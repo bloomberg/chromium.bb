@@ -303,10 +303,8 @@ void SystemTrayClient::ShowEnterpriseInfo() {
     return;
   }
 
-  // Otherwise show enterprise help in a browser tab.
-  chrome::ScopedTabbedBrowserDisplayer displayer(
-      ProfileManager::GetActiveUserProfile());
-  ShowSingletonTab(displayer.browser(), GURL(chrome::kLearnMoreEnterpriseURL));
+  // Otherwise show enterprise special settings subpage.
+  chrome::ShowManagementPageForProfile(ProfileManager::GetActiveUserProfile());
 }
 
 void SystemTrayClient::ShowNetworkConfigure(const std::string& network_id) {

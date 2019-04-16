@@ -109,6 +109,10 @@ void ShowImportDialog(Browser* browser);
 void ShowAboutChrome(Browser* browser);
 void ShowSearchEngineSettings(Browser* browser);
 
+#if defined(OS_CHROMEOS)
+void ShowManagementPageForProfile(Profile* profile);
+#endif
+
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 // Initiates signin in a new browser tab.
 void ShowBrowserSignin(Browser* browser,

@@ -383,6 +383,15 @@ void ShowSearchEngineSettings(Browser* browser) {
   ShowSettingsSubPage(browser, kSearchEnginesSubPage);
 }
 
+#if defined(OS_CHROMEOS)
+void ShowManagementPageForProfile(Profile* profile) {
+  const std::string page_path = "chrome://management";
+  base::RecordAction(base::UserMetricsAction("ShowOptions"));
+  SettingsWindowManager::GetInstance()->ShowChromePageForProfile(
+      profile, GURL(page_path));
+}
+#endif
+
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 void ShowBrowserSignin(Browser* browser,
                        signin_metrics::AccessPoint access_point) {
