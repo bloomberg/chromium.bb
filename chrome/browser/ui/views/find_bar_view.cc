@@ -192,8 +192,6 @@ FindBarView::FindBarView(FindBarHost* host)
   close_button_->SetFocusForPlatform();
   close_button_->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_FIND_IN_PAGE_CLOSE_TOOLTIP));
-  close_button_->SetAccessibleName(
-      l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE));
   close_button_->SetAnimationDuration(0);
   AddChildView(close_button_);
 
