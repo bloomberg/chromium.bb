@@ -761,10 +761,6 @@ ProcessorEntity* ClientTagBasedModelTypeProcessor::ProcessUpdate(
     return nullptr;
   }
 
-  // Grab a raw pointer in case the entity data needs to be cloned later if the
-  // received entity has an out of date encryption.
-  EntityData* entity_data = update->entity.get();
-
   ConflictResolution::Type resolution_type = ConflictResolution::TYPE_SIZE;
   if (entity && entity->IsUnsynced()) {
     // Handle conflict resolution.
@@ -817,14 +813,6 @@ ProcessorEntity* ClientTagBasedModelTypeProcessor::ProcessUpdate(
              << model_type_state_.encryption_key_name();
 
     entity->IncrementSequenceNumber(base::Time::Now());
-    if (resolution_type != ConflictResolution::USE_LOCAL &&
-        resolution_type != ConflictResolution::IGNORE_REMOTE_ENCRYPTION &&
-        entity->RequiresCommitData()) {
-      // If there is no pending commit data, and then either this update wasn't
-      // in conflict or the remote data won; either way the remote data is
-      // the right data to re-queue for commit.
-      entity->CacheCommitData(entity_data->Clone());
-    }
   }
   return entity;
 }
