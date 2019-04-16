@@ -13,7 +13,6 @@
 namespace blink {
 class WebElement;
 class WebFrame;
-class WebLocalFrame;
 }  // namespace blink
 
 namespace content {
@@ -53,16 +52,6 @@ class MimeHandlerViewFrameContainer : public MimeHandlerViewContainerBase {
   class RenderFrameLifetimeObserver;
   friend class RenderFrameLifetimeObserver;
   friend class MimeHandlerViewContainerManager;
-
-  static void CreateWithFrame(blink::WebLocalFrame* web_frame,
-                              const GURL& resource_url,
-                              const std::string& mime_type,
-                              const std::string& view_id);
-
-  MimeHandlerViewFrameContainer(blink::WebLocalFrame* web_frame,
-                                const GURL& resource_url,
-                                const std::string& mime_type,
-                                const std::string& view_id);
 
   MimeHandlerViewFrameContainer(const blink::WebElement& plugin_element,
                                 const GURL& resource_url,
