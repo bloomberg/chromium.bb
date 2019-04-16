@@ -163,7 +163,7 @@ void AccountManagerUIHandler::OnGetAccounts(
         !identity_manager_->HasAccountWithRefreshTokenInPersistentErrorState(
             maybe_account_info->account_id));
     account.SetString("fullName", maybe_account_info->full_name);
-    account.SetString("email", maybe_account_info->email);
+    account.SetString("email", stored_account.raw_email);
     if (!maybe_account_info->account_image.IsEmpty()) {
       account.SetString("pic",
                         webui::GetBitmapDataUrl(
