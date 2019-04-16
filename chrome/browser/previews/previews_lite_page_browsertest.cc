@@ -1455,6 +1455,15 @@ IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
   VerifyPreviewLoaded();
 
+  PreviewsUITabHelper* ui_tab_helper =
+      PreviewsUITabHelper::FromWebContents(GetWebContents());
+  previews::PreviewsUserData* previews_data =
+      ui_tab_helper->previews_user_data();
+  // Grab the page id and session now because they may change after the reload.
+  uint64_t expected_page_id = previews_data->server_lite_page_info()->page_id;
+  std::string expected_session_key =
+      previews_data->server_lite_page_info()->drp_session_key;
+
   // Starting a new page load will send a pingback for the previous page load.
   GetWebContents()->GetController().Reload(content::ReloadType::NORMAL, false);
   pingback_client->WaitForPingback();
@@ -1470,20 +1479,8 @@ IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
   if (GetParam())
     return;
 
-  PreviewsUITabHelper* ui_tab_helper =
-      PreviewsUITabHelper::FromWebContents(GetWebContents());
-  previews::PreviewsUserData* previews_data =
-      ui_tab_helper->previews_user_data();
-
-  EXPECT_EQ(data->session_key(),
-            previews_data->server_lite_page_info()->drp_session_key);
-
-  // TODO(crbug.com/952523): The page id is being incremented for every
-  // restarted navigation. Fix and remove the early return.
-  return;
-
-  EXPECT_EQ(data->page_id().value(),
-            previews_data->server_lite_page_info()->page_id);
+  EXPECT_EQ(data->session_key(), expected_session_key);
+  EXPECT_EQ(data->page_id().value(), expected_page_id);
 }
 
 class PreviewsLitePageServerTimeoutBrowserTest
