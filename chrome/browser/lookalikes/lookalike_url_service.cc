@@ -24,6 +24,7 @@
 #include "components/url_formatter/top_domains/top_domain_util.h"
 #include "components/url_formatter/url_formatter.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "net/base/url_util.h"
 
 namespace {
 
@@ -92,6 +93,11 @@ DomainInfo::~DomainInfo() = default;
 DomainInfo::DomainInfo(const DomainInfo&) = default;
 
 DomainInfo GetDomainInfo(const GURL& url) {
+  if (net::IsLocalhost(url) || net::IsHostnameNonUnique(url.host())) {
+    return DomainInfo(std::string(), std::string(),
+                      url_formatter::IDNConversionResult(),
+                      url_formatter::Skeletons());
+  }
   // Perform all computations on eTLD+1.
   const std::string domain_and_registry = GetETLDPlusOne(url.host());
   const std::string domain_without_registry =
