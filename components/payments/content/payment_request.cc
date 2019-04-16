@@ -420,6 +420,7 @@ void PaymentRequest::AreRequestedMethodsSupportedCallback(
   if (methods_supported) {
     if (SatisfiesSkipUIConstraints()) {
       skipped_payment_request_ui_ = true;
+      journey_logger_.SetEventOccurred(JourneyLogger::EVENT_SKIPPED_SHOW);
       Pay();
     }
   } else {
