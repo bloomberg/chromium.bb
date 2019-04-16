@@ -28,14 +28,15 @@ piex wasm raw image preview / thumbnail test page
 
     process(resolve, reject) {
       if (this.length <= 0 || this.length >= Math.pow(2, 30))
-        return reject(new Error('invalid image length'));
+        throw new Error('invalid image length');
 
       const memory = Module._malloc(this.length);
       if (!memory)
-        return reject(new Error('image malloc failure'));
+        throw Error('image malloc failure');
 
       const callback = Module.addFunction((result) => {
         this.result = result;
+        // TODO(noel): fix this leak (eg., process can throw).
         Module.removeFunction(callback);
         Module._free(memory);
         resolve(this.result);
