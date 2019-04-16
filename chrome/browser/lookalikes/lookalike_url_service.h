@@ -34,10 +34,11 @@ std::string GetETLDPlusOne(const std::string& hostname);
 
 struct DomainInfo {
   // eTLD+1, used for skeleton and edit distance comparison. Must be ASCII.
-  // Can be empty.
+  // Empty for non-unique domains, localhost or sites whose eTLD+1 is empty.
   const std::string domain_and_registry;
   // eTLD+1 without the registry part. For "www.google.com", this will be
-  // "google". Used for edit distance comparisons. Can be empty.
+  // "google". Used for edit distance comparisons.
+  // Empty for non-unique domains, localhost or sites whose eTLD+1 is empty.
   const std::string domain_without_registry;
 
   // Result of IDN conversion of domain_and_registry field.
@@ -53,6 +54,9 @@ struct DomainInfo {
   DomainInfo(const DomainInfo& other);
 };
 
+// Returns a DomainInfo instance computed from |url|. Will return empty fields
+// for non-unique hostnames (e.g. site.test), localhost or sites whose eTLD+1 is
+// empty.
 DomainInfo GetDomainInfo(const GURL& url);
 
 // A service that handles operations on lookalike URLs. It can fetch the list of

@@ -679,6 +679,28 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
   }
 }
 
+// Tests negative examples for all heuristics.
+IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
+                       NonUniqueDomains_NoMatch) {
+  // Unknown registry.
+  TestInterstitialNotShown(browser(), GetURL("google.cóm"));
+  CheckNoUkm();
+
+  // Engaged site is localhost, navigated site has unknown registry. This
+  // is intended to test that nonunique domains in the engaged site list is
+  // filtered out. However, it doesn't quite test that: We'll bail out early
+  // because the navigated site has unknown registry (and not because there is
+  // no engaged nonunique site).
+  SetEngagementScore(browser(), GURL("http://localhost6.localhost"),
+                     kHighEngagement);
+  test_clock()->Advance(base::TimeDelta::FromHours(1));
+  // The skeleton of this URL is localhost6.localpost which is at one edit
+  // distance from localhost6.localhost. We use localpost here to prevent an
+  // early return in LookalikeUrlNavigationThrottle::HandleThrottleRequest().
+  TestInterstitialNotShown(browser(), GURL("http://localhóst6.localpost"));
+  CheckNoUkm();
+}
+
 // Navigate to a domain whose visual representation looks both like a domain
 // with a site engagement score and also a top domain. This should record
 // metrics for a site engagement match because of the order of checks. It should
