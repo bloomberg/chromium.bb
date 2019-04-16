@@ -4,7 +4,6 @@
 
 #include "skia/ext/opacity_filter_canvas.h"
 #include "third_party/skia/include/core/SkPaint.h"
-#include "third_party/skia/include/core/SkTLazy.h"
 
 namespace skia {
 
