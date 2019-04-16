@@ -122,6 +122,7 @@ void PerformanceManager::BatchDeleteNodes(
 
 void PerformanceManager::RegisterObserver(
     std::unique_ptr<GraphObserver> observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   graph_.RegisterObserver(observer.get());
   observers_.push_back(std::move(observer));
 }
