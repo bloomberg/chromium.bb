@@ -48,7 +48,8 @@ ui::TextInputClient* GetTextInputClient() {
   DCHECK(bridge);
   ui::IMEInputContextHandlerInterface* handler =
       bridge->GetInputContextHandler();
-  DCHECK(handler);
+  if (!handler)
+    return nullptr;
   ui::TextInputClient* client = handler->GetInputMethod()->GetTextInputClient();
   DCHECK(client);
   return client;
@@ -87,9 +88,18 @@ void InputConnectionImpl::UpdateTextInputState(
 mojom::TextInputStatePtr InputConnectionImpl::GetTextInputState(
     bool is_input_state_update_requested) const {
   ui::TextInputClient* client = GetTextInputClient();
-  gfx::Range text_range, selection_range;
+  gfx::Range text_range = gfx::Range();
+  gfx::Range selection_range = gfx::Range();
   base::Optional<gfx::Range> composition_text_range = gfx::Range();
   base::string16 text;
+
+  if (!client) {
+    return mojom::TextInputStatePtr(base::in_place, 0, text, text_range,
+                                    selection_range, ui::TEXT_INPUT_TYPE_NONE,
+                                    false, 0, is_input_state_update_requested,
+                                    composition_text_range);
+  }
+
   client->GetTextRange(&text_range);
   client->GetEditableSelectionRange(&selection_range);
   if (!client->GetCompositionTextRange(&composition_text_range.value()))
@@ -156,6 +166,8 @@ void InputConnectionImpl::FinishComposingText() {
   }
 
   ui::TextInputClient* client = GetTextInputClient();
+  if (!client)
+    return;
   gfx::Range selection_range, composition_range;
   client->GetEditableSelectionRange(&selection_range);
   client->GetCompositionTextRange(&composition_range);
@@ -194,6 +206,9 @@ void InputConnectionImpl::SetComposingText(
       new_selection_range ? new_selection_range.value().end() : new_cursor_pos;
 
   ui::TextInputClient* client = GetTextInputClient();
+  if (!client)
+    return;
+
   gfx::Range selection_range;
   client->GetEditableSelectionRange(&selection_range);
   if (text.empty() &&
@@ -224,6 +239,8 @@ void InputConnectionImpl::RequestTextInputState(
 
 void InputConnectionImpl::SetSelection(const gfx::Range& new_selection_range) {
   ui::TextInputClient* client = GetTextInputClient();
+  if (!client)
+    return;
 
   gfx::Range selection_range;
   client->GetEditableSelectionRange(&selection_range);
