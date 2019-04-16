@@ -678,10 +678,10 @@ class NavigationListModel extends cr.EventTarget {
       }
 
       // Remove partitions that aren't available anymore.
-      const existingVolumeIds =
-          new Set(removableGroup.map(p => p.volumeInfo.volumeId));
+      const existingVolumeInfos =
+          new Set(removableGroup.map(p => p.volumeInfo));
       for (const partition of removableEntry.getUIChildren()) {
-        if (!existingVolumeIds.has(partition.volumeInfo.volumeId)) {
+        if (!existingVolumeInfos.has(partition.volumeInfo)) {
           removableEntry.removeChildEntry(partition);
         }
       }
