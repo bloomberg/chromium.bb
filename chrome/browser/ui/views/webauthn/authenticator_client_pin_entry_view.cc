@@ -30,7 +30,6 @@ std::unique_ptr<views::Textfield> MakePinTextField(
 
   auto field = std::make_unique<views::Textfield>();
   field->SetTextInputType(ui::TextInputType::TEXT_INPUT_TYPE_PASSWORD);
-  field->SetBackgroundColor(gfx::kGoogleGrey100);
   field->SetMinimumWidthInChars(kMinWidthInChars);
   field->SetDefaultWidthInChars(kDefaultWidthInChars);
   field->SetBorder(views::CreateSolidSidedBorder(0, 0, kBottomBorderThickness,
