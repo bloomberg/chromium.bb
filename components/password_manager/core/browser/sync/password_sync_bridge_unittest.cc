@@ -637,6 +637,25 @@ TEST_F(PasswordSyncBridgeTest,
   EXPECT_TRUE(error);
 }
 
+// This tests that if adding logins to the store fails,
+// ShouldMergeSync() would return an error without crashing.
+TEST_F(PasswordSyncBridgeTest,
+       ShouldMergeSyncRemoteAndLocalPasswordsWithErrorWhenStoreAddFails) {
+  // Simulate a failed AddLoginSync() by returning an empty change list.
+  ON_CALL(*mock_password_store_sync(), AddLoginSync(_))
+      .WillByDefault(testing::Return(PasswordStoreChangeList()));
+
+  syncer::EntityChangeList entity_change_list;
+  entity_change_list.push_back(syncer::EntityChange::CreateAdd(
+      /*storage_key=*/"",
+      SpecificsToEntity(CreateSpecificsWithSignonRealm(kSignonRealm1))));
+
+  EXPECT_CALL(*mock_password_store_sync(), RollbackTransaction());
+  base::Optional<syncer::ModelError> error = bridge()->MergeSyncData(
+      bridge()->CreateMetadataChangeList(), std::move(entity_change_list));
+  EXPECT_TRUE(error);
+}
+
 // This tests that if storing model type state fails,
 // ShouldMergeSync() would return an error without crashing.
 TEST_F(
