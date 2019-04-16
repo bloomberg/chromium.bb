@@ -1072,12 +1072,27 @@ static LayoutUnit ComputeContentSize(
       is_after_break = true;
     }
 
+    void AddTabulationCharacters(const NGInlineItem& item) {
+      AddTextUntil(&item);
+      DCHECK(item.Style());
+      const ComputedStyle& style = *item.Style();
+      const Font& font = style.GetFont();
+      const SimpleFontData* font_data = font.PrimaryFont();
+      const TabSize& tab_size = style.GetTabSize();
+      float advance = font.TabWidth(font_data, tab_size, position);
+      unsigned length = item.Length();
+      DCHECK_GE(length, 1u);
+      if (length > 1u)
+        advance += font.TabWidth(font_data, tab_size) * (length - 1);
+      position += LayoutUnit::FromFloatCeil(advance).ClampNegativeToZero();
+    }
+
     LayoutUnit Finish(const NGInlineItem* end) {
       AddTextUntil(end);
       return std::max(position, max_size);
     }
 
-    bool ComputeFromMinSize(const NGLineInfo& line_info) {
+    void ComputeFromMinSize(const NGLineInfo& line_info) {
       if (is_after_break) {
         position += line_info.TextIndent();
         is_after_break = false;
@@ -1106,12 +1121,13 @@ static LayoutUnit ComputeContentSize(
           // Tabulation characters change the widths by their positions, so
           // their widths for the max size may be different from the widths for
           // the min size. Fall back to 2 pass for now.
-          if (c == kTabulationCharacter)
-            return false;
+          if (c == kTabulationCharacter) {
+            AddTabulationCharacters(item);
+            continue;
+          }
         }
         position += result.inline_size;
       }
-      return true;
     }
   };
   // Instantiate |MaxSizeFromMinSize| if we can compute the max size in 1 pass.
@@ -1147,10 +1163,10 @@ static LayoutUnit ComputeContentSize(
     // Compute the max size from the line break result for the min size.
     if (max_size_from_min_size.has_value()) {
       // If there were floats, fall back to 2 pass for now.
-      if (!floats_for_min_max.IsEmpty() ||
-          !max_size_from_min_size->ComputeFromMinSize(line_info)) {
+      if (!floats_for_min_max.IsEmpty())
         max_size_from_min_size.reset();
-      }
+      else
+        max_size_from_min_size->ComputeFromMinSize(line_info);
     }
 
     for (auto* floating_object : floats_for_min_max) {
