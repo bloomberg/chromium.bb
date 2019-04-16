@@ -277,6 +277,18 @@ class Adapter : public AlsReader::Observer,
                         double new_brightness,
                         BrightnessChangeCause cause) const;
 
+  // Logs AdapterDecision. Also logs ratio of user brightness change to model
+  // brightness change if previous brightness change was triggered by the model.
+  // Only called when user changes brightness manually, i.e. when
+  // |OnUserBrightnessChanged| is called.
+  // |old_brightness_percent| and |new_brightness_percent| should come directly
+  // from BrightnessMonitor, and values are between 0 and 100.
+  void LogAdapterDecision(
+      base::TimeTicks first_recent_user_brightness_request_time,
+      const AdapterDecision& decision,
+      double old_brightness_percent,
+      double new_brightness_percent) const;
+
   Profile* const profile_;
 
   ScopedObserver<AlsReader, AlsReader::Observer> als_reader_observer_;
@@ -331,6 +343,20 @@ class Adapter : public AlsReader::Observer,
   // to check |adapter_disabled_by_user_adjustment_|.
   bool adapter_disabled_by_user_adjustment_ = false;
 
+  // When user changes brightness, they may press the brightness button several
+  // times to reach their ideal brightness. In this process, the adapter's
+  // |OnUserBrightnessChangeRequested| will be called for each button press,
+  // followed by |OnUserBrightnessChanged| when user finishes with their
+  // brightness change.
+  // |first_recent_user_brightness_request_time_| is set to the time when the
+  // first |OnUserBrightnessChangeRequested| is called, and will be unset
+  // when |OnUserBrightnessChanged| is called. We use this to ensure we only
+  // log the elapsed time between previous model adjustment and the 1st user
+  // brightness adjustment action.
+  base::Optional<base::TimeTicks> first_recent_user_brightness_request_time_;
+  base::Optional<AdapterDecision>
+      decision_at_first_recent_user_brightness_request_;
+
   // The thresholds are calculated from the |average_log_ambient_lux_|.
   // They are only updated when brightness is changed (either by user or model).
   base::Optional<double> brightening_threshold_;
@@ -348,6 +374,10 @@ class Adapter : public AlsReader::Observer,
 
   // Last time brightness was changed by the model.
   base::TimeTicks latest_model_brightness_change_time_;
+
+  // Brightness change triggered by the model. It's only unset if model changes
+  // brightness when there's no pior recorded brightness level.
+  base::Optional<double> model_brightness_change_;
 
   // Current recorded brightness. It can be either the user requested brightness
   // or the model requested brightness.
