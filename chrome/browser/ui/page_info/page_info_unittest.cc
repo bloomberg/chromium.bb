@@ -99,7 +99,7 @@ class MockPageInfoUI : public PageInfoUI {
     }
   }
 
-#if defined(SAFE_BROWSING_DB_LOCAL)
+#if defined(FULL_SAFE_BROWSING)
   std::unique_ptr<PageInfoUI::SecurityDescription>
   CreateSecurityDescriptionForPasswordReuse(
       bool unused_is_enterprise_password) const override {
@@ -462,7 +462,7 @@ TEST_F(PageInfoTest, UnwantedSoftware) {
             page_info()->site_identity_status());
 }
 
-#if defined(SAFE_BROWSING_DB_LOCAL)
+#if defined(FULL_SAFE_BROWSING)
 TEST_F(PageInfoTest, SignInPasswordReuse) {
   security_level_ = security_state::DANGEROUS;
   visible_security_state_.malicious_content_status =
