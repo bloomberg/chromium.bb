@@ -110,6 +110,12 @@ bool IsFrozen(const FrameNodeImpl* frame_node) {
 FrozenFrameAggregator::FrozenFrameAggregator() = default;
 FrozenFrameAggregator::~FrozenFrameAggregator() = default;
 
+void FrozenFrameAggregator::OnRegistered() {
+  // This observer presumes that it's been added before any nodes exist in the
+  // graph.
+  DCHECK(graph()->nodes().empty());
+}
+
 bool FrozenFrameAggregator::ShouldObserve(const NodeBase* node) {
   // Use the ShouldObserve hook to ensure page and process node attached data
   // is initialized. There's no need to observe these nodes beyond that.

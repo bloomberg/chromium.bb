@@ -48,6 +48,7 @@ void Graph::RegisterObserver(GraphObserver* observer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   observer->set_node_graph(this);
   observers_.push_back(observer);
+  observer->OnRegistered();
 }
 
 void Graph::UnregisterObserver(GraphObserver* observer) {
@@ -57,6 +58,7 @@ void Graph::UnregisterObserver(GraphObserver* observer) {
     if (*it == observer) {
       observers_.erase(it);
       removed = true;
+      observer->OnUnregistered();
       break;
     }
   }

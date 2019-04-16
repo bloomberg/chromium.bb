@@ -26,6 +26,7 @@ class FrozenFrameAggregator : public GraphObserver {
   ~FrozenFrameAggregator() override;
 
   // GraphObserver implementation:
+  void OnRegistered() override;
   bool ShouldObserve(const NodeBase* node) override;
   void OnNodeAdded(NodeBase* node) override;
   void OnBeforeNodeRemoved(NodeBase* node) override;

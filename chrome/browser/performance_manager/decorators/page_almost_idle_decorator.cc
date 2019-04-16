@@ -61,6 +61,12 @@ PageAlmostIdleDecorator::PageAlmostIdleDecorator() {
 
 PageAlmostIdleDecorator::~PageAlmostIdleDecorator() = default;
 
+void PageAlmostIdleDecorator::OnRegistered() {
+  // This observer presumes that it's been added before any nodes exist in the
+  // graph.
+  DCHECK(graph()->nodes().empty());
+}
+
 bool PageAlmostIdleDecorator::ShouldObserve(const NodeBase* node) {
   switch (node->id().type) {
     case resource_coordinator::CoordinationUnitType::kFrame:
