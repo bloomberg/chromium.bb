@@ -15,7 +15,6 @@ bool ToLocalHour(int hour,
   DCHECK(out);
 
   // Gets the local time at |hour| in yesterday.
-
   base::Time another_day = today + base::TimeDelta::FromDays(day_delta);
   base::Time::Exploded another_day_exploded;
   another_day.LocalExplode(&another_day_exploded);
