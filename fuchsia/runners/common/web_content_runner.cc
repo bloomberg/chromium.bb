@@ -30,13 +30,13 @@ fidl::InterfaceHandle<fuchsia::io::Directory> OpenDirectoryOrFail(
   return directory;
 }
 
-chromium::web::ContextPtr CreateWebContextWithDataDirectory(
+fuchsia::web::ContextPtr CreateWebContextWithDataDirectory(
     fidl::InterfaceHandle<fuchsia::io::Directory> data_directory) {
   auto web_context_provider =
       base::fuchsia::ServiceDirectoryClient::ForCurrentProcess()
-          ->ConnectToService<chromium::web::ContextProvider>();
+          ->ConnectToService<fuchsia::web::ContextProvider>();
 
-  chromium::web::CreateContextParams create_params;
+  fuchsia::web::CreateContextParams create_params;
 
   // Pass /svc and /data to the context.
   create_params.set_service_directory(OpenDirectoryOrFail(
@@ -44,7 +44,7 @@ chromium::web::ContextPtr CreateWebContextWithDataDirectory(
   if (data_directory)
     create_params.set_data_directory(std::move(data_directory));
 
-  chromium::web::ContextPtr web_context;
+  fuchsia::web::ContextPtr web_context;
   web_context_provider->Create(std::move(create_params),
                                web_context.NewRequest());
   web_context.set_error_handler([](zx_status_t status) {
@@ -59,20 +59,20 @@ chromium::web::ContextPtr CreateWebContextWithDataDirectory(
 }  // namespace
 
 // static
-chromium::web::ContextPtr WebContentRunner::CreateDefaultWebContext() {
+fuchsia::web::ContextPtr WebContentRunner::CreateDefaultWebContext() {
   return CreateWebContextWithDataDirectory(OpenDirectoryOrFail(
       base::FilePath(base::fuchsia::kPersistedDataDirectoryPath)));
 }
 
 // static
-chromium::web::ContextPtr WebContentRunner::CreateIncognitoWebContext() {
+fuchsia::web::ContextPtr WebContentRunner::CreateIncognitoWebContext() {
   return CreateWebContextWithDataDirectory(
       fidl::InterfaceHandle<fuchsia::io::Directory>());
 }
 
 WebContentRunner::WebContentRunner(
     base::fuchsia::ServiceDirectory* service_directory,
-    chromium::web::ContextPtr context,
+    fuchsia::web::ContextPtr context,
     base::OnceClosure on_idle_closure)
     : context_(std::move(context)),
       service_binding_(service_directory, this),

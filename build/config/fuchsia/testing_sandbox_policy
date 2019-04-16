@@ -6,7 +6,6 @@
       "vulkan" ],
   "dev": ["null", "zero"],
   "services": [
-      "chromium.web.ContextProvider",
       "fuchsia.fonts.Provider",
       "fuchsia.media.Audio",
       "fuchsia.mediacodec.CodecFactory",
@@ -20,6 +19,7 @@
       "fuchsia.ui.input.ImeVisibilityService",
       "fuchsia.ui.policy.Presenter",
       "fuchsia.ui.scenic.Scenic",
-      "fuchsia.vulkan.loader.Loader"
+      "fuchsia.vulkan.loader.Loader",
+      "fuchsia.web.ContextProvider"
   ]
 }

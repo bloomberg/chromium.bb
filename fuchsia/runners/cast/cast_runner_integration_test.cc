@@ -52,7 +52,7 @@ class FakeCastChannel : public chromium::cast::CastChannel {
   }
 
  protected:
-  // chromium::web::CastChannel implementation.
+  // chromium::cast::CastChannel implementation.
   void OnOpened(fidl::InterfaceHandle<chromium::web::MessagePort> channel,
                 OnOpenedCallback callback_ignored) override {
     port_ = channel.Bind();
@@ -156,7 +156,7 @@ class CastRunnerIntegrationTest : public testing::Test {
     component_state_->cast_channel()->set_on_opened(run_loop.QuitClosure());
     run_loop.Run();
 
-    DCHECK(component_state_->cast_channel()->port());
+    ASSERT_TRUE(component_state_->cast_channel()->port());
   }
 
   fuchsia::sys::ComponentControllerPtr StartCastComponent(
@@ -241,7 +241,7 @@ TEST_F(CastRunnerIntegrationTest, BasicRequest) {
 
   // Access the NavigationController from the WebComponent. The test will hang
   // here if no WebComponent was created.
-  chromium::web::NavigationControllerPtr nav_controller;
+  fuchsia::web::NavigationControllerPtr nav_controller;
   {
     base::RunLoop run_loop;
     cr_fuchsia::ResultReceiver<WebComponent*> web_component(
@@ -254,15 +254,16 @@ TEST_F(CastRunnerIntegrationTest, BasicRequest) {
         ->GetNavigationController(nav_controller.NewRequest());
   }
 
-  // Ensure the NavigationEntry has the expected URL.
+  // Ensure the NavigationState has the expected URL.
   {
     base::RunLoop run_loop;
-    cr_fuchsia::ResultReceiver<std::unique_ptr<chromium::web::NavigationEntry>>
-        nav_entry(run_loop.QuitClosure());
+    cr_fuchsia::ResultReceiver<fuchsia::web::NavigationState> nav_entry(
+        run_loop.QuitClosure());
     nav_controller->GetVisibleEntry(
         cr_fuchsia::CallbackToFitFunction(nav_entry.GetReceiveCallback()));
     run_loop.Run();
-    EXPECT_EQ(nav_entry->get()->url, test_server_.GetURL(kBlankAppPath).spec());
+    ASSERT_TRUE(nav_entry->has_url());
+    EXPECT_EQ(nav_entry->url(), test_server_.GetURL(kBlankAppPath).spec());
   }
 
   // Verify that the component is torn down when |component_controller| is
@@ -306,7 +307,7 @@ TEST_F(CastRunnerIntegrationTest, CastChannel) {
 
   // Access the NavigationController from the WebComponent. The test will hang
   // here if no WebComponent was created.
-  chromium::web::NavigationControllerPtr nav_controller;
+  fuchsia::web::NavigationControllerPtr nav_controller;
   {
     base::RunLoop run_loop;
     cr_fuchsia::ResultReceiver<WebComponent*> web_component(
@@ -319,15 +320,16 @@ TEST_F(CastRunnerIntegrationTest, CastChannel) {
         ->GetNavigationController(nav_controller.NewRequest());
   }
 
-  // Ensure the NavigationEntry has the expected URL.
+  // Ensure the NavigationState has the expected URL.
   {
     base::RunLoop run_loop;
-    cr_fuchsia::ResultReceiver<std::unique_ptr<chromium::web::NavigationEntry>>
-        nav_entry(run_loop.QuitClosure());
+    cr_fuchsia::ResultReceiver<fuchsia::web::NavigationState> nav_entry(
+        run_loop.QuitClosure());
     nav_controller->GetVisibleEntry(
         cr_fuchsia::CallbackToFitFunction(nav_entry.GetReceiveCallback()));
     run_loop.Run();
-    EXPECT_EQ(nav_entry->get()->url,
+    ASSERT_TRUE(nav_entry->has_url());
+    EXPECT_EQ(nav_entry->url(),
               test_server_.GetURL(kCastChannelAppPath).spec());
   }
 

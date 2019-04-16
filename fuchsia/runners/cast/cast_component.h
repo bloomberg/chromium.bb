@@ -12,7 +12,6 @@
 
 #include "base/fuchsia/service_directory.h"
 #include "fuchsia/base/agent_manager.h"
-#include "fuchsia/fidl/chromium/web/cpp/fidl.h"
 #include "fuchsia/runners/cast/cast_channel_bindings.h"
 #include "fuchsia/runners/cast/named_message_port_connector.h"
 #include "fuchsia/runners/cast/queryable_data_bindings.h"
@@ -22,7 +21,7 @@ class CastRunner;
 
 // A specialization of WebComponent which adds Cast-specific services.
 class CastComponent : public WebComponent,
-                      public chromium::web::NavigationEventObserver {
+                      public fuchsia::web::NavigationEventListener {
  public:
   CastComponent(CastRunner* runner,
                 std::unique_ptr<base::fuchsia::StartupContext> startup_context,
@@ -38,10 +37,10 @@ class CastComponent : public WebComponent,
   void DestroyComponent(int termination_exit_code,
                         fuchsia::sys::TerminationReason reason) override;
 
-  // chromium::web::NavigationEventObserver implementation.
+  // fuchsia::web::NavigationEventListener implementation.
   // Triggers the injection of API channels into the page content.
   void OnNavigationStateChanged(
-      chromium::web::NavigationEvent change,
+      fuchsia::web::NavigationState change,
       OnNavigationStateChangedCallback callback) override;
 
   std::unique_ptr<cr_fuchsia::AgentManager> agent_manager_;
@@ -54,8 +53,8 @@ class CastComponent : public WebComponent,
   fuchsia::sys::ServiceProviderPtr agent_services_;
   fuchsia::modular::AgentControllerPtr agent_controller_;
 
-  fidl::Binding<chromium::web::NavigationEventObserver>
-      navigation_observer_binding_;
+  fidl::Binding<fuchsia::web::NavigationEventListener>
+      navigation_listener_binding_;
 
   DISALLOW_COPY_AND_ASSIGN(CastComponent);
 };

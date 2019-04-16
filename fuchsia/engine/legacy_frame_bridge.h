@@ -11,6 +11,7 @@
 
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/macros.h"
+#include "fuchsia/engine/web_engine_export.h"
 #include "fuchsia/fidl/chromium/web/cpp/fidl.h"
 
 // Allows chromium::web::Frame clients to connect to fuchsia::web::Frame
@@ -18,7 +19,7 @@
 //
 // LegacyFrameBridge instances are self-managed; they destroy themselves
 // when the connection with either end is terminated.
-class LegacyFrameBridge : public chromium::web::Frame {
+class WEB_ENGINE_EXPORT LegacyFrameBridge : public chromium::web::Frame {
  public:
   LegacyFrameBridge(fidl::InterfaceRequest<chromium::web::Frame> request,
                     fuchsia::web::FramePtr handle);

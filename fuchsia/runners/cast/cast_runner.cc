@@ -17,7 +17,7 @@
 #include "url/gurl.h"
 
 CastRunner::CastRunner(base::fuchsia::ServiceDirectory* service_directory,
-                       chromium::web::ContextPtr context,
+                       fuchsia::web::ContextPtr context,
                        base::OnceClosure on_idle_closure)
     : WebContentRunner(service_directory,
                        std::move(context),
