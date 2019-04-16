@@ -583,27 +583,6 @@ void LayoutBoxModelObject::AddOutlineRectsForDescendant(
   descendant.AddOutlineRects(rects, additional_offset, include_block_overflows);
 }
 
-bool LayoutBoxModelObject::HasNonEmptyLayoutSize() const {
-  for (const LayoutBoxModelObject* root = this; root;
-       root = root->Continuation()) {
-    for (const LayoutObject* object = root; object;
-         object = object->NextInPreOrder(root)) {
-      if (object->IsBox()) {
-        const LayoutBox& box = ToLayoutBox(*object);
-        if (box.LogicalHeight() && box.LogicalWidth())
-          return true;
-      } else if (object->IsLayoutInline()) {
-        const LayoutInline& layout_inline = ToLayoutInline(*object);
-        if (!layout_inline.LinesBoundingBox().IsEmpty())
-          return true;
-      } else {
-        DCHECK(object->IsText() || object->IsSVG());
-      }
-    }
-  }
-  return false;
-}
-
 void LayoutBoxModelObject::AbsoluteQuadsForSelf(
     Vector<FloatQuad>& quads,
     MapCoordinatesFlags mode) const {
