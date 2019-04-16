@@ -121,6 +121,7 @@ void PromptAction::UpdateChips() {
     Chip& chip = chips->back();
     chip.text = choice_proto.name();
     chip.type = choice_proto.chip_type();
+    chip.icon = choice_proto.chip_icon();
     chip.disabled = !precondition_results_[i];
     chips->back().callback = base::BindOnce(&PromptAction::OnSuggestionChosen,
                                             weak_ptr_factory_.GetWeakPtr(), i);

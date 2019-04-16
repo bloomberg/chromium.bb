@@ -22,6 +22,8 @@ struct Chip {
 
   ChipType type = UNKNOWN_CHIP_TYPE;
 
+  ChipIcon icon = NO_ICON;
+
   // Localized string to display.
   std::string text;
 
