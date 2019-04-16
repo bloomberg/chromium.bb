@@ -554,8 +554,12 @@ IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
   EXPECT_EQ(1U, GetServerAddressesMetadata(1).size());
 }
 
-IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
-                       DeleteServerAddressMetadataWhenDataGetsRemoved) {
+// TODO(crbug.com/953152): Flaky on multiple builders and recently regressed on
+// Mac, apparently with
+// https://chromium-review.googlesource.com/c/chromium/src/+/1566296.
+IN_PROC_BROWSER_TEST_P(
+    TwoClientWalletSyncTest,
+    DISABLED_DeleteServerAddressMetadataWhenDataGetsRemoved) {
   GetFakeServer()->SetWalletData(
       {CreateSyncWalletCard(/*name=*/"card-1", /*last_four=*/"0001",
                             kDefaultBillingAddressID),
