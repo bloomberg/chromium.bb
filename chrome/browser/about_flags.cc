@@ -555,13 +555,18 @@ const FeatureEntry::FeatureVariation
 #if defined(OS_ANDROID)
 const FeatureEntry::FeatureParam
     kInterestFeedLargerImagesFeatureVariationConstant[] = {
+        {"feed_ui_enabled", "true"}};
+const FeatureEntry::FeatureParam
+    kInterestFeedSnippetsEnabledFeatureVariationConstant[] = {
         {"feed_ui_enabled", "true"},
-        {"feed_server_endpoint",
-         "https://www.google.com/httpservice/noretry/DiscoverClankService/"
-         "FeedQuery"}};
+        {"snippets_enabled", "true"}};
 const FeatureEntry::FeatureVariation kInterestFeedFeatureVariations[] = {
     {"(larger images)", kInterestFeedLargerImagesFeatureVariationConstant,
-     base::size(kInterestFeedLargerImagesFeatureVariationConstant), nullptr}};
+     base::size(kInterestFeedLargerImagesFeatureVariationConstant), nullptr},
+    {"(larger images and snippets)",
+     kInterestFeedSnippetsEnabledFeatureVariationConstant,
+     base::size(kInterestFeedSnippetsEnabledFeatureVariationConstant),
+     nullptr}};
 
 const FeatureEntry::FeatureVariation kRemoteSuggestionsFeatureVariations[] = {
     {"via content suggestion server (backed by ChromeReader)", nullptr, 0,
