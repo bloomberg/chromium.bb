@@ -378,13 +378,22 @@ void BookmarkAppHelper::OnIconsDownloaded(
     return;
   }
 
+  // TODO(alancutter): Get user confirmation before entering the install flow,
+  // installation code shouldn't have to perform UI work.
   if (base::FeatureList::IsEnabled(::features::kDesktopPWAWindowing) &&
       for_installable_site_ == web_app::ForInstallableSite::kYes) {
     web_app_info_.open_as_window = true;
-    chrome::ShowPWAInstallDialog(
-        contents_, web_app_info_,
-        base::BindOnce(&BookmarkAppHelper::OnBubbleCompleted,
-                       weak_factory_.GetWeakPtr()));
+    if (install_source_ == WebappInstallSource::OMNIBOX_INSTALL_ICON) {
+      chrome::ShowPWAInstallBubble(
+          contents_, web_app_info_,
+          base::BindOnce(&BookmarkAppHelper::OnBubbleCompleted,
+                         weak_factory_.GetWeakPtr()));
+    } else {
+      chrome::ShowPWAInstallDialog(
+          contents_, web_app_info_,
+          base::BindOnce(&BookmarkAppHelper::OnBubbleCompleted,
+                         weak_factory_.GetWeakPtr()));
+    }
   } else {
     chrome::ShowBookmarkAppDialog(
         contents_, web_app_info_,

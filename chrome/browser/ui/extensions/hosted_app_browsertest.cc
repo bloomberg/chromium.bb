@@ -1240,7 +1240,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, InstallInstallableSite) {
   ASSERT_TRUE(https_server()->Start());
   NavigateToURLAndWait(browser(), GetInstallableAppURL());
 
-  chrome::SetAutoAcceptPWAInstallDialogForTesting(/*auto_accept*/ true);
+  chrome::SetAutoAcceptPWAInstallConfirmationForTesting(/*auto_accept*/ true);
 
   web_app::AppId app_id;
 
@@ -1256,7 +1256,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, InstallInstallableSite) {
   chrome::ExecuteCommand(browser(), IDC_INSTALL_PWA);
   run_loop.Run();
 
-  chrome::SetAutoAcceptPWAInstallDialogForTesting(/*auto_accept*/ false);
+  chrome::SetAutoAcceptPWAInstallConfirmationForTesting(/*auto_accept*/ false);
 
   const extensions::Extension* app =
       extensions::ExtensionRegistry::Get(browser()->profile())
