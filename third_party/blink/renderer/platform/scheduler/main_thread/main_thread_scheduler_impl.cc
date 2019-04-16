@@ -1570,7 +1570,7 @@ void MainThreadSchedulerImpl::ApplyTaskQueuePolicy(
   DCHECK(old_task_queue_policy.IsQueueEnabled(task_queue) ||
          task_queue_enabled_voter);
   if (task_queue_enabled_voter) {
-    task_queue_enabled_voter->SetQueueEnabled(
+    task_queue_enabled_voter->SetVoteToEnable(
         new_task_queue_policy.IsQueueEnabled(task_queue));
   }
 

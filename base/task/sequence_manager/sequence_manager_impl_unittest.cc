@@ -582,7 +582,7 @@ void DisableQueueTestTask(uint64_t value,
                           std::vector<EnqueueOrder>* out_result,
                           TaskQueue::QueueEnabledVoter* voter) {
   out_result->push_back(EnqueueOrder::FromIntForTesting(value));
-  voter->SetQueueEnabled(false);
+  voter->SetVoteToEnable(false);
 }
 
 TEST_P(SequenceManagerTest, SingleQueuePosting) {
@@ -734,13 +734,13 @@ TEST_P(SequenceManagerTest, HasPendingImmediateWork_ImmediateTask) {
   EXPECT_TRUE(queue->GetTaskQueueImpl()->immediate_work_queue()->Empty());
   std::unique_ptr<TaskQueue::QueueEnabledVoter> voter =
       queue->CreateQueueEnabledVoter();
-  voter->SetQueueEnabled(false);
+  voter->SetVoteToEnable(false);
   RunLoop().RunUntilIdle();
   EXPECT_FALSE(queue->GetTaskQueueImpl()->immediate_work_queue()->Empty());
   EXPECT_TRUE(queue->HasTaskToRunImmediately());
 
   // Run the task, making the queue empty.
-  voter->SetQueueEnabled(true);
+  voter->SetVoteToEnable(true);
   RunLoop().RunUntilIdle();
   EXPECT_FALSE(queue->HasTaskToRunImmediately());
 }
@@ -888,7 +888,7 @@ TEST(SequenceManagerTestWithMockTaskRunner,
       fixture.sequence_manager()->CreateTaskQueue(TaskQueue::Spec("test"));
   std::unique_ptr<TaskQueue::QueueEnabledVoter> voter =
       queue->CreateQueueEnabledVoter();
-  voter->SetQueueEnabled(false);
+  voter->SetVoteToEnable(false);
 
   WaitableEvent done_event;
   Thread thread("TestThread");
@@ -905,7 +905,7 @@ TEST(SequenceManagerTestWithMockTaskRunner,
   EXPECT_EQ(0u, fixture.test_task_runner()->GetPendingTaskCount());
 
   // But if the queue becomes re-enabled it does schedule work.
-  voter->SetQueueEnabled(true);
+  voter->SetVoteToEnable(true);
   EXPECT_EQ(1u, fixture.test_task_runner()->GetPendingTaskCount());
 }
 
@@ -988,7 +988,7 @@ TEST_P(SequenceManagerTest, RemovingFenceForDisabledQueueDoesNotPostDoWork) {
 
   std::unique_ptr<TaskQueue::QueueEnabledVoter> voter =
       queue->CreateQueueEnabledVoter();
-  voter->SetQueueEnabled(false);
+  voter->SetVoteToEnable(false);
   queue->InsertFence(TaskQueue::InsertFencePosition::kNow);
   queue->task_runner()->PostTask(FROM_HERE, task.Get());
 
@@ -1003,10 +1003,10 @@ TEST_P(SequenceManagerTest, EnablingFencedQueueDoesNotPostDoWork) {
 
   std::unique_ptr<TaskQueue::QueueEnabledVoter> voter =
       queue->CreateQueueEnabledVoter();
-  voter->SetQueueEnabled(false);
+  voter->SetVoteToEnable(false);
   queue->InsertFence(TaskQueue::InsertFencePosition::kNow);
   queue->task_runner()->PostTask(FROM_HERE, task.Get());
-  voter->SetQueueEnabled(true);
+  voter->SetVoteToEnable(true);
 
   EXPECT_CALL(task, Run).Times(0);
   RunLoop().RunUntilIdle();
@@ -1018,13 +1018,13 @@ TEST_P(SequenceManagerTest, DenyRunning_BeforePosting) {
 
   std::unique_ptr<TaskQueue::QueueEnabledVoter> voter =
       queue->CreateQueueEnabledVoter();
-  voter->SetQueueEnabled(false);
+  voter->SetVoteToEnable(false);
   queue->task_runner()->PostTask(FROM_HERE, task.Get());
 
   EXPECT_CALL(task, Run).Times(0);
   RunLoop().RunUntilIdle();
 
-  voter->SetQueueEnabled(true);
+  voter->SetVoteToEnable(true);
   EXPECT_CALL(task, Run);
   RunLoop().RunUntilIdle();
 }
@@ -1036,12 +1036,12 @@ TEST_P(SequenceManagerTest, DenyRunning_AfterPosting) {
   queue->task_runner()->PostTask(FROM_HERE, task.Get());
   std::unique_ptr<TaskQueue::QueueEnabledVoter> voter =
       queue->CreateQueueEnabledVoter();
-  voter->SetQueueEnabled(false);
+  voter->SetVoteToEnable(false);
 
   EXPECT_CALL(task, Run).Times(0);
   RunLoop().RunUntilIdle();
 
-  voter->SetQueueEnabled(true);
+  voter->SetVoteToEnable(true);
   EXPECT_CALL(task, Run);
   RunLoop().RunUntilIdle();
 }
@@ -1053,14 +1053,14 @@ TEST_P(SequenceManagerTest, DenyRunning_AfterRemovingFence) {
   queue->InsertFence(TaskQueue::InsertFencePosition::kNow);
   std::unique_ptr<TaskQueue::QueueEnabledVoter> voter =
       queue->CreateQueueEnabledVoter();
-  voter->SetQueueEnabled(false);
+  voter->SetVoteToEnable(false);
   queue->task_runner()->PostTask(FROM_HERE, BindOnce(&TestTask, 1, &run_order));
 
   RunLoop().RunUntilIdle();
   EXPECT_TRUE(run_order.empty());
 
   queue->RemoveFence();
-  voter->SetQueueEnabled(true);
+  voter->SetVoteToEnable(true);
   RunLoop().RunUntilIdle();
   EXPECT_THAT(run_order, ElementsAre(1u));
 }
@@ -2342,14 +2342,14 @@ TEST_P(SequenceManagerTest, TaskQueueObserver_DelayedTask) {
 
   std::unique_ptr<TaskQueue::QueueEnabledVoter> voter =
       queue->CreateQueueEnabledVoter();
-  voter->SetQueueEnabled(false);
+  voter->SetVoteToEnable(false);
   Mock::VerifyAndClearExpectations(&observer);
 
   // When a queue has been enabled, we may get a notification if the
   // TimeDomain's next scheduled wake-up has changed.
   EXPECT_CALL(observer,
               OnQueueNextWakeUpChanged(queue.get(), start_time + delay1s));
-  voter->SetQueueEnabled(true);
+  voter->SetVoteToEnable(true);
   Mock::VerifyAndClearExpectations(&observer);
 
   // Tidy up.
@@ -2386,24 +2386,24 @@ TEST_P(SequenceManagerTest, TaskQueueObserver_DelayedTaskMultipleQueues) {
 
   // Disabling a queue should not trigger a notification.
   EXPECT_CALL(observer, OnQueueNextWakeUpChanged(_, _)).Times(0);
-  voter0->SetQueueEnabled(false);
+  voter0->SetVoteToEnable(false);
   Mock::VerifyAndClearExpectations(&observer);
 
   // Re-enabling it should should also trigger a notification.
   EXPECT_CALL(observer,
               OnQueueNextWakeUpChanged(queues[0].get(), start_time + delay1s));
-  voter0->SetQueueEnabled(true);
+  voter0->SetVoteToEnable(true);
   Mock::VerifyAndClearExpectations(&observer);
 
   // Disabling a queue should not trigger a notification.
   EXPECT_CALL(observer, OnQueueNextWakeUpChanged(_, _)).Times(0);
-  voter1->SetQueueEnabled(false);
+  voter1->SetVoteToEnable(false);
   Mock::VerifyAndClearExpectations(&observer);
 
   // Re-enabling it should should trigger a notification.
   EXPECT_CALL(observer,
               OnQueueNextWakeUpChanged(queues[1].get(), start_time + delay10s));
-  voter1->SetQueueEnabled(true);
+  voter1->SetVoteToEnable(true);
   Mock::VerifyAndClearExpectations(&observer);
 
   // Tidy up.
@@ -2993,7 +2993,7 @@ TEST_P(SequenceManagerTest, TaskQueueVoters) {
   EXPECT_TRUE(queue->IsQueueEnabled());
 
   // If any voter wants to disable, the queue is disabled.
-  voter1->SetQueueEnabled(false);
+  voter1->SetVoteToEnable(false);
   EXPECT_FALSE(queue->IsQueueEnabled());
 
   // If the voter is deleted then the queue should be re-enabled.
@@ -3002,21 +3002,21 @@ TEST_P(SequenceManagerTest, TaskQueueVoters) {
 
   // If any of the remaining voters wants to disable, the queue should be
   // disabled.
-  voter2->SetQueueEnabled(false);
+  voter2->SetVoteToEnable(false);
   EXPECT_FALSE(queue->IsQueueEnabled());
 
   // If another queue votes to disable, nothing happens because it's already
   // disabled.
-  voter3->SetQueueEnabled(false);
+  voter3->SetVoteToEnable(false);
   EXPECT_FALSE(queue->IsQueueEnabled());
 
   // There are two votes to disable, so one of them voting to enable does
   // nothing.
-  voter2->SetQueueEnabled(true);
+  voter2->SetVoteToEnable(true);
   EXPECT_FALSE(queue->IsQueueEnabled());
 
   // IF all queues vote to enable then the queue is enabled.
-  voter3->SetQueueEnabled(true);
+  voter3->SetVoteToEnable(true);
   EXPECT_TRUE(queue->IsQueueEnabled());
 }
 
@@ -3026,7 +3026,7 @@ TEST_P(SequenceManagerTest, ShutdownQueueBeforeEnabledVoterDeleted) {
   std::unique_ptr<TaskQueue::QueueEnabledVoter> voter =
       queue->CreateQueueEnabledVoter();
 
-  voter->SetQueueEnabled(true);  // NOP
+  voter->SetVoteToEnable(true);  // NOP
   queue->ShutdownTaskQueue();
 
   // This should complete without DCHECKing.
@@ -3039,7 +3039,7 @@ TEST_P(SequenceManagerTest, ShutdownQueueBeforeDisabledVoterDeleted) {
   std::unique_ptr<TaskQueue::QueueEnabledVoter> voter =
       queue->CreateQueueEnabledVoter();
 
-  voter->SetQueueEnabled(false);
+  voter->SetVoteToEnable(false);
   queue->ShutdownTaskQueue();
 
   // This should complete without DCHECKing.
@@ -3165,7 +3165,7 @@ TEST_P(SequenceManagerTest, DelayTillNextTask_Disabled) {
 
   std::unique_ptr<TaskQueue::QueueEnabledVoter> voter =
       queue->CreateQueueEnabledVoter();
-  voter->SetQueueEnabled(false);
+  voter->SetVoteToEnable(false);
   queue->task_runner()->PostTask(FROM_HERE, BindOnce(&NopTask));
 
   LazyNow lazy_now(mock_tick_clock());
@@ -3263,10 +3263,10 @@ TEST_P(SequenceManagerTest, CouldTaskRun_DisableAndReenable) {
 
   std::unique_ptr<TaskQueue::QueueEnabledVoter> voter =
       queue->CreateQueueEnabledVoter();
-  voter->SetQueueEnabled(false);
+  voter->SetVoteToEnable(false);
   EXPECT_FALSE(queue->GetTaskQueueImpl()->CouldTaskRun(enqueue_order));
 
-  voter->SetQueueEnabled(true);
+  voter->SetVoteToEnable(true);
   EXPECT_TRUE(queue->GetTaskQueueImpl()->CouldTaskRun(enqueue_order));
 }
 
@@ -3307,7 +3307,7 @@ TEST_P(SequenceManagerTest, DelayedDoWorkNotPostedForDisabledQueue) {
 
   std::unique_ptr<TaskQueue::QueueEnabledVoter> voter =
       queue->CreateQueueEnabledVoter();
-  voter->SetQueueEnabled(false);
+  voter->SetVoteToEnable(false);
 
   switch (GetParam()) {
     case TestType::kMessagePump:
@@ -3326,7 +3326,7 @@ TEST_P(SequenceManagerTest, DelayedDoWorkNotPostedForDisabledQueue) {
       NOTREACHED();
   }
 
-  voter->SetQueueEnabled(true);
+  voter->SetVoteToEnable(true);
   EXPECT_EQ(TimeDelta::FromMilliseconds(1), NextPendingTaskDelay());
 }
 
@@ -3348,21 +3348,21 @@ TEST_P(SequenceManagerTest, DisablingQueuesChangesDelayTillNextDoWork) {
 
   EXPECT_EQ(TimeDelta::FromMilliseconds(1), NextPendingTaskDelay());
 
-  voter0->SetQueueEnabled(false);
+  voter0->SetVoteToEnable(false);
   if (GetParam() == TestType::kMessageLoop) {
     EXPECT_EQ(TimeDelta::FromMilliseconds(1), NextPendingTaskDelay());
   } else {
     EXPECT_EQ(TimeDelta::FromMilliseconds(10), NextPendingTaskDelay());
   }
 
-  voter1->SetQueueEnabled(false);
+  voter1->SetVoteToEnable(false);
   if (GetParam() == TestType::kMessageLoop) {
     EXPECT_EQ(TimeDelta::FromMilliseconds(1), NextPendingTaskDelay());
   } else {
     EXPECT_EQ(TimeDelta::FromMilliseconds(100), NextPendingTaskDelay());
   }
 
-  voter2->SetQueueEnabled(false);
+  voter2->SetVoteToEnable(false);
   switch (GetParam()) {
     case TestType::kMessagePump:
       EXPECT_EQ(TimeDelta::FromDays(1), NextPendingTaskDelay());
@@ -3399,10 +3399,10 @@ TEST_P(SequenceManagerTest, GetNextScheduledWakeUp) {
   // We don't have wake-ups scheduled for disabled queues.
   std::unique_ptr<TaskQueue::QueueEnabledVoter> voter =
       queue->CreateQueueEnabledVoter();
-  voter->SetQueueEnabled(false);
+  voter->SetVoteToEnable(false);
   EXPECT_EQ(nullopt, queue->GetNextScheduledWakeUp());
 
-  voter->SetQueueEnabled(true);
+  voter->SetVoteToEnable(true);
   EXPECT_EQ(start_time + delay2, queue->GetNextScheduledWakeUp());
 
   // Immediate tasks shouldn't make any difference.
@@ -3425,7 +3425,7 @@ TEST_P(SequenceManagerTest, SetTimeDomainForDisabledQueue) {
 
   std::unique_ptr<TaskQueue::QueueEnabledVoter> voter =
       queue->CreateQueueEnabledVoter();
-  voter->SetQueueEnabled(false);
+  voter->SetVoteToEnable(false);
 
   // We should not get a notification for a disabled queue.
   EXPECT_CALL(observer, OnQueueNextWakeUpChanged(_, _)).Times(0);
@@ -3564,7 +3564,7 @@ TEST_P(SequenceManagerTest, ObserverNotFiredForDisabledQueuePostTask) {
 
   std::unique_ptr<TaskQueue::QueueEnabledVoter> voter =
       main_tq->CreateQueueEnabledVoter();
-  voter->SetQueueEnabled(false);
+  voter->SetVoteToEnable(false);
 
   // We don't expect the observer to fire if the TaskQueue gets disabled.
   EXPECT_CALL(observer, OnQueueNextWakeUpChanged(_, _)).Times(0);
@@ -3588,7 +3588,7 @@ TEST_P(SequenceManagerTest,
 
   std::unique_ptr<TaskQueue::QueueEnabledVoter> voter =
       main_tq->CreateQueueEnabledVoter();
-  voter->SetQueueEnabled(false);
+  voter->SetVoteToEnable(false);
 
   // We don't expect the observer to fire if the TaskQueue gets blocked.
   EXPECT_CALL(observer, OnQueueNextWakeUpChanged(_, _)).Times(0);
