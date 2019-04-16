@@ -9,6 +9,8 @@
 
 namespace web_app {
 
+InstallOptions::InstallOptions() = default;
+
 InstallOptions::InstallOptions(const GURL& url,
                                LaunchContainer launch_container,
                                InstallSource install_source)

@@ -55,6 +55,8 @@ InstallOptions GetWindowedInstallOptions() {
   options.add_to_desktop = false;
   options.add_to_quick_launch_bar = false;
   options.install_placeholder = true;
+  options.reinstall_placeholder = true;
+  options.stop_if_window_opened = true;
   return options;
 }
 
@@ -73,6 +75,8 @@ InstallOptions GetTabbedInstallOptions() {
   options.add_to_desktop = false;
   options.add_to_quick_launch_bar = false;
   options.install_placeholder = true;
+  options.reinstall_placeholder = true;
+  options.stop_if_window_opened = true;
   return options;
 }
 
@@ -89,6 +93,8 @@ InstallOptions GetNoContainerInstallOptions() {
   options.add_to_desktop = false;
   options.add_to_quick_launch_bar = false;
   options.install_placeholder = true;
+  options.reinstall_placeholder = true;
+  options.stop_if_window_opened = true;
   return options;
 }
 
@@ -105,6 +111,8 @@ InstallOptions GetCreateDesktopShorcutDefaultInstallOptions() {
   options.add_to_desktop = false;
   options.add_to_quick_launch_bar = false;
   options.install_placeholder = true;
+  options.reinstall_placeholder = true;
+  options.stop_if_window_opened = true;
   return options;
 }
 
@@ -122,6 +130,8 @@ InstallOptions GetCreateDesktopShorcutFalseInstallOptions() {
   options.add_to_desktop = false;
   options.add_to_quick_launch_bar = false;
   options.install_placeholder = true;
+  options.reinstall_placeholder = true;
+  options.stop_if_window_opened = true;
   return options;
 }
 
@@ -139,6 +149,8 @@ InstallOptions GetCreateDesktopShorcutTrueInstallOptions() {
   options.add_to_desktop = true;
   options.add_to_quick_launch_bar = false;
   options.install_placeholder = true;
+  options.reinstall_placeholder = true;
+  options.stop_if_window_opened = true;
   return options;
 }
 
