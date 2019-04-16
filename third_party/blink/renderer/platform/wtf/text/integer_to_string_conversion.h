@@ -55,14 +55,14 @@ class IntegerToStringConverter {
 
     do {
       --begin_;
-      DCHECK_NE(begin_, buffer_);
+      DCHECK_GE(begin_, buffer_);
       *begin_ = static_cast<LChar>((value % 10) + '0');
       value /= 10;
     } while (value);
 
     if (is_negative) {
       --begin_;
-      DCHECK_NE(begin_, buffer_);
+      DCHECK_GE(begin_, buffer_);
       *begin_ = static_cast<LChar>('-');
     }
 
