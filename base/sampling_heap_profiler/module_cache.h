@@ -59,6 +59,9 @@ class BASE_EXPORT ModuleCache {
 
     // Gets the size of the module.
     virtual size_t GetSize() const = 0;
+
+    // True if this is a native module.
+    virtual bool IsNative() const = 0;
   };
 
   ModuleCache();
