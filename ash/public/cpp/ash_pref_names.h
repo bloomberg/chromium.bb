@@ -138,20 +138,20 @@ ASH_PUBLIC_EXPORT extern const char kAssistantNumWarmerWelcomeTriggered[];
 
 ASH_PUBLIC_EXPORT extern const char kVpnConfigAllowed[];
 
-ASH_PUBLIC_EXPORT extern const char kDevicePowerPeakShiftEnabled[];
-ASH_PUBLIC_EXPORT extern const char kDevicePowerPeakShiftBatteryThreshold[];
-ASH_PUBLIC_EXPORT extern const char kDevicePowerPeakShiftDayConfig[];
+ASH_PUBLIC_EXPORT extern const char kPowerPeakShiftEnabled[];
+ASH_PUBLIC_EXPORT extern const char kPowerPeakShiftBatteryThreshold[];
+ASH_PUBLIC_EXPORT extern const char kPowerPeakShiftDayConfig[];
 
-ASH_PUBLIC_EXPORT extern const char kDeviceBootOnAcEnabled[];
+ASH_PUBLIC_EXPORT extern const char kBootOnAcEnabled[];
 
-ASH_PUBLIC_EXPORT extern const char kDeviceAdvancedBatteryChargeModeEnabled[];
-ASH_PUBLIC_EXPORT extern const char kDeviceAdvancedBatteryChargeModeDayConfig[];
+ASH_PUBLIC_EXPORT extern const char kAdvancedBatteryChargeModeEnabled[];
+ASH_PUBLIC_EXPORT extern const char kAdvancedBatteryChargeModeDayConfig[];
 
-ASH_PUBLIC_EXPORT extern const char kDeviceBatteryChargeMode[];
-ASH_PUBLIC_EXPORT extern const char kDeviceBatteryChargeCustomStartCharging[];
-ASH_PUBLIC_EXPORT extern const char kDeviceBatteryChargeCustomStopCharging[];
+ASH_PUBLIC_EXPORT extern const char kBatteryChargeMode[];
+ASH_PUBLIC_EXPORT extern const char kBatteryChargeCustomStartCharging[];
+ASH_PUBLIC_EXPORT extern const char kBatteryChargeCustomStopCharging[];
 
-ASH_PUBLIC_EXPORT extern const char kDeviceUsbPowerShareEnabled[];
+ASH_PUBLIC_EXPORT extern const char kUsbPowerShareEnabled[];
 
 }  // namespace prefs
 
