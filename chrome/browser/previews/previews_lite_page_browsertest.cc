@@ -39,6 +39,8 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_service_client_test_utils.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_pingback_client.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
@@ -1411,6 +1413,77 @@ IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
   // Starting a new page load will send a pingback for the previous page load.
   GetWebContents()->GetController().Reload(content::ReloadType::NORMAL, false);
   WaitForPingback();
+}
+
+class TestDataReductionProxyPingbackClient
+    : public data_reduction_proxy::DataReductionProxyPingbackClient {
+ public:
+  void WaitForPingback() {
+    base::RunLoop run_loop;
+    wait_for_pingback_closure_ = run_loop.QuitClosure();
+    run_loop.Run();
+  }
+
+  data_reduction_proxy::DataReductionProxyData* data() { return data_.get(); }
+
+ private:
+  void SendPingback(
+      const data_reduction_proxy::DataReductionProxyData& data,
+      const data_reduction_proxy::DataReductionProxyPageLoadTiming& timing)
+      override {
+    data_ = data.DeepCopy();
+    if (wait_for_pingback_closure_)
+      std::move(wait_for_pingback_closure_).Run();
+  }
+
+  void SetPingbackReportingFraction(
+      float pingback_reporting_fraction) override {}
+
+  base::OnceClosure wait_for_pingback_closure_;
+  std::unique_ptr<data_reduction_proxy::DataReductionProxyData> data_;
+};
+
+IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
+                       DISABLE_ON_WIN_MAC_CHROMESOS(PingbackContent)) {
+  TestDataReductionProxyPingbackClient* pingback_client =
+      new TestDataReductionProxyPingbackClient();
+  DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
+      browser()->profile())
+      ->data_reduction_proxy_service()
+      ->SetPingbackClientForTesting(pingback_client);
+
+  ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
+  VerifyPreviewLoaded();
+
+  // Starting a new page load will send a pingback for the previous page load.
+  GetWebContents()->GetController().Reload(content::ReloadType::NORMAL, false);
+  pingback_client->WaitForPingback();
+
+  data_reduction_proxy::DataReductionProxyData* data = pingback_client->data();
+  EXPECT_TRUE(data->used_data_reduction_proxy());
+  EXPECT_TRUE(data->lite_page_received());
+  EXPECT_FALSE(data->lofi_policy_received());
+  EXPECT_FALSE(data->lofi_received());
+  EXPECT_FALSE(data->was_cached_data_reduction_proxy_response());
+
+  // TODO(crbug.com/952523): Fix and remove this early return.
+  if (GetParam())
+    return;
+
+  PreviewsUITabHelper* ui_tab_helper =
+      PreviewsUITabHelper::FromWebContents(GetWebContents());
+  previews::PreviewsUserData* previews_data =
+      ui_tab_helper->previews_user_data();
+
+  EXPECT_EQ(data->session_key(),
+            previews_data->server_lite_page_info()->drp_session_key);
+
+  // TODO(crbug.com/952523): The page id is being incremented for every
+  // restarted navigation. Fix and remove the early return.
+  return;
+
+  EXPECT_EQ(data->page_id().value(),
+            previews_data->server_lite_page_info()->page_id);
 }
 
 class PreviewsLitePageServerTimeoutBrowserTest
