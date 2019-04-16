@@ -303,37 +303,37 @@
   },
   {
     "name": "cct-module",
-    // "owners": [ "your-team" ],
+    "owners": [ "mvanouwerkerk", "//chrome/android/java/src/org/chromium/chrome/browser/customtabs/OWNERS" ],
     "expiry_milestone": 76
   },
   {
     "name": "cct-module-cache",
-    "owners": [ "mvanouwerkerk" ],
+    "owners": [ "mvanouwerkerk", "//chrome/android/java/src/org/chromium/chrome/browser/customtabs/OWNERS" ],
     "expiry_milestone": 76
   },
   {
     "name": "cct-module-custom-header",
-    "owners": [ "mvanouwerkerk" ],
+    "owners": [ "mvanouwerkerk", "//chrome/android/java/src/org/chromium/chrome/browser/customtabs/OWNERS" ],
     "expiry_milestone": 76
   },
   {
     "name": "cct-module-custom-request-header",
-    "owners": [ "mvanouwerkerk" ],
+    "owners": [ "mvanouwerkerk", "//chrome/android/java/src/org/chromium/chrome/browser/customtabs/OWNERS" ],
     "expiry_milestone": 76
   },
   {
     "name": "cct-module-dex-loading",
-    "owners": [ "mvanouwerkerk" ],
+    "owners": [ "mvanouwerkerk", "//chrome/android/java/src/org/chromium/chrome/browser/customtabs/OWNERS" ],
     "expiry_milestone": 76
   },
   {
     "name": "cct-module-post-message",
-    "owners": [ "mvanouwerkerk" ],
+    "owners": [ "mvanouwerkerk", "//chrome/android/java/src/org/chromium/chrome/browser/customtabs/OWNERS" ],
     "expiry_milestone": 76
   },
   {
     "name": "cct-module-use-intent-extras",
-    "owners": [ "mvanouwerkerk" ],
+    "owners": [ "mvanouwerkerk", "//chrome/android/java/src/org/chromium/chrome/browser/customtabs/OWNERS" ],
     "expiry_milestone": 76
   },
   {
@@ -1746,7 +1746,7 @@
   {
     "name": "enable-tab-engagement-reporting",
     "owners": [ "memex-team@google.com" ],
-    "expiry_milestone": 82 
+    "expiry_milestone": 82
   },
   {
     "name": "enable-text-fragment-anchor",
