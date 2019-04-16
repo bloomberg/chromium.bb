@@ -214,7 +214,7 @@ void PlatformThread::SetName(const std::string& name) {
   ThreadIdNameManager::GetInstance()->SetName(name);
 
   // The SetThreadDescription API works even if no debugger is attached.
-  auto set_thread_description_func =
+  static auto set_thread_description_func =
       reinterpret_cast<SetThreadDescription>(::GetProcAddress(
           ::GetModuleHandle(L"Kernel32.dll"), "SetThreadDescription"));
   if (set_thread_description_func) {
