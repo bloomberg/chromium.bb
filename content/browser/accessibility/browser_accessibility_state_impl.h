@@ -57,7 +57,8 @@ class CONTENT_EXPORT BrowserAccessibilityStateImpl
   void ResetAccessibilityMode() override;
   void OnScreenReaderDetected() override;
   bool IsAccessibleBrowser() override;
-  void AddHistogramCallback(base::Closure callback) override;
+  void AddUIThreadHistogramCallback(base::OnceClosure callback) override;
+  void AddOtherThreadHistogramCallback(base::OnceClosure callback) override;
 
   void UpdateHistogramsForTesting() override;
 
@@ -85,17 +86,22 @@ class CONTENT_EXPORT BrowserAccessibilityStateImpl
 
   // Called a short while after startup to allow time for the accessibility
   // state to be determined. Updates histograms with the current state.
-  void UpdateHistograms();
+  // Two variants - one for things that must be run on the UI thread, and
+  // another that can be run on another thread.
+  void UpdateHistogramsOnUIThread();
+  void UpdateHistogramsOnOtherThread();
 
   // Leaky singleton, destructor generally won't be called.
   ~BrowserAccessibilityStateImpl() override;
 
   void PlatformInitialize();
-  void UpdatePlatformSpecificHistograms();
+  void UpdatePlatformSpecificHistogramsOnUIThread();
+  void UpdatePlatformSpecificHistogramsOnOtherThread();
 
   ui::AXMode accessibility_mode_;
 
-  std::vector<base::Closure> histogram_callbacks_;
+  std::vector<base::OnceClosure> ui_thread_histogram_callbacks_;
+  std::vector<base::OnceClosure> other_thread_histogram_callbacks_;
 
   bool disable_hot_tracking_;
 

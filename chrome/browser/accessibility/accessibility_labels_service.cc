@@ -55,14 +55,12 @@ void AccessibilityLabelsService::Init() {
           &AccessibilityLabelsService::OnImageLabelsEnabledChanged,
           weak_factory_.GetWeakPtr()));
 
-  // Log whether the feature is enabled after startup.
-  // TODO(dmazzoni) re-enable. http://crbug.com/940805
-#if 0
-  content::BrowserAccessibilityState::GetInstance()->AddHistogramCallback(
-      base::BindRepeating(
+  // Log whether the feature is enabled after startup. This must be run on the
+  // UI thread because it accesses prefs.
+  content::BrowserAccessibilityState::GetInstance()
+      ->AddUIThreadHistogramCallback(base::BindRepeating(
           &AccessibilityLabelsService::UpdateAccessibilityLabelsHistograms,
           weak_factory_.GetWeakPtr()));
-#endif
 }
 
 AccessibilityLabelsService::AccessibilityLabelsService(Profile* profile)

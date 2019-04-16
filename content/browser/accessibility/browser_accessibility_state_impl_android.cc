@@ -21,8 +21,12 @@ void BrowserAccessibilityStateImpl::PlatformInitialize() {
   Java_BrowserAccessibilityState_registerAnimatorDurationScaleObserver(env);
 }
 
-void BrowserAccessibilityStateImpl::UpdatePlatformSpecificHistograms() {
-  // NOTE: this method is run from the file thread to reduce jank, since
+void BrowserAccessibilityStateImpl::
+    UpdatePlatformSpecificHistogramsOnUIThread() {}
+
+void BrowserAccessibilityStateImpl::
+    UpdatePlatformSpecificHistogramsOnOtherThread() {
+  // NOTE: this method is run from another thread to reduce jank, since
   // there's no guarantee these system calls will return quickly. Be careful
   // not to add any code that isn't safe to run from a non-main thread!
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
