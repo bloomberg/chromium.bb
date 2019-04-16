@@ -323,6 +323,11 @@ class FlexLayoutAlgorithm {
   // line. In both cases, border/padding is not included.
   LayoutUnit IntrinsicContentBlockSize() const;
 
+  // Positions flex lines by modifying FlexLine::cross_axis_offset, and
+  // FlexItem::desired_position. When lines stretch, also modifies
+  // FlexLine::cross_axis_extent.
+  void AlignFlexLines(LayoutUnit cross_axis_content_extent);
+
   static TransformedWritingMode GetTransformedWritingMode(const ComputedStyle&);
 
   static const StyleContentAlignmentData& ContentAlignmentNormalBehavior();

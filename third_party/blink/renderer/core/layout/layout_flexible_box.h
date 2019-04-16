@@ -156,6 +156,7 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
       LayoutUnit main_axis_border_scrollbar_padding,
       ChildLayoutType = kLayoutIfNeeded);
   void AdjustAlignmentForChild(LayoutBox& child, LayoutUnit);
+  void ResetAlignmentForChild(LayoutBox& child, LayoutUnit);
   bool MainAxisLengthIsDefinite(const LayoutBox& child,
                                 const Length& flex_basis,
                                 bool add_to_cb = true) const;
@@ -172,7 +173,8 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
   bool HasAutoMarginsInCrossAxis(const LayoutBox& child) const;
   bool UpdateAutoMarginsInCrossAxis(LayoutBox& child,
                                     LayoutUnit available_alignment_space);
-  void RepositionLogicalHeightDependentFlexItems(Vector<FlexLine>&);
+  void RepositionLogicalHeightDependentFlexItems(
+      FlexLayoutAlgorithm& algorithm);
   LayoutUnit ClientLogicalBottomAfterRepositioning();
 
   LayoutUnit ComputeChildMarginValue(const Length& margin);
@@ -200,7 +202,7 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
   void LayoutColumnReverse(FlexItemVectorView&,
                            LayoutUnit cross_axis_offset,
                            LayoutUnit available_free_space);
-  void AlignFlexLines(Vector<FlexLine>&);
+  void AlignFlexLines(FlexLayoutAlgorithm&);
   void AlignChildren(Vector<FlexLine>&);
   void ApplyStretchAlignmentToChild(FlexItem& child);
   void FlipForRightToLeftColumn(const Vector<FlexLine>& line_contexts);
