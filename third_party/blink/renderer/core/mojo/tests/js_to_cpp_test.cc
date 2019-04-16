@@ -413,7 +413,8 @@ TEST_F(JsToCppTest, Echo) {
   EXPECT_TRUE(cpp_side_connection.DidSucceed());
 }
 
-TEST_F(JsToCppTest, BitFlip) {
+// Flaky. http://crbug.com/952627
+TEST_F(JsToCppTest, DISABLED_BitFlip) {
   // These tests generate a lot of expected validation errors. Suppress logging.
   mojo::internal::ScopedSuppressValidationErrorLoggingForTests log_suppression;
 
