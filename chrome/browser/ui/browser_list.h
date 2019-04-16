@@ -125,6 +125,10 @@ class BrowserList {
   // for incognito windows.
   static int GetIncognitoSessionsActiveForProfile(Profile* profile);
 
+  // Returns true if the incognito session for |profile| is in use in any window
+  // across all desktops. This function considers devtools windows as well.
+  static bool IsIncognitoSessionInUse(Profile* profile);
+
  private:
   BrowserList();
   ~BrowserList();

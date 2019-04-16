@@ -2803,3 +2803,13 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CountIncognitoWindows) {
   DCHECK_EQ(0, BrowserList::GetIncognitoSessionsActiveForProfile(
                    browser()->profile()));
 }
+
+IN_PROC_BROWSER_TEST_F(BrowserTest, IsIncognitoSessionInUse) {
+  EXPECT_FALSE(BrowserList::IsIncognitoSessionInUse(browser()->profile()));
+
+  Browser* incognito_browser = CreateIncognitoBrowser(browser()->profile());
+  EXPECT_TRUE(BrowserList::IsIncognitoSessionInUse(browser()->profile()));
+
+  CloseBrowserSynchronously(incognito_browser);
+  EXPECT_FALSE(BrowserList::IsIncognitoSessionInUse(browser()->profile()));
+}
