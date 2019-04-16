@@ -42,14 +42,16 @@ chromeos::PowerPolicyController::Action GetIdleAction(bool on_battery_power) {
 
 namespace chromeos {
 
-IdleActionWarningObserver::IdleActionWarningObserver() : warning_dialog_(NULL) {
+IdleActionWarningObserver::IdleActionWarningObserver() {
   PowerManagerClient::Get()->AddObserver(this);
 }
 
 IdleActionWarningObserver::~IdleActionWarningObserver() {
   PowerManagerClient::Get()->RemoveObserver(this);
-  if (warning_dialog_)
+  if (warning_dialog_) {
+    warning_dialog_->GetWidget()->RemoveObserver(this);
     warning_dialog_->CloseDialog();
+  }
 }
 
 void IdleActionWarningObserver::IdleActionImminent(
@@ -68,6 +70,7 @@ void IdleActionWarningObserver::IdleActionImminent(
     warning_dialog_->Update(idle_action_time);
   } else {
     warning_dialog_ = new IdleActionWarningDialogView(idle_action_time);
+    warning_dialog_->GetWidget()->AddObserver(this);
     ReportMetricsForDemoMode(IdleLogoutWarningEvent::kShown);
   }
 }
@@ -83,12 +86,18 @@ void IdleActionWarningObserver::PowerChanged(
       power_manager::PowerSupplyProperties_BatteryState_DISCHARGING;
 }
 
+void IdleActionWarningObserver::OnWidgetClosing(views::Widget* widget) {
+  DCHECK(warning_dialog_);
+  DCHECK_EQ(widget, warning_dialog_->GetWidget());
+  warning_dialog_->GetWidget()->RemoveObserver(this);
+  warning_dialog_ = nullptr;
+}
+
 void IdleActionWarningObserver::HideDialogIfPresent() {
   if (warning_dialog_) {
     warning_dialog_->CloseDialog();
     ReportMetricsForDemoMode(IdleLogoutWarningEvent::kCanceled);
   }
-  warning_dialog_ = nullptr;
 }
 
 }  // namespace chromeos
