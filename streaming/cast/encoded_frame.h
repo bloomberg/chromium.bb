@@ -8,7 +8,7 @@
 #include <stdint.h>
 
 #include <chrono>
-#include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "platform/api/time.h"
@@ -81,7 +81,7 @@ struct EncodedFrame {
   std::chrono::milliseconds new_playout_delay;
 
   // The encoded signal data.
-  std::string data;
+  std::vector<uint8_t> data;
 
   DISALLOW_COPY_AND_ASSIGN(EncodedFrame);
 };

@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build_overrides/build.gni")
+
 source_set("cast") {
   sources = [
     "big_endian.h",
@@ -11,6 +13,8 @@ source_set("cast") {
     "encoded_frame.cc",
     "encoded_frame.h",
     "expanded_value_base.h",
+    "frame_crypto.cc",
+    "frame_crypto.h",
     "frame_id.cc",
     "frame_id.h",
     "ntp_time.cc",
@@ -24,6 +28,11 @@ source_set("cast") {
   public_deps = [
     "../../third_party/abseil",
   ]
+  if (build_with_chromium) {
+    public_deps += [ "//third_party/boringssl" ]
+  } else {
+    public_deps += [ "../../third_party/boringssl" ]
+  }
 
   deps = [
     "../../platform",
@@ -36,6 +45,7 @@ source_set("cast_unittests") {
   sources = [
     "big_endian_unittest.cc",
     "expanded_value_base_unittest.cc",
+    "frame_crypto_unittest.cc",
     "ntp_time_unittest.cc",
     "rtp_time_unittest.cc",
     "ssrc_unittest.cc",
