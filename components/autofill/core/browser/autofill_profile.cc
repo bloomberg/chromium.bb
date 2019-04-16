@@ -948,7 +948,6 @@ int AutofillProfile::GetClientValidityBitfieldValue() const {
   int validity_value = 0;
   size_t field_type_shift = 0;
   for (ServerFieldType supported_type : kSupportedTypesByClientForValidation) {
-    DCHECK(GetValidityState(supported_type, CLIENT) != UNSUPPORTED);
     validity_value |= GetValidityState(supported_type, CLIENT)
                       << field_type_shift;
     field_type_shift += kValidityBitsPerType;
