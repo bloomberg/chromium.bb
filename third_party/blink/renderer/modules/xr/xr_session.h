@@ -173,6 +173,7 @@ class XRSession final : public EventTargetWithInlineData,
   // Incremented every time display_info_ is changed, so that other objects that
   // depend on it can know when they need to update.
   unsigned int DisplayInfoPtrId() const { return display_info_id_; }
+  unsigned int StageParametersId() const { return stage_parameters_id_; }
 
   void SetNonImmersiveProjectionMatrix(const WTF::Vector<float>&);
   void SetXRDisplayInfo(device::mojom::blink::VRDisplayInfoPtr display_info);
@@ -228,7 +229,8 @@ class XRSession final : public EventTargetWithInlineData,
 
   bool has_xr_focus_ = true;
   bool is_external_ = false;
-  int display_info_id_ = 0;
+  unsigned int display_info_id_ = 0;
+  unsigned int stage_parameters_id_ = 0;
   device::mojom::blink::VRDisplayInfoPtr display_info_;
 
   mojo::Binding<device::mojom::blink::XRSessionClient> client_binding_;

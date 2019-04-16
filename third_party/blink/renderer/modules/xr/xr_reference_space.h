@@ -31,8 +31,10 @@ class XRReferenceSpace : public XRSpace {
   std::unique_ptr<TransformationMatrix> GetTransformToMojoSpace() override;
 
   XRRigidTransform* originOffset() const { return origin_offset_; }
-  void setOriginOffset(XRRigidTransform*);
+  virtual void setOriginOffset(XRRigidTransform*);
   TransformationMatrix InverseOriginOffsetMatrix() override;
+
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(reset, kReset)
 
   void Trace(blink::Visitor*) override;
 
