@@ -206,7 +206,7 @@ void MediaStreamDispatcherHost::DoOpenDevice(
   }
 
   media_stream_manager_->OpenDevice(
-      render_process_id_, render_frame_id_, page_request_id, requester_id_,
+      render_process_id_, render_frame_id_, requester_id_, page_request_id,
       device_id, type, std::move(salt_and_origin), std::move(callback),
       base::BindRepeating(&MediaStreamDispatcherHost::OnDeviceStopped,
                           weak_factory_.GetWeakPtr()));
