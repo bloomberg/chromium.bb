@@ -61,6 +61,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       import {PbrMaterial} from './js/cottontail/src/materials/pbr.js';
       import {BoxBuilder} from './js/cottontail/src/geometry/box-builder.js';
       import {mat4, vec3, quat} from './js/cottontail/src/math/gl-matrix.js';
+      import {BoundsRenderer} from './js/cottontail/src/nodes/bounds-renderer.js';
 
       // If requested, initialize the WebXR polyfill
       if (QueryArgs.getBool('allowPolyfill', false)) {
@@ -79,6 +80,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       let gl = null;
       let renderer = null;
       let scene = new Scene();
+      let boundsRenderer = null;
       if (hideStats) {
         scene.enableStats(false);
       }
@@ -197,16 +199,28 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             outputContext: outputCanvas.getContext('xrpresent')
         });
 
-        session.requestReferenceSpace({ type: 'stationary', subtype: 'floor-level' }).then((refSpace) => {
-          return refSpace;
-        }, (e) => {
-          if (!session.mode.startsWith('immersive')) {
-            // If we're in inline mode, our underlying platform may not support
-            // the stationary reference space, but an identity space is guaranteed.
-            return session.requestReferenceSpace({ type: 'identity' });
+        // Same logic for establishing a reference space as in room-scale.html
+        session.requestReferenceSpace({ type: 'bounded' }).then((refSpace) => {
+          if (!boundsRenderer) {
+            boundsRenderer = new BoundsRenderer(refSpace);
+            scene.addNode(boundsRenderer);
           } else {
-            throw e;
+            boundsRenderer.boundedRefSpace = refSpace;
           }
+          return refSpace;
+        }).catch(() => {
+          console.log('Falling back to floor-level reference space');
+          return session.requestReferenceSpace({ type: 'stationary', subtype: 'floor-level' }).catch((e) => {
+            if (!session.mode.startsWith('immersive')) {
+              console.log('Falling back to identity reference space');
+              return session.requestReferenceSpace({ type: 'identity' }).then((refSpace) => {
+                refSpace.originOffset = new XRRigidTransform({y: -1.6});
+                return refSpace;
+              });
+            } else {
+              throw e;
+            }
+          });
         }).then((refSpace) => {
           if (session.mode.startsWith('immersive')) {
             xrImmersiveRefSpace = refSpace;
@@ -298,6 +312,18 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         // Update tracking space origin so that origin + playerOffset == player location in world space
         vec3.sub(trackingSpaceOriginInWorldSpace, playerInWorldSpaceNew, playerOffsetInWorldSpaceNew);
 
+        // Compute the origin offset
+        quat.identity(invOrientation);
+        quat.rotateY(invOrientation, invOrientation, -trackingSpaceHeadingDegrees * Math.PI / 180);
+        vec3.negate(invPosition, trackingSpaceOriginInWorldSpace);
+        vec3.transformQuat(invPosition, invPosition, invOrientation);
+        let xform = new XRRigidTransform(
+          {x: invPosition[0], y: invPosition[1], z: invPosition[2]},
+          {x: invOrientation[0], y: invOrientation[1], z: invOrientation[2], w: invOrientation[3]});
+
+        // Update originOffset to use the teleported player position and orientation
+        refSpace.originOffset = xform;
+
         console.log('teleport to', trackingSpaceOriginInWorldSpace);
       }
 
@@ -327,17 +353,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       function onXRFrame(time, frame) {
         let session = frame.session;
         let refSpace = getRefSpace(session);
-
-        quat.identity(invOrientation);
-        quat.rotateY(invOrientation, invOrientation, -trackingSpaceHeadingDegrees * Math.PI / 180);
-        vec3.negate(invPosition, trackingSpaceOriginInWorldSpace);
-        vec3.transformQuat(invPosition, invPosition, invOrientation);
-        let xform = new XRRigidTransform(
-          {x: invPosition[0], y: invPosition[1], z: invPosition[2]},
-          {x: invOrientation[0], y: invOrientation[1], z: invOrientation[2], w: invOrientation[3]});
-
-        // Update originOffset to use the teleported player position and orientation
-        refSpace.originOffset = xform;
 
         let pose = frame.getViewerPose(refSpace);
         scene.startFrame();

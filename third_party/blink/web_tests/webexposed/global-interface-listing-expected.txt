@@ -10536,6 +10536,11 @@ interface XRReferenceSpace : XRSpace
     method constructor
     setter onreset
     setter originOffset
+interface XRReferenceSpaceEvent : Event
+    attribute @@toStringTag
+    getter referenceSpace
+    getter transform
+    method constructor
 interface XRRenderState
     attribute @@toStringTag
     getter baseLayer
@@ -10578,10 +10583,6 @@ interface XRSessionEvent : Event
     method constructor
 interface XRSpace : EventTarget
     attribute @@toStringTag
-    method constructor
-interface XRStageBounds
-    attribute @@toStringTag
-    getter geometry
     method constructor
 interface XRStationaryReferenceSpace : XRReferenceSpace
     attribute @@toStringTag

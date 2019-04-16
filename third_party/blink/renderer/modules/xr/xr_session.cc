@@ -272,12 +272,24 @@ ScriptPromise XRSession::requestReferenceSpace(
     reference_space =
         MakeGarbageCollected<XRStationaryReferenceSpace>(this, subtype);
   } else if (options->type() == "bounded") {
-    // TODO(https://crbug.com/917411): Bounded reference spaces cannot be
-    // returned unless they have bounds geometry. Until we implement that they
-    // will be considered unsupported.
-    return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(DOMExceptionCode::kNotSupportedError,
-                                           kReferenceSpaceNotSupported));
+    bool supports_bounded = false;
+    if (immersive() && display_info_->stageParameters) {
+      if (display_info_->stageParameters->bounds) {
+        supports_bounded = true;
+      } else if (display_info_->stageParameters->sizeX > 0 &&
+                 display_info_->stageParameters->sizeZ > 0) {
+        supports_bounded = true;
+      }
+    }
+
+    if (supports_bounded) {
+      reference_space = MakeGarbageCollected<XRBoundedReferenceSpace>(this);
+    } else {
+      return ScriptPromise::RejectWithDOMException(
+          script_state,
+          DOMException::Create(DOMExceptionCode::kNotSupportedError,
+                               kReferenceSpaceNotSupported));
+    }
   } else if (options->type() == "unbounded") {
     if (immersive() && environment_integration_) {
       reference_space = MakeGarbageCollected<XRUnboundedReferenceSpace>(this);
@@ -930,6 +942,20 @@ void XRSession::OnExitPresent() {
 
 void XRSession::SetXRDisplayInfo(
     device::mojom::blink::VRDisplayInfoPtr display_info) {
+  // We don't necessarily trust the backend to only send us display info changes
+  // when something has actually changed, and a change here can trigger several
+  // other interfaces to recompute data or fire events, so it's worthwhile to
+  // validate that an actual change has occurred.
+  if (display_info_) {
+    if (display_info_->Equals(*display_info))
+      return;
+
+    if (display_info_->stageParameters && display_info->stageParameters &&
+        !display_info_->stageParameters->Equals(
+            *(display_info->stageParameters)))
+      stage_parameters_id_++;
+  }
+
   display_info_id_++;
   display_info_ = std::move(display_info);
   is_external_ = display_info_->capabilities->hasExternalDisplay;
