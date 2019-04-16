@@ -33,6 +33,8 @@
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "ui/gfx/geometry/size.h"
+#include "ui/gfx/geometry/vector2d.h"
 
 #if defined(OS_MACOSX)
 typedef struct CGSize CGSize;
@@ -42,11 +44,6 @@ typedef struct CGSize CGSize;
 #endif
 #endif
 
-namespace gfx {
-class Size;
-class Vector2d;
-}
-
 namespace blink {
 
 class PLATFORM_EXPORT IntSize {
@@ -55,7 +52,9 @@ class PLATFORM_EXPORT IntSize {
  public:
   constexpr IntSize() : width_(0), height_(0) {}
   constexpr IntSize(int width, int height) : width_(width), height_(height) {}
-  explicit IntSize(const gfx::Size&);
+  constexpr explicit IntSize(const gfx::Size& s)
+      : IntSize(s.width(), s.height()) {}
+  constexpr explicit IntSize(const gfx::Vector2d& v) : IntSize(v.x(), v.y()) {}
 
   constexpr int Width() const { return width_; }
   constexpr int Height() const { return height_; }
@@ -117,10 +116,14 @@ class PLATFORM_EXPORT IntSize {
 
   // Use this only for logical sizes, which can not be negative. Things that are
   // offsets instead, and can be negative, should use a gfx::Vector2d.
-  explicit operator gfx::Size() const;
+  constexpr explicit operator gfx::Size() const {
+    return gfx::Size(width_, height_);
+  }
   // IntSize is used as an offset, which can be negative, but gfx::Size can not.
   // The Vector2d type is used for offsets instead.
-  explicit operator gfx::Vector2d() const;
+  constexpr explicit operator gfx::Vector2d() const {
+    return gfx::Vector2d(width_, height_);
+  }
 
   String ToString() const;
 
