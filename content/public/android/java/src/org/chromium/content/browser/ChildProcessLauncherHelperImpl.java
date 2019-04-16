@@ -273,8 +273,8 @@ public final class ChildProcessLauncherHelperImpl {
             public void run() {
                 ChildConnectionAllocator allocator =
                         getConnectionAllocator(context, true /* sandboxed */);
-                sBindingManager = new BindingManager(context, allocator.getNumberOfServices(),
-                        sSandboxedChildConnectionRanking, false /* onTesting */);
+                sBindingManager = new BindingManager(
+                        context, allocator.getNumberOfServices(), sSandboxedChildConnectionRanking);
             }
         });
 
