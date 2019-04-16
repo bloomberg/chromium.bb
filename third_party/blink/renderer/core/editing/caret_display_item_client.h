@@ -37,7 +37,6 @@
 
 namespace blink {
 
-class Node;
 class GraphicsContext;
 class LayoutBlock;
 struct PaintInvalidatorContext;
@@ -46,17 +45,6 @@ class CORE_EXPORT CaretDisplayItemClient final : public DisplayItemClient {
  public:
   CaretDisplayItemClient();
   ~CaretDisplayItemClient() override;
-
-  // TODO(yosin,wangxianzhu): Make these two static functions private or
-  // combine them into updateForPaintInvalidation() when the callsites in
-  // FrameCaret are removed.
-
-  // Creating VisiblePosition causes synchronous layout so we should use the
-  // PositionWithAffinity version if possible.
-  // A position in HTMLTextFromControlElement is a typical example.
-  static LayoutRect ComputeCaretRect(
-      const PositionWithAffinity& caret_position);
-  static LayoutBlock* CaretLayoutBlock(const Node*);
 
   // Called indirectly from LayoutBlock::clearPreviousVisualRects().
   void ClearPreviousVisualRect(const LayoutBlock&);
@@ -84,6 +72,13 @@ class CORE_EXPORT CaretDisplayItemClient final : public DisplayItemClient {
 
  private:
   friend class CaretDisplayItemClientTest;
+  friend class ParameterizedComputeCaretRectTest;
+
+  // Creating VisiblePosition causes synchronous layout so we should use the
+  // PositionWithAffinity version if possible.
+  // A position in HTMLTextFromControlElement is a typical example.
+  static LayoutRect ComputeCaretRect(
+      const PositionWithAffinity& caret_position);
 
   void InvalidatePaintInCurrentLayoutBlock(const PaintInvalidatorContext&);
   void InvalidatePaintInPreviousLayoutBlock(const PaintInvalidatorContext&);

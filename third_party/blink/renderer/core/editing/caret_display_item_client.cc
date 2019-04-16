@@ -46,11 +46,13 @@ namespace blink {
 CaretDisplayItemClient::CaretDisplayItemClient() = default;
 CaretDisplayItemClient::~CaretDisplayItemClient() = default;
 
-static inline bool CaretRendersInsideNode(const Node* node) {
+namespace {
+
+inline bool CaretRendersInsideNode(const Node* node) {
   return node && !IsDisplayInsideTable(node) && !EditingIgnoresContent(*node);
 }
 
-LayoutBlock* CaretDisplayItemClient::CaretLayoutBlock(const Node* node) {
+LayoutBlock* CaretLayoutBlock(const Node* node) {
   if (!node)
     return nullptr;
 
@@ -72,8 +74,8 @@ LayoutBlock* CaretDisplayItemClient::CaretLayoutBlock(const Node* node) {
                           : layout_object->ContainingBlock();
 }
 
-static LayoutRect MapCaretRectToCaretPainter(const LayoutBlock* caret_block,
-                                             const LocalCaretRect& caret_rect) {
+LayoutRect MapCaretRectToCaretPainter(const LayoutBlock* caret_block,
+                                      const LocalCaretRect& caret_rect) {
   // FIXME: This shouldn't be called on un-rooted subtrees.
   // FIXME: This should probably just use mapLocalToAncestor.
   // Compute an offset between the caretLayoutItem and the caretPainterItem.
@@ -94,6 +96,8 @@ static LayoutRect MapCaretRectToCaretPainter(const LayoutBlock* caret_block,
   }
   return result_rect;
 }
+
+}  // namespace
 
 LayoutRect CaretDisplayItemClient::ComputeCaretRect(
     const PositionWithAffinity& caret_position) {
