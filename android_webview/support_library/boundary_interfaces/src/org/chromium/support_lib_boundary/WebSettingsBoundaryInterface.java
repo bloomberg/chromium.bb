@@ -23,4 +23,7 @@ public interface WebSettingsBoundaryInterface {
 
     void setWillSuppressErrorPage(boolean suppressed);
     boolean getWillSuppressErrorPage();
+
+    void setForceDark(int forceDarkMode);
+    int getForceDark();
 }

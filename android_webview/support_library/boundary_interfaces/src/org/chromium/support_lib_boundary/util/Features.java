@@ -159,4 +159,8 @@ public class Features {
 
     // WebViewCompat.isMultiProcessEnabled
     public static final String MULTI_PROCESS_QUERY = "MULTI_PROCESS_QUERY";
+
+    // WebSettingsCompat.setForceDark
+    // WebSettingsCompat.getForceDark
+    public static final String FORCE_DARK = "FORCE_DARK";
 }
