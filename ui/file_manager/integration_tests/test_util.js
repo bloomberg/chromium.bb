@@ -254,7 +254,7 @@ async function getBrowserWindows() {
 }
 
 /**
- * Adds the givin entries to the target volume(s).
+ * Adds the given entries to the target volume(s).
  * @param {Array<string>} volumeNames Names of target volumes.
  * @param {Array<TestEntryInfo>} entries List of entries to be added.
  * @param {function(boolean)=} opt_callback Callback function to be passed the
