@@ -162,13 +162,14 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
     self._RunGpuIntegrationTests(
         'run_tests_with_expectations_files', ['--retry-limit=1'])
     self.assertEqual(
-        self._test_result['tests']['unexpected_test_failure']['actual'],
+        self._test_result['tests']['a']['b']
+        ['unexpected-fail.html']['actual'],
         'FAIL FAIL')
 
   def testDefaultRetryArgumentsinRunGpuIntegrationTests(self):
     self._RunGpuIntegrationTests('run_tests_with_expectations_files')
     self.assertEqual(
-        self._test_result['tests']['expected_flaky']['actual'],
+        self._test_result['tests']['a']['b']['expected-flaky.html']['actual'],
         'FAIL FAIL FAIL')
 
   def testTestNamePrefixGenerationInRunGpuIntegrationTests(self):
@@ -311,38 +312,38 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
   def _RunTestsWithExpectationsFiles(self):
     self._RunIntegrationTest(
       'run_tests_with_expectations_files',
-      [('unexpected_test_failure')],
-      [('expected_failure'),
-       ('expected_flaky')],
-      [('expected_skip')],
+      [('a/b/unexpected-fail.html')],
+      [('a/b/expected-fail.html'),
+       ('a/b/expected-flaky.html')],
+      [('a/b/expected-skip.html')],
       ['--retry-limit=3', '--retry-only-retry-on-failure-tests',
        ('--test-name-prefix=unittest_data.integration_tests.'
         'RunTestsWithExpectationsFiles.')])
 
   def testUseTestExpectationsFileToHandleExpectedSkip(self):
     self._RunTestsWithExpectationsFiles()
-    results = self._test_result['tests']['expected_skip']
+    results = self._test_result['tests']['a']['b']['expected-skip.html']
     self.assertEqual(results['expected'], 'SKIP')
     self.assertEqual(results['actual'], 'SKIP')
     self.assertNotIn('is_regression', results)
 
   def testUseTestExpectationsFileToHandleUnexpectedTestFailure(self):
     self._RunTestsWithExpectationsFiles()
-    results = self._test_result['tests']['unexpected_test_failure']
+    results = self._test_result['tests']['a']['b']['unexpected-fail.html']
     self.assertEqual(results['expected'], 'PASS')
     self.assertEqual(results['actual'], 'FAIL')
     self.assertIn('is_regression', results)
 
   def testUseTestExpectationsFileToHandleExpectedFailure(self):
     self._RunTestsWithExpectationsFiles()
-    results = self._test_result['tests']['expected_failure']
+    results = self._test_result['tests']['a']['b']['expected-fail.html']
     self.assertEqual(results['expected'], 'FAIL')
     self.assertEqual(results['actual'], 'FAIL')
     self.assertNotIn('is_regression', results)
 
   def testUseTestExpectationsFileToHandleExpectedFlakyTest(self):
     self._RunTestsWithExpectationsFiles()
-    results = self._test_result['tests']['expected_flaky']
+    results = self._test_result['tests']['a']['b']['expected-flaky.html']
     self.assertEqual(results['expected'], 'PASS')
     self.assertEqual(results['actual'], 'FAIL FAIL FAIL PASS')
     self.assertNotIn('is_regression', results)

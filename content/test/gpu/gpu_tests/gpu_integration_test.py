@@ -432,6 +432,10 @@ class GpuIntegrationTest(
   def setUp(self):
     self._EnsureTabIsAvailable()
 
+  @staticmethod
+  def GetJSONResultsDelimiter():
+    return '/'
+
 def LoadAllTestsInModule(module):
   # Just delegates to serially_executed_browser_test_case to reduce the
   # number of imports in other files.
