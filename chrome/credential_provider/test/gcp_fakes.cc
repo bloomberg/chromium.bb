@@ -599,11 +599,6 @@ FakeAssociatedUserValidator::~FakeAssociatedUserValidator() {
   *GetInstanceStorage() = original_validator_;
 }
 
-bool FakeAssociatedUserValidator::IsUserAccessBlocked(
-    const base::string16& sid) const {
-  return locked_user_sids_.find(sid) != locked_user_sids_.end();
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 
 FakeInternetAvailabilityChecker::FakeInternetAvailabilityChecker(
