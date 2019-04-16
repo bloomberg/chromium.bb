@@ -12,7 +12,9 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/policy/core/common/external_data_manager.h"
+#include "components/policy/core/common/policy_merger.h"
 #include "components/policy/core/common/policy_types.h"
+#include "components/policy/policy_constants.h"
 #include "components/strings/grit/components_strings.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -46,6 +48,13 @@ void SetPolicy(PolicyMap* map,
                std::unique_ptr<ExternalDataFetcher> external_data_fetcher) {
   map->Set(name, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
            nullptr, std::move(external_data_fetcher));
+}
+
+std::vector<base::Value> GetListStorage(const std::vector<std::string> entry) {
+  std::vector<base::Value> result;
+  for (const auto& it : entry)
+    result.emplace_back(base::Value(it));
+  return result;
 }
 
 }  // namespace
@@ -298,6 +307,139 @@ TEST_F(PolicyMapTest, MergeFrom) {
   EXPECT_TRUE(a.Equals(c));
 }
 
+TEST_F(PolicyMapTest, MergeValues) {
+  std::vector<base::Value> abcd = GetListStorage({"a", "b", "c", "d"});
+  std::vector<base::Value> abc = GetListStorage({"a", "b", "c"});
+  std::vector<base::Value> ab = GetListStorage({"a", "b"});
+  std::vector<base::Value> cd = GetListStorage({"c", "d"});
+  std::vector<base::Value> ef = GetListStorage({"e", "f"});
+
+  // Case 1 - kPolicyName1
+  PolicyMap::Entry platform_user_mandatory(
+      POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_PLATFORM,
+      std::make_unique<base::Value>(abc), nullptr);
+
+  platform_user_mandatory.AddConflictingPolicy(PolicyMap::Entry(
+      POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+      std::make_unique<base::Value>(cd), nullptr));
+
+  platform_user_mandatory.AddConflictingPolicy(
+      PolicyMap::Entry(POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+                       POLICY_SOURCE_ENTERPRISE_DEFAULT,
+                       std::make_unique<base::Value>(ef), nullptr));
+
+  platform_user_mandatory.AddConflictingPolicy(
+      PolicyMap::Entry(POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER,
+                       POLICY_SOURCE_ENTERPRISE_DEFAULT,
+                       std::make_unique<base::Value>(ef), nullptr));
+
+  PolicyMap::Entry merged_user_mandatory(
+      POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_MERGED,
+      std::make_unique<base::Value>(abcd), nullptr);
+  merged_user_mandatory.AddConflictingPolicy(platform_user_mandatory);
+
+  // Case 2 - kPolicyName2
+  PolicyMap::Entry cloud_machine_recommended(
+      POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_MACHINE,
+      POLICY_SOURCE_PRIORITY_CLOUD, std::make_unique<base::Value>(ab), nullptr);
+
+  cloud_machine_recommended.AddConflictingPolicy(PolicyMap::Entry(
+      POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_MACHINE, POLICY_SOURCE_PLATFORM,
+      std::make_unique<base::Value>(cd), nullptr));
+
+  cloud_machine_recommended.AddConflictingPolicy(PolicyMap::Entry(
+      POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER, POLICY_SOURCE_PLATFORM,
+      std::make_unique<base::Value>(ef), nullptr));
+
+  PolicyMap::Entry merged_machine_recommended(
+      POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_MACHINE, POLICY_SOURCE_MERGED,
+      std::make_unique<base::Value>(abcd), nullptr);
+  merged_machine_recommended.AddConflictingPolicy(cloud_machine_recommended);
+
+  // Case 3 - ExtensionsInstallBlacklist
+  PolicyMap::Entry cloud_machine_mandatory(
+      POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+      POLICY_SOURCE_PRIORITY_CLOUD, std::make_unique<base::Value>(ab), nullptr);
+
+  cloud_machine_mandatory.AddConflictingPolicy(PolicyMap::Entry(
+      POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE, POLICY_SOURCE_PLATFORM,
+      std::make_unique<base::Value>(cd), nullptr));
+
+  PolicyMap::Entry merged_cloud_machine_mandatory(
+      POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE, POLICY_SOURCE_MERGED,
+      std::make_unique<base::Value>(abcd), nullptr);
+  merged_cloud_machine_mandatory.AddConflictingPolicy(cloud_machine_mandatory);
+
+  // Case 4 - ExtensionsInstallWhitelist
+  PolicyMap::Entry ad_machine_mandatory(
+      POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+      POLICY_SOURCE_ACTIVE_DIRECTORY, std::make_unique<base::Value>(ef),
+      nullptr);
+
+  // Case 4 - Non-list policy
+  PolicyMap::Entry bad_stuff(POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+                             POLICY_SOURCE_ACTIVE_DIRECTORY,
+                             std::make_unique<base::Value>("bad stuff"),
+                             nullptr);
+
+  PolicyMap::Entry expected_bad_stuff(
+      POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+      POLICY_SOURCE_ACTIVE_DIRECTORY,
+      std::make_unique<base::Value>("bad stuff"), nullptr);
+  expected_bad_stuff.AddError(
+      IDS_POLICY_LIST_MERGING_WRONG_POLICY_TYPE_SPECIFIED);
+
+  PolicyMap policy_not_merged;
+  policy_not_merged.Set(kTestPolicyName1, platform_user_mandatory.DeepCopy());
+  policy_not_merged.Set(kTestPolicyName2, cloud_machine_recommended.DeepCopy());
+  policy_not_merged.Set(policy::key::kExtensionInstallBlacklist,
+                        cloud_machine_mandatory.DeepCopy());
+  policy_not_merged.Set(policy::key::kExtensionInstallWhitelist,
+                        ad_machine_mandatory.DeepCopy());
+  policy_not_merged.Set(kTestPolicyName3, bad_stuff.DeepCopy());
+
+  PolicyMap expected_list_merged;
+  expected_list_merged.Set(kTestPolicyName1, merged_user_mandatory.DeepCopy());
+  expected_list_merged.Set(kTestPolicyName2,
+                           merged_machine_recommended.DeepCopy());
+  expected_list_merged.Set(policy::key::kExtensionInstallBlacklist,
+                           merged_cloud_machine_mandatory.DeepCopy());
+  expected_list_merged.Set(policy::key::kExtensionInstallWhitelist,
+                           ad_machine_mandatory.DeepCopy());
+  expected_list_merged.Set(kTestPolicyName3, expected_bad_stuff.DeepCopy());
+
+  PolicyMap list_merged;
+  list_merged.CopyFrom(policy_not_merged);
+
+  PolicyMap list_merged_wildcard;
+  list_merged_wildcard.CopyFrom(policy_not_merged);
+
+  // Merging with no restrictions specified
+  PolicyListMerger empty_policy_list({});
+  list_merged.MergeValues({&empty_policy_list});
+  EXPECT_TRUE(list_merged.Equals(policy_not_merged));
+
+  PolicyListMerger bad_policy_list({"unknown"});
+  // Merging with wrong restrictions specified
+  list_merged.MergeValues({&bad_policy_list});
+  EXPECT_TRUE(list_merged.Equals(policy_not_merged));
+
+  // Merging lists restrictions specified
+  PolicyListMerger good_policy_list({kTestPolicyName1, kTestPolicyName2,
+                                     kTestPolicyName3,
+                                     policy::key::kExtensionInstallBlacklist,
+                                     policy::key::kExtensionInstallWhitelist});
+  PolicyListMerger wildcard_policy_list({"*"});
+  list_merged.MergeValues({&good_policy_list});
+  EXPECT_TRUE(list_merged.Equals(expected_list_merged));
+
+  PolicyMap expected_list_merged_wildcard;
+  expected_list_merged_wildcard.CopyFrom(expected_list_merged);
+  expected_list_merged_wildcard.Set(kTestPolicyName3, bad_stuff.DeepCopy());
+  list_merged_wildcard.MergeValues({&wildcard_policy_list});
+  EXPECT_TRUE(list_merged_wildcard.Equals(expected_list_merged_wildcard));
+}
+
 TEST_F(PolicyMapTest, GetDifferingKeys) {
   PolicyMap a;
   a.Set(kTestPolicyName1, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
@@ -477,64 +619,6 @@ TEST_F(PolicyMapTest, BlockedEntry) {
        ++it, ++iterated_values) {
   }
   EXPECT_TRUE(iterated_values == expected_size);
-}
-
-TEST_F(PolicyMapTest, MergedListResult) {
-  std::unique_ptr<base::ListValue> list1 = std::make_unique<base::ListValue>();
-  list1->Append(std::make_unique<base::Value>("google.com"));
-  std::unique_ptr<base::ListValue> list2 = std::make_unique<base::ListValue>();
-  list2->Append(std::make_unique<base::Value>("example.com"));
-  std::unique_ptr<base::ListValue> list3 = std::make_unique<base::ListValue>();
-  list3->Append(std::make_unique<base::Value>("acme.com"));
-  std::unique_ptr<base::ListValue> list4 = std::make_unique<base::ListValue>();
-  list4->Append(std::make_unique<base::Value>("fake.com"));
-  std::unique_ptr<base::ListValue> list5 = std::make_unique<base::ListValue>();
-  list5->Append(std::make_unique<base::Value>("bad.com"));
-  std::unique_ptr<base::ListValue> list6 = std::make_unique<base::ListValue>();
-  list6->Append(std::make_unique<base::Value>("good.com"));
-  std::unique_ptr<base::ListValue> list7 = std::make_unique<base::ListValue>();
-  list7->Append(std::make_unique<base::Value>("verybad.com"));
-
-  // TestPolicy1 - merge from all sources should ignore user cloud policy.
-  // TestPolicy2 - merge of blocked and recommended values should be ignored.
-  PolicyMap a;
-  a.Set(kTestPolicyName1, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-        POLICY_SOURCE_PLATFORM, std::move(list1), nullptr);
-  a.Set(kTestPolicyName2, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-        POLICY_SOURCE_ACTIVE_DIRECTORY, std::move(list5), nullptr);
-  a.GetMutable(kTestPolicyName2)->SetBlocked();
-
-  PolicyMap b;
-  b.Set(kTestPolicyName1, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-        POLICY_SOURCE_CLOUD, std::move(list2), nullptr);
-  b.Set(kTestPolicyName2, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-        POLICY_SOURCE_CLOUD, std::move(list6), nullptr);
-
-  PolicyMap c;
-  c.Set(kTestPolicyName1, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-        POLICY_SOURCE_PLATFORM, std::move(list3), nullptr);
-  c.Set(kTestPolicyName2, POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_MACHINE,
-        POLICY_SOURCE_PLATFORM, std::move(list4), nullptr);
-
-  PolicyMap d;
-  d.Set(kTestPolicyName1, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-        POLICY_SOURCE_CLOUD, std::move(list7), nullptr);
-
-  a.MergeFrom(b);
-  a.MergeFrom(c);
-  a.MergeFrom(d);
-
-  a.MergeListValues(kTestPolicyName1);
-  a.MergeListValues(kTestPolicyName2);
-
-  auto& merged_value1 = a.GetValue(kTestPolicyName1)->GetList();
-  EXPECT_EQ(3u, merged_value1.size());
-  EXPECT_EQ("google.com", merged_value1[0].GetString());
-  EXPECT_EQ("example.com", merged_value1[1].GetString());
-  EXPECT_EQ("acme.com", merged_value1[2].GetString());
-  auto& merged_value2 = a.GetValue(kTestPolicyName2)->GetList();
-  EXPECT_EQ(1u, merged_value2.size());
-  EXPECT_EQ("good.com", merged_value2[0].GetString());
 }
 
 }  // namespace policy

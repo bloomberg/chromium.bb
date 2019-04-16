@@ -164,8 +164,6 @@ std::ostream& operator<<(std::ostream& os, policy::PolicyScope scope) {
       return os << "POLICY_SCOPE_USER";
     case policy::POLICY_SCOPE_MACHINE:
       return os << "POLICY_SCOPE_MACHINE";
-    case policy::POLICY_SCOPE_MERGED:
-      return os << "POLICY_SCOPE_MERGED";
   }
   return os << "POLICY_SCOPE_UNKNOWN(" << int(scope) << ")";
 }
