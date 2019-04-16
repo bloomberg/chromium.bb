@@ -208,9 +208,6 @@ const char kDisableArcOptInVerification[] = "disable-arc-opt-in-verification";
 const char kDisableCaptivePortalBypassProxy[] =
     "disable-captive-portal-bypass-proxy";
 
-// Disables cloud backup feature.
-const char kDisableCloudImport[] = "disable-cloud-import";
-
 // Disables the Chrome OS demo.
 const char kDisableDemoMode[] = "disable-demo-mode";
 

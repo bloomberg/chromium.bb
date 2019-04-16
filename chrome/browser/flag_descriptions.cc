@@ -240,9 +240,6 @@ const char kClickToOpenPDFDescription[] =
     "When the PDF plugin is unavailable, show a click-to-open placeholder for "
     "embedded PDFs.";
 
-const char kCloudImportName[] = "Cloud Import";
-const char kCloudImportDescription[] = "Allows the cloud-import feature.";
-
 const char kCloudPrinterHandlerName[] = "Enable Cloud Printer Handler";
 const char kCloudPrinterHandlerDescription[] =
     "Use the new cloud printer handler for communicating with the cloud "

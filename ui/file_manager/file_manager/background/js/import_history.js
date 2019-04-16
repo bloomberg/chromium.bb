@@ -15,72 +15,6 @@ importer.ImportHistoryState = {
 };
 
 /**
- * An dummy {@code ImportHistory} implementation. This class can conveniently
- * be used when cloud import is disabled.
- * @param {boolean} answer The value to answer all {@code wasImported}
- *     queries with.
- *
- * @constructor
- * @implements {importer.HistoryLoader}
- * @implements {importer.ImportHistory}
- */
-importer.DummyImportHistory = function(answer) {
-  /** @private {boolean} */
-  this.answer_ = answer;
-};
-
-/** @override */
-importer.DummyImportHistory.prototype.whenReady = function() {
-  return Promise.resolve(/** @type {!importer.ImportHistory} */ (this));
-};
-
-/** @override */
-importer.DummyImportHistory.prototype.getHistory = function() {
-  return this.whenReady();
-};
-
-/** @override */
-importer.DummyImportHistory.prototype.wasCopied = function(entry, destination) {
-  return Promise.resolve(this.answer_);
-};
-
-/** @override */
-importer.DummyImportHistory.prototype.wasImported = function(
-    entry, destination) {
-  return Promise.resolve(this.answer_);
-};
-
-/** @override */
-importer.DummyImportHistory.prototype.markCopied =
-    (entry, destination, destinationUrl) => {
-      return Promise.resolve();
-    };
-
-/** @override */
-importer.DummyImportHistory.prototype.listUnimportedUrls = destination => {
-  return Promise.resolve([]);
-};
-
-/** @override */
-importer.DummyImportHistory.prototype.markImported = (entry, destination) => {
-  return Promise.resolve();
-};
-
-/** @override */
-importer.DummyImportHistory.prototype.markImportedByUrl = destinationUrl => {
-  return Promise.resolve();
-};
-
-/** @override */
-importer.DummyImportHistory.prototype.addHistoryLoadedListener = listener => {};
-
-/** @override */
-importer.DummyImportHistory.prototype.addObserver = observer => {};
-
-/** @override */
-importer.DummyImportHistory.prototype.removeObserver = observer => {};
-
-/**
  * @private @enum {number}
  */
 importer.RecordType_ = {
@@ -874,62 +808,6 @@ importer.DriveSyncWatcher.prototype.getSyncStatus_ = url => {
       })
       .catch(
           importer.getLogger().catcher('drive-sync-watcher-get-sync-status'));
-};
-
-/**
- * History loader that provides an ImportHistorty appropriate
- * to user settings (if import history is enabled/disabled).
- *
- * TODO(smckay): Use SynchronizedHistoryLoader directly
- *     once cloud-import feature is enabled by default.
- *
- * @constructor
- * @implements {importer.HistoryLoader}
- * @struct
- */
-importer.RuntimeHistoryLoader = function() {
-  /** @return {!importer.HistoryLoader} */
-  this.createRealHistoryLoader_ = () => {
-    return new importer.SynchronizedHistoryLoader(importer.getHistoryFiles);
-  };
-
-  /** @private {boolean} */
-  this.needsInitialization_ = true;
-
-  /** @private {!importer.Resolver.<!importer.ImportHistory>} */
-  this.historyResolver_ = new importer.Resolver();
-};
-
-/** @override */
-importer.RuntimeHistoryLoader.prototype.getHistory = function() {
-  if (this.needsInitialization_) {
-    this.needsInitialization_ = false;
-    importer.importEnabled()
-        .then(
-            /**
-             * @param {boolean} enabled
-             * @return {!importer.HistoryLoader}
-             */
-            enabled => {
-              return enabled ? this.createRealHistoryLoader_() :
-                               new importer.DummyImportHistory(false);
-            })
-        .then(loader => {
-          return this.historyResolver_.resolve(
-              /** @type {!importer.ImportHistory} */
-              (loader.getHistory()));
-        })
-        .catch(
-            importer.getLogger().catcher('runtime-history-loader-get-history'));
-  }
-
-  return this.historyResolver_.promise;
-};
-
-/** @override */
-importer.RuntimeHistoryLoader.prototype.addHistoryLoadedListener = function(
-    listener) {
-  this.historyResolver_.promise.then(listener);
 };
 
 /**

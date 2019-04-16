@@ -263,21 +263,6 @@ importer.getDirectory_ = (parent, name) => {
 };
 
 /**
- * @return {!Promise<boolean>} Resolves with true when Cloud Import feature
- *     is enabled.
- */
-importer.importEnabled = () => {
-  return new Promise((resolve, reject) => {
-    chrome.commandLinePrivate.hasSwitch(
-        'disable-cloud-import',
-        /** @param {boolean} disabled */
-        disabled => {
-          resolve(!disabled);
-        });
-  });
-};
-
-/**
  * Handles a message from Pulsar...in which we presume we are being
  * informed of its "Automatically import stuff." state.
  *
