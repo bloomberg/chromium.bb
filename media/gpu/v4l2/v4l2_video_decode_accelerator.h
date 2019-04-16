@@ -205,6 +205,7 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
   void InitializeTask(const Config& config,
                       bool* result,
                       base::WaitableEvent* done);
+  bool CheckConfig(const Config& config);
 
   // Enqueue a buffer to decode.  This will enqueue a buffer to the
   // decoder_input_queue_, then queue a DecodeBufferTask() to actually decode
