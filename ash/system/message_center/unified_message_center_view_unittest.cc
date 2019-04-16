@@ -581,6 +581,36 @@ TEST_F(UnifiedMessageCenterViewTest,
   EXPECT_FALSE(GetStackingCounter()->visible());
 }
 
+TEST_F(UnifiedMessageCenterViewTest,
+       RedesignedStackingCounter_LabelRelaidOutOnScroll) {
+  EnableNotificationStackingBarRedesign();
+
+  // Open the message center at the top of the notification list so the stacking
+  // bar is hidden by default.
+  std::string id = AddNotification();
+  for (size_t i = 0; i < 20; ++i)
+    AddNotification();
+  model()->SetTargetNotification(id);
+
+  CreateMessageCenterView();
+  EXPECT_FALSE(GetStackingCounterLabel()->visible());
+
+  // Scroll past one notification to show the stacking bar.
+  int scroll_amount = GetMessageViewVisibleBounds(0).height() + 1;
+  GetScroller()->ScrollToPosition(GetScrollBar(), scroll_amount);
+  message_center_view()->OnMessageCenterScrolled();
+  EXPECT_TRUE(GetStackingCounterLabel()->visible());
+  int label_width = GetStackingCounterLabel()->bounds().width();
+  EXPECT_GT(label_width, 0);
+
+  // Scroll past 10 more notifications so the label width must be expanded to
+  // contain longer 2-digit label.
+  scroll_amount = (GetMessageViewVisibleBounds(0).height() * 11) + 1;
+  GetScroller()->ScrollToPosition(GetScrollBar(), scroll_amount);
+  message_center_view()->OnMessageCenterScrolled();
+  EXPECT_GT(GetStackingCounterLabel()->bounds().width(), label_width);
+}
+
 TEST_F(UnifiedMessageCenterViewTest, RectBelowScroll) {
   for (size_t i = 0; i < 6; ++i)
     AddNotification();
