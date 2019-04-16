@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/system/sys_info.h"
 #include "components/arc/video_accelerator/arc_video_accelerator_util.h"
@@ -19,14 +20,6 @@
 #define DVLOGF(x) DVLOG(x) << __func__ << "(): "
 
 namespace arc {
-
-namespace {
-
-void DropSharedMemory(std::unique_ptr<base::SharedMemory> shm) {
-  // Just let |shm| fall out of scope.
-}
-
-}  // namespace
 
 GpuArcVideoEncodeAccelerator::GpuArcVideoEncodeAccelerator(
     const gpu::GpuPreferences& gpu_preferences)
@@ -205,8 +198,9 @@ void GpuArcVideoEncodeAccelerator::EncodeSharedMemory(
   // Add the function to relase |shm| and |callback| to |frame|'s  destruction
   // observer. When the |frame| goes out of scope, it unmaps and releases the
   // shared memory as well as executes |callback|.
-  frame->AddDestructionObserver(
-      base::BindOnce(&DropSharedMemory, std::move(shm)));
+  frame->AddDestructionObserver(base::BindOnce(
+      base::DoNothing::Once<std::unique_ptr<base::SharedMemory>>(),
+      std::move(shm)));
   frame->AddDestructionObserver(std::move(callback));
   accelerator_->Encode(frame, force_keyframe);
 }
