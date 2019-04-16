@@ -1004,12 +1004,6 @@ void LayoutInline::AbsoluteQuadsForSelf(Vector<FloatQuad>& quads,
 }
 
 LayoutPoint LayoutInline::FirstLineBoxTopLeft() const {
-  // This method is called from various places. It's mainly (only?) about
-  // calculating offsetLeft and offsetTop, though. Thus the callers seem to
-  // expect a purely physical point. This is what NG does. Legacy, on the other
-  // hand, sets the block-axis coordinate relatively to the block-start border
-  // edge, which means that offsetLeft will be wrong when writing-mode is
-  // vertical-rl.
   if (IsInLayoutNGInlineFormattingContext()) {
     const NGPhysicalBoxFragment* box_fragment =
         ContainingBlockFlowFragmentOf(*this);
@@ -1021,8 +1015,14 @@ LayoutPoint LayoutInline::FirstLineBoxTopLeft() const {
       return LayoutPoint();
     return fragments.front().offset_to_container_box.ToLayoutPoint();
   }
-  if (InlineBox* first_box = FirstLineBoxIncludingCulling())
-    return first_box->Location();
+  if (InlineBox* first_box = FirstLineBoxIncludingCulling()) {
+    LayoutPoint location = first_box->Location();
+    if (UNLIKELY(HasFlippedBlocksWritingMode())) {
+      location = ContainingBlock()->FlipForWritingMode(location);
+      location.Move(-LinesBoundingBox().Width(), LayoutUnit());
+    }
+    return location;
+  }
   return LayoutPoint();
 }
 
