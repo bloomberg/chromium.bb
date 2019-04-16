@@ -386,6 +386,9 @@ const char* const kChromeHostURLs[] = {
     kChromeUIInterventionsInternalsHost,
     kChromeUIInvalidationsHost,
     kChromeUILocalStateHost,
+#if !defined(OS_ANDROID)
+    kChromeUIManagementHost,
+#endif
     kChromeUIMediaEngagementHost,
     kChromeUINetExportHost,
     kChromeUINetInternalsHost,
