@@ -30,21 +30,17 @@ piex wasm raw image preview / thumbnail test page
       if (this.length <= 0 || this.length >= Math.pow(2, 30))
         throw new Error('invalid image length');
 
-      const memory = Module._malloc(this.length);
-      if (!memory)
+      this.memory = Module._malloc(this.length);
+      if (!this.memory)
         throw Error('image malloc failure');
 
-      const callback = Module.addFunction((result) => {
-        this.result = result;
-        // TODO(noel): fix this leak (eg., process can throw).
-        Module.removeFunction(callback);
-        Module._free(memory);
-        resolve(this.result);
+      this.callback = Module.addFunction((result) => {
+        resolve(this.result = result);
       }, 'vi');
 
       // Process the image: blocks until |callback| is called.
-      Module.HEAP8.set(this.source, memory);
-      Module._image(memory, this.source.byteLength, callback);
+      Module.HEAP8.set(this.source, this.memory);
+      Module._image(this.memory, this.length, this.callback);
     }
 
     preview() {
@@ -84,6 +80,11 @@ piex wasm raw image preview / thumbnail test page
       thumbnail.type = 'thumbnail';
 
       return thumbnail;
+    }
+
+    close() {
+      Module.removeFunction(this.callback);
+      Module._free(this.memory);
     }
   }
 
@@ -269,6 +270,7 @@ piex wasm raw image preview / thumbnail test page
     }).then((result) => {
       let preview = imageBuffer.preview();
       let thumb = imageBuffer.thumbnail();
+      imageBuffer.close();
       time = performance.now() - time;
       const maker = removeNullBytes(result.maker);
       const model = removeNullBytes(result.model);
@@ -282,6 +284,7 @@ piex wasm raw image preview / thumbnail test page
       if (!window.images_)
         document.title = 'DONE';
     }).catch((error) => {
+      imageBuffer.close();
       console.log(error);
       document.title = 'DONE';
     });
