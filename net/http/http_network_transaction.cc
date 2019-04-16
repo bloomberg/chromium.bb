@@ -1959,10 +1959,8 @@ GetTunnelRedirectHistogramValue(bool is_main_frame, bool was_auto_detected) {
 }
 
 // TODO(https://crbug.com/928551): Support for redirect on CONNECT is
-// deprecated, and support will be removed.
-//
-// The code in this method handles the temporary histogramming and
-// compatibility-mode policy during the phase-out.
+// deprecated. Should remove the ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT error
+// code and supporting plumbing + histogram once this change sticks on Stable.
 int HttpNetworkTransaction::DoCreateStreamCompletedTunnelResponseRedirect() {
   bool is_main_frame = (request_->load_flags & LOAD_MAIN_FRAME_DEPRECATED) ==
                        LOAD_MAIN_FRAME_DEPRECATED;
@@ -1972,18 +1970,7 @@ int HttpNetworkTransaction::DoCreateStreamCompletedTunnelResponseRedirect() {
       "Net.Proxy.RedirectDuringConnect",
       GetTunnelRedirectHistogramValue(is_main_frame, was_auto_detected));
 
-  // For legacy compatibility, the proxy is allowed to redirect CONNECT
-  // if:
-  //      (a) the request was for a top-level frame
-  //      (b) the proxy server was explicitly configured (i.e. not
-  //          auto-detected).
-  if (is_main_frame && !was_auto_detected) {
-    // Return OK and let the caller read the proxy's error page
-    next_state_ = STATE_NONE;
-    return OK;
-  }
-
-  // Otherwise let the request fail.
+  // Fail the request.
   stream_.reset();
   return ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT;
 }
