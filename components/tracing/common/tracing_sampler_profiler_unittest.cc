@@ -152,6 +152,7 @@ class TestModule : public base::ModuleCache::Module {
   std::string GetId() const override { return ""; }
   base::FilePath GetDebugBasename() const override { return base::FilePath(); }
   size_t GetSize() const override { return 0; }
+  bool IsNative() const override { return true; }
 };
 
 }  // namespace

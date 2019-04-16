@@ -103,6 +103,7 @@ class WindowsModule : public ModuleCache::Module {
   std::string GetId() const override { return id_; }
   FilePath GetDebugBasename() const override { return debug_basename_; }
   size_t GetSize() const override { return module_info_.SizeOfImage; }
+  bool IsNative() const override { return true; }
 
  private:
   ScopedModuleHandle module_handle_;

@@ -36,6 +36,7 @@ std::vector<const ModuleCache::Module*> ModuleCache::GetModules() const {
 }
 
 void ModuleCache::AddNonNativeModule(std::unique_ptr<Module> module) {
+  DCHECK(!module->IsNative());
   non_native_modules_.push_back(std::move(module));
 }
 

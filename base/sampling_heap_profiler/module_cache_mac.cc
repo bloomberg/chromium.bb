@@ -89,6 +89,7 @@ class MacModule : public ModuleCache::Module {
   std::string GetId() const override { return id_; }
   FilePath GetDebugBasename() const override { return debug_basename_; }
   size_t GetSize() const override { return size_; }
+  bool IsNative() const override { return true; }
 
  private:
   uintptr_t base_address_;

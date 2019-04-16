@@ -30,6 +30,7 @@ class TestModule : public ModuleCache::Module {
   std::string GetId() const override { return ""; }
   FilePath GetDebugBasename() const override { return FilePath(); }
   size_t GetSize() const override { return 0; }
+  bool IsNative() const override { return true; }
 
  private:
   const uintptr_t base_address_;

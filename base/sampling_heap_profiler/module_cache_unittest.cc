@@ -20,7 +20,8 @@ int AFunctionForTest() {
 // heap memory.
 class IsolatedModule : public ModuleCache::Module {
  public:
-  IsolatedModule() : memory_region_(new char[kRegionSize]) {}
+  explicit IsolatedModule(bool is_native = true)
+      : is_native_(is_native), memory_region_(new char[kRegionSize]) {}
 
   // ModuleCache::Module
   uintptr_t GetBaseAddress() const override {
@@ -31,18 +32,20 @@ class IsolatedModule : public ModuleCache::Module {
   std::string GetId() const override { return ""; }
   FilePath GetDebugBasename() const override { return FilePath(); }
   size_t GetSize() const override { return kRegionSize / 2; }
+  bool IsNative() const override { return is_native_; }
 
  private:
   static const int kRegionSize = 100;
 
+  bool is_native_;
   std::unique_ptr<char[]> memory_region_;
 };
 
 // Provides a fake module with configurable base address and size.
 class FakeModule : public ModuleCache::Module {
  public:
-  FakeModule(uintptr_t base_address, size_t size)
-      : base_address_(base_address), size_(size) {}
+  FakeModule(uintptr_t base_address, size_t size, bool is_native = true)
+      : base_address_(base_address), size_(size), is_native_(is_native) {}
 
   FakeModule(const FakeModule&) = delete;
   FakeModule& operator=(const FakeModule&) = delete;
@@ -51,10 +54,12 @@ class FakeModule : public ModuleCache::Module {
   std::string GetId() const override { return ""; }
   FilePath GetDebugBasename() const override { return FilePath(); }
   size_t GetSize() const override { return size_; }
+  bool IsNative() const override { return is_native_; }
 
  private:
   uintptr_t base_address_;
   size_t size_;
+  bool is_native_;
 };
 
 #if defined(OS_POSIX) && !defined(OS_IOS) || defined(OS_WIN) || \
@@ -95,7 +100,7 @@ MAYBE_TEST(ModuleCacheTest, LookupRange) {
 
 MAYBE_TEST(ModuleCacheTest, LookupNonNativeModule) {
   ModuleCache cache;
-  auto non_native_module_to_add = std::make_unique<IsolatedModule>();
+  auto non_native_module_to_add = std::make_unique<IsolatedModule>(false);
   const ModuleCache::Module* module = non_native_module_to_add.get();
   cache.AddNonNativeModule(std::move(non_native_module_to_add));
 
@@ -116,8 +121,9 @@ MAYBE_TEST(ModuleCacheTest, LookupOverlaidNonNativeModule) {
 
   // Overlay the native module with the non-native module, starting 8 bytes into
   // the native modules and ending 8 bytes before the end of the module.
-  auto non_native_module_to_add = std::make_unique<FakeModule>(
-      native_module->GetBaseAddress() + 8, native_module->GetSize() - 16);
+  auto non_native_module_to_add =
+      std::make_unique<FakeModule>(native_module->GetBaseAddress() + 8,
+                                   native_module->GetSize() - 16, false);
   const ModuleCache::Module* non_native_module = non_native_module_to_add.get();
   cache.AddNonNativeModule(std::move(non_native_module_to_add));
 
