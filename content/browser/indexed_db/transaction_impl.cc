@@ -96,10 +96,17 @@ void TransactionImpl::CreateObjectStore(int64_t object_store_id,
   if (!transaction_)
     return;
 
+  if (transaction_->mode() != blink::mojom::IDBTransactionMode::VersionChange) {
+    mojo::ReportBadMessage(
+        "CreateObjectStore must be called from a version change transaction.");
+  }
+
   IndexedDBConnection* connection = transaction_->connection();
   if (!connection->IsConnected())
     return;
 
+  // Note: This doesn't schedule a task on the transaction because the
+  // SetIndexKeys call path isn't asynchronous.
   connection->database()->CreateObjectStore(transaction_.get(), object_store_id,
                                             name, key_path, auto_increment);
 }
@@ -108,6 +115,11 @@ void TransactionImpl::DeleteObjectStore(int64_t object_store_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!transaction_)
     return;
+
+  if (transaction_->mode() != blink::mojom::IDBTransactionMode::VersionChange) {
+    mojo::ReportBadMessage(
+        "DeleteObjectStore must be called from a version change transaction.");
+  }
 
   IndexedDBConnection* connection = transaction_->connection();
   if (!connection->IsConnected())

@@ -591,6 +591,7 @@ Status IndexedDBMetadataCoding::CreateObjectStore(
     IndexedDBKeyPath key_path,
     bool auto_increment,
     IndexedDBObjectStoreMetadata* metadata) {
+  DCHECK(transaction);
   if (!KeyPrefix::ValidIds(database_id, object_store_id))
     return InvalidDBKeyStatus();
   Status s = indexed_db::SetMaxObjectStoreId(transaction, database_id,

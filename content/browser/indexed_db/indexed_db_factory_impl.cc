@@ -739,9 +739,9 @@ leveldb::Status IndexedDBFactoryImpl::AbortTransactions(const Origin& origin) {
   }
 
   for (base::string16& name : db_names) {
-    const scoped_refptr<IndexedDBDatabase>& db =
-        database_map_[std::make_pair(origin, name)];
-    db->AbortAllTransactionsForConnections();
+    auto database_it = database_map_.find(std::make_pair(origin, name));
+    if (database_it != database_map_.end())
+      database_it->second->AbortAllTransactionsForConnections();
   }
 
   return leveldb::Status::OK();
