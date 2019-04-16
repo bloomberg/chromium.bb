@@ -84,6 +84,14 @@ gfx::Rect ScrollbarLayerDelegate::TrackRect() const {
   return theme_.TrackRect(*scrollbar_);
 }
 
+gfx::Rect ScrollbarLayerDelegate::BackButtonRect() const {
+  return theme_.BackButtonRect(*scrollbar_, blink::kBackButtonStartPart);
+}
+
+gfx::Rect ScrollbarLayerDelegate::ForwardButtonRect() const {
+  return theme_.ForwardButtonRect(*scrollbar_, blink::kForwardButtonEndPart);
+}
+
 float ScrollbarLayerDelegate::ThumbOpacity() const {
   return theme_.ThumbOpacity(*scrollbar_);
 }
