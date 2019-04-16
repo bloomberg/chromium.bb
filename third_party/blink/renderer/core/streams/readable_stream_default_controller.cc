@@ -6,12 +6,12 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/core/streams/miscellaneous_operations.h"
+#include "third_party/blink/renderer/core/streams/promise_handler.h"
 #include "third_party/blink/renderer/core/streams/queue_with_sizes.h"
 #include "third_party/blink/renderer/core/streams/readable_stream_default_reader.h"
 #include "third_party/blink/renderer/core/streams/readable_stream_native.h"
 #include "third_party/blink/renderer/core/streams/stream_algorithms.h"
 #include "third_party/blink/renderer/core/streams/stream_promise_resolver.h"
-#include "third_party/blink/renderer/core/streams/stream_script_function.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/to_v8.h"
@@ -339,11 +339,11 @@ void ReadableStreamDefaultController::CallPullIfNeeded(
   auto pull_promise =
       controller->pull_algorithm_->Run(script_state, 0, nullptr);
 
-  class ResolveFunction : public StreamScriptFunction {
+  class ResolveFunction final : public PromiseHandler {
    public:
     ResolveFunction(ScriptState* script_state,
                     ReadableStreamDefaultController* controller)
-        : StreamScriptFunction(script_state), controller_(controller) {}
+        : PromiseHandler(script_state), controller_(controller) {}
 
     void CallWithLocal(v8::Local<v8::Value>) override {
       // 7. Upon fulfillment of pullPromise,
@@ -363,18 +363,18 @@ void ReadableStreamDefaultController::CallPullIfNeeded(
 
     void Trace(Visitor* visitor) override {
       visitor->Trace(controller_);
-      StreamScriptFunction::Trace(visitor);
+      PromiseHandler::Trace(visitor);
     }
 
    private:
     const Member<ReadableStreamDefaultController> controller_;
   };
 
-  class RejectFunction : public StreamScriptFunction {
+  class RejectFunction final : public PromiseHandler {
    public:
     RejectFunction(ScriptState* script_state,
                    ReadableStreamDefaultController* controller)
-        : StreamScriptFunction(script_state), controller_(controller) {}
+        : PromiseHandler(script_state), controller_(controller) {}
 
     void CallWithLocal(v8::Local<v8::Value> e) override {
       // 8. Upon rejection of pullPromise with reason e,
@@ -384,7 +384,7 @@ void ReadableStreamDefaultController::CallPullIfNeeded(
 
     void Trace(Visitor* visitor) override {
       visitor->Trace(controller_);
-      StreamScriptFunction::Trace(visitor);
+      PromiseHandler::Trace(visitor);
     }
 
    private:
@@ -529,11 +529,11 @@ void ReadableStreamDefaultController::SetUp(
   }
   DCHECK(!exception_state.HadException());
 
-  class ResolveFunction : public StreamScriptFunction {
+  class ResolveFunction final : public PromiseHandler {
    public:
     ResolveFunction(ScriptState* script_state,
                     ReadableStreamDefaultController* controller)
-        : StreamScriptFunction(script_state), controller_(controller) {}
+        : PromiseHandler(script_state), controller_(controller) {}
 
     void CallWithLocal(v8::Local<v8::Value>) override {
       //  11. Upon fulfillment of startPromise,
@@ -553,18 +553,18 @@ void ReadableStreamDefaultController::SetUp(
 
     void Trace(Visitor* visitor) override {
       visitor->Trace(controller_);
-      StreamScriptFunction::Trace(visitor);
+      PromiseHandler::Trace(visitor);
     }
 
    private:
     const Member<ReadableStreamDefaultController> controller_;
   };
 
-  class RejectFunction : public StreamScriptFunction {
+  class RejectFunction final : public PromiseHandler {
    public:
     RejectFunction(ScriptState* script_state,
                    ReadableStreamDefaultController* controller)
-        : StreamScriptFunction(script_state), controller_(controller) {}
+        : PromiseHandler(script_state), controller_(controller) {}
 
     void CallWithLocal(v8::Local<v8::Value> r) override {
       //  12. Upon rejection of startPromise with reason r,
@@ -574,7 +574,7 @@ void ReadableStreamDefaultController::SetUp(
 
     void Trace(Visitor* visitor) override {
       visitor->Trace(controller_);
-      StreamScriptFunction::Trace(visitor);
+      PromiseHandler::Trace(visitor);
     }
 
    private:

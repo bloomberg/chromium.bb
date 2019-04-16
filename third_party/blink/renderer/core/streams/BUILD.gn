@@ -8,6 +8,8 @@ blink_core_sources("streams") {
   sources = [
     "miscellaneous_operations.cc",
     "miscellaneous_operations.h",
+    "promise_handler.cc",
+    "promise_handler.h",
     "queue_with_sizes.cc",
     "queue_with_sizes.h",
     "readable_stream.cc",
@@ -27,8 +29,6 @@ blink_core_sources("streams") {
     "stream_algorithms.h",
     "stream_promise_resolver.cc",
     "stream_promise_resolver.h",
-    "stream_script_function.cc",
-    "stream_script_function.h",
     "transform_stream.cc",
     "transform_stream.h",
     "transform_stream_default_controller_interface.h",
