@@ -24,7 +24,9 @@ class MockBackgroundSyncController : public BackgroundSyncController {
   ~MockBackgroundSyncController() override = default;
 
   // BackgroundSyncController:
-  void NotifyBackgroundSyncRegistered(const url::Origin& origin) override;
+  void NotifyBackgroundSyncRegistered(const url::Origin& origin,
+                                      bool can_fire,
+                                      bool is_reregistered) override;
   void RunInBackground() override;
   void GetParameterOverrides(
       BackgroundSyncParameters* parameters) const override;

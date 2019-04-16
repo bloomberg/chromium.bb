@@ -6,9 +6,12 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/history/core/browser/history_service.h"
 #include "components/rappor/public/rappor_utils.h"
 #include "components/rappor/rappor_service_impl.h"
 #include "components/variations/variations_associated_data.h"
@@ -45,7 +48,10 @@ const char BackgroundSyncControllerImpl::kMaxSyncEventDurationName[] =
 
 BackgroundSyncControllerImpl::BackgroundSyncControllerImpl(Profile* profile)
     : profile_(profile),
-      site_engagement_service_(SiteEngagementService::Get(profile)) {
+      site_engagement_service_(SiteEngagementService::Get(profile)),
+      background_sync_metrics_(HistoryServiceFactory::GetForProfile(
+          profile_,
+          ServiceAccessType::EXPLICIT_ACCESS)) {
   DCHECK(profile_);
   DCHECK(site_engagement_service_);
 }
@@ -118,7 +124,9 @@ void BackgroundSyncControllerImpl::GetParameterOverrides(
 }
 
 void BackgroundSyncControllerImpl::NotifyBackgroundSyncRegistered(
-    const url::Origin& origin) {
+    const url::Origin& origin,
+    bool can_fire,
+    bool is_reregistered) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (profile_->IsOffTheRecord())
@@ -127,6 +135,20 @@ void BackgroundSyncControllerImpl::NotifyBackgroundSyncRegistered(
   rappor::SampleDomainAndRegistryFromGURL(GetRapporServiceImpl(),
                                           "BackgroundSync.Register.Origin",
                                           origin.GetURL());
+
+  background_sync_metrics_.MaybeRecordRegistrationEvent(origin, can_fire,
+                                                        is_reregistered);
+}
+
+void BackgroundSyncControllerImpl::NotifyBackgroundSyncCompleted(
+    const url::Origin& origin,
+    blink::ServiceWorkerStatusCode status_code,
+    int num_attempts,
+    int max_attempts) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  background_sync_metrics_.MaybeRecordCompletionEvent(
+      origin, status_code, num_attempts, max_attempts);
 }
 
 void BackgroundSyncControllerImpl::RunInBackground() {

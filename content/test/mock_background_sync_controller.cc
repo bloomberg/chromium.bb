@@ -15,7 +15,9 @@ constexpr int64_t kMinGapBetweenPeriodicSyncEventsMs = 12 * 60 * 60 * 1000;
 }  // namespace
 
 void MockBackgroundSyncController::NotifyBackgroundSyncRegistered(
-    const url::Origin& origin) {
+    const url::Origin& origin,
+    bool can_fire,
+    bool is_reregistered) {
   registration_count_ += 1;
   registration_origin_ = origin;
 }

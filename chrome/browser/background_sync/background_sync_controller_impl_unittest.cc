@@ -6,16 +6,22 @@
 
 #include <stdint.h>
 
+#include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "chrome/browser/engagement/site_engagement_score.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/history/core/browser/history_database_params.h"
+#include "components/history/core/browser/history_service.h"
+#include "components/history/core/test/test_history_database.h"
 #include "components/rappor/test_rappor_service.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/background_sync_parameters.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/background_sync_launcher_android.h"
@@ -54,18 +60,34 @@ class TestBackgroundSyncControllerImpl : public BackgroundSyncControllerImpl {
   DISALLOW_COPY_AND_ASSIGN(TestBackgroundSyncControllerImpl);
 };
 
+std::unique_ptr<KeyedService> BuildTestHistoryService(
+    const base::FilePath& file_path,
+    content::BrowserContext* context) {
+  auto service = std::make_unique<history::HistoryService>();
+  service->Init(history::TestHistoryDatabaseParamsForPath(file_path));
+  return service;
+}
+
 class BackgroundSyncControllerImplTest : public testing::Test {
  protected:
   BackgroundSyncControllerImplTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
-        controller_(std::make_unique<TestBackgroundSyncControllerImpl>(
-            &profile_,
-            &rappor_service_)) {
+      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {
     ResetFieldTrialList();
 #if defined(OS_ANDROID)
     BackgroundSyncLauncherAndroid::SetPlayServicesVersionCheckDisabledForTests(
         true);
 #endif
+  }
+
+  void SetUp() override {
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+
+    HistoryServiceFactory::GetInstance()->SetTestingFactory(
+        &profile_, base::BindRepeating(
+                       &BuildTestHistoryService,
+                       temp_dir_.GetPath().AppendASCII("BackgroundSyncTest")));
+    controller_ = std::make_unique<TestBackgroundSyncControllerImpl>(
+        &profile_, &rappor_service_);
   }
 
   void ResetFieldTrialList() {
@@ -81,6 +103,7 @@ class BackgroundSyncControllerImplTest : public testing::Test {
   rappor::TestRapporServiceImpl rappor_service_;
   std::unique_ptr<TestBackgroundSyncControllerImpl> controller_;
   std::unique_ptr<base::FieldTrialList> field_trial_list_;
+  base::ScopedTempDir temp_dir_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundSyncControllerImplTest);
 };
@@ -88,7 +111,9 @@ class BackgroundSyncControllerImplTest : public testing::Test {
 TEST_F(BackgroundSyncControllerImplTest, RapporTest) {
   url::Origin origin = url::Origin::Create(GURL(kExampleUrl));
   EXPECT_EQ(0, rappor_service_.GetReportsCount());
-  controller_->NotifyBackgroundSyncRegistered(origin);
+  controller_->NotifyBackgroundSyncRegistered(origin,
+                                              /* can_fire= */ true,
+                                              /* is_reregistered= */ false);
   EXPECT_EQ(1, rappor_service_.GetReportsCount());
 
   std::string sample;
@@ -105,7 +130,9 @@ TEST_F(BackgroundSyncControllerImplTest, NoRapporWhenOffTheRecord) {
   controller_ = std::make_unique<TestBackgroundSyncControllerImpl>(
       profile_.GetOffTheRecordProfile(), &rappor_service_);
 
-  controller_->NotifyBackgroundSyncRegistered(origin);
+  controller_->NotifyBackgroundSyncRegistered(origin,
+                                              /* can_fire= */ true,
+                                              /* is_reregistered= */ false);
   EXPECT_EQ(0, rappor_service_.GetReportsCount());
 }
 

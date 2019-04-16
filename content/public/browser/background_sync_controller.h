@@ -9,11 +9,12 @@
 
 #include "base/time/time.h"
 #include "content/common/content_export.h"
+#include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/blink/public/mojom/background_sync/background_sync.mojom-shared.h"
 
 namespace url {
 class Origin;
-}
+}  // namespace url
 
 namespace content {
 
@@ -32,8 +33,21 @@ class CONTENT_EXPORT BackgroundSyncController {
       BackgroundSyncParameters* parameters) const {}
 
   // Notification that a service worker registration with origin |origin| just
-  // registered a background sync event.
-  virtual void NotifyBackgroundSyncRegistered(const url::Origin& origin) {}
+  // registered a background sync event. Also includes information about the
+  // registration.
+  virtual void NotifyBackgroundSyncRegistered(const url::Origin& origin,
+                                              bool can_fire,
+                                              bool is_reregistered) {}
+
+  // Notification that a service worker registration with origin |origin| just
+  // completed a background sync registration. Also include the |status_code|
+  // the registration finished with, the number of attempts, and the max
+  // allowed number of attempts.
+  virtual void NotifyBackgroundSyncCompleted(
+      const url::Origin& origin,
+      blink::ServiceWorkerStatusCode status_code,
+      int num_attempts,
+      int max_attempts) {}
 
   // Calculates the soonest wakeup delta across all storage partitions and
   // schedules a background task to wake up the browser.

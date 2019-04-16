@@ -1061,6 +1061,51 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="BackgroundSyncCompleted">
+  <owner>nator@chromium.org</owner>
+  <owner>rayankans@chromium.org</owner>
+  <owner>peter@chromium.org</owner>
+  <summary>
+    Logged when a Background Sync one-shot registration is completed.
+  </summary>
+  <metric name="MaxAttempts">
+    <summary>
+      Integer value of the maximum number of allowed retries.
+    </summary>
+  </metric>
+  <metric name="NumAttempts">
+    <summary>
+      Integer value of the number of retries / sync events dispatched.
+    </summary>
+  </metric>
+  <metric name="Status">
+    <summary>
+      The enum value of the completion status, defined in
+      blink::ServiceWorkerStatusCode.
+    </summary>
+  </metric>
+</event>
+
+<event name="BackgroundSyncRegistered">
+  <owner>nator@chromium.org</owner>
+  <owner>rayankans@chromium.org</owner>
+  <owner>peter@chromium.org</owner>
+  <summary>
+    Logged when a one-shot Background Sync registration is created.
+  </summary>
+  <metric name="CanFire">
+    <summary>
+      Boolean for whether a sync event can be immediately dispatched for this
+      registration.
+    </summary>
+  </metric>
+  <metric name="IsReregistered">
+    <summary>
+      Boolean for whether this is a duplicate registration.
+    </summary>
+  </metric>
+</event>
+
 <event name="Blink.UpdateTime">
   <owner>schenney@chromium.org</owner>
   <summary>
