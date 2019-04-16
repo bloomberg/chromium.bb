@@ -112,6 +112,8 @@ class OptimizationGuideServiceNoHintsFetcherBrowserTest
     // only provides the URL.
     cmd->AppendSwitchASCII(previews::switches::kOptimizationGuideServiceURL,
                            https_server_->base_url().spec());
+    cmd->AppendSwitchASCII(previews::switches::kFetchHintsOverride,
+                           "example1.com, example2.com");
   }
 
   // Creates hint data for the |hint_setup_url|'s so that OnHintsUpdated in
@@ -216,6 +218,15 @@ class OptimizationGuideServiceHintsFetcherBrowserTest
  private:
   DISALLOW_COPY_AND_ASSIGN(OptimizationGuideServiceHintsFetcherBrowserTest);
 };
+
+// Issues with multiple profiles likely cause the site enagement service-based
+// tests to flake.
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#define DISABLE_ON_WIN_MAC_CHROMESOS(x) DISABLED_##x
+#else
+#define DISABLE_ON_WIN_MAC_CHROMESOS(x) x
+#endif
+
 // This test creates new browser with no profile and loads a random page with
 // the feature flags enables the PreviewsOnePlatformHints. We confirm that the
 // top_host_provider_impl executes and does not crash by checking UMA
@@ -253,8 +264,9 @@ IN_PROC_BROWSER_TEST_F(OptimizationGuideServiceNoHintsFetcherBrowserTest,
 // only returns HTTPS-schemed hosts. We verify this with the UMA histogram
 // logged when the GetHintsRequest is made to the remote Optimization Guide
 // Service.
-IN_PROC_BROWSER_TEST_F(OptimizationGuideServiceHintsFetcherBrowserTest,
-                       PreviewsTopHostProviderHTTPSOnly) {
+IN_PROC_BROWSER_TEST_F(
+    OptimizationGuideServiceHintsFetcherBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMESOS(PreviewsTopHostProviderHTTPSOnly)) {
   const base::HistogramTester* histogram_tester = GetHistogramTester();
 
   // Adds two HTTP and two HTTPS sites into the Site Engagement Service.

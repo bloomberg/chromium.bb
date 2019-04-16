@@ -142,7 +142,8 @@ void PreviewsService::Initialize(
           profile_path.Append(chrome::kPreviewsOptOutDBFilename)),
       optimization_guide_service
           ? std::make_unique<previews::PreviewsOptimizationGuide>(
-                optimization_guide_service, ui_task_runner, profile_path,
+                optimization_guide_service, ui_task_runner,
+                background_task_runner, profile_path,
                 previews_top_host_provider_.get(), previews_url_loader_factory_)
           : nullptr,
       base::Bind(&IsPreviewsTypeEnabled),
