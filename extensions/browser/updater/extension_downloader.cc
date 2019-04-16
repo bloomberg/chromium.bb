@@ -764,7 +764,9 @@ ExtensionDownloader::GetUpdateAvailability(
     const std::string& update_version_str = update->version;
     if (VLOG_IS_ON(2)) {
       if (update_version_str.empty())
-        VLOG(2) << "Manifest indicates " << extension_id << " has no update";
+        VLOG(2) << "Manifest indicates " << extension_id
+                << " has no update (info: " << update->info.value_or("no info")
+                << ")";
       else
         VLOG(2) << "Manifest indicates " << extension_id
                 << " latest version is '" << update_version_str << "'";
