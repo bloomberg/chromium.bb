@@ -75,7 +75,7 @@
   },
   {
     "name": "android-files-in-files-app",
-    // "owners": [ "your-team" ],
+    "owners": [ "fukino" ],
     "expiry_milestone": 76
   },
   {
