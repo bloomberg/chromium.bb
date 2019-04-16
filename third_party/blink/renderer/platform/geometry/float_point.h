@@ -49,9 +49,6 @@ typedef struct CGPoint CGPoint;
 
 namespace blink {
 
-class LayoutPoint;
-class LayoutSize;
-
 class PLATFORM_EXPORT FloatPoint {
   DISALLOW_NEW();
 
@@ -91,7 +88,6 @@ class PLATFORM_EXPORT FloatPoint {
     x_ += a.Width();
     y_ += a.Height();
   }
-  void Move(const LayoutSize&);
   void Move(const FloatSize& a) {
     x_ += a.Width();
     y_ += a.Height();
@@ -100,7 +96,6 @@ class PLATFORM_EXPORT FloatPoint {
     x_ += a.X();
     y_ += a.Y();
   }
-  void MoveBy(const LayoutPoint&);
   void MoveBy(const FloatPoint& a) {
     x_ += a.X();
     y_ += a.Y();

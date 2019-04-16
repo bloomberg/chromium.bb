@@ -55,16 +55,6 @@ FloatPoint FloatPoint::ShrunkTo(const FloatPoint& other) const {
   return FloatPoint(std::min(x_, other.x_), std::min(y_, other.y_));
 }
 
-void FloatPoint::Move(const LayoutSize& size) {
-  x_ += size.Width();
-  y_ += size.Height();
-}
-
-void FloatPoint::MoveBy(const LayoutPoint& point) {
-  x_ += point.X();
-  y_ += point.Y();
-}
-
 FloatPoint FloatPoint::NarrowPrecision(double x, double y) {
   return FloatPoint(clampTo<float>(x), clampTo<float>(y));
 }

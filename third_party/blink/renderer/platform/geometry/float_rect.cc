@@ -34,14 +34,6 @@
 
 namespace blink {
 
-void FloatRect::Move(const LayoutSize& delta) {
-  location_.Move(delta.Width().ToFloat(), delta.Height().ToFloat());
-}
-
-void FloatRect::Move(const IntSize& delta) {
-  location_.Move(delta.Width(), delta.Height());
-}
-
 FloatRect FloatRect::NarrowPrecision(double x,
                                      double y,
                                      double width,

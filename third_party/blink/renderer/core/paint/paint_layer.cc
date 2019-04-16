@@ -602,7 +602,8 @@ void PaintLayer::MapPointInPaintInvalidationContainerToBacking(
 
   // Move the point into the source_state transform space, map to dest_state
   // transform space, then move into squashing layer state.
-  point.MoveBy(paint_invalidation_container.FirstFragment().PaintOffset());
+  point.MoveBy(
+      FloatPoint(paint_invalidation_container.FirstFragment().PaintOffset()));
   point = GeometryMapper::SourceToDestinationProjection(
               source_state.Transform(), dest_state.Transform())
               .MapPoint(point);

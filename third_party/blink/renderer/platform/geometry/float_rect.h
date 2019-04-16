@@ -49,9 +49,6 @@ typedef struct CGRect CGRect;
 
 namespace blink {
 
-class LayoutRect;
-class LayoutSize;
-
 class PLATFORM_EXPORT FloatRect {
   DISALLOW_NEW();
 
@@ -102,8 +99,6 @@ class PLATFORM_EXPORT FloatRect {
   }
 
   void Move(const FloatSize& delta) { location_ += delta; }
-  void Move(const LayoutSize&);
-  void Move(const IntSize&);
   void MoveBy(const FloatPoint& delta) { location_.Move(delta.X(), delta.Y()); }
   void Move(float dx, float dy) { location_.Move(dx, dy); }
 
