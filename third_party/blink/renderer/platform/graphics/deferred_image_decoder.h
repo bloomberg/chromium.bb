@@ -81,6 +81,14 @@ class PLATFORM_EXPORT DeferredImageDecoder final {
   ImageOrientation OrientationAtIndex(size_t index) const;
   bool HotSpot(IntPoint&) const;
 
+  // A less expensive method for getting the number of bytes thus far received
+  // for the image. Checking Data()->size() involves copying bytes to a
+  // SharedBuffer.
+  //
+  // Returns 0 if the read-write buffer has not been initialized or received
+  // data.
+  size_t ByteSize() const;
+
  private:
   explicit DeferredImageDecoder(std::unique_ptr<ImageDecoder> metadata_decoder);
 
@@ -111,6 +119,7 @@ class PLATFORM_EXPORT DeferredImageDecoder final {
   sk_sp<SkColorSpace> color_space_for_sk_images_;
   IntPoint hot_spot_;
   const PaintImage::ContentId complete_frame_content_id_;
+  base::Optional<bool> incremental_decode_needed_;
 
   // Caches frame state information.
   Vector<DeferredFrameData> frame_data_;

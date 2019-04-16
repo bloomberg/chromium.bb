@@ -155,6 +155,19 @@ bool BitmapImage::GetHotSpot(IntPoint& hot_spot) const {
   return decoder_ && decoder_->HotSpot(hot_spot);
 }
 
+// We likely don't need to confirm that this is the first time all data has
+// been received as a way to avoid reporting the UMA multiple times for the
+// same image. However, we err on the side of caution.
+bool BitmapImage::ShouldReportByteSizeUMAs(bool data_now_completely_received) {
+  if (!decoder_)
+    return false;
+  // Ensures that refactoring to check truthiness of ByteSize() method is
+  // equivalent to the previous use of Data() and does not mess up UMAs.
+  DCHECK_EQ(!decoder_->ByteSize(), !decoder_->Data());
+  return !all_data_received_ && data_now_completely_received &&
+         decoder_->ByteSize() && IsSizeAvailable();
+}
+
 Image::SizeAvailability BitmapImage::SetData(scoped_refptr<SharedBuffer> data,
                                              bool all_data_received) {
   if (!data)
@@ -199,14 +212,12 @@ Image::SizeAvailability BitmapImage::DataChanged(bool all_data_received) {
 
   // Report the image density metric right after we received all the data. The
   // SetData() call on the decoder_ (if there is one) should have decoded the
-  // images and we should know the image size at this point. We still check it
-  // here as a sanity check.
-  if (!all_data_received_ && all_data_received && decoder_ &&
-      decoder_->Data() && decoder_->FilenameExtension() == "jpg" &&
-      IsSizeAvailable()) {
+  // images and we should know the image size at this point.
+  if (ShouldReportByteSizeUMAs(all_data_received) &&
+      decoder_->FilenameExtension() == "jpg") {
     BitmapImageMetrics::CountImageJpegDensity(
         std::min(Size().Width(), Size().Height()),
-        ImageDensityInCentiBpp(Size(), decoder_->Data()->size()));
+        ImageDensityInCentiBpp(Size(), decoder_->ByteSize()));
   }
 
   // Feed all the data we've seen so far to the image decoder.
