@@ -6,7 +6,10 @@
 
 #include "base/command_line.h"
 #include "base/files/file_util.h"
+#include "base/metrics/histogram_samples.h"
+#include "base/metrics/statistics_recorder.h"
 #include "base/trace_event/trace_event.h"
+#include "chrome/test/base/test_switches.h"
 #include "content/public/browser/tracing_controller.h"
 #include "services/tracing/public/cpp/trace_event_agent.h"
 #include "ui/compositor/compositor_switches.h"
@@ -72,7 +75,29 @@ void PerformanceTest::TearDownOnMainThread() {
     runloop.Run();
     CHECK(result);
   }
+  bool print = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kPerfTestPrintUmaMeans);
+  LOG_IF(INFO, print) << "=== Histogram Means ===";
+  for (auto name : GetUMAHistogramNames()) {
+    EXPECT_TRUE(HasHistogram(name)) << "missing histogram:" << name;
+    LOG_IF(INFO, print) << name << ": " << GetHistogramMean(name);
+  }
+  LOG_IF(INFO, print) << "=== End Histogram Means ===";
+
   InProcessBrowserTest::TearDownOnMainThread();
+}
+
+float PerformanceTest::GetHistogramMean(const std::string& name) {
+  auto* histogram = base::StatisticsRecorder::FindHistogram(name);
+  if (!histogram)
+    return 0;
+  auto samples = histogram->SnapshotSamples();
+  DCHECK_NE(0, samples->TotalCount());
+  return static_cast<float>(samples->sum()) / samples->TotalCount();
+}
+
+bool PerformanceTest::HasHistogram(const std::string& name) {
+  return !!base::StatisticsRecorder::FindHistogram(name);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
