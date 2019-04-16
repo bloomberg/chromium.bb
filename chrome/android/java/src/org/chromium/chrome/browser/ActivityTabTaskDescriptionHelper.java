@@ -225,8 +225,9 @@ public class ActivityTabTaskDescriptionHelper {
     public void updateTaskDescription(String label, Bitmap icon) {
         int color = mDefaultThemeColor;
         if (mCurrentTab != null) {
-            TabThemeColorHelper tabTheme = TabThemeColorHelper.get(mCurrentTab);
-            if (!tabTheme.isDefaultColor()) color = tabTheme.getColor();
+            if (!TabThemeColorHelper.isDefaultColorUsed(mCurrentTab)) {
+                color = TabThemeColorHelper.getColor(mCurrentTab);
+            }
         }
         ApiCompatibilityUtils.setTaskDescription(mActivity, label, icon, color);
     }
