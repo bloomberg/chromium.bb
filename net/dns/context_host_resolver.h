@@ -21,23 +21,26 @@ namespace net {
 
 class DnsClient;
 struct DnsConfig;
+class HostCache;
 class HostResolverManager;
 struct ProcTaskParams;
 class URLRequestContext;
 
-// Wrapper for HostResolverManager that sets per-context parameters for created
-// requests. Except for tests, typically only interacted with through the
-// HostResolver interface.
+// Wrapper for HostResolverManager, expected to be owned by a URLRequestContext,
+// that sets per-URLRequestContext parameters for created requests. Except for
+// tests, typically only interacted with through the HostResolver interface.
 //
 // See HostResolver::Create[...]() methods for construction.
 class NET_EXPORT ContextHostResolver : public HostResolver {
  public:
   // Creates a ContextHostResolver that forwards all of its requests through
-  // |manager|.
-  explicit ContextHostResolver(HostResolverManager* manager);
+  // |manager|. Requests will be cached using |host_cache| if not null.
+  explicit ContextHostResolver(HostResolverManager* manager,
+                               std::unique_ptr<HostCache> host_cache);
   // Same except the created resolver will own its own HostResolverManager.
   explicit ContextHostResolver(
-      std::unique_ptr<HostResolverManager> owned_manager);
+      std::unique_ptr<HostResolverManager> owned_manager,
+      std::unique_ptr<HostCache> host_cache);
   ~ContextHostResolver() override;
 
   // HostResolver methods:
@@ -91,6 +94,8 @@ class NET_EXPORT ContextHostResolver : public HostResolver {
   std::unordered_set<WrappedRequest*> active_requests_;
 
   URLRequestContext* context_ = nullptr;
+  // TODO(crbug.com/934402): Use this cache for resolves.
+  std::unique_ptr<HostCache> host_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(ContextHostResolver);
 };

@@ -1360,7 +1360,8 @@ void NetworkContext::CreateHostResolver(
 
     private_internal_resolver =
         network_service_->host_resolver_factory()->CreateStandaloneResolver(
-            url_request_context_->net_log(), options, "");
+            url_request_context_->net_log(), options, "",
+            false /* enable_caching */);
     private_internal_resolver->SetRequestContext(url_request_context_);
     internal_resolver = private_internal_resolver.get();
 

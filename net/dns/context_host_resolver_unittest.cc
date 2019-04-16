@@ -79,7 +79,8 @@ TEST_F(ContextHostResolverTest, Resolve) {
                      false /* delay */, &context);
   SetMockDnsRules(std::move(rules));
 
-  auto resolver = std::make_unique<ContextHostResolver>(manager_.get());
+  auto resolver = std::make_unique<ContextHostResolver>(
+      manager_.get(), nullptr /* host_cache */);
   resolver->SetRequestContext(&context);
   std::unique_ptr<HostResolver::ResolveHostRequest> request =
       resolver->CreateRequest(HostPortPair("example.com", 100),
@@ -106,7 +107,8 @@ TEST_F(ContextHostResolverTest, DestroyRequest) {
       MockDnsClientRule::Result(MockDnsClientRule::EMPTY), false /* delay */);
   SetMockDnsRules(std::move(rules));
 
-  auto resolver = std::make_unique<ContextHostResolver>(manager_.get());
+  auto resolver = std::make_unique<ContextHostResolver>(
+      manager_.get(), nullptr /* host_cache */);
   std::unique_ptr<HostResolver::ResolveHostRequest> request =
       resolver->CreateRequest(HostPortPair("example.com", 100),
                               NetLogWithSource(), base::nullopt);
@@ -148,11 +150,13 @@ TEST_F(ContextHostResolverTest, DestroyResolver) {
       MockDnsClientRule::Result(MockDnsClientRule::EMPTY), false /* delay */);
   SetMockDnsRules(std::move(rules));
 
-  auto resolver1 = std::make_unique<ContextHostResolver>(manager_.get());
+  auto resolver1 = std::make_unique<ContextHostResolver>(
+      manager_.get(), nullptr /* host_cache */);
   std::unique_ptr<HostResolver::ResolveHostRequest> request1 =
       resolver1->CreateRequest(HostPortPair("example.com", 100),
                                NetLogWithSource(), base::nullopt);
-  auto resolver2 = std::make_unique<ContextHostResolver>(manager_.get());
+  auto resolver2 = std::make_unique<ContextHostResolver>(
+      manager_.get(), nullptr /* host_cache */);
   std::unique_ptr<HostResolver::ResolveHostRequest> request2 =
       resolver2->CreateRequest(HostPortPair("google.com", 100),
                                NetLogWithSource(), base::nullopt);
@@ -194,11 +198,13 @@ TEST_F(ContextHostResolverTest, DestroyResolver_RemainingRequests) {
   SetMockDnsRules(std::move(rules));
 
   // Make ResolveHostRequests the same hostname for both resolvers.
-  auto resolver1 = std::make_unique<ContextHostResolver>(manager_.get());
+  auto resolver1 = std::make_unique<ContextHostResolver>(
+      manager_.get(), nullptr /* host_cache */);
   std::unique_ptr<HostResolver::ResolveHostRequest> request1 =
       resolver1->CreateRequest(HostPortPair("example.com", 100),
                                NetLogWithSource(), base::nullopt);
-  auto resolver2 = std::make_unique<ContextHostResolver>(manager_.get());
+  auto resolver2 = std::make_unique<ContextHostResolver>(
+      manager_.get(), nullptr /* host_cache */);
   std::unique_ptr<HostResolver::ResolveHostRequest> request2 =
       resolver2->CreateRequest(HostPortPair("example.com", 100),
                                NetLogWithSource(), base::nullopt);
@@ -237,7 +243,8 @@ TEST_F(ContextHostResolverTest, DestroyResolver_CompletedRequests) {
       MockDnsClientRule::Result(MockDnsClientRule::EMPTY), false /* delay */);
   SetMockDnsRules(std::move(rules));
 
-  auto resolver = std::make_unique<ContextHostResolver>(manager_.get());
+  auto resolver = std::make_unique<ContextHostResolver>(
+      manager_.get(), nullptr /* host_cache */);
   std::unique_ptr<HostResolver::ResolveHostRequest> request =
       resolver->CreateRequest(HostPortPair("example.com", 100),
                               NetLogWithSource(), base::nullopt);

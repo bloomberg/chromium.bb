@@ -98,16 +98,19 @@ HostResolver::Options::Options()
 
 std::unique_ptr<HostResolver> HostResolver::Factory::CreateResolver(
     HostResolverManager* manager,
-    base::StringPiece host_mapping_rules) {
-  return HostResolver::CreateResolver(manager, host_mapping_rules);
+    base::StringPiece host_mapping_rules,
+    bool enable_caching) {
+  return HostResolver::CreateResolver(manager, host_mapping_rules,
+                                      enable_caching);
 }
 
 std::unique_ptr<HostResolver> HostResolver::Factory::CreateStandaloneResolver(
     NetLog* net_log,
     const Options& options,
-    base::StringPiece host_mapping_rules) {
-  return HostResolver::CreateStandaloneResolver(net_log, options,
-                                                host_mapping_rules);
+    base::StringPiece host_mapping_rules,
+    bool enable_caching) {
+  return HostResolver::CreateStandaloneResolver(
+      net_log, options, host_mapping_rules, enable_caching);
 }
 
 HostResolver::~HostResolver() = default;
@@ -173,10 +176,13 @@ const URLRequestContext* HostResolver::GetContextForTesting() const {
 // static
 std::unique_ptr<HostResolver> HostResolver::CreateResolver(
     HostResolverManager* manager,
-    base::StringPiece host_mapping_rules) {
+    base::StringPiece host_mapping_rules,
+    bool enable_caching) {
   DCHECK(manager);
 
-  auto resolver = std::make_unique<ContextHostResolver>(manager);
+  auto cache = enable_caching ? HostCache::CreateDefaultCache() : nullptr;
+  auto resolver =
+      std::make_unique<ContextHostResolver>(manager, std::move(cache));
 
   if (host_mapping_rules.empty())
     return resolver;
@@ -190,10 +196,11 @@ std::unique_ptr<HostResolver> HostResolver::CreateResolver(
 std::unique_ptr<HostResolver> HostResolver::CreateStandaloneResolver(
     NetLog* net_log,
     base::Optional<Options> options,
-    base::StringPiece host_mapping_rules) {
-  auto resolver = std::make_unique<ContextHostResolver>(
-      std::make_unique<HostResolverManager>(
-          std::move(options).value_or(Options()), net_log));
+    base::StringPiece host_mapping_rules,
+    bool enable_caching) {
+  std::unique_ptr<ContextHostResolver> resolver =
+      CreateStandaloneContextResolver(net_log, std::move(options),
+                                      enable_caching);
 
   if (host_mapping_rules.empty())
     return resolver;
@@ -206,10 +213,14 @@ std::unique_ptr<HostResolver> HostResolver::CreateStandaloneResolver(
 // static
 std::unique_ptr<ContextHostResolver>
 HostResolver::CreateStandaloneContextResolver(NetLog* net_log,
-                                              base::Optional<Options> options) {
+                                              base::Optional<Options> options,
+                                              bool enable_caching) {
+  auto cache = enable_caching ? HostCache::CreateDefaultCache() : nullptr;
+
   return std::make_unique<ContextHostResolver>(
       std::make_unique<HostResolverManager>(
-          std::move(options).value_or(Options()), net_log));
+          std::move(options).value_or(Options()), net_log),
+      std::move(cache));
 }
 
 // static

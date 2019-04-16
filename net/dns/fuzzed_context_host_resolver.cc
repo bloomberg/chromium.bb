@@ -29,6 +29,7 @@
 #include "net/dns/dns_client.h"
 #include "net/dns/dns_config.h"
 #include "net/dns/dns_hosts.h"
+#include "net/dns/host_cache.h"
 #include "net/dns/host_resolver_manager.h"
 #include "net/dns/host_resolver_proc.h"
 #include "net/dns/mdns_client.h"
@@ -346,11 +347,13 @@ class FuzzedHostResolverManager : public HostResolverManager {
 FuzzedContextHostResolver::FuzzedContextHostResolver(
     const Options& options,
     NetLog* net_log,
-    base::FuzzedDataProvider* data_provider)
+    base::FuzzedDataProvider* data_provider,
+    bool enable_caching)
     : ContextHostResolver(
           std::make_unique<FuzzedHostResolverManager>(options,
                                                       net_log,
-                                                      data_provider)),
+                                                      data_provider),
+          enable_caching ? HostCache::CreateDefaultCache() : nullptr),
       data_provider_(data_provider),
       socket_factory_(data_provider),
       net_log_(net_log) {}

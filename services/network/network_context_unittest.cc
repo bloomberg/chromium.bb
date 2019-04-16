@@ -2993,8 +2993,8 @@ TEST_F(NetworkContextTest, ResolveHost_CloseClient) {
             network_context->GetNumOutstandingResolveHostRequestsForTesting());
 }
 
-// Test factory of net::HostResolvers. Creates standard
-// net::ContextHostResolver. Keeps pointers to all created resolvers.
+// Test factory of net::HostResolvers. Creates standard (but potentially non-
+// caching) net::ContextHostResolver. Keeps pointers to all created resolvers.
 class TestResolverFactory : public net::HostResolver::Factory {
  public:
   static TestResolverFactory* CreateAndSetFactory(NetworkService* service) {
@@ -3006,9 +3006,11 @@ class TestResolverFactory : public net::HostResolver::Factory {
 
   std::unique_ptr<net::HostResolver> CreateResolver(
       net::HostResolverManager* manager,
-      base::StringPiece host_mapping_rules) override {
+      base::StringPiece host_mapping_rules,
+      bool enable_caching) override {
     DCHECK(host_mapping_rules.empty());
-    auto resolver = std::make_unique<net::ContextHostResolver>(manager);
+    auto resolver = std::make_unique<net::ContextHostResolver>(
+        manager, nullptr /* host_cache */);
     resolvers_.push_back(resolver.get());
     return resolver;
   }
@@ -3016,10 +3018,12 @@ class TestResolverFactory : public net::HostResolver::Factory {
   std::unique_ptr<net::HostResolver> CreateStandaloneResolver(
       net::NetLog* net_log,
       const net::HostResolver::Options& options,
-      base::StringPiece host_mapping_rules) override {
+      base::StringPiece host_mapping_rules,
+      bool enable_caching) override {
     DCHECK(host_mapping_rules.empty());
     std::unique_ptr<net::ContextHostResolver> resolver =
-        net::HostResolver::CreateStandaloneContextResolver(net_log, options);
+        net::HostResolver::CreateStandaloneContextResolver(net_log, options,
+                                                           enable_caching);
     resolvers_.push_back(resolver.get());
     return resolver;
   }
