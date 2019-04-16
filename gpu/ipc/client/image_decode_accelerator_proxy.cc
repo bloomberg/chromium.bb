@@ -69,7 +69,7 @@ bool GetJpegSubsampling(const media::JpegParseResult& parse_result,
   const uint8_t comp2_v =
       parse_result.frame_header.components[2].vertical_sampling_factor;
 
-  if (comp1_h != 1u || comp1_v != 1u || comp2_h == 1u || comp2_v == 1u)
+  if (comp1_h != 1u || comp1_v != 1u || comp2_h != 1u || comp2_v != 1u)
     return false;
 
   if (comp0_h == 2u && comp0_v == 2u) {
