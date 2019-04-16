@@ -166,6 +166,7 @@ subdir('tests')
 subdir('data')
 subdir('man')
 
-configure_file(output: 'config.h', install: false, configuration: config_h)
+configure_file(output: 'config.h', configuration: config_h)
+
 
 # TODO: process doc/doxygen/*.doxygen.in

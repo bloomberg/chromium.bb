@@ -45,7 +45,6 @@ if get_option('shell-ivi')
 	ivi_test_ini = configure_file(
 		input: '../ivi-shell/weston.ini.in',
 		output: 'weston-ivi-test.ini',
-		install: false,
 		configuration: ivi_test_config
 	)
 endif
