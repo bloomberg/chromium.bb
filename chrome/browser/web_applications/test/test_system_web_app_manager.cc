@@ -21,4 +21,13 @@ void TestSystemWebAppManager::SetSystemApps(
   SetSystemAppsForTesting(std::move(system_app_urls));
 }
 
+void TestSystemWebAppManager::SetUpdatePolicy(
+    SystemWebAppManager::UpdatePolicy policy) {
+  SetUpdatePolicyForTesting(policy);
+}
+
+const base::Version& TestSystemWebAppManager::CurrentVersion() const {
+  return current_version_;
+}
+
 }  // namespace web_app

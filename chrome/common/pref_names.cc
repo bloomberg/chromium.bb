@@ -1646,6 +1646,11 @@ const char kWebAppInstallForceList[] = "profile.web_app.install.forcelist";
 // Dictionary that maps web app URLs to Chrome extension IDs.
 const char kWebAppsExtensionIDs[] = "web_apps.extension_ids";
 
+// A string representing the last version of Chrome that System Web Apps were
+// updated for.
+const char kSystemWebAppLastUpdateVersion[] =
+    "web_apps.system_web_app_last_update";
+
 // The default audio capture device used by the Media content setting.
 const char kDefaultAudioCaptureDevice[] = "media.default_audio_capture_device";
 

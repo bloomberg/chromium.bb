@@ -164,6 +164,7 @@ void WebAppProvider::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   ExtensionIdsMap::RegisterProfilePrefs(registry);
   WebAppPolicyManager::RegisterProfilePrefs(registry);
+  SystemWebAppManager::RegisterProfilePrefs(registry);
 }
 
 // static
