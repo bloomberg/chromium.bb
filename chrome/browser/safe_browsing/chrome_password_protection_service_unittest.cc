@@ -52,6 +52,8 @@ using PasswordReuseDialogInteraction =
 using PasswordReuseLookup = GaiaPasswordReuse::PasswordReuseLookup;
 using PasswordReuseEvent =
     safe_browsing::LoginReputationClientRequest::PasswordReuseEvent;
+using ::testing::_;
+using ::testing::Return;
 
 namespace OnPolicySpecifiedPasswordReuseDetected = extensions::api::
     safe_browsing_private::OnPolicySpecifiedPasswordReuseDetected;
@@ -365,6 +367,7 @@ TEST_F(ChromePasswordProtectionServiceTest,
       PasswordReuseEvent::SIGN_IN_PASSWORD, &reason));
   EXPECT_EQ(RequestOutcome::USER_NOT_SIGNED_IN, reason);
 
+  // Sets up the account as a gmail account as there is no hosted domain.
   CoreAccountInfo account_info = SetPrimaryAccount(kTestEmail);
   SetUpSyncAccount(kNoHostedDomainFound, account_info);
 
@@ -389,22 +392,21 @@ TEST_F(ChromePasswordProtectionServiceTest,
       LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
       PasswordReuseEvent::SIGN_IN_PASSWORD, &reason));
 
-  // If sync password entry pinging is disabled by policy,
-  // |IsPingingEnabled(..)| should return false.
+  // Even if sync password entry pinging is disabled by policy,
+  // |IsPingingEnabled(..)| should still default to true if the
+  // the password reuse type is SIGN_IN_PASSWORD.
   profile()->GetPrefs()->SetInteger(prefs::kPasswordProtectionWarningTrigger,
                                     PASSWORD_PROTECTION_OFF);
   service_->ConfigService(false /*incognito*/, false /*SBER*/);
-  EXPECT_FALSE(service_->IsPingingEnabled(
+  EXPECT_TRUE(service_->IsPingingEnabled(
       LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
       PasswordReuseEvent::SIGN_IN_PASSWORD, &reason));
-  EXPECT_EQ(RequestOutcome::TURNED_OFF_BY_ADMIN, reason);
 
   profile()->GetPrefs()->SetInteger(prefs::kPasswordProtectionWarningTrigger,
                                     PASSWORD_REUSE);
-  EXPECT_FALSE(service_->IsPingingEnabled(
+  EXPECT_TRUE(service_->IsPingingEnabled(
       LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
       PasswordReuseEvent::SIGN_IN_PASSWORD, &reason));
-  EXPECT_EQ(RequestOutcome::PASSWORD_ALERT_MODE, reason);
 }
 
 TEST_F(ChromePasswordProtectionServiceTest,
@@ -993,7 +995,7 @@ TEST_F(ChromePasswordProtectionServiceTest,
 }
 
 TEST_F(ChromePasswordProtectionServiceTest,
-       VerifyOnPolicySpecifiedPasswordReuseDetectedEventForPasswordReuse) {
+       VerifyTriggerOnPolicySpecifiedPasswordReuseDetectedForGsuiteUser) {
   TestExtensionEventObserver event_observer(test_event_router_);
   CoreAccountInfo account_info = SetPrimaryAccount(kTestEmail);
   SetUpSyncAccount("example.com", account_info);
@@ -1001,10 +1003,9 @@ TEST_F(ChromePasswordProtectionServiceTest,
                                     PASSWORD_REUSE);
   NavigateAndCommit(GURL(kPasswordReuseURL));
 
-  service_->MaybeStartProtectedPasswordEntryRequest(
-      web_contents(), web_contents()->GetLastCommittedURL(),
-      PasswordReuseEvent::SIGN_IN_PASSWORD, {},
-      /*password_field_exists =*/true);
+  service_->MaybeReportPasswordReuseDetected(
+      web_contents(), PasswordReuseEvent::ENTERPRISE_PASSWORD,
+      /*is_phishing_url =*/true);
   base::RunLoop().RunUntilIdle();
 
   ASSERT_EQ(1, test_event_router_->GetEventCount(
@@ -1012,42 +1013,52 @@ TEST_F(ChromePasswordProtectionServiceTest,
   auto captured_args = event_observer.PassEventArgs().GetList()[0].Clone();
   EXPECT_EQ(kPasswordReuseURL, captured_args.FindKey("url")->GetString());
   EXPECT_EQ("foo@example.com", captured_args.FindKey("userName")->GetString());
-  EXPECT_FALSE(captured_args.FindKey("isPhishingUrl")->GetBool());
+  EXPECT_TRUE(captured_args.FindKey("isPhishingUrl")->GetBool());
+
+  // If the reused password is not Enterprise password but the account is
+  // GSuite, event should be sent.
+  service_->MaybeReportPasswordReuseDetected(
+      web_contents(), PasswordReuseEvent::OTHER_GAIA_PASSWORD,
+      /*is_phishing_url =*/true);
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_EQ(2, test_event_router_->GetEventCount(
+                   OnPolicySpecifiedPasswordReuseDetected::kEventName));
 
   // If user is in incognito mode, no event should be sent.
   service_->ConfigService(true /*incognito*/, false /*SBER*/);
-  service_->MaybeStartProtectedPasswordEntryRequest(
-      web_contents(), web_contents()->GetLastCommittedURL(),
-      PasswordReuseEvent::SIGN_IN_PASSWORD, {},
-      /*password_field_exists =*/true);
+  service_->MaybeReportPasswordReuseDetected(
+      web_contents(), PasswordReuseEvent::ENTERPRISE_PASSWORD,
+      /*is_phishing_url =*/true);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(1, test_event_router_->GetEventCount(
+  EXPECT_EQ(2, test_event_router_->GetEventCount(
                    OnPolicySpecifiedPasswordReuseDetected::kEventName));
 }
 
 TEST_F(ChromePasswordProtectionServiceTest,
-       VerifyOnPolicySpecifiedPasswordReuseDetectedEventForPhishingReuse) {
+       VerifyTriggerOnPolicySpecifiedPasswordReuseDetectedForGmailUser) {
   TestExtensionEventObserver event_observer(test_event_router_);
-  CoreAccountInfo account_info = SetPrimaryAccount(kTestEmail);
-  SetUpSyncAccount("example.com", account_info);
+
+  // If user is a Gmail user and enterprise password is used, event should be
+  // sent.
+  CoreAccountInfo gmail_account_info = SetPrimaryAccount(kTestGmail);
+  SetUpSyncAccount(kNoHostedDomainFound, gmail_account_info);
   profile()->GetPrefs()->SetInteger(prefs::kPasswordProtectionWarningTrigger,
                                     PASSWORD_REUSE);
-  NavigateAndCommit(GURL(kPhishingURL));
-  service_->OnModalWarningShownForSignInPassword(web_contents(),
-                                                 "verdict_token");
+  NavigateAndCommit(GURL(kPasswordReuseURL));
+
+  service_->MaybeReportPasswordReuseDetected(
+      web_contents(), PasswordReuseEvent::ENTERPRISE_PASSWORD,
+      /*is_phishing_url =*/true);
   base::RunLoop().RunUntilIdle();
-
-  ASSERT_EQ(1, test_event_router_->GetEventCount(
+  EXPECT_EQ(1, test_event_router_->GetEventCount(
                    OnPolicySpecifiedPasswordReuseDetected::kEventName));
-  auto captured_args = event_observer.PassEventArgs().GetList()[0].Clone();
-  EXPECT_EQ(kPhishingURL, captured_args.FindKey("url")->GetString());
-  EXPECT_EQ("foo@example.com", captured_args.FindKey("userName")->GetString());
-  EXPECT_TRUE(captured_args.FindKey("isPhishingUrl")->GetBool());
 
-  // If user is in incognito mode, no event should be sent.
-  service_->ConfigService(true /*incognito*/, false /*SBER*/);
-  service_->OnModalWarningShownForSignInPassword(web_contents(),
-                                                 "verdict_token");
+  // If user is a Gmail user and not an enterprise password is used , no event
+  // should be sent.
+  service_->MaybeReportPasswordReuseDetected(
+      web_contents(), PasswordReuseEvent::OTHER_GAIA_PASSWORD,
+      /*is_phishing_url =*/true);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, test_event_router_->GetEventCount(
                    OnPolicySpecifiedPasswordReuseDetected::kEventName));
