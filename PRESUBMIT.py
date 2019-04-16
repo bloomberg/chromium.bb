@@ -2350,6 +2350,43 @@ def _CheckUselessForwardDeclarations(input_api, output_api):
 
   return results
 
+def _CheckAndroidDebuggableBuild(input_api, output_api):
+  """Checks that code uses BuildInfo.isDebugAndroid() instead of
+     Build.TYPE.equals('') or ''.equals(Build.TYPE) to check if
+     this is a debuggable build of Android.
+  """
+  build_type_check_pattern = input_api.re.compile(
+      r'\bBuild\.TYPE\.equals\(|\.equals\(\s*\bBuild\.TYPE\)')
+
+  errors = []
+
+  sources = lambda affected_file: input_api.FilterSourceFile(
+      affected_file,
+      black_list=(_EXCLUDED_PATHS +
+                  _TEST_CODE_EXCLUDED_PATHS +
+                  input_api.DEFAULT_BLACK_LIST +
+                  (r"^android_webview[\\/]support_library[\\/]"
+                      "boundary_interfaces[\\/]",
+                   r"^chrome[\\/]android[\\/]webapk[\\/].*",
+                   r'^third_party[\\/].*',
+                   r"tools[\\/]android[\\/]customtabs_benchmark[\\/].*",
+                   r"webview[\\/]chromium[\\/]License.*",)),
+      white_list=[r'.*\.java$'])
+
+  for f in input_api.AffectedSourceFiles(sources):
+    for line_num, line in f.ChangedContents():
+      if build_type_check_pattern.search(line):
+        errors.append("%s:%d" % (f.LocalPath(), line_num))
+
+  results = []
+
+  if errors:
+    results.append(output_api.PresubmitPromptWarning(
+        'Build.TYPE.equals or .equals(Build.TYPE) usage is detected.'
+        ' Please use BuildInfo.isDebugAndroid() instead.',
+        errors))
+
+  return results
 
 # TODO: add unit tests
 def _CheckAndroidToastUsage(input_api, output_api):
@@ -3190,6 +3227,7 @@ def _AndroidSpecificOnUploadChecks(input_api, output_api):
   """Groups upload checks that target android code."""
   results = []
   results.extend(_CheckAndroidCrLogUsage(input_api, output_api))
+  results.extend(_CheckAndroidDebuggableBuild(input_api, output_api))
   results.extend(_CheckAndroidNewMdpiAssetLocation(input_api, output_api))
   results.extend(_CheckAndroidToastUsage(input_api, output_api))
   results.extend(_CheckAndroidTestJUnitInheritance(input_api, output_api))

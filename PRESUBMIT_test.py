@@ -1129,6 +1129,57 @@ class AndroidJUnitBaseClassTest(unittest.TestCase):
     self.assertTrue('IncorrectMultiLineTest.java:2' in msgs[0].items,
                     'IncorrectMultiLineTest not found in errors')
 
+class AndroidDebuggableBuildTest(unittest.TestCase):
+
+  def testCheckAndroidDebuggableBuild(self):
+    mock_input_api = MockInputApi()
+    mock_output_api = MockOutputApi()
+
+    mock_input_api.files = [
+      MockAffectedFile('RandomStuff.java', [
+        'random stuff'
+      ]),
+      MockAffectedFile('CorrectUsage.java', [
+        'import org.chromium.base.BuildInfo;',
+        'some random stuff',
+        'boolean isOsDebuggable = BuildInfo.isDebugAndroid();',
+      ]),
+      MockAffectedFile('JustCheckUserdebugBuild.java', [
+        'import android.os.Build;',
+        'some random stuff',
+        'boolean isOsDebuggable = Build.TYPE.equals("userdebug")',
+      ]),
+      MockAffectedFile('JustCheckEngineeringBuild.java', [
+        'import android.os.Build;',
+        'some random stuff',
+        'boolean isOsDebuggable = "eng".equals(Build.TYPE)',
+      ]),
+      MockAffectedFile('UsedBuildType.java', [
+        'import android.os.Build;',
+        'some random stuff',
+        'boolean isOsDebuggable = Build.TYPE.equals("userdebug")'
+            '|| "eng".equals(Build.TYPE)',
+      ]),
+      MockAffectedFile('UsedExplicitBuildType.java', [
+        'some random stuff',
+        'boolean isOsDebuggable = android.os.Build.TYPE.equals("userdebug")'
+            '|| "eng".equals(android.os.Build.TYPE)',
+      ]),
+    ]
+
+    msgs = PRESUBMIT._CheckAndroidDebuggableBuild(
+        mock_input_api, mock_output_api)
+    self.assertEqual(1, len(msgs),
+                     'Expected %d items, found %d: %s'
+                     % (1, len(msgs), msgs))
+    self.assertEqual(4, len(msgs[0].items),
+                     'Expected %d items, found %d: %s'
+                     % (4, len(msgs[0].items), msgs[0].items))
+    self.assertTrue('JustCheckUserdebugBuild.java:3' in msgs[0].items)
+    self.assertTrue('JustCheckEngineeringBuild.java:3' in msgs[0].items)
+    self.assertTrue('UsedBuildType.java:3' in msgs[0].items)
+    self.assertTrue('UsedExplicitBuildType.java:2' in msgs[0].items)
+
 
 class LogUsageTest(unittest.TestCase):
 
