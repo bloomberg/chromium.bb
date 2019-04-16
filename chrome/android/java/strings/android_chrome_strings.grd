@@ -1038,6 +1038,9 @@ Your Google account may have other forms of browsing history like searches and a
       <message name="IDS_WEBSITE_SETTINGS_BLOCKED_GROUP_HEADING_SOUND" desc="The heading for a list of websites that have been muted.">
         Muted
       </message>
+      <message name="IDS_WEBSITE_SETTINGS_MANAGED_GROUP_HEADING" desc="The heading for a list of websites that are managed by an external app.">
+        Managed by app
+      </message>
       <message name="IDS_WEBSITE_SETTINGS_ALLOWED_GROUP_HEADING" desc="The heading for a list of websites that have been allowed to use a particular permission, e.g. allowed to access a user's location.">
         Allowed
       </message>
