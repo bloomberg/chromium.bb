@@ -32,7 +32,9 @@ class StackingNotificationCounterView : public views::View {
   explicit StackingNotificationCounterView(views::ButtonListener* listener);
   ~StackingNotificationCounterView() override;
 
-  void SetCount(int total_notification_count, int stacked_notification_count);
+  // Sets the number of total notifications and hidden notifications. Returns
+  // true if the count was updated from the previous SetCount() call.
+  bool SetCount(int total_notification_count, int stacked_notification_count);
 
   // views::View:
   void OnPaint(gfx::Canvas* canvas) override;

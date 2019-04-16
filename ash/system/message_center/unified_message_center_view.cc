@@ -193,8 +193,12 @@ StackingNotificationCounterView::StackingNotificationCounterView(
 
 StackingNotificationCounterView::~StackingNotificationCounterView() = default;
 
-void StackingNotificationCounterView::SetCount(int total_notification_count,
+bool StackingNotificationCounterView::SetCount(int total_notification_count,
                                                int stacked_notification_count) {
+  if (total_notification_count == total_notification_count_ &&
+      stacked_notification_count == stacked_notification_count_)
+    return false;
+
   total_notification_count_ = total_notification_count;
   stacked_notification_count_ = stacked_notification_count;
 
@@ -213,6 +217,7 @@ void StackingNotificationCounterView::SetCount(int total_notification_count,
   }
 
   SchedulePaint();
+  return true;
 }
 
 void StackingNotificationCounterView::OnPaint(gfx::Canvas* canvas) {
@@ -357,10 +362,10 @@ void UnifiedMessageCenterView::OnMessageCenterScrolled() {
   model_->set_notification_target_mode(
       UnifiedSystemTrayModel::NotificationTargetMode::LAST_POSITION);
 
-  const bool was_visible = stacking_counter_->visible();
-  stacking_counter_->SetCount(message_list_view_->GetTotalNotificationCount(),
-                              GetStackedNotificationCount());
-  if (was_visible != stacking_counter_->visible()) {
+  bool was_count_updated = stacking_counter_->SetCount(
+      message_list_view_->GetTotalNotificationCount(),
+      GetStackedNotificationCount());
+  if (was_count_updated) {
     const int previous_y = scroller_->y();
     Layout();
     // Adjust scroll position when counter visibility is changed so that
