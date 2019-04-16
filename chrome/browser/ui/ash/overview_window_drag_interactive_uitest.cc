@@ -286,7 +286,9 @@ IN_PROC_BROWSER_TEST_P(OverviewWindowDragTest, NormalDrag) {
   generator.Wait();
 }
 
-IN_PROC_BROWSER_TEST_P(OverviewWindowDragTest, DragToClose) {
+// The test is flaky because close notification is not the right singal.
+// crbug.com/953355
+IN_PROC_BROWSER_TEST_P(OverviewWindowDragTest, DISABLED_DragToClose) {
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
   aura::Window* browser_window = browser_view->GetWidget()->GetNativeWindow();
   ui_controls::SendKeyPress(browser_window, ui::VKEY_MEDIA_LAUNCH_APP1,
