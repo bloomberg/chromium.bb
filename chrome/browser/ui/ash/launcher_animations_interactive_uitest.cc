@@ -36,7 +36,7 @@ class LauncherAnimationsTest : public UIPerformanceTest {
   // UIPerformanceTest:
   std::vector<std::string> GetUMAHistogramNames() const override {
     return {
-        "Apps.StateTransition.AnimationSmoothness.ClamshellMode",
+        "Apps.StateTransition.AnimationSmoothness.TabletMode",
     };
   }
 
