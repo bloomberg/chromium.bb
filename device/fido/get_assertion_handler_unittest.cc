@@ -49,6 +49,8 @@ using TestGetAssertionRequestCallback = test::StatusAndValuesCallbackReceiver<
 
 }  // namespace
 
+using testing::_;
+
 // FidoGetAssertionHandlerTest allows testing GetAssertionRequestHandler against
 // MockFidoDevices injected via a ScopedFakeFidoDiscoveryFactory.
 class FidoGetAssertionHandlerTest : public ::testing::Test {
@@ -286,8 +288,9 @@ TEST_F(FidoGetAssertionHandlerTest, IncorrectRpIdHash) {
 
   discovery()->AddDevice(std::move(device));
 
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
-  EXPECT_FALSE(get_assertion_callback().was_called());
+  get_assertion_callback().WaitForCallback();
+  EXPECT_EQ(FidoReturnCode::kAuthenticatorResponseInvalid,
+            get_assertion_callback().status());
 }
 
 // Tests a scenario where the authenticator responds with credential ID that
@@ -310,8 +313,9 @@ TEST_F(FidoGetAssertionHandlerTest, InvalidCredential) {
 
   discovery()->AddDevice(std::move(device));
 
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
-  EXPECT_FALSE(get_assertion_callback().was_called());
+  get_assertion_callback().WaitForCallback();
+  EXPECT_EQ(FidoReturnCode::kAuthenticatorResponseInvalid,
+            get_assertion_callback().status());
 }
 
 // Tests a scenario where the authenticator responds with an empty credential.
@@ -356,8 +360,9 @@ TEST_F(FidoGetAssertionHandlerTest, IncorrectUserEntity) {
 
   discovery()->AddDevice(std::move(device));
 
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
-  EXPECT_FALSE(get_assertion_callback().was_called());
+  get_assertion_callback().WaitForCallback();
+  EXPECT_EQ(FidoReturnCode::kAuthenticatorResponseInvalid,
+            get_assertion_callback().status());
 }
 
 TEST_F(FidoGetAssertionHandlerTest,
@@ -662,6 +667,45 @@ TEST_F(FidoGetAssertionHandlerTest,
   EXPECT_TRUE(get_assertion_callback().was_called());
   EXPECT_EQ(FidoReturnCode::kUserConsentDenied,
             get_assertion_callback().status());
+}
+
+MATCHER_P(IsCtap2Command, expected_command, "") {
+  return !arg.empty() && arg[0] == base::strict_cast<uint8_t>(expected_command);
+}
+
+TEST_F(FidoGetAssertionHandlerTest, DeviceFailsImmediately) {
+  // Test that, when a device immediately returns an unexpected error, the
+  // request continues and waits for another device.
+
+  auto broken_device = MockFidoDevice::MakeCtapWithGetInfoExpectation();
+  EXPECT_CALL(
+      *broken_device,
+      DeviceTransactPtr(
+          IsCtap2Command(CtapRequestCommand::kAuthenticatorGetAssertion), _))
+      .WillOnce(::testing::DoAll(
+          ::testing::WithArg<1>(
+              ::testing::Invoke([this](FidoDevice::DeviceCallback& callback) {
+                std::vector<uint8_t> response = {static_cast<uint8_t>(
+                    CtapDeviceResponseCode::kCtap2ErrInvalidCBOR)};
+                base::ThreadTaskRunnerHandle::Get()->PostTask(
+                    FROM_HERE,
+                    base::BindOnce(std::move(callback), std::move(response)));
+
+                auto working_device =
+                    MockFidoDevice::MakeCtapWithGetInfoExpectation();
+                working_device->ExpectCtap2CommandAndRespondWith(
+                    CtapRequestCommand::kAuthenticatorGetAssertion,
+                    test_data::kTestGetAssertionResponse);
+                discovery()->AddDevice(std::move(working_device));
+              })),
+          ::testing::Return(0)));
+
+  auto request_handler = CreateGetAssertionHandlerCtap();
+  discovery()->WaitForCallToStartAndSimulateSuccess();
+  discovery()->AddDevice(std::move(broken_device));
+
+  get_assertion_callback().WaitForCallback();
+  EXPECT_EQ(FidoReturnCode::kSuccess, get_assertion_callback().status());
 }
 
 // Tests a scenario where authenticator of incorrect transport type was used to

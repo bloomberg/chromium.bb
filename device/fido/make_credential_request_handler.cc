@@ -244,7 +244,7 @@ void MakeCredentialRequestHandler::AuthenticatorRemoved(
 
 void MakeCredentialRequestHandler::HandleResponse(
     FidoAuthenticator* authenticator,
-    CtapDeviceResponseCode response_code,
+    CtapDeviceResponseCode status,
     base::Optional<AuthenticatorMakeCredentialResponse> response) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker_);
 
@@ -259,11 +259,22 @@ void MakeCredentialRequestHandler::HandleResponse(
          authenticator->WillNeedPINToMakeCredential(request_, observer()) ==
              MakeCredentialPINDisposition::kNoPIN);
 
+  const base::Optional<FidoReturnCode> maybe_result =
+      ConvertDeviceResponseCodeToFidoReturnCode(status);
+  if (!maybe_result) {
+    FIDO_LOG(ERROR) << "Ignoring status " << static_cast<int>(status)
+                    << " from " << authenticator->GetDisplayName();
+    return;
+  }
+
   state_ = State::kFinished;
   CancelActiveAuthenticators(authenticator->GetId());
 
-  if (response_code != CtapDeviceResponseCode::kSuccess) {
-    OnAuthenticatorResponse(authenticator, response_code, base::nullopt);
+  if (status != CtapDeviceResponseCode::kSuccess) {
+    FIDO_LOG(ERROR) << "Failing make credential request due to status "
+                    << static_cast<int>(status) << " from "
+                    << authenticator->GetDisplayName();
+    OnAuthenticatorResponse(authenticator, *maybe_result, base::nullopt);
     return;
   }
 
@@ -271,12 +282,16 @@ void MakeCredentialRequestHandler::HandleResponse(
       fido_parsing_utils::CreateSHA256Hash(request_.rp().rp_id());
 
   if (!response || response->GetRpIdHash() != rp_id_hash) {
-    OnAuthenticatorResponse(
-        authenticator, CtapDeviceResponseCode::kCtap2ErrOther, base::nullopt);
+    FIDO_LOG(ERROR) << "Failing assertion request due to bad response from "
+                    << authenticator->GetDisplayName();
+    OnAuthenticatorResponse(authenticator,
+                            FidoReturnCode::kAuthenticatorResponseInvalid,
+                            base::nullopt);
     return;
   }
 
-  OnAuthenticatorResponse(authenticator, response_code, std::move(response));
+  OnAuthenticatorResponse(authenticator, FidoReturnCode::kSuccess,
+                          std::move(response));
 }
 
 void MakeCredentialRequestHandler::HandleTouch(
