@@ -2489,6 +2489,11 @@
     "label": "//testing/libfuzzer/fuzzers:template_url_parser_fuzzer",
     "type": "fuzzer",
   },
+  "test_buildbucket_api_gpu_use_cases": {
+    "label": "//content/test:test_buildbucket_api_gpu_use_cases",
+    "script": "//testing/scripts/test_buildbucket_api_gpu_use_cases.py",
+    "type": "script",
+  },
   "test_config_and_dict": {
     "label": "//testing/libfuzzer/tests:test_config_and_dict",
     "type": "fuzzer",
