@@ -25,6 +25,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ui.DummyUiActivity;
 import org.chromium.chrome.test.ui.DummyUiActivityTestCase;
+import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -36,6 +37,7 @@ import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 @RunWith(ChromeJUnit4ClassRunner.class)
 public class TabGridContainerViewBinderTest extends DummyUiActivityTestCase {
     private static final int CONTAINER_HEIGHT = 56;
+    private TabGridContainerViewBinder mTabGridContainerViewHolder;
     private PropertyModel mContainerModel;
     private PropertyModelChangeProcessor mMCP;
     private TabListRecyclerView mRecyclerView;
@@ -95,7 +97,7 @@ public class TabGridContainerViewBinderTest extends DummyUiActivityTestCase {
 
     @Test
     @MediumTest
-    public void testShowWithAnimation() {
+    public void testShowWithAnimation() throws Exception {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mContainerModel.set(
                     TabListContainerProperties.VISIBILITY_LISTENER, mMockVisibilityListener);
@@ -112,13 +114,18 @@ public class TabGridContainerViewBinderTest extends DummyUiActivityTestCase {
         }
         assertThat(mIsAnimating, equalTo(true));
 
-        CriteriaHelper.pollUiThread(() -> mRecyclerView.getAlpha() == 1.0f);
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return mRecyclerView.getAlpha() == 1.0f;
+            }
+        });
     }
 
     @Test
     @MediumTest
     @UiThreadTest
-    public void testShowWithoutAnimation() {
+    public void testShowWithoutAnimation() throws Exception {
         mContainerModel.set(
                 TabListContainerProperties.VISIBILITY_LISTENER, mMockVisibilityListener);
 
@@ -134,7 +141,7 @@ public class TabGridContainerViewBinderTest extends DummyUiActivityTestCase {
 
     @Test
     @MediumTest
-    public void testHidesWithAnimation() {
+    public void testHidesWithAnimation() throws Exception {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mContainerModel.set(
                     TabListContainerProperties.VISIBILITY_LISTENER, mMockVisibilityListener);
@@ -159,14 +166,19 @@ public class TabGridContainerViewBinderTest extends DummyUiActivityTestCase {
         }
         assertThat(mIsAnimating, equalTo(true));
 
-        CriteriaHelper.pollUiThread(() -> mRecyclerView.getAlpha() == 0.0f);
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return mRecyclerView.getAlpha() == 0.0f;
+            }
+        });
         assertThat(mRecyclerView.getVisibility(), equalTo(View.INVISIBLE));
     }
 
     @Test
     @MediumTest
     @UiThreadTest
-    public void testHidesWithoutAnimation() {
+    public void testHidesWithoutAnimation() throws Exception {
         mContainerModel.set(
                 TabListContainerProperties.VISIBILITY_LISTENER, mMockVisibilityListener);
 
@@ -188,7 +200,7 @@ public class TabGridContainerViewBinderTest extends DummyUiActivityTestCase {
     @Test
     @MediumTest
     @UiThreadTest
-    public void testIsIncognitoSetsBackgroundColor() {
+    public void testIsIncognitoSetsBackgroundColor() throws Exception {
         mContainerModel.set(TabListContainerProperties.IS_INCOGNITO, true);
         assertThat(mRecyclerView.getBackground(), instanceOf(ColorDrawable.class));
         assertThat(((ColorDrawable) mRecyclerView.getBackground()).getColor(),
@@ -205,7 +217,7 @@ public class TabGridContainerViewBinderTest extends DummyUiActivityTestCase {
     @Test
     @MediumTest
     @UiThreadTest
-    public void testTopContainerHeightSetsTopMargin() {
+    public void testTopContainerHeightSetsTopMargin() throws Exception {
         assertThat(mRecyclerView.getLayoutParams(), instanceOf(FrameLayout.LayoutParams.class));
         assertThat(
                 ((FrameLayout.LayoutParams) mRecyclerView.getLayoutParams()).topMargin, equalTo(0));
@@ -218,7 +230,7 @@ public class TabGridContainerViewBinderTest extends DummyUiActivityTestCase {
     @Test
     @MediumTest
     @UiThreadTest
-    public void testBottomContainerHeightSetsBottomMargin() {
+    public void testBottomContainerHeightSetsBottomMargin() throws Exception {
         assertThat(mRecyclerView.getLayoutParams(), instanceOf(FrameLayout.LayoutParams.class));
         assertThat(((FrameLayout.LayoutParams) mRecyclerView.getLayoutParams()).bottomMargin,
                 equalTo(0));
