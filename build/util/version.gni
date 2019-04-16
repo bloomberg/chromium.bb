@@ -114,7 +114,7 @@ if (target_os == "mac") {
 
   chrome_version_name = chrome_version_full
 
-  lines_to_write = [
+  lines_to_write__deprecated = [
     "VersionName=$chrome_version_name",
     "Chrome=$chrome_version_code",
     "ChromeModern=$chrome_modern_version_code",
@@ -125,15 +125,35 @@ if (target_os == "mac") {
     "WebviewBeta=$webview_beta_version_code",
     "WebviewDev=$webview_dev_version_code",
   ]
+  lines_to_write = [
+    "VersionName: $chrome_version_name",
+    "Chrome: $chrome_version_code",
+    "ChromeModern: $chrome_modern_version_code",
+    "Monochrome: $monochrome_version_code",
+    "TrichromeChrome: $trichrome_version_code",
+    "MonochromeFP: $notouch_chrome_version_code",
+    "WebviewStable: $webview_stable_version_code",
+    "WebviewBeta: $webview_beta_version_code",
+    "WebviewDev: $webview_dev_version_code",
+  ]
 
   if (target_cpu == "arm64" || target_cpu == "x64") {
-    lines_to_write += [
+    lines_to_write__deprecated += [
       "Monochrome_64_32=$monochrome_64_32_version_code",
       "Monochrome_64=$monochrome_64_version_code",
       "TrichromeChrome_64_32=$trichrome_64_32_version_code",
       "TrichromeChrome_64=$trichrome_64_version_code",
     ]
+    lines_to_write += [
+      "Monochrome6432: $monochrome_64_32_version_code",
+      "Monochrome64: $monochrome_64_version_code",
+      "TrichromeChrome6432: $trichrome_64_32_version_code",
+      "TrichromeChrome64: $trichrome_64_version_code",
+    ]
   }
 
-  write_file("$root_out_dir/chrome_versions.txt", lines_to_write)
+  write_file("$root_out_dir/android_chrome_versions.txt", lines_to_write)
+
+  # TODO (stonebraker) For a 3-way patch; to be removed
+  write_file("$root_out_dir/chrome_versions.txt", lines_to_write__deprecated)
 }
