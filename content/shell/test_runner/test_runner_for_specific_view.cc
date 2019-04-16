@@ -226,14 +226,41 @@ void TestRunnerForSpecificView::CapturePixelsAsyncThen(
       << "Web tests harness doesn't currently support running "
       << "testRuner.capturePixelsAsyncThen from an OOPIF";
 
-  web_view_test_proxy_->test_interfaces()->GetTestRunner()->DumpPixelsAsync(
-      web_view_test_proxy_,
-      base::BindOnce(&TestRunnerForSpecificView::CapturePixelsCallback,
-                     weak_factory_.GetWeakPtr(),
-                     std::move(persistent_callback)));
+  test_runner::TestInterfaces* interfaces =
+      web_view_test_proxy_->test_interfaces();
+
+  if (interfaces->GetTestRunner()->CanDumpPixelsFromRenderer()) {
+    // If we're grabbing pixels from printing, we do that in the renderer, and
+    // some tests actually look at the results.
+    interfaces->GetTestRunner()->DumpPixelsAsync(
+        web_view_test_proxy_,
+        base::BindOnce(&TestRunnerForSpecificView::RunJSCallbackWithBitmap,
+                       weak_factory_.GetWeakPtr(),
+                       std::move(persistent_callback)));
+  } else {
+    // If we're running the compositor lifecycle then the pixels aren't
+    // available from the renderer, and they don't matter to tests.
+    // TODO(crbug.com/952399): We could stop pretending they matter and split
+    // this into a separate testRunner API that won't act like its returning
+    // pixels.
+    main_frame_render_widget()->RequestPresentation(base::BindOnce(
+        &TestRunnerForSpecificView::RunJSCallbackAfterCompositorLifecycle,
+        weak_factory_.GetWeakPtr(), std::move(persistent_callback)));
+  }
 }
 
-void TestRunnerForSpecificView::CapturePixelsCallback(
+void TestRunnerForSpecificView::RunJSCallbackAfterCompositorLifecycle(
+    v8::UniquePersistent<v8::Function> callback,
+    const gfx::PresentationFeedback&) {
+  // TODO(crbug.com/952399): We're not testing pixels on this path, remove the
+  // SkBitmap plumbing entirely and rename CapturePixels* to RunLifecycle*.
+  SkBitmap bitmap;
+  bitmap.allocN32Pixels(1, 1);
+  bitmap.eraseColor(0);
+  RunJSCallbackWithBitmap(std::move(callback), bitmap);
+}
+
+void TestRunnerForSpecificView::RunJSCallbackWithBitmap(
     v8::UniquePersistent<v8::Function> callback,
     const SkBitmap& snapshot) {
   v8::Isolate* isolate = blink::MainThreadIsolate();
@@ -281,7 +308,7 @@ void TestRunnerForSpecificView::CopyImageAtAndCapturePixelsAsyncThen(
       blink::MainThreadIsolate(), callback);
   CopyImageAtAndCapturePixels(
       web_view()->MainFrame()->ToWebLocalFrame(), x, y,
-      base::BindOnce(&TestRunnerForSpecificView::CapturePixelsCallback,
+      base::BindOnce(&TestRunnerForSpecificView::RunJSCallbackWithBitmap,
                      weak_factory_.GetWeakPtr(),
                      std::move(persistent_callback)));
 }

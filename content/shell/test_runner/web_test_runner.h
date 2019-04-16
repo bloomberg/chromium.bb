@@ -60,14 +60,14 @@ class WebTestRunner {
   // pixels.
   virtual bool ShouldDumpSelectionRect() const = 0;
 
+  // Returns false if the browser should capture the pixel output, true if it
+  // can be done locally in the renderer via DumpPixelsAsync().
+  virtual bool CanDumpPixelsFromRenderer() const = 0;
+
   // Snapshots the content of |render_view| using the mode requested by the
   // current test and calls |callback| with the result.  Caller needs to ensure
   // that |render_view| stays alive until |callback| is called.
-  // Returns false if the request to capture pixels was processed locally, and
-  // true if the pixels need to be captured in the browser process instead. In
-  // that case the |callback| is still called once the pixels are captures but
-  // the SkBitmap contained within is not useful.
-  virtual bool DumpPixelsAsync(
+  virtual void DumpPixelsAsync(
       content::RenderView* render_view,
       base::OnceCallback<void(const SkBitmap&)> callback) = 0;
 

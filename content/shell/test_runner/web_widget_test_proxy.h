@@ -87,10 +87,6 @@ class TEST_RUNNER_EXPORT WebWidgetTestProxy : public content::RenderWidget {
 
   void EndSyntheticGestures();
 
-  // Triggers a full composite, and always submits a new frame to the display
-  // compositor. The |callback| will be run when the display compositor has
-  // presented that frame as part of its global scene.
-  void RequestPresentationForPixelDump(PresentationTimeCallback callback);
   // When |do_raster| is false, only a main frame animation step is performed,
   // but when true, a full composite is performed and a frame submitted to the
   // display compositor if there is any damage.
@@ -110,9 +106,10 @@ class TEST_RUNNER_EXPORT WebWidgetTestProxy : public content::RenderWidget {
 
   // For collapsing multiple simulated ScheduleAnimation() calls.
   bool animation_scheduled_ = false;
-  // When true, the scheduled AnimateNow() will perform a full composite.
-  // Otherwise, it will only perform the animation step, which calls out to
-  // blink, for performance reasons. See setAnimationRequiresRaster() in
+  // When true, an AnimateNow() is scheduled that will perform a full composite.
+  // Otherwise, any scheduled AnimateNow() calls will only perform the animation
+  // step, which calls out to blink but doesn't composite for performance
+  // reasons. See setAnimationRequiresRaster() in
   // https://chromium.googlesource.com/chromium/src/+/master/docs/testing/writing_web_tests.md
   // for details on the optimization.
   bool composite_requested_ = false;

@@ -1662,43 +1662,30 @@ std::string TestRunner::DumpLayout(blink::WebLocalFrame* frame) {
   return ::test_runner::DumpLayout(frame, web_test_runtime_flags_);
 }
 
-bool TestRunner::DumpPixelsAsync(
+bool TestRunner::CanDumpPixelsFromRenderer() const {
+  return web_test_runtime_flags_.dump_drag_image() ||
+         web_test_runtime_flags_.is_printing();
+}
+
+void TestRunner::DumpPixelsAsync(
     content::RenderView* render_view,
     base::OnceCallback<void(const SkBitmap&)> callback) {
   auto* view_proxy = static_cast<WebViewTestProxy*>(render_view);
-  CHECK(view_proxy->GetWebView()->MainFrame());
+  DCHECK(view_proxy->GetWebView()->MainFrame());
+  DCHECK(CanDumpPixelsFromRenderer());
 
   if (web_test_runtime_flags_.dump_drag_image()) {
-    if (drag_image_.isNull()) {
+    if (!drag_image_.isNull()) {
+      std::move(callback).Run(drag_image_);
+    } else {
       // This means the test called dumpDragImage but did not initiate a drag.
       // Return a blank image so that the test fails.
       SkBitmap bitmap;
       bitmap.allocN32Pixels(1, 1);
       bitmap.eraseColor(0);
       std::move(callback).Run(bitmap);
-      return false;
     }
-
-    std::move(callback).Run(drag_image_);
-    return false;
-  }
-
-  // If we need to do a display compositor pixel dump, then delegate that to the
-  // browser by returning true. Note that printing case can be handled here.
-  if (!web_test_runtime_flags_.is_printing()) {
-    auto* widget_proxy =
-        static_cast<WebWidgetTestProxy*>(view_proxy->GetWidget());
-    widget_proxy->RequestPresentationForPixelDump(base::BindOnce(
-        [](base::OnceCallback<void(const SkBitmap&)> callback,
-           const gfx::PresentationFeedback& feedback) {
-          // Generate a 1x1 black bitmap.
-          SkBitmap bitmap;
-          bitmap.allocN32Pixels(1, 1);
-          bitmap.eraseColor(0);
-          std::move(callback).Run(bitmap);
-        },
-        std::move(callback)));
-    return true;
+    return;
   }
 
   blink::WebLocalFrame* frame =
@@ -1712,7 +1699,6 @@ bool TestRunner::DumpPixelsAsync(
       target_frame = frame_to_print->ToWebLocalFrame();
   }
   test_runner::PrintFrameAsync(target_frame, std::move(callback));
-  return false;
 }
 
 void TestRunner::ReplicateWebTestRuntimeFlagsChanges(

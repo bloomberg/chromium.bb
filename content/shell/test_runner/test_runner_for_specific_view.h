@@ -25,6 +25,10 @@ class WebLocalFrame;
 class WebView;
 }
 
+namespace gfx {
+struct PresentationFeedback;
+}
+
 namespace gin {
 class Arguments;
 }
@@ -80,8 +84,12 @@ class TEST_RUNNER_EXPORT TestRunnerForSpecificView {
   // with the captured snapshot as the parameters (width, height, snapshot).
   // The snapshot is in uint8_t RGBA format.
   void CapturePixelsAsyncThen(v8::Local<v8::Function> callback);
-  void CapturePixelsCallback(v8::UniquePersistent<v8::Function> callback,
-                             const SkBitmap& snapshot);
+
+  void RunJSCallbackAfterCompositorLifecycle(
+      v8::UniquePersistent<v8::Function> callback,
+      const gfx::PresentationFeedback&);
+  void RunJSCallbackWithBitmap(v8::UniquePersistent<v8::Function> callback,
+                               const SkBitmap& snapshot);
 
   // Similar to CapturePixelsAsyncThen(). Copies to the clipboard the image
   // located at a particular point in the WebView (if there is such an image),
