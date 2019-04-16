@@ -248,7 +248,7 @@ class ValidationPool(object):
       if isinstance(buildbucket_id, int):
         buildbucket_id = str(buildbucket_id)
       else:
-        raise ValueError("Invalid buildbucket_id: %r" % (builder_name,))
+        raise ValueError("Invalid buildbucket_id: %r" % (buildbucket_id,))
 
     for changes_name, changes_value in (
         ('candidates', candidates),
