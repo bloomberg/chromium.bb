@@ -11,6 +11,7 @@
 
 #include "third_party/blink/renderer/bindings/modules/v8/v8_rtc_quic_transport_stats.h"
 #include "third_party/blink/renderer/core/dom/dom_high_res_time_stamp.h"
+#include "third_party/blink/renderer/modules/peerconnection/adapters/p2p_quic_transport.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/test/mock_p2p_quic_packet_transport.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_ice_gather_options.h"
 #include "third_party/webrtc/rtc_base/rtc_certificate_generator.h"
@@ -100,7 +101,7 @@ RTCQuicTransport* RTCQuicTransportTest::CreateConnectedQuicTransport(
   quic_transport->start(CreateRemoteRTCQuicParameters1(), ASSERT_NO_EXCEPTION);
   RunUntilIdle();
   DCHECK(delegate);
-  delegate->OnConnected();
+  delegate->OnConnected(P2PQuicNegotiatedParams());
   RunUntilIdle();
   DCHECK_EQ("connected", quic_transport->state());
   if (delegate_out) {

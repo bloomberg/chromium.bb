@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "third_party/blink/renderer/modules/peerconnection/adapters/ice_transport_host.h"
+#include "third_party/blink/renderer/modules/peerconnection/adapters/p2p_quic_transport.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/p2p_quic_transport_factory.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/quic_stream_host.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/quic_stream_proxy.h"
@@ -114,8 +115,10 @@ void QuicTransportHost::OnConnectionFailed(const std::string& error_details,
                                       proxy_, error_details, from_remote));
 }
 
-void QuicTransportHost::OnConnected() {
+void QuicTransportHost::OnConnected(P2PQuicNegotiatedParams negotiated_params) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  // TODO(shampson): When datagrams are integrated with RTCQuicTransport
+  // propagate the negotiated_params up.
   PostCrossThreadTask(
       *proxy_thread(), FROM_HERE,
       CrossThreadBind(&QuicTransportProxy::OnConnected, proxy_));
@@ -138,6 +141,18 @@ void QuicTransportHost::OnStream(P2PQuicStream* p2p_stream) {
   PostCrossThreadTask(*proxy_thread(), FROM_HERE,
                       CrossThreadBind(&QuicTransportProxy::OnStream, proxy_,
                                       WTF::Passed(std::move(stream_proxy))));
+}
+
+void QuicTransportHost::OnDatagramSent() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  // TODO(shampson): Implement when this is hooked into RTCQuicTransport.
+  return;
+}
+
+void QuicTransportHost::OnReceivedDatagram(Vector<uint8_t> datagram) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  // TODO(shampson): Implement when this is hooked into RTCQuicTransport.
+  return;
 }
 
 }  // namespace blink
