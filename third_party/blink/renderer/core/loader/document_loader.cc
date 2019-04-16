@@ -586,8 +586,6 @@ void DocumentLoader::LoadFailed(const ResourceError& error) {
   WebHistoryCommitType history_commit_type = LoadTypeToCommitType(load_type_);
   switch (state_) {
     case kNotStarted:
-      FALLTHROUGH;
-    case kProvisional:
       state_ = kSentDidFinishLoad;
       GetLocalFrameClient().DispatchDidFailProvisionalLoad(error,
                                                            history_commit_type);
@@ -603,6 +601,8 @@ void DocumentLoader::LoadFailed(const ResourceError& error) {
       GetFrameLoader().DidFinishNavigation();
       break;
     case kSentDidFinishLoad:
+      FALLTHROUGH;
+    case kProvisional:
       NOTREACHED();
       break;
   }
@@ -1033,7 +1033,6 @@ bool DocumentLoader::PrepareForLoad() {
 
   if (!params_->body_loader) {
     // TODO(dgozman): we should try to get rid of this case.
-    LoadFailed(ResourceError::CancelledError(url_));
     return false;
   }
 
@@ -1043,7 +1042,6 @@ bool DocumentLoader::PrepareForLoad() {
   int status_code = response_.HttpStatusCode();
   if (status_code == 204 || status_code == 205) {
     // The server does not want us to replace the page contents.
-    LoadFailed(ResourceError::CancelledError(url_));
     return false;
   }
 
@@ -1052,14 +1050,11 @@ bool DocumentLoader::PrepareForLoad() {
     // The server wants us to download instead of replacing the page contents.
     // Downloading is handled by the embedder, but we still get the initial
     // response so that we can ignore it and clean up properly.
-    LoadFailed(ResourceError::CancelledError(url_));
     return false;
   }
 
-  if (!CanShowMIMEType(response_.MimeType(), frame_)) {
-    LoadFailed(ResourceError::CancelledError(url_));
+  if (!CanShowMIMEType(response_.MimeType(), frame_))
     return false;
-  }
 
   return true;
 }

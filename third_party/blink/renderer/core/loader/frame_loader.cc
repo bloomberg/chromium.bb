@@ -1018,14 +1018,16 @@ void FrameLoader::CommitNavigation(
       std::move(extra_data));
   if (history_item)
     provisional_document_loader_->SetItemForHistoryNavigation(history_item);
+  if (!provisional_document_loader_->PrepareForLoad()) {
+    DetachDocumentLoader(provisional_document_loader_);
+    return;
+  }
 
   frame_->GetFrameScheduler()->DidStartProvisionalLoad(frame_->IsMainFrame());
   Client()->DispatchDidStartProvisionalLoad(provisional_document_loader_);
   probe::DidStartProvisionalLoad(frame_);
   virtual_time_pauser_.PauseVirtualTime();
-
-  if (provisional_document_loader_->PrepareForLoad())
-    provisional_document_loader_->StartLoading();
+  provisional_document_loader_->StartLoading();
   TakeObjectSnapshot();
 }
 
@@ -1361,7 +1363,13 @@ blink::UserAgentMetadata FrameLoader::UserAgentMetadata() const {
 void FrameLoader::Detach() {
   frame_->GetDocument()->CancelParsing();
   DetachDocumentLoader(document_loader_);
-  DetachDocumentLoader(provisional_document_loader_);
+  if (provisional_document_loader_) {
+    // Suppress client notification about failed provisional
+    // load - it does not bring any value when the frame is
+    // being detached anyway.
+    provisional_document_loader_->SetSentDidFinishLoad();
+    DetachDocumentLoader(provisional_document_loader_);
+  }
   frame_->GetNavigationScheduler().Cancel();
   DidFinishNavigation();
 
