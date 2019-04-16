@@ -26,10 +26,7 @@ const char kInspectorDefaultContextError[] =
     "Cannot find default execution context";
 const char kInspectorContextError[] =
     "Cannot find execution context with given id";
-// Builds older than commit position 353387 return a different error message.
-// TODO(samuong): Remove this once we stop supporting Chrome 47.
-const char kOldInspectorContextError[] =
-    "Execution context with given id not found.";
+const char kInspectorInvalidURL[] = "Cannot navigate to invalid URL";
 
 Status ParseInspectorError(const std::string& error_json) {
   std::unique_ptr<base::Value> error =
@@ -38,11 +35,14 @@ Status ParseInspectorError(const std::string& error_json) {
   if (!error || !error->GetAsDictionary(&error_dict))
     return Status(kUnknownError, "inspector error with no error message");
   std::string error_message;
-  if (error_dict->GetString("message", &error_message) &&
-      (error_message == kInspectorDefaultContextError ||
-       error_message == kInspectorContextError ||
-       error_message == kOldInspectorContextError)) {
-    return Status(kNoSuchExecutionContext);
+  bool error_found = error_dict->GetString("message", &error_message);
+  if (error_found) {
+    if (error_message == kInspectorDefaultContextError ||
+        error_message == kInspectorContextError) {
+      return Status(kNoSuchExecutionContext);
+    } else if (error_message == kInspectorInvalidURL) {
+      return Status(kInvalidArgument);
+    }
   }
   return Status(kUnknownError, "unhandled inspector error: " + error_json);
 }
