@@ -2432,7 +2432,7 @@
         'test_suites': {
           # We currently only want to run the WebGL 2.0 conformance tests on
           # this until additional Pixel 2 capacity is added.
-          'gpu_telemetry_tests': 'gpu_fyi_optional_android_release_specific_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_webgl2_conformance_telemetry_tests',
         },
       },
       'Android FYI dEQP Release (Nexus 5X)': {
@@ -2645,7 +2645,7 @@
           'linux_intel_hd_630',
         ],
         'test_suites': {
-          'gtest_tests': 'gpu_angle_deqp_gles2_gl_tests',
+          'gtest_tests': 'gpu_angle_deqp_gles2_gl_gtests',
         },
       },
       'Linux FYI dEQP Release (NVIDIA)': {
@@ -3059,7 +3059,7 @@
           'win10_intel_hd_630_stable',
         ],
         'test_suites': {
-          'gtest_tests': 'gpu_angle_deqp_gles2_d3d11_tests',
+          'gtest_tests': 'gpu_angle_deqp_gles2_d3d11_gtests',
         },
       },
       'Win10 FYI dEQP Release (NVIDIA)': {
