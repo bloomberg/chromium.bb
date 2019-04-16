@@ -6099,7 +6099,6 @@ crbug.com/915352 virtual/threaded/external/wpt/animation-worklet/worklet-animati
 
 crbug.com/915352 [ Mac10.10 Mac10.11 ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-with-scroll-timeline.https.html [ Pass Failure ]
 crbug.com/915352 [ Mac10.10 Mac10.11 ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-with-scroll-timeline-and-display-none.https.html [ Pass Failure ]
-crbug.com/951753 virtual/threaded/external/wpt/animation-worklet/worklet-animation-duration.https.html [ Pass Failure ]
 
 # Sheriff 2019-03-01
 crbug.com/937170 [ Linux Win7 ] external/wpt/IndexedDB/interleaved-cursors-large.html [ Pass Timeout Crash ]
