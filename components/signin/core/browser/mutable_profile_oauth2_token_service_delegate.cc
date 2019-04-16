@@ -500,8 +500,9 @@ void MutableProfileOAuth2TokenServiceDelegate::LoadCredentials(
   set_load_credentials_state(LOAD_CREDENTIALS_IN_PROGRESS);
 
 #if defined(OS_CHROMEOS)
+  // TODO(sinhak): Remove this ifdef block after Account Manager is switched on.
   // ChromeOS OOBE loads credentials without a primary account and expects this
-  // to be a no-op. See htttp://crbug.com/891818
+  // to be a no-op. See http://crbug.com/891818
   if (primary_account_id.empty()) {
     set_load_credentials_state(LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS);
     FinishLoadingCredentials();
