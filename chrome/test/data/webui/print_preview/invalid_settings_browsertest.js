@@ -98,6 +98,7 @@ cr.define('invalid_settings_browsertest', function() {
       });
       localDestinationInfos = [];
 
+      loadTimeData.overrideValues({isEnterpriseManaged: false});
       createPage(true);
 
       cr.webUIListenerCallback('use-cloud-print', 'cloudprint url', false);
