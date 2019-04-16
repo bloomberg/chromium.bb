@@ -24,12 +24,17 @@ class GraphObserverTest : public GraphTestHarness {};
 
 class TestGraphObserver : public GraphObserver {
  public:
-  TestGraphObserver() : node_created_count_(0u), node_destroyed_count_(0u) {}
+  TestGraphObserver() {}
+  ~TestGraphObserver() override {}
 
-  size_t node_created_count() { return node_created_count_; }
-  size_t node_destroyed_count() { return node_destroyed_count_; }
+  size_t node_created_count() const { return node_created_count_; }
+  size_t node_destroyed_count() const { return node_destroyed_count_; }
+  size_t registered() const { return registered_; }
+  size_t unregistered() const { return unregistered_; }
 
   // Overridden from GraphObserver.
+  void OnRegistered() override { ++registered_; }
+  void OnUnregistered() override { ++unregistered_; }
   bool ShouldObserve(const NodeBase* node) override {
     return node->id().type ==
            resource_coordinator::CoordinationUnitType::kFrame;
@@ -38,8 +43,10 @@ class TestGraphObserver : public GraphObserver {
   void OnBeforeNodeRemoved(NodeBase* node) override { ++node_destroyed_count_; }
 
  private:
-  size_t node_created_count_;
-  size_t node_destroyed_count_;
+  size_t node_created_count_ = 0;
+  size_t node_destroyed_count_ = 0;
+  size_t registered_ = 0;
+  size_t unregistered_ = 0;
 };
 
 }  // namespace
@@ -47,7 +54,9 @@ class TestGraphObserver : public GraphObserver {
 TEST_F(GraphObserverTest, CallbacksInvoked) {
   EXPECT_TRUE(graph()->observers_for_testing().empty());
   auto observer = std::make_unique<TestGraphObserver>();
+  EXPECT_EQ(0u, observer->registered());
   graph()->RegisterObserver(observer.get());
+  EXPECT_EQ(1u, observer->registered());
   EXPECT_EQ(1u, graph()->observers_for_testing().size());
 
 
@@ -64,7 +73,9 @@ TEST_F(GraphObserverTest, CallbacksInvoked) {
 
   EXPECT_EQ(2u, observer->node_destroyed_count());
 
+  EXPECT_EQ(0u, observer->unregistered());
   graph()->UnregisterObserver(observer.get());
+  EXPECT_EQ(1u, observer->unregistered());
 }
 
 }  // namespace performance_manager

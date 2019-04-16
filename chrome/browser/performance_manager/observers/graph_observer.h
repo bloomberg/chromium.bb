@@ -40,6 +40,12 @@ class GraphObserver {
   GraphObserver();
   virtual ~GraphObserver();
 
+  // Invoked when an observer is added to or removed from the graph. This is a
+  // convenient place for observers to initialize any necessary state, validate
+  // graph invariants, etc.
+  virtual void OnRegistered() {}
+  virtual void OnUnregistered() {}
+
   // Determines whether or not the observer should be registered with, and
   // invoked for, the |node|.
   virtual bool ShouldObserve(const NodeBase* node) = 0;

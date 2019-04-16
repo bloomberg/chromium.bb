@@ -27,6 +27,7 @@ class PageAlmostIdleDecorator : public GraphObserver {
   ~PageAlmostIdleDecorator() override;
 
   // GraphObserver implementation:
+  void OnRegistered() override;
   bool ShouldObserve(const NodeBase* node) override;
   void OnNetworkAlmostIdleChanged(FrameNodeImpl* frame_node) override;
   void OnIsLoadingChanged(PageNodeImpl* page_node) override;

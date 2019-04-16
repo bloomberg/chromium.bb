@@ -37,6 +37,9 @@ class SystemNodeImpl;
 // notifications for all coordination units.
 class Graph {
  public:
+  using CUIDMap =
+      std::unordered_map<resource_coordinator::CoordinationUnitID, NodeBase*>;
+
   Graph();
   ~Graph();
 
@@ -56,6 +59,7 @@ class Graph {
   std::vector<ProcessNodeImpl*> GetAllProcessNodes();
   std::vector<FrameNodeImpl*> GetAllFrameNodes();
   std::vector<PageNodeImpl*> GetAllPageNodes();
+  const CUIDMap& nodes() { return nodes_; }
 
   // Retrieves the process CU with PID |pid|, if any.
   ProcessNodeImpl* GetProcessNodeByPid(base::ProcessId pid);
@@ -75,8 +79,6 @@ class Graph {
                                             const void* key) const;
 
  private:
-  using CUIDMap =
-      std::unordered_map<resource_coordinator::CoordinationUnitID, NodeBase*>;
   using ProcessByPidMap = std::unordered_map<base::ProcessId, ProcessNodeImpl*>;
 
   void OnNodeAdded(NodeBase* node);
