@@ -649,8 +649,6 @@ void CGaiaCredentialBase::ResetInternalState() {
     events_->SetFieldSubmitButton(this, FID_SUBMIT, FID_DESCRIPTION);
     UpdateSubmitButtonInteractiveState();
   }
-
-  token_update_locker_.reset();
 }
 
 HRESULT CGaiaCredentialBase::GetBaseGlsCommandline(
@@ -812,32 +810,23 @@ HRESULT CGaiaCredentialBase::HandleAutologon(
     }
   }
 
+  // Restore user's access so that they can sign in.
+  HRESULT hr =
+      AssociatedUserValidator::Get()->RestoreUserAccess(OLE2W(get_sid()));
+  if (FAILED(hr) && hr != HRESULT_FROM_NT(STATUS_OBJECT_NAME_NOT_FOUND)) {
+    LOGFN(ERROR) << "RestoreUserAccess hr=" << putHR(hr);
+    return hr;
+  }
+
   // The OS user has already been created, so return all the information
   // needed to log them in.
   DWORD cpus = 0;
   provider()->GetUsageScenario(&cpus);
-  HRESULT hr = BuildCredPackAuthenticationBuffer(
+  hr = BuildCredPackAuthenticationBuffer(
       domain_, get_username(), get_password(),
       static_cast<CREDENTIAL_PROVIDER_USAGE_SCENARIO>(cpus), cpcs);
   if (FAILED(hr)) {
     LOGFN(ERROR) << "BuildCredPackAuthenticationBuffer hr=" << putHR(hr);
-    return hr;
-  }
-
-  // Prevent update of token handle validity until after sign in has completed
-  // so that a race condition doesn't end up locking out a user while they are
-  // in the process of signing in. The lock must occur before restoring access
-  // to the user below to prevent a race condition where the user would have
-  // their access restored but then the token handle update thread is
-  // immediately executed which causes the user to be locked again afterwards.
-  PreventDenyAccessUpdate();
-
-  // Restore user's access so that they can sign in.
-  hr = AssociatedUserValidator::Get()->RestoreUserAccess(OLE2W(get_sid()));
-  if (FAILED(hr) && hr != HRESULT_FROM_NT(STATUS_OBJECT_NAME_NOT_FOUND)) {
-    LOGFN(ERROR) << "RestoreUserAccess hr=" << putHR(hr);
-    ::CoTaskMemFree(cpcs->rgbSerialization);
-    cpcs->rgbSerialization = nullptr;
     return hr;
   }
 
@@ -866,14 +855,6 @@ void CGaiaCredentialBase::TellOmahaDidRun() {
       LOGFN(INFO) << "Unable to write omaha dr value sts=" << sts;
   }
 #endif  // defined(GOOGLE_CHROME_BUILD)
-}
-
-void CGaiaCredentialBase::PreventDenyAccessUpdate() {
-  if (!token_update_locker_) {
-    token_update_locker_.reset(
-        new AssociatedUserValidator::ScopedBlockDenyAccessUpdate(
-            AssociatedUserValidator::Get()));
-  }
 }
 
 // static
@@ -1082,7 +1063,6 @@ HRESULT CGaiaCredentialBase::GetSerialization(
 
   HRESULT hr = HandleAutologon(cpgsr, cpcs);
 
-  bool submit_button_enabled = false;
   // Don't clear the state of the credential on error. The error can occur
   // because the user is locked out or entered an incorrect old password when
   // trying to update their password. In these situations it may still be
@@ -1124,7 +1104,7 @@ HRESULT CGaiaCredentialBase::GetSerialization(
         *status_icon = CPSI_NONE;
         *cpgsr = CPGSR_NO_CREDENTIAL_FINISHED;
         LOGFN(INFO) << "No internet connection";
-        submit_button_enabled = UpdateSubmitButtonInteractiveState();
+        UpdateSubmitButtonInteractiveState();
 
         hr = S_OK;
       } else {
@@ -1151,15 +1131,9 @@ HRESULT CGaiaCredentialBase::GetSerialization(
           this, FID_CURRENT_PASSWORD_FIELD,
           needs_windows_password_ ? CPFIS_FOCUSED : CPFIS_NONE);
     }
-    submit_button_enabled = UpdateSubmitButtonInteractiveState();
+    UpdateSubmitButtonInteractiveState();
   }
-
-  // If user interaction is enabled that means we are not trying to do final
-  // sign in of the account so we can re-enable token updates.
-  if (submit_button_enabled)
-    token_update_locker_.reset();
-
-  // Otherwise, keep the ui disabled forever now. ReportResult will eventually
+  // Otherwise, keep the ui disable forever now. ReportResult will eventually
   // be called on success or failure and the reset of the state of the
   // credential will be done there.
   return hr;
@@ -1772,11 +1746,6 @@ HRESULT CGaiaCredentialBase::OnUserAuthenticated(BSTR authentication_info,
 
   result_status_ = STATUS_SUCCESS;
 
-  // Prevent update of token handle validity until after sign in has completed
-  // so the list of credentials doesn't suddenly change between now and when the
-  // attempt to auto login occurs.
-  PreventDenyAccessUpdate();
-
   // When this function returns, winlogon will be told to logon to the newly
   // created account.  This is important, as the save account info process
   // can't actually save the info until the user's profile is created, which
@@ -1806,17 +1775,15 @@ HRESULT CGaiaCredentialBase::ReportError(LONG status,
                                         CComBSTR(), FALSE);
 }
 
-bool CGaiaCredentialBase::UpdateSubmitButtonInteractiveState() {
-  bool should_enable =
-      logon_ui_process_ == INVALID_HANDLE_VALUE &&
-      ((!needs_windows_password_ || current_windows_password_.Length()) ||
-       (needs_windows_password_ && request_force_password_change_));
+void CGaiaCredentialBase::UpdateSubmitButtonInteractiveState() {
   if (events_) {
+    bool should_enable =
+        logon_ui_process_ == INVALID_HANDLE_VALUE &&
+        ((!needs_windows_password_ || current_windows_password_.Length()) ||
+         (needs_windows_password_ && request_force_password_change_));
     events_->SetFieldInteractiveState(
         this, FID_SUBMIT, should_enable ? CPFIS_NONE : CPFIS_DISABLED);
   }
-
-  return should_enable;
 }
 
 void CGaiaCredentialBase::DisplayPasswordField(int password_message) {
