@@ -15,7 +15,6 @@
 #include "components/sync/model/model_type_store_test_util.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "components/sync/user_events/user_event_sync_bridge.h"
-#include "components/variations/variations_associated_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using sync_pb::UserEventSpecifics;
