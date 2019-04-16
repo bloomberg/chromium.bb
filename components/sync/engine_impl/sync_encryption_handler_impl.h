@@ -177,7 +177,8 @@ class SyncEncryptionHandlerImpl : public KeystoreKeysHandler,
     kNotEncryptEverythingWithExplicitPassphrase = 4,
     kOldPassphraseType = 5,
     kServerKeyRotation = 6,
-    kMaxValue = kServerKeyRotation
+    kInitialization = 7,
+    kMaxValue = kInitialization
   };
 
   // Iterate over all encrypted types ensuring each entry is properly encrypted.

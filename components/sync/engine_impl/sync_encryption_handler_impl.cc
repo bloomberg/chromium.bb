@@ -1570,6 +1570,9 @@ SyncEncryptionHandlerImpl::GetMigrationReason(
       // passphrase).
       return NigoriMigrationReason::kNoReason;
     }
+    if (nigori.encryption_keybag().blob().empty()) {
+      return NigoriMigrationReason::kInitialization;
+    }
     return NigoriMigrationReason::KNigoriNotMigrated;
   }
 

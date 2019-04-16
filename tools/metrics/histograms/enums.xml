@@ -53832,6 +53832,7 @@ would be helpful to identify which type is being sent.
   <int value="4" label="Explicit passphrase without encrypt everything"/>
   <int value="5" label="Old passphrase type"/>
   <int value="6" label="Server key rotation"/>
+  <int value="7" label="Nigori node isn't initialized"/>
 </enum>
 
 <enum name="SyncNigoriMigrationResult">
