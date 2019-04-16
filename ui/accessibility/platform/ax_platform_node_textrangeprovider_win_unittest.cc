@@ -132,9 +132,30 @@ class AXPlatformNodeTextRangeProviderTest : public ui::AXPlatformNodeWinTest {
     ASSERT_NE(nullptr, text_range_provider.Get());
   }
 
+  void ComputeWordBoundariesOffsets(const std::string& text,
+                                    std::vector<int>& word_start_offsets,
+                                    std::vector<int>& word_end_offsets) {
+    char previous_char = ' ';
+    word_start_offsets = std::vector<int>();
+    for (size_t i = 0; i < text.size(); ++i) {
+      if (previous_char == ' ' && text[i] != ' ')
+        word_start_offsets.push_back(i);
+      previous_char = text[i];
+    }
+
+    previous_char = ' ';
+    word_end_offsets = std::vector<int>();
+    for (size_t i = text.size(); i > 0; --i) {
+      if (previous_char == ' ' && text[i - 1] != ' ')
+        word_end_offsets.push_back(i);
+      previous_char = text[i - 1];
+    }
+    std::reverse(word_end_offsets.begin(), word_end_offsets.end());
+  }
+
   ui::AXTreeUpdate BuildTextDocument(
       const std::vector<std::string>& text_nodes_content,
-      bool build_word_start_end_offsets = false) {
+      bool build_word_boundaries_offsets = false) {
     int current_id = 0;
     ui::AXNodeData root_data;
     root_data.id = ++current_id;
@@ -150,25 +171,13 @@ class AXPlatformNodeTextRangeProviderTest : public ui::AXPlatformNodeWinTest {
       text_data.role = ax::mojom::Role::kStaticText;
       text_data.SetName(text_content);
 
-      if (build_word_start_end_offsets) {
-        char previous_char = ' ';
+      if (build_word_boundaries_offsets) {
+        std::vector<int> word_end_offsets;
         std::vector<int> word_start_offsets;
-        for (size_t i = 0; i < text_content.size(); ++i) {
-          if (previous_char == ' ' && text_content[i] != ' ')
-            word_start_offsets.push_back(i);
-          previous_char = text_content[i];
-        }
+        ComputeWordBoundariesOffsets(text_content, word_start_offsets,
+                                     word_end_offsets);
         text_data.AddIntListAttribute(ax::mojom::IntListAttribute::kWordStarts,
                                       word_start_offsets);
-
-        previous_char = ' ';
-        std::vector<int> word_end_offsets;
-        for (size_t i = text_content.size(); i > 0; --i) {
-          if (previous_char == ' ' && text_content[i - 1] != ' ')
-            word_end_offsets.push_back(i);
-          previous_char = text_content[i - 1];
-        }
-        std::reverse(word_end_offsets.begin(), word_end_offsets.end());
         text_data.AddIntListAttribute(ax::mojom::IntListAttribute::kWordEnds,
                                       word_end_offsets);
       }
@@ -337,9 +346,8 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   GetTextRangeProviderFromTextNode(more_text_range_provider,
                                    root_node->children()[1]);
 
-  int result;
-
   // Compare the endpoints of the document which contains "some textmore text".
+  int result;
   EXPECT_HRESULT_SUCCEEDED(document_text_range_provider->CompareEndpoints(
       TextPatternRangeEndpoint_Start, document_text_range_provider.Get(),
       TextPatternRangeEndpoint_Start, &result));
@@ -396,61 +404,18 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
       TextPatternRangeEndpoint_End, document_text_range_provider.Get(),
       TextPatternRangeEndpoint_End, &result));
   EXPECT_EQ(0, result);
-
-  AXNodePosition::SetTreeForTesting(nullptr);
 }
 
 TEST_F(AXPlatformNodeTextRangeProviderTest,
        TestITextRangeProviderExpandToEnclosingCharacter) {
-  ui::AXNodeData text_data;
-  text_data.id = 2;
-  text_data.role = ax::mojom::Role::kStaticText;
-  text_data.SetName("some text");
-
-  ui::AXNodeData more_text_data;
-  more_text_data.id = 3;
-  more_text_data.role = ax::mojom::Role::kStaticText;
-  more_text_data.SetName("more text");
-
-  ui::AXNodeData root_data;
-  root_data.id = 1;
-  root_data.role = ax::mojom::Role::kRootWebArea;
-  root_data.child_ids = {2, 3};
-
-  ui::AXTreeUpdate update;
-  ui::AXTreeData tree_data;
-  tree_data.tree_id = ui::AXTreeID::CreateNewAXTreeID();
-  update.tree_data = tree_data;
-  update.has_tree_data = true;
-  update.root_id = root_data.id;
-  update.nodes.push_back(root_data);
-  update.nodes.push_back(text_data);
-  update.nodes.push_back(more_text_data);
-
-  Init(update);
-
-  AXNode* root_node = GetRootNode();
+  Init(BuildTextDocument({"some text", "more text"}));
   AXNodePosition::SetTreeForTesting(tree_.get());
 
-  ComPtr<IRawElementProviderSimple> root_node_raw =
-      QueryInterfaceFromNode<IRawElementProviderSimple>(root_node);
-
-  ComPtr<ITextProvider> text_provider;
-  EXPECT_HRESULT_SUCCEEDED(
-      root_node_raw->GetPatternProvider(UIA_TextPatternId, &text_provider));
-
   ComPtr<ITextRangeProvider> text_range_provider;
-  EXPECT_HRESULT_SUCCEEDED(
-      text_provider->get_DocumentRange(&text_range_provider));
-
+  GetTextRangeProviderFromTextNode(text_range_provider, GetRootNode());
   ASSERT_HRESULT_SUCCEEDED(
       text_range_provider->ExpandToEnclosingUnit(TextUnit_Character));
-
-  base::win::ScopedBstr text_content;
-  ASSERT_HRESULT_SUCCEEDED(
-      text_range_provider->GetText(-1, text_content.Receive()));
-  EXPECT_STREQ(L"s", text_content);
-  text_content.Reset();
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"s");
 
   int count;
   ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
@@ -459,19 +424,11 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
       TextPatternRangeEndpoint_Start, TextUnit_Character, /*count*/ 1, &count));
   ASSERT_EQ(1, count);
-
-  ASSERT_HRESULT_SUCCEEDED(
-      text_range_provider->GetText(-1, text_content.Receive()));
-  EXPECT_STREQ(L"om", text_content);
-  text_content.Reset();
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"om");
 
   ASSERT_HRESULT_SUCCEEDED(
       text_range_provider->ExpandToEnclosingUnit(TextUnit_Character));
-
-  ASSERT_HRESULT_SUCCEEDED(
-      text_range_provider->GetText(-1, text_content.Receive()));
-  EXPECT_STREQ(L"o", text_content);
-  text_content.Reset();
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"o");
 
   ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
       TextPatternRangeEndpoint_End, TextUnit_Character, /*count*/ 10, &count));
@@ -479,18 +436,11 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
       TextPatternRangeEndpoint_Start, TextUnit_Character, /*count*/ 9, &count));
   ASSERT_EQ(9, count);
-
-  ASSERT_HRESULT_SUCCEEDED(
-      text_range_provider->GetText(-1, text_content.Receive()));
-  EXPECT_STREQ(L"mo", text_content);
-  text_content.Reset();
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"mo");
 
   ASSERT_HRESULT_SUCCEEDED(
       text_range_provider->ExpandToEnclosingUnit(TextUnit_Character));
-  ASSERT_HRESULT_SUCCEEDED(
-      text_range_provider->GetText(-1, text_content.Receive()));
-  EXPECT_STREQ(L"m", text_content);
-  text_content.Reset();
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"m");
 
   // Move the start and end to the end of the document.
   // Expand to enclosing unit should never return a null position.
@@ -503,12 +453,106 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
 
   ASSERT_HRESULT_SUCCEEDED(
       text_range_provider->ExpandToEnclosingUnit(TextUnit_Character));
-  ASSERT_HRESULT_SUCCEEDED(
-      text_range_provider->GetText(-1, text_content.Receive()));
-  EXPECT_STREQ(L"", text_content);
-  text_content.Reset();
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"");
+}
 
-  AXNodePosition::SetTreeForTesting(nullptr);
+TEST_F(AXPlatformNodeTextRangeProviderTest,
+       TestITextRangeProviderExpandToEnclosingWord) {
+  Init(BuildTextDocument({"some text", "definitely not text"},
+                         /*build_word_boundaries_offsets*/ true));
+  AXNodePosition::SetTreeForTesting(tree_.get());
+
+  ComPtr<ITextRangeProvider> text_range_provider;
+  GetTextRangeProviderFromTextNode(text_range_provider,
+                                   GetRootNode()->children()[1]);
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"definitely not text");
+
+  // Start endpoint is already on a word's start boundary.
+  ASSERT_HRESULT_SUCCEEDED(
+      text_range_provider->ExpandToEnclosingUnit(TextUnit_Word));
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"definitely");
+
+  // Start endpoint is between a word's start and end boundaries.
+  int count;
+  ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
+      TextPatternRangeEndpoint_Start, TextUnit_Character, /*count*/ -2,
+      &count));
+  ASSERT_EQ(-2, count);
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"xtdefinitely");
+
+  ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
+      TextPatternRangeEndpoint_End, TextUnit_Character, /*count*/ 5, &count));
+  ASSERT_EQ(5, count);
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"xtdefinitely not ");
+
+  ASSERT_HRESULT_SUCCEEDED(
+      text_range_provider->ExpandToEnclosingUnit(TextUnit_Word));
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"text");
+
+  // Start endpoint is on a word's end boundary.
+  ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
+      TextPatternRangeEndpoint_Start, TextUnit_Character, /*count*/ 19,
+      &count));
+  ASSERT_EQ(19, count);
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"");
+
+  ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
+      TextPatternRangeEndpoint_End, TextUnit_Character, /*count*/ 1, &count));
+  ASSERT_EQ(1, count);
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L" ");
+
+  ASSERT_HRESULT_SUCCEEDED(
+      text_range_provider->ExpandToEnclosingUnit(TextUnit_Word));
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"not");
+}
+
+TEST_F(AXPlatformNodeTextRangeProviderTest,
+       TestITextRangeProviderExpandToEnclosingLine) {
+  Init(BuildTextDocument({"line #1", "maybe line #1?", "not line #1"}));
+  AXNodePosition::SetTreeForTesting(tree_.get());
+
+  ComPtr<ITextRangeProvider> text_range_provider;
+  GetTextRangeProviderFromTextNode(text_range_provider,
+                                   GetRootNode()->children()[0]);
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"line #1");
+
+  // Start endpoint is already on a line's start boundary.
+  int count;
+  ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
+      TextPatternRangeEndpoint_End, TextUnit_Character, /*count*/ -11, &count));
+  ASSERT_EQ(-7, count);
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"");
+
+  ASSERT_HRESULT_SUCCEEDED(
+      text_range_provider->ExpandToEnclosingUnit(TextUnit_Line));
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"line #1");
+
+  // Start endpoint is between a line's start and end boundaries.
+  ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
+      TextPatternRangeEndpoint_Start, TextUnit_Character, /*count*/ 14,
+      &count));
+  ASSERT_EQ(14, count);
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"");
+
+  ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
+      TextPatternRangeEndpoint_End, TextUnit_Character, /*count*/ 4, &count));
+  ASSERT_EQ(4, count);
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"line");
+
+  ASSERT_HRESULT_SUCCEEDED(
+      text_range_provider->ExpandToEnclosingUnit(TextUnit_Line));
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"maybe line #1?");
+
+  // Start endpoint is on a line's end boundary.
+  ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
+      TextPatternRangeEndpoint_Start, TextUnit_Character, /*count*/ 29,
+      &count));
+  ASSERT_EQ(26, count);
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"");
+
+  ASSERT_HRESULT_SUCCEEDED(
+      text_range_provider->ExpandToEnclosingUnit(TextUnit_Line));
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"not line #1");
 }
 
 TEST_F(AXPlatformNodeTextRangeProviderTest,
@@ -545,7 +589,6 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
     EXPECT_UIA_TEXTRANGE_EQ(text_range_provider,
                             L"some textmore texteven more text");
   }
-  AXNodePosition::SetTreeForTesting(nullptr);
 }
 
 TEST_F(AXPlatformNodeTextRangeProviderTest,
@@ -555,6 +598,7 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   // validate call.
   {
     Init(BuildTextDocument({}));
+    AXNodePosition::SetTreeForTesting(nullptr);
 
     ComPtr<ITextRangeProvider> text_range_provider;
     GetTextRangeProviderFromTextNode(text_range_provider, GetRootNode());
@@ -605,8 +649,6 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
     EXPECT_UIA_INVALIDOPERATION(this_provider->MoveEndpointByRange(
         TextPatternRangeEndpoint_Start, other_provider_different_type.Get(),
         TextPatternRangeEndpoint_Start));
-
-    AXNodePosition::SetTreeForTesting(nullptr);
   }
 }
 
@@ -659,8 +701,6 @@ TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderGetText) {
       document_textrange->GetText(-1, text_content.Receive()));
   EXPECT_STREQ(text_content, L"some textmore text");
   text_content.Reset();
-
-  AXNodePosition::SetTreeForTesting(nullptr);
 }
 
 TEST_F(AXPlatformNodeTextRangeProviderTest,
@@ -825,7 +865,7 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
 TEST_F(AXPlatformNodeTextRangeProviderTest,
        TestITextRangeProviderMoveEndpointByWord) {
   Init(BuildTextDocument({"some text", "more text", "even more text"},
-                         /*build_word_start_end_offsets*/ true));
+                         /*build_word_boundaries_offsets*/ true));
   AXNodePosition::SetTreeForTesting(tree_.get());
 
   ComPtr<ITextRangeProvider> text_range_provider;
@@ -1050,8 +1090,6 @@ TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderSelection) {
 
   ASSERT_UIA_INVALIDOPERATION(text_range_provider->AddToSelection());
   ASSERT_UIA_INVALIDOPERATION(text_range_provider->RemoveFromSelection());
-
-  AXNodePosition::SetTreeForTesting(nullptr);
 }
 
 TEST_F(AXPlatformNodeTextRangeProviderTest,
@@ -1110,7 +1148,6 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   EXPECT_UIA_DOUBLE_SAFEARRAY_EQ(body_rectangles.Get(), expected_values);
 
   AXTreeManagerMap::GetInstance().RemoveTreeManager(tree_data.tree_id);
-  AXNodePosition::SetTreeForTesting(nullptr);
 }
 
 TEST_F(AXPlatformNodeTextRangeProviderTest,
@@ -1471,8 +1508,6 @@ TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderGetChildren) {
                      text_node_raw2};
 
   EXPECT_UIA_VT_UNKNOWN_SAFEARRAY_EQ(children.Get(), expected_values);
-
-  AXNodePosition::SetTreeForTesting(nullptr);
 }
 
 TEST_F(AXPlatformNodeTextRangeProviderTest,
