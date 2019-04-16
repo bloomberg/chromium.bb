@@ -9525,7 +9525,7 @@ TEST_F(HttpNetworkTransactionTest, HTTPSViaHttpsProxy) {
                                  CONNECT_TIMING_HAS_SSL_TIMES);
 }
 
-// Test that an HTTPS Proxy can redirect a CONNECT request for main frames.
+// Test that an HTTPS Proxy cannot redirect a CONNECT request for main frames.
 TEST_F(HttpNetworkTransactionTest, RedirectOfHttpsConnectViaHttpsProxy) {
   session_deps_.proxy_resolution_service =
       ProxyResolutionService::CreateFixedFromPacResult(
@@ -9533,7 +9533,6 @@ TEST_F(HttpNetworkTransactionTest, RedirectOfHttpsConnectViaHttpsProxy) {
   TestNetLog net_log;
   session_deps_.net_log = &net_log;
 
-  base::TimeTicks start_time = base::TimeTicks::Now();
   const base::TimeDelta kTimeIncrement = base::TimeDelta::FromSeconds(4);
   session_deps_.host_resolver->set_ondemand_mode(true);
 
@@ -9589,43 +9588,7 @@ TEST_F(HttpNetworkTransactionTest, RedirectOfHttpsConnectViaHttpsProxy) {
   data.Resume();
 
   rv = callback.WaitForResult();
-  EXPECT_THAT(rv, IsOk());
-  const HttpResponseInfo* response = trans.GetResponseInfo();
-
-  ASSERT_TRUE(response);
-
-  EXPECT_EQ(302, response->headers->response_code());
-  std::string url;
-  EXPECT_TRUE(response->headers->IsRedirect(&url));
-  EXPECT_EQ("http://login.example.com/", url);
-
-  LoadTimingInfo load_timing_info;
-  EXPECT_TRUE(trans.GetLoadTimingInfo(&load_timing_info));
-
-  EXPECT_FALSE(load_timing_info.socket_reused);
-  EXPECT_NE(NetLogSource::kInvalidId, load_timing_info.socket_log_id);
-
-  // In the case of redirects from proxies, just as with all responses from
-  // proxies, DNS and SSL times reflect timing to look up the destination's
-  // name, and negotiate an SSL connection to it (Neither of which are done in
-  // this case), which the DNS and SSL times for the proxy are all included in
-  // connect_start / connect_end. See
-  // HttpNetworkTransaction::OnHttpsProxyTunnelResponseRedirect
-
-  EXPECT_TRUE(load_timing_info.connect_timing.dns_start.is_null());
-  EXPECT_TRUE(load_timing_info.connect_timing.dns_end.is_null());
-  EXPECT_TRUE(load_timing_info.connect_timing.ssl_start.is_null());
-  EXPECT_TRUE(load_timing_info.connect_timing.ssl_end.is_null());
-
-  EXPECT_EQ(start_time, load_timing_info.proxy_resolve_start);
-  EXPECT_EQ(start_time, load_timing_info.proxy_resolve_end);
-  EXPECT_EQ(start_time, load_timing_info.connect_timing.connect_start);
-  EXPECT_EQ(start_time + 3 * kTimeIncrement,
-            load_timing_info.connect_timing.connect_end);
-
-  EXPECT_TRUE(load_timing_info.send_start.is_null());
-  EXPECT_TRUE(load_timing_info.send_end.is_null());
-  EXPECT_TRUE(load_timing_info.receive_headers_end.is_null());
+  EXPECT_THAT(rv, IsError(ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT));
 }
 
 // Test that an HTTPS Proxy cannot redirect a CONNECT request for subresources.
@@ -9732,7 +9695,7 @@ TEST_F(HttpNetworkTransactionTest,
       HttpNetworkTransaction::kMainFrameByAutoDetectedProxy, 1);
 }
 
-// Test an HTTPS (SPDY) Proxy's ability to redirect a CONNECT request for main
+// Tests that an HTTPS (SPDY) Proxy's cannot redirect a CONNECT request for main
 // frames.
 TEST_F(HttpNetworkTransactionTest, RedirectOfHttpsConnectViaSpdyProxy) {
   base::HistogramTester histograms;
@@ -9741,7 +9704,6 @@ TEST_F(HttpNetworkTransactionTest, RedirectOfHttpsConnectViaSpdyProxy) {
   TestNetLog net_log;
   session_deps_.net_log = &net_log;
 
-  base::TimeTicks start_time = base::TimeTicks::Now();
   const base::TimeDelta kTimeIncrement = base::TimeDelta::FromSeconds(4);
   session_deps_.host_resolver->set_ondemand_mode(true);
 
@@ -9803,45 +9765,7 @@ TEST_F(HttpNetworkTransactionTest, RedirectOfHttpsConnectViaSpdyProxy) {
   FastForwardBy(kTimeIncrement);
   data.Resume();
   rv = callback.WaitForResult();
-  EXPECT_THAT(rv, IsOk());
-  const HttpResponseInfo* response = trans.GetResponseInfo();
-
-  ASSERT_TRUE(response);
-
-  EXPECT_EQ(302, response->headers->response_code());
-  std::string url;
-  EXPECT_TRUE(response->headers->IsRedirect(&url));
-  EXPECT_EQ("http://login.example.com/", url);
-
-  LoadTimingInfo load_timing_info;
-  EXPECT_TRUE(trans.GetLoadTimingInfo(&load_timing_info));
-
-  EXPECT_FALSE(load_timing_info.socket_reused);
-  EXPECT_NE(NetLogSource::kInvalidId, load_timing_info.socket_log_id);
-
-  // No proxy resolution times, since there's no PAC script.
-  EXPECT_TRUE(load_timing_info.proxy_resolve_start.is_null());
-  EXPECT_TRUE(load_timing_info.proxy_resolve_end.is_null());
-
-  // In the case of redirects from proxies, just as with all responses from
-  // proxies, DNS and SSL times reflect timing to look up the destination's
-  // name, and negotiate an SSL connection to it (Neither of which are done in
-  // this case), which the DNS and SSL times for the proxy are all included in
-  // connect_start / connect_end. See
-  // HttpNetworkTransaction::OnHttpsProxyTunnelResponseRedirect.
-
-  EXPECT_TRUE(load_timing_info.connect_timing.dns_start.is_null());
-  EXPECT_TRUE(load_timing_info.connect_timing.dns_end.is_null());
-  EXPECT_TRUE(load_timing_info.connect_timing.ssl_start.is_null());
-  EXPECT_TRUE(load_timing_info.connect_timing.ssl_end.is_null());
-
-  EXPECT_EQ(start_time, load_timing_info.connect_timing.connect_start);
-  EXPECT_EQ(start_time + 3 * kTimeIncrement,
-            load_timing_info.connect_timing.connect_end);
-
-  EXPECT_TRUE(load_timing_info.send_start.is_null());
-  EXPECT_TRUE(load_timing_info.send_end.is_null());
-  EXPECT_TRUE(load_timing_info.receive_headers_end.is_null());
+  EXPECT_THAT(rv, IsError(ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT));
 
   histograms.ExpectUniqueSample(
       "Net.Proxy.RedirectDuringConnect",
