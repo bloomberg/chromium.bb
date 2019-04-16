@@ -57,11 +57,6 @@ extension_harness_additional_script = r"""
   window.onload = function() { window._loaded = true; }
 """
 
-def _GenerateTestNameFromTestPath(test_path):
-  return ('WebglConformance.%s' %
-          test_path.replace('/', '_').replace('-', '_').
-          replace('\\', '_').rpartition('.')[0].replace('.', '_'))
-
 def _CompareVersion(version1, version2):
   ver_num1 = [int(x) for x in version1.split('.')]
   ver_num2 = [int(x) for x in version2.split('.')]
@@ -110,11 +105,12 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
         int(x) for x in options.webgl_conformance_version.split('.')][0]
     cls._is_asan = options.is_asan
     for test_path in test_paths:
-      # generated test name cannot contain '.'
-      name = _GenerateTestNameFromTestPath(test_path).replace(
-          '.', '_')
-      yield (name,
-             os.path.join(webgl_test_util.conformance_relpath, test_path),
+      test_path_with_args = test_path
+      if cls._webgl_version > 1:
+        test_path_with_args += '?webglVersion=' + str(cls._webgl_version)
+      yield (test_path,
+             os.path.join(
+                 webgl_test_util.conformance_relpath, test_path_with_args),
              ('_RunConformanceTest'))
 
     #
@@ -418,7 +414,6 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     current_dir = os.path.dirname(path)
     full_path = os.path.normpath(os.path.join(webgl_test_util.conformance_path,
                                               path))
-    webgl_version = int(version.split('.')[0])
 
     if not os.path.exists(full_path):
       raise Exception('The WebGL conformance test path specified ' +
@@ -471,8 +466,6 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
               include_path, version, webgl2_only, min_version_to_compare)
         else:
           test = os.path.join(current_dir, test_name)
-          if webgl_version > 1:
-            test += '?webglVersion=' + str(webgl_version)
           test_paths.append(test)
 
     return test_paths

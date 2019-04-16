@@ -217,10 +217,10 @@ class RunTestsWithExpectationsFiles(_BaseSampleIntegrationTest):
 
   @classmethod
   def GenerateGpuTests(cls, options):
-    tests = [('unexpected_test_failure', 'failure.html', ()),
-             ('expected_failure', 'failure.html', ()),
-             ('expected_flaky', 'flaky.html', ()),
-             ('expected_skip', 'skip.html', ())]
+    tests = [('a/b/unexpected-fail.html', 'failure.html', ()),
+             ('a/b/expected-fail.html', 'failure.html', ()),
+             ('a/b/expected-flaky.html', 'flaky.html', ()),
+             ('a/b/expected-skip.html', 'skip.html', ())]
     for test in tests:
       yield test
 
