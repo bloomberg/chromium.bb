@@ -167,7 +167,7 @@ class ContextualSearchFakeServer
     /**
      * Class that represents a fake tap triggered contextual search.
      */
-    public class MutableResolvedSearchTerm extends ResolvedSearchTerm {
+    public static class MutableResolvedSearchTerm extends ResolvedSearchTerm {
         // Fields that we can override in the ResolvedSearchTerm.
         private String mContextLanguage;
         private long mLoggedEventId;
@@ -193,8 +193,7 @@ class ContextualSearchFakeServer
          * Called in response to the
          * {@link ContextualSearchManager#nativeStartSearchTermResolutionRequest} method.
          * @param isNetworkUnavailable Indicates if the network is unavailable, in which case all
-         *         other
-         *        parameters should be ignored.
+         *        other parameters should be ignored.
          * @param responseCode The HTTP response code. If the code is not OK, the query should be
          *        ignored.
          * @param searchTerm The term to use in our subsequent search.
@@ -204,8 +203,7 @@ class ContextualSearchFakeServer
          *        A MID is a unique identifier for an entity in the Search Knowledge Graph.
          * @param doPreventPreload Whether we should prevent preloading on this search.
          * @param selectionStartAdjust A positive number of characters that the start of the
-         *         existing
-         *        selection should be expanded by.
+         *        existing selection should be expanded by.
          * @param selectionEndAdjust A positive number of characters that the end of the existing
          *        selection should be expanded by.
          * @param contextLanguage The language of the original search term, or an empty string.
@@ -214,22 +212,24 @@ class ContextualSearchFakeServer
          * @param quickActionUri The URI for the intent associated with the quick action.
          * @param quickActionCategory The {@link QuickActionCategory} for the quick action.
          * @param loggedEventId The EventID logged by the server, which should be recorded and sent
-         *         back
-         *        to the server along with user action results in a subsequent request.
+         *        back to the server along with user action results in a subsequent request.
          * @param searchUrlFull The URL for the full search to present in the overlay, or empty.
          * @param searchUrlPreload The URL for the search to preload into the overlay, or empty.
+         * @param cardTag The primary internal Coca card tag for the resolution, or {@code 0} if
+         *        none.
          */
         MutableResolvedSearchTerm(boolean isNetworkUnavailable, int responseCode,
                 final String searchTerm, final String displayText, final String alternateTerm,
                 final String mid, boolean doPreventPreload, int selectionStartAdjust,
                 int selectionEndAdjust, final String contextLanguage, final String thumbnailUrl,
-                final String caption, final String quickActionUri, final int quickActionCategory,
-                final long loggedEventId, final String searchUrlFull,
-                final String searchUrlPreload) {
+                final String caption, final String quickActionUri,
+                final @QuickActionCategory int quickActionCategory, final long loggedEventId,
+                final String searchUrlFull, final String searchUrlPreload,
+                final @CardTag int cardTag) {
             super(isNetworkUnavailable, responseCode, searchTerm, displayText, alternateTerm, mid,
                     doPreventPreload, selectionStartAdjust, selectionEndAdjust, contextLanguage,
                     thumbnailUrl, caption, quickActionUri, quickActionCategory, loggedEventId,
-                    searchUrlFull, searchUrlPreload);
+                    searchUrlFull, searchUrlPreload, cardTag);
         }
 
         @Override

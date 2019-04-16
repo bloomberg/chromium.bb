@@ -195,7 +195,7 @@ void ContextualSearchManager::OnSearchTermResolutionResponse(
       j_thumbnail_url, j_caption, j_quick_action_uri,
       resolved_search_term.quick_action_category,
       resolved_search_term.logged_event_id, j_search_url_full,
-      j_search_url_preload);
+      j_search_url_preload, resolved_search_term.coca_card_tag);
 }
 
 void ContextualSearchManager::OnTextSurroundingSelectionAvailable(

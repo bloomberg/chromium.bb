@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.contextualsearch;
 
 import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE;
+import static org.chromium.chrome.browser.contextualsearch.ContextualSearchFakeServer.MutableResolvedSearchTerm;
 import static org.chromium.chrome.browser.multiwindow.MultiWindowTestHelper.waitForSecondChromeTabbedActivity;
 import static org.chromium.chrome.browser.multiwindow.MultiWindowTestHelper.waitForTabs;
 import static org.chromium.content_public.browser.test.util.CriteriaHelper.DEFAULT_POLLING_INTERVAL;
@@ -2313,9 +2314,11 @@ public class ContextualSearchManagerTest {
         clickWordNode("intelligence");
         waitForPanelToPeek();
 
-        fakeResponse(new ResolvedSearchTerm(false, 200, "Intelligence",
-                "United States Intelligence", "alternate-term", null, false, -14, 0, "", "", "", "",
-                QuickActionCategory.NONE, 0, "", ""));
+        MutableResolvedSearchTerm resolvedSearchTerm =
+                new ContextualSearchFakeServer.MutableResolvedSearchTerm(
+                        false, 200, "Intelligence", "United States Intelligence");
+        resolvedSearchTerm.setSelectionStartAdjust(-14);
+        fakeResponse(resolvedSearchTerm);
         waitForSelectionToBe("United States Intelligence");
     }
 

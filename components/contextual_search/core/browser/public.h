@@ -25,6 +25,8 @@ extern const int kContextualCardsQuickActionsIntegration;
 extern const int kContextualCardsUrlActionsIntegration;
 // Support of dictionary definitions in the bar.
 extern const int kContextualCardsDefinitionsIntegration;
+// Support of translations in the bar as part of the resolve request.
+extern const int kContextualCardsTranslationsIntegration;
 // Support of unlimited cards with diagnostics enabled, for development.
 extern const int kContextualCardsDiagnosticIntegration;
 

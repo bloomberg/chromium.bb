@@ -14,10 +14,11 @@ const int kContextualCardsEntityIntegration = 1;
 const int kContextualCardsQuickActionsIntegration = 2;
 const int kContextualCardsUrlActionsIntegration = 3;
 const int kContextualCardsDefinitionsIntegration = 4;
-const int kContextualCardsDiagnosticIntegration = 9;
+const int kContextualCardsTranslationsIntegration = 5;
+const int kContextualCardsDiagnosticIntegration = 99;
 
 const int kContextualCardsSimplifiedServerMixin = 100;
 const char kContextualCardsSimplifiedServerMixinChar[] = "100";
-const char kContextualCardsSimplifiedServerWithDiagnosticChar[] = "109";
+const char kContextualCardsSimplifiedServerWithDiagnosticChar[] = "199";
 
 }  // namespace contextual_search

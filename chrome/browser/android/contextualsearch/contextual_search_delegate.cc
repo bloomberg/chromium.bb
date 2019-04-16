@@ -61,6 +61,7 @@ const char kContextualSearchCaption[] = "caption";
 const char kContextualSearchThumbnail[] = "thumbnail";
 const char kContextualSearchAction[] = "action";
 const char kContextualSearchCategory[] = "category";
+const char kContextualSearchCardTag[] = "card_tag";
 const char kContextualSearchSearchUrlFull[] = "search_url_full";
 const char kContextualSearchSearchUrlPreload[] = "search_url_preload";
 
@@ -215,16 +216,17 @@ ContextualSearchDelegate::GetResolvedSearchTermFromJson(
   std::string thumbnail_url = "";
   std::string caption = "";
   std::string quick_action_uri = "";
-  int64_t logged_event_id = 0;
   QuickActionCategory quick_action_category = QUICK_ACTION_CATEGORY_NONE;
+  int64_t logged_event_id = 0;
   std::string search_url_full = "";
   std::string search_url_preload = "";
+  int coca_card_tag = 0;
 
   DecodeSearchTermFromJsonResponse(
       json_string, &search_term, &display_text, &alternate_term, &mid,
       &prevent_preload, &mention_start, &mention_end, &context_language,
       &thumbnail_url, &caption, &quick_action_uri, &quick_action_category,
-      &logged_event_id, &search_url_full, &search_url_preload);
+      &logged_event_id, &search_url_full, &search_url_preload, &coca_card_tag);
   if (mention_start != 0 || mention_end != 0) {
     // Sanity check that our selection is non-zero and it is less than
     // 100 characters as that would make contextual search bar hide.
@@ -247,7 +249,7 @@ ContextualSearchDelegate::GetResolvedSearchTermFromJson(
       prevent_preload == kDoPreventPreloadValue, start_adjust, end_adjust,
       context_language, thumbnail_url, caption, quick_action_uri,
       quick_action_category, logged_event_id, search_url_full,
-      search_url_preload));
+      search_url_preload, coca_card_tag));
 }
 
 std::string ContextualSearchDelegate::BuildRequestUrl(
@@ -269,7 +271,11 @@ std::string ContextualSearchDelegate::BuildRequestUrl(
   int contextual_cards_version =
       contextual_search::kContextualCardsUrlActionsIntegration;
   if (base::FeatureList::IsEnabled(
-          chrome::android::kContextualSearchDefinitions)) {
+          chrome::android::kContextualSearchTranslationModel)) {
+    contextual_cards_version =
+        contextual_search::kContextualCardsTranslationsIntegration;
+  } else if (base::FeatureList::IsEnabled(
+                 chrome::android::kContextualSearchDefinitions)) {
     contextual_cards_version =
         contextual_search::kContextualCardsDefinitionsIntegration;
   }
@@ -459,7 +465,8 @@ void ContextualSearchDelegate::DecodeSearchTermFromJsonResponse(
     QuickActionCategory* quick_action_category,
     int64_t* logged_event_id,
     std::string* search_url_full,
-    std::string* search_url_preload) {
+    std::string* search_url_preload,
+    int* coca_card_tag) {
   bool contains_xssi_escape =
       base::StartsWith(response, kXssiEscape, base::CompareCase::SENSITIVE);
   const std::string& proper_json =
@@ -506,13 +513,13 @@ void ContextualSearchDelegate::DecodeSearchTermFromJsonResponse(
     }
   }
 
-  // Contextual Cards V1 Integration.
+  // Contextual Cards V1+ Integration.
   // Get the basic Bar data for Contextual Cards integration directly
   // from the root.
   dict->GetString(kContextualSearchCaption, caption);
   dict->GetString(kContextualSearchThumbnail, thumbnail_url);
 
-  // Contextual Cards V2 Integration.
+  // Contextual Cards V2+ Integration.
   // Get the Single Action data.
   dict->GetString(kContextualSearchAction, quick_action_uri);
   std::string quick_action_category_string;
@@ -531,10 +538,15 @@ void ContextualSearchDelegate::DecodeSearchTermFromJsonResponse(
     }
   }
 
-  // Contextual Cards V4 may also provide full search URLs to use in the
+  // Contextual Cards V4+ may also provide full search URLs to use in the
   // overlay.
   dict->GetString(kContextualSearchSearchUrlFull, search_url_full);
   dict->GetString(kContextualSearchSearchUrlPreload, search_url_preload);
+
+  // Contextual Cards V5+ integration can provide the primary card tag, so
+  // clients can tell what kind of card they have received.
+  // TODO(donnd): make sure this works with a non-integer or missing value!
+  dict->GetInteger(kContextualSearchCardTag, coca_card_tag);
 
   // Any Contextual Cards integration.
   // For testing purposes check if there was a diagnostic from Contextual
