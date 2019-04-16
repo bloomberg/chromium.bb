@@ -6588,9 +6588,7 @@ TEST_F(FormStructureTest, RationalizeRepreatedFields_LastFieldRationalized) {
   EXPECT_EQ(ADDRESS_HOME_STATE, forms[0]->field(5)->Type().GetStorableType());
 }
 
-INSTANTIATE_TEST_SUITE_P(,
-                         ParameterizedFormStructureTest,
-                         testing::Values(true, false));
+INSTANTIATE_TEST_SUITE_P(, ParameterizedFormStructureTest, testing::Bool());
 
 // Tests that, when the flag is off, we will not set the predicted type to
 // unknown for fields that have no server data and autocomplete off, and when
@@ -6661,6 +6659,151 @@ TEST_P(ParameterizedFormStructureTest,
   EXPECT_EQ(NAME_FIRST, forms[0]->field(0)->Type().GetStorableType());
   EXPECT_EQ(ADDRESS_HOME_LINE1, forms[0]->field(2)->Type().GetStorableType());
   EXPECT_EQ(ADDRESS_HOME_COUNTRY, forms[0]->field(3)->Type().GetStorableType());
+}
+
+struct RationalizationTypeRelationshipsTestParams {
+  ServerFieldType server_type;
+  ServerFieldType required_type;
+};
+class RationalizationFieldTypeFilterTest
+    : public FormStructureTest,
+      public testing::WithParamInterface<ServerFieldType> {};
+class RationalizationFieldTypeRelationshipsTest
+    : public FormStructureTest,
+      public testing::WithParamInterface<
+          RationalizationTypeRelationshipsTestParams> {};
+
+INSTANTIATE_TEST_SUITE_P(,
+                         RationalizationFieldTypeFilterTest,
+                         testing::Values(PHONE_HOME_COUNTRY_CODE));
+
+INSTANTIATE_TEST_SUITE_P(,
+                         RationalizationFieldTypeRelationshipsTest,
+                         testing::Values(
+                             RationalizationTypeRelationshipsTestParams{
+                                 PHONE_HOME_COUNTRY_CODE, PHONE_HOME_NUMBER},
+                             RationalizationTypeRelationshipsTestParams{
+                                 PHONE_HOME_COUNTRY_CODE,
+                                 PHONE_HOME_CITY_AND_NUMBER}));
+
+// Tests that the rationalization logic will filter out fields of type |param|
+// when there is no other required type.
+TEST_P(RationalizationFieldTypeFilterTest, Rationalization_Rules_Filter_Out) {
+  ServerFieldType filtered_off_field = GetParam();
+
+  FormData form;
+  form.url = GURL("http://foo.com");
+  FormFieldData field;
+  field.form_control_type = "text";
+  field.max_length = 10000;
+  field.should_autocomplete = true;
+
+  // Just adding >=3 random fields to trigger rationalization.
+  field.label = ASCIIToUTF16("First Name");
+  field.name = ASCIIToUTF16("firstName");
+  form.fields.push_back(field);
+  field.label = ASCIIToUTF16("Last Name");
+  field.name = ASCIIToUTF16("lastName");
+  form.fields.push_back(field);
+  field.label = ASCIIToUTF16("Address");
+  field.name = ASCIIToUTF16("address");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Something under test");
+  field.name = ASCIIToUTF16("tested-thing");
+  form.fields.push_back(field);
+
+  AutofillQueryResponseContents response;
+  response.add_field()->set_overall_type_prediction(NAME_FIRST);
+  response.add_field()->set_overall_type_prediction(NAME_LAST);
+  response.add_field()->set_overall_type_prediction(ADDRESS_HOME_LINE1);
+  response.add_field()->set_overall_type_prediction(filtered_off_field);
+
+  std::string response_string;
+  ASSERT_TRUE(response.SerializeToString(&response_string));
+
+  FormStructure form_structure(form);
+
+  // Will identify the sections based on the heuristics types.
+  form_structure.DetermineHeuristicTypes();
+
+  std::vector<FormStructure*> forms;
+  forms.push_back(&form_structure);
+
+  // Will call RationalizeFieldTypePredictions
+  FormStructure::ParseQueryResponse(response_string, forms, nullptr);
+
+  ASSERT_EQ(1U, forms.size());
+  ASSERT_EQ(4U, forms[0]->field_count());
+
+  EXPECT_EQ(NAME_FIRST, forms[0]->field(0)->Type().GetStorableType());
+  EXPECT_EQ(NAME_LAST, forms[0]->field(1)->Type().GetStorableType());
+  EXPECT_EQ(ADDRESS_HOME_LINE1, forms[0]->field(2)->Type().GetStorableType());
+
+  // Last field's type should have been overwritten to expected.
+  EXPECT_EQ(UNKNOWN_TYPE, forms[0]->field(3)->Type().GetStorableType());
+}
+
+// Tests that the rationalization logic will not filter out fields of type
+// |param| when there is another field with a required type.
+TEST_P(RationalizationFieldTypeRelationshipsTest,
+       Rationalization_Rules_Relationships) {
+  RationalizationTypeRelationshipsTestParams test_params = GetParam();
+
+  FormData form;
+  form.url = GURL("http://foo.com");
+  FormFieldData field;
+  field.form_control_type = "text";
+  field.max_length = 10000;
+  field.should_autocomplete = true;
+
+  // Just adding >=3 random fields to trigger rationalization.
+  field.label = ASCIIToUTF16("First Name");
+  field.name = ASCIIToUTF16("firstName");
+  form.fields.push_back(field);
+  field.label = ASCIIToUTF16("Last Name");
+  field.name = ASCIIToUTF16("lastName");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Some field with required type");
+  field.name = ASCIIToUTF16("some-name");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Something under test");
+  field.name = ASCIIToUTF16("tested-thing");
+  form.fields.push_back(field);
+
+  AutofillQueryResponseContents response;
+  response.add_field()->set_overall_type_prediction(NAME_FIRST);
+  response.add_field()->set_overall_type_prediction(NAME_LAST);
+  response.add_field()->set_overall_type_prediction(test_params.required_type);
+  response.add_field()->set_overall_type_prediction(test_params.server_type);
+
+  std::string response_string;
+  ASSERT_TRUE(response.SerializeToString(&response_string));
+
+  FormStructure form_structure(form);
+
+  // Will identify the sections based on the heuristics types.
+  form_structure.DetermineHeuristicTypes();
+
+  std::vector<FormStructure*> forms;
+  forms.push_back(&form_structure);
+
+  // Will call RationalizeFieldTypePredictions
+  FormStructure::ParseQueryResponse(response_string, forms, nullptr);
+
+  ASSERT_EQ(1U, forms.size());
+  ASSERT_EQ(4U, forms[0]->field_count());
+
+  EXPECT_EQ(NAME_FIRST, forms[0]->field(0)->Type().GetStorableType());
+  EXPECT_EQ(NAME_LAST, forms[0]->field(1)->Type().GetStorableType());
+  EXPECT_EQ(test_params.required_type,
+            forms[0]->field(2)->Type().GetStorableType());
+
+  // Last field's type should have been overwritten to expected.
+  EXPECT_EQ(test_params.server_type,
+            forms[0]->field(3)->Type().GetStorableType());
 }
 
 TEST_F(FormStructureTest, AllowBigForms) {
