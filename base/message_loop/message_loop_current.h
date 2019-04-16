@@ -23,6 +23,7 @@ class TestWebThreadBundle;
 
 namespace base {
 
+class MessageLoopBase;
 class MessageLoopImpl;
 
 namespace sequence_manager {
@@ -171,7 +172,7 @@ class BASE_EXPORT MessageLoopCurrent {
     ~ScopedNestableTaskAllower();
 
    private:
-    sequence_manager::internal::SequenceManagerImpl* const sequence_manager_;
+    MessageLoopBase* const loop_;
     const bool old_state_;
   };
 
@@ -186,12 +187,9 @@ class BASE_EXPORT MessageLoopCurrent {
   bool IsIdleForTesting();
 
  protected:
-  explicit MessageLoopCurrent(
-      sequence_manager::internal::SequenceManagerImpl* sequence_manager)
-      : current_(sequence_manager) {}
+  explicit MessageLoopCurrent(MessageLoopBase* current) : current_(current) {}
 
-  static sequence_manager::internal::SequenceManagerImpl*
-  GetCurrentSequenceManagerImpl();
+  static MessageLoopBase* GetCurrentMessageLoopBase();
 
   friend class MessageLoopImpl;
   friend class MessagePumpLibeventTest;
@@ -201,7 +199,7 @@ class BASE_EXPORT MessageLoopCurrent {
   friend class MessageLoopTaskRunnerTest;
   friend class web::TestWebThreadBundle;
 
-  sequence_manager::internal::SequenceManagerImpl* current_;
+  MessageLoopBase* current_;
 };
 
 #if !defined(OS_NACL)
@@ -252,8 +250,7 @@ class BASE_EXPORT MessageLoopCurrentForUI : public MessageLoopCurrent {
 #endif
 
  private:
-  explicit MessageLoopCurrentForUI(
-      sequence_manager::internal::SequenceManagerImpl* current)
+  explicit MessageLoopCurrentForUI(MessageLoopBase* current)
       : MessageLoopCurrent(current) {}
 
   MessagePumpForUI* GetMessagePumpForUI() const;
@@ -309,8 +306,7 @@ class BASE_EXPORT MessageLoopCurrentForIO : public MessageLoopCurrent {
 #endif  // !defined(OS_NACL_SFI)
 
  private:
-  explicit MessageLoopCurrentForIO(
-      sequence_manager::internal::SequenceManagerImpl* current)
+  explicit MessageLoopCurrentForIO(MessageLoopBase* current)
       : MessageLoopCurrent(current) {}
 
   MessagePumpForIO* GetMessagePumpForIO() const;
