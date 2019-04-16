@@ -8,6 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "chromeos/dbus/power_manager_client.h"
+#include "ui/views/widget/widget_observer.h"
 
 namespace chromeos {
 
@@ -15,7 +16,8 @@ class IdleActionWarningDialogView;
 
 // Listens for notifications that the idle action is imminent and shows a
 // warning dialog to the user.
-class IdleActionWarningObserver : public PowerManagerClient::Observer {
+class IdleActionWarningObserver : public PowerManagerClient::Observer,
+                                  public views::WidgetObserver {
  public:
   IdleActionWarningObserver();
   ~IdleActionWarningObserver() override;
@@ -26,7 +28,10 @@ class IdleActionWarningObserver : public PowerManagerClient::Observer {
   void IdleActionDeferred() override;
 
  private:
-  IdleActionWarningDialogView* warning_dialog_;  // Not owned.
+  // views::WidgetObserver:
+  void OnWidgetClosing(views::Widget* widget) override;
+
+  IdleActionWarningDialogView* warning_dialog_ = nullptr;  // Not owned.
 
   DISALLOW_COPY_AND_ASSIGN(IdleActionWarningObserver);
 };
