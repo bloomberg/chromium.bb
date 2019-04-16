@@ -62,11 +62,11 @@ class span {
 };
 
 template <typename T>
-span<T> SpanFromVector(const std::vector<T>& v) {
+span<T> SpanFrom(const std::vector<T>& v) {
   return span<T>(v.data(), v.size());
 }
 
-inline span<uint8_t> SpanFromStdString(const std::string& v) {
+inline span<uint8_t> SpanFrom(const std::string& v) {
   return span<uint8_t>(reinterpret_cast<const uint8_t*>(v.data()), v.size());
 }
 
@@ -105,6 +105,8 @@ enum class Error {
   CBOR_STRING8_MUST_BE_7BIT = 0x1c,
   CBOR_TRAILING_JUNK = 0x1d,
   CBOR_MAP_START_EXPECTED = 0x1e,
+  CBOR_MAP_STOP_EXPECTED = 0x1f,
+  CBOR_ENVELOPE_SIZE_LIMIT_EXCEEDED = 0x20,
 };
 
 // A status value with position that can be copied. The default status
@@ -399,6 +401,20 @@ class CBORTokenizer {
 // The client is responsible for discarding the already received information in
 // that case.
 void ParseCBOR(span<uint8_t> bytes, StreamingParserHandler* out);
+
+// =============================================================================
+// cbor::AppendString8EntryToMap - for limited in-place editing of messages
+// =============================================================================
+
+// Modifies the |cbor| message by appending a new key/value entry at the end
+// of the map. Patches up the envelope size; Status.ok() iff successful.
+// If not successful, |cbor| may be corrupted after this call.
+Status AppendString8EntryToCBORMap(span<uint8_t> string8_key,
+                                   span<uint8_t> string8_value,
+                                   std::vector<uint8_t>* cbor);
+Status AppendString8EntryToCBORMap(span<uint8_t> string8_key,
+                                   span<uint8_t> string8_value,
+                                   std::string* cbor);
 
 namespace internals {  // Exposed only for writing tests.
 int8_t ReadTokenStart(span<uint8_t> bytes,
