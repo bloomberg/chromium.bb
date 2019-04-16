@@ -17992,6 +17992,9 @@
     "isolated_scripts": [
       {
         "isolate_name": "resource_sizes_cronet_sample_apk",
+        "merge": {
+          "script": "//tools/perf/process_perf_results.py"
+        },
         "name": "resource_sizes_cronet_sample_apk",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -18051,6 +18054,9 @@
     "isolated_scripts": [
       {
         "isolate_name": "resource_sizes_cronet_sample_apk",
+        "merge": {
+          "script": "//tools/perf/process_perf_results.py"
+        },
         "name": "resource_sizes_cronet_sample_apk",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -19033,6 +19039,9 @@
     "isolated_scripts": [
       {
         "isolate_name": "resource_sizes_cronet_sample_apk",
+        "merge": {
+          "script": "//tools/perf/process_perf_results.py"
+        },
         "name": "resource_sizes_cronet_sample_apk",
         "swarming": {
           "can_use_on_swarming_builders": false
