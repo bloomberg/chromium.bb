@@ -9,6 +9,12 @@
 
 namespace cryptauthv2 {
 
+const char kTestDeviceSyncGroupName[] = "device_sync_group_name";
+const char kTestGcmRegistrationId[] = "gcm_registraion_id";
+const char kTestInstanceId[] = "instance_id";
+const char kTestInstanceIdToken[] = "instance_id_token";
+const char kTestLongDeviceId[] = "long_device_id";
+
 // Attributes of test ClientDirective.
 const int32_t kTestClientDirectiveRetryAttempts = 3;
 const int64_t kTestClientDirectiveCheckinDelayMillis = 2592000000;  // 30 days
@@ -21,12 +27,6 @@ const char kTestClientDirectivePolicyReferenceName[] =
     "client_directive_policy_reference_name";
 const TargetService kTestClientDirectiveInvokeNextService =
     TargetService::DEVICE_SYNC;
-
-// Attributes of test ClientAppMetadata.
-const char kTestGcmRegistrationId[] = "gcm_registraion_id";
-const char kTestInstanceId[] = "instance_id";
-const char kTestInstanceIdToken[] = "instance_id_token";
-const char kTestLongDeviceId[] = "long_device_id";
 
 ClientMetadata BuildClientMetadata(
     int32_t retry_count,
@@ -53,6 +53,36 @@ KeyDirective BuildKeyDirective(const PolicyReference& policy_reference,
   key_directive.set_enroll_time_millis(enroll_time_millis);
 
   return key_directive;
+}
+
+RequestContext BuildRequestContext(const std::string& group,
+                                   const ClientMetadata& client_metadata,
+                                   const std::string& device_id,
+                                   const std::string& device_id_token) {
+  RequestContext request_context;
+  request_context.set_group(group);
+  request_context.mutable_client_metadata()->CopyFrom(client_metadata);
+  request_context.set_device_id(device_id);
+  request_context.set_device_id_token(device_id_token);
+
+  return request_context;
+}
+
+DeviceFeatureStatus BuildDeviceFeatureStatus(
+    const std::string& device_id,
+    const std::vector<std::pair<std::string /* feature_type */,
+                                bool /* enabled */>>& feature_statuses) {
+  DeviceFeatureStatus device_feature_status;
+  device_feature_status.set_device_id(device_id);
+
+  for (const auto& feature_status : feature_statuses) {
+    DeviceFeatureStatus::FeatureStatus* fs =
+        device_feature_status.add_feature_statuses();
+    fs->set_feature_type(feature_status.first);
+    fs->set_enabled(feature_status.second);
+  }
+
+  return device_feature_status;
 }
 
 const ClientAppMetadata& GetClientAppMetadataForTest() {
@@ -108,6 +138,16 @@ const ClientDirective& GetClientDirectiveForTest() {
     return client_directive;
   }());
   return *client_directive;
+}
+
+const RequestContext& GetRequestContextForTest() {
+  static const base::NoDestructor<RequestContext> request_context([] {
+    return BuildRequestContext(
+        kTestDeviceSyncGroupName,
+        BuildClientMetadata(0 /* retry_count */, ClientMetadata::MANUAL),
+        kTestInstanceId, kTestInstanceIdToken);
+  }());
+  return *request_context;
 }
 
 }  // namespace cryptauthv2
