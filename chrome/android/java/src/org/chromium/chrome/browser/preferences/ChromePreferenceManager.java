@@ -290,6 +290,9 @@ public class ChromePreferenceManager {
     public static final String TWA_DIALOG_NUMBER_OF_DIMSISSALS_ON_CLEAR_DATA =
             "twa_dialog_number_of_dismissals_on_clear_data";
 
+    /** Key for deferred recording of WebAPK uninstalls. */
+    public static final String WEBAPK_NUMBER_OF_UNINSTALLS = "webapk_number_of_uninstalls";
+
     public static final String INTEREST_FEED_CONTENT_SUGGESTIONS_KEY =
             "interest_feed_content_suggestions";
 
