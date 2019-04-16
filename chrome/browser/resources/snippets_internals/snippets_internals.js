@@ -102,13 +102,6 @@ function getCategoryRankerProperties() {
   });
 }
 
-/* Check if pushing dummy suggestions is possible. */
-function checkIfPushingDummySuggestionPossible() {
-  pageHandler.isPushingDummySuggestionPossible().then(function(response) {
-    $('push-dummy-suggestion').disabled = !response.result;
-  });
-}
-
 /* Retrieve the remote content suggestions properties. */
 function getRemoteContentSuggestionsProperties() {
   pageHandler.getRemoteContentSuggestionsProperties().then(function(response) {
@@ -194,7 +187,6 @@ function refreshContent() {
   getUserClassifierProperties();
   getCategoryRankerProperties();
   getRemoteContentSuggestionsProperties();
-  checkIfPushingDummySuggestionPossible();
 }
 
 /* Setup buttons and other event listeners. */
@@ -230,14 +222,6 @@ function setupEventListeners() {
 
       // After we've fetched, update the page.
       getRemoteContentSuggestionsProperties();
-    });
-  });
-
-  $('push-dummy-suggestion').addEventListener('click', function(event) {
-    const content = $('push-dummy-suggestion').textContent;
-    $('push-dummy-suggestion').textContent = '...';
-    pageHandler.pushDummySuggestionInBackground(10).then(function(response) {
-      $('push-dummy-suggestion').textContent = content;
     });
   });
 

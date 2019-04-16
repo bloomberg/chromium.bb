@@ -206,8 +206,6 @@
 #include "chrome/browser/media/android/cdm/media_drm_origin_id_manager.h"
 #include "components/cdm/browser/media_drm_storage_impl.h"
 #include "components/feed/buildflags.h"
-#include "components/ntp_snippets/breaking_news/breaking_news_gcm_app_handler.h"
-#include "components/ntp_snippets/breaking_news/subscription_manager_impl.h"
 #include "components/ntp_snippets/category_rankers/click_based_category_ranker.h"
 #include "components/ntp_tiles/popular_sites_impl.h"
 #if BUILDFLAG(ENABLE_FEED_IN_CHROME)
@@ -421,7 +419,19 @@ const char kDismissedAssetDownloadSuggestions[] =
     "ntp_suggestions.downloads.assets.dismissed_ids";
 const char kDismissedOfflinePageDownloadSuggestions[] =
     "ntp_suggestions.downloads.offline_pages.dismissed_ids";
-#endif
+
+// Deprecated 4/2019.
+const char kBreakingNewsSubscriptionDataToken[] =
+    "ntp_suggestions.breaking_news_subscription_data.token";
+const char kBreakingNewsSubscriptionDataIsAuthenticated[] =
+    "ntp_suggestions.breaking_news_subscription_data.is_authenticated";
+const char kBreakingNewsGCMSubscriptionTokenCache[] =
+    "ntp_suggestions.breaking_news_gcm_subscription_token_cache";
+const char kBreakingNewsGCMLastTokenValidationTime[] =
+    "ntp_suggestions.breaking_news_gcm_last_token_validation_time";
+const char kBreakingNewsGCMLastForcedSubscriptionTime[] =
+    "ntp_suggestions.breaking_news_gcm_last_forced_subscription_time";
+#endif  // defined(OS_ANDROID)
 
 // Register prefs used only for migration (clearing or moving to a new key).
 void RegisterProfilePrefsForMigration(
@@ -463,7 +473,16 @@ void RegisterProfilePrefsForMigration(
 #if defined(OS_ANDROID)
   registry->RegisterListPref(kDismissedAssetDownloadSuggestions);
   registry->RegisterListPref(kDismissedOfflinePageDownloadSuggestions);
-#endif
+
+  registry->RegisterStringPref(kBreakingNewsSubscriptionDataToken,
+                               std::string());
+  registry->RegisterBooleanPref(kBreakingNewsSubscriptionDataIsAuthenticated,
+                                false);
+  registry->RegisterStringPref(kBreakingNewsGCMSubscriptionTokenCache,
+                               std::string());
+  registry->RegisterInt64Pref(kBreakingNewsGCMLastTokenValidationTime, 0);
+  registry->RegisterInt64Pref(kBreakingNewsGCMLastForcedSubscriptionTime, 0);
+#endif  // defined(OS_ANDROID)
 }
 
 }  // namespace
@@ -754,9 +773,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
       registry);
   ContentSuggestionsNotifierService::RegisterProfilePrefs(registry);
   explore_sites::HistoryStatisticsReporter::RegisterPrefs(registry);
-  ntp_snippets::BreakingNewsGCMAppHandler::RegisterProfilePrefs(registry);
   ntp_snippets::ClickBasedCategoryRanker::RegisterProfilePrefs(registry);
-  ntp_snippets::SubscriptionManagerImpl::RegisterProfilePrefs(registry);
   OomInterventionDecider::RegisterProfilePrefs(registry);
 #endif  // defined(OS_ANDROID)
 
@@ -1021,6 +1038,13 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
   // Added 4/2019.
   profile_prefs->ClearPref(kDismissedAssetDownloadSuggestions);
   profile_prefs->ClearPref(kDismissedOfflinePageDownloadSuggestions);
+
+  // Added 4/2019.
+  profile_prefs->ClearPref(kBreakingNewsSubscriptionDataToken);
+  profile_prefs->ClearPref(kBreakingNewsSubscriptionDataIsAuthenticated);
+  profile_prefs->ClearPref(kBreakingNewsGCMSubscriptionTokenCache);
+  profile_prefs->ClearPref(kBreakingNewsGCMLastTokenValidationTime);
+  profile_prefs->ClearPref(kBreakingNewsGCMLastForcedSubscriptionTime);
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)

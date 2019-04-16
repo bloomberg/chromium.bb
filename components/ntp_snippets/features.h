@@ -32,9 +32,6 @@ extern const base::Feature* const kAllFeatures[];
 
 extern const base::Feature kArticleSuggestionsFeature;
 
-// Feature to listen for GCM push updates from the server.
-extern const base::Feature kBreakingNewsPushFeature;
-
 // Feature for simple experimental comparison and validation of changes since
 // M58: enabling this brings back the M58 Stable fetching schedule (which is
 // suitable for Holdback groups).

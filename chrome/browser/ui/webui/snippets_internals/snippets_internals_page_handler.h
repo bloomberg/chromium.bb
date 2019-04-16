@@ -41,11 +41,6 @@ class SnippetsInternalsPageHandler
   void FetchSuggestionsInBackground(
       int64_t,
       FetchSuggestionsInBackgroundCallback) override;
-  void IsPushingDummySuggestionPossible(
-      IsPushingDummySuggestionPossibleCallback) override;
-  void PushDummySuggestionInBackground(
-      int64_t,
-      PushDummySuggestionInBackgroundCallback) override;
   void GetLastJson(GetLastJsonCallback) override;
   void ResetNotificationState() override;
   void GetSuggestionsByCategory(GetSuggestionsByCategoryCallback) override;
@@ -64,8 +59,6 @@ class SnippetsInternalsPageHandler
 
   void FetchSuggestionsInBackgroundImpl(FetchSuggestionsInBackgroundCallback);
   void GetSuggestionsByCategoryImpl(GetSuggestionsByCategoryCallback);
-  void PushDummySuggestionInBackgroundImpl(
-      PushDummySuggestionInBackgroundCallback);
 
   // Misc. methods.
   void CollectDismissedSuggestions(
@@ -94,7 +87,6 @@ class SnippetsInternalsPageHandler
 
   // Timers to delay actions.
   base::OneShotTimer suggestion_fetch_timer_;
-  base::OneShotTimer suggestion_push_timer_;
 
   // Handle back to the page by which we can update.
   snippets_internals::mojom::PagePtr page_;
