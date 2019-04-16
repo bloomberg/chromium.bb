@@ -27,6 +27,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -113,6 +114,7 @@ public class ExploreSitesPageTest {
 
     @Test
     @SmallTest
+    @DisabledTest
     @Feature({"ExploreSites", "RenderTest"})
     public void testScrolledLayout_withBack() throws Exception {
         final int scrollPosition = 2;
