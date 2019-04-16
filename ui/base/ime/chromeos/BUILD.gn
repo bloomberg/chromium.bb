@@ -52,8 +52,9 @@ jumbo_component("chromeos") {
   ]
 
   deps = [
-    "//chromeos",
+    "//chromeos/constants",
     "//chromeos/ime:gencode",
+    "//chromeos/system",
     "//services/ws/public/cpp/input_devices",
     "//third_party/icu",
     "//ui/base",

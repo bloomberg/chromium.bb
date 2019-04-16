@@ -218,6 +218,6 @@ test("display_unittests") {
   }
 
   if (is_chromeos) {
-    deps += [ "//chromeos" ]
+    deps += [ "//chromeos/constants" ]
   }
 }

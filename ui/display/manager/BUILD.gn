@@ -67,6 +67,6 @@ jumbo_component("manager") {
   defines = [ "DISPLAY_MANAGER_IMPLEMENTATION" ]
 
   if (is_chromeos) {
-    deps += [ "//chromeos" ]
+    deps += [ "//chromeos/system" ]
   }
 }

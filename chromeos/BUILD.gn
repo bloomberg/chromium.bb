@@ -40,8 +40,6 @@ component("chromeos") {
     "//third_party/protobuf:protobuf_lite",
   ]
   sources = [
-    "app_mode/kiosk_oem_manifest_parser.cc",
-    "app_mode/kiosk_oem_manifest_parser.h",
     "hugepage_text/hugepage_text.cc",
     "hugepage_text/hugepage_text.h",
     "policy/weekly_time/time_utils.cc",
@@ -70,20 +68,6 @@ component("chromeos") {
     "process_proxy/process_proxy.h",
     "process_proxy/process_proxy_registry.cc",
     "process_proxy/process_proxy_registry.h",
-    "system/cpu_temperature_reader.cc",
-    "system/cpu_temperature_reader.h",
-    "system/devicemode.cc",
-    "system/devicemode.h",
-    "system/factory_ping_embargo_check.cc",
-    "system/factory_ping_embargo_check.h",
-
-    # Used when running mash, both on Linux and on real devices.
-    "system/fake_statistics_provider.cc",
-    "system/fake_statistics_provider.h",
-    "system/name_value_pairs_parser.cc",
-    "system/name_value_pairs_parser.h",
-    "system/statistics_provider.cc",
-    "system/statistics_provider.h",
   ]
   if (current_cpu == "arm" || current_cpu == "x86") {
     defines = [ "BINDER_IPC_32BIT" ]
@@ -167,6 +151,7 @@ test("chromeos_unittests") {
     "//chromeos/network:unit_tests",
     "//chromeos/services:unit_tests",
     "//chromeos/settings:unit_tests",
+    "//chromeos/system:unit_tests",
     "//chromeos/timezone:unit_tests",
     "//chromeos/tpm:unit_tests",
     "//components/onc",
@@ -187,7 +172,6 @@ test("chromeos_unittests") {
     "//url",
   ]
   sources = [
-    "app_mode/kiosk_oem_manifest_parser_unittest.cc",
     "policy/weekly_time/time_utils_unittest.cc",
     "policy/weekly_time/weekly_time_interval_unittest.cc",
     "policy/weekly_time/weekly_time_unittest.cc",
@@ -199,9 +183,6 @@ test("chromeos_unittests") {
     "printing/printer_translator_unittest.cc",
     "process_proxy/process_output_watcher_unittest.cc",
     "process_proxy/process_proxy_unittest.cc",
-    "system/cpu_temperature_reader_unittest.cc",
-    "system/factory_ping_embargo_check_unittest.cc",
-    "system/name_value_pairs_parser_unittest.cc",
     "test/run_all_unittests.cc",
   ]
 

@@ -32,10 +32,10 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "chromeos/app_mode/kiosk_oem_manifest_parser.h"
 #include "chromeos/constants/chromeos_constants.h"
 #include "chromeos/constants/chromeos_paths.h"
 #include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/system/kiosk_oem_manifest_parser.h"
 #include "chromeos/system/name_value_pairs_parser.h"
 
 namespace chromeos {
