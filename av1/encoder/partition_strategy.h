@@ -85,6 +85,61 @@ void av1_get_max_min_partition_features(AV1_COMP *const cpi, MACROBLOCK *x,
 BLOCK_SIZE av1_predict_max_partition(AV1_COMP *const cpi, MACROBLOCK *const x,
                                      const float *features);
 
+// Attempts an early termination after PARTITION_SPLIT.
+void av1_ml_early_term_after_split(AV1_COMP *const cpi, MACROBLOCK *const x,
+                                   PC_TREE *const pc_tree, BLOCK_SIZE bsize,
+                                   int64_t best_rd, int64_t part_none_rd,
+                                   int64_t part_split_rd,
+                                   int64_t *split_block_rd, int mi_row,
+                                   int mi_col,
+                                   int *const terminate_partition_search);
+
+// Use data from first partition pass to emit split_scores and none_scores.
+// Returns 0 if the firstpass data is not valid, 1  otherwise.
+// split_score indicates confidence of picking split partition;
+// none_score indicates confidence of picking none partition;
+int av1_ml_prune_2pass_split_partition(const PC_TREE_STATS *pc_tree_stats,
+                                       BLOCK_SIZE bsize, int *split_score,
+                                       int *none_score);
+
+// Use the rdcost ratio and source var ratio to prune PARTITION_HORZ and
+// PARTITION_VERT.
+// TODO(chiyotsai@google.com): Currently this model does not use q value and has
+// no information about rectangular partitions. Preliminary experiments suggest
+// that we can get better performance by adding in q_index and rectangular
+// sse/var from SMS. We should retrain and tune this model later.
+void av1_ml_prune_rect_partition(const AV1_COMP *const cpi,
+                                 const MACROBLOCK *const x, BLOCK_SIZE bsize,
+                                 int64_t best_rd, int64_t none_rd,
+                                 int64_t *split_rd, int *const dst_prune_horz,
+                                 int *const dst_prune_vert);
+
+// Use a ML model to predict if horz_a, horz_b, vert_a, and vert_b should be
+// considered.
+void av1_ml_prune_ab_partition(BLOCK_SIZE bsize, int part_ctx, int var_ctx,
+                               int64_t best_rd, int64_t horz_rd[2],
+                               int64_t vert_rd[2], int64_t split_rd[4],
+                               int *const horza_partition_allowed,
+                               int *const horzb_partition_allowed,
+                               int *const verta_partition_allowed,
+                               int *const vertb_partition_allowed);
+
+// Use a ML model to predict if horz4 and vert4 should be considered.
+void av1_ml_prune_4_partition(const AV1_COMP *const cpi, MACROBLOCK *const x,
+                              BLOCK_SIZE bsize, int part_ctx, int64_t best_rd,
+                              int64_t horz_rd[2], int64_t vert_rd[2],
+                              int64_t split_rd[4],
+                              int *const partition_horz4_allowed,
+                              int *const partition_vert4_allowed,
+                              unsigned int pb_source_variance, int mi_row,
+                              int mi_col);
+
+// ML-based partition search breakout after PARTITION_NONE
+int av1_ml_predict_breakout(const AV1_COMP *const cpi, BLOCK_SIZE bsize,
+                            const MACROBLOCK *const x,
+                            const RD_STATS *const rd_stats,
+                            unsigned int pb_source_variance);
+
 // A simplified version of set_offsets meant to be used for
 // simple_motion_search.
 static INLINE void set_offsets_for_motion_search(const AV1_COMP *const cpi,
@@ -167,13 +222,5 @@ static INLINE int use_auto_max_partition(AV1_COMP *const cpi,
          cpi->twopass.gf_group.update_type[cpi->twopass.gf_group.index] !=
              INTNL_OVERLAY_UPDATE;
 }
-
-void av1_ml_early_term_after_split(AV1_COMP *const cpi, MACROBLOCK *const x,
-                                   PC_TREE *const pc_tree, BLOCK_SIZE bsize,
-                                   int64_t best_rd, int64_t part_none_rd,
-                                   int64_t part_split_rd,
-                                   int64_t *split_block_rd, int mi_row,
-                                   int mi_col,
-                                   int *const terminate_partition_search);
 
 #endif  // AOM_AV1_ENCODER_PARTITION_STRATEGY_H_
