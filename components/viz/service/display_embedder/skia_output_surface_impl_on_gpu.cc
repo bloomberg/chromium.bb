@@ -757,7 +757,22 @@ void SkiaOutputSurfaceImplOnGpu::CreateFallbackPromiseImage(
   auto surface = SkSurface::MakeRenderTarget(
       gr_context(), SkBudgeted::kNo, image_info, 0 /* sampleCount */,
       kTopLeft_GrSurfaceOrigin, nullptr /* surfaceProps */);
-  DCHECK(!!surface);
+
+  // We don't have driver support for that particular color_type. Try again with
+  // well supported SkColorType. Reads from this may have unusual colors due to
+  // interpreting RGBA as |color_type|, but that's better than completely
+  // undefined.
+  if (!surface) {
+    image_info = SkImageInfo::Make(1 /* width */, 1 /* height */,
+                                   kRGBA_8888_SkColorType, kOpaque_SkAlphaType);
+    surface = SkSurface::MakeRenderTarget(
+        gr_context(), SkBudgeted::kNo, image_info, 0 /* sampleCount */,
+        kTopLeft_GrSurfaceOrigin, nullptr /* surfaceProps */);
+
+    if (!surface)
+      return;
+  }
+
   auto* canvas = surface->getCanvas();
 #if DCHECK_IS_ON()
   canvas->clear(SK_ColorRED);
