@@ -487,6 +487,12 @@ AstNode* ParseType2(Parser* p) {
   } else if (it[0] == '(') {
     p->data = it + 1;
     SkipWhitespace(p);
+    if (p->data[0] == ')') {
+      std::cerr << "It looks like you're trying to provide an empty Type (), "
+                   "which we don't support"
+                << std::endl;
+      return nullptr;
+    }
     AstNode* type = ParseType(p);
     if (!type) {
       return nullptr;
@@ -500,6 +506,12 @@ AstNode* ParseType2(Parser* p) {
   } else if (it[0] == '{') {
     p->data = it + 1;
     SkipWhitespace(p);
+    if (p->data[0] == '}') {
+      std::cerr << "It looks like you're trying to provide an empty Group {}, "
+                   "which we don't support"
+                << std::endl;
+      return nullptr;
+    }
     AstNode* group = ParseGroup(p);
     if (!group) {
       return nullptr;
@@ -541,6 +553,12 @@ AstNode* ParseType2(Parser* p) {
     if (p->data[0] == '(') {
       ++p->data;
       SkipWhitespace(p);
+      if (p->data[0] == ')') {
+        std::cerr << "It looks like you're trying to provide an empty Type &(),"
+                     " which we don't support"
+                  << std::endl;
+        return nullptr;
+      }
       AstNode* group = ParseGroup(p);
       if (!group) {
         return nullptr;

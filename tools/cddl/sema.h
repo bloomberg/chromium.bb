@@ -6,6 +6,7 @@
 #define TOOLS_CDDL_SEMA_H_
 
 #include <cstdint>
+#include <iostream>
 #include <map>
 #include <memory>
 #include <string>
@@ -84,6 +85,40 @@ struct CddlType {
   CddlType* constraint_type;
 };
 
+// Override for << operator to simplify logging.
+// NOTE: If a new enum value is added without modifying this operator, it will
+// lead to a compilation failure because an enum class is used.
+inline std::ostream& operator<<(std::ostream& os,
+                                const CddlType::Which& which) {
+  switch (which) {
+    case CddlType::Which::kDirectChoice:
+      os << "kDirectChoice";
+      break;
+    case CddlType::Which::kValue:
+      os << "kValue";
+      break;
+    case CddlType::Which::kId:
+      os << "kId";
+      break;
+    case CddlType::Which::kMap:
+      os << "kMap";
+      break;
+    case CddlType::Which::kArray:
+      os << "kArray";
+      break;
+    case CddlType::Which::kGroupChoice:
+      os << "kGroupChoice";
+      break;
+    case CddlType::Which::kGroupnameChoice:
+      os << "kGroupnameChoice";
+      break;
+    case CddlType::Which::kTaggedType:
+      os << "kTaggedType";
+      break;
+  }
+  return os;
+}
+
 // Represets a group defined in CDDL.
 // TODO(btolsch): group choices
 struct CddlGroup {
@@ -128,6 +163,25 @@ struct CddlGroup {
 
   std::vector<std::unique_ptr<Entry>> entries;
 };
+
+// Override for << operator to simplify logging.
+// NOTE: If a new enum value is added without modifying this operator, it will
+// lead to a compilation failure because an enum class is used.
+inline std::ostream& operator<<(std::ostream& os,
+                                const CddlGroup::Entry::Which& which) {
+  switch (which) {
+    case CddlGroup::Entry::Which::kUninitialized:
+      os << "kUninitialized";
+      break;
+    case CddlGroup::Entry::Which::kType:
+      os << "kType";
+      break;
+    case CddlGroup::Entry::Which::kGroup:
+      os << "kGroup";
+      break;
+  }
+  return os;
+}
 
 // Represents all CDDL definitions.
 struct CddlSymbolTable {
@@ -258,6 +312,45 @@ struct CppType {
     TaggedType tagged_type;
   };
 };
+
+// Override for << operator to simplify logging.
+// NOTE: If a new enum value is added without modifying this operator, it will
+// lead to a compilation failure because an enum class is used.
+inline std::ostream& operator<<(std::ostream& os, const CppType::Which& which) {
+  switch (which) {
+    case CppType::Which::kUint64:
+      os << "kUint64";
+      break;
+    case CppType::Which::kString:
+      os << "kString";
+      break;
+    case CppType::Which::kBytes:
+      os << "kBytes";
+      break;
+    case CppType::Which::kVector:
+      os << "kVector";
+      break;
+    case CppType::Which::kEnum:
+      os << "kEnum";
+      break;
+    case CppType::Which::kStruct:
+      os << "kStruct";
+      break;
+    case CppType::Which::kOptional:
+      os << "kOptional";
+      break;
+    case CppType::Which::kDiscriminatedUnion:
+      os << "kDiscriminatedUnion";
+      break;
+    case CppType::Which::kTaggedType:
+      os << "kTaggedType";
+      break;
+    case CppType::Which::kUninitialized:
+      os << "kUninitialized";
+      break;
+  }
+  return os;
+}
 
 struct CppSymbolTable {
   std::vector<std::unique_ptr<CppType>> cpp_types;

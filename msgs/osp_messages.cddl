@@ -233,10 +233,9 @@ presentation-connection-message = {
   2: bytes / text ; message
 }
 
-status = &(
-  success: 1
-  failure: 2
-)
+status = {
+  status: text
+}
 
 result = (
   success: 1
