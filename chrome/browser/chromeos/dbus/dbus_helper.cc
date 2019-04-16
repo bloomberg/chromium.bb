@@ -10,6 +10,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chromeos/constants/chromeos_paths.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
+#include "chromeos/dbus/arc_camera_client.h"
 #include "chromeos/dbus/audio/cras_audio_client.h"
 #include "chromeos/dbus/auth_policy/auth_policy_client.h"
 #include "chromeos/dbus/biod/biod_client.h"
@@ -54,6 +55,7 @@ void InitializeDBus() {
   // dbus client initialization for Ash should be done in Shell::Init.
 
   if (bus) {
+    ArcCameraClient::Initialize(bus);
     AuthPolicyClient::Initialize(bus);
     BiodClient::Initialize(bus);  // For device::Fingerprint.
     CrasAudioClient::Initialize(bus);
@@ -68,6 +70,7 @@ void InitializeDBus() {
     SystemClockClient::Initialize(bus);
     UpstartClient::Initialize(bus);
   } else {
+    ArcCameraClient::InitializeFake();
     AuthPolicyClient::InitializeFake();
     BiodClient::InitializeFake();  // For device::Fingerprint.
     CrasAudioClient::InitializeFake();
@@ -104,6 +107,7 @@ void ShutdownDBus() {
   CrasAudioClient::Shutdown();
   BiodClient::Shutdown();
   AuthPolicyClient::Shutdown();
+  ArcCameraClient::Shutdown();
 
   DBusThreadManager::Shutdown();
   SystemSaltGetter::Shutdown();
