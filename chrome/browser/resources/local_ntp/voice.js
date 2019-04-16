@@ -363,6 +363,7 @@ speech.init = function(
     waiting: translatedStrings.waiting,
   };
   view.init(speech.onClick_);
+  view.setTitles(translatedStrings);
   speech.initWebkitSpeech_();
   speech.reset_();
 };
@@ -1443,7 +1444,7 @@ let view = {};
 
 /**
  * ID for the close button in the speech output container.
- * @const @private
+ * @const
  */
 view.CLOSE_BUTTON_ID = 'voice-close-button';
 
@@ -1630,6 +1631,17 @@ view.init = function(onClick) {
 
   text.init();
   microphone.init();
+};
+
+
+/**
+ * Sets accessibility titles/labels for the page elements.
+ * @param {!Object} translatedStrings Dictionary of localized title strings.
+ */
+view.setTitles = function(translatedStrings) {
+  let closeButton = $(view.CLOSE_BUTTON_ID);
+  closeButton.title = translatedStrings.voiceCloseTooltip;
+  closeButton.setAttribute('aria-label', translatedStrings.voiceCloseTooltip);
 };
 
 

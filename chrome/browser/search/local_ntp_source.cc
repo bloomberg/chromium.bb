@@ -300,6 +300,8 @@ std::unique_ptr<base::DictionaryValue> GetTranslatedStrings(bool is_google) {
     AddString(translated_strings.get(), "waiting", IDS_NEW_TAB_VOICE_WAITING);
     AddString(translated_strings.get(), "otherError",
               IDS_NEW_TAB_VOICE_OTHER_ERROR);
+    AddString(translated_strings.get(), "voiceCloseTooltip",
+              IDS_NEW_TAB_VOICE_CLOSE_TOOLTIP);
   }
 
   return translated_strings;
