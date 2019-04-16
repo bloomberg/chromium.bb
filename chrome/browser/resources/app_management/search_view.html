@@ -1,6 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="app_item.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_toolbar/cr_toolbar.html">
 
 <dom-module id="app-management-search-view">
@@ -27,10 +28,9 @@
     <div class="card-container" hidden$="[[isEmptyList_(apps_)]]">
       <template is="dom-repeat" items="[[apps_]]">
         <app-management-app-item app="[[item]]">
-          <paper-icon-button-light slot="right-content"
+          <cr-icon-button slot="right-content"
               class="subpage-arrow app-management-item-arrow" actionable>
-            <button></button>
-          </paper-icon-button-light>
+          </cr-icon-button>
         </app-management-app-item>
       </template>
     </div>
