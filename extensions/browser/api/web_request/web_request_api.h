@@ -499,6 +499,9 @@ class ExtensionWebRequestEventRouter {
   // ExtraInfoSpec::EXTRA_HEADERS set.
   bool HasAnyExtraHeadersListener(void* browser_context);
 
+  // Like above, but for usage on the UI thread.
+  bool HasAnyExtraHeadersListenerOnUI(content::BrowserContext* browser_context);
+
  private:
   friend class WebRequestAPI;
   friend class base::NoDestructor<ExtensionWebRequestEventRouter>;
@@ -718,6 +721,10 @@ class ExtensionWebRequestEventRouter {
   // Helper for |HasAnyExtraHeadersListener()|.
   bool HasAnyExtraHeadersListenerImpl(void* browser_context);
 
+  // Called on the UI thread to update |browser_contexts_with_extra_headers_|.
+  void UpdateExtraHeadersListenerOnUI(void* browser_context,
+                                      bool has_extra_headers_listeners);
+
   // Get the number of listeners - for testing only.
   size_t GetListenerCountForTesting(void* browser_context,
                                     const std::string& event_name);
@@ -731,6 +738,10 @@ class ExtensionWebRequestEventRouter {
 
   // Count of listeners per browser context which request extra headers.
   ExtraHeadersListenerCountMap extra_headers_listener_count_;
+
+  // Accessed on the UI thread to check if a given BrowserContext has any
+  // extra headers listeners.
+  std::set<content::BrowserContext*> browser_contexts_with_extra_headers_;
 
   // A map of network requests that are waiting for at least one event handler
   // to respond.
