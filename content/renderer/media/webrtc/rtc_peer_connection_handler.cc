@@ -1121,7 +1121,8 @@ RTCPeerConnectionHandler::CreateOfferInternal(
   auto transceiver_states = transceiver_state_surfacer.ObtainStates();
   std::vector<std::unique_ptr<blink::WebRTCRtpTransceiver>> transceivers;
   for (auto& transceiver_state : transceiver_states) {
-    auto transceiver = CreateOrUpdateTransceiver(std::move(transceiver_state));
+    auto transceiver = CreateOrUpdateTransceiver(
+        std::move(transceiver_state), TransceiverStateUpdateMode::kAll);
     transceivers.push_back(std::move(transceiver));
   }
   return transceivers;
@@ -1587,8 +1588,8 @@ RTCPeerConnectionHandler::AddTransceiverWithTrack(
   }
 
   auto transceiver_states = transceiver_state_surfacer.ObtainStates();
-  auto transceiver =
-      CreateOrUpdateTransceiver(std::move(transceiver_states[0]));
+  auto transceiver = CreateOrUpdateTransceiver(
+      std::move(transceiver_states[0]), TransceiverStateUpdateMode::kAll);
   std::unique_ptr<blink::WebRTCRtpTransceiver> web_transceiver =
       std::move(transceiver);
   return web_transceiver;
@@ -1641,8 +1642,8 @@ RTCPeerConnectionHandler::AddTransceiverWithKind(
   }
 
   auto transceiver_states = transceiver_state_surfacer.ObtainStates();
-  auto transceiver =
-      CreateOrUpdateTransceiver(std::move(transceiver_states[0]));
+  auto transceiver = CreateOrUpdateTransceiver(
+      std::move(transceiver_states[0]), TransceiverStateUpdateMode::kAll);
   std::unique_ptr<blink::WebRTCRtpTransceiver> web_transceiver =
       std::move(transceiver);
   return std::move(web_transceiver);
@@ -1721,7 +1722,8 @@ RTCPeerConnectionHandler::AddTrack(
   } else {
     DCHECK_EQ(configuration_.sdp_semantics, webrtc::SdpSemantics::kUnifiedPlan);
     // Unified Plan: Create or recycle a transceiver.
-    auto transceiver = CreateOrUpdateTransceiver(std::move(transceiver_state));
+    auto transceiver = CreateOrUpdateTransceiver(
+        std::move(transceiver_state), TransceiverStateUpdateMode::kAll);
     web_transceiver = std::move(transceiver);
   }
   if (peer_connection_tracker_) {
@@ -1858,7 +1860,8 @@ RTCPeerConnectionHandler::RemoveTrackUnifiedPlan(
   auto transceiver_state = std::move(transceiver_states[0]);
 
   // Update the transceiver.
-  auto transceiver = CreateOrUpdateTransceiver(std::move(transceiver_state));
+  auto transceiver = CreateOrUpdateTransceiver(
+      std::move(transceiver_state), TransceiverStateUpdateMode::kAll);
   if (peer_connection_tracker_) {
     size_t transceiver_index = GetTransceiverIndex(*transceiver);
     peer_connection_tracker_->TrackModifyTransceiver(
@@ -2208,7 +2211,8 @@ void RTCPeerConnectionHandler::OnModifyTransceivers(
 
     // Update the transceiver.
     web_transceivers[i] =
-        CreateOrUpdateTransceiver(std::move(transceiver_states[i]));
+        CreateOrUpdateTransceiver(std::move(transceiver_states[i]),
+                                  TransceiverStateUpdateMode::kSetDescription);
 
     // Log a "transceiverAdded" or "transceiverModified" event in
     // chrome://webrtc-internals if new or modified.
@@ -2381,7 +2385,8 @@ size_t RTCPeerConnectionHandler::GetTransceiverIndex(
 
 std::unique_ptr<RTCRtpTransceiver>
 RTCPeerConnectionHandler::CreateOrUpdateTransceiver(
-    RtpTransceiverState transceiver_state) {
+    RtpTransceiverState transceiver_state,
+    TransceiverStateUpdateMode update_mode) {
   DCHECK_EQ(configuration_.sdp_semantics, webrtc::SdpSemantics::kUnifiedPlan);
   DCHECK(transceiver_state.is_initialized());
   DCHECK(transceiver_state.sender_state());
@@ -2409,7 +2414,7 @@ RTCPeerConnectionHandler::CreateOrUpdateTransceiver(
   } else {
     // Update the transceiver. This also updates the sender and receiver.
     transceiver = (*it)->ShallowCopy();
-    transceiver->set_state(std::move(transceiver_state));
+    transceiver->set_state(std::move(transceiver_state), update_mode);
     DCHECK(FindSender(RTCRtpSender::getId(webrtc_sender.get())) !=
            rtp_senders_.end());
     DCHECK(FindReceiver(RTCRtpReceiver::getId(webrtc_receiver.get())) !=

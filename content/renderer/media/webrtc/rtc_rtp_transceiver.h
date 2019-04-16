@@ -106,6 +106,36 @@ class CONTENT_EXPORT RtpTransceiverState {
   base::Optional<webrtc::RtpTransceiverDirection> fired_direction_;
 };
 
+// RTCRtpTransceiver::set_state() performs differently depending on the update
+// mode. The update mode exists to get around problems with the webrtc threading
+// model: https://crbug.com/webrtc/8692.
+//
+// Transceiver state information can be surfaced as a result of invoking a
+// number of different JavaScript APIs. The way states are surfaced from webrtc
+// to content/blink fall into two categories:
+//   Blocking operations and callback-based operations.
+//
+// When a blocking operation is invoked, the main thread is blocked on the
+// webrtc signaling thread, and the state information is surfaced immediately
+// - guaranteed to be up-to-date. An example of this is addTrack().
+// Callback-based operations on the other hand will post a task from the
+// signaling thread to the main thread, placing the task to update the state
+// information in queue. There is no guarantee that something - such as
+// addTrack() - doesn't happen in-between the posting of the task and the
+// execution of it. In such cases, the state information surfaced might not be
+// up-to-date (in edge cases). Examples of callback-based operations include
+// setLocalDescription() and setRemoteDescription().
+enum class TransceiverStateUpdateMode {
+  // In this mode, all state information is updated. Use this enum unless
+  // a different update mode applies.
+  kAll,
+  // Use this enum when surfacing state information as a result of
+  // setLocalDescription() or setRemoteDescription().
+  // Behaves like "kAll" except "transceiver.sender.track" and
+  // "transceiver.direction" are not updated.
+  kSetDescription,
+};
+
 // Used to surface |webrtc::RtpTransceiverInterface| to blink. Multiple
 // |RTCRtpTransceiver|s could reference the same webrtc transceiver; |id| is
 // unique per webrtc transceiver.
@@ -130,7 +160,8 @@ class CONTENT_EXPORT RTCRtpTransceiver : public blink::WebRTCRtpTransceiver {
   std::unique_ptr<RTCRtpTransceiver> ShallowCopy() const;
 
   const RtpTransceiverState& state() const;
-  void set_state(RtpTransceiverState state);
+  void set_state(RtpTransceiverState state,
+                 TransceiverStateUpdateMode update_mode);
   RTCRtpSender* content_sender();
   RTCRtpReceiver* content_receiver();
 

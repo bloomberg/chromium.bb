@@ -320,7 +320,8 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   size_t GetTransceiverIndex(
       const blink::WebRTCRtpTransceiver& web_transceiver);
   std::unique_ptr<RTCRtpTransceiver> CreateOrUpdateTransceiver(
-      RtpTransceiverState transceiver_state);
+      RtpTransceiverState transceiver_state,
+      TransceiverStateUpdateMode update_mode);
 
   scoped_refptr<base::SingleThreadTaskRunner> signaling_thread() const;
 
