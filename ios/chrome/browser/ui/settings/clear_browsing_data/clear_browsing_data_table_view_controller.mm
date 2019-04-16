@@ -26,6 +26,7 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_button_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_link_item.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
+#include "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -37,6 +38,8 @@
 namespace {
 // Separation space between sections.
 const CGFloat kSeparationSpaceBetweenSections = 9;
+const CGFloat kCellHightlightColorAlpha = 0.05;
+const int kCellHighlightColorRgb = 0x4285F4;
 }  // namespace
 
 @interface ClearBrowsingDataTableViewController () <
@@ -129,6 +132,10 @@ const CGFloat kSeparationSpaceBetweenSections = 9;
 
 - (void)viewDidLoad {
   [super viewDidLoad];
+  if (IsNewClearBrowsingDataUIEnabled()) {
+    self.styler.cellHighlightColor =
+        UIColorFromRGB(kCellHighlightColorRgb, kCellHightlightColorAlpha);
+  }
   self.styler.tableViewBackgroundColor = UIColor.whiteColor;
   self.tableView.accessibilityIdentifier =
       kClearBrowsingDataViewAccessibilityIdentifier;
@@ -140,10 +147,6 @@ const CGFloat kSeparationSpaceBetweenSections = 9;
   // Add a tableFooterView in order to disable separators at the bottom of the
   // tableView.
   self.tableView.tableFooterView = [[UIView alloc] init];
-  self.styler.tableViewBackgroundColor = [UIColor clearColor];
-  // Align cell separators with text label leading margin.
-  [self.tableView
-      setSeparatorInset:UIEdgeInsetsMake(0, kTableViewHorizontalSpacing, 0, 0)];
   self.tableView.allowsMultipleSelection = YES;
   // Navigation controller configuration.
   self.title = l10n_util::GetNSString(IDS_IOS_CLEAR_BROWSING_DATA_TITLE);
@@ -333,7 +336,22 @@ const CGFloat kSeparationSpaceBetweenSections = 9;
 }
 
 - (CGFloat)tableView:(UITableView*)tableView
+    heightForHeaderInSection:(NSInteger)section {
+  if (IsNewClearBrowsingDataUIEnabled() &&
+      section == [self.tableViewModel
+                     sectionForSectionIdentifier:SectionIdentifierDataTypes]) {
+    return 0;
+  }
+  return kSeparationSpaceBetweenSections;
+}
+
+- (CGFloat)tableView:(UITableView*)tableView
     heightForFooterInSection:(NSInteger)section {
+  if (IsNewClearBrowsingDataUIEnabled() &&
+      section == [self.tableViewModel
+                     sectionForSectionIdentifier:SectionIdentifierTimeRange]) {
+    return 0;
+  }
   return kSeparationSpaceBetweenSections;
 }
 
