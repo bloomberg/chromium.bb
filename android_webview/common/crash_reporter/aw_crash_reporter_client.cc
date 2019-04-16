@@ -76,7 +76,7 @@ class AwCrashReporterClient : public crash_reporter::CrashReporterClient {
       return 100;
     }
 
-    return 100;
+    return 1;
   }
 
   bool GetBrowserProcessType(std::string* ptype) override {
