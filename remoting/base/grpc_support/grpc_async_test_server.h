@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_SIGNALING_GRPC_SUPPORT_GRPC_ASYNC_TEST_SERVER_H_
-#define REMOTING_SIGNALING_GRPC_SUPPORT_GRPC_ASYNC_TEST_SERVER_H_
+#ifndef REMOTING_BASE_GRPC_SUPPORT_GRPC_ASYNC_TEST_SERVER_H_
+#define REMOTING_BASE_GRPC_SUPPORT_GRPC_ASYNC_TEST_SERVER_H_
 
 #include <memory>
 
 #include "base/macros.h"
-#include "remoting/signaling/grpc_support/grpc_channel.h"
-#include "remoting/signaling/grpc_support/grpc_test_util.h"
+#include "remoting/base/grpc_support/grpc_channel.h"
+#include "remoting/base/grpc_support/grpc_test_util.h"
 #include "third_party/grpc/src/include/grpcpp/impl/codegen/service_type.h"
 #include "third_party/grpc/src/include/grpcpp/server.h"
 
@@ -106,4 +106,4 @@ class GrpcAsyncTestServer {
 }  // namespace test
 }  // namespace remoting
 
-#endif  // REMOTING_SIGNALING_GRPC_SUPPORT_GRPC_ASYNC_TEST_SERVER_H_
+#endif  // REMOTING_BASE_GRPC_SUPPORT_GRPC_ASYNC_TEST_SERVER_H_

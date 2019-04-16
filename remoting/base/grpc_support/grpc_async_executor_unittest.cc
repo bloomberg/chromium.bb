@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/signaling/grpc_support/grpc_async_executor.h"
+#include "remoting/base/grpc_support/grpc_async_executor.h"
 
 #include <memory>
 #include <string>
@@ -15,11 +15,11 @@
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "remoting/signaling/grpc_support/grpc_async_server_streaming_request.h"
-#include "remoting/signaling/grpc_support/grpc_async_test_server.h"
-#include "remoting/signaling/grpc_support/grpc_async_unary_request.h"
-#include "remoting/signaling/grpc_support/grpc_support_test_services.grpc.pb.h"
-#include "remoting/signaling/grpc_support/grpc_test_util.h"
+#include "remoting/base/grpc_support/grpc_async_server_streaming_request.h"
+#include "remoting/base/grpc_support/grpc_async_test_server.h"
+#include "remoting/base/grpc_support/grpc_async_unary_request.h"
+#include "remoting/base/grpc_support/grpc_support_test_services.grpc.pb.h"
+#include "remoting/base/grpc_support/grpc_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/grpc/src/include/grpcpp/grpcpp.h"

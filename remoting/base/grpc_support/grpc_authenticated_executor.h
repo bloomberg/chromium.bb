@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_SIGNALING_GRPC_SUPPORT_GRPC_AUTHENTICATED_EXECUTOR_H_
-#define REMOTING_SIGNALING_GRPC_SUPPORT_GRPC_AUTHENTICATED_EXECUTOR_H_
+#ifndef REMOTING_BASE_GRPC_SUPPORT_GRPC_AUTHENTICATED_EXECUTOR_H_
+#define REMOTING_BASE_GRPC_SUPPORT_GRPC_AUTHENTICATED_EXECUTOR_H_
 
 #include <memory>
 #include <string>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "remoting/base/grpc_support/grpc_executor.h"
 #include "remoting/base/oauth_token_getter.h"
-#include "remoting/signaling/grpc_support/grpc_executor.h"
 
 namespace remoting {
 
@@ -47,4 +47,4 @@ class GrpcAuthenticatedExecutor final : public GrpcExecutor {
 
 }  // namespace remoting
 
-#endif  // REMOTING_SIGNALING_GRPC_SUPPORT_GRPC_AUTHENTICATED_EXECUTOR_H_
+#endif  // REMOTING_BASE_GRPC_SUPPORT_GRPC_AUTHENTICATED_EXECUTOR_H_

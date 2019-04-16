@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_SIGNALING_GRPC_SUPPORT_GRPC_ASYNC_REQUEST_H_
-#define REMOTING_SIGNALING_GRPC_SUPPORT_GRPC_ASYNC_REQUEST_H_
+#ifndef REMOTING_BASE_GRPC_SUPPORT_GRPC_ASYNC_REQUEST_H_
+#define REMOTING_BASE_GRPC_SUPPORT_GRPC_ASYNC_REQUEST_H_
 
 #include <memory>
 #include <utility>
@@ -86,4 +86,4 @@ class GrpcAsyncRequest {
 
 }  // namespace remoting
 
-#endif  // REMOTING_SIGNALING_GRPC_SUPPORT_GRPC_ASYNC_REQUEST_H_
+#endif  // REMOTING_BASE_GRPC_SUPPORT_GRPC_ASYNC_REQUEST_H_

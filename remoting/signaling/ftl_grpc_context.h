@@ -10,8 +10,8 @@
 
 #include "base/macros.h"
 #include "net/base/backoff_entry.h"
+#include "remoting/base/grpc_support/grpc_channel.h"
 #include "remoting/signaling/ftl.pb.h"
-#include "remoting/signaling/grpc_support/grpc_channel.h"
 
 namespace grpc {
 class ClientContext;

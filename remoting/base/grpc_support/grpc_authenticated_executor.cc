@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/signaling/grpc_support/grpc_authenticated_executor.h"
+#include "remoting/base/grpc_support/grpc_authenticated_executor.h"
 
 #include <utility>
 
 #include "base/bind.h"
-#include "remoting/signaling/grpc_support/grpc_async_executor.h"
-#include "remoting/signaling/grpc_support/grpc_async_request.h"
+#include "remoting/base/grpc_support/grpc_async_executor.h"
+#include "remoting/base/grpc_support/grpc_async_request.h"
 #include "third_party/grpc/src/include/grpcpp/client_context.h"
 #include "third_party/grpc/src/include/grpcpp/security/credentials.h"
 

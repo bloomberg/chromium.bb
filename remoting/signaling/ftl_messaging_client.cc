@@ -11,12 +11,12 @@
 #include "base/guid.h"
 #include "base/logging.h"
 #include "base/time/time.h"
+#include "remoting/base/grpc_support/grpc_async_server_streaming_request.h"
+#include "remoting/base/grpc_support/grpc_async_unary_request.h"
+#include "remoting/base/grpc_support/grpc_authenticated_executor.h"
+#include "remoting/base/grpc_support/grpc_executor.h"
 #include "remoting/signaling/ftl_grpc_context.h"
 #include "remoting/signaling/ftl_message_reception_channel.h"
-#include "remoting/signaling/grpc_support/grpc_async_server_streaming_request.h"
-#include "remoting/signaling/grpc_support/grpc_async_unary_request.h"
-#include "remoting/signaling/grpc_support/grpc_authenticated_executor.h"
-#include "remoting/signaling/grpc_support/grpc_executor.h"
 #include "remoting/signaling/registration_manager.h"
 
 namespace remoting {

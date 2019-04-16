@@ -11,9 +11,7 @@
 #include "build/build_config.h"
 #include "google_apis/google_api_keys.h"
 #include "remoting/base/service_urls.h"
-#include "third_party/grpc/src/include/grpcpp/channel.h"
 #include "third_party/grpc/src/include/grpcpp/client_context.h"
-#include "third_party/grpc/src/include/grpcpp/grpcpp.h"
 
 namespace remoting {
 

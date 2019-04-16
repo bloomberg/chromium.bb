@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_SIGNALING_GRPC_SUPPORT_GRPC_ASYNC_EXECUTOR_H_
-#define REMOTING_SIGNALING_GRPC_SUPPORT_GRPC_ASYNC_EXECUTOR_H_
+#ifndef REMOTING_BASE_GRPC_SUPPORT_GRPC_ASYNC_EXECUTOR_H_
+#define REMOTING_BASE_GRPC_SUPPORT_GRPC_ASYNC_EXECUTOR_H_
 
 #include <list>
 #include <memory>
@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
-#include "remoting/signaling/grpc_support/grpc_executor.h"
+#include "remoting/base/grpc_support/grpc_executor.h"
 
 namespace remoting {
 
@@ -55,4 +55,4 @@ class GrpcAsyncExecutor final : public GrpcExecutor {
 
 }  // namespace remoting
 
-#endif  // REMOTING_SIGNALING_GRPC_SUPPORT_GRPC_ASYNC_EXECUTOR_H_
+#endif  // REMOTING_BASE_GRPC_SUPPORT_GRPC_ASYNC_EXECUTOR_H_
