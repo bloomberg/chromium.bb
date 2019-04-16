@@ -113,16 +113,6 @@ int WebViewTranslateClient::GetInfobarIconID() const {
   return 0;
 }
 
-void WebViewTranslateClient::RecordLanguageDetectionEvent(
-    const translate::LanguageDetectionDetails& details) const {
-  // TODO(crbug.com/722679): Implementing gaia-keyed logging.
-}
-
-void WebViewTranslateClient::RecordTranslateEvent(
-    const metrics::TranslateEventProto&) {
-  // TODO(crbug.com/728491): Implementing gaia-keyed logging.
-}
-
 bool WebViewTranslateClient::IsTranslatableURL(const GURL& url) {
   return !url.is_empty() && !url.SchemeIs(url::kFtpScheme);
 }
