@@ -403,7 +403,7 @@ static_library("common") {
     public_deps += [ ":app_mode_app_support" ]
   }
   if (is_chromeos) {
-    public_deps += [ "//chromeos" ]
+    deps += [ "//chromeos/constants" ]
   }
 
   if (enable_nacl) {
