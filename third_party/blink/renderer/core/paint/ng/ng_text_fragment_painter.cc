@@ -35,21 +35,6 @@ namespace blink {
 
 namespace {
 
-inline bool ShouldPaintTextFragment(const NGPaintFragment& fragment,
-                                    const NGPhysicalTextFragment& text_fragment,
-                                    const ComputedStyle& style) {
-  // We can skip painting if the fragment (including selection) is invisible.
-  if (!text_fragment.Length() || fragment.VisualRect().IsEmpty())
-    return false;
-
-  if (!text_fragment.TextShapeResult() &&
-      // A line break's selection tint is still visible.
-      !text_fragment.IsLineBreak())
-    return false;
-
-  return true;
-}
-
 Color SelectionBackgroundColor(const Document& document,
                                const ComputedStyle& style,
                                const NGPhysicalTextFragment& text_fragment,
@@ -282,7 +267,13 @@ void NGTextFragmentPainter::Paint(const PaintInfo& paint_info,
       To<NGPhysicalTextFragment>(fragment_.PhysicalFragment());
   const ComputedStyle& style = fragment_.Style();
 
-  if (!ShouldPaintTextFragment(fragment_, text_fragment, style))
+  // We can skip painting if the fragment (including selection) is invisible.
+  if (!text_fragment.Length() || fragment_.VisualRect().IsEmpty())
+    return;
+
+  if (!text_fragment.TextShapeResult() &&
+      // A line break's selection tint is still visible.
+      !text_fragment.IsLineBreak())
     return;
 
   const Document& document = fragment_.GetLayoutObject()->GetDocument();
@@ -300,9 +291,14 @@ void NGTextFragmentPainter::Paint(const PaintInfo& paint_info,
     DCHECK_LE(selection_status->start, selection_status->end);
     have_selection = selection_status->start < selection_status->end;
   }
-  if (!have_selection && paint_info.phase == PaintPhase::kSelection) {
+  if (!have_selection) {
     // When only painting the selection, don't bother to paint if there is none.
-    return;
+    if (paint_info.phase == PaintPhase::kSelection)
+      return;
+
+    // Flow controls (line break, tab, <wbr>) need only selection painting.
+    if (text_fragment.IsFlowControl())
+      return;
   }
 
   // The text clip phase already has a DrawingRecorder. Text clips are initiated
@@ -373,10 +369,6 @@ void NGTextFragmentPainter::Paint(const PaintInfo& paint_info,
                      selection_style.fill_color, box_rect, *selection_status);
     }
   }
-
-  // Line break needs only selection painting.
-  if (text_fragment.IsLineBreak())
-    return;
 
   const NGLineOrientation orientation = text_fragment.LineOrientation();
   if (orientation != NGLineOrientation::kHorizontal) {
