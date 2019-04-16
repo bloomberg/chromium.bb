@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "device/fido/pin.h"
+
 #include <string>
 #include <utility>
 
@@ -11,7 +13,6 @@
 #include "components/cbor/values.h"
 #include "components/cbor/writer.h"
 #include "device/fido/fido_constants.h"
-#include "device/fido/pin.h"
 #include "device/fido/pin_internal.h"
 #include "third_party/boringssl/src/include/openssl/aes.h"
 #include "third_party/boringssl/src/include/openssl/bn.h"
@@ -32,6 +33,19 @@ namespace pin {
 static bool HasAtLeastFourCodepoints(const std::string& pin) {
   base::i18n::UTF8CharIterator it(&pin);
   return it.Advance() && it.Advance() && it.Advance() && it.Advance();
+}
+
+// MakePinAuth returns `LEFT(HMAC-SHA-256(secret, data), 16)`.
+static std::vector<uint8_t> MakePinAuth(base::span<const uint8_t> secret,
+                                        base::span<const uint8_t> data) {
+  std::vector<uint8_t> pin_auth;
+  pin_auth.resize(SHA256_DIGEST_LENGTH);
+  unsigned hmac_bytes;
+  CHECK(HMAC(EVP_sha256(), secret.data(), secret.size(), data.data(),
+             data.size(), pin_auth.data(), &hmac_bytes));
+  DCHECK_EQ(pin_auth.size(), static_cast<size_t>(hmac_bytes));
+  pin_auth.resize(16);
+  return pin_auth;
 }
 
 bool IsValid(const std::string& pin) {
@@ -285,11 +299,9 @@ SetRequest::EncodeAsCBOR() const {
   uint8_t encrypted_pin[sizeof(pin_)];
   Encrypt(shared_key, pin_, encrypted_pin);
 
-  uint8_t pin_auth[SHA256_DIGEST_LENGTH];
-  unsigned hmac_bytes;
-  CHECK(HMAC(EVP_sha256(), shared_key, sizeof(shared_key), encrypted_pin,
-             sizeof(pin_), pin_auth, &hmac_bytes));
-  DCHECK_EQ(sizeof(pin_auth), static_cast<size_t>(hmac_bytes));
+  std::vector<uint8_t> pin_auth =
+      MakePinAuth(base::make_span(shared_key, sizeof(shared_key)),
+                  base::make_span(encrypted_pin, sizeof(encrypted_pin)));
 
   return EncodePINCommand(
       Subcommand::kSetPIN,
@@ -300,7 +312,7 @@ SetRequest::EncodeAsCBOR() const {
             static_cast<int>(RequestKey::kNewPINEnc),
             base::span<const uint8_t>(encrypted_pin, sizeof(encrypted_pin)));
         map->emplace(static_cast<int>(RequestKey::kPINAuth),
-                     base::span<const uint8_t>(pin_auth));
+                     std::move(pin_auth));
       });
 }
 
@@ -354,12 +366,9 @@ ChangeRequest::EncodeAsCBOR() const {
   memcpy(ciphertexts_concat, encrypted_pin, sizeof(encrypted_pin));
   memcpy(ciphertexts_concat + sizeof(encrypted_pin), old_pin_hash_enc,
          sizeof(old_pin_hash_enc));
-
-  uint8_t pin_auth[SHA256_DIGEST_LENGTH];
-  unsigned hmac_bytes;
-  CHECK(HMAC(EVP_sha256(), shared_key, sizeof(shared_key), ciphertexts_concat,
-             sizeof(ciphertexts_concat), pin_auth, &hmac_bytes));
-  DCHECK_EQ(sizeof(pin_auth), static_cast<size_t>(hmac_bytes));
+  std::vector<uint8_t> pin_auth = MakePinAuth(
+      base::make_span(shared_key, sizeof(shared_key)),
+      base::make_span(ciphertexts_concat, sizeof(ciphertexts_concat)));
 
   return EncodePINCommand(
       Subcommand::kChangePIN, [&cose_key, &encrypted_pin, &old_pin_hash_enc,
@@ -373,7 +382,7 @@ ChangeRequest::EncodeAsCBOR() const {
             static_cast<int>(RequestKey::kNewPINEnc),
             base::span<const uint8_t>(encrypted_pin, sizeof(encrypted_pin)));
         map->emplace(static_cast<int>(RequestKey::kPINAuth),
-                     base::span<const uint8_t>(pin_auth));
+                     std::move(pin_auth));
       });
 }
 
@@ -466,16 +475,7 @@ base::Optional<TokenResponse> TokenResponse::Parse(
 
 std::vector<uint8_t> TokenResponse::PinAuth(
     const std::array<uint8_t, 32> client_data_hash) {
-  std::vector<uint8_t> pin_auth;
-  pin_auth.resize(SHA256_DIGEST_LENGTH);
-
-  unsigned hmac_bytes;
-  CHECK(HMAC(EVP_sha256(), token_.data(), token_.size(),
-             client_data_hash.data(), client_data_hash.size(), pin_auth.data(),
-             &hmac_bytes));
-  DCHECK_EQ(pin_auth.size(), static_cast<size_t>(hmac_bytes));
-  pin_auth.resize(16);
-  return pin_auth;
+  return MakePinAuth(token_, client_data_hash);
 }
 
 }  // namespace pin
