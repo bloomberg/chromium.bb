@@ -31,19 +31,8 @@
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_stream.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
-#include "third_party/skia/include/core/SkRect.h"
-#include "ui/gfx/geometry/rect_f.h"
 
 namespace blink {
-
-FloatRect::FloatRect(const IntRect& r)
-    : location_(r.Location()), size_(r.Size()) {}
-
-FloatRect::FloatRect(const LayoutRect& r)
-    : location_(r.Location()), size_(r.Size()) {}
-
-FloatRect::FloatRect(const SkRect& r)
-    : location_(r.fLeft, r.fTop), size_(r.width(), r.height()) {}
 
 void FloatRect::Move(const LayoutSize& delta) {
   location_.Move(delta.Width().ToFloat(), delta.Height().ToFloat());
@@ -248,14 +237,6 @@ float FloatRect::SquaredDistanceTo(const FloatPoint& point) const {
   closest_point.SetX(clampTo<float>(point.X(), X(), MaxX()));
   closest_point.SetY(clampTo<float>(point.Y(), Y(), MaxY()));
   return (point - closest_point).DiagonalLengthSquared();
-}
-
-FloatRect::operator SkRect() const {
-  return SkRect::MakeXYWH(X(), Y(), Width(), Height());
-}
-
-FloatRect::operator gfx::RectF() const {
-  return gfx::RectF(X(), Y(), Width(), Height());
 }
 
 FloatRect UnionRect(const Vector<FloatRect>& rects) {

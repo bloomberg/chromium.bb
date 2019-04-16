@@ -42,7 +42,6 @@
 
 namespace blink {
 
-class FloatRect;
 class DoubleRect;
 
 class PLATFORM_EXPORT LayoutRect {
@@ -57,20 +56,25 @@ class PLATFORM_EXPORT LayoutRect {
                        LayoutUnit width,
                        LayoutUnit height)
       : location_(LayoutPoint(x, y)), size_(LayoutSize(width, height)) {}
-  LayoutRect(int x, int y, int width, int height)
+  constexpr LayoutRect(int x, int y, int width, int height)
       : location_(LayoutPoint(x, y)), size_(LayoutSize(width, height)) {}
-  LayoutRect(const FloatPoint& location, const FloatSize& size)
+  constexpr LayoutRect(const FloatPoint& location, const FloatSize& size)
       : location_(location), size_(size) {}
-  LayoutRect(const DoublePoint& location, const DoubleSize& size)
+  constexpr LayoutRect(const DoublePoint& location, const DoubleSize& size)
       : location_(location), size_(size) {}
-  LayoutRect(const IntPoint& location, const IntSize& size)
+  constexpr LayoutRect(const IntPoint& location, const IntSize& size)
       : location_(location), size_(size) {}
-  explicit LayoutRect(const IntRect& rect)
+  constexpr explicit LayoutRect(const IntRect& rect)
       : location_(rect.Location()), size_(rect.Size()) {}
 
   // Don't do these implicitly since they are lossy.
-  explicit LayoutRect(const FloatRect&);
+  constexpr explicit LayoutRect(const FloatRect& r)
+      : location_(r.Location()), size_(r.Size()) {}
   explicit LayoutRect(const DoubleRect&);
+
+  constexpr explicit operator FloatRect() const {
+    return FloatRect(X(), Y(), Width(), Height());
+  }
 
   constexpr LayoutPoint Location() const { return location_; }
   constexpr LayoutSize Size() const { return size_; }

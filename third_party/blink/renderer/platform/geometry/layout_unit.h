@@ -94,21 +94,18 @@ class LayoutUnit {
  public:
   constexpr LayoutUnit() : value_(0) {}
   template <typename IntegerType>
-  explicit LayoutUnit(IntegerType value) {
+  constexpr explicit LayoutUnit(IntegerType value) {
     if (std::is_signed<IntegerType>::value)
       SaturatedSet(static_cast<int>(value));
     else
       SaturatedSet(static_cast<unsigned>(value));
   }
-  explicit LayoutUnit(uint64_t value) {
-    value_ = base::saturated_cast<int>(value * kFixedPointDenominator);
-  }
-  explicit LayoutUnit(float value) {
-    value_ = base::saturated_cast<int>(value * kFixedPointDenominator);
-  }
-  explicit LayoutUnit(double value) {
-    value_ = base::saturated_cast<int>(value * kFixedPointDenominator);
-  }
+  constexpr explicit LayoutUnit(uint64_t value)
+      : value_(base::saturated_cast<int>(value * kFixedPointDenominator)) {}
+  constexpr explicit LayoutUnit(float value)
+      : value_(base::saturated_cast<int>(value * kFixedPointDenominator)) {}
+  constexpr explicit LayoutUnit(double value)
+      : value_(base::saturated_cast<int>(value * kFixedPointDenominator)) {}
 
   static LayoutUnit FromFloatCeil(float value) {
     LayoutUnit v;

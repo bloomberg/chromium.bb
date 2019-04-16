@@ -36,6 +36,8 @@
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/skia/include/core/SkRect.h"
+#include "ui/gfx/geometry/rect_f.h"
 
 #if defined(OS_MACOSX)
 typedef struct CGRect CGRect;
@@ -44,12 +46,6 @@ typedef struct CGRect CGRect;
 #import <Foundation/Foundation.h>
 #endif
 #endif
-
-struct SkRect;
-
-namespace gfx {
-class RectF;
-}
 
 namespace blink {
 
@@ -67,9 +63,12 @@ class PLATFORM_EXPORT FloatRect {
       : location_(location), size_(size) {}
   constexpr FloatRect(float x, float y, float width, float height)
       : location_(FloatPoint(x, y)), size_(FloatSize(width, height)) {}
-  explicit FloatRect(const IntRect&);
-  explicit FloatRect(const LayoutRect&);
-  FloatRect(const SkRect&);
+  constexpr explicit FloatRect(const IntRect& r)
+      : FloatRect(r.X(), r.Y(), r.Width(), r.Height()) {}
+  constexpr explicit FloatRect(const gfx::RectF& r)
+      : FloatRect(r.x(), r.y(), r.width(), r.height()) {}
+  FloatRect(const SkRect& r) : FloatRect(r.x(), r.y(), r.width(), r.height()) {}
+  // We also have conversion operator to FloatRect defined in LayoutRect.
 
   static FloatRect NarrowPrecision(double x,
                                    double y,
@@ -190,8 +189,12 @@ class PLATFORM_EXPORT FloatRect {
   operator CGRect() const;
 #endif
 
-  operator SkRect() const;
-  operator gfx::RectF() const;
+  operator SkRect() const {
+    return SkRect::MakeXYWH(X(), Y(), Width(), Height());
+  }
+  constexpr operator gfx::RectF() const {
+    return gfx::RectF(X(), Y(), Width(), Height());
+  }
 
 #if DCHECK_IS_ON()
   bool MayNotHaveExactIntRectRepresentation() const;
