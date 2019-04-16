@@ -54,6 +54,7 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/core/simple_dependency_manager.h"
+#include "components/keyed_service/core/simple_key_map.h"
 #include "components/keyed_service/core/simple_keyed_service_factory.h"
 #include "components/prefs/json_pref_store.h"
 #include "components/sync_preferences/pref_service_syncable.h"
@@ -150,6 +151,7 @@ OffTheRecordProfileImpl::OffTheRecordProfileImpl(Profile* real_profile)
 
   key_ = std::make_unique<ProfileKey>(profile_->GetPath(), prefs_.get(),
                                       profile_->GetProfileKey());
+  SimpleKeyMap::GetInstance()->Associate(this, key_.get());
 
   // Register on BrowserContext.
   user_prefs::UserPrefs::Set(this, prefs_.get());
@@ -232,6 +234,8 @@ OffTheRecordProfileImpl::~OffTheRecordProfileImpl() {
   DependencyManager::PerformInterlockedTwoPhaseShutdown(
       BrowserContextDependencyManager::GetInstance(), this,
       SimpleDependencyManager::GetInstance(), key_.get());
+
+  SimpleKeyMap::GetInstance()->Dissociate(this);
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   base::PostTaskWithTraits(

@@ -109,6 +109,7 @@
 #include "components/history/core/common/pref_names.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/core/simple_dependency_manager.h"
+#include "components/keyed_service/core/simple_key_map.h"
 #include "components/keyed_service/core/simple_keyed_service_factory.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/language/core/common/locale_util.h"
@@ -583,6 +584,7 @@ ProfileImpl::ProfileImpl(
   }
 
   key_ = std::make_unique<ProfileKey>(GetPath(), prefs_.get());
+  SimpleKeyMap::GetInstance()->Associate(this, key_.get());
 
 #if defined(OS_CHROMEOS)
   if (is_regular_profile) {
@@ -809,6 +811,8 @@ ProfileImpl::~ProfileImpl() {
   DependencyManager::PerformInterlockedTwoPhaseShutdown(
       BrowserContextDependencyManager::GetInstance(), this,
       SimpleDependencyManager::GetInstance(), key_.get());
+
+  SimpleKeyMap::GetInstance()->Dissociate(this);
 
   // This causes the Preferences file to be written to disk.
   if (prefs_loaded)

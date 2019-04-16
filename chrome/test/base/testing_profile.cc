@@ -81,6 +81,7 @@
 #include "components/keyed_service/core/refcounted_keyed_service.h"
 #include "components/keyed_service/core/simple_dependency_manager.h"
 #include "components/keyed_service/core/simple_factory_key.h"
+#include "components/keyed_service/core/simple_key_map.h"
 #include "components/offline_pages/buildflags/buildflags.h"
 #include "components/omnibox/browser/autocomplete_classifier.h"
 #include "components/omnibox/browser/history_index_restore_observer.h"
@@ -431,6 +432,7 @@ void TestingProfile::Init() {
   } else {
     key_ = std::make_unique<ProfileKey>(profile_path_, prefs_.get());
   }
+  SimpleKeyMap::GetInstance()->Associate(this, key_.get());
 
   if (!base::PathExists(profile_path_))
     base::CreateDirectory(profile_path_);
@@ -550,6 +552,8 @@ TestingProfile::~TestingProfile() {
   DependencyManager::PerformInterlockedTwoPhaseShutdown(
       browser_context_dependency_manager_, this, simple_dependency_manager_,
       key_.get());
+
+  SimpleKeyMap::GetInstance()->Dissociate(this);
 
   if (host_content_settings_map_.get())
     host_content_settings_map_->ShutdownOnUIThread();
