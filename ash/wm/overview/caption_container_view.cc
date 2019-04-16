@@ -180,16 +180,29 @@ CaptionContainerView::~CaptionContainerView() = default;
 void CaptionContainerView::SetHeaderVisibility(HeaderVisibility visibility) {
   DCHECK(close_button_->layer());
   DCHECK(header_view_->layer());
+  if (visibility == current_header_visibility_)
+    return;
+  const HeaderVisibility previous_visibility = current_header_visibility_;
+  current_header_visibility_ = visibility;
 
-  // Make the close button invisible if the rest of the header is to be shown.
-  // If the rest of the header is to be hidden, make the close button visible
-  // as |header_view_|'s opacity will be 0.f, hiding the close button. Modify
-  // |close_button_|'s opacity instead of visibilty so the flex from its
-  // sibling views do not mess up its layout.
-  close_button_->layer()->SetOpacity(
-      visibility == HeaderVisibility::kCloseButtonInvisibleOnly ? 0.f : 1.f);
-  const bool visible = visibility != HeaderVisibility::kInvisible;
-  AnimateLayerOpacity(header_view_->layer(), visible);
+  const bool all_invisible = visibility == HeaderVisibility::kInvisible;
+  AnimateLayerOpacity(header_view_->layer(), !all_invisible);
+
+  // If |header_view_| is fading out, we are done. Depending on if the close
+  // button was visible, it will fade out with |header_view_| or stay hidden.
+  if (all_invisible)
+    return;
+
+  const bool close_button_visible = visibility == HeaderVisibility::kVisible;
+  // If |header_view_| was hidden and is fading in, set the opacity of
+  // |close_button_| depending on whether the close button should fade in with
+  // |header_view_| or stay hidden.
+  if (previous_visibility == HeaderVisibility::kInvisible) {
+    close_button_->layer()->SetOpacity(close_button_visible ? 1.f : 0.f);
+    return;
+  }
+
+  AnimateLayerOpacity(close_button_->layer(), close_button_visible);
 }
 
 void CaptionContainerView::SetBackdropVisibility(bool visible) {

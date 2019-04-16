@@ -113,6 +113,8 @@ class ASH_EXPORT CaptionContainerView : public views::Button {
   // associated is not pillar or letter boxed.
   RoundedRectView* backdrop_view_ = nullptr;
 
+  HeaderVisibility current_header_visibility_ = HeaderVisibility::kVisible;
+
   DISALLOW_COPY_AND_ASSIGN(CaptionContainerView);
 };
 
