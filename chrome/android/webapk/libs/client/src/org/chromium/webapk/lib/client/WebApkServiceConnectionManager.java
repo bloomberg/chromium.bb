@@ -49,6 +49,10 @@ public class WebApkServiceConnectionManager {
         /** WebAPK IBinder interface. */
         private IBinder mBinder;
 
+        public Connection(WebApkServiceConnectionManager manager) {
+            mConnectionManager = manager;
+        }
+
         public IBinder getService() {
             return mBinder;
         }
@@ -57,8 +61,8 @@ public class WebApkServiceConnectionManager {
             mCallbacks.add(callback);
         }
 
-        public Connection(WebApkServiceConnectionManager manager) {
-            mConnectionManager = manager;
+        public boolean didAllCallbacksRun() {
+            return mCallbacks.isEmpty();
         }
 
         @Override
@@ -109,6 +113,14 @@ public class WebApkServiceConnectionManager {
         if (mConnections.isEmpty() && mNumPendingPostedTasks == 0) {
             destroyTaskRunner();
         }
+    }
+
+    /** Returns whether the callbacks for all of the {@link #connect()} calls have been run. */
+    public boolean didAllConnectCallbacksRun() {
+        for (Connection connection : mConnections.values()) {
+            if (!connection.didAllCallbacksRun()) return false;
+        }
+        return true;
     }
 
     /**
