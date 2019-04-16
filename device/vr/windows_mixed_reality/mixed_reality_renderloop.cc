@@ -198,7 +198,7 @@ bool MixedRealityRenderLoop::SubmitCompositedFrame() {
 
   if (FAILED(hr))
     return false;
-  texture_helper_.DiscardView();
+
   return true;
 }
 
