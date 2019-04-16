@@ -14,12 +14,15 @@
 
 namespace credential_provider {
 
-#define IMPL_IUNKOWN_NOQI_NOREF(cls)                            \
-  IFACEMETHODIMP cls::QueryInterface(REFIID riid, void** ppv) { \
-    return E_NOTIMPL;                                           \
-  }                                                             \
-  ULONG cls::AddRef() { return 0; }                             \
-  ULONG cls::Release(void) { return 0; }
+#define IMPL_IUNKOWN_NOQI_WITH_REF(cls)                               \
+  IFACEMETHODIMP cls::QueryInterface(REFIID riid, void** ppv) {       \
+    return E_NOTIMPL;                                                 \
+  }                                                                   \
+  ULONG cls::AddRef() { return ::InterlockedIncrement(&ref_count_); } \
+  ULONG cls::Release(void) {                                          \
+    DCHECK(ref_count_ > 0);                                           \
+    return ::InterlockedDecrement(&ref_count_);                       \
+  }
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -27,7 +30,9 @@ FakeCredentialProviderUser::FakeCredentialProviderUser(const wchar_t* sid,
                                                        const wchar_t* username)
     : sid_(sid), username_(username) {}
 
-FakeCredentialProviderUser::~FakeCredentialProviderUser() {}
+FakeCredentialProviderUser::~FakeCredentialProviderUser() {
+  EXPECT_EQ(ref_count_, 1u);
+}
 
 HRESULT STDMETHODCALLTYPE FakeCredentialProviderUser::GetSid(wchar_t** sid) {
   DWORD length = sid_.length() + 1;
@@ -58,13 +63,15 @@ FakeCredentialProviderUser::GetValue(REFPROPERTYKEY key, PROPVARIANT* value) {
   return E_NOTIMPL;
 }
 
-IMPL_IUNKOWN_NOQI_NOREF(FakeCredentialProviderUser)
+IMPL_IUNKOWN_NOQI_WITH_REF(FakeCredentialProviderUser)
 
 ///////////////////////////////////////////////////////////////////////////////
 
 FakeCredentialProviderUserArray::FakeCredentialProviderUserArray() {}
 
-FakeCredentialProviderUserArray::~FakeCredentialProviderUserArray() {}
+FakeCredentialProviderUserArray::~FakeCredentialProviderUserArray() {
+  EXPECT_EQ(ref_count_, 1u);
+}
 
 HRESULT FakeCredentialProviderUserArray::SetProviderFilter(
     REFGUID guidProviderToFilterTo) {
@@ -87,16 +94,19 @@ HRESULT FakeCredentialProviderUserArray::GetAt(DWORD index,
                                                ICredentialProviderUser** user) {
   EXPECT_LT(index, users_.size());
   *user = &users_[index];
+  (*user)->AddRef();
   return S_OK;
 }
 
-IMPL_IUNKOWN_NOQI_NOREF(FakeCredentialProviderUserArray)
+IMPL_IUNKOWN_NOQI_WITH_REF(FakeCredentialProviderUserArray)
 
 ///////////////////////////////////////////////////////////////////////////////
 
 FakeCredentialProviderEvents::FakeCredentialProviderEvents() {}
 
-FakeCredentialProviderEvents::~FakeCredentialProviderEvents() {}
+FakeCredentialProviderEvents::~FakeCredentialProviderEvents() {
+  EXPECT_EQ(ref_count_, 1u);
+}
 
 HRESULT FakeCredentialProviderEvents::CredentialsChanged(
     UINT_PTR upAdviseContext) {
@@ -104,13 +114,15 @@ HRESULT FakeCredentialProviderEvents::CredentialsChanged(
   return S_OK;
 }
 
-IMPL_IUNKOWN_NOQI_NOREF(FakeCredentialProviderEvents)
+IMPL_IUNKOWN_NOQI_WITH_REF(FakeCredentialProviderEvents)
 
 ///////////////////////////////////////////////////////////////////////////////
 
 FakeGaiaCredentialProvider::FakeGaiaCredentialProvider() {}
 
-FakeGaiaCredentialProvider::~FakeGaiaCredentialProvider() {}
+FakeGaiaCredentialProvider::~FakeGaiaCredentialProvider() {
+  EXPECT_EQ(ref_count_, 1u);
+}
 
 HRESULT FakeGaiaCredentialProvider::GetUsageScenario(DWORD* cpus) {
   DCHECK(cpus);
@@ -131,6 +143,6 @@ HRESULT FakeGaiaCredentialProvider::OnUserAuthenticated(
   return S_OK;
 }
 
-IMPL_IUNKOWN_NOQI_NOREF(FakeGaiaCredentialProvider)
+IMPL_IUNKOWN_NOQI_WITH_REF(FakeGaiaCredentialProvider)
 
 }  // namespace credential_provider
