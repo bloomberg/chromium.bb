@@ -16582,6 +16582,7 @@ Called by update_net_error_codes.py.-->
   <int value="551" label="DeviceBatteryChargeCustomStartCharging"/>
   <int value="552" label="DeviceBatteryChargeCustomStopCharging"/>
   <int value="553" label="DeviceUsbPowerShareEnabled"/>
+  <int value="554" label="PolicyListMultipleSourceMergeList"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">

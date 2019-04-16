@@ -17,9 +17,6 @@ enum PolicyScope {
 
   // MACHINE policies apply to any users of the current machine.
   POLICY_SCOPE_MACHINE,
-
-  // MERGED policies are the result of a combination of the above types.
-  POLICY_SCOPE_MERGED,
 };
 
 // The level of a policy determines its enforceability and whether users can
@@ -55,6 +52,7 @@ enum PolicySource {
   // The policy was set by a cloud source that has higher priroity.
   POLICY_SOURCE_PRIORITY_CLOUD,
 
+  // The policy coming from multiple sources and its value has been merged.
   POLICY_SOURCE_MERGED,
 
   // Number of source types. Has to be the last element.

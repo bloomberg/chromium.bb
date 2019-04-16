@@ -22,6 +22,8 @@
 
 namespace policy {
 
+class PolicyMerger;
+
 class PolicyMapTest;
 FORWARD_DECLARE_TEST(PolicyMapTest, BlockedEntry);
 FORWARD_DECLARE_TEST(PolicyMapTest, MergeFrom);
@@ -70,6 +72,9 @@ class POLICY_EXPORT PolicyMap {
     // Adds a conflicting policy.
     void AddConflictingPolicy(const Entry& conflict);
 
+    // Removes all the conflicts.
+    void ClearConflicts();
+
     bool IsBlocked() const;
 
     void SetBlocked();
@@ -104,10 +109,6 @@ class POLICY_EXPORT PolicyMap {
   // This is equivalent to Get(policy)->value, when it doesn't return NULL.
   const base::Value* GetValue(const std::string& policy) const;
   base::Value* GetMutableValue(const std::string& policy);
-
-  // Merges the values coming from different sources and clears the conflict
-  // state.
-  void MergeListValues(const std::string& policy);
 
   // Overwrites any existing information stored in the map for the key |policy|.
   // Resets the error for that policy to the empty string.
@@ -157,6 +158,9 @@ class POLICY_EXPORT PolicyMap {
   // by Entry::has_higher_priority_than(). If a policy is contained in both
   // maps with the same priority, the current value in |this| is preserved.
   void MergeFrom(const PolicyMap& other);
+
+  // Merge the policy values that are coming from different sources.
+  void MergeValues(const std::vector<PolicyMerger*>& mergers);
 
   // Loads the values in |policies| into this PolicyMap. All policies loaded
   // will have |level|, |scope| and |source| in their entries. Existing entries

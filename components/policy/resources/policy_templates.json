@@ -6107,6 +6107,31 @@
       'arc_support': 'Android apps may voluntarily choose to honor this list. You cannot force them to honor it.',
     },
     {
+      'name': 'PolicyListMultipleSourceMergeList',
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
+      'supported_on': ['chrome.*:75-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': ['ExtensionInstallWhitelist', 'ExtensionInstallBlacklist'],
+      'id': 554,
+      'caption': '''Allow merging list policies from different sources''',
+      'tags': [],
+      'desc': '''Allows the selected policies to be merged when they come from different sources, with the same scopes and level.
+
+        If a policy is in the list, in case there is conflict between two sources, given that they have the same scopes and level, the values will be merged into a new policy list.
+
+        If a policy is in the list, in case there is conflict between two sources but also between different scopes and/or level, the policy with the highest priority will be applied.
+
+        If a policy is not in the list, in case there is any conflict between sources, scopes and/or level, the policy with the highest priority will be applied.''',
+      'label': '''Allow merging list policies from different sources''',
+    },
+    {
       'name': 'OpenNetworkConfiguration',
       'type': 'string',
       'schema': { 'type': 'string' },
@@ -15798,5 +15823,5 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   },
   'placeholders': [],
   'deleted_policy_ids': [412],
-  'highest_id_currently_used':  553
+  'highest_id_currently_used':  554
 }

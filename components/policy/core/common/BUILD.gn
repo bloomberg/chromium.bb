@@ -112,6 +112,8 @@ jumbo_source_set("internal") {
     "policy_loader_win.h",
     "policy_map.cc",
     "policy_map.h",
+    "policy_merger.cc",
+    "policy_merger.h",
     "policy_namespace.cc",
     "policy_namespace.h",
     "policy_proto_decoders.cc",

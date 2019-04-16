@@ -17,6 +17,7 @@
 #include "base/values.h"
 #include "components/policy/core/common/policy_bundle.h"
 #include "components/policy/core/common/policy_map.h"
+#include "components/policy/core/common/policy_merger.h"
 #include "components/policy/core/common/policy_types.h"
 #include "components/policy/policy_constants.h"
 
@@ -67,18 +68,6 @@ void RemapProxyPolicies(PolicyMap* policies) {
     policies->Set(key::kProxySettings, current_priority.level,
                   current_priority.scope, inherited_source,
                   std::move(proxy_settings), nullptr);
-  }
-}
-
-// If the policy to merge extension policies is set it causes a merge of the
-// Extension list policies. This is a temporary solution until the generic
-// merging logic is finished
-void MergeExtensionPolicies(PolicyMap* policies) {
-  auto* value = policies->GetValue(key::kExtensionInstallListsMergeEnabled);
-  if (value && value->GetBool()) {
-    policies->MergeListValues(key::kExtensionInstallForcelist);
-    policies->MergeListValues(key::kExtensionInstallBlacklist);
-    policies->MergeListValues(key::kExtensionInstallWhitelist);
   }
 }
 
@@ -204,8 +193,32 @@ void PolicyServiceImpl::MergeAndTriggerUpdates() {
     provided_bundle.CopyFrom(provider->policies());
     RemapProxyPolicies(&provided_bundle.Get(chrome_namespace));
     bundle.MergeFrom(provided_bundle);
-    MergeExtensionPolicies(&bundle.Get(chrome_namespace));
   }
+
+  // Merges all the mergeable policies
+  const auto& chrome_policies = bundle.Get(chrome_namespace);
+  auto* policy_lists_to_merge_ptr =
+      chrome_policies.GetValue(key::kPolicyListMultipleSourceMergeList);
+
+  std::set<std::string> policy_lists_to_merge;
+
+  if (policy_lists_to_merge_ptr) {
+    for (const auto& item : policy_lists_to_merge_ptr->GetList())
+      policy_lists_to_merge.emplace(item.GetString());
+  }
+
+  auto* value =
+      chrome_policies.GetValue(key::kExtensionInstallListsMergeEnabled);
+  if (value && value->GetBool()) {
+    policy_lists_to_merge.insert(key::kExtensionInstallForcelist);
+    policy_lists_to_merge.insert(key::kExtensionInstallBlacklist);
+    policy_lists_to_merge.insert(key::kExtensionInstallWhitelist);
+  }
+
+  PolicyListMerger policy_list_merger(std::move(policy_lists_to_merge));
+
+  for (auto it = bundle.begin(); it != bundle.end(); ++it)
+    it->second->MergeValues({&policy_list_merger});
 
   // Swap first, so that observers that call GetPolicies() see the current
   // values.

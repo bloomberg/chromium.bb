@@ -11,6 +11,7 @@
 #include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/policy/core/common/policy_merger.h"
 #include "components/strings/grit/components_strings.h"
 
 namespace policy {
@@ -100,6 +101,12 @@ void PolicyMap::Entry::AddConflictingPolicy(const Entry& conflict) {
   conflicts.push_back(std::move(conflicted_policy_copy));
 }
 
+void PolicyMap::Entry::ClearConflicts() {
+  conflicts.clear();
+  error_message_ids_.erase(IDS_POLICY_CONFLICT_SAME_VALUE);
+  error_message_ids_.erase(IDS_POLICY_CONFLICT_DIFF_VALUE);
+}
+
 base::string16 PolicyMap::Entry::GetLocalizedErrors(
     L10nLookupFunction lookup) const {
   base::string16 error_string = base::UTF8ToUTF16(error_strings_);
@@ -146,36 +153,6 @@ const base::Value* PolicyMap::GetValue(const std::string& policy) const {
   return entry != map_.end() && !entry->second.IsBlocked()
              ? entry->second.value.get()
              : nullptr;
-}
-
-void PolicyMap::MergeListValues(const std::string& policy) {
-  auto entry = map_.find(policy);
-  if (entry == map_.end() || entry->second.conflicts.empty())
-    return;
-  base::ListValue value;
-  DCHECK(entry->second.value->is_list());
-  bool has_valid_sources = !entry->second.IsBlocked();
-  if (!entry->second.IsBlocked()) {
-    for (const auto& i : entry->second.value->GetList())
-      value.GetList().emplace_back(i.Clone());
-  }
-  for (const auto& source : entry->second.conflicts) {
-    if (!source.IsBlocked() && source.level == entry->second.level) {
-      // SKip user cloud policy because it could be from arbitrary domain.
-      if (source.scope == POLICY_SCOPE_USER &&
-          source.source == POLICY_SOURCE_CLOUD) {
-        continue;
-      }
-      for (const auto& i : source.value->GetList())
-        value.GetList().emplace_back(i.Clone());
-      has_valid_sources = true;
-    }
-  }
-  if (has_valid_sources) {
-    Set(policy, entry->second.level, POLICY_SCOPE_MERGED, POLICY_SOURCE_MERGED,
-        base::Value::ToUniquePtrValue(value.Clone()),
-        std::move(entry->second.external_data_fetcher));
-  }
 }
 
 base::Value* PolicyMap::GetMutableValue(const std::string& policy) {
@@ -286,6 +263,11 @@ void PolicyMap::MergeFrom(const PolicyMap& other) {
     if (current_policy != &new_policy)
       Set(it.first, std::move(new_policy));
   }
+}
+
+void PolicyMap::MergeValues(const std::vector<PolicyMerger*>& mergers) {
+  for (const auto* it : mergers)
+    it->Merge(&map_);
 }
 
 void PolicyMap::LoadFrom(const base::DictionaryValue* policies,
