@@ -126,6 +126,7 @@ class Device extends EventTarget implements GPUDevice {
   public readonly adapter: Adapter;
   public readonly extensions: GPUExtensions;
   public readonly limits = kDefaultLimits;
+  public readonly lost: Promise<GPUDeviceLostInfo> = new Promise(() => {});
   private queue: Queue = new Queue();
   constructor(adapter: Adapter, descriptor: GPUDeviceDescriptor) {
     super();

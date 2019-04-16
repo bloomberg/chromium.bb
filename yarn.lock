@@ -194,10 +194,10 @@
   resolved "https://registry.yarnpkg.com/@webgpu/shaderc/-/shaderc-0.0.3.tgz#fd07fb581733ac0d036adbf90d8043fae35e03c3"
   integrity sha512-7bFX2hQtKeDBHNNyXoBLsLR7nH5L/dNHYbcuo+F0H5dwNibcEcpDRx/Ln5SeNPMdXY659ez2AHtQLWXlu0kdoQ==
 
-"@webgpu/types@0.0.2":
-  version "0.0.2"
-  resolved "https://registry.yarnpkg.com/@webgpu/types/-/types-0.0.2.tgz#3844b3fc53b44f21145c36b633870558b8cfa72f"
-  integrity sha512-mdvsTqbBxq4t91ZtoarSZ7R95tGPfliZ0T40qJf+CCjyUnmR+gg7UCzZ6lS9qvXH11AimYXA1AvNpL+MiN19YA==
+"@webgpu/types@0.0.3":
+  version "0.0.3"
+  resolved "https://registry.yarnpkg.com/@webgpu/types/-/types-0.0.3.tgz#3b7989fab7fbc50bfa201fa46708927518fa3ece"
+  integrity sha512-2LXPgHQwpjHQsHTuooOuL88vMkZaCgHaQ1EayZbDsQgMM/q78Me1QMSyZDs542DEiu6YcILKBbkFNruSmVGE7A==
 
 abbrev@1:
   version "1.1.1"
