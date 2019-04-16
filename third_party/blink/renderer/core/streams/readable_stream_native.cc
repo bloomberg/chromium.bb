@@ -11,11 +11,11 @@
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/streams/miscellaneous_operations.h"
+#include "third_party/blink/renderer/core/streams/promise_handler.h"
 #include "third_party/blink/renderer/core/streams/readable_stream_default_controller.h"
 #include "third_party/blink/renderer/core/streams/readable_stream_default_reader.h"
 #include "third_party/blink/renderer/core/streams/stream_algorithms.h"
 #include "third_party/blink/renderer/core/streams/stream_promise_resolver.h"
-#include "third_party/blink/renderer/core/streams/stream_script_function.h"
 #include "third_party/blink/renderer/core/streams/underlying_source_base.h"
 #include "third_party/blink/renderer/core/streams/writable_stream_default_controller.h"
 #include "third_party/blink/renderer/core/streams/writable_stream_default_writer.h"
@@ -165,25 +165,17 @@ class ReadableStreamNative::PipeToEngine
   using PromiseReaction =
       v8::Local<v8::Value> (PipeToEngine::*)(v8::Local<v8::Value>);
 
-  class WrappedPromiseReaction : public ScriptFunction {
+  class WrappedPromiseReaction final : public PromiseHandlerWithValue {
    public:
-    static v8::Local<v8::Function> Create(ScriptState* script_state,
-                                          PipeToEngine* instance,
-                                          PromiseReaction method) {
-      auto* reaction = MakeGarbageCollected<WrappedPromiseReaction>(
-          script_state, instance, method);
-      return reaction->BindToV8Function();
-    }
-
     WrappedPromiseReaction(ScriptState* script_state,
                            PipeToEngine* instance,
                            PromiseReaction method)
-        : ScriptFunction(script_state), instance_(instance), method_(method) {}
+        : PromiseHandlerWithValue(script_state),
+          instance_(instance),
+          method_(method) {}
 
-    void CallRaw(const v8::FunctionCallbackInfo<v8::Value>& args) override {
-      DCHECK_EQ(args.Length(), 1);
-      auto result = (instance_->*method_)(args[0]);
-      args.GetReturnValue().Set(result);
+    v8::Local<v8::Value> CallWithLocal(v8::Local<v8::Value> value) override {
+      return (instance_->*method_)(value);
     }
 
     void Trace(Visitor* visitor) override {
@@ -583,42 +575,19 @@ class ReadableStreamNative::PipeToEngine
 
   ReadableStreamNative* Readable() { return reader_->owner_readable_stream_; }
 
-  // Performs promise.then(on_fulfilled, on_rejected). The logic in this method
-  // is identical to StreamPromiseThen(), but the types are different. It's not
-  // possible to share the logic without using complex templates, which would
-  // duplicate the object code anyway.
+  // Performs promise.then(on_fulfilled, on_rejected). It behaves like
+  // StreamPromiseThen(). Only the types are different.
   v8::Local<v8::Promise> ThenPromise(v8::Local<v8::Promise> promise,
                                      PromiseReaction on_fulfilled,
                                      PromiseReaction on_rejected = nullptr) {
-    auto context = script_state_->GetContext();
-    v8::MaybeLocal<v8::Promise> result_maybe;
-    if (!on_fulfilled) {
-      DCHECK(on_rejected);
-      result_maybe = promise->Catch(
-          context,
-          WrappedPromiseReaction::Create(script_state_, this, on_rejected));
-    } else if (on_rejected) {
-      result_maybe = promise->Then(
-          context,
-          WrappedPromiseReaction::Create(script_state_, this, on_fulfilled),
-          WrappedPromiseReaction::Create(script_state_, this, on_rejected));
-    } else {
-      result_maybe = promise->Then(
-          context,
-          WrappedPromiseReaction::Create(script_state_, this, on_fulfilled));
-    }
-
-    v8::Local<v8::Promise> result;
-    if (!result_maybe.ToLocal(&result)) {
-      DVLOG(3) << "assuming that failure of promise->Then() is caused by "
-                  "shutdown and ignoring it";
-      // Try to create a dummy promise so that the calling code can continue. If
-      // we can't create one, then we can't return to the calling context so we
-      // have to crash. This shouldn't happen except on OOM.
-      result =
-          v8::Promise::Resolver::New(context).ToLocalChecked()->GetPromise();
-    }
-    return result;
+    return StreamThenPromise(
+        script_state_->GetContext(), promise,
+        on_fulfilled ? MakeGarbageCollected<WrappedPromiseReaction>(
+                           script_state_, this, on_fulfilled)
+                     : nullptr,
+        on_rejected ? MakeGarbageCollected<WrappedPromiseReaction>(
+                          script_state_, this, on_rejected)
+                    : nullptr);
   }
 
   Member<ScriptState> script_state_;
@@ -706,10 +675,10 @@ class ReadableStreamNative::TeeEngine::PullAlgorithm final
   }
 
  private:
-  class ResolveFunction final : public StreamScriptFunction {
+  class ResolveFunction final : public PromiseHandler {
    public:
     ResolveFunction(ScriptState* script_state, TeeEngine* engine)
-        : StreamScriptFunction(script_state), engine_(engine) {}
+        : PromiseHandler(script_state), engine_(engine) {}
 
     void CallWithLocal(v8::Local<v8::Value> result) override {
       //    i. If closed is true, return.
@@ -791,7 +760,7 @@ class ReadableStreamNative::TeeEngine::PullAlgorithm final
 
     void Trace(Visitor* visitor) override {
       visitor->Trace(engine_);
-      StreamScriptFunction::Trace(visitor);
+      PromiseHandler::Trace(visitor);
     }
 
    private:
@@ -940,10 +909,10 @@ void ReadableStreamNative::TeeEngine::Start(ScriptState* script_state,
     controller_[branch] = branch_[branch]->readable_stream_controller_;
   }
 
-  class RejectFunction final : public StreamScriptFunction {
+  class RejectFunction final : public PromiseHandler {
    public:
     RejectFunction(ScriptState* script_state, TeeEngine* engine)
-        : StreamScriptFunction(script_state), engine_(engine) {}
+        : PromiseHandler(script_state), engine_(engine) {}
 
     void CallWithLocal(v8::Local<v8::Value> r) override {
       // 18. Upon rejection of reader.[[closedPromise]] with reason r,
@@ -960,7 +929,7 @@ void ReadableStreamNative::TeeEngine::Start(ScriptState* script_state,
 
     void Trace(Visitor* visitor) override {
       visitor->Trace(engine_);
-      StreamScriptFunction::Trace(visitor);
+      PromiseHandler::Trace(visitor);
     }
 
    private:
@@ -1507,10 +1476,10 @@ v8::Local<v8::Promise> ReadableStreamNative::Cancel(
   v8::Local<v8::Promise> source_cancel_promise =
       stream->readable_stream_controller_->CancelSteps(script_state, reason);
 
-  class ReturnUndefinedFunction : public StreamScriptFunction {
+  class ReturnUndefinedFunction final : public PromiseHandler {
    public:
     explicit ReturnUndefinedFunction(ScriptState* script_state)
-        : StreamScriptFunction(script_state) {}
+        : PromiseHandler(script_state) {}
 
     // The method does nothing; the default value of undefined is returned to
     // JavaScript.

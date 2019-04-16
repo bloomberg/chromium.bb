@@ -6,9 +6,9 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/core/streams/miscellaneous_operations.h"
+#include "third_party/blink/renderer/core/streams/promise_handler.h"
 #include "third_party/blink/renderer/core/streams/queue_with_sizes.h"
 #include "third_party/blink/renderer/core/streams/stream_algorithms.h"
-#include "third_party/blink/renderer/core/streams/stream_script_function.h"
 #include "third_party/blink/renderer/core/streams/writable_stream_native.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
@@ -136,11 +136,11 @@ void WritableStreamDefaultController::SetUp(
   }
   DCHECK(!exception_state.HadException());
 
-  class ResolvePromiseFunction final : public StreamScriptFunction {
+  class ResolvePromiseFunction final : public PromiseHandler {
    public:
     ResolvePromiseFunction(ScriptState* script_state,
                            WritableStreamNative* stream)
-        : StreamScriptFunction(script_state), stream_(stream) {}
+        : PromiseHandler(script_state), stream_(stream) {}
 
     void CallWithLocal(v8::Local<v8::Value>) override {
       // 16. Upon fulfillment of startPromise
@@ -161,18 +161,18 @@ void WritableStreamDefaultController::SetUp(
 
     void Trace(Visitor* visitor) override {
       visitor->Trace(stream_);
-      StreamScriptFunction::Trace(visitor);
+      PromiseHandler::Trace(visitor);
     }
 
    private:
     Member<WritableStreamNative> stream_;
   };
 
-  class RejectPromiseFunction final : public StreamScriptFunction {
+  class RejectPromiseFunction final : public PromiseHandler {
    public:
     RejectPromiseFunction(ScriptState* script_state,
                           WritableStreamNative* stream)
-        : StreamScriptFunction(script_state), stream_(stream) {}
+        : PromiseHandler(script_state), stream_(stream) {}
 
     void CallWithLocal(v8::Local<v8::Value> r) override {
       // 17. Upon rejection of startPromise with reason r,
@@ -191,7 +191,7 @@ void WritableStreamDefaultController::SetUp(
 
     void Trace(Visitor* visitor) override {
       visitor->Trace(stream_);
-      StreamScriptFunction::Trace(visitor);
+      PromiseHandler::Trace(visitor);
     }
 
    private:
@@ -496,10 +496,10 @@ void WritableStreamDefaultController::ProcessClose(
   //  6. Perform ! WritableStreamDefaultControllerClearAlgorithms(controller).
   ClearAlgorithms(controller);
 
-  class ResolveFunction final : public StreamScriptFunction {
+  class ResolveFunction final : public PromiseHandler {
    public:
     ResolveFunction(ScriptState* script_state, WritableStreamNative* stream)
-        : StreamScriptFunction(script_state), stream_(stream) {}
+        : PromiseHandler(script_state), stream_(stream) {}
 
     void CallWithLocal(v8::Local<v8::Value>) override {
       //  7. Upon fulfillment of sinkClosePromise,
@@ -509,17 +509,17 @@ void WritableStreamDefaultController::ProcessClose(
 
     void Trace(Visitor* visitor) override {
       visitor->Trace(stream_);
-      StreamScriptFunction::Trace(visitor);
+      PromiseHandler::Trace(visitor);
     }
 
    private:
     Member<WritableStreamNative> stream_;
   };
 
-  class RejectFunction final : public StreamScriptFunction {
+  class RejectFunction final : public PromiseHandler {
    public:
     RejectFunction(ScriptState* script_state, WritableStreamNative* stream)
-        : StreamScriptFunction(script_state), stream_(stream) {}
+        : PromiseHandler(script_state), stream_(stream) {}
 
     void CallWithLocal(v8::Local<v8::Value> reason) override {
       //  8. Upon rejection of sinkClosePromise with reason reason,
@@ -531,7 +531,7 @@ void WritableStreamDefaultController::ProcessClose(
 
     void Trace(Visitor* visitor) override {
       visitor->Trace(stream_);
-      StreamScriptFunction::Trace(visitor);
+      PromiseHandler::Trace(visitor);
     }
 
    private:
@@ -559,12 +559,12 @@ void WritableStreamDefaultController::ProcessWrite(
   const auto sinkWritePromise =
       controller->write_algorithm_->Run(script_state, 1, &chunk);
 
-  class ResolveFunction : public StreamScriptFunction {
+  class ResolveFunction final : public PromiseHandler {
    public:
     ResolveFunction(ScriptState* script_state,
                     WritableStreamNative* stream,
                     WritableStreamDefaultController* controller)
-        : StreamScriptFunction(script_state),
+        : PromiseHandler(script_state),
           stream_(stream),
           controller_(controller) {}
 
@@ -608,7 +608,7 @@ void WritableStreamDefaultController::ProcessWrite(
     void Trace(Visitor* visitor) override {
       visitor->Trace(stream_);
       visitor->Trace(controller_);
-      StreamScriptFunction::Trace(visitor);
+      PromiseHandler::Trace(visitor);
     }
 
    private:
@@ -616,12 +616,12 @@ void WritableStreamDefaultController::ProcessWrite(
     Member<WritableStreamDefaultController> controller_;
   };
 
-  class RejectFunction : public StreamScriptFunction {
+  class RejectFunction final : public PromiseHandler {
    public:
     RejectFunction(ScriptState* script_state,
                    WritableStreamNative* stream,
                    WritableStreamDefaultController* controller)
-        : StreamScriptFunction(script_state),
+        : PromiseHandler(script_state),
           stream_(stream),
           controller_(controller) {}
 
@@ -643,7 +643,7 @@ void WritableStreamDefaultController::ProcessWrite(
     void Trace(Visitor* visitor) override {
       visitor->Trace(stream_);
       visitor->Trace(controller_);
-      StreamScriptFunction::Trace(visitor);
+      PromiseHandler::Trace(visitor);
     }
 
    private:

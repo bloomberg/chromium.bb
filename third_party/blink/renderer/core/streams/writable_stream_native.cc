@@ -6,8 +6,8 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/core/streams/miscellaneous_operations.h"
+#include "third_party/blink/renderer/core/streams/promise_handler.h"
 #include "third_party/blink/renderer/core/streams/stream_promise_resolver.h"
-#include "third_party/blink/renderer/core/streams/stream_script_function.h"
 #include "third_party/blink/renderer/core/streams/writable_stream_default_controller.h"
 #include "third_party/blink/renderer/core/streams/writable_stream_default_writer.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -436,14 +436,12 @@ void WritableStreamNative::FinishErroring(ScriptState* script_state,
   auto promise = stream->writable_stream_controller_->AbortSteps(
       script_state, abort_request->Reason(isolate));
 
-  class ResolvePromiseFunction final : public StreamScriptFunction {
+  class ResolvePromiseFunction final : public PromiseHandler {
    public:
     ResolvePromiseFunction(ScriptState* script_state,
                            WritableStreamNative* stream,
                            StreamPromiseResolver* promise)
-        : StreamScriptFunction(script_state),
-          stream_(stream),
-          promise_(promise) {}
+        : PromiseHandler(script_state), stream_(stream), promise_(promise) {}
 
     void CallWithLocal(v8::Local<v8::Value>) override {
       // 13. Upon fulfillment of promise,
@@ -458,7 +456,7 @@ void WritableStreamNative::FinishErroring(ScriptState* script_state,
     void Trace(Visitor* visitor) override {
       visitor->Trace(stream_);
       visitor->Trace(promise_);
-      StreamScriptFunction::Trace(visitor);
+      PromiseHandler::Trace(visitor);
     }
 
    private:
@@ -466,14 +464,12 @@ void WritableStreamNative::FinishErroring(ScriptState* script_state,
     Member<StreamPromiseResolver> promise_;
   };
 
-  class RejectPromiseFunction final : public StreamScriptFunction {
+  class RejectPromiseFunction final : public PromiseHandler {
    public:
     RejectPromiseFunction(ScriptState* script_state,
                           WritableStreamNative* stream,
                           StreamPromiseResolver* promise)
-        : StreamScriptFunction(script_state),
-          stream_(stream),
-          promise_(promise) {}
+        : PromiseHandler(script_state), stream_(stream), promise_(promise) {}
 
     void CallWithLocal(v8::Local<v8::Value> reason) override {
       // 14. Upon rejection of promise with reason reason,
@@ -488,7 +484,7 @@ void WritableStreamNative::FinishErroring(ScriptState* script_state,
     void Trace(Visitor* visitor) override {
       visitor->Trace(stream_);
       visitor->Trace(promise_);
-      StreamScriptFunction::Trace(visitor);
+      PromiseHandler::Trace(visitor);
     }
 
    private:
