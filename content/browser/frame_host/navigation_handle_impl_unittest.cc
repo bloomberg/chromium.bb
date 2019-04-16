@@ -71,17 +71,17 @@ class NavigationHandleImplTest : public RenderViewHostImplTestHarness {
   }
 
   void TearDown() override {
-    // Release the |test_handle_| before destroying the WebContents, to match
+    // Release the |request_| before destroying the WebContents, to match
     // the WebContentsObserverSanityChecker expectations.
-    test_handle_.reset();
+    request_.reset();
     RenderViewHostImplTestHarness::TearDown();
   }
 
-  void Resume() { test_handle_->throttle_runner_.CallResumeForTesting(); }
+  void Resume() { test_handle()->throttle_runner_.CallResumeForTesting(); }
 
   void CancelDeferredNavigation(
       NavigationThrottle::ThrottleCheckResult result) {
-    test_handle_->CancelDeferredNavigationInternal(result);
+    test_handle()->CancelDeferredNavigationInternal(result);
   }
 
   // Helper function to call WillStartRequest on |handle|. If this function
@@ -93,7 +93,7 @@ class NavigationHandleImplTest : public RenderViewHostImplTestHarness {
 
     // It's safe to use base::Unretained since the NavigationHandle is owned by
     // the NavigationHandleImplTest.
-    test_handle_->WillStartRequest(
+    test_handle()->WillStartRequest(
         base::Bind(&NavigationHandleImplTest::UpdateThrottleCheckResult,
                    base::Unretained(this)));
   }
@@ -109,7 +109,7 @@ class NavigationHandleImplTest : public RenderViewHostImplTestHarness {
 
     // It's safe to use base::Unretained since the NavigationHandle is owned by
     // the NavigationHandleImplTest.
-    test_handle_->WillRedirectRequest(
+    test_handle()->WillRedirectRequest(
         GURL(), nullptr,
         base::Bind(&NavigationHandleImplTest::UpdateThrottleCheckResult,
                    base::Unretained(this)));
@@ -123,11 +123,11 @@ class NavigationHandleImplTest : public RenderViewHostImplTestHarness {
       const base::Optional<net::SSLInfo> ssl_info = base::nullopt) {
     was_callback_called_ = false;
     callback_result_ = NavigationThrottle::DEFER;
-    test_handle_->set_net_error_code(net_error_code);
+    test_handle()->set_net_error_code(net_error_code);
 
     // It's safe to use base::Unretained since the NavigationHandle is owned by
     // the NavigationHandleImplTest.
-    test_handle_->WillFailRequest(
+    test_handle()->WillFailRequest(
         base::Bind(&NavigationHandleImplTest::UpdateThrottleCheckResult,
                    base::Unretained(this)));
   }
@@ -145,13 +145,15 @@ class NavigationHandleImplTest : public RenderViewHostImplTestHarness {
     // by the NavigationHandleImplTest. The ConnectionInfo is different from
     // that sent to WillRedirectRequest to verify that it's correctly plumbed
     // in both cases.
-    test_handle_->WillProcessResponse(
+    test_handle()->WillProcessResponse(
         base::Bind(&NavigationHandleImplTest::UpdateThrottleCheckResult,
                    base::Unretained(this)));
   }
 
   // Returns the handle used in tests.
-  NavigationHandleImpl* test_handle() const { return test_handle_.get(); }
+  NavigationHandleImpl* test_handle() const {
+    return request_->navigation_handle();
+  }
 
   // Whether the callback was called.
   bool was_callback_called() const { return was_callback_called_; }
@@ -161,7 +163,7 @@ class NavigationHandleImplTest : public RenderViewHostImplTestHarness {
     return callback_result_;
   }
 
-  NavigationHandleImpl::State state() { return test_handle_->state(); }
+  NavigationHandleImpl::State state() { return test_handle()->state(); }
 
   bool is_deferring() {
     switch (state()) {
@@ -216,29 +218,13 @@ class NavigationHandleImplTest : public RenderViewHostImplTestHarness {
     return test_throttle;
   }
 
-  // Creates and register a NavigationThrottle that will delete the
-  // NavigationHandle in checks.
-  void AddDeletingNavigationThrottle() {
-    DCHECK(test_handle_);
-    test_handle()->RegisterThrottleForTesting(
-        std::make_unique<DeletingNavigationThrottle>(
-            test_handle(), base::BindRepeating(
-                               &NavigationHandleImplTest::ResetNavigationHandle,
-                               base::Unretained(this))));
-  }
-
   void CreateNavigationHandle() {
     scoped_refptr<FrameNavigationEntry> frame_entry(new FrameNavigationEntry());
     request_ = NavigationRequest::CreateBrowserInitiated(
         main_test_rfh()->frame_tree_node(), CommonNavigationParams(),
         CommitNavigationParams(), false /* browser-initiated */, std::string(),
         *frame_entry, nullptr, nullptr, nullptr);
-    test_handle_ = base::WrapUnique<NavigationHandleImpl>(
-        new NavigationHandleImpl(request_.get(), std::vector<GURL>(),
-                                 false,  // is_same_document
-                                 0,
-                                 nullptr,  // navigation_ui_data
-                                 net::HttpRequestHeaders(), Referrer()));
+    request_->CreateNavigationHandle(true);
   }
 
  private:
@@ -251,10 +237,7 @@ class NavigationHandleImplTest : public RenderViewHostImplTestHarness {
     was_callback_called_ = true;
   }
 
-  void ResetNavigationHandle() { test_handle_ = nullptr; }
-
   std::unique_ptr<NavigationRequest> request_;
-  std::unique_ptr<NavigationHandleImpl> test_handle_;
   bool was_callback_called_;
   NavigationThrottle::ThrottleCheckResult callback_result_;
 };
