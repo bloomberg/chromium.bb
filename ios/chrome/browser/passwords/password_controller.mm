@@ -695,7 +695,10 @@ void LogSuggestionShown(PasswordSuggestionType type) {
                    fieldIdentifier:(NSString*)fieldIdentifier
                          fieldType:(NSString*)fieldType {
   if (!features::IsAutomaticPasswordGenerationEnabled() ||
-      _passwordManagerClient->IsIncognito())
+      _passwordManagerClient->IsIncognito() ||
+      !_passwordManagerDriver->GetPasswordGenerationHelper()
+           ->IsGenerationEnabled(
+               /*log_debug_data*/ true))
     return NO;
   if (![fieldType isEqualToString:@"password"])
     return NO;
