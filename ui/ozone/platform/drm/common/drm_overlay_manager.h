@@ -53,6 +53,7 @@ class DrmOverlayManager : public OverlayManagerOzone {
   // Updates the MRU cache for overlay configuration |candidates| with |status|.
   void UpdateCacheForOverlayCandidates(
       const std::vector<OverlaySurfaceCandidate>& candidates,
+      const gfx::AcceleratedWidget widget,
       const std::vector<OverlayStatus>& status);
 
  private:
@@ -69,11 +70,14 @@ class DrmOverlayManager : public OverlayManagerOzone {
     std::vector<OverlayStatus> status;
   };
 
-  // List of all OverlaySurfaceCandidate instances which have been requested
-  // for validation and/or validated.
-  base::MRUCache<std::vector<OverlaySurfaceCandidate>,
-                 OverlayValidationCacheValue>
-      cache_;
+  using OverlayCandidatesListCache =
+      base::MRUCache<std::vector<OverlaySurfaceCandidate>,
+                     OverlayValidationCacheValue>;
+
+  // Map of each widget to the cache of list of all OverlaySurfaceCandidate
+  // instances which have been requested for validation and/or validated.
+  std::map<gfx::AcceleratedWidget, OverlayCandidatesListCache>
+      widget_cache_map_;
 
   THREAD_CHECKER(thread_checker_);
 
