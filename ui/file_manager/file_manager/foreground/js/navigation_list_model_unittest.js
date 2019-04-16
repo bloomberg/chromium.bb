@@ -524,4 +524,15 @@ function testMultipleUsbPartitionsGrouping() {
   groupedUsbs = /** @type NavigationModelFakeItem */ (model.item(2));
   assertEquals('External Drive', groupedUsbs.label);
   assertEquals(3, groupedUsbs.entry.getUIChildren().length);
+
+  // Add an extra copy of partition3, which replaces the existing partition3
+  // and triggers NavigationListModel to recalculate.
+  volumeManager.volumeInfoList.add(MockVolumeManager.createMockVolumeInfo(
+      VolumeManagerCommon.VolumeType.REMOVABLE, 'removable:partition3',
+      'partition3', 'device/path/1'));
+
+  // Check that partition3 is not duplicated.
+  groupedUsbs = /** @type NavigationModelFakeItem */ (model.item(2));
+  assertEquals('External Drive', groupedUsbs.label);
+  assertEquals(3, groupedUsbs.entry.getUIChildren().length);
 }
