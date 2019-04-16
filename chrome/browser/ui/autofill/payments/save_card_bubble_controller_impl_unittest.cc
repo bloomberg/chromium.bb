@@ -69,7 +69,7 @@ class TestSaveCardBubbleControllerImpl : public SaveCardBubbleControllerImpl {
   }
 
   AutofillSyncSigninState GetSyncState() const override {
-    return AutofillSyncSigninState::kSignedInAndSyncFeature;
+    return AutofillSyncSigninState::kSignedInAndSyncFeatureEnabled;
   }
 
  private:

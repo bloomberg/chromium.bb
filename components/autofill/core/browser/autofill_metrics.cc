@@ -1902,8 +1902,10 @@ const char* AutofillMetrics::GetMetricsSyncStateSuffix(
       return ".SignedIn";
     case AutofillSyncSigninState::kSignedInAndWalletSyncTransportEnabled:
       return ".SignedInAndWalletSyncTransportEnabled";
-    case AutofillSyncSigninState::kSignedInAndSyncFeature:
-      return ".SignedInAndSyncFeature";
+    case AutofillSyncSigninState::kSignedInAndSyncFeatureEnabled:
+      return ".SignedInAndSyncFeatureEnabled";
+    case AutofillSyncSigninState::kSyncPaused:
+      return ".SyncPaused";
     case AutofillSyncSigninState::kNumSyncStates:
       return ".Unknown";
   }

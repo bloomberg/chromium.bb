@@ -166,20 +166,21 @@ bool IsCreditCardMigrationEnabled(PersonalDataManager* personal_data_manager,
   if (!autofill::payments::HasGooglePaymentsAccount(personal_data_manager))
     return false;
 
-  AutofillSyncSigninState sync_state =
-      personal_data_manager->GetSyncSigninState();
-
-  // User signed-in and turned sync on.
-  if (sync_state != AutofillSyncSigninState::kSignedInAndSyncFeature &&
-      // User signed-in but not turned on sync.
-      (sync_state !=
-           AutofillSyncSigninState::kSignedInAndWalletSyncTransportEnabled ||
-       !base::FeatureList::IsEnabled(
-           features::kAutofillEnableLocalCardMigrationForNonSyncUser))) {
-    return false;
+  switch (personal_data_manager->GetSyncSigninState()) {
+    case AutofillSyncSigninState::kSignedOut:
+    case AutofillSyncSigninState::kSignedIn:
+    case AutofillSyncSigninState::kSyncPaused:
+      return false;
+    case AutofillSyncSigninState::kSignedInAndWalletSyncTransportEnabled:
+      return base::FeatureList::IsEnabled(
+          features::kAutofillEnableLocalCardMigrationForNonSyncUser);
+    case AutofillSyncSigninState::kSignedInAndSyncFeatureEnabled:
+      return true;
+    case AutofillSyncSigninState::kNumSyncStates:
+      break;
   }
-
-  return true;
+  NOTREACHED();
+  return false;
 }
 
 bool IsInAutofillSuggestionsDisabledExperiment() {

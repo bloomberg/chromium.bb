@@ -8690,9 +8690,10 @@ TEST_F(AutofillMetricsTest, LogSaveCardPromptMetric_BySyncState) {
         /*is_reshow=*/true, AutofillClient::SaveCreditCardOptions(),
         /*previous_save_credit_card_prompt_user_decision=*/0,
         security_state::SecurityLevel::SECURE,
-        SyncSigninState::kSignedInAndSyncFeature);
+        SyncSigninState::kSignedInAndSyncFeatureEnabled);
     histogram_tester.ExpectBucketCount(
-        "Autofill.SaveCreditCardPrompt.Local.Reshows.SignedInAndSyncFeature",
+        "Autofill.SaveCreditCardPrompt.Local.Reshows."
+        "SignedInAndSyncFeatureEnabled",
         AutofillMetrics::SAVE_CARD_PROMPT_SHOWN, 1);
   }
 }
