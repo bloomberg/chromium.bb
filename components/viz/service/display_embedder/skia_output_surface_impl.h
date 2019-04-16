@@ -13,6 +13,7 @@
 #include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "components/viz/common/display/renderer_settings.h"
+#include "components/viz/common/display/update_vsync_parameters_callback.h"
 #include "components/viz/service/display/skia_output_surface.h"
 #include "components/viz/service/viz_service_export.h"
 #include "gpu/command_buffer/common/sync_token.h"
@@ -30,7 +31,6 @@ namespace viz {
 
 class GpuServiceImpl;
 class SkiaOutputSurfaceImplOnGpu;
-class SyntheticBeginFrameSource;
 
 // The SkiaOutputSurface implementation. It is the output surface for
 // SkiaRenderer. It lives on the compositor thread, but it will post tasks
@@ -46,7 +46,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
  public:
   SkiaOutputSurfaceImpl(GpuServiceImpl* gpu_service,
                         gpu::SurfaceHandle surface_handle,
-                        SyntheticBeginFrameSource* synthetic_begin_frame_source,
+                        UpdateVSyncParametersCallback update_vsync_callback,
                         const RendererSettings& renderer_settings);
   ~SkiaOutputSurfaceImpl() override;
 
@@ -136,7 +136,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
 
   const bool is_using_vulkan_;
   const gpu::SurfaceHandle surface_handle_;
-  SyntheticBeginFrameSource* const synthetic_begin_frame_source_;
+  UpdateVSyncParametersCallback update_vsync_callback_;
   OutputSurfaceClient* client_ = nullptr;
 
   std::unique_ptr<base::WaitableEvent> initialize_waitable_event_;

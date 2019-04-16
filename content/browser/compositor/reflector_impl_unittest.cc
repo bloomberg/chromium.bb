@@ -80,7 +80,7 @@ class TestOutputSurface : public BrowserCompositorOutputSurface {
  public:
   TestOutputSurface(scoped_refptr<viz::ContextProvider> context_provider)
       : BrowserCompositorOutputSurface(std::move(context_provider),
-                                       UpdateVSyncParametersCallback(),
+                                       viz::UpdateVSyncParametersCallback(),
                                        CreateTestValidatorOzone()) {}
 
   void SetFlip(bool flip) { capabilities_.flipped_output_surface = flip; }
