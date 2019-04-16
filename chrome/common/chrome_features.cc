@@ -365,7 +365,7 @@ const base::Feature kInSessionPasswordChange{"InSessionPasswordChange",
 #if defined(OS_ANDROID)
 // Enables or disables the installable ambient badge infobar.
 const base::Feature kInstallableAmbientBadgeInfoBar{
-    "InstallableAmbientBadgeInfoBar", base::FEATURE_DISABLED_BY_DEFAULT};
+    "InstallableAmbientBadgeInfoBar", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 #if !defined(OS_ANDROID)
