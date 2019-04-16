@@ -9,17 +9,16 @@
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
 <link rel="import" href="../settings_page/settings_subpage.html">
-<link rel="import" href="../settings_shared_css.html">
 
 <dom-module id="network-summary-item">
   <template>
     <style include="internet-shared iron-flex">
       network-siminfo {
-        padding-inline-start: var(--settings-box-row-padding);
+        padding-inline-start: var(--cr-section-padding);
       }
 
       #outerBox {
-        padding: 0 var(--settings-box-row-padding);
+        padding: 0 var(--cr-section-padding);
         @apply(--network-summary-item-outer-box);
       }
 
