@@ -242,7 +242,7 @@ void TabletModeWindowDragDelegate::ContinueWindowDrag(
 
   if (GetOverviewSession()) {
     GetOverviewSession()->OnWindowDragContinued(
-        dragged_window_, location_in_screen, indicator_state);
+        dragged_window_, gfx::PointF(location_in_screen), indicator_state);
   }
 }
 
@@ -263,7 +263,7 @@ void TabletModeWindowDragDelegate::EndWindowDrag(
   OverviewSession* overview_session = GetOverviewSession();
   if (overview_session) {
     GetOverviewSession()->OnWindowDragEnded(
-        dragged_window_, location_in_screen,
+        dragged_window_, gfx::PointF(location_in_screen),
         ShouldDropWindowIntoOverview(snap_position, location_in_screen));
   }
   split_view_controller_->OnWindowDragEnded(dragged_window_, snap_position,
@@ -434,8 +434,8 @@ bool TabletModeWindowDragDelegate::ShouldDropWindowIntoOverview(
     return false;
 
   OverviewGrid* overview_grid = GetOverviewGrid(dragged_window_);
-  aura::Window* target_window =
-      overview_grid->GetTargetWindowOnLocation(location_in_screen);
+  aura::Window* target_window = overview_grid->GetTargetWindowOnLocation(
+      gfx::PointF(location_in_screen), /*ignored_item=*/nullptr);
   const bool is_drop_target_selected =
       target_window && overview_grid->IsDropTargetWindow(target_window);
 

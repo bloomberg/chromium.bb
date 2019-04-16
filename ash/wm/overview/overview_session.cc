@@ -244,7 +244,7 @@ void OverviewSession::Init(const WindowList& windows,
                 EnterExitOverviewType::kSwipeFromShelf);
       overview_grid->CalculateWindowListAnimationStates(
           /*selected_item=*/nullptr, OverviewTransition::kEnter);
-      overview_grid->PositionWindows(/*animate=*/true, /*ignore_item=*/nullptr,
+      overview_grid->PositionWindows(/*animate=*/true, /*ignored_items=*/{},
                                      OverviewTransition::kEnter);
     }
   }
@@ -420,11 +420,13 @@ void OverviewSession::SelectWindow(OverviewItem* item) {
   ::wm::ActivateWindow(window);
 }
 
-void OverviewSession::SetBoundsForOverviewGridsInScreenIgnoringWindow(
-    const gfx::Rect& bounds,
-    OverviewItem* ignored_item) {
-  for (std::unique_ptr<OverviewGrid>& grid : grid_list_)
-    grid->SetBoundsAndUpdatePositionsIgnoringWindow(bounds, ignored_item);
+void OverviewSession::RearrangeDuringDrag(aura::Window* dragged_window,
+                                          const gfx::PointF& location_in_screen,
+                                          IndicatorState indicator_state) {
+  for (std::unique_ptr<OverviewGrid>& grid : grid_list_) {
+    grid->RearrangeDuringDrag(dragged_window, location_in_screen,
+                              indicator_state);
+  }
 }
 
 void OverviewSession::SetSplitViewDragIndicatorsIndicatorState(
@@ -445,15 +447,18 @@ OverviewGrid* OverviewSession::GetGridWithRootWindow(
   return nullptr;
 }
 
-void OverviewSession::AddItem(aura::Window* window,
-                              bool reposition,
-                              bool animate) {
+void OverviewSession::AddItem(
+    aura::Window* window,
+    bool reposition,
+    bool animate,
+    const base::flat_set<OverviewItem*>& ignored_items,
+    size_t index) {
   // Early exit if a grid already contains |window|.
   OverviewGrid* grid = GetGridWithRootWindow(window->GetRootWindow());
   if (!grid || grid->GetOverviewItemContaining(window))
     return;
 
-  grid->AddItem(window, reposition, animate);
+  grid->AddItem(window, reposition, animate, ignored_items, index);
   ++num_items_;
 
   // Transfer focus from |window| to |overview_focus_widget_| to match the
@@ -470,14 +475,19 @@ void OverviewSession::RemoveItem(OverviewItem* overview_item) {
       restore_focus_window_ = nullptr;
   }
 
-  // Remove |overview_item| from the corresponding grid.
-  for (std::unique_ptr<OverviewGrid>& grid : grid_list_) {
-    if (grid->GetOverviewItemContaining(overview_item->GetWindow())) {
-      grid->RemoveItem(overview_item);
-      --num_items_;
-      break;
-    }
-  }
+  GetGridWithOverviewItem(overview_item)->RemoveItem(overview_item);
+  --num_items_;
+}
+
+void OverviewSession::AddDropTargetForDraggingFromOverview(
+    OverviewItem* dragged_item) {
+  GetGridWithOverviewItem(dragged_item)
+      ->AddDropTargetForDraggingFromOverview(dragged_item);
+}
+
+void OverviewSession::RemoveDropTargetForDraggingFromOverview(
+    OverviewItem* dragged_item) {
+  GetGridWithOverviewItem(dragged_item)->RemoveDropTarget();
 }
 
 void OverviewSession::InitiateDrag(OverviewItem* item,
@@ -547,7 +557,7 @@ void OverviewSession::OnWindowDragStarted(aura::Window* dragged_window,
 
 void OverviewSession::OnWindowDragContinued(
     aura::Window* dragged_window,
-    const gfx::Point& location_in_screen,
+    const gfx::PointF& location_in_screen,
     IndicatorState indicator_state) {
   OverviewGrid* target_grid =
       GetGridWithRootWindow(dragged_window->GetRootWindow());
@@ -557,7 +567,7 @@ void OverviewSession::OnWindowDragContinued(
                                      indicator_state);
 }
 void OverviewSession::OnWindowDragEnded(aura::Window* dragged_window,
-                                        const gfx::Point& location_in_screen,
+                                        const gfx::PointF& location_in_screen,
                                         bool should_drop_window_into_overview) {
   OverviewGrid* target_grid =
       GetGridWithRootWindow(dragged_window->GetRootWindow());
@@ -567,10 +577,11 @@ void OverviewSession::OnWindowDragEnded(aura::Window* dragged_window,
                                  should_drop_window_into_overview);
 }
 
-void OverviewSession::PositionWindows(bool animate,
-                                      OverviewItem* ignored_item) {
+void OverviewSession::PositionWindows(
+    bool animate,
+    const base::flat_set<OverviewItem*>& ignored_items) {
   for (std::unique_ptr<OverviewGrid>& grid : grid_list_)
-    grid->PositionWindows(animate, ignored_item);
+    grid->PositionWindows(animate, ignored_items);
 }
 
 bool OverviewSession::IsWindowInOverview(const aura::Window* window) {
@@ -884,10 +895,16 @@ void OverviewSession::OnSplitViewDividerPositionChanged() {
   for (std::unique_ptr<OverviewGrid>& grid : grid_list_) {
     grid->SetBoundsAndUpdatePositions(
         GetGridBoundsInScreen(const_cast<aura::Window*>(grid->root_window()),
-                              /*divider_changed=*/true));
+                              /*divider_changed=*/true),
+        /*ignored_items=*/{});
   }
   PositionWindows(/*animate=*/false);
   MaybeCreateAndPositionNoWindowsWidget();
+}
+
+OverviewGrid* OverviewSession::GetGridWithOverviewItem(OverviewItem* item) {
+  DCHECK(GetGridWithRootWindow(item->GetWindow()->GetRootWindow()));
+  return GetGridWithRootWindow(item->GetWindow()->GetRootWindow());
 }
 
 void OverviewSession::ResetFocusRestoreWindow(bool focus) {
@@ -946,7 +963,8 @@ void OverviewSession::OnDisplayBoundsChanged() {
   for (std::unique_ptr<OverviewGrid>& grid : grid_list_) {
     grid->SetBoundsAndUpdatePositions(
         GetGridBoundsInScreen(const_cast<aura::Window*>(grid->root_window()),
-                              /*divider_changed=*/false));
+                              /*divider_changed=*/false),
+        /*ignored_items=*/{});
   }
   PositionWindows(/*animate=*/false);
   MaybeCreateAndPositionNoWindowsWidget();

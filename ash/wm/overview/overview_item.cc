@@ -267,8 +267,10 @@ void OverviewItem::SetBounds(const gfx::RectF& target_bounds,
   // window may change bounds so we still need to call SetItemBounds to update
   // the window transform.
   OverviewAnimationType new_animation_type = animation_type;
-  if (target_bounds == target_bounds_)
+  if (target_bounds == target_bounds_ &&
+      !GetWindow()->layer()->GetAnimator()->is_animating()) {
     new_animation_type = OVERVIEW_ANIMATION_NONE;
+  }
 
   base::AutoReset<bool> auto_reset_in_bounds_update(&in_bounds_update_, true);
   // If |target_bounds_| is empty, this is the first update. Let

@@ -120,10 +120,12 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   // Activates |item's| window.
   void SelectWindow(OverviewItem* item);
 
-  // Called to set bounds for window grids. Used for split view.
-  void SetBoundsForOverviewGridsInScreenIgnoringWindow(
-      const gfx::Rect& bounds,
-      OverviewItem* ignored_item);
+  // Updates overview bounds and hides the drop target when a preview area is
+  // shown. Updates the appearance of the drop target to visually indicate when
+  // |dragged_window| is being dragged over it.
+  void RearrangeDuringDrag(aura::Window* dragged_window,
+                           const gfx::PointF& location_in_screen,
+                           IndicatorState indicator_state);
 
   // Called to show or hide the split view drag indicators. This will do
   // nothing if split view is not enabled. |event_location| is used to reparent
@@ -136,24 +138,28 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   // nullptr if the window grid is not found.
   OverviewGrid* GetGridWithRootWindow(aura::Window* root_window);
 
-  // Add |window| to the grid in |grid_list_| with the same root window. Does
-  // nothing if the grid already contains |window|. And if |reposition| is true,
-  // re-position all windows in the target window grid. If |animate| is true,
-  // re-position with animation. This function may be called in two scenarios:
-  // 1) when a item in split view mode was previously snapped but should now be
-  // returned to the window grid (e.g. split view divider dragged to either
-  // edge, or a window is snapped to a postion that already has a snapped
-  // window); 2) when a window (not from overview) is dragged while overview is
-  // open and the window is dropped on the drop target, the dragged window is
-  // then added to the overview.
-  void AddItem(aura::Window* window, bool reposition, bool animate);
+  // Adds |window| at the specified |index| into the grid with the same root
+  // window. Does nothing if that grid does not exist in |grid_list_| or already
+  // contains |window|. If |reposition| is true, repositions all items in the
+  // target grid (unless it already contained |window|), except those in
+  // |ignored_items|. If |animate| is true, animates the repositioning.
+  // |animate| has no effect if |reposition| is false.
+  void AddItem(aura::Window* window,
+               bool reposition,
+               bool animate,
+               const base::flat_set<OverviewItem*>& ignored_items = {},
+               size_t index = 0u);
 
-  // Removes |overview_item| from the corresponding overview grid. This may be
-  // called in two scenarioes: 1) when a user drags an overview item to snap to
-  // one side of the screen, the item should be removed from the overview grid;
-  // 2) when a window (not from overview) ends its dragging while overview is
-  // open, the drop target should be removed.
+  // Removes |overview_item| from the corresponding grid. No items are
+  // repositioned.
   void RemoveItem(OverviewItem* overview_item);
+
+  // Adds a drop target that visually appears to be revealed as |dragged_item|
+  // is dragged off of it.
+  void AddDropTargetForDraggingFromOverview(OverviewItem* dragged_item);
+
+  // Removes the drop target from the grid containing |dragged_item|.
+  void RemoveDropTargetForDraggingFromOverview(OverviewItem* dragged_item);
 
   void InitiateDrag(OverviewItem* item, const gfx::PointF& location_in_screen);
   void Drag(OverviewItem* item, const gfx::PointF& location_in_screen);
@@ -171,14 +177,15 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   // TODO(xdai): Currently it doesn't work for multi-display scenario.
   void OnWindowDragStarted(aura::Window* dragged_window, bool animate);
   void OnWindowDragContinued(aura::Window* dragged_window,
-                             const gfx::Point& location_in_screen,
+                             const gfx::PointF& location_in_screen,
                              IndicatorState indicator_state);
   void OnWindowDragEnded(aura::Window* dragged_window,
-                         const gfx::Point& location_in_screen,
+                         const gfx::PointF& location_in_screen,
                          bool should_drop_window_into_overview);
 
-  // Positions all of the windows in the overview, except |ignored_item|.
-  void PositionWindows(bool animate, OverviewItem* ignored_item = nullptr);
+  // Positions all overview items except those in |ignored_items|.
+  void PositionWindows(bool animate,
+                       const base::flat_set<OverviewItem*>& ignored_items = {});
 
   // Returns true if |window| is currently showing in overview.
   bool IsWindowInOverview(const aura::Window* window);
@@ -277,6 +284,9 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
 
  private:
   friend class OverviewSessionTest;
+
+  // Retrieves the window grid containing |item|.
+  OverviewGrid* GetGridWithOverviewItem(OverviewItem* item);
 
   // |focus|, restores focus to the stored window.
   void ResetFocusRestoreWindow(bool focus);
