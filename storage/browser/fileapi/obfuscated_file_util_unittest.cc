@@ -1695,9 +1695,6 @@ TEST_P(ObfuscatedFileUtilTest, TestOriginEnumerator) {
 }
 
 TEST_P(ObfuscatedFileUtilTest, TestRevokeUsageCache) {
-  // TODO(crbug.com/93417): Update test for in-memory mode.
-  if (in_memory_test())
-    return;
   std::unique_ptr<FileSystemOperationContext> context(NewContext(nullptr));
 
   int64_t expected_quota = 0;

@@ -65,8 +65,8 @@ class FileSystemQuotaClientTest : public testing::Test {
   };
 
  protected:
-  FileSystemQuotaClient* NewQuotaClient(bool is_incognito) {
-    return new FileSystemQuotaClient(file_system_context_.get(), is_incognito);
+  FileSystemQuotaClient* NewQuotaClient() {
+    return new FileSystemQuotaClient(file_system_context_.get());
   }
 
   void GetOriginUsageAsync(FileSystemQuotaClient* quota_client,
@@ -245,13 +245,13 @@ class FileSystemQuotaClientTest : public testing::Test {
 };
 
 TEST_F(FileSystemQuotaClientTest, NoFileSystemTest) {
-  std::unique_ptr<FileSystemQuotaClient> quota_client(NewQuotaClient(false));
+  std::unique_ptr<FileSystemQuotaClient> quota_client(NewQuotaClient());
 
   EXPECT_EQ(0, GetOriginUsage(quota_client.get(), kDummyURL1, kTemporary));
 }
 
 TEST_F(FileSystemQuotaClientTest, NoFileTest) {
-  std::unique_ptr<FileSystemQuotaClient> quota_client(NewQuotaClient(false));
+  std::unique_ptr<FileSystemQuotaClient> quota_client(NewQuotaClient());
   const TestFile kFiles[] = {
       {true, nullptr, 0, kDummyURL1, kTemporary},
   };
@@ -263,7 +263,7 @@ TEST_F(FileSystemQuotaClientTest, NoFileTest) {
 }
 
 TEST_F(FileSystemQuotaClientTest, OneFileTest) {
-  std::unique_ptr<FileSystemQuotaClient> quota_client(NewQuotaClient(false));
+  std::unique_ptr<FileSystemQuotaClient> quota_client(NewQuotaClient());
   const TestFile kFiles[] = {
       {true, nullptr, 0, kDummyURL1, kTemporary},
       {false, "foo", 4921, kDummyURL1, kTemporary},
@@ -279,7 +279,7 @@ TEST_F(FileSystemQuotaClientTest, OneFileTest) {
 }
 
 TEST_F(FileSystemQuotaClientTest, TwoFilesTest) {
-  std::unique_ptr<FileSystemQuotaClient> quota_client(NewQuotaClient(false));
+  std::unique_ptr<FileSystemQuotaClient> quota_client(NewQuotaClient());
   const TestFile kFiles[] = {
       {true, nullptr, 0, kDummyURL1, kTemporary},
       {false, "foo", 10310, kDummyURL1, kTemporary},
@@ -296,7 +296,7 @@ TEST_F(FileSystemQuotaClientTest, TwoFilesTest) {
 }
 
 TEST_F(FileSystemQuotaClientTest, EmptyFilesTest) {
-  std::unique_ptr<FileSystemQuotaClient> quota_client(NewQuotaClient(false));
+  std::unique_ptr<FileSystemQuotaClient> quota_client(NewQuotaClient());
   const TestFile kFiles[] = {
       {true, nullptr, 0, kDummyURL1, kTemporary},
       {false, "foo", 0, kDummyURL1, kTemporary},
@@ -314,7 +314,7 @@ TEST_F(FileSystemQuotaClientTest, EmptyFilesTest) {
 }
 
 TEST_F(FileSystemQuotaClientTest, SubDirectoryTest) {
-  std::unique_ptr<FileSystemQuotaClient> quota_client(NewQuotaClient(false));
+  std::unique_ptr<FileSystemQuotaClient> quota_client(NewQuotaClient());
   const TestFile kFiles[] = {
       {true, nullptr, 0, kDummyURL1, kTemporary},
       {true, "dirtest", 0, kDummyURL1, kTemporary},
@@ -332,7 +332,7 @@ TEST_F(FileSystemQuotaClientTest, SubDirectoryTest) {
 }
 
 TEST_F(FileSystemQuotaClientTest, MultiTypeTest) {
-  std::unique_ptr<FileSystemQuotaClient> quota_client(NewQuotaClient(false));
+  std::unique_ptr<FileSystemQuotaClient> quota_client(NewQuotaClient());
   const TestFile kFiles[] = {
       {true, nullptr, 0, kDummyURL1, kTemporary},
       {true, "dirtest", 0, kDummyURL1, kTemporary},
@@ -360,7 +360,7 @@ TEST_F(FileSystemQuotaClientTest, MultiTypeTest) {
 }
 
 TEST_F(FileSystemQuotaClientTest, MultiDomainTest) {
-  std::unique_ptr<FileSystemQuotaClient> quota_client(NewQuotaClient(false));
+  std::unique_ptr<FileSystemQuotaClient> quota_client(NewQuotaClient());
   const TestFile kFiles[] = {
       {true, nullptr, 0, kDummyURL1, kTemporary},
       {true, "dir1", 0, kDummyURL1, kTemporary},
@@ -406,7 +406,7 @@ TEST_F(FileSystemQuotaClientTest, MultiDomainTest) {
 }
 
 TEST_F(FileSystemQuotaClientTest, GetUsage_MultipleTasks) {
-  std::unique_ptr<FileSystemQuotaClient> quota_client(NewQuotaClient(false));
+  std::unique_ptr<FileSystemQuotaClient> quota_client(NewQuotaClient());
   const TestFile kFiles[] = {
       {true, nullptr, 0, kDummyURL1, kTemporary},
       {false, "foo", 11, kDummyURL1, kTemporary},
@@ -436,7 +436,7 @@ TEST_F(FileSystemQuotaClientTest, GetUsage_MultipleTasks) {
 }
 
 TEST_F(FileSystemQuotaClientTest, GetOriginsForType) {
-  std::unique_ptr<FileSystemQuotaClient> quota_client(NewQuotaClient(false));
+  std::unique_ptr<FileSystemQuotaClient> quota_client(NewQuotaClient());
   const TestFile kFiles[] = {
       {true, nullptr, 0, kDummyURL1, kTemporary},
       {true, nullptr, 0, kDummyURL2, kTemporary},
@@ -456,7 +456,7 @@ TEST_F(FileSystemQuotaClientTest, GetOriginsForType) {
 }
 
 TEST_F(FileSystemQuotaClientTest, GetOriginsForHost) {
-  std::unique_ptr<FileSystemQuotaClient> quota_client(NewQuotaClient(false));
+  std::unique_ptr<FileSystemQuotaClient> quota_client(NewQuotaClient());
   const char* kURL1 = "http://foo.com/";
   const char* kURL2 = "https://foo.com/";
   const char* kURL3 = "http://foo.com:1/";
@@ -483,28 +483,8 @@ TEST_F(FileSystemQuotaClientTest, GetOriginsForHost) {
               origins.end());  // Different type.
 }
 
-TEST_F(FileSystemQuotaClientTest, IncognitoTest) {
-  std::unique_ptr<FileSystemQuotaClient> quota_client(NewQuotaClient(true));
-  const TestFile kFiles[] = {
-      {true, nullptr, 0, kDummyURL1, kTemporary},
-      {false, "foo", 10, kDummyURL1, kTemporary},
-  };
-  InitializeOriginFiles(quota_client.get(), kFiles, base::size(kFiles));
-
-  // Having files in the usual directory wouldn't affect the result
-  // queried in incognito mode.
-  EXPECT_EQ(0, GetOriginUsage(quota_client.get(), kDummyURL1, kTemporary));
-  EXPECT_EQ(0, GetOriginUsage(quota_client.get(), kDummyURL1, kPersistent));
-
-  std::set<url::Origin> origins =
-      GetOriginsForType(quota_client.get(), kTemporary);
-  EXPECT_EQ(0U, origins.size());
-  origins = GetOriginsForHost(quota_client.get(), kTemporary, "www.dummy.org");
-  EXPECT_EQ(0U, origins.size());
-}
-
 TEST_F(FileSystemQuotaClientTest, DeleteOriginTest) {
-  std::unique_ptr<FileSystemQuotaClient> quota_client(NewQuotaClient(false));
+  std::unique_ptr<FileSystemQuotaClient> quota_client(NewQuotaClient());
   const TestFile kFiles[] = {
       {true, nullptr, 0, "http://foo.com/", kTemporary},
       {false, "a", 1, "http://foo.com/", kTemporary},
