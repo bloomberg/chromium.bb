@@ -182,8 +182,16 @@ UnwindResult NativeUnwinderMac::TryUnwind(x86_thread_state64_t* thread_context,
     result = CheckPostconditions(step_result, prev_rsp, rsp, stack_top,
                                  &successfully_unwound);
 
-    if (successfully_unwound)
+    if (successfully_unwound) {
       stack->emplace_back(rip, module_cache->GetModuleForAddress(rip));
+
+      // Save the relevant register state back into the thread context.
+      unw_word_t rbp;
+      unw_get_reg(&unwind_cursor, UNW_X86_64_RBP, &rbp);
+      thread_context->__rip = rip;
+      thread_context->__rsp = rsp;
+      thread_context->__rbp = rbp;
+    }
 
     if (result.has_value())
       return *result;
@@ -281,6 +289,9 @@ Optional<UnwindResult> NativeUnwinderMac::CheckPostconditions(
     unw_word_t rsp,
     uintptr_t stack_top,
     bool* successfully_unwound) const {
+  const bool stack_pointer_was_moved_and_is_valid =
+      rsp > prev_rsp && rsp < stack_top;
+
   *successfully_unwound =
       step_result > 0 ||
       // libunwind considers the unwind complete and returns 0 if no unwind
@@ -290,7 +301,7 @@ Optional<UnwindResult> NativeUnwinderMac::CheckPostconditions(
       // performed prior to the check. Distinguish these cases by checking
       // whether the stack pointer was moved by unw_step. If so, record the
       // new frame to enable non-native unwinders to continue the unwinding.
-      (step_result == 0 && rsp > prev_rsp);
+      (step_result == 0 && stack_pointer_was_moved_and_is_valid);
 
   if (step_result < 0)
     return UnwindResult::ABORTED;
@@ -306,6 +317,11 @@ Optional<UnwindResult> NativeUnwinderMac::CheckPostconditions(
   // signify that we couldn't unwind further.
   if (step_result == 0)
     return UnwindResult::UNRECOGNIZED_FRAME;
+
+  // If we succeeded but didn't advance the stack pointer, or got an invalid
+  // new stack pointer, abort.
+  if (!stack_pointer_was_moved_and_is_valid)
+    return UnwindResult::ABORTED;
 
   return nullopt;
 }
