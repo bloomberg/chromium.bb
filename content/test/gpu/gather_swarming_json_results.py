@@ -123,6 +123,31 @@ def ExtractTestTimes(node, node_name, dest):
         ExtractTestTimes(node[k], k, dest)
 
 
+def GatherResults(bot, build, step):
+  if build is None:
+    build_json = GetJsonForLatestGreenBuildSteps(bot)
+    build = build_json.get('number')
+  else:
+    build_json = GetJsonForBuildSteps(bot, build)
+
+  logging.debug('Fetched information from bot %s, build %s', bot, build)
+
+  if 'steps' not in build_json:
+    raise ValueError('Returned Json data do not have "steps"')
+
+  json_output = FindStepLogURL(build_json['steps'], step, 'json.output')
+  if not json_output:
+    raise ValueError('Unable to find json.output from step starting with %s' %
+                     step)
+  logging.debug('json.output for step starting with %s: %s', step, json_output)
+
+  merged_json = JsonLoadStrippingUnicode(json_output)
+  extracted_times = {'times':{}}
+  ExtractTestTimes(merged_json, '', extracted_times['times'])
+
+  return extracted_times, merged_json
+
+
 def main():
   rest_args = sys.argv[1:]
   parser = argparse.ArgumentParser(
@@ -146,29 +171,12 @@ def main():
   if options.verbose:
     logging.basicConfig(level=logging.DEBUG)
 
-  build = options.build
-  if build is None:
-    build_json = GetJsonForLatestGreenBuildSteps(options.bot)
-    build = build_json.get('number')
-  else:
-    build_json = GetJsonForBuildSteps(options.bot, build)
+  if sys.version_info < (2, 7, 10):
+    logging.warn('Script does not work with Python older than 2.7.10')
+    return 0
 
-  logging.debug('Fetched information from bot %s, build %s',
-                options.bot, build)
-
-  if 'steps' not in build_json:
-    raise ValueError('Returned Json data do not have "steps"')
-
-  json_output = FindStepLogURL(build_json['steps'], options.step, 'json.output')
-  if not json_output:
-    raise ValueError('Unable to find json.output from step starting with %s' %
-                     options.step)
-  logging.debug('json.output for step starting with %s: %s',
-                options.step, json_output)
-
-  merged_json = JsonLoadStrippingUnicode(json_output)
-  extracted_times = {'times':{}}
-  ExtractTestTimes(merged_json, '', extracted_times['times'])
+  extracted_times, merged_json = GatherResults(
+      options.bot, options.build, options.step)
 
   logging.debug('Saving output to %s', options.output)
   with open(options.output, 'w') as f:

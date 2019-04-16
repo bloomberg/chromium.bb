@@ -17135,6 +17135,20 @@
         }
       },
       {
+        "isolate_name": "test_buildbucket_api_gpu_use_cases",
+        "name": "test_buildbucket_api_gpu_use_cases",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "nvidia-quadro-p400-ubuntu-stable",
+              "os": "Ubuntu",
+              "pool": "Chrome-GPU"
+            }
+          ]
+        }
+      },
+      {
         "args": [
           "trace_test",
           "--show-stdout",

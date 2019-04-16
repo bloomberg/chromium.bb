@@ -4396,6 +4396,10 @@
       },
     },
 
+    'test_buildbucket_api_gpu_use_cases': {
+      'test_buildbucket_api_gpu_use_cases': {},
+    },
+
     'test_traffic_annotation_auditor_script': {
       'test_traffic_annotation_auditor': {
         'hard_timeout': 14400,
@@ -4862,6 +4866,11 @@
       'gpu_fyi_optional_and_v8_desktop_release_specific_telemetry_tests',
       'gpu_info_collection_telemetry_tests',
       'gpu_webgl_conformance_telemetry_tests',
+    ],
+
+    'gpu_angle_perf_isolated_scripts_and_test_buildbucket_api_gpu_use_cases': [
+      'gpu_angle_perf_isolated_scripts',
+      'test_buildbucket_api_gpu_use_cases',
     ],
 
     'gpu_angle_win_gtests': [

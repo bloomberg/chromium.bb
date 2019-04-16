@@ -2326,3 +2326,21 @@ group("fuzzers") {
     "//content/test/fuzzer",
   ]
 }
+
+# This group defines the isolate files needed to run
+# test_buildbucket_api_gpu_cases.py on bots. This also tells the build system
+# when the tests should be re-run - when one of the dependent files changes.
+#
+group("test_buildbucket_api_gpu_use_cases") {
+  data = [
+    # The common.py script and its dependencies.
+    "//testing/scripts/common.py",
+    "//testing/xvfb.py",
+    "//testing/test_env.py",
+
+    # The test runner and its dependencies.
+    "//testing/scripts/test_buildbucket_api_gpu_use_cases.py",
+
+    "//content/test/gpu/gather_swarming_json_results.py",
+  ]
+}
