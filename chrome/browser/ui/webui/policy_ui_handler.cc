@@ -31,7 +31,6 @@
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/policy/schema_registry_service.h"
-#include "chrome/browser/policy/schema_registry_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/browser/cloud/message_util.h"
@@ -603,9 +602,10 @@ PolicyUIHandler::PolicyUIHandler()
 PolicyUIHandler::~PolicyUIHandler() {
   GetPolicyService()->RemoveObserver(policy::POLICY_DOMAIN_CHROME, this);
   GetPolicyService()->RemoveObserver(policy::POLICY_DOMAIN_EXTENSIONS, this);
-  policy::SchemaRegistry* registry =
-      policy::SchemaRegistryServiceFactory::GetForContext(
-          Profile::FromWebUI(web_ui())->GetOriginalProfile())->registry();
+  policy::SchemaRegistry* registry = Profile::FromWebUI(web_ui())
+                                         ->GetOriginalProfile()
+                                         ->GetPolicySchemaRegistryService()
+                                         ->registry();
   registry->RemoveObserver(this);
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -733,9 +733,10 @@ void PolicyUIHandler::RegisterMessages() {
   extensions::ExtensionRegistry::Get(Profile::FromWebUI(web_ui()))
       ->AddObserver(this);
 #endif
-  policy::SchemaRegistry* registry =
-      policy::SchemaRegistryServiceFactory::GetForContext(
-          Profile::FromWebUI(web_ui())->GetOriginalProfile())->registry();
+  policy::SchemaRegistry* registry = Profile::FromWebUI(web_ui())
+                                         ->GetOriginalProfile()
+                                         ->GetPolicySchemaRegistryService()
+                                         ->registry();
   registry->AddObserver(this);
 
   web_ui()->RegisterMessageCallback(
@@ -783,9 +784,9 @@ void PolicyUIHandler::OnPolicyUpdated(const policy::PolicyNamespace& ns,
 base::Value PolicyUIHandler::GetPolicyNames() const {
   base::DictionaryValue names;
   Profile* profile = Profile::FromWebUI(web_ui());
-  policy::SchemaRegistry* registry =
-      policy::SchemaRegistryServiceFactory::GetForContext(
-          profile->GetOriginalProfile())->registry();
+  policy::SchemaRegistry* registry = profile->GetOriginalProfile()
+                                         ->GetPolicySchemaRegistryService()
+                                         ->registry();
   scoped_refptr<policy::SchemaMap> schema_map = registry->schema_map();
 
   // Add Chrome policy names.

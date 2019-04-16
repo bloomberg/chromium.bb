@@ -20,7 +20,6 @@
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/policy/schema_registry_service.h"
-#include "chrome/browser/policy/schema_registry_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/storage/storage_schema_manifest_handler.h"
 #include "components/policy/core/common/schema.h"
@@ -114,9 +113,7 @@ ManagedValueStoreCache::ExtensionTracker::ExtensionTracker(
     : profile_(profile),
       policy_domain_(policy_domain),
       extension_registry_observer_(this),
-      schema_registry_(
-          policy::SchemaRegistryServiceFactory::GetForContext(profile)
-              ->registry()),
+      schema_registry_(profile->GetPolicySchemaRegistryService()->registry()),
       weak_factory_(this) {
   extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
   // Load schemas when the extension system is ready. It might be ready now.
@@ -295,7 +292,7 @@ void ManagedValueStoreCache::OnPolicyServiceInitialized(
   // The PolicyService now has all the initial policies ready. Send policy
   // for all the managed extensions to their backing stores now.
   policy::SchemaRegistry* registry =
-      policy::SchemaRegistryServiceFactory::GetForContext(profile_)->registry();
+      profile_->GetPolicySchemaRegistryService()->registry();
   const policy::ComponentMap* map =
       registry->schema_map()->GetComponents(policy_domain_);
   if (!map)

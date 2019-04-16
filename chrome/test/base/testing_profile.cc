@@ -40,7 +40,7 @@
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/policy/schema_registry_service.h"
-#include "chrome/browser/policy/schema_registry_service_factory.h"
+#include "chrome/browser/policy/schema_registry_service_profile_builder.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/prerender/prerender_manager.h"
@@ -816,10 +816,7 @@ void TestingProfile::CreateIncognitoPrefService() {
 
 void TestingProfile::CreateProfilePolicyConnector() {
   schema_registry_service_ =
-      policy::SchemaRegistryServiceFactory::CreateForContext(
-          this, policy::Schema(), nullptr);
-  CHECK_EQ(schema_registry_service_.get(),
-           policy::SchemaRegistryServiceFactory::GetForContext(this));
+      BuildSchemaRegistryServiceForProfile(this, policy::Schema(), nullptr);
 
   if (!policy_service_) {
     std::vector<policy::ConfigurationPolicyProvider*> providers;
@@ -916,6 +913,11 @@ base::Time TestingProfile::GetStartTime() const {
 ProfileKey* TestingProfile::GetProfileKey() const {
   DCHECK(key_);
   return key_.get();
+}
+
+policy::SchemaRegistryService*
+TestingProfile::GetPolicySchemaRegistryService() {
+  return schema_registry_service_.get();
 }
 
 base::FilePath TestingProfile::last_selected_directory() {

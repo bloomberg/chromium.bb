@@ -64,7 +64,7 @@
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/policy/schema_registry_service.h"
-#include "chrome/browser/policy/schema_registry_service_factory.h"
+#include "chrome/browser/policy/schema_registry_service_profile_builder.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/chrome_pref_service_factory.h"
 #include "chrome/browser/prefs/in_process_service_factory_factory.h"
@@ -506,14 +506,15 @@ ProfileImpl::ProfileImpl(
   set_is_guest_profile(path == ProfileManager::GetGuestProfilePath());
   set_is_system_profile(path == ProfileManager::GetSystemProfilePath());
 
+  policy::BrowserPolicyConnector* connector =
+      g_browser_process->browser_policy_connector();
+  schema_registry_service_ = BuildSchemaRegistryServiceForProfile(
+      this, connector->GetChromeSchema(), connector->GetSchemaRegistry());
+
   // If we are creating the profile synchronously, then we should load the
   // policy data immediately.
   bool force_immediate_policy_load = (create_mode == CREATE_MODE_SYNCHRONOUS);
-  policy::BrowserPolicyConnector* connector =
-      g_browser_process->browser_policy_connector();
-  schema_registry_service_ =
-      policy::SchemaRegistryServiceFactory::CreateForContext(
-          this, connector->GetChromeSchema(), connector->GetSchemaRegistry());
+
 #if defined(OS_CHROMEOS)
   if (force_immediate_policy_load)
     chromeos::DeviceSettingsService::Get()->LoadImmediately();
@@ -1087,6 +1088,10 @@ PrefService* ProfileImpl::GetReadOnlyOffTheRecordPrefs() {
         prefs_.get(), CreateExtensionPrefStore(this, true), nullptr);
   }
   return dummy_otr_prefs_.get();
+}
+
+policy::SchemaRegistryService* ProfileImpl::GetPolicySchemaRegistryService() {
+  return schema_registry_service_.get();
 }
 
 content::ResourceContext* ProfileImpl::GetResourceContext() {

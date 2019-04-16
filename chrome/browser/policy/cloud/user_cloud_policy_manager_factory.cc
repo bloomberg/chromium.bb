@@ -13,7 +13,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/policy/schema_registry_service.h"
-#include "chrome/browser/policy/schema_registry_service_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/policy/core/common/cloud/cloud_external_data_manager.h"
@@ -108,9 +108,7 @@ void UserCloudPolicyManagerFactory::ClearTestingFactory() {
 UserCloudPolicyManagerFactory::UserCloudPolicyManagerFactory()
     : BrowserContextKeyedBaseFactory(
           "UserCloudPolicyManager",
-          BrowserContextDependencyManager::GetInstance()) {
-  DependsOn(SchemaRegistryServiceFactory::GetInstance());
-}
+          BrowserContextDependencyManager::GetInstance()) {}
 
 UserCloudPolicyManagerFactory::~UserCloudPolicyManagerFactory() {
   DCHECK(manager_wrappers_.empty());
@@ -150,8 +148,8 @@ UserCloudPolicyManagerFactory::CreateManagerForOriginalBrowserContext(
       std::unique_ptr<CloudExternalDataManager>(),
       base::ThreadTaskRunnerHandle::Get(),
       base::BindRepeating(&content::GetNetworkConnectionTracker)));
-  manager->Init(
-      SchemaRegistryServiceFactory::GetForContext(context)->registry());
+  Profile* profile = Profile::FromBrowserContext(context);
+  manager->Init(profile->GetPolicySchemaRegistryService()->registry());
   manager_wrappers_[context] = new ManagerWrapper(manager.get());
   return manager;
 }

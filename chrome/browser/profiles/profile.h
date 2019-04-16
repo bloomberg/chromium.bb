@@ -36,6 +36,10 @@ namespace content {
 class WebUI;
 }
 
+namespace policy {
+class SchemaRegistryService;
+}
+
 namespace network {
 class SharedURLLoaderFactory;
 }
@@ -225,6 +229,9 @@ class Profile : public content::BrowserContext {
   // Returns the key used to index KeyedService instances created by a
   // SimpleKeyedServiceFactory, more strictly typed as a ProfileKey.
   virtual ProfileKey* GetProfileKey() const = 0;
+
+  // Returns the SchemaRegistryService.
+  virtual policy::SchemaRegistryService* GetPolicySchemaRegistryService();
 
   // Returns the last directory that was chosen for uploading or opening a file.
   virtual base::FilePath last_selected_directory() = 0;
