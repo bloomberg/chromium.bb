@@ -61,7 +61,8 @@ MimeHandlerViewContainerManager* MimeHandlerViewContainerManager::Get(
 
 MimeHandlerViewContainerManager::MimeHandlerViewContainerManager(
     content::RenderFrame* render_frame)
-    : content::RenderFrameObserver(render_frame) {}
+    : content::RenderFrameObserver(render_frame),
+      before_unload_control_binding_(this) {}
 
 MimeHandlerViewContainerManager::~MimeHandlerViewContainerManager() {}
 
@@ -71,15 +72,12 @@ void MimeHandlerViewContainerManager::OnDestruct() {
   GetRenderFrameMap()->erase(routing_id());
 }
 
-void MimeHandlerViewContainerManager::CreateFrameContainer(
-    const GURL& resource_url,
-    const std::string& mime_type,
-    const std::string& view_id) {
-  auto* child = render_frame()->GetWebFrame()->FirstChild();
-  if (!child || child->IsWebRemoteFrame())
-    return;
-  MimeHandlerViewFrameContainer::CreateWithFrame(
-      child->ToWebLocalFrame(), resource_url, mime_type, view_id);
+void MimeHandlerViewContainerManager::CreateBeforeUnloadControl(
+    CreateBeforeUnloadControlCallback callback) {
+  mime_handler::BeforeUnloadControlPtr before_unload_control;
+  before_unload_control_binding_.Bind(
+      mojo::MakeRequest(&before_unload_control));
+  std::move(callback).Run(std::move(before_unload_control));
 }
 
 void MimeHandlerViewContainerManager::DestroyFrameContainer(
@@ -109,6 +107,14 @@ MimeHandlerViewContainerManager::GetFrameContainer(int32_t instance_id) {
       return frame_container;
   }
   return nullptr;
+}
+
+void MimeHandlerViewContainerManager::SetShowBeforeUnloadDialog(
+    bool show_dialog,
+    SetShowBeforeUnloadDialogCallback callback) {
+  render_frame()->GetWebFrame()->GetDocument().SetShowBeforeUnloadDialog(
+      show_dialog);
+  std::move(callback).Run();
 }
 
 }  // namespace extensions

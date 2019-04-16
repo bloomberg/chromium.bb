@@ -78,21 +78,6 @@ v8::Local<v8::Object> MimeHandlerViewFrameContainer::GetScriptableObject(
   return v8::Local<v8::Object>();
 }
 
-// static
-void MimeHandlerViewFrameContainer::CreateWithFrame(
-    blink::WebLocalFrame* web_frame,
-    const GURL& resource_url,
-    const std::string& mime_type,
-    const std::string& view_id) {
-  // TODO(ekaramad): Eventually MHVFC should not request the resource which
-  // means this mode of MHVFC is no longer necessary. After intercepting the
-  // response we should just proceed with creating the MimeHandlerViewGuest
-  // and attaching to the inserted <iframe> on the browser side. The current
-  // renderer state for it seems unnecessary.
-  new MimeHandlerViewFrameContainer(web_frame, resource_url, mime_type,
-                                    view_id);
-}
-
 MimeHandlerViewFrameContainer::MimeHandlerViewFrameContainer(
     const blink::WebElement& plugin_element,
     const GURL& resource_url,
@@ -111,27 +96,6 @@ MimeHandlerViewFrameContainer::MimeHandlerViewFrameContainer(
       MimeHandlerViewUMATypes::Type::kDidCreateMimeHandlerViewContainerBase);
   is_embedded_ = true;
   SendResourceRequest();
-}
-
-MimeHandlerViewFrameContainer::MimeHandlerViewFrameContainer(
-    blink::WebLocalFrame* web_local_frame,
-    const GURL& resource_url,
-    const std::string& mime_type,
-    const std::string& view_id)
-    : MimeHandlerViewContainerBase(
-          content::RenderFrame::FromWebFrame(
-              web_local_frame->Parent()->ToWebLocalFrame()),
-          content::WebPluginInfo(),
-          mime_type,
-          resource_url),
-      element_instance_id_(content::RenderThread::Get()->GenerateRoutingID()),
-      render_frame_lifetime_observer_(
-          new RenderFrameLifetimeObserver(this, GetEmbedderRenderFrame())) {
-  is_embedded_ = false;
-  view_id_ = view_id;
-  plugin_frame_routing_id_ =
-      content::RenderFrame::FromWebFrame(web_local_frame)->GetRoutingID();
-  MimeHandlerViewContainerBase::CreateMimeHandlerViewGuestIfNecessary();
 }
 
 MimeHandlerViewFrameContainer::~MimeHandlerViewFrameContainer() {}
@@ -174,10 +138,8 @@ gfx::Size MimeHandlerViewFrameContainer::GetElementSize() const {
 }
 
 blink::WebFrame* MimeHandlerViewFrameContainer::GetContentFrame() const {
-  if (is_embedded_)
-    return blink::WebFrame::FromFrameOwnerElement(plugin_element_);
-
-  return GetEmbedderRenderFrame()->GetWebFrame()->FirstChild();
+  DCHECK(is_embedded_);
+  return blink::WebFrame::FromFrameOwnerElement(plugin_element_);
 }
 
 }  // namespace extensions
