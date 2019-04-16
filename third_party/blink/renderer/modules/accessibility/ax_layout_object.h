@@ -105,6 +105,7 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   float FontSize() const final;
   float FontWeight() const final;
   String ImageDataUrl(const IntSize& max_size) const final;
+  ax::mojom::ListStyle GetListStyle() const final;
   String GetText() const override;
   ax::mojom::TextDirection GetTextDirection() const final;
   ax::mojom::TextPosition GetTextPosition() const final;

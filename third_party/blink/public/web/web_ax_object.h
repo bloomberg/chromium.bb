@@ -184,6 +184,7 @@ class WebAXObject {
   BLINK_EXPORT WebVector<WebAXObject> RadioButtonsInGroup() const;
   BLINK_EXPORT ax::mojom::Role Role() const;
   BLINK_EXPORT WebString StringValue() const;
+  BLINK_EXPORT ax::mojom::ListStyle GetListStyle() const;
   BLINK_EXPORT ax::mojom::TextDirection GetTextDirection() const;
   BLINK_EXPORT ax::mojom::TextPosition GetTextPosition() const;
   BLINK_EXPORT void GetTextStyleAndTextDecorationStyle(

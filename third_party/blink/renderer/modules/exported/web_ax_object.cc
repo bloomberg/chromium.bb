@@ -1015,6 +1015,13 @@ WebString WebAXObject::StringValue() const {
   return private_->StringValue();
 }
 
+ax::mojom::ListStyle WebAXObject::GetListStyle() const {
+  if (IsDetached())
+    return ax::mojom::ListStyle::kNone;
+
+  return private_->GetListStyle();
+}
+
 ax::mojom::TextDirection WebAXObject::GetTextDirection() const {
   if (IsDetached())
     return ax::mojom::TextDirection::kLtr;

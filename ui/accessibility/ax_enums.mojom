@@ -578,6 +578,9 @@ enum IntAttribute {
    // Of type AXCheckedState
   kCheckedState,
 
+  // The list style type. Only available on list items.
+  kListStyle,
+
    // Specifies the direction of the text, e.g., right-to-left.
   kTextDirection,
 
@@ -761,6 +764,16 @@ enum MarkerType {
   kSpellingTextMatchActiveSuggestionSuggestion = 53,
   kGrammarTextMatchActiveSuggestionSuggestion = 54,
   kSpellingGrammarTextMatchActiveSuggestionSuggestion = 55,
+};
+
+enum ListStyle {
+  kNone,
+  kCircle,
+  kDisc,
+  kImage,
+  kNumeric,
+  kSquare,
+  kOther, // Language specific ordering (alpha, roman, cjk-ideographic, etc...)
 };
 
 enum TextDirection {

@@ -79,6 +79,8 @@ std::string IntAttrToString(const BrowserAccessibility& node,
       return ui::ToString(static_cast<ax::mojom::HasPopup>(value));
     case ax::mojom::IntAttribute::kInvalidState:
       return ui::ToString(static_cast<ax::mojom::InvalidState>(value));
+    case ax::mojom::IntAttribute::kListStyle:
+      return ui::ToString(static_cast<ax::mojom::ListStyle>(value));
     case ax::mojom::IntAttribute::kNameFrom:
       return ui::ToString(static_cast<ax::mojom::NameFrom>(value));
     case ax::mojom::IntAttribute::kRestriction:

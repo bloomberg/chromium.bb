@@ -140,6 +140,10 @@ TEST(AXEnumUtilTest, Text_Decoration_Style) {
       ParseTextDecorationStyle);
 }
 
+TEST(AXEnumUtilTest, ListStyle) {
+  TestEnumStringConversion<ax::mojom::ListStyle>(ParseListStyle);
+}
+
 TEST(AXEnumUtilTest, TextDirection) {
   TestEnumStringConversion<ax::mojom::TextDirection>(ParseTextDirection);
 }
