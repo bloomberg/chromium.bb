@@ -13,8 +13,9 @@
 #include "chrome/browser/chromeos/login/auth/chrome_cryptohome_authenticator.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_features.h"
+#include "chrome/common/pref_names.h"
 #include "chromeos/constants/chromeos_switches.h"
+#include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
 
 namespace chromeos {
@@ -24,15 +25,18 @@ InSessionPasswordChangeHandler::~InSessionPasswordChangeHandler() = default;
 
 void InSessionPasswordChangeHandler::HandleInitialize(
     const base::ListValue* value) {
-  CHECK(base::FeatureList::IsEnabled(features::kInSessionPasswordChange));
+  const Profile* profile = Profile::FromWebUI(web_ui());
+  CHECK(profile->GetPrefs()->GetBoolean(
+      prefs::kSamlInSessionPasswordChangeEnabled));
+
   AllowJavascript();
   base::Value params(base::Value::Type::DICTIONARY);
   const std::string password_change_url =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kSamlPasswordChangeUrl);
   params.SetKey("passwordChangeUrl", base::Value(password_change_url));
-  user_manager::User* user =
-      ProfileHelper::Get()->GetUserByProfile(Profile::FromWebUI(web_ui()));
+  const user_manager::User* user =
+      ProfileHelper::Get()->GetUserByProfile(profile);
   if (user)
     params.SetKey("userName", base::Value(user->GetDisplayEmail()));
   CallJavascriptFunction("insession.password.change.loadAuthExtension", params);

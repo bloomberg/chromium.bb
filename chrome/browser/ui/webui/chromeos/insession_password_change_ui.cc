@@ -9,10 +9,11 @@
 #include "base/bind.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/insession_password_change_handler_chromeos.h"
-#include "chrome/common/chrome_features.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "ui/strings/grit/ui_strings.h"
 
@@ -20,7 +21,10 @@ namespace chromeos {
 
 InSessionPasswordChangeUI::InSessionPasswordChangeUI(content::WebUI* web_ui)
     : ui::WebDialogUI(web_ui) {
-  CHECK(base::FeatureList::IsEnabled(features::kInSessionPasswordChange));
+  Profile* profile = Profile::FromWebUI(web_ui);
+  CHECK(profile->GetPrefs()->GetBoolean(
+      prefs::kSamlInSessionPasswordChangeEnabled));
+
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIPasswordChangeHost);
 
@@ -35,7 +39,6 @@ InSessionPasswordChangeUI::InSessionPasswordChangeUI(content::WebUI* web_ui)
                           IDR_PASSWORD_CHANGE_AUTHENTICATOR_JS);
   source->AddResourcePath("password_change.js", IDR_PASSWORD_CHANGE_JS);
 
-  Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource::Add(profile, source);
 }
 
