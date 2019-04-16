@@ -291,6 +291,8 @@ used when committed.
     use the accelerated video decoder/encoder test programs.
 *   [Video Decoder Tests](media/gpu/video_decoder_test_usage.md) - Running the
     new video decoder tests.
+*   [Video Decoder Performance Tests](media/gpu/video_decoder_perf_test_usage.md) -
+    Running the new video decoder performance tests.
 
 ### Accessibility
 *   [Accessibility Overview](accessibility/overview.md) - Overview of

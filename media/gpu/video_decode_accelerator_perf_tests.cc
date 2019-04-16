@@ -20,7 +20,9 @@ namespace test {
 
 namespace {
 
-// Video decoder perf tests usage message.
+// Video decoder perf tests usage message. Make sure to also update the
+// documentation under docs/media/gpu/video_decoder_perf_test_usage.md when
+// making changes here.
 constexpr const char* usage_msg =
     "usage: video_decode_accelerator_perf_tests\n"
     "           [-v=<level>] [--vmodule=<config>] [--use_vd] [--gtest_help]\n"
