@@ -9,20 +9,12 @@ from __future__ import print_function
 
 import json
 import os
-import re
 import urllib
 
-from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import alerts
 from chromite.lib import cros_logging as logging
-from chromite.lib import retry_util
-from chromite.lib import timeout_util
 
-
-CROS_TREE_STATUS_URL = 'https://chromiumos-status.appspot.com'
-CROS_TREE_STATUS_JSON_URL = '%s/current?format=json' % CROS_TREE_STATUS_URL
-CROS_TREE_STATUS_UPDATE_URL = '%s/status' % CROS_TREE_STATUS_URL
 
 _LUCI_MILO_BUILDBOT_URL = 'https://luci-milo.appspot.com/buildbot'
 _LEGOLAND_BUILD_URL = ('https://cros-goldeneye.corp.google.com/chromeos/'
@@ -32,136 +24,6 @@ _LEGOLAND_BUILD_URL = ('https://cros-goldeneye.corp.google.com/chromeos/'
 _LOGDOG_URL = ('https://luci-logdog.appspot.com/v/'
                '?s=chromeos/buildbucket/cr-buildbucket.appspot.com/'
                '%s/%%2B/steps/%s/0/stdout')
-
-# The tree status json file contains the following keywords.
-TREE_STATUS_STATE = 'general_state'
-TREE_STATUS_USERNAME = 'username'
-TREE_STATUS_MESSAGE = 'message'
-TREE_STATUS_DATE = 'date'
-TREE_STATUS_CAN_COMMIT = 'can_commit_freely'
-
-# These keywords in a status message are detected automatically to
-# update the tree status.
-MESSAGE_KEYWORDS = ('open', 'throt', 'close', 'maint')
-
-# This is the delimiter to separate messages from different updates.
-MESSAGE_DELIMITER = '|'
-
-# Default sleep time (seconds) for waiting for tree status
-DEFAULT_WAIT_FOR_TREE_STATUS_SLEEP = 30
-
-# Default timeout (seconds) for waiting for tree status
-DEFAULT_WAIT_FOR_TREE_STATUS_TIMEOUT = 60 * 3
-
-# Match EXPERIMENTAL= case-insensitive.
-EXPERIMENTAL_BUILDERS_RE = re.compile(r'EXPERIMENTAL=(\S+)', re.IGNORECASE)
-
-
-def _GetStatusDict(status_url, raw_message=False):
-  """Polls |status_url| and returns the retrieved tree status dictionary.
-
-  This function gets a JSON response from |status_url|, and returns
-  the dictionary of the tree status, if one exists and the http
-  request was successful.
-
-  The tree status dictionary contains:
-    TREE_STATUS_USERNAME: User who posted the message (foo@chromium.org).
-    TREE_STATUS_MESSAGE: The status message ("Tree is Open (CQ is good)").
-    TREE_STATUS_CAN_COMMIT: Whether tree is commit ready ('true' or 'false').
-    TREE_STATUS_STATE: one of constants.VALID_TREE_STATUSES.
-
-  Args:
-    status_url: The URL of the tree status to check.
-    raw_message: Whether to return the raw message without stripping the
-      "Tree is open/throttled/closed" string. Defaults to always strip.
-
-  Returns:
-    The tree status as a dictionary, if it was successfully retrieved.
-    Otherwise None.
-  """
-  try:
-    # Check for successful response code.
-    response = urllib.urlopen(status_url)
-    if response.getcode() == 200:
-      data = json.load(response)
-      if not raw_message:
-        # Tree status message is usually in the form:
-        #   "Tree is open/closed/throttled (reason for the tree closure)"
-        # We want only the reason enclosed in the parentheses.
-        # This is a best-effort parsing because user may post the message
-        # in a form that we don't recognize.
-        match = re.match(r'Tree is [\w\s\.]+\((.*)\)',
-                         data.get(TREE_STATUS_MESSAGE, ''))
-        data[TREE_STATUS_MESSAGE] = '' if not match else match.group(1)
-      return data
-  # We remain robust against IOError's.
-  except IOError as e:
-    logging.error('Could not reach %s: %r', status_url, e)
-
-
-def _GetStatus(status_url):
-  """Polls |status_url| and returns the retrieved tree status.
-
-  This function gets a JSON response from |status_url|, and returns the
-  value associated with the TREE_STATUS_STATE, if one exists and the
-  http request was successful.
-
-  Returns:
-    The tree status, as a string, if it was successfully retrieved. Otherwise
-    None.
-  """
-  status_dict = _GetStatusDict(status_url)
-  if status_dict:
-    return status_dict.get(TREE_STATUS_STATE)
-
-
-def GetExperimentalBuilders(status_url=None, timeout=1):
-  """Polls |status_url| and returns the list of experimental builders.
-
-  This function gets a JSON response from |status_url|, and returns the
-  list of builders marked as experimental in the tree status' message.
-
-  Args:
-    status_url: The status url to check i.e.
-      'https://status.appspot.com/current?format=json'
-    timeout: How long to wait for the tree status (in seconds).
-
-  Returns:
-    A list of strings, where each string is a builder. Returns an empty list if
-    there are no experimental builders listed in the tree status.
-
-  Raises:
-    TimeoutError if the request takes longer than |timeout| to complete.
-  """
-  if not status_url:
-    status_url = CROS_TREE_STATUS_JSON_URL
-
-  site_config = config_lib.GetConfig()
-
-  @timeout_util.TimeoutDecorator(timeout)
-  def _get_status_dict():
-    experimental = []
-    status_dict = _GetStatusDict(status_url)
-    if status_dict:
-      for match in EXPERIMENTAL_BUILDERS_RE.findall(
-          status_dict.get(TREE_STATUS_MESSAGE)):
-        # The value for EXPERIMENTAL= could be a comma-separated list
-        # of builders.
-        for builder in match.split(','):
-          if builder in site_config:
-            experimental.append(builder)
-          else:
-            logging.warning(
-                'Got unknown build config "%s" in list of '
-                'EXPERIMENTAL-BUILDERS.', builder)
-
-    if experimental:
-      logging.info('Got experimental build configs %s from tree status.',
-                   experimental)
-
-    return experimental
-
-  return retry_util.GenericRetry(lambda _: True, 3, _get_status_dict, sleep=1)
 
 
 def GetGardenerEmailAddresses():

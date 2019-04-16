@@ -40,7 +40,6 @@ from chromite.lib import partial_mock
 from chromite.lib import patch as cros_patch
 from chromite.lib import patch_unittest
 from chromite.lib import timeout_util
-from chromite.lib import tree_status
 from chromite.lib import triage_lib
 
 
@@ -139,8 +138,6 @@ class _Base(cros_test_lib.MockTestCase):
     self.PatchObject(gob_util, 'CreateHttpConn',
                      side_effect=AssertionError('Test should not contact GoB'))
     self.PatchObject(gob_util, 'CheckChange')
-    self.PatchObject(tree_status, 'GetExperimentalBuilders',
-                     return_value=[])
     self.fake_db = fake_cidb.FakeCIDBConnection()
     cidb.CIDBConnectionFactory.SetupMockCidb(self.fake_db)
     # Suppress all gerrit access; having this occur is generally a sign
