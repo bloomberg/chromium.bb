@@ -1450,10 +1450,13 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
 
   // In https://crbug.com/949977, we used the a.com SiteInstance here and didn't
   // have a process, and an observer called GetProcess, creating a process. This
-  // process never went away, even after the SiteInstance was gone.
-  RenderProcessHost* rph_2 = starting_site_instance->GetProcess();
+  // RPH never went away, even after the SiteInstance was gone. Simulate this
+  // by creating a new RPH for site_instance_a directly. Note that the actual
+  // process may not get created (only if the spare process is in use), so wait
+  // for RPH destruction rather than process exit.
+  RenderProcessHost* rph_2 = site_instance_a->GetProcess();
   RenderProcessHostWatcher process_exit_observer_2(
-      rph_2, content::RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+      rph_2, content::RenderProcessHostWatcher::WATCH_FOR_HOST_DESTRUCTION);
   navigation_b.WaitForNavigationFinished();
 
   // Ensure RPH 1 is destroyed, which happens at commit time even before the fix
@@ -1469,6 +1472,13 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
   // backup fix and test for that in a followup CL.
   GURL url_c = embedded_test_server()->GetURL("c.com", "/title1.html");
   EXPECT_TRUE(NavigateToURL(shell()->web_contents(), url_c));
+
+  // Remove all references to site_instance_a so that we can be sure its process
+  // gets cleaned up. Pruning the NavigationEntry for url_a on the tab simulates
+  // closing the tab (from that SiteInstance's perspective).
+  site_instance_a = nullptr;
+  starting_site_instance = nullptr;
+  shell()->web_contents()->GetController().PruneAllButLastCommitted();
 
   // Wait for rph_2 to exit when it's not used. This wouldn't happen when the
   // bug was present.

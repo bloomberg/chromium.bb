@@ -50,8 +50,13 @@ SiteInstanceImpl::SiteInstanceImpl(BrowsingInstance* browsing_instance)
 SiteInstanceImpl::~SiteInstanceImpl() {
   GetContentClient()->browser()->SiteInstanceDeleting(this);
 
-  if (process_)
+  if (process_) {
     process_->RemoveObserver(this);
+
+    // Ensure the RenderProcessHost gets deleted if this SiteInstance created a
+    // process which was never used by any listeners.
+    process_->Cleanup();
+  }
 
   // Now that no one is referencing us, we can safely remove ourselves from
   // the BrowsingInstance.  Any future visits to a page from this site
