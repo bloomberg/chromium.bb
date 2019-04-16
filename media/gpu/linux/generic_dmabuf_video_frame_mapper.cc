@@ -17,8 +17,6 @@ namespace media {
 
 namespace {
 
-constexpr size_t kNumOfYUVPlanes = 3;
-
 uint8_t* Mmap(const size_t length, const int fd) {
   void* addr =
       mmap(nullptr, length, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0u);
@@ -43,15 +41,32 @@ void MunmapBuffers(const std::vector<std::pair<uint8_t*, size_t>>& chunks,
 // |src_video_frame| is the video frame that owns dmabufs to the mapped planes.
 scoped_refptr<VideoFrame> CreateMappedVideoFrame(
     scoped_refptr<const VideoFrame> src_video_frame,
-    uint8_t* plane_addrs[kNumOfYUVPlanes],
+    uint8_t* plane_addrs[VideoFrame::kMaxPlanes],
     const std::vector<std::pair<uint8_t*, size_t>>& chunks) {
   scoped_refptr<VideoFrame> video_frame;
 
   const auto& layout = src_video_frame->layout();
   const auto& visible_rect = src_video_frame->visible_rect();
-  video_frame = VideoFrame::WrapExternalYuvDataWithLayout(
-      layout, visible_rect, visible_rect.size(), plane_addrs[0], plane_addrs[1],
-      plane_addrs[2], src_video_frame->timestamp());
+  if (IsYuvPlanar(layout.format())) {
+    video_frame = VideoFrame::WrapExternalYuvDataWithLayout(
+        layout, visible_rect, visible_rect.size(), plane_addrs[0],
+        plane_addrs[1], plane_addrs[2], src_video_frame->timestamp());
+  } else if (VideoFrame::NumPlanes(layout.format()) == 1) {
+    size_t plane_size =
+        VideoFrame::AllocationSize(layout.format(), layout.coded_size());
+    if (plane_size > layout.buffer_sizes()[0] - layout.planes()[0].offset) {
+      // VideoFrameLayout can describe planes that are larger than the useful
+      // data they contain.
+      VLOGF(1) << "buffer_size - offset is smaller than expected"
+               << "buffer_size=" << layout.buffer_sizes()[0]
+               << ", offset=" << layout.planes()[0].offset
+               << ", plane_size=" << plane_size;
+      return nullptr;
+    }
+    video_frame = VideoFrame::WrapExternalData(
+        layout.format(), layout.coded_size(), visible_rect, visible_rect.size(),
+        plane_addrs[0], plane_size, src_video_frame->timestamp());
+  }
   if (!video_frame) {
     return nullptr;
   }
@@ -60,6 +75,17 @@ scoped_refptr<VideoFrame> CreateMappedVideoFrame(
   video_frame->AddDestructionObserver(
       base::BindOnce(MunmapBuffers, chunks, std::move(src_video_frame)));
   return video_frame;
+}
+
+bool IsFormatSupported(VideoPixelFormat format) {
+  constexpr VideoPixelFormat supported_formats[] = {
+      PIXEL_FORMAT_I420,
+      PIXEL_FORMAT_YV12,
+      PIXEL_FORMAT_NV12,
+      PIXEL_FORMAT_RGB32,
+  };
+  return std::find(std::cbegin(supported_formats), std::cend(supported_formats),
+                   format);
 }
 
 }  // namespace
@@ -72,6 +98,13 @@ scoped_refptr<VideoFrame> GenericDmaBufVideoFrameMapper::Map(
     return nullptr;
   }
 
+  // TODO(crbug.com/952147): Create GenericDmaBufVideoFrameMapper with pixel
+  // format, and only the format should be acceptable here.
+  if (!IsFormatSupported(video_frame->format())) {
+    VLOGF(1) << "Unsupported format: " << video_frame->format();
+    return nullptr;
+  }
+
   const VideoFrameLayout& layout = video_frame->layout();
 
   // Map all buffers from their start address.
@@ -80,7 +113,7 @@ scoped_refptr<VideoFrame> GenericDmaBufVideoFrameMapper::Map(
   const auto& buffer_sizes = layout.buffer_sizes();
   std::vector<uint8_t*> buffer_addrs(buffer_sizes.size(), nullptr);
   DCHECK_EQ(buffer_addrs.size(), dmabuf_fds.size());
-  DCHECK_LE(buffer_addrs.size(), kNumOfYUVPlanes);
+  DCHECK_LE(buffer_addrs.size(), VideoFrame::kMaxPlanes);
   for (size_t i = 0; i < dmabuf_fds.size(); i++) {
     buffer_addrs[i] = Mmap(buffer_sizes[i], dmabuf_fds[i].get());
     if (!buffer_addrs[i]) {
@@ -90,12 +123,12 @@ scoped_refptr<VideoFrame> GenericDmaBufVideoFrameMapper::Map(
     chunks.emplace_back(buffer_addrs[i], buffer_sizes[i]);
   }
 
-  // Always prepare 3 addresses for planes initialized by nullptr.
-  // This enables to specify nullptr to redundant plane, for pixel format whose
-  // number of planes are less than 3.
+  // Always prepare VideoFrame::kMaxPlanes addresses for planes initialized by
+  // nullptr. This enables to specify nullptr to redundant plane, for pixel
+  // format whose number of planes are less than VideoFrame::kMaxPlanes.
   const auto& planes = layout.planes();
   const size_t num_of_planes = layout.num_planes();
-  uint8_t* plane_addrs[kNumOfYUVPlanes] = {};
+  uint8_t* plane_addrs[VideoFrame::kMaxPlanes] = {};
   if (dmabuf_fds.size() == 1) {
     for (size_t i = 0; i < num_of_planes; i++) {
       plane_addrs[i] = buffer_addrs[0] + planes[i].offset;
