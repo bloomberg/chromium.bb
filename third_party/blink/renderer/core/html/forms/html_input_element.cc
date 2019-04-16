@@ -544,7 +544,7 @@ void HTMLInputElement::UpdateType() {
   // UA Shadow tree was recreated. We need to set selection again. We do it
   // later in order to avoid force layout.
   if (GetDocument().FocusedElement() == this)
-    GetDocument().UpdateFocusAppearanceLater();
+    GetDocument().UpdateFocusAppearanceAfterLayout();
 
   // TODO(tkent): Should we dispatch a change event?
   ClearValueBeforeFirstUserEdit();

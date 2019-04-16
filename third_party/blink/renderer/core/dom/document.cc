@@ -643,10 +643,6 @@ Document::Document(const DocumentInit& initializer,
       throw_on_dynamic_markup_insertion_count_(0),
       ignore_opens_during_unload_count_(0),
       markers_(MakeGarbageCollected<DocumentMarkerController>(*this)),
-      update_focus_appearance_timer_(
-          GetTaskRunner(TaskType::kInternalUserInteraction),
-          this,
-          &Document::UpdateFocusAppearanceTimerFired),
       css_target_(nullptr),
       was_discarded_(false),
       load_event_progress_(kLoadEventCompleted),
@@ -2495,6 +2491,9 @@ void Document::UpdateStyleAndLayout(ForcedLayoutStatus status) {
 
   if (status == IsForcedLayout && frame_view)
     frame_view->DidFinishForcedLayout();
+
+  if (update_focus_appearance_after_layout_)
+    UpdateFocusAppearance();
 }
 
 void Document::LayoutUpdated() {
@@ -6653,20 +6652,20 @@ bool Document::IsContextThread() const {
   return IsMainThread();
 }
 
-void Document::UpdateFocusAppearanceLater() {
-  if (!update_focus_appearance_timer_.IsActive())
-    update_focus_appearance_timer_.StartOneShot(TimeDelta(), FROM_HERE);
+void Document::UpdateFocusAppearanceAfterLayout() {
+  DCHECK_LT(Lifecycle().GetState(), DocumentLifecycle::kLayoutClean);
+  update_focus_appearance_after_layout_ = true;
 }
 
 void Document::CancelFocusAppearanceUpdate() {
-  update_focus_appearance_timer_.Stop();
+  update_focus_appearance_after_layout_ = false;
 }
 
-void Document::UpdateFocusAppearanceTimerFired(TimerBase*) {
+void Document::UpdateFocusAppearance() {
+  update_focus_appearance_after_layout_ = false;
   Element* element = FocusedElement();
   if (!element)
     return;
-  UpdateStyleAndLayout();
   if (element->IsFocusable())
     element->UpdateFocusAppearance(SelectionBehaviorOnFocus::kRestore);
 }
