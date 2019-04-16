@@ -13,7 +13,6 @@
 #include "base/values.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/scoped_process_information.h"
-#include "chrome/credential_provider/gaiacp/associated_user_validator.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_provider_i.h"
 #include "chrome/credential_provider/gaiacp/gcp_utils.h"
 #include "chrome/credential_provider/gaiacp/scoped_handle.h"
@@ -172,11 +171,6 @@ class ATL_NO_VTABLE CGaiaCredentialBase
       CREDENTIAL_PROVIDER_GET_SERIALIZATION_RESPONSE* pcpgsr,
       CREDENTIAL_PROVIDER_CREDENTIAL_SERIALIZATION* pcpcs);
 
-  // Instantiates |token_update_locker_| so that user access cannot be denied
-  // during this time. This function is called when we are about to really sign
-  // in the user to Windows.
-  void PreventDenyAccessUpdate();
-
   // Writes value to omaha registry to record that GCP has been used.
   static void TellOmahaDidRun();
 
@@ -239,8 +233,8 @@ class ATL_NO_VTABLE CGaiaCredentialBase
   // not require direct user input to the credential (user is entering
   // credentials in  GLS) or a submit of the credential is not valid (user needs
   // to enter the old Windows password but currently nothing has been entered in
-  // the password field). Returns true if the submit button is enabled.
-  bool UpdateSubmitButtonInteractiveState();
+  // the password field).
+  void UpdateSubmitButtonInteractiveState();
 
   // Stops the GLS process in case it is still executing. Often called when user
   // switches credentials in the middle of a sign in through the GLS.
@@ -299,13 +293,6 @@ class ATL_NO_VTABLE CGaiaCredentialBase
 
   // Holds information about the success or failure of the sign in.
   NTSTATUS result_status_ = STATUS_SUCCESS;
-
-  // When we finally want to allow user sign in. This object is instantiated
-  // to prevent updates of token handle validity until after sign in has
-  // completed so the the user cannot be locked out while they are trying to
-  // sign in.
-  std::unique_ptr<AssociatedUserValidator::ScopedBlockDenyAccessUpdate>
-      token_update_locker_;
 };
 
 }  // namespace credential_provider
