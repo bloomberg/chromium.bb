@@ -61,21 +61,24 @@ void IdentityAccessorImpl::GetPrimaryAccountInfo(
 
 void IdentityAccessorImpl::GetPrimaryAccountWhenAvailable(
     GetPrimaryAccountWhenAvailableCallback callback) {
-  AccountInfo account_info =
-      identity_manager_->GetPrimaryAccountInfoDeprecated();
-  AccountState account_state = GetStateOfAccount(account_info);
+  base::Optional<AccountInfo> account_info =
+      identity_manager_->FindExtendedAccountInfoForAccount(
+          identity_manager_->GetPrimaryAccountInfo());
 
-  if (!account_state.has_refresh_token ||
-      identity_manager_->GetErrorStateOfRefreshTokenForAccount(
-          account_info.account_id) != GoogleServiceAuthError::AuthErrorNone()) {
+  if (!account_info || identity_manager_->GetErrorStateOfRefreshTokenForAccount(
+                           account_info->account_id) !=
+                           GoogleServiceAuthError::AuthErrorNone()) {
     primary_account_available_callbacks_.push_back(std::move(callback));
     return;
   }
 
-  DCHECK(!account_info.account_id.empty());
-  DCHECK(!account_info.email.empty());
-  DCHECK(!account_info.gaia.empty());
-  std::move(callback).Run(account_info, account_state);
+  AccountState account_state;
+  account_state.has_refresh_token = true;
+  account_state.is_primary_account = true;
+  DCHECK(!account_info->account_id.empty());
+  DCHECK(!account_info->email.empty());
+  DCHECK(!account_info->gaia.empty());
+  std::move(callback).Run(account_info.value(), account_state);
 }
 
 void IdentityAccessorImpl::GetAccessToken(const std::string& account_id,
@@ -136,7 +139,7 @@ void IdentityAccessorImpl::OnAccountStateChange(const std::string& account_id) {
 }
 
 AccountState IdentityAccessorImpl::GetStateOfAccount(
-    const AccountInfo& account_info) {
+    const CoreAccountInfo& account_info) {
   AccountState account_state;
   account_state.has_refresh_token =
       identity_manager_->HasAccountWithRefreshToken(account_info.account_id);

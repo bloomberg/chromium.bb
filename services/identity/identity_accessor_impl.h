@@ -62,7 +62,7 @@ class IdentityAccessorImpl : public mojom::IdentityAccessor,
   void OnAccountStateChange(const std::string& account_id);
 
   // Gets the current state of the account represented by |account_info|.
-  AccountState GetStateOfAccount(const AccountInfo& account_info);
+  AccountState GetStateOfAccount(const CoreAccountInfo& account_info);
 
   // Called when |binding_| hits a connection error. Destroys this instance,
   // since it's no longer needed.
