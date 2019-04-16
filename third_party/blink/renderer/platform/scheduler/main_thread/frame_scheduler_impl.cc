@@ -540,7 +540,7 @@ std::unique_ptr<ResourceLoadingTaskRunnerHandleImpl>
 FrameSchedulerImpl::CreateResourceLoadingTaskRunnerHandleImpl() {
   if (main_thread_scheduler_->scheduling_settings()
           .use_resource_fetch_priority ||
-      (parent_page_scheduler_->IsLoading() &&
+      (parent_page_scheduler_ && parent_page_scheduler_->IsLoading() &&
        main_thread_scheduler_->scheduling_settings()
            .use_resource_priorities_only_during_loading)) {
     scoped_refptr<MainThreadTaskQueue> task_queue =
