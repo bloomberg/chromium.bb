@@ -4,6 +4,8 @@
 
 source_set("base") {
   sources = [
+    "boringssl_util.cc",
+    "boringssl_util.h",
     "error.cc",
     "error.h",
     "export.h",
@@ -19,6 +21,7 @@ source_set("base") {
 
   deps = [
     "../third_party/abseil",
+    "../third_party/boringssl",
   ]
   configs += [ "..:root_config_overrides" ]
 }
