@@ -605,7 +605,8 @@ bool SyncChannel::Send(Message* message) {
                "line", IPC_MESSAGE_ID_LINE(message->type()));
 #endif
   if (!message->is_sync()) {
-    ChannelProxy::SendInternal(message);
+    ChannelProxy::SendInternal(
+        message, TRACE_HEAP_PROFILER_API_GET_CURRENT_TASK_CONTEXT());
     return true;
   }
 
@@ -620,7 +621,8 @@ bool SyncChannel::Send(Message* message) {
     return false;
   }
 
-  ChannelProxy::SendInternal(message);
+  ChannelProxy::SendInternal(
+      message, TRACE_HEAP_PROFILER_API_GET_CURRENT_TASK_CONTEXT());
 
   // Wait for reply, or for any other incoming synchronous messages.
   // |this| might get deleted, so only call static functions at this point.
