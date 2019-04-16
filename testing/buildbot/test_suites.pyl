@@ -2699,6 +2699,9 @@
 
     'cronet_isolated_scripts': {
       'resource_sizes_cronet_sample_apk': {
+        'merge': {
+          'script': '//tools/perf/process_perf_results.py',
+        },
         'swarming': {
           'can_use_on_swarming_builders': False,
         },
