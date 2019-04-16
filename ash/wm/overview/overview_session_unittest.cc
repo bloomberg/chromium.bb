@@ -257,6 +257,10 @@ class OverviewSessionTest : public AshTestBase {
     return iter->get();
   }
 
+  OverviewItem* GetDropTarget(int grid_index) {
+    return overview_session()->grid_list_[grid_index]->GetDropTarget();
+  }
+
   // Selects |window| in the active overview session by cycling through all
   // windows in overview until it is found. Returns true if |window| was found,
   // false otherwise.
@@ -2329,6 +2333,53 @@ TEST_F(OverviewSessionTest, OverviewWidgetStackingOrder) {
       "Ash.Overview.WindowDrag.PresentationTime.MaxLatency.TabletMode", 1);
 }
 
+// Test that dragging a window from the top creates a drop target stacked at the
+// bottom. Test that dropping into overview removes the drop target.
+TEST_F(OverviewSessionTest, DropTargetStackedAtBottomForWindowDraggedFromTop) {
+  UpdateDisplay("800x600");
+  EnterTabletMode();
+  std::unique_ptr<aura::Window> window1(CreateTestWindow());
+  window1->SetProperty(aura::client::kAppType,
+                       static_cast<int>(AppType::BROWSER));
+  std::unique_ptr<aura::Window> window2(CreateTestWindow());
+  aura::Window* parent = window1->parent();
+  ASSERT_EQ(parent, window2->parent());
+  wm::ActivateWindow(window2.get());
+  wm::ActivateWindow(window1.get());
+  std::unique_ptr<WindowResizer> resizer =
+      CreateWindowResizer(window1.get(), gfx::Point(400, 0), HTCAPTION,
+                          ::wm::WINDOW_MOVE_SOURCE_TOUCH);
+  ASSERT_TRUE(GetDropTarget(0));
+  EXPECT_LT(IndexOf(GetDropTarget(0)->GetWindow(), parent),
+            IndexOf(window2.get(), parent));
+  resizer->Drag(gfx::Point(400, 500), ui::EF_NONE);
+  resizer->CompleteDrag();
+  EXPECT_FALSE(GetDropTarget(0));
+}
+
+// Test that dragging an overview item to snap creates a drop target stacked at
+// the bottom. Test that ending the drag removes the drop target.
+TEST_F(OverviewSessionTest, DropTargetStackedAtBottomForOverviewItem) {
+  EnterTabletMode();
+  std::unique_ptr<aura::Window> window1(CreateTestWindow());
+  std::unique_ptr<aura::Window> window2(CreateTestWindow());
+  aura::Window* parent = window1->parent();
+  ASSERT_EQ(parent, window2->parent());
+  wm::ActivateWindow(window2.get());
+  wm::ActivateWindow(window1.get());
+  ToggleOverview();
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->MoveMouseTo(gfx::ToRoundedPoint(
+      GetWindowItemForWindow(0, window1.get())->target_bounds().CenterPoint()));
+  generator->PressLeftButton();
+  generator->MoveMouseBy(5, 0);
+  ASSERT_TRUE(GetDropTarget(0));
+  EXPECT_LT(IndexOf(GetDropTarget(0)->GetWindow(), parent),
+            IndexOf(window2.get(), parent));
+  generator->ReleaseLeftButton();
+  EXPECT_FALSE(GetDropTarget(0));
+}
+
 // Verify that a windows which enter overview mode have a visible backdrop, if
 // the window is to be letter or pillar fitted.
 TEST_F(OverviewSessionTest, Backdrop) {
@@ -2744,7 +2795,7 @@ TEST_F(OverviewSessionTest, PositionWindows) {
 
   // Verify that |item2| and |item3| change bounds when calling PositionWindows
   // while ignoring |item1|.
-  overview_session()->PositionWindows(/*animate=*/false, item1);
+  overview_session()->PositionWindows(/*animate=*/false, {item1});
   EXPECT_EQ(bounds1, item1->target_bounds());
   EXPECT_NE(bounds2, item2->target_bounds());
   EXPECT_NE(bounds3, item3->target_bounds());

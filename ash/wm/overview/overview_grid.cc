@@ -39,6 +39,7 @@
 #include "ash/wm/tablet_mode/tablet_mode_window_state.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
+#include "base/containers/unique_ptr_adapters.h"
 #include "base/i18n/string_search.h"
 #include "base/numerics/ranges.h"
 #include "base/strings/string_number_conversions.h"
@@ -173,9 +174,9 @@ class ShutdownAnimationFpsCounterObserver : public OverviewObserver {
   DISALLOW_COPY_AND_ASSIGN(ShutdownAnimationFpsCounterObserver);
 };
 
-// Creates |drop_target_widget_|. It's created when a window (not from overview)
-// is dragged around and destroyed when the drag ends. If |animate| is true, do
-// the opacity animation for the drop target.
+// Creates |drop_target_widget_|. It's created when a window or overview item is
+// dragged around, and destroyed when the drag ends. If |animate| is true, then
+// the drop target will fade in.
 std::unique_ptr<views::Widget> CreateDropTargetWidget(
     aura::Window* dragged_window,
     bool animate) {
@@ -194,12 +195,14 @@ std::unique_ptr<views::Widget> CreateDropTargetWidget(
   // Show plus icon if drag a tab from a multi-tab window.
   widget->SetContentsView(new DropTargetView(
       dragged_window->GetProperty(ash::kTabDraggingSourceWindowKey)));
+  aura::Window* drop_target_window = widget->GetNativeWindow();
+  drop_target_window->parent()->StackChildAtBottom(drop_target_window);
   widget->Show();
 
   if (animate) {
     widget->SetOpacity(0.f);
     ScopedOverviewAnimationSettings settings(
-        OVERVIEW_ANIMATION_DROP_TARGET_FADE_IN, widget->GetNativeWindow());
+        OVERVIEW_ANIMATION_DROP_TARGET_FADE_IN, drop_target_window);
     widget->SetOpacity(1.f);
   } else {
     widget->SetOpacity(1.f);
@@ -406,18 +409,17 @@ void OverviewGrid::PrepareForOverview() {
 
 void OverviewGrid::PositionWindows(
     bool animate,
-    OverviewItem* ignored_item,
+    const base::flat_set<OverviewItem*>& ignored_items,
     OverviewSession::OverviewTransition transition) {
   if (!overview_session_ || suspend_reposition_ || window_list_.empty())
     return;
 
   DCHECK_NE(transition, OverviewSession::OverviewTransition::kExit);
 
-  std::vector<gfx::RectF> rects = GetWindowRects(ignored_item);
+  std::vector<gfx::RectF> rects = GetWindowRects(ignored_items);
 
   // Position the windows centering the left-aligned rows vertically. Do not
-  // position |ignored_item| if it is not nullptr and matches a item in
-  // |window_list_|.
+  // position items in |ignored_items|.
   OverviewAnimationType animation_type =
       transition == OverviewSession::OverviewTransition::kEnter
           ? OVERVIEW_ANIMATION_LAYOUT_OVERVIEW_ITEMS_ON_ENTER
@@ -430,7 +432,7 @@ void OverviewGrid::PositionWindows(
   for (size_t i = 0; i < window_list_.size(); ++i) {
     OverviewItem* window_item = window_list_[i].get();
     if (window_item->animating_to_close() ||
-        (ignored_item != nullptr && window_item == ignored_item)) {
+        ignored_items.contains(window_item)) {
       rects[i].SetRect(0, 0, 0, 0);
       continue;
     }
@@ -560,21 +562,28 @@ OverviewItem* OverviewGrid::GetOverviewItemContaining(
 
 void OverviewGrid::AddItem(aura::Window* window,
                            bool reposition,
-                           bool animate) {
+                           bool animate,
+                           const base::flat_set<OverviewItem*>& ignored_items,
+                           size_t index) {
   DCHECK(!GetOverviewItemContaining(window));
+
+  // When an overview item is dragged, this function might be called on the
+  // wrong grid. See http://crbug.com/916856.
+  if (index > window_list_.size())
+    index = 0u;
 
   window_observer_.Add(window);
   window_state_observer_.Add(wm::GetWindowState(window));
   window_list_.insert(
-      window_list_.begin(),
+      window_list_.begin() + index,
       std::make_unique<OverviewItem>(window, overview_session_, this));
-  window_list_.front()->PrepareForOverview();
+  window_list_[index]->PrepareForOverview();
   // The item is added after overview enter animation is complete, so
   // just call OnStartingAnimationComplete.
-  window_list_.front()->OnStartingAnimationComplete();
+  window_list_[index]->OnStartingAnimationComplete();
 
   if (reposition)
-    PositionWindows(animate);
+    PositionWindows(animate, ignored_items);
 }
 
 void OverviewGrid::RemoveItem(OverviewItem* overview_item) {
@@ -593,19 +602,94 @@ void OverviewGrid::RemoveItem(OverviewItem* overview_item) {
   window_list_.erase(std::next(iter).base());
 }
 
-void OverviewGrid::SetBoundsAndUpdatePositions(const gfx::Rect& bounds) {
-  SetBoundsAndUpdatePositionsIgnoringWindow(bounds, nullptr);
+void OverviewGrid::AddDropTargetForDraggingFromOverview(
+    OverviewItem* dragged_item) {
+  DCHECK_EQ(dragged_item->GetWindow()->GetRootWindow(), root_window_);
+  DCHECK(!drop_target_widget_);
+  drop_target_widget_ =
+      CreateDropTargetWidget(dragged_item->GetWindow(), /*animate=*/false);
+  const size_t position = GetOverviewItemIndex(dragged_item) + 1u;
+  overview_session_->AddItem(drop_target_widget_->GetNativeWindow(),
+                             /*reposition=*/true, /*animate=*/false,
+                             /*ignored_items=*/{dragged_item}, position);
+  OverviewItem* drop_target = GetDropTarget();
+  // See the comment in RemoveDropTarget() for how |drop_target| can be null.
+  if (drop_target) {
+    // This part is necessary because |OverviewItem::OnSelectorItemDragStarted|
+    // is called on all overview items before the drop target exists among them.
+    // That is because |AddDropTargetForDraggingFromOverview| is only called for
+    // drag to snap, but |OnSelectorItemDragStarted| is called before the drag
+    // has been disambiguated between drag to close and drag to snap.
+    drop_target->OnSelectorItemDragStarted(dragged_item);
+  }
 }
 
-void OverviewGrid::SetBoundsAndUpdatePositionsIgnoringWindow(
-    const gfx::Rect& bounds,
-    OverviewItem* ignored_item) {
-  bounds_ = bounds;
+void OverviewGrid::RemoveDropTarget() {
+  DCHECK(drop_target_widget_);
+  OverviewItem* drop_target = GetDropTarget();
+  // TODO(http://crbug.com/916856): Disable tab and app dragging that doesn't
+  // happen in the primary display.
+  // The |drop_target_widget_| may be not in the same display as the dragged
+  // window/item, which will cause |drop_target| to be null.
+  if (drop_target)
+    overview_session_->RemoveItem(drop_target);
+  drop_target_widget_.reset();
+}
+
+void OverviewGrid::SetBoundsAndUpdatePositions(
+    const gfx::Rect& bounds_in_screen,
+    const base::flat_set<OverviewItem*>& ignored_items) {
+  bounds_ = bounds_in_screen;
   if (desks_widget_) {
     desks_widget_->SetBounds(
         GetDesksWidgetBounds(root_window_, bounds_.width()));
   }
-  PositionWindows(/*animate=*/true, ignored_item);
+  PositionWindows(/*animate=*/true, ignored_items);
+}
+
+void OverviewGrid::RearrangeDuringDrag(aura::Window* dragged_window,
+                                       const gfx::PointF& location_in_screen,
+                                       IndicatorState indicator_state) {
+  OverviewItem* drop_target = GetDropTarget();
+
+  // Update the drop target visibility according to |indicator_state|.
+  const bool wanted_drop_target_visibility =
+      indicator_state != IndicatorState::kPreviewAreaLeft &&
+      indicator_state != IndicatorState::kPreviewAreaRight;
+  const bool update_drop_target_visibility =
+      drop_target &&
+      (drop_target_widget_->IsVisible() != wanted_drop_target_visibility);
+  if (update_drop_target_visibility) {
+    drop_target_widget_->GetLayer()->SetVisible(wanted_drop_target_visibility);
+    drop_target->SetOpacity(wanted_drop_target_visibility ? 1.f : 0.f);
+  }
+
+  OverviewItem* dragged_item = GetOverviewItemContaining(dragged_window);
+
+  // Update the grid's bounds.
+  const gfx::Rect wanted_grid_bounds =
+      GetGridBoundsInScreenDuringDragging(dragged_window, indicator_state);
+  if (update_drop_target_visibility || bounds_ != wanted_grid_bounds) {
+    base::flat_set<OverviewItem*> ignored_items;
+    if (dragged_item)
+      ignored_items.insert(dragged_item);
+    if (drop_target && !wanted_drop_target_visibility)
+      ignored_items.insert(drop_target);
+    SetBoundsAndUpdatePositions(wanted_grid_bounds, ignored_items);
+  }
+
+  // If the drop target is on another grid, let that grid handle what follows.
+  if (!drop_target)
+    return;
+
+  // Visually indicate when |dragged_window| is dragged over the drop target.
+  aura::Window* target_window =
+      GetTargetWindowOnLocation(location_in_screen, dragged_item);
+  DropTargetView* drop_target_view =
+      static_cast<DropTargetView*>(drop_target_widget_->GetContentsView());
+  DCHECK(drop_target_view);
+  drop_target_view->UpdateBackgroundVisibility(
+      target_window && IsDropTargetWindow(target_window));
 }
 
 void OverviewGrid::SetSelectionWidgetVisibility(bool visible) {
@@ -649,41 +733,14 @@ void OverviewGrid::OnWindowDragStarted(aura::Window* dragged_window,
 }
 
 void OverviewGrid::OnWindowDragContinued(aura::Window* dragged_window,
-                                         const gfx::Point& location_in_screen,
+                                         const gfx::PointF& location_in_screen,
                                          IndicatorState indicator_state) {
   DCHECK_EQ(dragged_window->GetRootWindow(), root_window_);
 
-  OverviewItem* drop_target = GetDropTarget();
+  RearrangeDuringDrag(dragged_window, location_in_screen, indicator_state);
 
-  // Update the drop target visibility according to |indicator_state|.
-  const bool wanted_drop_target_visibility =
-      indicator_state != IndicatorState::kPreviewAreaLeft &&
-      indicator_state != IndicatorState::kPreviewAreaRight;
-  const bool update_drop_target_visibility =
-      drop_target &&
-      (drop_target_widget_->IsVisible() != wanted_drop_target_visibility);
-  if (update_drop_target_visibility) {
-    drop_target_widget_->GetLayer()->SetVisible(wanted_drop_target_visibility);
-    drop_target->SetOpacity(wanted_drop_target_visibility ? 1.f : 0.f);
-  }
-
-  // Update the grid's bounds.
-  const gfx::Rect wanted_bounds =
-      GetGridBoundsInScreenDuringDragging(dragged_window, indicator_state);
-  const bool update_bounds =
-      update_drop_target_visibility || bounds_ != wanted_bounds;
-  if (update_bounds) {
-    SetBoundsAndUpdatePositionsIgnoringWindow(
-        wanted_bounds, wanted_drop_target_visibility ? nullptr : drop_target);
-  }
-
-  // Visually indicate when |dragged_window| is dragged over the drop target.
-  aura::Window* target_window = GetTargetWindowOnLocation(location_in_screen);
-  DropTargetView* drop_target_view =
-      static_cast<DropTargetView*>(drop_target_widget_->GetContentsView());
-  DCHECK(drop_target_view);
-  drop_target_view->UpdateBackgroundVisibility(
-      target_window && IsDropTargetWindow(target_window));
+  aura::Window* target_window =
+      GetTargetWindowOnLocation(location_in_screen, /*ignored_item=*/nullptr);
 
   if (indicator_state == IndicatorState::kPreviewAreaLeft ||
       indicator_state == IndicatorState::kPreviewAreaRight) {
@@ -733,7 +790,7 @@ void OverviewGrid::OnWindowDragContinued(aura::Window* dragged_window,
 }
 
 void OverviewGrid::OnWindowDragEnded(aura::Window* dragged_window,
-                                     const gfx::Point& location_in_screen,
+                                     const gfx::PointF& location_in_screen,
                                      bool should_drop_window_into_overview) {
   DCHECK_EQ(dragged_window->GetRootWindow(), root_window_);
   DCHECK(drop_target_widget_.get());
@@ -750,15 +807,7 @@ void OverviewGrid::OnWindowDragEnded(aura::Window* dragged_window,
     AddDraggedWindowIntoOverviewOnDragEnd(dragged_window);
   }
 
-  OverviewItem* drop_target_item =
-      GetOverviewItemContaining(drop_target_widget_->GetNativeWindow());
-  // TODO(http://crbug.com/916856): Disable tab and app dragging that doesn't
-  // happen in the primary display.
-  // The |drop_target_widget_| may not in the same display as
-  // |dragged_window|, which will cause |drop_target_item| to be null.
-  if (drop_target_item)
-    overview_session_->RemoveItem(drop_target_item);
-  drop_target_widget_.reset();
+  RemoveDropTarget();
 
   // Called to reset caption and title visibility after dragging.
   OnSelectorItemDragEnded();
@@ -767,7 +816,8 @@ void OverviewGrid::OnWindowDragEnded(aura::Window* dragged_window,
   // |target_window|, and we may need to update |minimized_widget_| that holds
   // the contents of |target_window| if |target_window| is a minimized window
   // in overview.
-  aura::Window* target_window = GetTargetWindowOnLocation(location_in_screen);
+  aura::Window* target_window =
+      GetTargetWindowOnLocation(location_in_screen, /*ignored_item=*/nullptr);
   if (target_window &&
       target_window->GetProperty(ash::kIsDeferredTabDraggingTargetWindowKey)) {
     // Create an window observer and update the minimized window widget after
@@ -781,7 +831,7 @@ void OverviewGrid::OnWindowDragEnded(aura::Window* dragged_window,
   // be updated based on the preview area during drag, but the window finally
   // didn't be snapped to the preview area.
   SetBoundsAndUpdatePositions(
-      GetGridBoundsInScreenAfterDragging(dragged_window));
+      GetGridBoundsInScreenAfterDragging(dragged_window), /*ignored_items=*/{});
 }
 
 bool OverviewGrid::IsDropTargetWindow(aura::Window* window) const {
@@ -790,11 +840,9 @@ bool OverviewGrid::IsDropTargetWindow(aura::Window* window) const {
 }
 
 OverviewItem* OverviewGrid::GetDropTarget() {
-  if (!drop_target_widget_ || window_list_.empty())
-    return nullptr;
-
-  OverviewItem* first_item = window_list_.front().get();
-  return IsDropTargetWindow(first_item->GetWindow()) ? first_item : nullptr;
+  return drop_target_widget_
+             ? GetOverviewItemContaining(drop_target_widget_->GetNativeWindow())
+             : nullptr;
 }
 
 void OverviewGrid::OnWindowDestroying(aura::Window* window) {
@@ -1037,16 +1085,9 @@ void OverviewGrid::StartNudge(OverviewItem* item) {
   for (const auto& window_item : window_list_)
     src_rects.push_back(window_item->target_bounds());
 
-  std::vector<gfx::RectF> dst_rects = GetWindowRects(item);
+  std::vector<gfx::RectF> dst_rects = GetWindowRects({item});
 
-  // Get the index of |item|.
-  size_t index =
-      std::find_if(window_list_.begin(), window_list_.end(),
-                   [&item](const std::unique_ptr<OverviewItem>& item_ptr) {
-                     return item == item_ptr.get();
-                   }) -
-      window_list_.begin();
-  DCHECK_LT(index, window_list_.size());
+  const size_t index = GetOverviewItemIndex(item);
 
   // Returns a vector of integers indicating which row the item is in. |index|
   // is the index of the element which is going to be deleted and should not
@@ -1192,15 +1233,15 @@ OverviewGrid::UpdateYPositionAndOpacity(
 }
 
 aura::Window* OverviewGrid::GetTargetWindowOnLocation(
-    const gfx::Point& location_in_screen) {
-  // Find the overview item that contains |location_in_screen|.
-  auto iter = std::find_if(
-      window_list_.begin(), window_list_.end(),
-      [&location_in_screen](std::unique_ptr<OverviewItem>& item) {
-        return item->target_bounds().Contains(gfx::PointF(location_in_screen));
-      });
-
-  return (iter != window_list_.end()) ? (*iter)->GetWindow() : nullptr;
+    const gfx::PointF& location_in_screen,
+    OverviewItem* ignored_item) {
+  for (std::unique_ptr<OverviewItem>& item : window_list_) {
+    if (item.get() == ignored_item)
+      continue;
+    if (item->target_bounds().Contains(location_in_screen))
+      return item->GetWindow();
+  }
+  return nullptr;
 }
 
 bool OverviewGrid::IsDesksBarViewActive() const {
@@ -1343,7 +1384,7 @@ void OverviewGrid::MoveSelectionWidgetToTarget(bool animate) {
 }
 
 std::vector<gfx::RectF> OverviewGrid::GetWindowRects(
-    OverviewItem* ignored_item) {
+    const base::flat_set<OverviewItem*>& ignored_items) {
   gfx::Rect total_bounds = bounds_;
 
   if (features::IsVirtualDesksEnabled()) {
@@ -1410,7 +1451,7 @@ std::vector<gfx::RectF> OverviewGrid::GetWindowRects(
     overview_mode_bounds.set_width(right_bound - total_bounds.x());
     bool windows_fit = FitWindowRectsInBounds(
         overview_mode_bounds, std::min(kMaxHeight + 2 * kWindowMargin, height),
-        ignored_item, &rects, &max_bottom, &min_right, &max_right);
+        ignored_items, &rects, &max_bottom, &min_right, &max_right);
 
     if (height_fixed) {
       if (!windows_fit) {
@@ -1457,7 +1498,7 @@ std::vector<gfx::RectF> OverviewGrid::GetWindowRects(
     overview_mode_bounds.set_width(right_bound - total_bounds.x());
     FitWindowRectsInBounds(
         overview_mode_bounds, std::min(kMaxHeight + 2 * kWindowMargin, height),
-        ignored_item, &rects, &max_bottom, &min_right, &max_right);
+        ignored_items, &rects, &max_bottom, &min_right, &max_right);
   }
 
   gfx::Vector2dF offset(0, (total_bounds.bottom() - max_bottom) / 2.f);
@@ -1466,13 +1507,14 @@ std::vector<gfx::RectF> OverviewGrid::GetWindowRects(
   return rects;
 }
 
-bool OverviewGrid::FitWindowRectsInBounds(const gfx::Rect& bounds,
-                                          int height,
-                                          OverviewItem* ignored_item,
-                                          std::vector<gfx::RectF>* out_rects,
-                                          int* out_max_bottom,
-                                          int* out_min_right,
-                                          int* out_max_right) {
+bool OverviewGrid::FitWindowRectsInBounds(
+    const gfx::Rect& bounds,
+    int height,
+    const base::flat_set<OverviewItem*>& ignored_items,
+    std::vector<gfx::RectF>* out_rects,
+    int* out_max_bottom,
+    int* out_min_right,
+    int* out_max_right) {
   const size_t window_count = window_list_.size();
   out_rects->resize(window_count);
 
@@ -1493,7 +1535,7 @@ bool OverviewGrid::FitWindowRectsInBounds(const gfx::Rect& bounds,
   const gfx::Size item_size(0, height);
   for (size_t i = 0u; i < window_count; ++i) {
     if (window_list_[i]->animating_to_close() ||
-        (ignored_item && ignored_item == window_list_[i].get())) {
+        ignored_items.contains(window_list_[i].get())) {
       continue;
     }
 
@@ -1579,6 +1621,13 @@ OverviewGrid::GetOverviewItemIterContainingWindow(aura::Window* window) {
                       [window](std::unique_ptr<OverviewItem>& item) {
                         return item->GetWindow() == window;
                       });
+}
+
+size_t OverviewGrid::GetOverviewItemIndex(OverviewItem* item) const {
+  auto iter = std::find_if(window_list_.begin(), window_list_.end(),
+                           base::MatchesUniquePtr(item));
+  DCHECK(iter != window_list_.end());
+  return iter - window_list_.begin();
 }
 
 void OverviewGrid::AddDraggedWindowIntoOverviewOnDragEnd(
