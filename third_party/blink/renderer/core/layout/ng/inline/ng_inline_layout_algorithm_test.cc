@@ -38,8 +38,8 @@ TEST_F(NGInlineLayoutAlgorithmTest, BreakToken) {
   )HTML");
 
   // Perform 1st Layout.
-  LayoutBlockFlow* block_flow =
-      ToLayoutBlockFlow(GetLayoutObjectByElementId("container"));
+  auto* block_flow =
+      To<LayoutBlockFlow>(GetLayoutObjectByElementId("container"));
   NGInlineNode inline_node(block_flow);
   NGLogicalSize size(LayoutUnit(50), LayoutUnit(20));
 
@@ -157,8 +157,8 @@ TEST_F(NGInlineLayoutAlgorithmTest,
       </oof-container>
     </div>
   )HTML");
-  LayoutBlockFlow* block_flow =
-      ToLayoutBlockFlow(GetLayoutObjectByElementId("container"));
+  auto* block_flow =
+      To<LayoutBlockFlow>(GetLayoutObjectByElementId("container"));
   const NGPhysicalBoxFragment* container = block_flow->CurrentFragment();
   ASSERT_TRUE(container);
   EXPECT_EQ(LayoutUnit(), container->Size().height);
@@ -194,8 +194,8 @@ TEST_F(NGInlineLayoutAlgorithmTest, BoxForEndMargin) {
     <!-- This line wraps, and only 2nd line has a border. -->
     <div id=container>12 <span>3 45</span> 6</div>
   )HTML");
-  LayoutBlockFlow* block_flow =
-      ToLayoutBlockFlow(GetLayoutObjectByElementId("container"));
+  auto* block_flow =
+      To<LayoutBlockFlow>(GetLayoutObjectByElementId("container"));
   const NGPhysicalBoxFragment* block_box = block_flow->CurrentFragment();
   ASSERT_TRUE(block_box);
   EXPECT_EQ(2u, block_box->Children().size());
@@ -227,8 +227,8 @@ TEST_F(NGInlineLayoutAlgorithmTest, ContainerBorderPadding) {
     </style>
     <div id=container>test</div>
   )HTML");
-  LayoutBlockFlow* block_flow =
-      ToLayoutBlockFlow(GetLayoutObjectByElementId("container"));
+  auto* block_flow =
+      To<LayoutBlockFlow>(GetLayoutObjectByElementId("container"));
   NGBlockNode block_node(block_flow);
   NGConstraintSpace space =
       NGConstraintSpace::CreateFromLayoutObject(*block_flow);
@@ -261,8 +261,8 @@ TEST_F(NGInlineLayoutAlgorithmTest, MAYBE_VerticalAlignBottomReplaced) {
     </style>
     <div id=container><img src="#" width="96" height="96"></div>
   )HTML");
-  LayoutBlockFlow* block_flow =
-      ToLayoutBlockFlow(GetLayoutObjectByElementId("container"));
+  auto* block_flow =
+      To<LayoutBlockFlow>(GetLayoutObjectByElementId("container"));
   NGInlineNode inline_node(block_flow);
   NGInlineChildLayoutContext context;
   NGConstraintSpace space =
@@ -361,8 +361,8 @@ TEST_F(NGInlineLayoutAlgorithmTest, TextFloatsAroundInlineFloatThatFitsOnLine) {
     </div>
   )HTML");
 
-  LayoutBlockFlow* block_flow =
-      ToLayoutBlockFlow(GetLayoutObjectByElementId("container"));
+  auto* block_flow =
+      To<LayoutBlockFlow>(GetLayoutObjectByElementId("container"));
   const NGPhysicalBoxFragment* block_box = block_flow->CurrentFragment();
   ASSERT_TRUE(block_box);
 
@@ -492,8 +492,8 @@ TEST_F(NGInlineLayoutAlgorithmTest, InkOverflow) {
     </style>
     <div id="container">Hello</div>
   )HTML");
-  LayoutBlockFlow* block_flow =
-      ToLayoutBlockFlow(GetLayoutObjectByElementId("container"));
+  auto* block_flow =
+      To<LayoutBlockFlow>(GetLayoutObjectByElementId("container"));
   const NGPaintFragment* paint_fragment = block_flow->PaintFragment();
   ASSERT_TRUE(paint_fragment);
   const NGPhysicalFragment& box_fragment = paint_fragment->PhysicalFragment();

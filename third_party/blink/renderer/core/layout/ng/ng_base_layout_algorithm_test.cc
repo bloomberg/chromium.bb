@@ -30,7 +30,7 @@ void NGBaseLayoutAlgorithmTest::AdvanceToLayoutPhase() {
 
 std::pair<scoped_refptr<const NGPhysicalBoxFragment>, NGConstraintSpace>
 NGBaseLayoutAlgorithmTest::RunBlockLayoutAlgorithmForElement(Element* element) {
-  LayoutBlockFlow* block_flow = ToLayoutBlockFlow(element->GetLayoutObject());
+  auto* block_flow = To<LayoutBlockFlow>(element->GetLayoutObject());
   NGBlockNode node(block_flow);
   NGConstraintSpace space =
       NGConstraintSpace::CreateFromLayoutObject(*block_flow);
@@ -46,7 +46,7 @@ NGBaseLayoutAlgorithmTest::GetBoxFragmentByElementId(const char* id) {
   LayoutObject* layout_object = GetLayoutObjectByElementId(id);
   CHECK(layout_object && layout_object->IsLayoutNGMixin());
   scoped_refptr<const NGPhysicalBoxFragment> fragment =
-      ToLayoutBlockFlow(layout_object)->CurrentFragment();
+      To<LayoutBlockFlow>(layout_object)->CurrentFragment();
   CHECK(fragment);
   return fragment;
 }

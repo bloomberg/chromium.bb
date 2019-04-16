@@ -18,7 +18,7 @@ class NGCaretNavigatorTest : public RenderingTest,
   void SetupHtml(const char* id, String html) {
     SetBodyInnerHTML(html);
 
-    block_flow_ = ToLayoutBlockFlow(GetLayoutObjectByElementId(id));
+    block_flow_ = To<LayoutBlockFlow>(GetLayoutObjectByElementId(id));
     DCHECK(block_flow_);
     DCHECK(block_flow_->IsLayoutNGMixin());
     DCHECK(block_flow_->ChildrenInline());

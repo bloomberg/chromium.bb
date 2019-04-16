@@ -104,8 +104,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, Caching) {
       WritingMode::kHorizontalTb, TextDirection::kLtr,
       NGLogicalSize(LayoutUnit(100), LayoutUnit(100)));
 
-  LayoutBlockFlow* block_flow =
-      ToLayoutBlockFlow(GetLayoutObjectByElementId("box"));
+  auto* block_flow = To<LayoutBlockFlow>(GetLayoutObjectByElementId("box"));
   NGBlockNode node(block_flow);
 
   scoped_refptr<const NGLayoutResult> result(node.Layout(space, nullptr));
@@ -155,8 +154,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, MinInlineSizeCaching) {
       WritingMode::kHorizontalTb, TextDirection::kLtr,
       NGLogicalSize(LayoutUnit(100), LayoutUnit(100)));
 
-  LayoutBlockFlow* block_flow =
-      ToLayoutBlockFlow(GetLayoutObjectByElementId("box"));
+  auto* block_flow = To<LayoutBlockFlow>(GetLayoutObjectByElementId("box"));
   NGBlockNode node(block_flow);
 
   scoped_refptr<const NGLayoutResult> result(node.Layout(space, nullptr));
@@ -252,7 +250,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, PercentageBlockSizeQuirkDescendantsCaching) {
 
   auto run_test = [&](auto id) -> scoped_refptr<const NGLayoutResult> {
     // Grab the box under test.
-    LayoutBlockFlow* box = ToLayoutBlockFlow(GetLayoutObjectByElementId(id));
+    auto* box = To<LayoutBlockFlow>(GetLayoutObjectByElementId(id));
 
     // Check that we have a cache hit with space100.
     scoped_refptr<const NGLayoutResult> result =
@@ -344,10 +342,10 @@ TEST_F(NGBlockLayoutAlgorithmTest, ShrinkToFitCaching) {
       /* shrink_to_fit */ true, /* is_new_formatting_context */ true);
   scoped_refptr<const NGLayoutResult> result;
 
-  LayoutBlockFlow* box1 = ToLayoutBlockFlow(GetLayoutObjectByElementId("box1"));
-  LayoutBlockFlow* box2 = ToLayoutBlockFlow(GetLayoutObjectByElementId("box2"));
-  LayoutBlockFlow* box3 = ToLayoutBlockFlow(GetLayoutObjectByElementId("box3"));
-  LayoutBlockFlow* box4 = ToLayoutBlockFlow(GetLayoutObjectByElementId("box4"));
+  auto* box1 = To<LayoutBlockFlow>(GetLayoutObjectByElementId("box1"));
+  auto* box2 = To<LayoutBlockFlow>(GetLayoutObjectByElementId("box2"));
+  auto* box3 = To<LayoutBlockFlow>(GetLayoutObjectByElementId("box3"));
+  auto* box4 = To<LayoutBlockFlow>(GetLayoutObjectByElementId("box4"));
 
   // Ensure we cached the result for box1 in the first layout pass.
   result = box1->CachedLayoutResult(space300, nullptr);
@@ -417,7 +415,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, LineOffsetCaching) {
                    NGBfcOffset(LayoutUnit(50), LayoutUnit()));
 
   scoped_refptr<const NGLayoutResult> result;
-  LayoutBlockFlow* box1 = ToLayoutBlockFlow(GetLayoutObjectByElementId("box1"));
+  auto* box1 = To<LayoutBlockFlow>(GetLayoutObjectByElementId("box1"));
 
   // Ensure we get a cached layout result, even if our BFC line-offset changed.
   result = box1->CachedLayoutResult(space200, nullptr);
@@ -2199,7 +2197,8 @@ TEST_F(NGBlockLayoutAlgorithmTest, DISABLED_FloatFragmentationParallelFlows) {
 
   LayoutUnit kFragmentainerSpaceAvailable(150);
 
-  NGBlockNode node(ToLayoutBlockFlow(GetLayoutObjectByElementId("container")));
+  NGBlockNode node(
+      To<LayoutBlockFlow>(GetLayoutObjectByElementId("container")));
   NGConstraintSpace space = ConstructBlockLayoutTestConstraintSpace(
       WritingMode::kHorizontalTb, TextDirection::kLtr,
       NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite), false,
@@ -2278,7 +2277,8 @@ TEST_F(NGBlockLayoutAlgorithmTest, FloatFragmentationOrthogonalFlows) {
 
   LayoutUnit kFragmentainerSpaceAvailable(150);
 
-  NGBlockNode node(ToLayoutBlockFlow(GetLayoutObjectByElementId("container")));
+  NGBlockNode node(
+      To<LayoutBlockFlow>(GetLayoutObjectByElementId("container")));
   NGConstraintSpace space = ConstructBlockLayoutTestConstraintSpace(
       WritingMode::kHorizontalTb, TextDirection::kLtr,
       NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite), false, true,
@@ -2327,7 +2327,8 @@ TEST_F(NGBlockLayoutAlgorithmTest, DISABLED_FloatFragmentationZeroHeight) {
 
   LayoutUnit kFragmentainerSpaceAvailable(150);
 
-  NGBlockNode node(ToLayoutBlockFlow(GetLayoutObjectByElementId("container")));
+  NGBlockNode node(
+      To<LayoutBlockFlow>(GetLayoutObjectByElementId("container")));
   NGConstraintSpace space = ConstructBlockLayoutTestConstraintSpace(
       WritingMode::kHorizontalTb, TextDirection::kLtr,
       NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite), false,
@@ -2452,7 +2453,8 @@ TEST_F(NGBlockLayoutAlgorithmTest, NewFcAvoidsFloats) {
     </div>
   )HTML");
 
-  NGBlockNode node(ToLayoutBlockFlow(GetLayoutObjectByElementId("container")));
+  NGBlockNode node(
+      To<LayoutBlockFlow>(GetLayoutObjectByElementId("container")));
   NGConstraintSpace space = ConstructBlockLayoutTestConstraintSpace(
       WritingMode::kHorizontalTb, TextDirection::kLtr,
       NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite));
@@ -2487,7 +2489,8 @@ TEST_F(NGBlockLayoutAlgorithmTest, ZeroBlockSizeAboveEdge) {
     </div>
   )HTML");
 
-  NGBlockNode node(ToLayoutBlockFlow(GetLayoutObjectByElementId("container")));
+  NGBlockNode node(
+      To<LayoutBlockFlow>(GetLayoutObjectByElementId("container")));
   NGConstraintSpace space = ConstructBlockLayoutTestConstraintSpace(
       WritingMode::kHorizontalTb, TextDirection::kLtr,
       NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite), false, true);
@@ -2524,7 +2527,8 @@ TEST_F(NGBlockLayoutAlgorithmTest, NewFcFirstChildIsZeroBlockSize) {
     </div>
   )HTML");
 
-  NGBlockNode node(ToLayoutBlockFlow(GetLayoutObjectByElementId("container")));
+  NGBlockNode node(
+      To<LayoutBlockFlow>(GetLayoutObjectByElementId("container")));
   NGConstraintSpace space = ConstructBlockLayoutTestConstraintSpace(
       WritingMode::kHorizontalTb, TextDirection::kLtr,
       NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite), false, true);

@@ -38,7 +38,7 @@ class NGCaretPositionTest : public NGLayoutTest {
     SetBodyInnerHTML(String::Format(pattern, id, width, html));
     container_ = GetElementById(id);
     DCHECK(container_);
-    context_ = ToLayoutBlockFlow(container_->GetLayoutObject());
+    context_ = To<LayoutBlockFlow>(container_->GetLayoutObject());
     DCHECK(context_);
     DCHECK(context_->IsLayoutNGMixin());
     root_fragment_ = context_->CurrentFragment();

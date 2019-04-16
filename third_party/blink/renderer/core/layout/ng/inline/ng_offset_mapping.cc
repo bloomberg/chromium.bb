@@ -230,7 +230,7 @@ LayoutBlockFlow* NGOffsetMapping::GetInlineFormattingContextOf(
        runner = runner->Parent()) {
     if (!CanUseNGOffsetMapping(*runner))
       continue;
-    return ToLayoutBlockFlow(runner);
+    return To<LayoutBlockFlow>(runner);
   }
   return nullptr;
 }
