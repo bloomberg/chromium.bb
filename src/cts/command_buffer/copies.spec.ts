@@ -2,7 +2,6 @@ export const description = `
 copy{Buffer,Texture}To{Buffer,Texture} tests.
 `;
 
-import * as w from "../../framework/gpu/interface.js";
 import { TestGroup, FixtureCreate } from "../../framework/index.js";
 import { GPUTest, makeGPUTestCreate } from "../gpu_test.js";
 
@@ -57,7 +56,7 @@ group.test("b2t2t2b", CopyTest, async (t) => {
   const dst = t.device.createBuffer({ size: 4, usage: 4 | 8 });
   src.setSubData(0, data);
 
-  const midDesc: w.GPUTextureDescriptor = {
+  const midDesc: GPUTextureDescriptor = {
     size: { width: 1, height: 1, depth: 1 },
     format: "rgba8uint",
     usage: 1 | 2,

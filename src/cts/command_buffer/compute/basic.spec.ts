@@ -50,7 +50,7 @@ group.test("memcpy", GPUTest, async (t) => {
   const pass = encoder.beginComputePass();
   pass.setPipeline(pipeline);
   pass.setBindGroup(0, bg);
-  pass.dispatch(1);
+  pass.dispatch(1, 1, 1);
   pass.endPass();
   t.device.getQueue().submit([encoder.finish()]);
 

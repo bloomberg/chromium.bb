@@ -1,4 +1,4 @@
-import { GPU } from "./interface.js";
+/// <reference types="@webgpu/types" />
 
 type ImplType = Promise<GPU>;
 let impl: ImplType;
