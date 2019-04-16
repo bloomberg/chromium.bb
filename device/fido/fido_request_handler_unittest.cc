@@ -229,11 +229,29 @@ class FakeFidoRequestHandler : public FidoRequestHandler<std::vector<uint8_t>> {
     // at this point.
     device_authenticator->SetTaskForTesting(std::make_unique<FakeFidoTask>(
         device_authenticator->device(),
-        base::BindOnce(&FakeFidoRequestHandler::OnAuthenticatorResponse,
+        base::BindOnce(&FakeFidoRequestHandler::HandleResponse,
                        weak_factory_.GetWeakPtr(), authenticator)));
   }
 
  private:
+  void HandleResponse(FidoAuthenticator* authenticator,
+                      CtapDeviceResponseCode status,
+                      base::Optional<std::vector<uint8_t>> response) {
+    const base::Optional<FidoReturnCode> maybe_result =
+        ConvertDeviceResponseCodeToFidoReturnCode(status);
+    if (!maybe_result) {
+      FIDO_LOG(ERROR) << "Ignoring status " << static_cast<int>(status)
+                      << " from " << authenticator->GetDisplayName();
+      active_authenticators().erase(authenticator->GetId());
+      return;
+    }
+
+    if (!is_complete()) {
+      CancelActiveAuthenticators(authenticator->GetId());
+    }
+    OnAuthenticatorResponse(authenticator, *maybe_result, std::move(response));
+  }
+
   base::WeakPtrFactory<FakeFidoRequestHandler> weak_factory_;
 };
 
