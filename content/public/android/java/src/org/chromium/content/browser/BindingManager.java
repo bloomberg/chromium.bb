@@ -10,6 +10,7 @@ import android.content.res.Configuration;
 import android.support.v4.util.ArraySet;
 
 import org.chromium.base.Log;
+import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.process_launcher.ChildProcessConnection;
 
@@ -144,19 +145,14 @@ class BindingManager implements ComponentCallbacks2 {
         LauncherThread.removeCallbacks(mDelayedClearer);
     }
 
-    // Whether this instance is used on testing.
-    private final boolean mOnTesting;
-
     /**
      * The constructor is private to hide parameters exposed for testing from the regular consumer.
      * Use factory methods to create an instance.
      */
-    BindingManager(Context context, int maxSize, Iterable<ChildProcessConnection> ranking,
-            boolean onTesting) {
+    BindingManager(Context context, int maxSize, Iterable<ChildProcessConnection> ranking) {
         assert LauncherThread.runningOnLauncherThread();
         Log.i(TAG, "Moderate binding enabled: maxSize=%d", maxSize);
 
-        mOnTesting = onTesting;
         mMaxSize = maxSize;
         mRanking = ranking;
         assert mMaxSize > 0;
@@ -165,7 +161,9 @@ class BindingManager implements ComponentCallbacks2 {
             @Override
             public void run() {
                 Log.i(TAG, "Release moderate connections: %d", mConnections.size());
-                if (!mOnTesting) {
+                // Tests may not load the native library which is required for
+                // recording histograms.
+                if (LibraryLoader.getInstance().isInitialized()) {
                     RecordHistogram.recordCountHistogram(
                             "Android.ModerateBindingCount", mConnections.size());
                 }
