@@ -138,21 +138,19 @@ NSString* const kXCallbackURLHost = @"x-callback-url";
 // Helper method to encapsulate both checking the flag and getting the copied
 // text.
 // TODO(crbug.com/932116): Can be removed when the flag is cleaned up.
+//
+// This has been disabled to prevent a bug in M74. See crbug.com/952939.
 - (NSString*)getCopiedTextUsingFlag {
-  if (!self.copiedContentBehaviorEnabled) {
-    return nil;
-  }
-  return [self.clipboardRecentContent recentTextFromClipboard];
+  return nil;
 }
 
 // Helper method to encapsulate both checking the flag and getting the copied
 // image.
 // TODO(crbug.com/932116): Can be removed when the flag is cleaned up.
+//
+// This has been disabled to prevent a bug in M74. See crbug.com/952939.
 - (UIImage*)getCopiedImageUsingFlag {
-  if (!self.copiedContentBehaviorEnabled || !self.supportsSearchByImage) {
-    return nil;
-  }
-  return [self.clipboardRecentContent recentImageFromClipboard];
+  return nil;
 }
 
 - (void)viewWillTransitionToSize:(CGSize)size
