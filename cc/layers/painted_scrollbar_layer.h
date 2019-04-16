@@ -84,6 +84,8 @@ class CC_EXPORT PaintedScrollbarLayer : public ScrollbarLayerInterface,
   int thumb_length_;
   gfx::Point location_;
   gfx::Rect track_rect_;
+  gfx::Rect back_button_rect_;
+  gfx::Rect forward_button_rect_;
   bool is_overlay_;
   bool has_thumb_;
 

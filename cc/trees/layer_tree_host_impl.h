@@ -26,6 +26,7 @@
 #include "cc/input/browser_controls_offset_manager_client.h"
 #include "cc/input/input_handler.h"
 #include "cc/input/scrollbar_animation_controller.h"
+#include "cc/input/scrollbar_controller.h"
 #include "cc/layers/layer_collections.h"
 #include "cc/resources/ui_resource_client.h"
 #include "cc/scheduler/begin_frame_tracker.h"
@@ -259,8 +260,9 @@ class CC_EXPORT LayerTreeHostImpl
       const gfx::ScrollOffset& root_offset) override;
   void ScrollEnd(ScrollState* scroll_state, bool should_snap = false) override;
 
-  void MouseDown() override;
-  void MouseUp() override;
+  InputHandlerPointerResult MouseDown(
+      const gfx::PointF& viewport_point) override;
+  InputHandlerPointerResult MouseUp(const gfx::PointF& viewport_point) override;
   void MouseMoveAt(const gfx::Point& viewport_point) override;
   void MouseLeave() override;
 
@@ -1179,6 +1181,9 @@ class CC_EXPORT LayerTreeHostImpl
   bool is_animating_for_snap_;
 
   const PaintImage::GeneratorClientId paint_image_generator_client_id_;
+
+  // Manages composited scrollbar hit testing.
+  std::unique_ptr<ScrollbarController> scrollbar_controller_;
 
   // Set to true when a scroll gesture being handled on the compositor has
   // ended. i.e. When a GSE has arrived and any ongoing scroll animation has

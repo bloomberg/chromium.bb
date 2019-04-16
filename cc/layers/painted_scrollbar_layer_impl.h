@@ -38,6 +38,8 @@ class CC_EXPORT PaintedScrollbarLayerImpl : public ScrollbarLayerImplBase {
                    AppendQuadsData* append_quads_data) override;
   gfx::Rect GetEnclosingRectInTargetSpace() const override;
 
+  void SetBackButtonRect(gfx::Rect back_button_rect);
+  void SetForwardButtonRect(gfx::Rect forward_button_rect);
   void SetThumbThickness(int thumb_thickness);
   void SetThumbLength(int thumb_length);
   void SetTrackStart(int track_start);
@@ -58,6 +60,8 @@ class CC_EXPORT PaintedScrollbarLayerImpl : public ScrollbarLayerImplBase {
     internal_content_bounds_ = content_bounds;
   }
 
+  gfx::Rect BackButtonRect() const override;
+  gfx::Rect ForwardButtonRect() const override;
   int ThumbThickness() const override;
 
   LayerTreeSettings::ScrollbarAnimator GetScrollbarAnimator() const override;
@@ -90,6 +94,8 @@ class CC_EXPORT PaintedScrollbarLayerImpl : public ScrollbarLayerImplBase {
   int thumb_length_;
   int track_start_;
   int track_length_;
+  gfx::Rect back_button_rect_;
+  gfx::Rect forward_button_rect_;
 };
 
 }  // namespace cc

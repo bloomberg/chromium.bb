@@ -752,6 +752,12 @@ void RenderWidgetHostInputEventRouter::RouteGestureEvent(
     case blink::kWebGestureDeviceTouchscreen:
       RouteTouchscreenGestureEvent(root_view, event, latency);
       break;
+    case blink::kWebGestureDeviceScrollbar:
+      NOTREACHED()
+          << "This gesture source is only ever generated inside the renderer "
+             "and is designated for compositor threaded scrollbar scrolling. "
+             "We should never see it in the browser.";
+      break;
   };
 }
 

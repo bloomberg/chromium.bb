@@ -34,6 +34,13 @@ enum WebGestureDevice {
   kWebGestureDeviceTouchscreen,
   kWebGestureDeviceSyntheticAutoscroll,
 
+  // This is the device type used when generating synthetic gesture scrolls for
+  // compositor thread scrollbar scrolling. Please refer to
+  // ui::InputHandlerProxy::InjectScrollbarGestureScroll to see how this is
+  // consumed. Explainer:
+  // https://github.com/MicrosoftEdge/MSEdgeExplainers/blob/master/Scrolling/ImplScrollbars/dev-diagram.md
+  kWebGestureDeviceScrollbar,
+
   kWebGestureDeviceCount,
 };
 
