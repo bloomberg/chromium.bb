@@ -100,10 +100,15 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
                             base::string16* value) const;
   base::string16 GetString16Attribute(
       ax::mojom::StringAttribute attribute) const;
+  bool HasInheritedStringAttribute(ax::mojom::StringAttribute attribute) const;
   const std::string& GetInheritedStringAttribute(
       ax::mojom::StringAttribute attribute) const;
-  const base::string16 GetInheritedString16Attribute(
+  base::string16 GetInheritedString16Attribute(
       ax::mojom::StringAttribute attribute) const;
+  bool GetInheritedStringAttribute(ax::mojom::StringAttribute attribute,
+                                   std::string* value) const;
+  bool GetInheritedString16Attribute(ax::mojom::StringAttribute attribute,
+                                     base::string16* value) const;
 
   bool HasIntListAttribute(ax::mojom::IntListAttribute attribute) const;
   const std::vector<int32_t>& GetIntListAttribute(

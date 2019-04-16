@@ -1546,28 +1546,48 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   text_data.AddIntAttribute(ax::mojom::IntAttribute::kTextStrikethroughStyle,
                             2);
   text_data.AddIntAttribute(ax::mojom::IntAttribute::kTextUnderlineStyle, 3);
+  text_data.AddIntAttribute(ax::mojom::IntAttribute::kBackgroundColor,
+                            0xDEADBEEFU);
+  text_data.AddIntAttribute(ax::mojom::IntAttribute::kColor, 0xDEADC0DEU);
+  text_data.AddStringAttribute(ax::mojom::StringAttribute::kLanguage, "fr-CA");
+  text_data.SetTextDirection(ax::mojom::TextDirection::kRtl);
   text_data.SetName("some text");
 
-  ui::AXNodeData more_text_data;
-  more_text_data.id = 3;
-  more_text_data.role = ax::mojom::Role::kStaticText;
-  more_text_data.AddState(ax::mojom::State::kInvisible);
-  more_text_data.SetName("more text");
+  ui::AXNodeData heading_data;
+  heading_data.id = 3;
+  heading_data.role = ax::mojom::Role::kHeading;
+  heading_data.AddIntAttribute(ax::mojom::IntAttribute::kHierarchicalLevel, 6);
+  heading_data.child_ids = {4};
+
+  ui::AXNodeData heading_text_data;
+  heading_text_data.id = 4;
+  heading_text_data.role = ax::mojom::Role::kStaticText;
+  heading_text_data.AddState(ax::mojom::State::kInvisible);
+  heading_text_data.AddIntAttribute(ax::mojom::IntAttribute::kBackgroundColor,
+                                    0xDEADBEEFU);
+  heading_text_data.AddIntAttribute(ax::mojom::IntAttribute::kColor,
+                                    0xDEADC0DEU);
+  heading_text_data.SetTextDirection(ax::mojom::TextDirection::kRtl);
+  heading_text_data.SetName("more text");
 
   ui::AXNodeData mark_data;
-  mark_data.id = 4;
+  mark_data.id = 5;
   mark_data.role = ax::mojom::Role::kMark;
-  mark_data.child_ids = {5};
+  mark_data.child_ids = {6};
 
   ui::AXNodeData mark_text_data;
-  mark_text_data.id = 5;
+  mark_text_data.id = 6;
   mark_text_data.role = ax::mojom::Role::kStaticText;
+  mark_text_data.AddIntAttribute(ax::mojom::IntAttribute::kBackgroundColor,
+                                 0xDEADBEEFU);
+  mark_text_data.AddIntAttribute(ax::mojom::IntAttribute::kColor, 0xDEADC0DEU);
+  mark_text_data.SetTextDirection(ax::mojom::TextDirection::kRtl);
   mark_text_data.SetName("marked text");
 
   ui::AXNodeData root_data;
   root_data.id = 1;
   root_data.role = ax::mojom::Role::kRootWebArea;
-  root_data.child_ids = {2, 3, 4};
+  root_data.child_ids = {2, 3, 5};
 
   ui::AXTreeUpdate update;
   ui::AXTreeData tree_data;
@@ -1577,15 +1597,19 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   update.root_id = root_data.id;
   update.nodes.push_back(root_data);
   update.nodes.push_back(text_data);
-  update.nodes.push_back(more_text_data);
+  update.nodes.push_back(heading_data);
+  update.nodes.push_back(heading_text_data);
   update.nodes.push_back(mark_data);
   update.nodes.push_back(mark_text_data);
 
   Init(update);
   AXNodePosition::SetTreeForTesting(tree_.get());
+  AXTreeManagerMap::GetInstance().AddTreeManager(tree_data.tree_id, this);
 
   AXNode* root_node = GetRootNode();
   AXNode* text_node = root_node->children()[0];
+  AXNode* heading_node = root_node->children()[1];
+  AXNode* heading_text_node = heading_node->children()[0];
   AXNode* mark_node = root_node->children()[2];
   AXNode* mark_text_node = mark_node->children()[0];
 
@@ -1593,6 +1617,9 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   GetTextRangeProviderFromTextNode(document_range_provider, root_node);
   ComPtr<ITextRangeProvider> text_range_provider;
   GetTextRangeProviderFromTextNode(text_range_provider, text_node);
+  ComPtr<ITextRangeProvider> heading_text_range_provider;
+  GetTextRangeProviderFromTextNode(heading_text_range_provider,
+                                   heading_text_node);
   ComPtr<ITextRangeProvider> mark_text_range_provider;
   GetTextRangeProviderFromTextNode(mark_text_range_provider, mark_text_node);
 
@@ -1607,6 +1634,26 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
 
   base::win::ScopedVariant expected_variant;
 
+  // SkColor is ARGB, COLORREF is 0BGR
+  expected_variant.Set(static_cast<int32_t>(0x00EFBEADU));
+  EXPECT_UIA_TEXTATTRIBUTE_EQ(text_range_provider,
+                              UIA_BackgroundColorAttributeId, expected_variant);
+  EXPECT_UIA_TEXTATTRIBUTE_EQ(document_range_provider,
+                              UIA_BackgroundColorAttributeId, expected_variant);
+  expected_variant.Reset();
+
+  {
+    base::win::ScopedVariant lang_variant;
+    EXPECT_HRESULT_SUCCEEDED(text_range_provider->GetAttributeValue(
+        UIA_CultureAttributeId, lang_variant.Receive()));
+
+    EXPECT_EQ(lang_variant.type(), VT_I4);
+    const LCID lcid = V_I4(lang_variant.ptr());
+    EXPECT_EQ(LANG_FRENCH, PRIMARYLANGID(lcid));
+    EXPECT_EQ(SUBLANG_FRENCH_CANADIAN, SUBLANGID(lcid));
+    EXPECT_EQ(SORT_DEFAULT, SORTIDFROMLCID(lcid));
+  }
+
   base::string16 font_name = base::UTF8ToUTF16("sans");
   expected_variant.Set(SysAllocString(font_name.c_str()));
   EXPECT_UIA_TEXTATTRIBUTE_EQ(text_range_provider, UIA_FontNameAttributeId,
@@ -1618,6 +1665,14 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
                               expected_variant);
   expected_variant.Reset();
 
+  // SkColor is ARGB, COLORREF is 0BGR
+  expected_variant.Set(static_cast<int32_t>(0x00DEC0ADU));
+  EXPECT_UIA_TEXTATTRIBUTE_EQ(text_range_provider,
+                              UIA_ForegroundColorAttributeId, expected_variant);
+  EXPECT_UIA_TEXTATTRIBUTE_EQ(document_range_provider,
+                              UIA_ForegroundColorAttributeId, expected_variant);
+  expected_variant.Reset();
+
   expected_variant.Set(false);
   EXPECT_UIA_TEXTATTRIBUTE_EQ(text_range_provider, UIA_IsHiddenAttributeId,
                               expected_variant);
@@ -1625,7 +1680,6 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
 
   EXPECT_UIA_TEXTATTRIBUTE_EQ(document_range_provider, UIA_IsHiddenAttributeId,
                               expected_mixed_variant);
-  expected_variant.Reset();
 
   expected_variant.Set(TextDecorationLineStyle::TextDecorationLineStyle_Dot);
   EXPECT_UIA_TEXTATTRIBUTE_EQ(text_range_provider, UIA_OverlineStyleAttributeId,
@@ -1648,10 +1702,24 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
                               expected_variant);
   expected_variant.Reset();
 
+  expected_variant.Set(static_cast<int32_t>(StyleId_Heading6));
+  EXPECT_UIA_TEXTATTRIBUTE_EQ(heading_text_range_provider,
+                              UIA_StyleIdAttributeId, expected_variant);
+  expected_variant.Reset();
+
   style_name = base::UTF8ToUTF16("mark");
   expected_variant.Set(SysAllocString(style_name.c_str()));
   EXPECT_UIA_TEXTATTRIBUTE_EQ(mark_text_range_provider,
                               UIA_StyleNameAttributeId, expected_variant);
+  expected_variant.Reset();
+
+  expected_variant.Set(
+      static_cast<int32_t>(FlowDirections::FlowDirections_RightToLeft));
+  EXPECT_UIA_TEXTATTRIBUTE_EQ(
+      text_range_provider, UIA_TextFlowDirectionsAttributeId, expected_variant);
+  EXPECT_UIA_TEXTATTRIBUTE_EQ(document_range_provider,
+                              UIA_TextFlowDirectionsAttributeId,
+                              expected_variant);
   expected_variant.Reset();
 }
 

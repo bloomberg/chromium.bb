@@ -21,6 +21,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/enum_variant.h"
 #include "base/win/scoped_variant.h"
+#include "skia/ext/skia_utils_win.h"
 #include "third_party/iaccessible2/ia2_api_all.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/accessibility_switches.h"
@@ -4032,9 +4033,20 @@ HRESULT AXPlatformNodeWin::GetTextAttributeValue(TEXTATTRIBUTEID attribute_id,
   }
 
   switch (attribute_id) {
+    case UIA_BackgroundColorAttributeId:
+      V_VT(result) = VT_I4;
+      V_I4(result) =
+          GetIntAttributeAsCOLORREF(ax::mojom::IntAttribute::kBackgroundColor);
+      break;
+    case UIA_CultureAttributeId:
+      return GetCultureAttributeAsVariant(result);
     case UIA_FontNameAttributeId:
       V_VT(result) = VT_BSTR;
       V_BSTR(result) = GetFontNameAttributeAsBSTR();
+      break;
+    case UIA_ForegroundColorAttributeId:
+      V_VT(result) = VT_I4;
+      V_I4(result) = GetIntAttributeAsCOLORREF(ax::mojom::IntAttribute::kColor);
       break;
     case UIA_IsHiddenAttributeId:
       V_VT(result) = VT_BOOL;
@@ -4054,10 +4066,19 @@ HRESULT AXPlatformNodeWin::GetTextAttributeValue(TEXTATTRIBUTEID attribute_id,
       V_VT(result) = VT_BSTR;
       V_BSTR(result) = GetStyleNameAttributeAsBSTR();
       break;
+    case UIA_StyleIdAttributeId:
+      V_VT(result) = VT_I4;
+      V_I4(result) = ComputeUIAStyleId();
+      break;
     case UIA_UnderlineStyleAttributeId:
       V_VT(result) = VT_I4;
       V_I4(result) = GetUIATextDecorationStyle(
           ax::mojom::IntAttribute::kTextUnderlineStyle);
+      break;
+    case UIA_TextFlowDirectionsAttributeId:
+      V_VT(result) = VT_I4;
+      V_I4(result) =
+          TextDirectionToFlowDirections(GetData().GetTextDirection());
       break;
     default:
       V_VT(result) = VT_UNKNOWN;
@@ -4065,6 +4086,96 @@ HRESULT AXPlatformNodeWin::GetTextAttributeValue(TEXTATTRIBUTEID attribute_id,
   }
 
   return S_OK;
+}
+
+HRESULT AXPlatformNodeWin::GetCultureAttributeAsVariant(VARIANT* result) const {
+  const base::string16 language =
+      GetInheritedString16Attribute(ax::mojom::StringAttribute::kLanguage);
+  const LCID lcid =
+      LocaleNameToLCID(language.c_str(), LOCALE_ALLOW_NEUTRAL_NAMES);
+  if (!lcid)
+    return E_FAIL;
+
+  V_VT(result) = VT_I4;
+  V_I4(result) = lcid;
+  return S_OK;
+}
+
+COLORREF AXPlatformNodeWin::GetIntAttributeAsCOLORREF(
+    ax::mojom::IntAttribute attribute) const {
+  const SkColor color = GetIntAttribute(attribute);
+  return skia::SkColorToCOLORREF(color);
+}
+
+LONG AXPlatformNodeWin::ComputeUIAStyleId() const {
+  const AXPlatformNodeBase* current_node = this;
+  do {
+    switch (current_node->GetData().role) {
+      case ax::mojom::Role::kHeading:
+        return AXHierarchicalLevelToUIAStyleId(current_node->GetIntAttribute(
+            ax::mojom::IntAttribute::kHierarchicalLevel));
+      case ax::mojom::Role::kListItem:
+        // TODO: In a following change, introduce enum ax::mojom::ListStyle,
+        // then return either |StyleId_NumberedList| or |StyleId_BulletedList|.
+        // The enum will also be used to implement UIA_BulletStyleAttributeId.
+        break;
+      case ax::mojom::Role::kMark:
+        return StyleId_Custom;
+      case ax::mojom::Role::kBlockquote:
+        return StyleId_Quote;
+      default:
+        break;
+    }
+    current_node = FromNativeViewAccessible(current_node->GetParent());
+  } while (current_node);
+
+  return StyleId_Normal;
+}
+
+// static
+LONG AXPlatformNodeWin::AXHierarchicalLevelToUIAStyleId(
+    int32_t hierarchical_level) {
+  switch (hierarchical_level) {
+    case 0:
+      return StyleId_Normal;
+    case 1:
+      return StyleId_Heading1;
+    case 2:
+      return StyleId_Heading2;
+    case 3:
+      return StyleId_Heading3;
+    case 4:
+      return StyleId_Heading4;
+    case 5:
+      return StyleId_Heading5;
+    case 6:
+      return StyleId_Heading6;
+    case 7:
+      return StyleId_Heading7;
+    case 8:
+      return StyleId_Heading8;
+    case 9:
+      return StyleId_Heading9;
+    default:
+      return StyleId_Custom;
+  }
+}
+
+// static
+FlowDirections AXPlatformNodeWin::TextDirectionToFlowDirections(
+    ax::mojom::TextDirection text_direction) {
+  switch (text_direction) {
+    case ax::mojom::TextDirection::kNone:
+      return FlowDirections::FlowDirections_Default;
+    case ax::mojom::TextDirection::kLtr:
+      return FlowDirections::FlowDirections_Default;
+    case ax::mojom::TextDirection::kRtl:
+      return FlowDirections::FlowDirections_RightToLeft;
+    case ax::mojom::TextDirection::kTtb:
+      return FlowDirections::FlowDirections_Vertical;
+    case ax::mojom::TextDirection::kBtt:
+      return FlowDirections::FlowDirections_BottomToTop;
+  }
 }
 
 // IRawElementProviderSimple support methods.

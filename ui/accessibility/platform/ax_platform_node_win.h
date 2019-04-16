@@ -996,7 +996,6 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
                               REFIID riid,
                               void** object) override;
 
- public:
   // Support method for ITextRangeProvider::GetAttributeValue
   HRESULT GetTextAttributeValue(TEXTATTRIBUTEID attribute_id, VARIANT* result);
 
@@ -1196,6 +1195,21 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
 
   // Helper method for mutating the ISelectionItemProvider selected state
   HRESULT ISelectionItemProviderSetSelected(bool selected);
+
+  //
+  // Getters for UIA GetTextAttributeValue
+  //
+
+  // Lookup the LCID for the language this node is using
+  HRESULT GetCultureAttributeAsVariant(VARIANT* result) const;
+  // Converts an int attribute to a COLORREF
+  COLORREF GetIntAttributeAsCOLORREF(ax::mojom::IntAttribute attribute) const;
+  // Helper to get the UIA StyleId enumeration for this node
+  LONG ComputeUIAStyleId() const;
+  // Converts IntAttribute::kHierarchicalLevel to UIA StyleId enumeration
+  static LONG AXHierarchicalLevelToUIAStyleId(int32_t hierarchical_level);
+  // Convert mojom TextDirection to UIA FlowDirections enumeration
+  static FlowDirections TextDirectionToFlowDirections(ax::mojom::TextDirection);
 
   bool IsAncestorComboBox();
 
