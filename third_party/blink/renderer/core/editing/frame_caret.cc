@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/core/editing/caret_display_item_client.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
+#include "third_party/blink/renderer/core/editing/local_caret_rect.h"
 #include "third_party/blink/renderer/core/editing/position_with_affinity.h"
 #include "third_party/blink/renderer/core/editing/selection_editor.h"
 #include "third_party/blink/renderer/core/editing/visible_position.h"
@@ -161,16 +162,6 @@ void FrameCaret::InvalidatePaint(const LayoutBlock& block,
   display_item_client_->InvalidatePaint(block, context);
 }
 
-static IntRect AbsoluteBoundsForLocalRect(Node* node, const LayoutRect& rect) {
-  LayoutBlock* caret_painter = CaretDisplayItemClient::CaretLayoutBlock(node);
-  if (!caret_painter)
-    return IntRect();
-
-  LayoutRect local_rect(rect);
-  return caret_painter->LocalToAbsoluteQuad(FloatRect(local_rect))
-      .EnclosingBoundingBox();
-}
-
 IntRect FrameCaret::AbsoluteCaretBounds() const {
   DCHECK_NE(frame_->GetDocument()->Lifecycle().GetState(),
             DocumentLifecycle::kInPrePaint);
@@ -178,11 +169,7 @@ IntRect FrameCaret::AbsoluteCaretBounds() const {
   DocumentLifecycle::DisallowTransitionScope disallow_transition(
       frame_->GetDocument()->Lifecycle());
 
-  Node* const caret_node = CaretPosition().AnchorNode();
-  if (!IsActive())
-    return AbsoluteBoundsForLocalRect(caret_node, LayoutRect());
-  return AbsoluteBoundsForLocalRect(
-      caret_node, CaretDisplayItemClient::ComputeCaretRect(CaretPosition()));
+  return AbsoluteCaretBoundsOf(CaretPosition());
 }
 
 void FrameCaret::SetShouldShowBlockCursor(bool should_show_block_cursor) {

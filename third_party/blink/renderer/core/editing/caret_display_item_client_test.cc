@@ -371,6 +371,11 @@ class ParameterizedComputeCaretRectTest
       public testing::WithParamInterface<bool> {
  public:
   ParameterizedComputeCaretRectTest() : ScopedLayoutNGForTest(GetParam()) {}
+
+ protected:
+  LayoutRect ComputeCaretRect(const PositionWithAffinity& position) const {
+    return CaretDisplayItemClient::ComputeCaretRect(position);
+  }
 };
 
 INSTANTIATE_TEST_SUITE_P(All,
@@ -384,7 +389,7 @@ TEST_P(ParameterizedComputeCaretRectTest, CaretRectAfterEllipsisNoCrash) {
   const Node* text = GetElementById("target")->firstChild();
   const Position position = Position::LastPositionInNode(*text);
   // Shouldn't crash inside. The actual result doesn't matter and may change.
-  CaretDisplayItemClient::ComputeCaretRect(PositionWithAffinity(position));
+  ComputeCaretRect(PositionWithAffinity(position));
 }
 
 }  // namespace blink
