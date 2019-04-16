@@ -347,6 +347,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', ('amd', 0x699f), 'opengl'], bug=951771)
     self.Skip('conformance/rendering/line-rendering-quality.html',
         ['win', ('amd', 0x699f), 'opengl'], bug=950123)
+    self.Skip('conformance/rendering/multisample-corruption.html',
+        ['win', ('amd', 0x699f), 'opengl', 'passthrough'], bug=952887)
 
     # Mark ANGLE's OpenGL as flaky on Windows Amd
     self.Flaky('conformance/*', ['win', 'amd', 'opengl'], bug=582083)
