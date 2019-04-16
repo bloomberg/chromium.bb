@@ -41,5 +41,7 @@ FAIL addTransceiver does not reuse reusable transceivers promise_test: Unhandled
 FAIL Can setup two-way call using a single transceiver promise_test: Unhandled rejection with value: object "TypeError: Cannot read property 'direction' of null"
 FAIL Closing the PC stops the transceivers promise_test: Unhandled rejection with value: object "InvalidStateError: Failed to execute 'addTransceiver' on 'RTCPeerConnection': This operation is only supported in 'unified-plan'. 'unified-plan' will become the default behavior in the future, but it is currently experimental. To try it out, construct the RTCPeerConnection with sdpSemantics:'unified-plan' present in the RTCConfiguration argument."
 FAIL Changing transceiver direction to 'sendrecv' makes ontrack fire promise_test: Unhandled rejection with value: object "TypeError: Cannot set property 'direction' of null"
+FAIL transceiver.sender.track does not revert to an old state promise_test: Unhandled rejection with value: object "TypeError: Cannot read property 'track' of undefined"
+FAIL transceiver.direction does not revert to an old state promise_test: Unhandled rejection with value: object "TypeError: Cannot set property 'direction' of undefined"
 Harness: the test ran to completion.
 

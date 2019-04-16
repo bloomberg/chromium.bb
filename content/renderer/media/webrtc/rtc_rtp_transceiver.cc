@@ -197,14 +197,28 @@ class RTCRtpTransceiver::RTCRtpTransceiverInternal
     return state_;
   }
 
-  void set_state(RtpTransceiverState state) {
+  void set_state(RtpTransceiverState state,
+                 TransceiverStateUpdateMode update_mode) {
     DCHECK(main_task_runner_->BelongsToCurrentThread());
     DCHECK_EQ(state.main_task_runner(), main_task_runner_);
     DCHECK_EQ(state.signaling_task_runner(), signaling_task_runner_);
     DCHECK(state.webrtc_transceiver() == webrtc_transceiver_);
     DCHECK(state.is_initialized());
+    auto previous_direction = state_.direction();
     state_ = std::move(state);
-    sender_->set_state(state_.MoveSenderState());
+    auto sender_state = state_.MoveSenderState();
+    if (update_mode == TransceiverStateUpdateMode::kSetDescription) {
+      // setLocalDescription() and setRemoteDescription() cannot modify
+      // "sender.track" or "direction", so this part of the state information is
+      // either identical to the current state or out-dated information.
+      // Surfacing out-dated information has caused crashes and other problems,
+      // see https://crbug.com/950280.
+      sender_state.set_track_ref(sender_->state().track_ref()
+                                     ? sender_->state().track_ref()->Copy()
+                                     : nullptr);
+      state_.set_direction(previous_direction);
+    }
+    sender_->set_state(std::move(sender_state));
     receiver_->set_state(state_.MoveReceiverState());
   }
 
@@ -305,8 +319,9 @@ RTCRtpReceiver* RTCRtpTransceiver::content_receiver() {
   return internal_->content_receiver();
 }
 
-void RTCRtpTransceiver::set_state(RtpTransceiverState transceiver_state) {
-  internal_->set_state(std::move(transceiver_state));
+void RTCRtpTransceiver::set_state(RtpTransceiverState transceiver_state,
+                                  TransceiverStateUpdateMode update_mode) {
+  internal_->set_state(std::move(transceiver_state), update_mode);
 }
 
 blink::WebRTCRtpTransceiverImplementationType
