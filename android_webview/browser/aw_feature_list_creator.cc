@@ -85,6 +85,13 @@ std::unique_ptr<PrefService> CreatePrefService(
   pref_registry->RegisterStringPref(
       android_webview::prefs::kWebRestrictionsAuthority, std::string());
 
+  // Register the Autocomplete Data Retention Policy pref.
+  // The default value '0' represents the latest Chrome major version on which
+  // the retention policy ran. By setting it to a low default value, we're
+  // making sure it runs now (as it only runs once per major version).
+  pref_registry->RegisterIntegerPref(
+      autofill::prefs::kAutocompleteLastVersionRetentionPolicy, 0);
+
   AwBrowserContext::RegisterPrefs(pref_registry.get());
 
   metrics::MetricsService::RegisterPrefs(pref_registry.get());
