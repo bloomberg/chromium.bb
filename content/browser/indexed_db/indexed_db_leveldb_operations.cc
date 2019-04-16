@@ -410,7 +410,7 @@ Status SetMaxObjectStoreId(LevelDBTransaction* transaction,
   }
 
   if (object_store_id <= max_object_store_id) {
-    INTERNAL_CONSISTENCY_ERROR_UNTESTED(SET_MAX_OBJECT_STORE_ID);
+    INTERNAL_CONSISTENCY_ERROR(SET_MAX_OBJECT_STORE_ID);
     return indexed_db::InternalInconsistencyStatus();
   }
   indexed_db::PutInt(transaction, max_object_store_id_key, object_store_id);
