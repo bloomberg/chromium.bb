@@ -36,31 +36,38 @@ class FileSystemBrowserTest : public ContentBrowserTest,
                               public testing::WithParamInterface<bool> {
  public:
   FileSystemBrowserTest() {
+    is_incognito_ = GetParam();
     feature_list_.InitAndEnableFeature(
         storage::features::kEnableFilesystemInIncognito);
   }
 
   void SimpleTest(const GURL& test_url) {
-    const bool incognito = GetParam();
     // The test page will perform tests on FileAPI, then navigate to either
     // a #pass or #fail ref.
-    Shell* the_browser = incognito ? CreateOffTheRecordBrowser() : shell();
-
     VLOG(0) << "Navigating to URL and blocking.";
-    NavigateToURLBlockUntilNavigationsComplete(the_browser, test_url, 2);
+    NavigateToURLBlockUntilNavigationsComplete(browser(), test_url, 2);
     VLOG(0) << "Navigation done.";
-    std::string result =
-        the_browser->web_contents()->GetLastCommittedURL().ref();
+    std::string result = browser()->web_contents()->GetLastCommittedURL().ref();
     if (result != "pass") {
       std::string js_result;
       ASSERT_TRUE(ExecuteScriptAndExtractString(
-          the_browser, "window.domAutomationController.send(getLog())",
+          browser(), "window.domAutomationController.send(getLog())",
           &js_result));
       FAIL() << "Failed: " << js_result;
     }
   }
 
+  Shell* browser() {
+    if (!browser_)
+      browser_ = is_incognito() ? CreateOffTheRecordBrowser() : shell();
+    return browser_;
+  }
+
+  bool is_incognito() { return is_incognito_; }
+
  protected:
+  bool is_incognito_;
+  Shell* browser_ = nullptr;
   base::test::ScopedFeatureList feature_list_;
 };
 
@@ -70,7 +77,7 @@ class FileSystemBrowserTestWithLowQuota : public FileSystemBrowserTest {
  public:
   void SetUpOnMainThread() override {
     SetLowQuota(BrowserContext::GetDefaultStoragePartition(
-                    shell()->web_contents()->GetBrowserContext())
+                    browser()->web_contents()->GetBrowserContext())
                     ->GetQuotaManager());
   }
 
@@ -87,17 +94,15 @@ class FileSystemBrowserTestWithLowQuota : public FileSystemBrowserTest {
     storage::QuotaSettings settings;
     settings.pool_size = 25 * kMeg;
     settings.per_host_quota = 5 * kMeg;
-    settings.must_remain_available = 100 * kMeg;
+    settings.must_remain_available = 10 * kMeg;
     settings.refresh_interval = base::TimeDelta::Max();
     qm->SetQuotaSettings(settings);
   }
 };
 
-// TODO(https://crbug.com/93417): Expand the test after updating quota
-// managenent for in-memory implementation.
 INSTANTIATE_TEST_SUITE_P(,
                          FileSystemBrowserTestWithLowQuota,
-                         ::testing::Values(false));
+                         ::testing::Bool());
 
 IN_PROC_BROWSER_TEST_P(FileSystemBrowserTest, RequestTest) {
   SimpleTest(GetTestUrl("fileapi", "request_test.html"));
