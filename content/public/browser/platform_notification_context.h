@@ -48,6 +48,9 @@ class PlatformNotificationContext
 
   using DeleteResultCallback = base::OnceCallback<void(bool /* success */)>;
 
+  using DeleteAllResultCallback =
+      base::OnceCallback<void(bool /* success */, size_t /* deleted_count */)>;
+
   // Reasons for updating a notification, triggering a read.
   enum class Interaction {
     // No interaction was taken with the notification.
@@ -109,6 +112,11 @@ class PlatformNotificationContext
   virtual void DeleteNotificationData(const std::string& notification_id,
                                       const GURL& origin,
                                       DeleteResultCallback callback) = 0;
+
+  // Checks permissions for all notifications in the database and deletes all
+  // that do not have the permission anymore.
+  virtual void DeleteAllNotificationDataForBlockedOrigins(
+      DeleteAllResultCallback callback) = 0;
 
   // Trigger all pending notifications.
   virtual void TriggerNotifications() = 0;

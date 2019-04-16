@@ -120,6 +120,13 @@ class PlatformNotificationServiceBrowserTest : public InProcessBrowserTest {
         browser()->profile(), TestPageUrl().GetOrigin(), CONTENT_SETTING_ALLOW);
   }
 
+  // Blocks permission to display Web Notifications for origin of the test
+  // page that's being used in this browser test.
+  void BlockNotificationPermissionForTest() const {
+    NotificationPermissionContext::UpdatePermission(
+        browser()->profile(), TestPageUrl().GetOrigin(), CONTENT_SETTING_BLOCK);
+  }
+
   bool RequestAndAcceptPermission() {
     return "granted" ==
            RequestAndRespondToPermission(PermissionRequestManager::ACCEPT_ALL);
@@ -546,6 +553,33 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
   histogram_tester_.ExpectUniqueSample(
       "Notifications.PersistentWebNotificationCloseResult",
       0 /* SERVICE_WORKER_OK */, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
+                       BlockingPermissionClosesNotification) {
+  GrantNotificationPermissionForTest();
+
+  // Creates a simple notification.
+  std::string script_result;
+  ASSERT_TRUE(RunScript("DisplayPersistentNotification()", &script_result));
+  ASSERT_EQ(1u, GetDisplayedNotifications(true /* is_persistent */).size());
+
+  // Block permissions and wait until notification got closed.
+  base::RunLoop run_loop;
+  display_service_tester_->SetNotificationClosedClosure(run_loop.QuitClosure());
+  BlockNotificationPermissionForTest();
+  run_loop.Run();
+
+  // Notification should be closed after blocking permissions.
+  ASSERT_EQ(0u, GetDisplayedNotifications(true /* is_persistent */).size());
+
+  // We are still in the process of closing the notification, but the recording
+  // of the number of closed notifications happens after that. Run loop until
+  // that is done to verify the UMA entry.
+  base::RunLoop().RunUntilIdle();
+  histogram_tester_.ExpectBucketCount(
+      "Notifications.Permissions.RevokeDeleteCount",
+      1 /* deleted_notifications */, 1 /* sample_count */);
 }
 
 IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,

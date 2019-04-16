@@ -94,6 +94,8 @@ class CONTENT_EXPORT PlatformNotificationContextImpl
   void DeleteNotificationData(const std::string& notification_id,
                               const GURL& origin,
                               DeleteResultCallback callback) override;
+  void DeleteAllNotificationDataForBlockedOrigins(
+      DeleteAllResultCallback callback) override;
   void ReadAllNotificationDataForServiceWorkerRegistration(
       const GURL& origin,
       int64_t service_worker_registration_id,
@@ -115,6 +117,10 @@ class CONTENT_EXPORT PlatformNotificationContextImpl
                            bool supports_synchronization);
 
   using InitializeResultCallback = base::OnceCallback<void(bool)>;
+
+  using ReadAllOriginsResultCallback =
+      base::OnceCallback<void(bool /* success */,
+                              std::set<GURL> /* origins */)>;
 
   // Initializes the database if necessary. |callback| will be invoked on the
   // |task_runner_| thread. If everything is available, |callback| will be
@@ -201,6 +207,27 @@ class CONTENT_EXPORT PlatformNotificationContextImpl
                                 const GURL& origin,
                                 DeleteResultCallback callback,
                                 bool initialized);
+
+  // Actually reads all notification origins from the database. Must only be
+  // called on the |task_runner_| thread. |callback| will be invoked on the UI
+  // thread when the operation has completed.
+  void DoReadAllNotificationOrigins(ReadAllOriginsResultCallback callback,
+                                    bool initialized);
+
+  // Checks permissions for all |origins| via PermissionController and deletes
+  // all notifications for origins that do not have granted permissions. Must be
+  // called on the UI thread. |callback| will be invoked on the UI thread when
+  // the operation has completed.
+  void CheckPermissionsAndDeleteBlocked(DeleteAllResultCallback callback,
+                                        bool success,
+                                        std::set<GURL> origins);
+
+  // Actually deletes the notification information from the database. Must only
+  // be called on the |task_runner_| thread. |callback| will be invoked on the
+  // UI thread when the operation has completed.
+  void DoDeleteAllNotificationDataForOrigins(std::set<GURL> origins,
+                                             DeleteAllResultCallback callback,
+                                             bool initialized);
 
   void OnStorageWipedInitialized(bool initialized);
 

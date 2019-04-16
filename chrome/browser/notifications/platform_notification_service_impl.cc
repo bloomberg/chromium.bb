@@ -34,11 +34,14 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/platform_notification_context.h"
+#include "content/public/browser/storage_partition.h"
 #include "extensions/buildflags/buildflags.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "third_party/blink/public/common/notifications/notification_resources.h"
@@ -98,6 +101,31 @@ static bool ShouldDisplayWebNotificationOnFullScreen(Profile* profile,
   return false;
 }
 
+// Records the total number of deleted notifications after all storage
+// partitions are done and called OnDeleted. Uses the ref count to keep track
+// of pending callbacks.
+class RevokeDeleteCountRecorder
+    : public base::RefCounted<RevokeDeleteCountRecorder> {
+ public:
+  RevokeDeleteCountRecorder() : total_deleted_count_(0) {}
+
+  void OnDeleted(bool success, size_t deleted_count) {
+    total_deleted_count_ += deleted_count;
+  }
+
+ private:
+  friend class base::RefCounted<RevokeDeleteCountRecorder>;
+
+  ~RevokeDeleteCountRecorder() {
+    UMA_HISTOGRAM_COUNTS_100("Notifications.Permissions.RevokeDeleteCount",
+                             total_deleted_count_);
+  }
+
+  size_t total_deleted_count_;
+
+  DISALLOW_COPY_AND_ASSIGN(RevokeDeleteCountRecorder);
+};
+
 }  // namespace
 
 // static
@@ -119,14 +147,41 @@ PlatformNotificationServiceImpl::PlatformNotificationServiceImpl(
     Profile* profile)
     : profile_(profile),
       trigger_scheduler_(NotificationTriggerScheduler::Create()) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(profile_);
+  HostContentSettingsMapFactory::GetForProfile(profile_)->AddObserver(this);
 }
 
 PlatformNotificationServiceImpl::~PlatformNotificationServiceImpl() = default;
 
 void PlatformNotificationServiceImpl::Shutdown() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  HostContentSettingsMapFactory::GetForProfile(profile_)->RemoveObserver(this);
   // Clear the profile as we're not supposed to use it anymore.
   profile_ = nullptr;
+}
+
+void PlatformNotificationServiceImpl::OnContentSettingChanged(
+    const ContentSettingsPattern& primary_pattern,
+    const ContentSettingsPattern& secondary_pattern,
+    ContentSettingsType content_type,
+    const std::string& resource_identifier) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  if (content_type != CONTENT_SETTINGS_TYPE_NOTIFICATIONS)
+    return;
+
+  auto recorder = base::MakeRefCounted<RevokeDeleteCountRecorder>();
+  content::BrowserContext::ForEachStoragePartition(
+      profile_,
+      base::BindRepeating(
+          [](scoped_refptr<RevokeDeleteCountRecorder> recorder,
+             content::StoragePartition* partition) {
+            partition->GetPlatformNotificationContext()
+                ->DeleteAllNotificationDataForBlockedOrigins(base::BindOnce(
+                    &RevokeDeleteCountRecorder::OnDeleted, recorder));
+          },
+          recorder));
 }
 
 bool PlatformNotificationServiceImpl::WasClosedProgrammatically(
