@@ -16,6 +16,8 @@ This consists of the components:
 * Patched header files used by Chromium
 * Cherry picked an unused variable/function warning from upstream master:
   https://github.com/libjpeg-turbo/libjpeg-turbo/commit/b46af82cc159bbd05312417d003cfab67c340156
+* Cherry picked checking the maximum supported CPUID leaf:
+  https://github.com/libjpeg-turbo/libjpeg-turbo/commit/aa9db616774e24af7ab2fbcddd5711057b8a901e
 * Deleted unused directories: ci, cmakescripts, doc, java, md5, release, sharedlib,
   simd/loongson, simd/mips, simd/powerpc, testimages, and win
 * Deleted unused files: appveyor.yml, Brewfile, CMakeLists.txt, doxygen.config,
