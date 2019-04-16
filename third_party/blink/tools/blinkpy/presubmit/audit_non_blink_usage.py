@@ -363,6 +363,11 @@ _CONFIG = [
             # Permit using crash keys inside Blink without jumping through
             # hoops.
             'crash_reporter::.*CrashKey.*',
+
+            # Useful for platform-specific code.
+            'base::mac::(CFToNSCast|NSToCFCast)',
+            'base::mac::Is(AtMost|AtLeast)?OS.+',
+            'base::(scoped_nsobject|ScopedCFTypeRef)',
         ],
         'disallowed': [
             '.+',
@@ -426,10 +431,6 @@ _CONFIG = [
         'allowed': [
             'color_space_utilities::GetColorSpaceGamut',
         ],
-    },
-    {
-        'paths': ['third_party/blink/renderer/core/editing/web_substring_util.mm'],
-        'allowed': ['base::mac::CFToNSCast'],
     },
     {
         'paths': ['third_party/blink/renderer/core/fetch/data_consumer_handle_test_util.cc'],

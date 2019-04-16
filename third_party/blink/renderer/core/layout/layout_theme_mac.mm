@@ -25,6 +25,7 @@
 #import <Cocoa/Cocoa.h>
 #import <math.h>
 
+#import "base/mac/mac_util.h"
 #import "third_party/blink/public/platform/mac/web_sandbox_support.h"
 #import "third_party/blink/public/platform/platform.h"
 #import "third_party/blink/renderer/core/css_value_keywords.h"
@@ -38,7 +39,6 @@
 #import "third_party/blink/renderer/platform/graphics/bitmap_image.h"
 #import "third_party/blink/renderer/platform/mac/block_exceptions.h"
 #import "third_party/blink/renderer/platform/mac/color_mac.h"
-#import "third_party/blink/renderer/platform/mac/version_util_mac.h"
 #import "third_party/blink/renderer/platform/mac/web_core_ns_cell_extras.h"
 #import "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #import "third_party/blink/renderer/platform/text/platform_locale.h"
@@ -942,7 +942,7 @@ NSSearchFieldCell* LayoutThemeMac::Search() const {
     // this is achieved by calling |setCenteredLook| with NO. In OS10.11 and
     // later, instead call |setPlaceholderString| with an empty string.
     // See https://crbug.com/752362.
-    if (IsOS10_10()) {
+    if (base::mac::IsAtMostOS10_10()) {
       SEL sel = @selector(setCenteredLook:);
       if ([search_ respondsToSelector:sel]) {
         BOOL bool_value = NO;
