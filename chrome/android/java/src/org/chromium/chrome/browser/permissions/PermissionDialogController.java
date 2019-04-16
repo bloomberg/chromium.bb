@@ -191,7 +191,7 @@ public class PermissionDialogController
         mModalDialogManager = mDialogDelegate.getTab().getActivity().getModalDialogManager();
         mAppModalDialogView = new PermissionAppModalDialogView(this, mDialogDelegate);
         mModalDialogManager.showDialog(
-                mAppModalDialogView.getDialogModel(), ModalDialogManager.ModalDialogType.APP);
+                mAppModalDialogView.getDialogModel(), ModalDialogManager.ModalDialogType.TAB);
         mState = State.PROMPT_OPEN;
     }
 
