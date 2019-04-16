@@ -30,7 +30,7 @@ SupportResult IsFormatSupported(VideoPixelFormat input_format,
   } kSupportFormatConversionArray[] = {
       {PIXEL_FORMAT_I420, PIXEL_FORMAT_NV12, false},
       {PIXEL_FORMAT_YV12, PIXEL_FORMAT_NV12, false},
-      {PIXEL_FORMAT_RGB32, PIXEL_FORMAT_NV12, true},
+      {PIXEL_FORMAT_ABGR, PIXEL_FORMAT_NV12, true},
   };
 
   for (auto* conv = std::cbegin(kSupportFormatConversionArray);
@@ -236,7 +236,7 @@ int LibYUVImageProcessor::DoConversion(const VideoFrame* const input,
 
       // RGB conversions. NOTE: Libyuv functions called here are named in
       // little-endian manner.
-      case PIXEL_FORMAT_RGB32:
+      case PIXEL_FORMAT_ABGR:
         // There is no libyuv function to convert to RGBA to NV12. Therefore, we
         // convert RGBA to I420 tentatively and thereafter convert the tentative
         // one to NV12.
