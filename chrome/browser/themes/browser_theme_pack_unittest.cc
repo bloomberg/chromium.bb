@@ -1045,8 +1045,7 @@ TEST_F(BrowserThemePackTest, TestToolbarColorPropagationNoImage) {
 }
 
 // Ensure that, given an explicit toolbar color and a toolbar image, the output
-// color in COLOR_TOOLBAR reflects the color of the image (not the explicit
-// color).
+// color in COLOR_TOOLBAR reflects the explicit color.
 TEST_F(BrowserThemePackTest,
        TestToolbarColorComputedFromImageOverridesInputColor) {
   scoped_refptr<BrowserThemePack> pack(
@@ -1058,12 +1057,11 @@ TEST_F(BrowserThemePackTest,
   EXPECT_TRUE(pack->GetColor(TP::COLOR_TOOLBAR, &toolbar_color));
 
   constexpr SkColor kExplicitColor = SkColorSetRGB(0, 255, 0);
-  EXPECT_NE(toolbar_color, kExplicitColor);
+  EXPECT_EQ(toolbar_color, kExplicitColor);
 }
 
 // Ensure that, given an explicit frame color and a frame image, the output
-// color in COLOR_FRAME reflects the color of the image (not the explicit
-// color).
+// color in COLOR_FRAME reflects the explicit color.
 TEST_F(BrowserThemePackTest,
        TestFrameColorComputedFromImageOverridesInputColor) {
   scoped_refptr<BrowserThemePack> pack(
@@ -1075,7 +1073,7 @@ TEST_F(BrowserThemePackTest,
   EXPECT_TRUE(pack->GetColor(TP::COLOR_FRAME, &frame_color));
 
   constexpr SkColor kExplicitColor = SkColorSetRGB(255, 0, 255);
-  EXPECT_NE(frame_color, kExplicitColor);
+  EXPECT_EQ(frame_color, kExplicitColor);
 }
 
 // Test theme generation for a given color.
