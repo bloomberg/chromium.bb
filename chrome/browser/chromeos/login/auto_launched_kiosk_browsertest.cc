@@ -385,7 +385,6 @@ class AutoLaunchedKioskTest : public extensions::ExtensionApiTest {
 
   void InitDevicePolicy() {
     device_policy_helper_.InstallOwnerKey();
-    device_policy_helper_.MarkAsEnterpriseOwned();
 
     // Create device policy, and cache it to local state.
     em::DeviceLocalAccountsProto* const device_local_accounts =

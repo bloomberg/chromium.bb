@@ -167,12 +167,6 @@ class SigninProfileAppsPolicyTestBase : public DevicePolicyCrosBrowserTest {
     command_line->AppendSwitch(chromeos::switches::kForceLoginManagerInTests);
   }
 
-  void SetUpInProcessBrowserTestFixture() override {
-    DevicePolicyCrosBrowserTest::SetUpInProcessBrowserTestFixture();
-    InstallOwnerKey();
-    MarkAsEnterpriseOwned();
-  }
-
   void SetUpOnMainThread() override {
     DevicePolicyCrosBrowserTest::SetUpOnMainThread();
 

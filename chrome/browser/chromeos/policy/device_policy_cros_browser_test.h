@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/login/mixin_based_in_process_browser_test.h"
+#include "chrome/browser/chromeos/login/test/device_state_mixin.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 
@@ -23,14 +24,6 @@ class DevicePolicyCrosTestHelper {
  public:
   DevicePolicyCrosTestHelper();
   ~DevicePolicyCrosTestHelper();
-
-  // Marks the device as enterprise-owned. Must be called to make device
-  // policies apply Chrome-wide. If this is not called, device policies will
-  // affect CrosSettings only.
-  static void MarkAsEnterpriseOwnedBy(const std::string& user_name);
-
-  // Calls MarkAsEnterpriseOwnedBy() with the user from |device_policy_|.
-  void MarkAsEnterpriseOwned();
 
   // Writes the owner key to disk. To be called before installing a policy.
   void InstallOwnerKey();
@@ -57,13 +50,6 @@ class DevicePolicyCrosBrowserTest
   void SetUp() override;
   void SetUpInProcessBrowserTestFixture() override;
 
-  virtual void MarkOwnership();
-
-  // Marks the device as enterprise-owned. Must be called to make device
-  // policies apply Chrome-wide. If this is not called, device policies will
-  // affect CrosSettings only.
-  void MarkAsEnterpriseOwned();
-
   // Writes the owner key to disk. To be called before installing a policy.
   void InstallOwnerKey();
 
@@ -80,6 +66,10 @@ class DevicePolicyCrosBrowserTest
   }
 
   DevicePolicyBuilder* device_policy() { return test_helper_.device_policy(); }
+
+  chromeos::DeviceStateMixin device_state_{
+      &mixin_host_,
+      chromeos::DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED};
 
  private:
   DevicePolicyCrosTestHelper test_helper_;

@@ -70,12 +70,6 @@ class ShutdownPolicyBaseTest
         ->BindInterface(ash::mojom::kServiceName, &tray_test_api_);
   }
 
-  void SetUpInProcessBrowserTestFixture() override {
-    policy::DevicePolicyCrosBrowserTest::SetUpInProcessBrowserTestFixture();
-    InstallOwnerKey();
-    MarkAsEnterpriseOwned();
-  }
-
   // Updates the device shutdown policy and sets it to |reboot_on_shutdown|.
   void UpdateRebootOnShutdownPolicy(bool reboot_on_shutdown) {
     policy::DevicePolicyBuilder* builder = device_policy();
@@ -183,8 +177,6 @@ class ShutdownPolicyLockerTest : public ShutdownPolicyBaseTest {
     ShutdownPolicyBaseTest::SetUpInProcessBrowserTestFixture();
     zero_duration_mode_.reset(new ui::ScopedAnimationDurationScaleMode(
         ui::ScopedAnimationDurationScaleMode::ZERO_DURATION));
-    InstallOwnerKey();
-    MarkAsEnterpriseOwned();
   }
 
   void SetUpOnMainThread() override {
@@ -237,12 +229,6 @@ class ShutdownPolicyLoginTest : public ShutdownPolicyBaseTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kLoginManager);
     command_line->AppendSwitch(switches::kForceLoginManagerInTests);
-  }
-
-  void SetUpInProcessBrowserTestFixture() override {
-    ShutdownPolicyBaseTest::SetUpInProcessBrowserTestFixture();
-    InstallOwnerKey();
-    MarkAsEnterpriseOwned();
   }
 
   void SetUpOnMainThread() override {

@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
+#include "chrome/browser/chromeos/login/test/device_state_mixin.h"
 #include "chrome/browser/chromeos/login/test/network_portal_detector_mixin.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
@@ -83,6 +84,10 @@ class DeviceDisablingTest
  private:
   policy::DevicePolicyCrosTestHelper test_helper_;
 
+  chromeos::DeviceStateMixin device_state_{
+      &mixin_host_,
+      chromeos::DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED};
+
   DISALLOW_COPY_AND_ASSIGN(DeviceDisablingTest);
 };
 
@@ -128,7 +133,6 @@ void DeviceDisablingTest::SetUpInProcessBrowserTestFixture() {
   OobeBaseTest::SetUpInProcessBrowserTestFixture();
 
   test_helper_.InstallOwnerKey();
-  test_helper_.MarkAsEnterpriseOwned();
 }
 
 void DeviceDisablingTest::SetUpOnMainThread() {
