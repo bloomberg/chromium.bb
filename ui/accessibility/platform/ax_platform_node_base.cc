@@ -290,6 +290,25 @@ bool AXPlatformNodeBase::GetString16Attribute(
   return GetData().GetString16Attribute(attribute, value);
 }
 
+bool AXPlatformNodeBase::HasInheritedStringAttribute(
+    ax::mojom::StringAttribute attribute) const {
+  const AXPlatformNodeBase* current_node = this;
+
+  do {
+    if (!current_node->delegate_) {
+      return false;
+    }
+
+    if (current_node->GetData().HasStringAttribute(attribute)) {
+      return true;
+    }
+
+    current_node = FromNativeViewAccessible(current_node->GetParent());
+  } while (current_node);
+
+  return false;
+}
+
 const std::string& AXPlatformNodeBase::GetInheritedStringAttribute(
     ax::mojom::StringAttribute attribute) const {
   const AXPlatformNodeBase* current_node = this;
@@ -309,9 +328,39 @@ const std::string& AXPlatformNodeBase::GetInheritedStringAttribute(
   return base::EmptyString();
 }
 
-const base::string16 AXPlatformNodeBase::GetInheritedString16Attribute(
+base::string16 AXPlatformNodeBase::GetInheritedString16Attribute(
     ax::mojom::StringAttribute attribute) const {
   return base::UTF8ToUTF16(GetInheritedStringAttribute(attribute));
+}
+
+bool AXPlatformNodeBase::GetInheritedStringAttribute(
+    ax::mojom::StringAttribute attribute,
+    std::string* value) const {
+  const AXPlatformNodeBase* current_node = this;
+
+  do {
+    if (!current_node->delegate_) {
+      return false;
+    }
+
+    if (current_node->GetData().GetStringAttribute(attribute, value)) {
+      return true;
+    }
+
+    current_node = FromNativeViewAccessible(current_node->GetParent());
+  } while (current_node);
+
+  return false;
+}
+
+bool AXPlatformNodeBase::GetInheritedString16Attribute(
+    ax::mojom::StringAttribute attribute,
+    base::string16* value) const {
+  std::string value_utf8;
+  if (!GetInheritedStringAttribute(attribute, &value_utf8))
+    return false;
+  *value = base::UTF8ToUTF16(value_utf8);
+  return true;
 }
 
 bool AXPlatformNodeBase::HasIntListAttribute(
