@@ -268,6 +268,10 @@ class AutofillProfile : public AutofillDataModel {
     is_client_validity_states_updated_ = is_client_validity_states_updated;
   }
 
+  // Check for the validity of the data. Leave the field empty if the data is
+  // invalid and the relevant feature is enabled.
+  bool ShouldSkipFillingOrSuggesting(ServerFieldType type) const override;
+
   base::WeakPtr<const AutofillProfile> GetWeakPtr() const {
     return weak_ptr_factory_.GetWeakPtr();
   }

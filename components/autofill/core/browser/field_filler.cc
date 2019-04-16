@@ -633,29 +633,8 @@ bool FieldFiller::FillFormField(const AutofillField& field,
     return false;
   }
 
-  // Check for the validity of the data. Leave the field empty if the data is
-  // invalid and the relevant feature is enabled.
-  bool use_server_validation = base::FeatureList::IsEnabled(
-      autofill::features::kAutofillProfileServerValidation);
-  bool use_client_validation = base::FeatureList::IsEnabled(
-      autofill::features::kAutofillProfileClientValidation);
-  ServerFieldType server_field_type = type.GetStorableType();
-
-  if (use_server_validation &&
-      data_model.GetValidityState(server_field_type, AutofillProfile::SERVER) ==
-          AutofillProfile::INVALID) {
+  if (data_model.ShouldSkipFillingOrSuggesting(type.GetStorableType()))
     return false;
-  }
-
-  // We are making an exception and skipping the validation check for address
-  // fields when the country is empty.
-  if (use_client_validation &&
-      data_model.GetValidityState(server_field_type, AutofillProfile::CLIENT) ==
-          AutofillProfile::INVALID &&
-      (GroupTypeOfServerFieldType(type.GetStorableType()) != ADDRESS_HOME ||
-       !data_model.GetRawInfo(ADDRESS_HOME_COUNTRY).empty())) {
-    return false;
-  }
 
   base::string16 value = data_model.GetInfo(type, app_locale_);
   if (type.GetStorableType() == CREDIT_CARD_VERIFICATION_CODE)

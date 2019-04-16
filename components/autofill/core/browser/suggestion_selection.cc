@@ -71,22 +71,9 @@ std::vector<Suggestion> GetPrefixMatchedSuggestions(
                      matched_profiles->size() < kMaxSuggestedProfilesCount;
        i++) {
     AutofillProfile* profile = profiles[i];
-    bool use_server_validation = base::FeatureList::IsEnabled(
-        autofill::features::kAutofillProfileServerValidation);
-    bool use_client_validation = base::FeatureList::IsEnabled(
-        autofill::features::kAutofillProfileClientValidation);
 
-    ServerFieldType server_field_type = type.GetStorableType();
-    if ((use_client_validation &&
-         profile->GetValidityState(server_field_type,
-                                   AutofillProfile::CLIENT) ==
-             AutofillProfile::INVALID) ||
-        (use_server_validation &&
-         profile->GetValidityState(server_field_type,
-                                   AutofillProfile::SERVER) ==
-             AutofillProfile::INVALID)) {
+    if (profile->ShouldSkipFillingOrSuggesting(type.GetStorableType()))
       continue;
-    }
 
     base::string16 value =
         GetInfoInOneLine(profile, type, comparator.app_locale());
@@ -108,8 +95,7 @@ std::vector<Suggestion> GetPrefixMatchedSuggestions(
       // for US phone numbers.
       if (base::FeatureList::IsEnabled(
               autofill::features::kAutofillUseImprovedLabelDisambiguation) &&
-          AutofillType(AutofillType(server_field_type).GetStorableType())
-                  .group() == PHONE_HOME) {
+          type.group() == PHONE_HOME) {
         value = base::UTF8ToUTF16(i18n::FormatPhoneNationallyForDisplay(
             base::UTF16ToUTF8(value), data_util::GetCountryCodeWithFallback(
                                           *profile, comparator.app_locale())));
