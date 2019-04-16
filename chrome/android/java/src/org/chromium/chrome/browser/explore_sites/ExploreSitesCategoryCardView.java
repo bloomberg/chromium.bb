@@ -50,6 +50,21 @@ public class ExploreSitesCategoryCardView extends LinearLayout {
     private ExploreSitesCategory mCategory;
     private int mCategoryCardIndex;
 
+    public View getTileViewAt(int tilePosition) {
+        return mTileView.getChildAt(tilePosition);
+    }
+
+    public int getFocusedTileIndex(int defaultIndex) {
+        if (mTileView.getFocusedChild() != null) {
+            for (int i = 0; i < mTileView.getChildCount(); i++) {
+                if (mTileView.getChildAt(i).hasFocus()) {
+                    return i;
+                }
+            }
+        }
+        return defaultIndex;
+    }
+
     private class CategoryCardInteractionDelegate
             implements ContextMenuManager.Delegate, OnClickListener, OnCreateContextMenuListener,
                        OnFocusChangeListener {
