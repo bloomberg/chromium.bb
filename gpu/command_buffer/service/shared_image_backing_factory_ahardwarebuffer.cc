@@ -502,8 +502,9 @@ class SharedImageRepresentationSkiaVkAHB
       SharedImageManager* manager,
       SharedImageBacking* backing,
       scoped_refptr<SharedContextState> context_state,
-      sk_sp<SkPromiseImageTexture> promise_texture)
-      : SharedImageRepresentationSkia(manager, backing, nullptr),
+      sk_sp<SkPromiseImageTexture> promise_texture,
+      MemoryTypeTracker* tracker)
+      : SharedImageRepresentationSkia(manager, backing, tracker),
         promise_texture_(std::move(promise_texture)),
         context_state_(std::move(context_state)) {
     DCHECK(promise_texture_);
@@ -731,7 +732,8 @@ SharedImageBackingAHB::ProduceSkia(
     if (!promise_texture)
       return nullptr;
     return std::make_unique<SharedImageRepresentationSkiaVkAHB>(
-        manager, this, std::move(context_state), std::move(promise_texture));
+        manager, this, std::move(context_state), std::move(promise_texture),
+        tracker);
   }
 
   auto* texture = GenGLTexture();
