@@ -826,7 +826,6 @@ public class AwContents implements SmartClipProvider {
         @Override
         public void onConfigurationChanged(Configuration configuration) {
             updateDefaultLocale();
-            mSettings.updateAcceptLanguages();
         }
     };
 
@@ -878,8 +877,8 @@ public class AwContents implements SmartClipProvider {
             AwSettings settings, DependencyFactory dependencyFactory) {
         try (ScopedSysTraceEvent e1 = ScopedSysTraceEvent.scoped("AwContents.constructor")) {
             mRendererPriority = RendererPriority.HIGH;
+            mSettings = settings;
             updateDefaultLocale();
-            settings.updateAcceptLanguages();
 
             mBrowserContext = browserContext;
 
@@ -901,7 +900,6 @@ public class AwContents implements SmartClipProvider {
             mFullScreenTransitionsState = new FullScreenTransitionsState(
                     mContainerView, mInternalAccessAdapter, mAwViewMethods);
             mLayoutSizer = dependencyFactory.createLayoutSizer();
-            mSettings = settings;
             mLayoutSizer.setDelegate(new AwLayoutSizerDelegate());
             mWebContentsDelegate = new AwWebContentsDelegateAdapter(
                     this, contentsClient, settings, mContext, mContainerView);
@@ -1172,9 +1170,13 @@ public class AwContents implements SmartClipProvider {
         return wrapper;
     }
 
-    // Set current locales to native.
+    /**
+     * Set current locales to native. Propagates this information to the Accept-Language header for
+     * subsequent requests. Note that this will affect <b>all</b> AwContents, not just this
+     * instance, as all WebViews share the same NetworkContext/UrlRequestContextGetter.
+     */
     @VisibleForTesting
-    public static void updateDefaultLocale() {
+    public void updateDefaultLocale() {
         String locales = LocaleUtils.getDefaultLocaleListString();
         if (!sCurrentLocales.equals(locales)) {
             sCurrentLocales = locales;
@@ -1184,6 +1186,7 @@ public class AwContents implements SmartClipProvider {
             // it is not guaranteed to be listed at the first of sCurrentLocales. Therefore,
             // both values are passed to native.
             nativeUpdateDefaultLocale(LocaleUtils.getDefaultLocaleString(), sCurrentLocales);
+            mSettings.updateAcceptLanguages();
         }
     }
 
@@ -3684,7 +3687,6 @@ public class AwContents implements SmartClipProvider {
             postUpdateWebContentsVisibility();
 
             updateDefaultLocale();
-            mSettings.updateAcceptLanguages();
 
             if (mComponentCallbacks != null) return;
             mComponentCallbacks = new AwComponentCallbacks();
