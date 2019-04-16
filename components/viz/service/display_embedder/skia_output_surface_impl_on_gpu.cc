@@ -18,6 +18,7 @@
 #include "components/viz/service/display/output_surface_frame.h"
 #include "components/viz/service/display/texture_deleter.h"
 #include "components/viz/service/display_embedder/direct_context_provider.h"
+#include "components/viz/service/display_embedder/image_context.h"
 #include "components/viz/service/display_embedder/skia_output_device.h"
 #include "components/viz/service/display_embedder/skia_output_device_gl.h"
 #include "components/viz/service/display_embedder/skia_output_device_offscreen.h"
@@ -66,6 +67,29 @@
 #endif
 
 namespace viz {
+
+class SkiaOutputSurfaceImplOnGpu::ScopedPromiseImageAccess {
+ public:
+  ScopedPromiseImageAccess(SkiaOutputSurfaceImplOnGpu* impl_on_gpu,
+                           std::vector<ImageContext*> image_contexts)
+      : impl_on_gpu_(impl_on_gpu), image_contexts_(std::move(image_contexts)) {
+    // TODO(penghuang): gather begin read access semaphores from shared images.
+    // https://crbug.com/944194
+    impl_on_gpu_->BeginAccessImages(image_contexts_);
+  }
+
+  ~ScopedPromiseImageAccess() {
+    // TODO(penghuang): end shared image access with meaningful semaphores.
+    // https://crbug.com/944194
+    impl_on_gpu_->EndAccessImages(image_contexts_);
+  }
+
+ private:
+  SkiaOutputSurfaceImplOnGpu* const impl_on_gpu_;
+  std::vector<ImageContext*> image_contexts_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedPromiseImageAccess);
+};
 
 // Skia gr_context() and |context_provider_| share an underlying GLContext.
 // Each of them caches some GL state. Interleaving usage could make cached
@@ -375,6 +399,7 @@ void SkiaOutputSurfaceImplOnGpu::Reshape(
 void SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
     std::unique_ptr<SkDeferredDisplayList> ddl,
     std::unique_ptr<SkDeferredDisplayList> overdraw_ddl,
+    std::vector<ImageContext*> image_contexts,
     std::vector<gpu::SyncToken> sync_tokens,
     uint64_t sync_fence_release) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -385,12 +410,13 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
     return;
 
   PullTextureUpdates(std::move(sync_tokens));
-
   {
     base::Optional<gpu::raster::GrShaderCache::ScopedCacheUse> cache_use;
     if (gr_shader_cache_) {
       cache_use.emplace(gr_shader_cache_, gpu::kInProcessCommandBufferClientId);
     }
+    ScopedPromiseImageAccess scoped_promise_image_access(
+        this, std::move(image_contexts));
     output_sk_surface()->draw(ddl.get());
     gr_context()->flush();
   }
@@ -454,6 +480,7 @@ void SkiaOutputSurfaceImplOnGpu::SwapBuffers(OutputSurfaceFrame frame) {
 void SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass(
     RenderPassId id,
     std::unique_ptr<SkDeferredDisplayList> ddl,
+    std::vector<ImageContext*> image_contexts,
     std::vector<gpu::SyncToken> sync_tokens,
     uint64_t sync_fence_release) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -479,6 +506,8 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass(
     base::Optional<gpu::raster::GrShaderCache::ScopedCacheUse> cache_use;
     if (gr_shader_cache_)
       cache_use.emplace(gr_shader_cache_, gpu::kInProcessCommandBufferClientId);
+    ScopedPromiseImageAccess scoped_promise_image_access(
+        this, std::move(image_contexts));
     offscreen.surface()->draw(ddl.get());
     gr_context()->flush();
   }
@@ -486,11 +515,11 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass(
 }
 
 void SkiaOutputSurfaceImplOnGpu::RemoveRenderPassResource(
-    std::vector<RenderPassId> ids) {
+    std::vector<std::unique_ptr<ImageContext>> image_contexts) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(!ids.empty());
-  for (const auto& id : ids) {
-    auto it = offscreen_surfaces_.find(id);
+  DCHECK(!image_contexts.empty());
+  for (auto& image_context : image_contexts) {
+    auto it = offscreen_surfaces_.find(image_context->render_pass_id);
     DCHECK(it != offscreen_surfaces_.end());
     offscreen_surfaces_.erase(it);
   }
@@ -652,77 +681,174 @@ sk_sp<SkPromiseImageTexture> SkiaOutputSurfaceImplOnGpu::FallbackPromiseImage(
     ResourceFormat format) {
   SkColorType color_type =
       ResourceFormatToClosestSkColorType(true /* gpu_compositing */, format);
-  return fallback_promise_image_texture_[color_type];
+  auto& promise_image_texture = fallback_promise_image_texture_[color_type];
+  if (!promise_image_texture) {
+    auto image_info = SkImageInfo::Make(1 /* width */, 1 /* height */,
+                                        color_type, kOpaque_SkAlphaType);
+    auto surface = SkSurface::MakeRenderTarget(
+        gr_context(), SkBudgeted::kNo, image_info, 0 /* sampleCount */,
+        kTopLeft_GrSurfaceOrigin, nullptr /* surfaceProps */);
+    // We don't have driver support for that particular color_type. Try again
+    // with well supported SkColorType. Reads from this may have unusual colors
+    // due to interpreting RGBA as |color_type|, but that's better than
+    // completely undefined.
+    if (!surface) {
+      image_info =
+          SkImageInfo::Make(1 /* width */, 1 /* height */,
+                            kRGBA_8888_SkColorType, kOpaque_SkAlphaType);
+      surface = SkSurface::MakeRenderTarget(
+          gr_context(), SkBudgeted::kNo, image_info, 0 /* sampleCount */,
+          kTopLeft_GrSurfaceOrigin, nullptr /* surfaceProps */);
+
+      if (!surface)
+        return nullptr;
+    }
+    auto* canvas = surface->getCanvas();
+#if DCHECK_IS_ON()
+    canvas->clear(SK_ColorRED);
+#else
+    canvas->clear(SK_ColorWHITE);
+#endif
+    fallback_promise_images_.push_back(surface->makeImageSnapshot());
+    auto gr_texture = fallback_promise_images_.back()->getBackendTexture(
+        false /* flushPendingGrContextIO */);
+    promise_image_texture = SkPromiseImageTexture::Make(gr_texture);
+  }
+  return promise_image_texture;
 }
 
-sk_sp<SkPromiseImageTexture> SkiaOutputSurfaceImplOnGpu::FulfillPromiseTexture(
-    const gpu::MailboxHolder& mailbox_holder,
-    const gfx::Size& size,
-    const ResourceFormat resource_format,
-    std::unique_ptr<gpu::SharedImageRepresentationSkia>* shared_image_out) {
+void SkiaOutputSurfaceImplOnGpu::BeginAccessImages(
+    const std::vector<ImageContext*>& image_contexts) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  if (!*shared_image_out && mailbox_holder.mailbox.IsSharedImage()) {
-    std::unique_ptr<gpu::SharedImageRepresentationSkia> shared_image =
-        shared_image_representation_factory_->ProduceSkia(
-            mailbox_holder.mailbox, context_state_.get());
-    if (!shared_image) {
-      DLOG(ERROR) << "Failed to fulfill the promise texture - SharedImage "
-                     "mailbox not found in SharedImageManager.";
-      return FallbackPromiseImage(resource_format);
+  for (auto* context : image_contexts) {
+    // Skip the context if it has been processed.
+    if (context->representation_is_being_accessed)
+      continue;
+    // Prepare for accessing render pass.
+    if (context->render_pass_id) {
+      // We don't cache promise image for render pass, so the it should always
+      // be nullptr.
+      auto it = offscreen_surfaces_.find(context->render_pass_id);
+      DCHECK(it != offscreen_surfaces_.end());
+      context->promise_image_texture = it->second.fulfill();
+      if (!context->promise_image_texture) {
+        DLOG(ERROR) << "Failed to fulfill the promise texture created from "
+                       "RenderPassId:"
+                    << context->render_pass_id;
+        context->promise_image_texture =
+            FallbackPromiseImage(context->resource_format);
+      }
+      continue;
     }
-    if (!(shared_image->usage() & gpu::SHARED_IMAGE_USAGE_DISPLAY)) {
-      DLOG(ERROR) << "Failed to fulfill the promise texture - SharedImage "
-                     "was not created with display usage.";
-      return FallbackPromiseImage(resource_format);
+
+    // Prepare for accessing shared image.
+    if (context->mailbox.IsSharedImage()) {
+      if (context->promise_image_texture) {
+        // The promise image has been fulfilled early, so we just need begin
+        // access the shared image representation. If representation is nullptr,
+        // it means the promise image was not fulfilled successfully last time
+        // and a fallback content has been used, in that case, we cannot change
+        // the content, so we do nothing.
+        if (context->representation) {
+          // TODO(penghuang): create gather read access semaphores and call
+          // skia flush() with them. https://crbug.com/944194
+          auto promise_image_texture =
+              context->representation->BeginReadAccess();
+          // The image has been fulfilled and cached. It is too late to tell
+          // skia the backing of the cached image is not accessible right now,
+          // so crash for now.
+          // TODO(penghuang): find a way to notify skia.
+          CHECK(promise_image_texture);
+          context->representation_is_being_accessed = true;
+        }
+        continue;
+      }
+
+      auto representation = shared_image_representation_factory_->ProduceSkia(
+          context->mailbox, context_state_.get());
+      if (!representation) {
+        DLOG(ERROR) << "Failed to fulfill the promise texture - SharedImage "
+                       "mailbox not found in SharedImageManager.";
+        context->promise_image_texture =
+            FallbackPromiseImage(context->resource_format);
+        continue;
+      }
+
+      if (!(representation->usage() & gpu::SHARED_IMAGE_USAGE_DISPLAY)) {
+        DLOG(ERROR) << "Failed to fulfill the promise texture - SharedImage "
+                       "was not created with display usage.";
+        context->promise_image_texture =
+            FallbackPromiseImage(context->resource_format);
+        continue;
+      }
+
+      context->representation = std::move(representation);
+      // TODO(penghuang): create gather read access semaphores and call
+      // skia flush() with them. https://crbug.com/944194
+      context->promise_image_texture =
+          context->representation->BeginReadAccess();
+      if (!context->promise_image_texture) {
+        DLOG(ERROR) << "Failed to fulfill the promise texture - SharedImage "
+                       "begin read access failed..";
+        context->promise_image_texture =
+            FallbackPromiseImage(context->resource_format);
+        continue;
+      }
+      context->representation_is_being_accessed = true;
+      continue;
     }
-    *shared_image_out = std::move(shared_image);
-  }
-  if (*shared_image_out) {
-    auto promise_texture = (*shared_image_out)->BeginReadAccess();
-    DLOG_IF(ERROR, !promise_texture)
-        << "Failed to begin read access for SharedImageRepresentationSkia";
-    return promise_texture;
-  }
 
-  if (is_using_vulkan()) {
-    // Probably this texture is created with wrong inteface (GLES2Interface).
-    DLOG(ERROR) << "Failed to fulfill the promise texture whose backend is not "
-                   "compitable with vulkan.";
-    return FallbackPromiseImage(resource_format);
-  }
+    // Prepare for accessing legacy mailbox.
+    // The promise image has been fulfilled once, so we do need do anything.
+    if (context->promise_image_texture)
+      continue;
 
-  auto* texture_base = mailbox_manager_->ConsumeTexture(mailbox_holder.mailbox);
-  if (!texture_base) {
-    DLOG(ERROR) << "Failed to fulfill the promise texture.";
-    return FallbackPromiseImage(resource_format);
+    if (is_using_vulkan()) {
+      // Probably this texture is created with wrong interface
+      // (GLES2Interface).
+      DLOG(ERROR)
+          << "Failed to fulfill the promise texture whose backend is not "
+             "compitable with vulkan.";
+      context->promise_image_texture =
+          FallbackPromiseImage(context->resource_format);
+      continue;
+    }
+
+    auto* texture_base = mailbox_manager_->ConsumeTexture(context->mailbox);
+    if (!texture_base) {
+      DLOG(ERROR) << "Failed to fulfill the promise texture.";
+      context->promise_image_texture =
+          FallbackPromiseImage(context->resource_format);
+      continue;
+    }
+    BindOrCopyTextureIfNecessary(texture_base);
+    GrBackendTexture backend_texture;
+    gpu::GetGrBackendTexture(gl_version_info_, texture_base->target(),
+                             context->size, texture_base->service_id(),
+                             context->resource_format, &backend_texture);
+    if (!backend_texture.isValid()) {
+      DLOG(ERROR) << "Failed to fulfill the promise texture.";
+      context->promise_image_texture =
+          FallbackPromiseImage(context->resource_format);
+      continue;
+    }
+    context->promise_image_texture =
+        SkPromiseImageTexture::Make(backend_texture);
   }
-  BindOrCopyTextureIfNecessary(texture_base);
-  GrBackendTexture backend_texture;
-  gpu::GetGrBackendTexture(gl_version_info_, texture_base->target(), size,
-                           texture_base->service_id(), resource_format,
-                           &backend_texture);
-  if (!backend_texture.isValid()) {
-    DLOG(ERROR) << "Failed to fulfill the promise texture.";
-    return FallbackPromiseImage(resource_format);
-  }
-  return SkPromiseImageTexture::Make(backend_texture);
 }
 
-sk_sp<SkPromiseImageTexture> SkiaOutputSurfaceImplOnGpu::FulfillPromiseTexture(
-    const RenderPassId id,
-    std::unique_ptr<gpu::SharedImageRepresentationSkia>* shared_image_out) {
-  DCHECK(!*shared_image_out);
-  auto it = offscreen_surfaces_.find(id);
-  DCHECK(it != offscreen_surfaces_.end());
-  auto promise_texture = it->second.fulfill();
-  if (!promise_texture) {
-    DLOG(ERROR)
-        << "Failed to fulfill the promise texture created from RenderPassId:"
-        << id;
-    return nullptr;
+void SkiaOutputSurfaceImplOnGpu::EndAccessImages(
+    const std::vector<ImageContext*>& image_contexts) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  for (auto* context : image_contexts) {
+    if (!context->representation_is_being_accessed)
+      continue;
+    // TODO(penghuang): create end read access semaphores and call
+    // EndReadAccess() with them. https://crbug.com/944194
+    DCHECK(context->representation);
+    context->representation->EndReadAccess();
+    context->representation_is_being_accessed = false;
   }
-  return promise_texture;
 }
 
 sk_sp<GrContextThreadSafeProxy>
@@ -730,60 +856,12 @@ SkiaOutputSurfaceImplOnGpu::GetGrContextThreadSafeProxy() {
   return gr_context()->threadSafeProxy();
 }
 
-void SkiaOutputSurfaceImplOnGpu::DestroySkImages(
-    std::vector<sk_sp<SkImage>>&& images,
-    uint64_t sync_fence_release) {
-  DCHECK(!images.empty());
+void SkiaOutputSurfaceImplOnGpu::ReleaseSkImages(
+    std::vector<std::unique_ptr<ImageContext>> image_contexts) {
+  DCHECK(!image_contexts.empty());
   // The window could be destroyed already, and the MakeCurrent will fail with
   // an destroyed window, so MakeCurrent without requiring the fbo0.
   MakeCurrent(false /* need_fbo0 */);
-#if DCHECK_IS_ON()
-  for (const auto& image : images)
-    DCHECK(image->unique());
-#endif
-  images.clear();
-  // Flush the gr_context() to make sure images are released, and the release
-  // and done callbacks are called.
-  gr_context()->flush();
-  ReleaseFenceSyncAndPushTextureUpdates(sync_fence_release);
-}
-
-void SkiaOutputSurfaceImplOnGpu::CreateFallbackPromiseImage(
-    SkColorType color_type) {
-  MakeCurrent(false /* need_fbo0 */);
-
-  auto image_info = SkImageInfo::Make(1 /* width */, 1 /* height */, color_type,
-                                      kOpaque_SkAlphaType);
-  auto surface = SkSurface::MakeRenderTarget(
-      gr_context(), SkBudgeted::kNo, image_info, 0 /* sampleCount */,
-      kTopLeft_GrSurfaceOrigin, nullptr /* surfaceProps */);
-
-  // We don't have driver support for that particular color_type. Try again with
-  // well supported SkColorType. Reads from this may have unusual colors due to
-  // interpreting RGBA as |color_type|, but that's better than completely
-  // undefined.
-  if (!surface) {
-    image_info = SkImageInfo::Make(1 /* width */, 1 /* height */,
-                                   kRGBA_8888_SkColorType, kOpaque_SkAlphaType);
-    surface = SkSurface::MakeRenderTarget(
-        gr_context(), SkBudgeted::kNo, image_info, 0 /* sampleCount */,
-        kTopLeft_GrSurfaceOrigin, nullptr /* surfaceProps */);
-
-    if (!surface)
-      return;
-  }
-
-  auto* canvas = surface->getCanvas();
-#if DCHECK_IS_ON()
-  canvas->clear(SK_ColorRED);
-#else
-  canvas->clear(SK_ColorWHITE);
-#endif
-  fallback_promise_images_.push_back(surface->makeImageSnapshot());
-  auto gr_texture = fallback_promise_images_.back()->getBackendTexture(
-      false /* flushPendingGrContextIO */);
-  fallback_promise_image_texture_[color_type] =
-      SkPromiseImageTexture::Make(gr_texture);
 }
 
 void SkiaOutputSurfaceImplOnGpu::SetCapabilitiesForTesting(

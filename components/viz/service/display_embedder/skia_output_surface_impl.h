@@ -14,6 +14,7 @@
 #include "base/threading/thread_checker.h"
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/display/update_vsync_parameters_callback.h"
+#include "components/viz/common/resources/resource_id.h"
 #include "components/viz/service/display/skia_output_surface.h"
 #include "components/viz/service/viz_service_export.h"
 #include "gpu/command_buffer/common/sync_token.h"
@@ -29,6 +30,7 @@ class WaitableEvent;
 
 namespace viz {
 
+struct ImageContext;
 class GpuServiceImpl;
 class SkiaOutputSurfaceImplOnGpu;
 
@@ -76,7 +78,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   // SkiaOutputSurface implementation:
   SkCanvas* BeginPaintCurrentFrame() override;
   sk_sp<SkImage> MakePromiseSkImageFromYUV(
-      std::vector<ResourceMetadata> metadatas,
+      const std::vector<ResourceMetadata>& metadatas,
       SkYUVColorSpace yuv_color_space,
       sk_sp<SkColorSpace> dst_color_space,
       bool has_alpha) override;
@@ -87,15 +89,14 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
                                  bool mipmap,
                                  sk_sp<SkColorSpace> color_space) override;
   gpu::SyncToken SubmitPaint() override;
-  sk_sp<SkImage> MakePromiseSkImage(ResourceMetadata metadata) override;
+  sk_sp<SkImage> MakePromiseSkImage(const ResourceMetadata& metadata) override;
   sk_sp<SkImage> MakePromiseSkImageFromRenderPass(
       const RenderPassId& id,
       const gfx::Size& size,
       ResourceFormat format,
       bool mipmap,
       sk_sp<SkColorSpace> color_space) override;
-  gpu::SyncToken ReleasePromiseSkImages(
-      std::vector<sk_sp<SkImage>> image) override;
+  void ReleaseCachedPromiseSkImages(std::vector<ResourceId> ids) override;
 
   void RemoveRenderPassResource(std::vector<RenderPassId> ids) override;
   void CopyOutput(RenderPassId id,
@@ -111,8 +112,6 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   void SetCapabilitiesForTesting(bool flipped_output_surface);
 
  private:
-  class PromiseTextureHelper;
-  class YUVAPromiseTextureHelper;
   void InitializeOnGpuThread(base::WaitableEvent* event);
   SkSurfaceCharacterization CreateSkSurfaceCharacterization(
       const gfx::Size& surface_size,
@@ -127,8 +126,6 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
                        std::vector<gpu::SyncToken> sync_tokens);
   GrBackendFormat GetGrBackendFormatForTexture(ResourceFormat resource_format,
                                                uint32_t gl_texture_target);
-
-  void CreateFallbackPromiseImage(SkColorType color_type);
 
   uint64_t sync_fence_release_ = 0;
 
@@ -157,7 +154,19 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   // |nway_canvas_| contains |overdraw_canvas_| and root canvas.
   base::Optional<SkNWayCanvas> nway_canvas_;
 
-  // Sync tokens for resources which are used for the current frame.
+  // The cached for promise images indexed by resource id.
+  base::flat_map<ResourceId, std::unique_ptr<ImageContext>>
+      promise_image_cache_;
+
+  // The cache for promise image created from render passes.
+  base::flat_map<RenderPassId, std::unique_ptr<ImageContext>>
+      render_pass_image_cache_;
+
+  // Image contexts which are used for the current frame or render pass.
+  std::vector<ImageContext*> images_in_current_paint_;
+
+  // Sync tokens for resources which are used for the current frame or render
+  // pass.
   std::vector<gpu::SyncToken> resource_sync_tokens_;
 
   // The task runner for running task on the client (compositor) thread.
@@ -173,8 +182,6 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
 
   // Observers for context lost.
   base::ObserverList<ContextLostObserver>::Unchecked observers_;
-
-  std::vector<bool> seen_resource_formats_;
 
   THREAD_CHECKER(thread_checker_);
 

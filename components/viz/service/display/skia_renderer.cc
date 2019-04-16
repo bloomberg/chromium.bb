@@ -480,9 +480,11 @@ SkiaRenderer::ScopedSkImageBuilder::ScopedSkImageBuilder(
     // to store the new created image later.
     auto& image = skia_renderer->promise_images_[resource_id];
     if (!image) {
-      image =
-          skia_renderer->lock_set_for_external_use_
-              ->LockResourceAndCreateSkImage(resource_id, alpha_type, origin);
+      auto metadata =
+          skia_renderer->lock_set_for_external_use_->LockResource(resource_id);
+      metadata.alpha_type = alpha_type;
+      metadata.origin = origin;
+      image = skia_renderer->skia_output_surface_->MakePromiseSkImage(metadata);
       LOG_IF(ERROR, !image) << "Failed to create the promise sk image.";
     }
     sk_image_ = image.get();

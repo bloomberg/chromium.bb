@@ -7,6 +7,7 @@
 
 #include "GrTypes.h"
 #include "components/viz/common/resources/resource_format.h"
+#include "components/viz/common/resources/resource_id.h"
 #include "components/viz/service/viz_service_export.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "gpu/command_buffer/common/sync_token.h"
@@ -19,9 +20,12 @@ namespace viz {
 // Used to construct a promise SkImage for a ResourceId.
 struct VIZ_SERVICE_EXPORT ResourceMetadata {
   ResourceMetadata();
-  ResourceMetadata(ResourceMetadata&& other);
+  ResourceMetadata(const ResourceMetadata& other);
   ~ResourceMetadata();
-  ResourceMetadata& operator=(ResourceMetadata&& other);
+  ResourceMetadata& operator=(const ResourceMetadata& other);
+
+  // Resource Id.
+  ResourceId resource_id = kInvalidResourceId;
 
   // A mailbox holder for the resource texture.
   gpu::MailboxHolder mailbox_holder;

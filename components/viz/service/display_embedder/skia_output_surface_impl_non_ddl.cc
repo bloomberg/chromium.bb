@@ -19,6 +19,7 @@
 #include "components/viz/service/display/output_surface_client.h"
 #include "components/viz/service/display/output_surface_frame.h"
 #include "components/viz/service/display/resource_metadata.h"
+#include "components/viz/service/display_embedder/image_context.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/common/swap_buffers_complete_params.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
@@ -63,12 +64,6 @@ CreateSharedImageRepresentationFactory(gpu::SharedImageManager* manager) {
   // TODO(https://crbug.com/899905): Use a real MemoryTracker, not nullptr.
   return std::make_unique<gpu::SharedImageRepresentationFactory>(
       manager, nullptr /* tracker */);
-}
-
-void ReleaseSharedImagePresentation(void* context) {
-  std::unique_ptr<gpu::SharedImageRepresentationSkia> representation(
-      static_cast<gpu::SharedImageRepresentationSkia*>(context));
-  representation->EndReadAccess();
 }
 
 }  // namespace
@@ -247,12 +242,29 @@ SkCanvas* SkiaOutputSurfaceImplNonDDL::BeginPaintCurrentFrame() {
 }
 
 sk_sp<SkImage> SkiaOutputSurfaceImplNonDDL::MakePromiseSkImage(
-    ResourceMetadata metadata) {
+    const ResourceMetadata& metadata) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (metadata.mailbox_holder.mailbox.IsSharedImage() && sir_factory_) {
-    WaitSyncToken(metadata.mailbox_holder.sync_token);
-    return MakeSkImageFromSharedImage(metadata);
+    auto& image_context = promise_image_cache_[metadata.resource_id];
+    if (!image_context)
+      image_context = MakeSkImageFromSharedImage(metadata);
+    if (image_context) {
+      if (!image_context->representation_is_being_accessed) {
+        // TODO(penghuang): create gather read access semaphores and call skia
+        // flush() with them. https://crbug.com/944194
+        auto promise_image_texture =
+            image_context->representation->BeginReadAccess();
+        // The image has been created and cached. It is too late to tell skia
+        // the backing of the cached image is not accessible right now, so crash
+        // for now.
+        // TODO(penghuang): find a way to notify skia.
+        CHECK(promise_image_texture);
+        image_context->representation_is_being_accessed = true;
+      }
+      images_in_current_paint_.push_back(image_context.get());
+    }
+    return image_context ? image_context->image : nullptr;
   }
 
   GrBackendTexture backend_texture;
@@ -269,7 +281,7 @@ sk_sp<SkImage> SkiaOutputSurfaceImplNonDDL::MakePromiseSkImage(
 }
 
 sk_sp<SkImage> SkiaOutputSurfaceImplNonDDL::MakePromiseSkImageFromYUV(
-    std::vector<ResourceMetadata> metadatas,
+    const std::vector<ResourceMetadata>& metadatas,
     SkYUVColorSpace yuv_color_space,
     sk_sp<SkColorSpace> dst_color_space,
     bool has_alpha) {
@@ -288,7 +300,7 @@ sk_sp<SkImage> SkiaOutputSurfaceImplNonDDL::MakePromiseSkImageFromYUV(
   };
   GrBackendTexture yuva_textures[4] = {};
   const auto process_planar = [&](size_t i, ResourceFormat resource_format) {
-    auto& metadata = metadatas[i];
+    auto metadata = metadatas[i];
     metadata.resource_format = resource_format;
     if (!GetGrBackendTexture(metadata, &yuva_textures[i]))
       DLOG(ERROR) << "Failed to GetGrBackendTexture from a mailbox.";
@@ -335,26 +347,21 @@ sk_sp<SkImage> SkiaOutputSurfaceImplNonDDL::MakePromiseSkImageFromYUV(
       kTopLeft_GrSurfaceOrigin, dst_color_space);
 }
 
-gpu::SyncToken SkiaOutputSurfaceImplNonDDL::ReleasePromiseSkImages(
-    std::vector<sk_sp<SkImage>> images) {
-  if (images.empty())
-    return gpu::SyncToken();
+void SkiaOutputSurfaceImplNonDDL::ReleaseCachedPromiseSkImages(
+    std::vector<ResourceId> ids) {
+  if (ids.empty())
+    return;
   DCHECK_EQ(order_num_, 0u);
   order_num_ = sync_point_order_data_->GenerateUnprocessedOrderNumber();
   sync_point_order_data_->BeginProcessingOrderNumber(order_num_);
-  gpu::SyncToken sync_token(
-      gpu::CommandBufferNamespace::VIZ_SKIA_OUTPUT_SURFACE_NON_DDL,
-      sync_point_client_state_->command_buffer_id(), ++sync_fence_release_);
-  sync_token.SetVerifyFlush();
-  sync_point_client_state_->ReleaseFenceSync(sync_fence_release_);
-  const bool is_using_vulkan = shared_context_state_->use_vulkan_gr_context();
-  if (!is_using_vulkan) {
-    DCHECK(mailbox_manager_->UsesSync());
-    mailbox_manager_->PushTextureUpdates(sync_token);
+  for (auto id : ids) {
+    auto it = promise_image_cache_.find(id);
+    DCHECK(it != promise_image_cache_.end());
+    it->second->image = nullptr;
+    promise_image_cache_.erase(it);
   }
   sync_point_order_data_->FinishProcessingOrderNumber(order_num_);
   order_num_ = 0u;
-  return sync_token;
 }
 
 void SkiaOutputSurfaceImplNonDDL::SkiaSwapBuffers(OutputSurfaceFrame frame) {
@@ -412,6 +419,19 @@ gpu::SyncToken SkiaOutputSurfaceImplNonDDL::SubmitPaint() {
   } else {
     offscreen_sk_surfaces_[current_render_pass_id_]->flush();
   }
+
+  for (auto* image_context : images_in_current_paint_) {
+    if (!image_context->representation_is_being_accessed)
+      continue;
+    // TODO(penghuang): create end read access semaphores and call
+    // EndReadAccess() with them. https://crbug.com/944194
+    DCHECK(image_context->representation);
+    image_context->representation->EndReadAccess();
+    image_context->representation_is_being_accessed = false;
+  }
+
+  images_in_current_paint_.clear();
+
   gpu::SyncToken sync_token(
       gpu::CommandBufferNamespace::VIZ_SKIA_OUTPUT_SURFACE_NON_DDL,
       sync_point_client_state_->command_buffer_id(), ++sync_fence_release_);
@@ -485,43 +505,50 @@ bool SkiaOutputSurfaceImplNonDDL::WaitSyncToken(
   return true;
 }
 
-sk_sp<SkImage> SkiaOutputSurfaceImplNonDDL::MakeSkImageFromSharedImage(
+std::unique_ptr<ImageContext>
+SkiaOutputSurfaceImplNonDDL::MakeSkImageFromSharedImage(
     const ResourceMetadata& metadata) {
-  auto representation = sir_factory_->ProduceSkia(
-      metadata.mailbox_holder.mailbox, shared_context_state_.get());
-  if (!representation) {
-    DLOG(ERROR) << "Failed to make the SkImage - SharedImage mailbox not "
-                   "found in SharedImageManager.";
+  auto image_context = std::make_unique<ImageContext>(metadata);
+  WaitSyncToken(image_context->sync_token);
+  image_context->representation = sir_factory_->ProduceSkia(
+      image_context->mailbox, shared_context_state_.get());
+  if (!image_context->representation) {
+    DLOG(ERROR) << "Failed to make the SkImage - SharedImage mailbox not found "
+                   "in SharedImageManager.";
     return nullptr;
   }
 
-  if (!(representation->usage() & gpu::SHARED_IMAGE_USAGE_DISPLAY)) {
+  if (!(image_context->representation->usage() &
+        gpu::SHARED_IMAGE_USAGE_DISPLAY)) {
     DLOG(ERROR) << "Failed to make the SkImage - SharedImage was not created "
                    "with display usage.";
     return nullptr;
   }
-  auto promise_texture = representation->BeginReadAccess();
-  if (!promise_texture) {
+
+  // TODO(penghuang): create gather read access semaphores and call skia flush()
+  // with them. https://crbug.com/944194
+  image_context->promise_image_texture =
+      image_context->representation->BeginReadAccess();
+  if (!image_context->promise_image_texture) {
     DLOG(ERROR)
-        << "Failed to begin read access for SharedImageRepresentationSkia";
+        << "Failed to make the SkImage - SharedImage begin access failed.";
     return nullptr;
   }
+  image_context->representation_is_being_accessed = true;
 
   SkColorType color_type = ResourceFormatToClosestSkColorType(
       true /* gpu_compositing */, metadata.resource_format);
 
-  auto sk_image = SkImage::MakeFromTexture(
-      gr_context(), promise_texture->backendTexture(), kTopLeft_GrSurfaceOrigin,
-      color_type, metadata.alpha_type, metadata.color_space.ToSkColorSpace(),
-      ReleaseSharedImagePresentation, representation.get());
+  image_context->image = SkImage::MakeFromTexture(
+      gr_context(), image_context->promise_image_texture->backendTexture(),
+      kTopLeft_GrSurfaceOrigin, color_type, image_context->alpha_type,
+      image_context->color_space);
 
-  if (!sk_image) {
+  if (!image_context->image) {
     DLOG(ERROR) << "Failed to create the SkImage";
     return nullptr;
   }
-
-  representation.release();
-  return sk_image;
+  return image_context;
 }
 
 bool SkiaOutputSurfaceImplNonDDL::GetGrBackendTexture(

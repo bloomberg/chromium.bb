@@ -41,6 +41,7 @@ class GLES2Interface;
 }  // namespace gpu
 
 namespace viz {
+
 class ContextProvider;
 class SharedBitmapManager;
 class SkiaOutputSurface;
@@ -204,12 +205,6 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
 
     // Lock a resource for external use.
     ResourceMetadata LockResource(ResourceId resource_id);
-
-    // Lock a resource and create a SkImage from it by using
-    // Client::CreateImage.
-    sk_sp<SkImage> LockResourceAndCreateSkImage(ResourceId resource_id,
-                                                SkAlphaType alpha_type,
-                                                GrSurfaceOrigin origin);
 
     // Unlock all locked resources with a |sync_token|.
     // See UnlockForExternalUse for the detail. All resources must be unlocked
