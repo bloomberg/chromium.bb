@@ -19,14 +19,13 @@ namespace base {
 // MessageLoopCurrent
 
 // static
-sequence_manager::internal::SequenceManagerImpl*
-MessageLoopCurrent::GetCurrentSequenceManagerImpl() {
+MessageLoopBase* MessageLoopCurrent::GetCurrentMessageLoopBase() {
   return sequence_manager::internal::SequenceManagerImpl::GetCurrent();
 }
 
 // static
 MessageLoopCurrent MessageLoopCurrent::Get() {
-  return MessageLoopCurrent(GetCurrentSequenceManagerImpl());
+  return MessageLoopCurrent(GetCurrentMessageLoopBase());
 }
 
 // static
@@ -36,7 +35,7 @@ MessageLoopCurrent MessageLoopCurrent::GetNull() {
 
 // static
 bool MessageLoopCurrent::IsSet() {
-  return !!GetCurrentSequenceManagerImpl();
+  return !!GetCurrentMessageLoopBase();
 }
 
 void MessageLoopCurrent::AddDestructionObserver(
@@ -67,7 +66,7 @@ void MessageLoopCurrent::SetTaskRunner(
 }
 
 bool MessageLoopCurrent::IsBoundToCurrentThread() const {
-  return current_ == GetCurrentSequenceManagerImpl();
+  return current_ == GetCurrentMessageLoopBase();
 }
 
 bool MessageLoopCurrent::IsIdleForTesting() {
@@ -100,13 +99,13 @@ bool MessageLoopCurrent::NestableTasksAllowed() const {
 }
 
 MessageLoopCurrent::ScopedNestableTaskAllower::ScopedNestableTaskAllower()
-    : sequence_manager_(GetCurrentSequenceManagerImpl()),
-      old_state_(sequence_manager_->IsTaskExecutionAllowed()) {
-  sequence_manager_->SetTaskExecutionAllowed(true);
+    : loop_(GetCurrentMessageLoopBase()),
+      old_state_(loop_->IsTaskExecutionAllowed()) {
+  loop_->SetTaskExecutionAllowed(true);
 }
 
 MessageLoopCurrent::ScopedNestableTaskAllower::~ScopedNestableTaskAllower() {
-  sequence_manager_->SetTaskExecutionAllowed(old_state_);
+  loop_->SetTaskExecutionAllowed(old_state_);
 }
 
 bool MessageLoopCurrent::operator==(const MessageLoopCurrent& other) const {
@@ -120,27 +119,26 @@ bool MessageLoopCurrent::operator==(const MessageLoopCurrent& other) const {
 
 // static
 MessageLoopCurrentForUI MessageLoopCurrentForUI::Get() {
-  auto* sequence_manager = GetCurrentSequenceManagerImpl();
-  DCHECK(sequence_manager);
+  MessageLoopBase* loop = GetCurrentMessageLoopBase();
+  DCHECK(loop);
 #if defined(OS_ANDROID)
-  DCHECK(sequence_manager->IsType(MessageLoop::TYPE_UI) ||
-         sequence_manager->IsType(MessageLoop::TYPE_JAVA));
+  DCHECK(loop->IsType(MessageLoop::TYPE_UI) ||
+         loop->IsType(MessageLoop::TYPE_JAVA));
 #else   // defined(OS_ANDROID)
-  DCHECK(sequence_manager->IsType(MessageLoop::TYPE_UI));
+  DCHECK(loop->IsType(MessageLoop::TYPE_UI));
 #endif  // defined(OS_ANDROID)
-  return MessageLoopCurrentForUI(sequence_manager);
+  return MessageLoopCurrentForUI(loop);
 }
 
 // static
 bool MessageLoopCurrentForUI::IsSet() {
-  sequence_manager::internal::SequenceManagerImpl* sequence_manager =
-      GetCurrentSequenceManagerImpl();
-  return sequence_manager &&
+  MessageLoopBase* loop = GetCurrentMessageLoopBase();
+  return loop &&
 #if defined(OS_ANDROID)
-         (sequence_manager->IsType(MessageLoop::TYPE_UI) ||
-          sequence_manager->IsType(MessageLoop::TYPE_JAVA));
+         (loop->IsType(MessageLoop::TYPE_UI) ||
+          loop->IsType(MessageLoop::TYPE_JAVA));
 #else   // defined(OS_ANDROID)
-         sequence_manager->IsType(MessageLoop::TYPE_UI);
+         loop->IsType(MessageLoop::TYPE_UI);
 #endif  // defined(OS_ANDROID)
 }
 
@@ -192,16 +190,16 @@ void MessageLoopCurrentForUI::RemoveMessagePumpObserver(
 
 // static
 MessageLoopCurrentForIO MessageLoopCurrentForIO::Get() {
-  auto* sequence_manager = GetCurrentSequenceManagerImpl();
-  DCHECK(sequence_manager);
-  DCHECK(sequence_manager->IsType(MessageLoop::TYPE_IO));
-  return MessageLoopCurrentForIO(sequence_manager);
+  MessageLoopBase* loop = GetCurrentMessageLoopBase();
+  DCHECK(loop);
+  DCHECK(loop->IsType(MessageLoop::TYPE_IO));
+  return MessageLoopCurrentForIO(loop);
 }
 
 // static
 bool MessageLoopCurrentForIO::IsSet() {
-  auto* sequence_manager = GetCurrentSequenceManagerImpl();
-  return sequence_manager && sequence_manager->IsType(MessageLoop::TYPE_IO);
+  MessageLoopBase* loop = GetCurrentMessageLoopBase();
+  return loop && loop->IsType(MessageLoop::TYPE_IO);
 }
 
 MessagePumpForIO* MessageLoopCurrentForIO::GetMessagePumpForIO() const {
