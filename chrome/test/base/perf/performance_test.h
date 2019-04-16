@@ -27,6 +27,11 @@ class PerformanceTest : public InProcessBrowserTest {
   void TearDownOnMainThread() override;
 
  private:
+  // Returns the mean of the histogram |name|.
+  float GetHistogramMean(const std::string& name);
+
+  bool HasHistogram(const std::string& name);
+
   const bool should_start_trace_;
 
   DISALLOW_COPY_AND_ASSIGN(PerformanceTest);
