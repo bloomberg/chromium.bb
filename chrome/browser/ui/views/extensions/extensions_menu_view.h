@@ -13,6 +13,7 @@
 
 namespace views {
 class Button;
+class ImageView;
 }  // namespace views
 
 class ToolbarActionsBar;
@@ -35,6 +36,7 @@ class ExtensionsMenuView : public views::ButtonListener,
   static bool IsShowing();
   static void Hide();
   static ExtensionsMenuView* GetExtensionsMenuViewForTesting();
+  static std::unique_ptr<views::ImageView> CreateFixedSizeIconView();
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;

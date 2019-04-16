@@ -5,45 +5,23 @@
 #include "chrome/browser/ui/views/extensions/extensions_menu_button.h"
 
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
+#include "chrome/browser/ui/views/extensions/extensions_menu_view.h"
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_button.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 
 const char ExtensionsMenuButton::kClassName[] = "ExtensionsMenuButton";
 
-namespace {
-
-content::WebContents* GetActiveWebContents(Browser* browser) {
-  return browser->tab_strip_model()->GetActiveWebContents();
-}
-
-void SetIconViewImage(views::ImageView* image_view,
-                      Browser* browser,
-                      ToolbarActionViewController* controller) {
-  image_view->SetImage(
-      controller->GetIcon(GetActiveWebContents(browser), gfx::Size(16, 16))
-          .AsImageSkia());
-}
-
-std::unique_ptr<views::View> CreateIconView(
-    Browser* browser,
-    ToolbarActionViewController* controller) {
-  auto image_view = std::make_unique<views::ImageView>();
-  SetIconViewImage(image_view.get(), browser, controller);
-  return image_view;
-}
-
-}  // namespace
-
 ExtensionsMenuButton::ExtensionsMenuButton(
     Browser* browser,
     std::unique_ptr<ToolbarActionViewController> controller)
     : HoverButton(this,
-                  CreateIconView(browser, controller.get()),
-                  controller->GetActionName(),
+                  ExtensionsMenuView::CreateFixedSizeIconView(),
+                  base::string16(),
                   base::string16()),
       browser_(browser),
       controller_(std::move(controller)) {
+  set_auto_compute_tooltip(false);
   set_context_menu_controller(this);
   controller_->SetDelegate(this);
   UpdateState();
@@ -76,15 +54,19 @@ views::View* ExtensionsMenuButton::GetReferenceViewForPopup() {
 }
 
 content::WebContents* ExtensionsMenuButton::GetCurrentWebContents() const {
-  return GetActiveWebContents(browser_);
+  return browser_->tab_strip_model()->GetActiveWebContents();
 }
 
 void ExtensionsMenuButton::UpdateState() {
   DCHECK_EQ(views::ImageView::kViewClassName, icon_view()->GetClassName());
-  SetIconViewImage(static_cast<views::ImageView*>(icon_view()), browser_,
-                   controller_.get());
+  static_cast<views::ImageView*>(icon_view())
+      ->SetImage(controller_
+                     ->GetIcon(GetCurrentWebContents(),
+                               icon_view()->GetPreferredSize())
+                     .AsImageSkia());
   SetTitleTextWithHintRange(controller_->GetActionName(),
                             gfx::Range::InvalidRange());
+  SetTooltipText(controller_->GetTooltip(GetCurrentWebContents()));
 }
 
 bool ExtensionsMenuButton::IsMenuRunning() const {

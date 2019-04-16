@@ -106,9 +106,11 @@ void ExtensionsMenuView::Repopulate() {
   }
 
   AddChildView(std::make_unique<views::Separator>());
+  auto icon_view = CreateFixedSizeIconView();
+  icon_view->SetImage(CreateVectorIcon(kSettingsIcon));
   auto footer = std::make_unique<HoverButton>(
-      this, CreateVectorIcon(kSettingsIcon),
-      l10n_util::GetStringUTF16(IDS_MANAGE_EXTENSION));
+      this, std::move(icon_view),
+      l10n_util::GetStringUTF16(IDS_MANAGE_EXTENSION), base::string16());
   footer->set_id(EXTENSIONS_SETTINGS_ID);
   manage_extensions_button_for_testing_ = footer.get();
   AddChildView(std::move(footer));
@@ -165,6 +167,16 @@ bool ExtensionsMenuView::IsShowing() {
 void ExtensionsMenuView::Hide() {
   if (IsShowing())
     g_extensions_dialog->GetWidget()->Close();
+}
+
+// static
+std::unique_ptr<views::ImageView>
+ExtensionsMenuView::CreateFixedSizeIconView() {
+  // Note that this size is larger than the 16dp extension icons as it needs to
+  // accommodate 24dp click-to-script badging and surrounding shadows.
+  auto image_view = std::make_unique<views::ImageView>();
+  image_view->SetPreferredSize(gfx::Size(28, 28));
+  return image_view;
 }
 
 ExtensionsMenuView* ExtensionsMenuView::GetExtensionsMenuViewForTesting() {
