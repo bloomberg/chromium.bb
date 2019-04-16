@@ -6,6 +6,7 @@
 #import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
 
+#import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey2/chrome_earl_grey_edo.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -30,22 +31,14 @@
 
 // Tests that the tools menu is tappable.
 - (void)testTapToolsMenu {
-  id<GREYMatcher> toolsMenuButtonID =
-      grey_allOf(grey_accessibilityID(@"kToolbarToolsMenuButtonIdentifier"),
-                 grey_sufficientlyVisible(), nil);
-  [[EarlGrey selectElementWithMatcher:toolsMenuButtonID]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::ToolsMenuButton()]
       performAction:grey_tap()];
 }
 
 // Tests that a tab can be opened.
 - (void)testOpenTab {
   // Open tools menu.
-  // TODO(crbug.com/917114): Calling the string directly is temporary while we
-  // roll out a solution to access constants across the code base for EG2.
-  id<GREYMatcher> toolsMenuButtonID =
-      grey_allOf(grey_accessibilityID(@"kToolbarToolsMenuButtonIdentifier"),
-                 grey_sufficientlyVisible(), nil);
-  [[EarlGrey selectElementWithMatcher:toolsMenuButtonID]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::ToolsMenuButton()]
       performAction:grey_tap()];
 
   // Open new tab.
