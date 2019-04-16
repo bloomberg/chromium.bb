@@ -67,6 +67,11 @@ bool CompositorOverlayCandidateValidatorAndroid::AllowDCLayerOverlays() {
   return false;
 }
 
+bool CompositorOverlayCandidateValidatorAndroid::
+    NeedsSurfaceOccludingDamageRect() {
+  return false;
+}
+
 // Overlays will still be allowed when software mirroring is enabled, even
 // though they won't appear in the mirror.
 void CompositorOverlayCandidateValidatorAndroid::SetSoftwareMirrorMode(

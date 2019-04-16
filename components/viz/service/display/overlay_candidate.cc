@@ -88,6 +88,7 @@ OverlayCandidate::OverlayCandidate()
       is_clipped(false),
       is_opaque(false),
       use_output_surface_for_resource(false),
+      no_occluding_damage(false),
       resource_id(0),
 #if defined(OS_ANDROID)
       is_backed_by_surface_texture(false),
@@ -243,6 +244,10 @@ bool OverlayCandidate::FromDrawQuadResource(
   candidate->clip_rect = quad->shared_quad_state->clip_rect;
   candidate->is_clipped = quad->shared_quad_state->is_clipped;
   candidate->is_opaque = !quad->ShouldDrawWithBlending();
+  if (quad->shared_quad_state->occluding_damage_rect.has_value()) {
+    candidate->no_occluding_damage =
+        quad->shared_quad_state->occluding_damage_rect->IsEmpty();
+  }
 
   candidate->resource_id = resource_id;
   candidate->transform = overlay_transform;
@@ -266,6 +271,10 @@ bool OverlayCandidate::FromVideoHoleQuad(
   candidate->display_rect = gfx::RectF(quad->rect);
   transform.TransformRect(&candidate->display_rect);
   candidate->transform = overlay_transform;
+  if (quad->shared_quad_state->occluding_damage_rect.has_value()) {
+    candidate->no_occluding_damage =
+        quad->shared_quad_state->occluding_damage_rect->IsEmpty();
+  }
 
   return true;
 }

@@ -345,7 +345,7 @@ void Display::InitializeRenderer(bool enable_shared_images) {
   bool output_partial_list =
       renderer_->use_partial_swap() && !overlay_validator;
   bool needs_surface_occluding_damage_rect =
-      overlay_validator && overlay_validator->AllowDCLayerOverlays();
+      overlay_validator && overlay_validator->NeedsSurfaceOccludingDamageRect();
   aggregator_.reset(new SurfaceAggregator(
       surface_manager_, resource_provider_.get(), output_partial_list,
       needs_surface_occluding_damage_rect));

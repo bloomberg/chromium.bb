@@ -30,6 +30,10 @@ bool CompositorOverlayCandidateValidatorWin::AllowDCLayerOverlays() {
   return true;
 }
 
+bool CompositorOverlayCandidateValidatorWin::NeedsSurfaceOccludingDamageRect() {
+  return true;
+}
+
 void CompositorOverlayCandidateValidatorWin::SetSoftwareMirrorMode(
     bool enabled) {
   // Software mirroring isn't supported on Windows.
