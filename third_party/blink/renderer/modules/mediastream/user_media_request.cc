@@ -376,8 +376,7 @@ UserMediaRequest* UserMediaRequest::Create(
       error_state.ThrowTypeError("exact constraints are not supported");
       return nullptr;
     }
-    if (!options->audio().IsNull() && options->audio().GetAsBoolean() &&
-        (options->video().IsNull() || !options->video().GetAsBoolean())) {
+    if (!audio.IsNull() && video.IsNull()) {
       error_state.ThrowTypeError("Audio only requests are not supported");
       return nullptr;
     }
