@@ -398,11 +398,10 @@ TEST_F(PowerPrefsTest, PeakShift) {
   base::Value day_configs;
   DecodeJsonStringAndNormalize(kDayConfigsJson, &day_configs);
 
-  managed_pref_store_->SetBoolean(prefs::kDevicePowerPeakShiftEnabled, true);
-  managed_pref_store_->SetInteger(prefs::kDevicePowerPeakShiftBatteryThreshold,
-                                  50);
+  managed_pref_store_->SetBoolean(prefs::kPowerPeakShiftEnabled, true);
+  managed_pref_store_->SetInteger(prefs::kPowerPeakShiftBatteryThreshold, 50);
   managed_pref_store_->SetValue(
-      prefs::kDevicePowerPeakShiftDayConfig,
+      prefs::kPowerPeakShiftDayConfig,
       std::make_unique<base::Value>(std::move(day_configs)), 0);
 
   constexpr char kExpectedPeakShiftPolicy[] =
@@ -414,10 +413,10 @@ TEST_F(PowerPrefsTest, PeakShift) {
 }
 
 TEST_F(PowerPrefsTest, BootOnAc) {
-  managed_pref_store_->SetBoolean(prefs::kDeviceBootOnAcEnabled, true);
+  managed_pref_store_->SetBoolean(prefs::kBootOnAcEnabled, true);
   EXPECT_TRUE(power_manager_client()->policy().boot_on_ac());
 
-  managed_pref_store_->SetBoolean(prefs::kDeviceBootOnAcEnabled, false);
+  managed_pref_store_->SetBoolean(prefs::kBootOnAcEnabled, false);
   EXPECT_FALSE(power_manager_client()->policy().boot_on_ac());
 }
 

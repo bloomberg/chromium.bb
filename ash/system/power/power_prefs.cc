@@ -235,29 +235,29 @@ PowerPrefs::~PowerPrefs() {
 
 // static
 void PowerPrefs::RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
-  registry->RegisterBooleanPref(prefs::kDevicePowerPeakShiftEnabled, false,
+  registry->RegisterBooleanPref(prefs::kPowerPeakShiftEnabled, false,
                                 PrefRegistry::PUBLIC);
-  registry->RegisterIntegerPref(prefs::kDevicePowerPeakShiftBatteryThreshold,
-                                -1, PrefRegistry::PUBLIC);
-  registry->RegisterDictionaryPref(prefs::kDevicePowerPeakShiftDayConfig,
+  registry->RegisterIntegerPref(prefs::kPowerPeakShiftBatteryThreshold, -1,
+                                PrefRegistry::PUBLIC);
+  registry->RegisterDictionaryPref(prefs::kPowerPeakShiftDayConfig,
                                    PrefRegistry::PUBLIC);
 
-  registry->RegisterBooleanPref(prefs::kDeviceBootOnAcEnabled, false,
+  registry->RegisterBooleanPref(prefs::kBootOnAcEnabled, false,
                                 PrefRegistry::PUBLIC);
 
-  registry->RegisterBooleanPref(prefs::kDeviceAdvancedBatteryChargeModeEnabled,
-                                false, PrefRegistry::PUBLIC);
-  registry->RegisterDictionaryPref(
-      prefs::kDeviceAdvancedBatteryChargeModeDayConfig, PrefRegistry::PUBLIC);
-
-  registry->RegisterIntegerPref(prefs::kDeviceBatteryChargeMode, -1,
+  registry->RegisterBooleanPref(prefs::kAdvancedBatteryChargeModeEnabled, false,
                                 PrefRegistry::PUBLIC);
-  registry->RegisterIntegerPref(prefs::kDeviceBatteryChargeCustomStartCharging,
-                                -1, PrefRegistry::PUBLIC);
-  registry->RegisterIntegerPref(prefs::kDeviceBatteryChargeCustomStopCharging,
-                                -1, PrefRegistry::PUBLIC);
+  registry->RegisterDictionaryPref(prefs::kAdvancedBatteryChargeModeDayConfig,
+                                   PrefRegistry::PUBLIC);
 
-  registry->RegisterBooleanPref(prefs::kDeviceUsbPowerShareEnabled, true,
+  registry->RegisterIntegerPref(prefs::kBatteryChargeMode, -1,
+                                PrefRegistry::PUBLIC);
+  registry->RegisterIntegerPref(prefs::kBatteryChargeCustomStartCharging, -1,
+                                PrefRegistry::PUBLIC);
+  registry->RegisterIntegerPref(prefs::kBatteryChargeCustomStopCharging, -1,
+                                PrefRegistry::PUBLIC);
+
+  registry->RegisterBooleanPref(prefs::kUsbPowerShareEnabled, true,
                                 PrefRegistry::PUBLIC);
 }
 
@@ -411,20 +411,19 @@ void PowerPrefs::UpdatePowerPolicyFromPrefs() {
   values.fast_suspend_when_backlights_forced_off =
       prefs->GetBoolean(prefs::kPowerFastSuspendWhenBacklightsForcedOff);
 
-  if (local_state_->GetBoolean(prefs::kDevicePowerPeakShiftEnabled) &&
-      local_state_->IsManagedPreference(prefs::kDevicePowerPeakShiftEnabled) &&
+  if (local_state_->GetBoolean(prefs::kPowerPeakShiftEnabled) &&
+      local_state_->IsManagedPreference(prefs::kPowerPeakShiftEnabled) &&
       local_state_->IsManagedPreference(
-          prefs::kDevicePowerPeakShiftBatteryThreshold) &&
-      local_state_->IsManagedPreference(
-          prefs::kDevicePowerPeakShiftDayConfig)) {
+          prefs::kPowerPeakShiftBatteryThreshold) &&
+      local_state_->IsManagedPreference(prefs::kPowerPeakShiftDayConfig)) {
     const base::DictionaryValue* configs_value =
-        local_state_->GetDictionary(prefs::kDevicePowerPeakShiftDayConfig);
+        local_state_->GetDictionary(prefs::kPowerPeakShiftDayConfig);
     DCHECK(configs_value);
     std::vector<PeakShiftDayConfiguration> configs;
     if (GetPeakShiftDayConfigurations(*configs_value, &configs)) {
       values.peak_shift_enabled = true;
-      values.peak_shift_battery_threshold = local_state_->GetInteger(
-          prefs::kDevicePowerPeakShiftBatteryThreshold);
+      values.peak_shift_battery_threshold =
+          local_state_->GetInteger(prefs::kPowerPeakShiftBatteryThreshold);
       values.peak_shift_day_configurations = std::move(configs);
     } else {
       LOG(WARNING) << "Invalid Peak Shift day configs format: "
@@ -432,8 +431,8 @@ void PowerPrefs::UpdatePowerPolicyFromPrefs() {
     }
   }
 
-  if (local_state_->IsManagedPreference(prefs::kDeviceBootOnAcEnabled)) {
-    values.boot_on_ac = local_state_->GetBoolean(prefs::kDeviceBootOnAcEnabled);
+  if (local_state_->IsManagedPreference(prefs::kBootOnAcEnabled)) {
+    values.boot_on_ac = local_state_->GetBoolean(prefs::kBootOnAcEnabled);
   }
 
   power_policy_controller_->ApplyPrefs(values);
@@ -497,14 +496,12 @@ void PowerPrefs::ObserveLocalStatePrefs(PrefService* prefs) {
 
   local_state_registrar_ = std::make_unique<PrefChangeRegistrar>();
   local_state_registrar_->Init(prefs);
-  local_state_registrar_->Add(prefs::kDevicePowerPeakShiftEnabled,
+  local_state_registrar_->Add(prefs::kPowerPeakShiftEnabled, update_callback);
+  local_state_registrar_->Add(prefs::kPowerPeakShiftBatteryThreshold,
                               update_callback);
-  local_state_registrar_->Add(prefs::kDevicePowerPeakShiftBatteryThreshold,
-                              update_callback);
-  local_state_registrar_->Add(prefs::kDevicePowerPeakShiftDayConfig,
-                              update_callback);
+  local_state_registrar_->Add(prefs::kPowerPeakShiftDayConfig, update_callback);
 
-  local_state_registrar_->Add(prefs::kDeviceBootOnAcEnabled, update_callback);
+  local_state_registrar_->Add(prefs::kBootOnAcEnabled, update_callback);
 
   UpdatePowerPolicyFromPrefs();
 }
