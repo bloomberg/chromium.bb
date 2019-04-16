@@ -280,8 +280,7 @@
         <settings-toggle-button
             id="enableSpellcheckingToggle"
             label="$i18n{spellCheckTitle}"
-            pref="{{prefs.browser.enable_spellchecking}}"
-            on-change="onEnableSpellCheckingChange_">
+            pref="{{prefs.browser.enable_spellchecking}}">
         </settings-toggle-button>
 <if expr="_google_chrome or not is_macosx">
         <iron-collapse id="spellCheckCollapse"

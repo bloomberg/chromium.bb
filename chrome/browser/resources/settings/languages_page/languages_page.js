@@ -573,19 +573,6 @@ Polymer({
     settings.navigateTo(settings.routes.EDIT_DICTIONARY);
   },
 
-  /** @private */
-  onEnableSpellCheckingChange_: function() {
-    // <if expr="not is_macosx">
-    if (this.getPref('browser.enable_spellchecking').value) {
-      this.spellCheckLanguages_.forEach(item => {
-        if (!item.isManaged && item.language.supportsSpellcheck) {
-          this.languageHelper.toggleSpellCheck(item.language.code, true);
-        }
-      });
-    }
-    // </if>
-  },
-
   /**
    * Handler for enabling or disabling spell check for a specific language.
    * @param {!{target: Element, model: !{item: !LanguageState}}} e
@@ -598,18 +585,6 @@ Polymer({
 
     this.languageHelper.toggleSpellCheck(
         item.language.code, !item.spellCheckEnabled);
-
-    // <if expr="not is_macosx">
-    // When the user toggles off spellcheck for all languages, disable
-    // spellcheck entirely to signal to the user that no spellcheck will occur.
-    const allSpellcheckLanguagesDisabled =
-        this.spellCheckLanguages_.every(item => !item.spellCheckEnabled);
-    if (allSpellcheckLanguagesDisabled &&
-        this.getPref('browser.enable_spellchecking').enforcement !==
-            chrome.settingsPrivate.Enforcement.ENFORCED) {
-      this.setPrefValue('browser.enable_spellchecking', false);
-    }
-    // </if>
   },
 
   /**
