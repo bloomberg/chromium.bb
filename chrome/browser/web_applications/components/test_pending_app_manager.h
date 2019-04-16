@@ -30,9 +30,6 @@ class TestPendingAppManager : public PendingAppManager {
   const std::vector<GURL>& uninstall_requests() const {
     return uninstall_requests_;
   }
-  const std::vector<InstallOptions>& reinstall_requests() const {
-    return reinstall_requests_;
-  }
 
   int deduped_install_count() const { return deduped_install_count_; }
   int deduped_uninstall_count() const { return deduped_uninstall_count_; }
@@ -52,10 +49,6 @@ class TestPendingAppManager : public PendingAppManager {
                    const RepeatingInstallCallback& callback) override;
   void UninstallApps(std::vector<GURL> uninstall_urls,
                      const UninstallCallback& callback) override;
-  void ReinstallPlaceholderApp(InstallOptions install_options,
-                               OnceInstallCallback callback) override;
-  void ReinstallPlaceholderAppIfUnused(InstallOptions install_options,
-                                       OnceInstallCallback callback) override;
   std::vector<GURL> GetInstalledAppUrls(
       InstallSource install_source) const override;
   base::Optional<AppId> LookupAppId(const GURL& url) const override;
@@ -67,7 +60,6 @@ class TestPendingAppManager : public PendingAppManager {
   void DoInstall(InstallOptions install_options, OnceInstallCallback callback);
   std::vector<InstallOptions> install_requests_;
   std::vector<GURL> uninstall_requests_;
-  std::vector<InstallOptions> reinstall_requests_;
 
   int deduped_install_count_;
   int deduped_uninstall_count_;

@@ -101,10 +101,14 @@ void WebAppPolicyManager::ReinstallPlaceholderAppIfNecessary(const GURL& url) {
   if (it == web_apps_list.end())
     return;
 
+  auto install_options = GetInstallOptionsForPolicyEntry(*it);
+  install_options.install_placeholder = false;
+  install_options.reinstall_placeholder = true;
+  install_options.stop_if_window_opened = true;
+
   // If the app is not a placeholder app, PendingAppManager will ignore the
   // request.
-  pending_app_manager_->ReinstallPlaceholderAppIfUnused(
-      GetInstallOptionsForPolicyEntry(*it), base::DoNothing());
+  pending_app_manager_->Install(std::move(install_options), base::DoNothing());
 }
 
 // static
