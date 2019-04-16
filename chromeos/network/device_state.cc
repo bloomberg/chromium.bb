@@ -37,6 +37,8 @@ bool DeviceState::PropertyChanged(const std::string& key,
     return true;
   if (key == shill::kAddressProperty) {
     return GetStringValue(key, value, &mac_address_);
+  } else if (key == shill::kInterfaceProperty) {
+    return GetStringValue(key, value, &interface_);
   } else if (key == shill::kScanningProperty) {
     return GetBooleanValue(key, value, &scanning_);
   } else if (key == shill::kSupportNetworkScanProperty) {

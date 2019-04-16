@@ -32,6 +32,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) DeviceState : public ManagedState {
 
   // Accessors
   const std::string& mac_address() const { return mac_address_; }
+  const std::string& interface() const { return interface_; }
   bool scanning() const { return scanning_; }
   void set_scanning(bool scanning) { scanning_ = scanning; }
 
@@ -86,6 +87,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) DeviceState : public ManagedState {
  private:
   // Common Device Properties
   std::string mac_address_;
+  std::string interface_;
 
   // Cellular specific properties
   std::string operator_name_;
