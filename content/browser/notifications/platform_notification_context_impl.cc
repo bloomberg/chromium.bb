@@ -23,6 +23,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/notification_database_data.h"
+#include "content/public/browser/permission_controller.h"
+#include "content/public/browser/permission_type.h"
 #include "content/public/browser/platform_notification_service.h"
 #include "content/public/common/content_features.h"
 #include "third_party/blink/public/common/notifications/notification_resources.h"
@@ -213,6 +215,131 @@ void PlatformNotificationContextImpl::RemoveService(
       [service](const std::unique_ptr<BlinkNotificationServiceImpl>& ptr) {
         return ptr.get() == service;
       });
+}
+
+void PlatformNotificationContextImpl::
+    DeleteAllNotificationDataForBlockedOrigins(
+        DeleteAllResultCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  LazyInitialize(base::BindOnce(
+      &PlatformNotificationContextImpl::DoReadAllNotificationOrigins, this,
+      base::BindOnce(
+          &PlatformNotificationContextImpl::CheckPermissionsAndDeleteBlocked,
+          this, std::move(callback))));
+}
+
+void PlatformNotificationContextImpl::DoReadAllNotificationOrigins(
+    ReadAllOriginsResultCallback callback,
+    bool initialized) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  std::set<GURL> origins;
+  if (!initialized) {
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
+        base::BindOnce(std::move(callback), /* success= */ false,
+                       std::move(origins)));
+    return;
+  }
+
+  NotificationDatabase::Status status =
+      database_->ForEachNotificationData(base::BindRepeating(
+          [](std::set<GURL>* origins, const NotificationDatabaseData& data) {
+            origins->insert(data.origin);
+          },
+          &origins));
+
+  bool success = status == NotificationDatabase::STATUS_OK;
+  if (!success)
+    origins.clear();
+
+  // Blow away the database if reading data failed due to corruption.
+  if (status == NotificationDatabase::STATUS_ERROR_CORRUPTED)
+    DestroyDatabase();
+
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
+      base::BindOnce(std::move(callback), success, std::move(origins)));
+}
+
+void PlatformNotificationContextImpl::CheckPermissionsAndDeleteBlocked(
+    DeleteAllResultCallback callback,
+    bool success,
+    std::set<GURL> origins) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  // Make sure |browser_context_| is still valid before getting the controller.
+  if (!success || !service_proxy_) {
+    std::move(callback).Run(/* success= */ false, /* deleted_count= */ 0);
+    return;
+  }
+
+  content::PermissionController* controller =
+      BrowserContext::GetPermissionController(browser_context_);
+  if (!controller) {
+    std::move(callback).Run(/* success= */ false, /* deleted_count= */ 0);
+    return;
+  }
+
+  // Erase all valid origins so we're left with invalid ones.
+  base::EraseIf(origins, [controller](const GURL& origin) {
+    auto permission = controller->GetPermissionStatus(
+        PermissionType::NOTIFICATIONS, origin, origin);
+    return permission == blink::mojom::PermissionStatus::GRANTED;
+  });
+
+  if (origins.empty()) {
+    std::move(callback).Run(/* success= */ true, /* deleted_count= */ 0);
+    return;
+  }
+
+  LazyInitialize(base::BindOnce(
+      &PlatformNotificationContextImpl::DoDeleteAllNotificationDataForOrigins,
+      this, std::move(origins), std::move(callback)));
+}
+
+void PlatformNotificationContextImpl::DoDeleteAllNotificationDataForOrigins(
+    std::set<GURL> origins,
+    DeleteAllResultCallback callback,
+    bool initialized) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  if (!initialized) {
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
+        base::BindOnce(std::move(callback), /* success= */ false,
+                       /* deleted_count= */ 0));
+    return;
+  }
+
+  std::set<std::string> deleted_notification_ids;
+  NotificationDatabase::Status status = NotificationDatabase::STATUS_OK;
+  for (const auto& origin : origins) {
+    status = database_->DeleteAllNotificationDataForOrigin(
+        origin, /* tag= */ "", &deleted_notification_ids);
+    if (status != NotificationDatabase::STATUS_OK)
+      break;
+  }
+
+  UMA_HISTOGRAM_ENUMERATION("Notifications.Database.DeleteAllForOriginsResult",
+                            status, NotificationDatabase::STATUS_COUNT);
+
+  bool success = status == NotificationDatabase::STATUS_OK;
+
+  // Blow away the database if deleting data failed due to corruption. Following
+  // the contract of the delete methods, consider this to be a success as the
+  // caller's goal has been achieved: the data is gone.
+  if (status == NotificationDatabase::STATUS_ERROR_CORRUPTED) {
+    DestroyDatabase();
+    success = true;
+  }
+
+  if (service_proxy_) {
+    for (const std::string& notification_id : deleted_notification_ids)
+      service_proxy_->CloseNotification(notification_id);
+  }
+
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
+      base::BindOnce(std::move(callback), success,
+                     deleted_notification_ids.size()));
 }
 
 void PlatformNotificationContextImpl::ReadNotificationDataAndRecordInteraction(
@@ -697,8 +824,10 @@ void PlatformNotificationContextImpl::
   if (status == NotificationDatabase::STATUS_ERROR_CORRUPTED)
     DestroyDatabase();
 
-  // TODO(peter): Close the notifications in |deleted_notification_ids|. See
-  // https://crbug.com/532436.
+  if (service_proxy_) {
+    for (const std::string& notification_id : deleted_notification_ids)
+      service_proxy_->CloseNotification(notification_id);
+  }
 }
 
 void PlatformNotificationContextImpl::OnStorageWiped() {

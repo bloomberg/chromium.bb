@@ -19,6 +19,7 @@
 #include "chrome/browser/notifications/notification_trigger_scheduler.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/buildflags.h"
+#include "components/content_settings/core/browser/content_settings_observer.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_types.h"
 #include "content/public/browser/platform_notification_service.h"
@@ -35,6 +36,7 @@ struct NotificationResources;
 // which Web Notifications can be controlled.
 class PlatformNotificationServiceImpl
     : public content::PlatformNotificationService,
+      public content_settings::Observer,
       public KeyedService {
  public:
   explicit PlatformNotificationServiceImpl(Profile* profile);
@@ -91,6 +93,12 @@ class PlatformNotificationServiceImpl
 
   // KeyedService implementation.
   void Shutdown() override;
+
+  // content_settings::Observer implementation.
+  void OnContentSettingChanged(const ContentSettingsPattern& primary_pattern,
+                               const ContentSettingsPattern& secondary_pattern,
+                               ContentSettingsType content_type,
+                               const std::string& resource_identifier) override;
 
   static void OnUrlHistoryQueryComplete(
       base::OnceClosure callback,
