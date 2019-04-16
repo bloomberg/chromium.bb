@@ -36,6 +36,8 @@ component("dbus") {
   sources = [
     "arc_appfuse_provider_client.cc",
     "arc_appfuse_provider_client.h",
+    "arc_camera_client.cc",
+    "arc_camera_client.h",
     "arc_midis_client.cc",
     "arc_midis_client.h",
     "arc_obb_mounter_client.cc",
@@ -64,6 +66,8 @@ component("dbus") {
     "easy_unlock_client.h",
     "fake_arc_appfuse_provider_client.cc",
     "fake_arc_appfuse_provider_client.h",
+    "fake_arc_camera_client.cc",
+    "fake_arc_camera_client.h",
     "fake_arc_midis_client.cc",
     "fake_arc_midis_client.h",
     "fake_arc_obb_mounter_client.cc",
