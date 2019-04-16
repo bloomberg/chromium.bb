@@ -15,7 +15,7 @@
         android:background="@color/modern_primary_color"
         android:fillViewport="true"
         android:layout_height="wrap_content"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:paddingStart="24dp"
         android:paddingEnd="24dp"
         android:paddingTop="24dp"
