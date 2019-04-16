@@ -21,8 +21,8 @@ class NGInlineFragmentTraversalTest : public NGLayoutTest {
     const LayoutObject* layout_object = element->GetLayoutObject();
     DCHECK(layout_object) << element;
     DCHECK(layout_object->IsLayoutBlockFlow()) << element;
-    DCHECK(ToLayoutBlockFlow(layout_object)->CurrentFragment()) << element;
-    return *ToLayoutBlockFlow(layout_object)->CurrentFragment();
+    DCHECK(To<LayoutBlockFlow>(layout_object)->CurrentFragment()) << element;
+    return *To<LayoutBlockFlow>(layout_object)->CurrentFragment();
   }
 
   const NGPhysicalFragment& GetFragmentOfNode(

@@ -101,7 +101,7 @@ class NGOffsetMappingTest : public NGLayoutTest {
 
   void SetupHtml(const char* id, String html) {
     SetBodyInnerHTML(html);
-    layout_block_flow_ = ToLayoutBlockFlow(GetLayoutObjectByElementId(id));
+    layout_block_flow_ = To<LayoutBlockFlow>(GetLayoutObjectByElementId(id));
     DCHECK(layout_block_flow_->IsLayoutNGMixin());
     layout_object_ = layout_block_flow_->FirstChild();
     style_ = layout_object_->Style();
@@ -1259,8 +1259,8 @@ TEST_P(NGOffsetMappingGetterTest, Get) {
       Whitespaces   in this text   should be   collapsed.
     </div>
   )HTML");
-  LayoutBlockFlow* layout_block_flow =
-      ToLayoutBlockFlow(GetLayoutObjectByElementId("container"));
+  auto* layout_block_flow =
+      To<LayoutBlockFlow>(GetLayoutObjectByElementId("container"));
   DCHECK(layout_block_flow->ChildrenInline());
 
   // For the purpose of this test, ensure this is laid out by each layout

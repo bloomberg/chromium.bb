@@ -23,7 +23,7 @@ class NGPhysicalLineBoxFragmentTest : public NGLayoutTest {
     DCHECK(layout_object) << container;
     DCHECK(layout_object->IsLayoutBlockFlow()) << container;
     const NGPhysicalBoxFragment* root_fragment =
-        ToLayoutBlockFlow(layout_object)->CurrentFragment();
+        To<LayoutBlockFlow>(layout_object)->CurrentFragment();
     DCHECK(root_fragment) << container;
 
     for (const auto& child :

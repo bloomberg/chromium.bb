@@ -30,7 +30,7 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   NGInlineNode(LayoutBlockFlow*);
 
   LayoutBlockFlow* GetLayoutBlockFlow() const {
-    return ToLayoutBlockFlow(box_);
+    return To<LayoutBlockFlow>(box_);
   }
   NGLayoutInputNode NextSibling() { return nullptr; }
 
@@ -133,17 +133,17 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   bool MarkLineBoxesDirty(LayoutBlockFlow*);
 
   NGInlineNodeData* MutableData() {
-    return ToLayoutBlockFlow(box_)->GetNGInlineNodeData();
+    return To<LayoutBlockFlow>(box_)->GetNGInlineNodeData();
   }
   const NGInlineNodeData& Data() const {
     DCHECK(IsPrepareLayoutFinished() &&
            !GetLayoutBlockFlow()->NeedsCollectInlines());
-    return *ToLayoutBlockFlow(box_)->GetNGInlineNodeData();
+    return *To<LayoutBlockFlow>(box_)->GetNGInlineNodeData();
   }
   // Same as |Data()| but can access even when |NeedsCollectInlines()| is set.
   const NGInlineNodeData& MaybeDirtyData() const {
     DCHECK(IsPrepareLayoutFinished());
-    return *ToLayoutBlockFlow(box_)->GetNGInlineNodeData();
+    return *To<LayoutBlockFlow>(box_)->GetNGInlineNodeData();
   }
   const NGInlineNodeData& EnsureData();
 

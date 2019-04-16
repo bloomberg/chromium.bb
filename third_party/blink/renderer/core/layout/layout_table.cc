@@ -338,11 +338,12 @@ void LayoutTable::UpdateLogicalWidth() {
       available_content_logical_width =
           (container_width_in_inline_direction - margin_total)
               .ClampNegativeToZero();
-      if (ShrinkToAvoidFloats() && cb->IsLayoutBlockFlow() &&
-          ToLayoutBlockFlow(cb)->ContainsFloats() &&
+      auto* containing_block_flow = DynamicTo<LayoutBlockFlow>(cb);
+      if (ShrinkToAvoidFloats() && containing_block_flow &&
+          containing_block_flow->ContainsFloats() &&
           !has_perpendicular_containing_block) {
         available_content_logical_width = ShrinkLogicalWidthToAvoidFloats(
-            margin_start, margin_end, ToLayoutBlockFlow(cb));
+            margin_start, margin_end, containing_block_flow);
       }
     }
 

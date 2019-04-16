@@ -346,7 +346,8 @@ NGInlineNode::NGInlineNode(LayoutBlockFlow* block)
 }
 
 bool NGInlineNode::IsPrepareLayoutFinished() const {
-  const NGInlineNodeData* data = ToLayoutBlockFlow(box_)->GetNGInlineNodeData();
+  const NGInlineNodeData* data =
+      To<LayoutBlockFlow>(box_)->GetNGInlineNodeData();
   return data && !data->text_content.IsNull();
 }
 
@@ -888,7 +889,7 @@ void NGInlineNode::AssociateItemsWithInlines(NGInlineNodeData* data) {
 void NGInlineNode::ClearAssociatedFragments(
     const NGPhysicalFragment& fragment,
     const NGBlockBreakToken* block_break_token) {
-  LayoutBlockFlow* block_flow = ToLayoutBlockFlow(fragment.GetLayoutObject());
+  auto* block_flow = To<LayoutBlockFlow>(fragment.GetLayoutObject());
   if (!block_flow->ChildrenInline())
     return;
   NGInlineNode node = NGInlineNode(block_flow);

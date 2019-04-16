@@ -1618,12 +1618,12 @@ FloatPoint LayoutText::FirstRunOrigin() const {
 bool LayoutText::CanOptimizeSetText() const {
   // If we have only one line of text and "contain: layout size" we can avoid
   // doing a layout and only paint in the SetText() operation.
-  return Parent()->IsLayoutBlockFlow() &&
-         Parent()->ShouldApplyLayoutContainment() &&
+  auto* parent_block_flow = DynamicTo<LayoutBlockFlow>(Parent());
+  return parent_block_flow && Parent()->ShouldApplyLayoutContainment() &&
          Parent()->ShouldApplySizeContainment() &&
          // If we have "text-overflow: ellipsis" we need to check if we need or
          // not ellipsis in the new text and recompute its position.
-         !ToLayoutBlockFlow(Parent())->ShouldTruncateOverflowingText() &&
+         !parent_block_flow->ShouldTruncateOverflowingText() &&
          !PreviousSibling() && !NextSibling() && FirstTextBox() &&
          FirstTextBox() == LastTextBox() &&
          // If "line-height" is "normal" we might need to recompute the

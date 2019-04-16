@@ -23,8 +23,8 @@ class NGPhysicalTextFragmentTest : public NGLayoutTest {
     const LayoutObject* layout_object = container->GetLayoutObject();
     DCHECK(layout_object) << container;
     DCHECK(layout_object->IsLayoutBlockFlow()) << container;
-    const NGPhysicalBoxFragment* root_fragment =
-        ToLayoutBlockFlow(layout_object)->CurrentFragment();
+    const auto* root_fragment =
+        To<LayoutBlockFlow>(layout_object)->CurrentFragment();
     DCHECK(root_fragment) << container;
 
     Vector<scoped_refptr<const NGPhysicalTextFragment>> result;

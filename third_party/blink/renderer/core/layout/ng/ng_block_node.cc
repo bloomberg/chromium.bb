@@ -53,9 +53,7 @@ inline LayoutMultiColumnFlowThread* GetFlowThread(
 }
 
 inline LayoutMultiColumnFlowThread* GetFlowThread(const LayoutBox& box) {
-  if (!box.IsLayoutBlockFlow())
-    return nullptr;
-  return GetFlowThread(&ToLayoutBlockFlow(box));
+  return GetFlowThread(DynamicTo<LayoutBlockFlow>(box));
 }
 
 // Parameters to pass when creating a layout algorithm for a block node.
@@ -530,7 +528,7 @@ NGLayoutInputNode NGBlockNode::FirstChild() const {
   if (!child)
     return nullptr;
   if (AreNGBlockFlowChildrenInline(block))
-    return NGInlineNode(ToLayoutBlockFlow(block));
+    return NGInlineNode(To<LayoutBlockFlow>(block));
   return NGBlockNode(ToLayoutBox(child));
 }
 

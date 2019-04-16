@@ -546,8 +546,9 @@ void Write(WTF::TextStream& ts,
     WritePaintProperties(ts, o, indent + 1);
   }
 
-  if ((behavior & kLayoutAsTextShowLineTrees) && o.IsLayoutBlockFlow()) {
-    LayoutTreeAsText::WriteLineBoxTree(ts, ToLayoutBlockFlow(o), indent + 1);
+  auto* layout_block_flow = DynamicTo<LayoutBlockFlow>(o);
+  if ((behavior & kLayoutAsTextShowLineTrees) && layout_block_flow) {
+    LayoutTreeAsText::WriteLineBoxTree(ts, *layout_block_flow, indent + 1);
   }
 
   if (o.IsText() && !o.IsBR()) {
