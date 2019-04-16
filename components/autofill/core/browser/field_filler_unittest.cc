@@ -455,6 +455,38 @@ TEST_F(AutofillFieldFillerTest, FillFormField_NoValidity) {
                            /*city=*/ASCIIToUTF16("Elysium"));
 }
 
+// Tests that using only client side validation, if the country is empty, the
+// address fields will get filled regardless of their invalidity.
+TEST_F(AutofillFieldFillerTest, FillFormField_Validity_CountryEmpty) {
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitWithFeatures(
+      /*enabled_features=*/{features::kAutofillProfileClientValidation},
+      /*disabled_features=*/{features::kAutofillProfileServerValidation});
+  AutofillProfile profile = test::GetFullProfile();
+  profile.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16(""));
+  profile.SetValidityState(ADDRESS_HOME_STATE, AutofillProfile::INVALID,
+                           AutofillProfile::CLIENT);
+  profile.SetValidityState(EMAIL_ADDRESS, AutofillProfile::INVALID,
+                           AutofillProfile::CLIENT);
+
+  AutofillField field_state;
+  field_state.set_heuristic_type(ADDRESS_HOME_STATE);
+  AutofillField field_email;
+  field_email.set_heuristic_type(EMAIL_ADDRESS);
+
+  FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
+  // State is filled, because it's an address field.
+  filler.FillFormField(field_state, profile, &field_state,
+                       /*cvc=*/base::string16());
+  EXPECT_EQ(ASCIIToUTF16("CA"), field_state.value);
+
+  // Email is not filled, because it's not an address field, and it doesn't
+  // depend on the country.
+  filler.FillFormField(field_email, profile, &field_email,
+                       /*cvc=*/base::string16());
+  EXPECT_EQ(ASCIIToUTF16(""), field_email.value);
+}
+
 struct AutofillFieldFillerTestCase {
   HtmlFieldType field_type;
   size_t field_max_length;
