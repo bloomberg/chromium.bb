@@ -430,7 +430,6 @@ MediaFactory::CreateRendererFactorySelector(
   // MediaPlayerRendererClientFactory setup.
   auto mojo_media_player_renderer_factory =
       std::make_unique<media::MojoRendererFactory>(
-          media::MojoRendererFactory::GetGpuFactoriesCB(),
           GetMediaInterfaceFactory());
 
   // Always give |factory_selector| a MediaPlayerRendererClient factory. WMPI
@@ -449,7 +448,6 @@ MediaFactory::CreateRendererFactorySelector(
 
   // FlingingRendererClientFactory (FRCF) setup.
   auto mojo_flinging_factory = std::make_unique<media::MojoRendererFactory>(
-      media::MojoRendererFactory::GetGpuFactoriesCB(),
       GetMediaInterfaceFactory());
 
   auto flinging_factory = std::make_unique<FlingingRendererClientFactory>(
@@ -471,8 +469,6 @@ MediaFactory::CreateRendererFactorySelector(
   use_mojo_renderer_factory = enable_mojo_renderer;
   if (use_mojo_renderer_factory) {
     auto mojo_renderer_factory = std::make_unique<media::MojoRendererFactory>(
-        base::Bind(&RenderThreadImpl::GetGpuFactories,
-                   base::Unretained(render_thread)),
         GetMediaInterfaceFactory());
 
     // The "default" MojoRendererFactory can be wrapped by a

@@ -236,6 +236,20 @@ scoped_refptr<VideoFrame> VideoFrame::CreateFrame(VideoPixelFormat format,
 }
 
 // static
+scoped_refptr<VideoFrame> VideoFrame::CreateVideoHoleFrame(
+    const base::UnguessableToken& overlay_plane_id,
+    const gfx::Size& natural_size,
+    base::TimeDelta timestamp) {
+  auto layout = VideoFrameLayout::Create(PIXEL_FORMAT_UNKNOWN, natural_size);
+  scoped_refptr<VideoFrame> frame =
+      new VideoFrame(*layout, StorageType::STORAGE_OPAQUE,
+                     gfx::Rect(natural_size), natural_size, timestamp);
+  frame->metadata()->SetUnguessableToken(VideoFrameMetadata::OVERLAY_PLANE_ID,
+                                         overlay_plane_id);
+  return frame;
+}
+
+// static
 scoped_refptr<VideoFrame> VideoFrame::CreateZeroInitializedFrame(
     VideoPixelFormat format,
     const gfx::Size& coded_size,
