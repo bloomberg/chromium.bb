@@ -1023,6 +1023,15 @@ bool PaintArtifactCompositor::DirectlyUpdateScrollOffsetTransform(
   return false;
 }
 
+bool PaintArtifactCompositor::DirectlyUpdateTransform(
+    const TransformPaintPropertyNode& transform) {
+  if (auto* property_trees = GetPropertyTreesForDirectUpdate()) {
+    return property_tree_manager_.DirectlyUpdateTransform(property_trees,
+                                                          transform);
+  }
+  return false;
+}
+
 static bool IsRenderSurfaceCandidate(
     const cc::EffectNode& effect,
     const Vector<const EffectPaintPropertyNode*>& blink_effects) {

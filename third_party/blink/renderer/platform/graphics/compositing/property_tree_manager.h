@@ -125,6 +125,8 @@ class PropertyTreeManager {
                                             const EffectPaintPropertyNode&);
   bool DirectlyUpdateScrollOffsetTransform(cc::PropertyTrees*,
                                            const TransformPaintPropertyNode&);
+  bool DirectlyUpdateTransform(cc::PropertyTrees*,
+                               const TransformPaintPropertyNode&);
 
  private:
   void SetupRootTransformNode();

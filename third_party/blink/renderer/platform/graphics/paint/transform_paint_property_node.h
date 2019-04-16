@@ -133,17 +133,22 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
           backface_visibility != other.backface_visibility ||
           rendering_context_id != other.rendering_context_id ||
           compositor_element_id != other.compositor_element_id ||
-          scroll != other.scroll ||
-          !StickyConstraintEquals(other)) {
+          scroll != other.scroll || !StickyConstraintEquals(other)) {
         return PaintPropertyChangeType::kChangedOnlyValues;
       }
       bool transform_changed =
           !transform_and_origin.TransformEquals(other.transform_and_origin);
+      // An additional cc::EffectNode may be required if
+      // blink::TransformPaintPropertyNode is not axis-aligned (see:
+      // PropertyTreeManager::NeedsSyntheticEffect). Changes to axis alignment
+      // are therefore treated as non-simple. By ensuring both |this| and
+      // |other| preserve axis alignment, this check is more conservative than
+      // PropertyTreeManager.
       bool transform_change_is_simple =
           transform_changed &&
           !animation_state.is_running_animation_on_compositor &&
-          transform_and_origin.IsIdentityOr2DTranslation() &&
-          other.transform_and_origin.IsIdentityOr2DTranslation();
+          TransformPreservesAxisAlignment(transform_and_origin) &&
+          TransformPreservesAxisAlignment(other.transform_and_origin);
       // If the transform changed, and it's not simple then we need to report
       // values change.
       if (transform_changed && !transform_change_is_simple &&
@@ -176,6 +181,15 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
         return true;
       return sticky_constraint && other.sticky_constraint &&
              *sticky_constraint == *other.sticky_constraint;
+    }
+
+   private:
+    // Returns true if the given transform preserves axis alignment.
+    static bool TransformPreservesAxisAlignment(
+        const TransformAndOrigin& transform) {
+      return transform.IsIdentityOr2DTranslation() ||
+             (transform.Matrix().Is2dTransform() &&
+              transform.Matrix().Preserves2dAxisAlignment());
     }
   };
 
