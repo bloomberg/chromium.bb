@@ -187,56 +187,6 @@ bool IsOffscreen(const Node* node) {
   return RectInViewport(*node).IsEmpty();
 }
 
-// As IsOffscreen() but returns visibility through the |node|'s frame's viewport
-// after scrolling the frame in |direction|.
-bool IsOffscreenAfterFrameScroll(const Node* node,
-                                 SpatialNavigationDirection direction) {
-  LocalFrameView* frame_view = node->GetDocument().View();
-  if (!frame_view)
-    return true;
-
-  DCHECK(!frame_view->NeedsLayout());
-
-  // If |node| is in the root frame, VisibleContentRect() will include
-  // visual viewport transformation (pinch-zoom) if one exists.
-  LayoutRect frame_viewport(
-      frame_view->GetScrollableArea()->VisibleContentRect());
-
-  // |direction| extends the node's frame's viewport's rect (before doing the
-  // intersection-check) to also include content revealed by one scroll step in
-  // that |direction|.
-  int pixels_per_line_step =
-      ScrollableArea::PixelsPerLineStep(frame_view->GetChromeClient());
-  switch (direction) {
-    case SpatialNavigationDirection::kLeft:
-      frame_viewport.SetX(frame_viewport.X() - pixels_per_line_step);
-      frame_viewport.SetWidth(frame_viewport.Width() + pixels_per_line_step);
-      break;
-    case SpatialNavigationDirection::kRight:
-      frame_viewport.SetWidth(frame_viewport.Width() + pixels_per_line_step);
-      break;
-    case SpatialNavigationDirection::kUp:
-      frame_viewport.SetY(frame_viewport.Y() - pixels_per_line_step);
-      frame_viewport.SetHeight(frame_viewport.Height() + pixels_per_line_step);
-      break;
-    case SpatialNavigationDirection::kDown:
-      frame_viewport.SetHeight(frame_viewport.Height() + pixels_per_line_step);
-      break;
-    default:
-      break;
-  }
-
-  LayoutObject* layout_object = node->GetLayoutObject();
-  if (!layout_object)
-    return true;
-
-  LayoutRect rect(layout_object->VisualRectInDocument());
-  if (rect.IsEmpty())
-    return true;
-
-  return !frame_viewport.Intersects(rect);
-}
-
 bool HasRemoteFrame(const Node* node) {
   auto* frame_owner_element = DynamicTo<HTMLFrameOwnerElement>(node);
   if (!frame_owner_element)
