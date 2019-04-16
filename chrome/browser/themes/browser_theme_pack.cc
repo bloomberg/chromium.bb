@@ -1406,7 +1406,8 @@ void BrowserThemePack::CreateToolbarImageAndColors(ImageCache* images) {
   const gfx::Image dest_image(gfx::ImageSkia(std::move(source), dest_size));
   temp_output[kSrcImageId] = dest_image;
 
-  SetColor(kToolbarColorId, ComputeImageColor(dest_image, dest_size.height()));
+  SetColorIfUnspecified(kToolbarColorId,
+                        ComputeImageColor(dest_image, dest_size.height()));
 
   MergeImageCaches(temp_output, images);
 }
@@ -1464,8 +1465,9 @@ void BrowserThemePack::CreateFrameImagesAndColors(ImageCache* images) {
       temp_output[frame_values.prs_id] = dest_image;
 
       if (frame_values.color_id) {
-        SetColor(frame_values.color_id.value(),
-                 ComputeImageColor(dest_image, kTallestFrameHeight));
+        SetColorIfUnspecified(
+            frame_values.color_id.value(),
+            ComputeImageColor(dest_image, kTallestFrameHeight));
       }
     }
   }
@@ -1479,22 +1481,17 @@ void BrowserThemePack::GenerateFrameColors() {
     SetColor(TP::COLOR_FRAME, HSLShift(frame, GetTintInternal(TP::TINT_FRAME)));
   }
 
-  SkColor temp;
-  if (!GetColor(TP::COLOR_FRAME_INACTIVE, &temp)) {
-    SetColor(TP::COLOR_FRAME_INACTIVE,
-             HSLShift(frame, GetTintInternal(TP::TINT_FRAME_INACTIVE)));
-  }
+  SetColorIfUnspecified(
+      TP::COLOR_FRAME_INACTIVE,
+      HSLShift(frame, GetTintInternal(TP::TINT_FRAME_INACTIVE)));
 
-  if (!GetColor(TP::COLOR_FRAME_INCOGNITO, &temp)) {
-    SetColor(TP::COLOR_FRAME_INCOGNITO,
-             HSLShift(frame, GetTintInternal(TP::TINT_FRAME_INCOGNITO)));
-  }
+  SetColorIfUnspecified(
+      TP::COLOR_FRAME_INCOGNITO,
+      HSLShift(frame, GetTintInternal(TP::TINT_FRAME_INCOGNITO)));
 
-  if (!GetColor(TP::COLOR_FRAME_INCOGNITO_INACTIVE, &temp)) {
-    SetColor(
-        TP::COLOR_FRAME_INCOGNITO_INACTIVE,
-        HSLShift(frame, GetTintInternal(TP::TINT_FRAME_INCOGNITO_INACTIVE)));
-  }
+  SetColorIfUnspecified(
+      TP::COLOR_FRAME_INCOGNITO_INACTIVE,
+      HSLShift(frame, GetTintInternal(TP::TINT_FRAME_INCOGNITO_INACTIVE)));
 }
 
 void BrowserThemePack::GenerateWindowControlButtonColor(ImageCache* images) {
