@@ -421,6 +421,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', 'passthrough', 'opengl', 'intel'], bug=602688)
     self.Fail('deqp/functional/gles3/shaderbuiltinvar.html', # ANGLE bug
         ['win', 'passthrough', 'opengl', 'intel'], bug=2880)
+    self.Skip(
+        'conformance/uniforms/no-over-optimization-on-uniform-array-08.html',
+        ['win', 'intel', 'opengl', 'passthrough'], bug=907195)
 
     # Passthrough command decoder / Linux / OpenGL / NVIDIA
     self.Fail('conformance/textures/image_bitmap_from_video/' +
