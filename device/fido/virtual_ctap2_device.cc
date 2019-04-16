@@ -370,9 +370,11 @@ CtapDeviceResponseCode SetPIN(VirtualCtap2Device::State* state,
              &hmac_bytes));
   DCHECK_EQ(sizeof(calculated_pin_auth), static_cast<size_t>(hmac_bytes));
 
-  if (pin_auth.size() != sizeof(calculated_pin_auth) ||
-      CRYPTO_memcmp(calculated_pin_auth, pin_auth.data(),
-                    sizeof(calculated_pin_auth)) != 0) {
+  static_assert(sizeof(calculated_pin_auth) >= 16,
+                "calculated_pin_auth is expected to be at least 16 bytes");
+  if (pin_auth.size() != 16 ||
+      CRYPTO_memcmp(calculated_pin_auth, pin_auth.data(), pin_auth.size()) !=
+          0) {
     return CtapDeviceResponseCode::kCtap2ErrPinAuthInvalid;
   }
 
