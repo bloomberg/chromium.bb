@@ -57,9 +57,9 @@ bool PwaInstallView::Update() {
 
 void PwaInstallView::OnExecuting(PageActionIconView::ExecuteSource source) {
   base::RecordAction(base::UserMetricsAction("PWAInstallIcon"));
-  web_app::CreateWebAppFromBanner(GetWebContents(),
-                                  WebappInstallSource::OMNIBOX_INSTALL_ICON,
-                                  base::DoNothing());
+  web_app::CreateWebAppFromManifest(GetWebContents(),
+                                    WebappInstallSource::OMNIBOX_INSTALL_ICON,
+                                    base::DoNothing());
 }
 
 views::BubbleDialogDelegateView* PwaInstallView::GetBubble() const {

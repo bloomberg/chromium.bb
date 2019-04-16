@@ -72,13 +72,13 @@ class BookmarkAppInstallManagerTest : public ChromeRenderViewHostTestHarness {
   std::unique_ptr<BookmarkAppInstallManager> install_manager_;
 };
 
-TEST_F(BookmarkAppInstallManagerTest, FromBanner_WebContentsDestroyed) {
+TEST_F(BookmarkAppInstallManagerTest, FromManifest_WebContentsDestroyed) {
   NavigateAndCommit(GURL("https://example.com/path"));
 
   base::RunLoop run_loop;
   bool callback_called = false;
 
-  install_manager_->InstallWebAppFromBanner(
+  install_manager_->InstallWebAppFromManifest(
       web_contents(), WebappInstallSource::MENU_BROWSER_TAB, base::DoNothing(),
       base::BindLambdaForTesting([&](const web_app::AppId& installed_app_id,
                                      web_app::InstallResultCode code) {
