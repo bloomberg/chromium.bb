@@ -133,6 +133,7 @@ class TestObserver : public PowerManagerClient::Observer {
 
 }  // namespace
 
+// TODO(jiameng): add more unit tests on AdapterDecision related histograms.
 class AdapterTest : public testing::Test {
  public:
   AdapterTest()
@@ -260,9 +261,11 @@ class AdapterTest : public testing::Test {
 
   void ReportUserBrightnessChangeRequest(double old_brightness_percent,
                                          double new_brightness_percent) {
+    // Report a user-brightness-change-requested signal before a
+    // user-brightness-changed signal to simulate the real brightness monitor.
+    fake_brightness_monitor_.ReportUserBrightnessChangeRequested();
     fake_brightness_monitor_.ReportUserBrightnessChanged(
         old_brightness_percent, new_brightness_percent);
-    fake_brightness_monitor_.ReportUserBrightnessChangeRequested();
     thread_bundle_.RunUntilIdle();
   }
 

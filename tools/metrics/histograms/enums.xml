@@ -4142,6 +4142,18 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="kBrightnessPercent"/>
 </enum>
 
+<enum name="AutoScreenBrightnessNoBrightnessChangeCause">
+  <int value="0" label="WaitingForInitialAls"/>
+  <int value="1" label="WaitingForAvgHorizon"/>
+  <int value="2" label="MissingAlsData"/>
+  <int value="3" label="DisabledByUser"/>
+  <int value="4" label="BrightnessSetByPolicy"/>
+  <int value="5" label="FluctuatingAlsIncrease"/>
+  <int value="6" label="FluctuatingAlsDecrease"/>
+  <int value="7" label="MinimalAlsChange"/>
+  <int value="8" label="MissingPersonalCurve"/>
+</enum>
+
 <enum name="AutoScreenBrightnessParameterError">
   <int value="0" label="ModelError"/>
   <int value="1" label="AdapterError"/>
