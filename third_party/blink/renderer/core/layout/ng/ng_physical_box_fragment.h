@@ -29,10 +29,6 @@ class CORE_EXPORT NGPhysicalBoxFragment final
       child.fragment->Release();
   }
 
-  ChildLinkList Children() const final {
-    return ChildLinkList(num_children_, &children_[0]);
-  }
-
   base::Optional<LayoutUnit> Baseline(const NGBaselineRequest& request) const {
     return baselines_.Offset(request);
   }

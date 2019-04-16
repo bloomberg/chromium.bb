@@ -17,8 +17,8 @@ namespace blink {
 namespace {
 
 struct SameSizeAsNGPhysicalContainerFragment : NGPhysicalFragment {
-  wtf_size_t size;
   void* pointer;
+  wtf_size_t size;
 };
 
 static_assert(sizeof(NGPhysicalContainerFragment) ==
@@ -34,6 +34,7 @@ NGPhysicalContainerFragment::NGPhysicalContainerFragment(
     NGFragmentType type,
     unsigned sub_type)
     : NGPhysicalFragment(builder, type, sub_type),
+      buffer_(buffer),
       num_children_(builder->children_.size()) {
   has_floating_descendants_ = builder->HasFloatingDescendants();
 
