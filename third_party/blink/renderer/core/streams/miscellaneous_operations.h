@@ -39,6 +39,24 @@ CORE_EXPORT StreamAlgorithm* CreateAlgorithmFromUnderlyingMethod(
     v8::MaybeLocal<v8::Value> extra_arg,
     ExceptionState&);
 
+// Looks up |method_name| on |object|. Will throw an exception if the lookup
+// fails or if the resolved method is neither a function nor undefined.
+// |name_for_error| is used for the name of the method in exception messages.
+CORE_EXPORT v8::MaybeLocal<v8::Value> ResolveMethod(
+    ScriptState*,
+    v8::Local<v8::Object> object,
+    const char* method_name,
+    const char* name_for_error,
+    ExceptionState&);
+
+// This works like CreateAlgorithmFromUnderlyingMethod() but |method| must
+// already have been resolved and verified to be a v8::Function.
+CORE_EXPORT StreamAlgorithm* CreateAlgorithmFromResolvedMethod(
+    ScriptState*,
+    v8::Local<v8::Object> underlying_object,
+    v8::Local<v8::Value> method,
+    v8::MaybeLocal<v8::Value> extra_arg);
+
 // Create a StreamStartAlgorithm from the "start" method on |underlying_object|.
 // Unlike other algorithms, the lookup of the method on the object is done at
 // execution time rather than algorithm creation time. |method_name_for_error|
