@@ -332,3 +332,57 @@ testcase.myFilesAutoExpandOnce = async () => {
   // Check that MyFiles is still collapsed.
   await remoteCall.waitForElement(appId, myFiles + ':not([expanded])');
 };
+
+/**
+ * Tests that My files refreshes its contents when PlayFiles is mounted.
+ * crbug.com/946972.
+ */
+testcase.myFilesUpdatesWhenAndroidVolumeMounts = async () => {
+  const playFilesTreeItem = '#directory-tree [entry-label="Play files"]';
+  // Mount Downloads.
+  await sendTestMessage({name: 'mountDownloads'});
+
+  // Wait until Downloads is mounted.
+  await remoteCall.waitFor('getVolumesCount', null, (count) => count === 1, []);
+
+  // Open Files app on local Downloads.
+  const appId =
+      await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.beautiful], []);
+
+  // Click on My files and wait it to load.
+  const myFiles = '#directory-tree [entry-label="My files"]';
+  const downloadsRow = ['Downloads', '--', 'Folder'];
+  const playFilesRow = ['Play files', '--', 'Folder'];
+  const crostiniRow = ['Linux files', '--', 'Folder'];
+  await remoteCall.waitAndClickElement(appId, myFiles);
+  await remoteCall.waitForFiles(
+      appId, [downloadsRow, crostiniRow],
+      {ignoreFileSize: true, ignoreLastModifiedTime: true});
+
+  // Mount Play files volume.
+  await sendTestMessage({name: 'mountPlayFiles'});
+
+  // Wait until it is mounted.
+  await remoteCall.waitFor('getVolumesCount', null, (count) => count === 2, []);
+
+  // Android volume should automatically appear on directory tree and file list.
+  await remoteCall.waitForElement(appId, playFilesTreeItem);
+  await remoteCall.waitForFiles(
+      appId, [downloadsRow, crostiniRow, playFilesRow],
+      {ignoreFileSize: true, ignoreLastModifiedTime: true});
+
+  // Un-mount Play files volume.
+  await sendTestMessage({name: 'unmountPlayFiles'});
+
+  // Wait until it is un-mounted.
+  await remoteCall.waitFor('getVolumesCount', null, (count) => count === 1, []);
+
+  // Check: Play files should disappear from file list.
+  await remoteCall.waitForFiles(
+      appId, [downloadsRow, crostiniRow],
+      {ignoreFileSize: true, ignoreLastModifiedTime: true});
+
+  // Check: Play files should disappear from directory tree.
+  chrome.test.assertTrue(
+      !!await remoteCall.waitForElementLost(appId, playFilesTreeItem));
+};
