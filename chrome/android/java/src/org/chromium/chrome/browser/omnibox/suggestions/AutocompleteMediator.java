@@ -136,6 +136,7 @@ class AutocompleteMediator
     private float mMaxRequiredWidth;
     private float mMaxMatchContentsWidth;
     private boolean mUseDarkColors = true;
+    private boolean mShowSuggestionFavicons;
     private int mLayoutDirection;
 
     private WindowAndroid mWindowAndroid;
@@ -307,6 +308,9 @@ class AutocompleteMediator
             mEditUrlProcessor = null;
         }
 
+        mShowSuggestionFavicons =
+                ChromeFeatureList.isEnabled(ChromeFeatureList.OMNIBOX_SHOW_SUGGESTION_FAVICONS);
+
         for (Runnable deferredRunnable : mDeferredNativeRunnables) {
             mHandler.post(deferredRunnable);
         }
@@ -369,6 +373,7 @@ class AutocompleteMediator
      */
     void setAutocompleteProfile(Profile profile) {
         mAutocomplete.setProfile(profile);
+        mBasicSuggestionProcessor.setProfile(profile);
     }
 
     /**
@@ -754,6 +759,9 @@ class AutocompleteMediator
             PropertyModel model = processor.createModelForSuggestion(suggestion);
             model.set(SuggestionCommonProperties.LAYOUT_DIRECTION, mLayoutDirection);
             model.set(SuggestionCommonProperties.USE_DARK_COLORS, mUseDarkColors);
+            model.set(SuggestionCommonProperties.SHOW_SUGGESTION_ICONS,
+                    mShowSuggestionFavicons
+                            || DeviceFormFactor.isNonMultiDisplayContextOnTablet(mContext));
 
             // Before populating the model, add it to the list of current models.  If the suggestion
             // has an image and the image was already cached, it will be updated synchronously and

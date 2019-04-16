@@ -10,7 +10,7 @@ import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.ColorRes;
-import android.support.annotation.DrawableRes;
+import android.support.annotation.DimenRes;
 import android.support.annotation.IntDef;
 import android.support.annotation.VisibleForTesting;
 import android.support.v4.graphics.drawable.DrawableCompat;
@@ -49,6 +49,13 @@ public class SuggestionView extends ViewGroup implements OnClickListener {
         int MULTI_LINE_ANSWER = 2;
     }
 
+    @IntDef({SuggestionIconType.FALLBACK, SuggestionIconType.FAVICON})
+    @Retention(RetentionPolicy.SOURCE)
+    @interface SuggestionIconType {
+        int FALLBACK = 0;
+        int FAVICON = 1;
+    }
+
     private final int mSuggestionHeight;
     private final int mSuggestionAnswerHeight;
     @SuggestionLayoutType
@@ -63,9 +70,14 @@ public class SuggestionView extends ViewGroup implements OnClickListener {
     private final View mRefineView;
     private TintedDrawable mRefineIcon;
 
+    private boolean mUseDarkIconTint;
+
     // Pre-computed offsets in px.
-    private final int mSuggestionStartOffsetPx;
-    private final int mSuggestionIconWidthPx;
+    private int mSuggestionIconAreaSizePx;
+    private int mSuggestionFaviconSizePx;
+    // Current suggestion icon dimensions.
+    private int mSuggestionIconWidthPx;
+    private int mSuggestionIconHeightPx;
 
     /**
      * Constructs a new omnibox suggestion view.
@@ -140,14 +152,11 @@ public class SuggestionView extends ViewGroup implements OnClickListener {
 
         mRefineWidth =
                 getResources().getDimensionPixelSize(R.dimen.omnibox_suggestion_refine_width);
-
         mRefineViewOffsetPx = getResources().getDimensionPixelSize(
                 R.dimen.omnibox_suggestion_refine_view_modern_end_padding);
-
-        mSuggestionStartOffsetPx =
-                getResources().getDimensionPixelOffset(R.dimen.omnibox_suggestion_start_offset);
-        mSuggestionIconWidthPx =
-                getResources().getDimensionPixelSize(R.dimen.location_bar_icon_width);
+        mSuggestionFaviconSizePx =
+                getResources().getDimensionPixelSize(R.dimen.omnibox_suggestion_favicon_size);
+        setSuggestionIconAreaWidthRes(R.dimen.omnibox_suggestion_start_offset_without_icon);
     }
 
     @Override
@@ -257,6 +266,15 @@ public class SuggestionView extends ViewGroup implements OnClickListener {
         return mContentsView.mAnswerImage;
     }
 
+    /**
+     * Specify area width for the suggestion icon.
+     * This call generally controls suggestion icon visibility.
+     * @param areaWidthRes Dimen resource specifying area width.
+     */
+    void setSuggestionIconAreaWidthRes(@DimenRes int areaWidthRes) {
+        mSuggestionIconAreaSizePx = getResources().getDimensionPixelOffset(areaWidthRes);
+    }
+
     void setRefinable(boolean refinable) {
         if (refinable) {
             mRefineView.setVisibility(VISIBLE);
@@ -303,20 +321,26 @@ public class SuggestionView extends ViewGroup implements OnClickListener {
 
     /**
      * Updates the suggestion icon to the specified drawable with the specified tint.
-     * @param resId resource id (may be bitmap or vector) of icon to display
-     * @param useDarkTint specifies whether to apply dark or light tint to an icon
+     * @param icon Drawable instance.
+     * @param type Type / function of the supplied icon.
      * @param allowTint specifies whether icon should receive a tint or displayed as is.
+     * @param useDarkTint specifies whether to apply dark or light tint to an icon
      */
-    void setSuggestionIconDrawable(@DrawableRes int resId, boolean useDarkTint, boolean allowTint) {
-        mContentsView.mSuggestionIcon = AppCompatResources.getDrawable(getContext(), resId);
+    void setSuggestionIconDrawable(
+            Drawable icon, @SuggestionIconType int type, boolean allowTint, boolean useDarkTint) {
+        if (type == SuggestionIconType.FALLBACK) {
+            mSuggestionIconWidthPx = icon.getIntrinsicWidth();
+            mSuggestionIconHeightPx = icon.getIntrinsicHeight();
+        } else {
+            mSuggestionIconWidthPx = mSuggestionFaviconSizePx;
+            mSuggestionIconHeightPx = mSuggestionFaviconSizePx;
+        }
+
+        mContentsView.mSuggestionIcon = icon;
         mContentsView.mAllowTint = allowTint;
-        mContentsView.mSuggestionIcon.setBounds(0, 0,
-                mContentsView.mSuggestionIcon.getIntrinsicWidth(),
-                mContentsView.mSuggestionIcon.getIntrinsicHeight());
+        mUseDarkIconTint = useDarkTint;
+        icon.setBounds(0, 0, mSuggestionIconWidthPx, mSuggestionIconHeightPx);
         updateSuggestionIconTint(useDarkTint);
-        // Note: invalidate() does not immediately invoke onDraw(), but schedules it to be called at
-        // some point in the future.
-        // https://developer.android.com/reference/android/view/View.html#invalidate()
         mContentsView.invalidate();
     }
 
@@ -429,12 +453,11 @@ public class SuggestionView extends ViewGroup implements OnClickListener {
             if (mSuggestionIcon != null) {
                 canvas.save();
                 float suggestionIconLeft =
-                        (mSuggestionIconWidthPx - mSuggestionIcon.getIntrinsicWidth()) / 2f;
+                        (mSuggestionIconAreaSizePx - mSuggestionIconWidthPx) / 2f;
                 if (getLayoutDirection() == LAYOUT_DIRECTION_RTL) {
-                    suggestionIconLeft += getMeasuredWidth() - mSuggestionIconWidthPx;
+                    suggestionIconLeft += getMeasuredWidth() - mSuggestionIconAreaSizePx;
                 }
-                float suggestionIconTop =
-                        (getMeasuredHeight() - mSuggestionIcon.getIntrinsicHeight()) / 2f;
+                float suggestionIconTop = (getMeasuredHeight() - mSuggestionIconHeightPx) / 2f;
                 canvas.translate(suggestionIconLeft, suggestionIconTop);
                 mSuggestionIcon.draw(canvas);
                 canvas.restore();
@@ -498,10 +521,10 @@ public class SuggestionView extends ViewGroup implements OnClickListener {
             final int answerImageBottom = answerImageTop + mAnswerImage.getMeasuredHeight();
             final int line1AdditionalStartPadding =
                     mSuggestionDelegate.getAdditionalTextLine1StartPadding(
-                            mTextLine1, r - l - mSuggestionStartOffsetPx);
+                            mTextLine1, r - l - mSuggestionIconAreaSizePx);
 
             if (getLayoutDirection() == LAYOUT_DIRECTION_RTL) {
-                int rightStartPos = r - l - mSuggestionStartOffsetPx;
+                int rightStartPos = r - l - mSuggestionIconAreaSizePx;
                 mTextLine1.layout(
                         0, line1Top, rightStartPos - line1AdditionalStartPadding, line1Bottom);
                 mAnswerImage.layout(rightStartPos - imageWidth, answerImageTop, rightStartPos,
@@ -509,11 +532,11 @@ public class SuggestionView extends ViewGroup implements OnClickListener {
                 mTextLine2.layout(
                         0, line2Top, rightStartPos - (imageWidth + imageSpacing), line2Bottom);
             } else {
-                mTextLine1.layout(mSuggestionStartOffsetPx + line1AdditionalStartPadding, line1Top,
+                mTextLine1.layout(mSuggestionIconAreaSizePx + line1AdditionalStartPadding, line1Top,
                         r - l, line1Bottom);
-                mAnswerImage.layout(mSuggestionStartOffsetPx, answerImageTop,
-                        mSuggestionStartOffsetPx + imageWidth, answerImageBottom);
-                mTextLine2.layout(mSuggestionStartOffsetPx + imageWidth + imageSpacing, line2Top,
+                mAnswerImage.layout(mSuggestionIconAreaSizePx, answerImageTop,
+                        mSuggestionIconAreaSizePx + imageWidth, answerImageBottom);
+                mTextLine2.layout(mSuggestionIconAreaSizePx + imageWidth + imageSpacing, line2Top,
                         r - l, line2Bottom);
             }
         }
@@ -524,7 +547,7 @@ public class SuggestionView extends ViewGroup implements OnClickListener {
             //                style spans) measured and if that remains the same along with the
             //                height/width of this view, then we should be able to skip measure
             //                properly.
-            int maxWidth = MeasureSpec.getSize(widthMeasureSpec) - mSuggestionStartOffsetPx;
+            int maxWidth = MeasureSpec.getSize(widthMeasureSpec) - mSuggestionIconAreaSizePx;
             mTextLine1.measure(MeasureSpec.makeMeasureSpec(maxWidth, MeasureSpec.AT_MOST),
                     MeasureSpec.makeMeasureSpec(mSuggestionHeight, MeasureSpec.AT_MOST));
             mTextLine2.measure(MeasureSpec.makeMeasureSpec(maxWidth, MeasureSpec.AT_MOST),
