@@ -5,7 +5,7 @@ module.exports = function(grunt) {
       args: [
         ...(inspect ? ["--inspect-brk"] : []),
         "-r", "ts-node/register/transpile-only",
-        "./node-run.js",
+        "./run-node.js",
         ...args
       ]
     };
