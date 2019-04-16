@@ -34,7 +34,6 @@
 #include "base/callback.h"
 #include "base/time/time.h"
 #include "cc/input/browser_controls_state.h"
-#include "cc/paint/paint_canvas.h"
 #include "cc/trees/element_id.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_float_size.h"
@@ -154,19 +153,6 @@ class WebWidget {
   // update for the purposes of metrics gathering.
   virtual void UpdateLifecycle(LifecycleUpdate requested_update,
                                LifecycleUpdateReason reason) {}
-
-  // Called to paint the rectangular region within the WebWidget
-  // onto the specified canvas at (view_port.x, view_port.y).
-  //
-  // Before calling PaintContent(), the caller must ensure the lifecycle of the
-  // widget's frame is clean by calling UpdateLifecycle(LifecycleUpdate::All).
-  // It is okay to call paint multiple times once the lifecycle is clean,
-  // assuming no other changes are made to the WebWidget (e.g., once
-  // events are processed, it should be assumed that another call to
-  // UpdateLifecycle is warranted before painting again). Paints starting from
-  // the main LayoutView's property tree state, thus ignoring any transient
-  // transormations (e.g. pinch-zoom, dev tools emulation, etc.).
-  virtual void PaintContent(cc::PaintCanvas*, const WebRect& view_port) {}
 
   // Called to inform the WebWidget of a change in theme.
   // Implementors that cache rendered copies of widgets need to re-render
