@@ -220,7 +220,7 @@ class ValidationPool(object):
         launcher is NOT considered a Pre-CQ trybot.)
       tree_was_open: Whether the tree was open when the pool was created.
       applied: List of CLs that have been applied to the current repo.
-      buildbucket_id: Buildbucket id of the current build as a string .
+      buildbucket_id: Buildbucket id of the current build as a string or int.
                       None if not buildbucket scheduled.
       builder_run: BuilderRun instance used to fetch cidb handle and metadata
         instance. Please note due to the pickling logic, this MUST be the last
@@ -245,7 +245,10 @@ class ValidationPool(object):
 
     if (buildbucket_id is not None and
         not isinstance(buildbucket_id, basestring)):
-      raise ValueError("Invalid buildbucket_id: %r" % (builder_name,))
+      if isinstance(buildbucket_id, int):
+        buildbucket_id = str(buildbucket_id)
+      else:
+        raise ValueError("Invalid buildbucket_id: %r" % (builder_name,))
 
     for changes_name, changes_value in (
         ('candidates', candidates),
