@@ -330,6 +330,10 @@ void LayoutInline::StyleDidChange(StyleDifference diff,
     if (!ShouldCreateBoxFragment()) {
       UpdateShouldCreateBoxFragment();
     }
+    if (old_style &&
+        new_style.GetUnicodeBidi() != old_style->GetUnicodeBidi()) {
+      SetNeedsCollectInlines();
+    }
   }
 
   bool old_style_is_containing_block = ComputeIsAbsoluteContainer(old_style);

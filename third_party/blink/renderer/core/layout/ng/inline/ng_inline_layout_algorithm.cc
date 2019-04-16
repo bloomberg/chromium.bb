@@ -37,6 +37,16 @@
 
 namespace blink {
 
+namespace {
+
+inline void ClearNeedsLayoutIfNeeded(LayoutObject* layout_object) {
+  DCHECK(layout_object);
+  if (layout_object->NeedsLayout())
+    layout_object->ClearNeedsLayout();
+}
+
+}  // namespace
+
 NGInlineLayoutAlgorithm::NGInlineLayoutAlgorithm(
     NGInlineNode inline_node,
     const NGConstraintSpace& space,
@@ -86,6 +96,8 @@ NGInlineBoxState* NGInlineLayoutAlgorithm::HandleCloseTag(
     box->EnsureTextMetrics(*item.Style(), baseline_type_);
   box = box_states_->OnCloseTag(&line_box_, box, baseline_type_,
                                 item.HasEndEdge());
+  item.GetLayoutObject()->SetShouldDoFullPaintInvalidation();
+  ClearNeedsLayoutIfNeeded(item.GetLayoutObject());
   return box;
 }
 
@@ -227,6 +239,7 @@ void NGInlineLayoutAlgorithm::CreateLine(
       }
       line_box_.AddChild(text_builder.ToTextFragment(), box->text_top,
                          item_result.inline_size, item.BidiLevel());
+      ClearNeedsLayoutIfNeeded(item.GetLayoutObject());
     } else if (item.Type() == NGInlineItem::kControl) {
       PlaceControlItem(item, *line_info, &item_result, box);
     } else if (item.Type() == NGInlineItem::kOpenTag) {
@@ -384,6 +397,7 @@ void NGInlineLayoutAlgorithm::PlaceControlItem(const NGInlineItem& item,
   }
   DCHECK(item.GetLayoutObject());
   DCHECK(item.GetLayoutObject()->IsText());
+  ClearNeedsLayoutIfNeeded(item.GetLayoutObject());
 
   if (UNLIKELY(quirks_mode_ && !box->HasMetrics()))
     box->EnsureTextMetrics(*item.Style(), baseline_type_);

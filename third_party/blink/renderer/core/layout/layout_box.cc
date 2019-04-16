@@ -362,6 +362,11 @@ void LayoutBox::StyleDidChange(StyleDifference diff,
         old_style->OverscrollBehaviorY() != new_style.OverscrollBehaviorY()) {
       SetNeedsPaintPropertyUpdate();
     }
+
+    if (IsInLayoutNGInlineFormattingContext() && IsAtomicInlineLevel() &&
+        old_style->Direction() != new_style.Direction()) {
+      SetNeedsCollectInlines();
+    }
   }
 
   if (diff.TransformChanged()) {

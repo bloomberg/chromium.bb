@@ -133,13 +133,12 @@ class NGLineBoxMarker {
 // |NGInlineItem|.
 class ItemsBuilderForMarkLineBoxesDirty {
  public:
-  void Append(const String&, const ComputedStyle*, LayoutText*) {}
-  bool Append(const String&, LayoutText*) { return false; }
+  void AppendText(const String&, LayoutText*) {}
+  bool AppendTextReusing(const String&, LayoutText*) { return false; }
   void AppendOpaque(NGInlineItem::NGInlineItemType,
-                    const ComputedStyle*,
                     LayoutObject*) {}
-  void AppendBreakOpportunity(const ComputedStyle*, LayoutObject*) {}
-  void AppendAtomicInline(const ComputedStyle*, LayoutObject*) {}
+  void AppendBreakOpportunity(LayoutObject*) {}
+  void AppendAtomicInline(LayoutObject*) {}
   void AppendFloating(LayoutObject*) {
     has_floating_or_out_of_flow_positioned_ = true;
   }
@@ -208,14 +207,14 @@ void CollectInlinesInternal(LayoutBlockFlow* block,
       // reuse. builder->MightCollapseWithPreceding(*previous_text)
       bool item_reused = false;
       if (previous_text && layout_text->HasValidInlineItems())
-        item_reused = builder->Append(*previous_text, layout_text);
+        item_reused = builder->AppendTextReusing(*previous_text, layout_text);
 
       // If not create a new item as needed.
       if (!item_reused) {
         if (UNLIKELY(layout_text->IsWordBreak()))
-          builder->AppendBreakOpportunity(node->Style(), layout_text);
+          builder->AppendBreakOpportunity(layout_text);
         else
-          builder->Append(layout_text->GetText(), node->Style(), layout_text);
+          builder->AppendText(layout_text->GetText(), layout_text);
       }
 
       if (symbol == layout_text)
@@ -245,12 +244,12 @@ void CollectInlinesInternal(LayoutBlockFlow* block,
         // LayoutNGListItem produces the 'outside' list marker as an inline
         // block. This is an out-of-flow item whose position is computed
         // automatically.
-        builder->AppendOpaque(NGInlineItem::kListMarker, node->Style(), node);
+        builder->AppendOpaque(NGInlineItem::kListMarker, node);
       } else {
         // For atomic inlines add a unicode "object replacement character" to
         // signal the presence of a non-text object to the unicode bidi
         // algorithm.
-        builder->AppendAtomicInline(node->Style(), node);
+        builder->AppendAtomicInline(node);
 
         if (marker && marker->HandleAtomicInline(ToLayoutBox(node)))
           marker = nullptr;
@@ -836,11 +835,7 @@ void NGInlineNode::ShapeTextForFirstLineIfNeeded(NGInlineNodeData* data) {
 
   first_line_items->items.AppendVector(data->items);
   for (auto& item : first_line_items->items) {
-    if (item.style_) {
-      DCHECK(item.layout_object_);
-      item.style_ = item.layout_object_->FirstLineStyle();
-      item.SetStyleVariant(NGStyleVariant::kFirstLine);
-    }
+    item.SetStyleVariant(NGStyleVariant::kFirstLine);
   }
 
   // Check if we have a first-line anonymous inline box. It is the first

@@ -42,6 +42,18 @@ bool LayoutNGMixin<Base>::IsOfType(LayoutObject::LayoutObjectType type) const {
 }
 
 template <typename Base>
+void LayoutNGMixin<Base>::StyleDidChange(StyleDifference diff,
+                                         const ComputedStyle* old_style) {
+  Base::StyleDidChange(diff, old_style);
+
+  const ComputedStyle& new_style = Base::StyleRef();
+  if (old_style && Base::ChildrenInline() &&
+      new_style.GetUnicodeBidi() != old_style->GetUnicodeBidi()) {
+    Base::SetNeedsCollectInlines();
+  }
+}
+
+template <typename Base>
 NGInlineNodeData* LayoutNGMixin<Base>::TakeNGInlineNodeData() {
   return ng_inline_node_data_.release();
 }
