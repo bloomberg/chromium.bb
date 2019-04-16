@@ -306,25 +306,21 @@ TEST(AutofillProfileTest, CreateInferredLabelsI18n_FR) {
                        "antoine@exemple.com", "Exemple Inc", "8 Rue de Londres",
                        "", "Paris", "", "75009", "FR", "+33 (0) 1 42 68 53 00");
   profiles.back()->set_language_code("fr_FR");
-  profiles.back()->SetInfo(
-      AutofillType(ADDRESS_HOME_SORTING_CODE), UTF8ToUTF16("CEDEX"), "en-US");
   static const char* kExpectedLabels[] = {
       "",
       "Antoine de Saint-Exupéry",
       "Antoine de Saint-Exupéry, 8 Rue de Londres",
       "Antoine de Saint-Exupéry, 8 Rue de Londres, Paris",
       "Antoine de Saint-Exupéry, 8 Rue de Londres, 75009 Paris",
-      "Antoine de Saint-Exupéry, 8 Rue de Londres, 75009 Paris CEDEX",
-      "Exemple Inc, Antoine de Saint-Exupéry, 8 Rue de Londres, 75009 Paris "
-          "CEDEX",
-      "Exemple Inc, Antoine de Saint-Exupéry, 8 Rue de Londres, 75009 Paris "
-          "CEDEX, France",
-      "Exemple Inc, Antoine de Saint-Exupéry, 8 Rue de Londres, 75009 Paris "
-          "CEDEX, France, antoine@exemple.com",
-      "Exemple Inc, Antoine de Saint-Exupéry, 8 Rue de Londres, 75009 Paris "
-          "CEDEX, France, antoine@exemple.com, +33 (0) 1 42 68 53 00",
-      "Exemple Inc, Antoine de Saint-Exupéry, 8 Rue de Londres, 75009 Paris "
-          "CEDEX, France, antoine@exemple.com, +33 (0) 1 42 68 53 00",
+      "Exemple Inc, Antoine de Saint-Exupéry, 8 Rue de Londres, 75009 Paris",
+      "Exemple Inc, Antoine de Saint-Exupéry, 8 Rue de Londres, 75009 Paris, "
+      "France",
+      "Exemple Inc, Antoine de Saint-Exupéry, 8 Rue de Londres, 75009 Paris, "
+      "France, antoine@exemple.com",
+      "Exemple Inc, Antoine de Saint-Exupéry, 8 Rue de Londres, 75009 Paris, "
+      "France, antoine@exemple.com, +33 (0) 1 42 68 53 00",
+      "Exemple Inc, Antoine de Saint-Exupéry, 8 Rue de Londres, 75009 Paris, "
+      "France, antoine@exemple.com, +33 (0) 1 42 68 53 00",
   };
 
   std::vector<base::string16> labels;
