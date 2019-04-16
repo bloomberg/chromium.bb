@@ -41,7 +41,9 @@ class CORE_EXPORT NGPhysicalContainerFragment : public NGPhysicalFragment {
     const NGLinkStorage* buffer_;
   };
 
-  virtual ChildLinkList Children() const = 0;
+  ChildLinkList Children() const {
+    return ChildLinkList(num_children_, buffer_);
+  }
 
   void AddOutlineRectsForNormalChildren(Vector<LayoutRect>* outline_rects,
                                         const LayoutPoint& additional_offset,
@@ -61,6 +63,9 @@ class CORE_EXPORT NGPhysicalContainerFragment : public NGPhysicalFragment {
                               NGFragmentType,
                               unsigned sub_type);
 
+  // Because flexible arrays need to be the last member in a class, the actual
+  // storage is in the subclass and we just keep a pointer to it here.
+  const NGLinkStorage* buffer_;
   wtf_size_t num_children_;
 };
 
