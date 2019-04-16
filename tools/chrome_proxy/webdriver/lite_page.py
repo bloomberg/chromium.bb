@@ -337,6 +337,8 @@ class LitePage(IntegrationTest):
                                'NetworkQualityEstimator.Enabled:'
                                'force_effective_connection_type/2G')
       test_driver.AddChromeArg(
+          '--data-reduction-proxy-experiment=force_lite_page')
+      test_driver.AddChromeArg(
           '--force-fieldtrials='
           'NetworkQualityEstimator/Enabled/'
           'DataReductionProxyPreviewsBlackListTransition/Enabled/')
