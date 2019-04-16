@@ -15,14 +15,12 @@
 namespace blink {
 
 class HTMLElement;
-class WebFormElementObserverCallback;
 
 class CORE_EXPORT WebFormElementObserverImpl final
     : public GarbageCollectedFinalized<WebFormElementObserverImpl>,
       public WebFormElementObserver {
  public:
-  WebFormElementObserverImpl(HTMLElement&,
-                             std::unique_ptr<WebFormElementObserverCallback>);
+  WebFormElementObserverImpl(HTMLElement&, base::OnceClosure);
   ~WebFormElementObserverImpl() override;
 
   // WebFormElementObserver implementation.
