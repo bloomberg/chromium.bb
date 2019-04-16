@@ -199,13 +199,19 @@ def WipeOldOutput(buildroot):
   osutils.RmDir(image_dir, ignore_missing=True, sudo=True)
 
 
-def MakeChroot(buildroot, replace, use_sdk, chrome_root=None, extra_env=None,
-               use_image=False, cache_dir=None):
+def MakeChroot(buildroot, replace, use_sdk, self_bootstrap=False,
+               chrome_root=None, extra_env=None, use_image=False,
+               cache_dir=None):
   """Wrapper around make_chroot."""
   cmd = ['cros_sdk', '--buildbot-log-version']
   if not use_image:
     cmd.append('--nouse-image')
-  cmd.append('--create' if use_sdk else '--bootstrap')
+  if use_sdk:
+    cmd.append('--create')
+  else:
+    cmd.append('--bootstrap')
+    if self_bootstrap:
+      cmd.append('--self-bootstrap')
 
   if replace:
     cmd.append('--replace')
