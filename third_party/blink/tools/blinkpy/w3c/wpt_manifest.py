@@ -194,6 +194,12 @@ class WPTManifest(object):
         wpt_path = finder.path_from_web_tests(path)
         manifest_path = host.filesystem.join(wpt_path, MANIFEST_NAME)
 
+        # Unconditionally delete local MANIFEST.json to avoid regenerating the
+        # manifest from scratch (when version is bumped) or invalid/out-of-date
+        # local manifest breaking the runner.
+        if host.filesystem.exists(manifest_path):
+            host.filesystem.remove(manifest_path)
+
         # TODO(crbug.com/853815): perhaps also cache the manifest for wpt_internal.
         if 'external' in path:
             base_manifest_path = finder.path_from_web_tests('external', BASE_MANIFEST_NAME)
@@ -201,12 +207,6 @@ class WPTManifest(object):
                 _log.error('Manifest base not found at "%s".', base_manifest_path)
                 host.filesystem.write_text_file(base_manifest_path, '{}')
 
-            # Unconditionally replace MANIFEST.json with the base manifest even if
-            # the former exists, to avoid regenerating the manifest from scratch
-            # when the manifest version changes. Remove the destination first as
-            # copyfile will fail if the two files are hardlinked or symlinked.
-            if host.filesystem.exists(manifest_path):
-                host.filesystem.remove(manifest_path)
             host.filesystem.copyfile(base_manifest_path, manifest_path)
 
         WPTManifest.generate_manifest(host, wpt_path)
