@@ -162,13 +162,15 @@ const char* const kQuerySelector =
 // Returns undefined if no elements are found, TOO_MANY_ELEMENTS (18) if too
 // many elements were found and strict mode is enabled.
 const char* const kQuerySelectorWithConditions =
-    R"(function (selector, strict, visible, inner_text_re) {
+    R"(function (selector, strict, visible, inner_text_str, value_str) {
         var found = this.querySelectorAll(selector);
         var found_index = -1;
-        var re = inner_text_re ? RegExp(inner_text_re) : undefined;
+        var inner_text_re = inner_text_str ? RegExp(inner_text_str) : undefined;
+        var value_re = value_str ? RegExp(value_str) : undefined;
         var match = function(e) {
           if (visible && e.getClientRects().length == 0) return false;
-          if (re && !re.test(e.innerText)) return false;
+          if (inner_text_re && !inner_text_re.test(e.innerText)) return false;
+          if (value_re && !value_re.test(e.value)) return false;
           return true;
         };
         for (let i = 0; i < found.length; i++) {
@@ -634,7 +636,8 @@ void WebController::ElementFinder::RecursiveFindElement(
           .Build());
   std::string function;
   if (index == (selector_.selectors.size() - 1)) {
-    if (selector_.must_be_visible || !selector_.inner_text_pattern.empty()) {
+    if (selector_.must_be_visible || !selector_.inner_text_pattern.empty() ||
+        !selector_.value_pattern.empty()) {
       function.assign(kQuerySelectorWithConditions);
       argument.emplace_back(runtime::CallArgument::Builder()
                                 .SetValue(base::Value::ToUniquePtrValue(
@@ -643,6 +646,10 @@ void WebController::ElementFinder::RecursiveFindElement(
       argument.emplace_back(runtime::CallArgument::Builder()
                                 .SetValue(base::Value::ToUniquePtrValue(
                                     base::Value(selector_.inner_text_pattern)))
+                                .Build());
+      argument.emplace_back(runtime::CallArgument::Builder()
+                                .SetValue(base::Value::ToUniquePtrValue(
+                                    base::Value(selector_.value_pattern)))
                                 .Build());
     }
   }

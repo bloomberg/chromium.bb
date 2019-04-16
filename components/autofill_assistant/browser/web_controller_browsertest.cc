@@ -539,6 +539,31 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, InnerTextCondition) {
   RunLaxElementCheck(selector, false);
 }
 
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, ValueCondition) {
+  // One match
+  RunLaxElementCheck(Selector({"#input1"}).MatchingValue("helloworld1"), true);
+  RunStrictElementCheck(Selector({"#input1"}).MatchingValue("helloworld1"),
+                        true);
+
+  // No matches
+  RunLaxElementCheck(Selector({"#input2"}).MatchingValue("doesnotmatch"),
+                     false);
+  RunStrictElementCheck(Selector({"#input2"}).MatchingValue("doesnotmatch"),
+                        false);
+
+  // Multiple matches
+  RunLaxElementCheck(Selector({"#input1,#input2"}).MatchingValue("^hello"),
+                     true);
+  RunStrictElementCheck(Selector({"#input1,#input2"}).MatchingValue("^hello"),
+                        false);
+
+  // Multiple selector matches, one value match
+  RunLaxElementCheck(Selector({"#input1,#input2"}).MatchingValue("helloworld1"),
+                     true);
+  RunStrictElementCheck(
+      Selector({"#input1,#input2"}).MatchingValue("helloworld1"), true);
+}
+
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
                        ConcurrentElementsVisibilityCheck) {
   std::vector<Selector> selectors;
