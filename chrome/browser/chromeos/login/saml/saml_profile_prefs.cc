@@ -11,7 +11,9 @@ namespace {
 
 const int kDefaultSAMLOfflineSigninTimeLimit = 14 * 24 * 60 * 60;  // 14 days.
 
+// In-session password-change feature (includes password expiry notifications).
 const bool kDefaultSamlInSessionPasswordChangeEnabled = false;
+const int kDefaultSamlPasswordExpirationAdvanceWarningDays = 14;
 
 }  // namespace
 
@@ -24,6 +26,9 @@ void RegisterSamlProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 
   registry->RegisterBooleanPref(prefs::kSamlInSessionPasswordChangeEnabled,
                                 kDefaultSamlInSessionPasswordChangeEnabled);
+  registry->RegisterIntegerPref(
+      prefs::kSamlPasswordExpirationAdvanceWarningDays,
+      kDefaultSamlPasswordExpirationAdvanceWarningDays);
 }
 
 }  // namespace chromeos

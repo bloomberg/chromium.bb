@@ -3545,6 +3545,14 @@
     ]
   },
 
+  "SamlPasswordExpirationAdvanceWarningDays": {
+    "os": [],
+    "test_policy": { "SamlPasswordExpirationAdvanceWarningDays": 7 },
+    "pref_mappings": [
+      { "pref": "saml.password_expiration_advance_warning_days"}
+    ]
+  },
+
   "----- Chrome OS device policies ---------------------------------------": {},
 
   "DevicePolicyRefreshRate": {

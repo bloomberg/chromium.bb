@@ -2010,6 +2010,11 @@ const char kKnownUserParentAccessCodeConfig[] =
 // Also enables SAML password expiry notifications, if we have that information.
 const char kSamlInSessionPasswordChangeEnabled[] =
     "saml.in_session_password_change_enabled";
+// The number of days in advance to notify the user that their SAML password
+// will expire (works when kSamlInSessionPasswordChangeEnabled is true).
+const char kSamlPasswordExpirationAdvanceWarningDays[] =
+    "saml.password_expiration_advance_warning_days";
+
 #endif  // defined(OS_CHROMEOS)
 
 // Whether there is a Flash version installed that supports clearing LSO data.
