@@ -159,8 +159,8 @@ void AutofillAgent::BindRequest(mojom::AutofillAgentAssociatedRequest request) {
 
 bool AutofillAgent::FormDataCompare::operator()(const FormData& lhs,
                                                 const FormData& rhs) const {
-  return std::tie(lhs.name, lhs.origin, lhs.action, lhs.is_form_tag) <
-         std::tie(rhs.name, rhs.origin, rhs.action, rhs.is_form_tag);
+  return std::tie(lhs.name, lhs.url, lhs.action, lhs.is_form_tag) <
+         std::tie(rhs.name, rhs.url, rhs.action, rhs.is_form_tag);
 }
 
 void AutofillAgent::DidCommitProvisionalLoad(bool is_same_document_navigation,

@@ -38,7 +38,7 @@ FormData GenerateWithProto(const ::form_data_fuzzer::Form& form_proto) {
   result.is_formless_checkout = form_proto.is_formless_checkout();
   result.name = UTF8ToUTF16(form_proto.name());
   result.action = GURL(form_proto.action());
-  result.origin = GURL(form_proto.origin());
+  result.url = GURL(form_proto.origin());
   result.main_frame_origin =
       url::Origin::Create(GURL(form_proto.main_frame_origin()));
 

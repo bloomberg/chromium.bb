@@ -1525,7 +1525,7 @@ TEST_P(AutofillQueryTest, ExpiredCacheInResponse) {
 TEST_P(AutofillQueryTest, RichMetadata_Enabled) {
   // Initialize a form. Note that this state is post-parse.
   FormData form;
-  form.origin = GURL("https://origin.com");
+  form.url = GURL("https://origin.com");
   form.action = GURL("https://origin.com/submit-me");
   form.id_attribute = UTF8ToUTF16("form-id-attribute");
   form.name_attribute = UTF8ToUTF16("form-name-attribute");
@@ -1625,7 +1625,7 @@ TEST_P(AutofillQueryTest, RichMetadata_Enabled) {
 TEST_P(AutofillQueryTest, RichMetadata_Disabled) {
   // Initialize a form. Note that this state is post-parse.
   FormData form;
-  form.origin = GURL("https://origin.com");
+  form.url = GURL("https://origin.com");
   form.action = GURL("https://origin.com/submit-me");
   form.id_attribute = UTF8ToUTF16("form-id-attribute");
   form.name_attribute = UTF8ToUTF16("form-name-attribute");
@@ -1715,7 +1715,7 @@ TEST_P(AutofillUploadTest, RichMetadata) {
   local_feature.InitAndEnableFeature(features::kAutofillMetadataUploads);
 
   FormData form;
-  form.origin = GURL("https://origin.com");
+  form.url = GURL("https://origin.com");
   form.action = GURL("https://origin.com/submit-me");
   form.id_attribute = UTF8ToUTF16("form-id_attribute");
   form.name_attribute = UTF8ToUTF16("form-id_attribute");

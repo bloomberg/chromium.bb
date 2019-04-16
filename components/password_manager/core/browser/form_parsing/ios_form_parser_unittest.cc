@@ -72,7 +72,7 @@ class IOSFormParserTest : public testing::Test {
 FormData GetFormData(const FormParsingTestCase& test_form) {
   FormData form_data;
   form_data.action = GURL("http://example1.com");
-  form_data.origin = GURL("http://example2.com");
+  form_data.url = GURL("http://example2.com");
   for (size_t i = 0; i < test_form.fields.size(); ++i) {
     const TestFieldData& field_data = test_form.fields[i];
     FormFieldData field;

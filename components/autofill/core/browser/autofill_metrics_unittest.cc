@@ -501,7 +501,7 @@ TEST_F(AutofillMetricsTest, QualityMetrics) {
   // Set up our form data.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
-  form.origin = GURL("http://example.com/form.html");
+  form.url = GURL("http://example.com/form.html");
   form.action = GURL("http://example.com/submit.html");
   form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
 
@@ -688,7 +688,7 @@ TEST_F(AutofillMetricsTest,
   // Set up our form data.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
-  form.origin = GURL("http://example.com/form.html");
+  form.url = GURL("http://example.com/form.html");
   form.action = GURL("http://example.com/submit.html");
 
   std::vector<ServerFieldType> heuristic_types, server_types;
@@ -768,7 +768,7 @@ TEST_F(AutofillMetricsTest,
   // Set up our form data.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
-  form.origin = GURL("http://example.com/form.html");
+  form.url = GURL("http://example.com/form.html");
   form.action = GURL("http://example.com/submit.html");
 
   std::vector<ServerFieldType> heuristic_types, server_types;
@@ -835,7 +835,7 @@ TEST_F(AutofillMetricsTest, LogHiddenRepresentationalFieldSkipDecision) {
   // Set up our form data.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
-  form.origin = GURL("http://example.com/form.html");
+  form.url = GURL("http://example.com/form.html");
   form.action = GURL("http://example.com/submit.html");
   form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
 
@@ -977,7 +977,7 @@ TEST_F(AutofillMetricsTest, LogRepeatedAddressTypeRationalized) {
   // Set up our form data.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
-  form.origin = GURL("http://example.com/form.html");
+  form.url = GURL("http://example.com/form.html");
   form.action = GURL("http://example.com/submit.html");
   form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
 
@@ -1084,7 +1084,7 @@ TEST_F(AutofillMetricsTest, LogRepeatedStateCountryTypeRationalized) {
   // Set up our form data.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
-  form.origin = GURL("http://example.com/form.html");
+  form.url = GURL("http://example.com/form.html");
   form.action = GURL("http://example.com/submit.html");
   form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
 
@@ -1221,7 +1221,7 @@ TEST_F(AutofillMetricsTest,
   // Set up our form data.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
-  form.origin = GURL("http://example.com/form.html");
+  form.url = GURL("http://example.com/form.html");
   form.action = GURL("http://example.com/submit.html");
 
   std::vector<ServerFieldType> heuristic_types, server_types;
@@ -1287,7 +1287,7 @@ TEST_F(AutofillMetricsTest,
   // Set up our form data.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
-  form.origin = GURL("http://example.com/form.html");
+  form.url = GURL("http://example.com/form.html");
   form.action = GURL("http://example.com/submit.html");
 
   std::vector<ServerFieldType> heuristic_types, server_types;
@@ -1588,7 +1588,7 @@ TEST_P(QualityMetricsTest, Classification) {
   // Set up our form data.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
-  form.origin = GURL("http://example.com/form.html");
+  form.url = GURL("http://example.com/form.html");
   form.action = GURL("http://example.com/submit.html");
   form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
 
@@ -1763,7 +1763,7 @@ TEST_F(AutofillMetricsTest, TimingMetrics) {
 
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
-  form.origin = GURL("http://example.com/form.html");
+  form.url = GURL("http://example.com/form.html");
   form.action = GURL("http://example.com/submit.html");
   form.main_frame_origin =
       url::Origin::Create(GURL("http://example_root.com/form.html"));
@@ -1804,7 +1804,7 @@ TEST_F(AutofillMetricsTest, QualityMetrics_NoSubmission) {
   // Set up our form data.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
-  form.origin = GURL("http://example.com/form.html");
+  form.url = GURL("http://example.com/form.html");
   form.action = GURL("http://example.com/submit.html");
   form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
 
@@ -1990,7 +1990,7 @@ TEST_F(AutofillMetricsTest, QualityMetrics_NoSubmission) {
 TEST_F(AutofillMetricsTest, QualityMetrics_BasedOnAutocomplete) {
   FormData form;
   form.name = ASCIIToUTF16("MyForm");
-  form.origin = GURL("http://myform.com/form.html");
+  form.url = GURL("http://myform.com/form.html");
   form.action = GURL("http://myform.com/submit.html");
   form.main_frame_origin =
       url::Origin::Create(GURL("http://example_root.com/form.html"));
@@ -2105,7 +2105,7 @@ TEST_F(AutofillMetricsTest, UpiVirtualPaymentAddress) {
   // Set up our form data.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
-  form.origin = GURL("http://example.com/form.html");
+  form.url = GURL("http://example.com/form.html");
   form.action = GURL("http://example.com/submit.html");
   form.main_frame_origin =
       url::Origin::Create(GURL("http://example_root.com/form.html"));
@@ -2164,7 +2164,7 @@ TEST_F(AutofillMetricsTest, PredictedMetricsWithAutocomplete) {
   FormData form;
   FormFieldData field;
   form.name = ASCIIToUTF16("TestForm");
-  form.origin = GURL("http://example.com/form.html");
+  form.url = GURL("http://example.com/form.html");
   form.action = GURL("http://example.com/submit.html");
   form.main_frame_origin =
       url::Origin::Create(GURL("http://example_root.com/form.html"));
@@ -2241,7 +2241,7 @@ TEST_F(AutofillMetricsTest, SaneMetricsWithCacheMismatch) {
   // Set up our form data.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
-  form.origin = GURL("http://example.com/form.html");
+  form.url = GURL("http://example.com/form.html");
   form.action = GURL("http://example.com/submit.html");
   form.main_frame_origin =
       url::Origin::Create(GURL("http://example_root.com/form.html"));
@@ -2340,7 +2340,7 @@ TEST_F(AutofillMetricsTest, StoredProfileCountAutofillableFormSubmission) {
   // Construct a fillable form.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
-  form.origin = GURL("http://example.com/form.html");
+  form.url = GURL("http://example.com/form.html");
   form.action = GURL("http://example.com/submit.html");
   form.main_frame_origin =
       url::Origin::Create(GURL("http://example_root.com/form.html"));
@@ -2376,7 +2376,7 @@ TEST_F(AutofillMetricsTest, StoredProfileCountNonAutofillableFormSubmission) {
   // Construct a non-fillable form.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
-  form.origin = GURL("http://example.com/form.html");
+  form.url = GURL("http://example.com/form.html");
   form.action = GURL("http://example.com/submit.html");
   form.main_frame_origin =
       url::Origin::Create(GURL("http://example_root.com/form.html"));
@@ -2408,7 +2408,7 @@ TEST_F(AutofillMetricsTest, NumberOfEditedAutofilledFields) {
   // Construct a fillable form.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
-  form.origin = GURL("http://example.com/form.html");
+  form.url = GURL("http://example.com/form.html");
   form.action = GURL("http://example.com/submit.html");
   form.main_frame_origin =
       url::Origin::Create(GURL("http://example_root.com/form.html"));
@@ -2462,7 +2462,7 @@ TEST_F(AutofillMetricsTest, NumberOfEditedAutofilledFields_NoSubmission) {
   // Construct a fillable form.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
-  form.origin = GURL("http://example.com/form.html");
+  form.url = GURL("http://example.com/form.html");
   form.action = GURL("http://example.com/submit.html");
   form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
 
@@ -2511,7 +2511,7 @@ TEST_F(AutofillMetricsTest, DeveloperEngagement) {
   // Start with a non-fillable form.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
-  form.origin = GURL("http://example.com/form.html");
+  form.url = GURL("http://example.com/form.html");
   form.action = GURL("http://example.com/submit.html");
   form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
 
@@ -2615,7 +2615,7 @@ TEST_F(AutofillMetricsTest,
   // Start with a non-fillable form.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
-  form.origin = GURL("http://example.com/form.html");
+  form.url = GURL("http://example.com/form.html");
   form.action = GURL("http://example.com/submit.html");
   form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
 
@@ -2661,7 +2661,7 @@ TEST_F(AutofillMetricsTest,
        UkmDeveloperEngagement_LogFillableFormParsedWithTypeHints) {
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
-  form.origin = GURL("http://example.com/form.html");
+  form.url = GURL("http://example.com/form.html");
   form.action = GURL("http://example.com/submit.html");
   form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
 
@@ -2718,7 +2718,7 @@ TEST_F(AutofillMetricsTest, UkmDeveloperEngagement_LogUpiVpaTypeHint) {
       {});
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
-  form.origin = GURL("http://example.com/form.html");
+  form.url = GURL("http://example.com/form.html");
   form.action = GURL("http://example.com/submit.html");
   form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
 
@@ -2919,7 +2919,7 @@ TEST_F(AutofillMetricsTest, AddressSuggestionsCount) {
   // Set up our form data.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
-  form.origin = GURL("http://example.com/form.html");
+  form.url = GURL("http://example.com/form.html");
   form.action = GURL("http://example.com/submit.html");
   form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
 
@@ -2991,7 +2991,7 @@ TEST_P(AutofillMetricsCompanyTest, CompanyNameSuggestions) {
   // Set up our form data.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
-  form.origin = GURL("http://example.com/form.html");
+  form.url = GURL("http://example.com/form.html");
   form.action = GURL("http://example.com/submit.html");
   form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
 
@@ -3035,7 +3035,7 @@ TEST_F(AutofillMetricsTest, CreditCardCheckoutFlowUserActions) {
   // Set up our form data.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
-  form.origin = GURL("http://example.com/form.html");
+  form.url = GURL("http://example.com/form.html");
   form.action = GURL("http://example.com/submit.html");
   form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
 
@@ -3220,7 +3220,7 @@ TEST_F(AutofillMetricsTest, CreditCardCheckoutFlowUserActions) {
 TEST_F(AutofillMetricsTest, UpiVpaUkmTest) {
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
-  form.origin = GURL("http://example.com/form.html");
+  form.url = GURL("http://example.com/form.html");
   form.action = GURL("http://example.com/submit.html");
   form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
   FormFieldData field;
@@ -3251,7 +3251,7 @@ TEST_F(AutofillMetricsTest, ProfileCheckoutFlowUserActions) {
   // Set up our form data.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
-  form.origin = GURL("http://example.com/form.html");
+  form.url = GURL("http://example.com/form.html");
   form.action = GURL("http://example.com/submit.html");
   form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
 
@@ -3390,7 +3390,7 @@ TEST_F(AutofillMetricsTest, PolledCreditCardSuggestions_DebounceLogs) {
   // Set up the form data.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
-  form.origin = GURL("http://www.foo.com/");
+  form.url = GURL("http://www.foo.com/");
 
   FormFieldData field;
   std::vector<ServerFieldType> field_types;
@@ -3450,7 +3450,7 @@ TEST_F(AutofillMetricsTest, QueriedCreditCardFormIsSecure) {
   // Set up the form data.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
-  form.origin = GURL("http://example.com/form.html");
+  form.url = GURL("http://example.com/form.html");
   form.action = GURL("http://example.com/submit.html");
   form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
 
@@ -3468,7 +3468,7 @@ TEST_F(AutofillMetricsTest, QueriedCreditCardFormIsSecure) {
 
   {
     // Simulate having seen this insecure form on page load.
-    form.origin = GURL("http://example.com/form.html");
+    form.url = GURL("http://example.com/form.html");
     form.action = GURL("http://example.com/submit.html");
     form.main_frame_origin =
         url::Origin::Create(autofill_client_.form_origin());
@@ -3487,7 +3487,7 @@ TEST_F(AutofillMetricsTest, QueriedCreditCardFormIsSecure) {
   {
     // Simulate having seen this secure form on page load.
     autofill_manager_->Reset();
-    form.origin = GURL("https://example.com/form.html");
+    form.url = GURL("https://example.com/form.html");
     form.action = GURL("https://example.com/submit.html");
     form.main_frame_origin =
         url::Origin::Create(autofill_client_.form_origin());
@@ -3511,7 +3511,7 @@ TEST_F(AutofillMetricsTest, PolledProfileSuggestions_DebounceLogs) {
   // Set up the form data.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
-  form.origin = GURL("http://example.com/form.html");
+  form.url = GURL("http://example.com/form.html");
   form.action = GURL("http://example.com/submit.html");
   form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
 
@@ -3568,7 +3568,7 @@ TEST_P(AutofillMetricsIFrameTest, CreditCardParsedFormEvents) {
   // Set up our form data.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
-  form.origin = GURL("http://example.com/form.html");
+  form.url = GURL("http://example.com/form.html");
   form.action = GURL("http://example.com/submit.html");
   form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
 
@@ -3600,7 +3600,7 @@ TEST_P(AutofillMetricsIFrameTest, CreditCardInteractedFormEvents) {
   // Set up our form data.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
-  form.origin = GURL("http://example.com/form.html");
+  form.url = GURL("http://example.com/form.html");
   form.action = GURL("http://example.com/submit.html");
   form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
 
@@ -3656,7 +3656,7 @@ TEST_P(AutofillMetricsIFrameTest, CreditCardPopupSuppressedFormEvents) {
   // Set up our form data.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
-  form.origin = GURL("http://example.com/form.html");
+  form.url = GURL("http://example.com/form.html");
   form.action = GURL("http://example.com/submit.html");
   form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
 
@@ -3714,7 +3714,7 @@ TEST_P(AutofillMetricsIFrameTest, CreditCardShownFormEvents) {
   // Set up our form data.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
-  form.origin = GURL("http://example.com/form.html");
+  form.url = GURL("http://example.com/form.html");
   form.action = GURL("http://example.com/submit.html");
   form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
 
@@ -3919,7 +3919,7 @@ TEST_P(AutofillMetricsIFrameTest, CreditCardSelectedFormEvents) {
   // Set up our form data.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
-  form.origin = GURL("http://example.com/form.html");
+  form.url = GURL("http://example.com/form.html");
   form.action = GURL("http://example.com/submit.html");
   form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
 
@@ -4000,7 +4000,7 @@ TEST_P(AutofillMetricsIFrameTest, CreditCardFilledFormEvents) {
   // Set up our form data.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
-  form.origin = GURL("http://example.com/form.html");
+  form.url = GURL("http://example.com/form.html");
   form.action = GURL("http://example.com/submit.html");
   form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
 
@@ -4241,7 +4241,7 @@ TEST_F(AutofillMetricsTest, CreditCardGetRealPanDuration) {
   // Set up our form data.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
-  form.origin = GURL("http://example.com/form.html");
+  form.url = GURL("http://example.com/form.html");
   form.action = GURL("http://example.com/submit.html");
   form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
 
@@ -4312,7 +4312,7 @@ TEST_F(AutofillMetricsTest,
   // Set up our form data.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
-  form.origin = GURL("http://example.com/form.html");
+  form.url = GURL("http://example.com/form.html");
   form.action = GURL("http://example.com/submit.html");
   form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
 
@@ -4354,7 +4354,7 @@ TEST_P(AutofillMetricsIFrameTest,
   // Set up our form data.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
-  form.origin = GURL("http://example.com/form.html");
+  form.url = GURL("http://example.com/form.html");
   form.action = GURL("http://example.com/submit.html");
 
   FormFieldData field;
@@ -4400,7 +4400,7 @@ TEST_P(AutofillMetricsIFrameTest,
   // Set up our form data.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
-  form.origin = GURL("http://example.com/form.html");
+  form.url = GURL("http://example.com/form.html");
   form.action = GURL("http://example.com/submit.html");
 
   FormFieldData field;
@@ -4447,7 +4447,7 @@ TEST_P(AutofillMetricsIFrameTest,
   // Set up our form data.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
-  form.origin = GURL("http://example.com/form.html");
+  form.url = GURL("http://example.com/form.html");
   form.action = GURL("http://example.com/submit.html");
   form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
 
@@ -4495,7 +4495,7 @@ TEST_P(AutofillMetricsIFrameTest,
   // Set up our form data.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
-  form.origin = GURL("http://example.com/form.html");
+  form.url = GURL("http://example.com/form.html");
   form.action = GURL("http://example.com/submit.html");
   form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
 
@@ -4543,7 +4543,7 @@ TEST_P(AutofillMetricsIFrameTest,
   // Set up our form data.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
-  form.origin = GURL("http://example.com/form.html");
+  form.url = GURL("http://example.com/form.html");
   form.action = GURL("http://example.com/submit.html");
   form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
 
@@ -4607,7 +4607,7 @@ TEST_F(AutofillMetricsTest, ShouldNotLogFormEventNoCardForAddressForm) {
   // Set up our form data.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
-  form.origin = GURL("http://example.com/form.html");
+  form.url = GURL("http://example.com/form.html");
   form.action = GURL("http://example.com/submit.html");
   form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
 
@@ -4648,7 +4648,7 @@ TEST_P(AutofillMetricsIFrameTest, CreditCardSubmittedFormEvents) {
   // Set up our form data.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
-  form.origin = GURL("http://example.com/form.html");
+  form.url = GURL("http://example.com/form.html");
   form.action = GURL("http://example.com/submit.html");
   form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
 
@@ -5149,7 +5149,7 @@ TEST_P(AutofillMetricsIFrameTest, CreditCardWillSubmitFormEvents) {
   // Set up our form data.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
-  form.origin = GURL("http://example.com/form.html");
+  form.url = GURL("http://example.com/form.html");
   form.action = GURL("http://example.com/submit.html");
   form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
 
@@ -5471,7 +5471,7 @@ TEST_F(AutofillMetricsTest, MixedParsedFormEvents) {
   // Set up our form data.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
-  form.origin = GURL("http://example.com/form.html");
+  form.url = GURL("http://example.com/form.html");
   form.action = GURL("http://example.com/submit.html");
   form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
 
@@ -5514,7 +5514,7 @@ TEST_F(AutofillMetricsTest, AddressParsedFormEvents) {
   // Set up our form data.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
-  form.origin = GURL("http://example.com/form.html");
+  form.url = GURL("http://example.com/form.html");
   form.action = GURL("http://example.com/submit.html");
   form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
 
@@ -5556,7 +5556,7 @@ TEST_F(AutofillMetricsTest, AddressInteractedFormEvents) {
   // Set up our form data.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
-  form.origin = GURL("http://example.com/form.html");
+  form.url = GURL("http://example.com/form.html");
   form.action = GURL("http://example.com/submit.html");
   form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
 
@@ -5632,7 +5632,7 @@ TEST_F(AutofillMetricsTest, AddressSuppressedFormEvents) {
   // Set up our form data.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
-  form.origin = GURL("http://example.com/form.html");
+  form.url = GURL("http://example.com/form.html");
   form.action = GURL("http://example.com/submit.html");
   form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
 
@@ -5725,7 +5725,7 @@ TEST_F(AutofillMetricsTest, AddressShownFormEvents) {
   // Set up our form data.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
-  form.origin = GURL("http://example.com/form.html");
+  form.url = GURL("http://example.com/form.html");
   form.action = GURL("http://example.com/submit.html");
   form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
 
@@ -5851,7 +5851,7 @@ TEST_F(AutofillMetricsTest, AddressFilledFormEvents) {
   // Set up our form data.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
-  form.origin = GURL("http://example.com/form.html");
+  form.url = GURL("http://example.com/form.html");
   form.action = GURL("http://example.com/submit.html");
   form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
 
@@ -5970,7 +5970,7 @@ TEST_F(AutofillMetricsTest, AddressSubmittedFormEvents) {
   // Set up our form data.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
-  form.origin = GURL("http://example.com/form.html");
+  form.url = GURL("http://example.com/form.html");
   form.action = GURL("http://example.com/submit.html");
   form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
 
@@ -6184,7 +6184,7 @@ TEST_F(AutofillMetricsTest, AddressWillSubmitFormEvents) {
   // Set up our form data.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
-  form.origin = GURL("http://example.com/form.html");
+  form.url = GURL("http://example.com/form.html");
   form.action = GURL("http://example.com/submit.html");
   form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
 
@@ -6372,7 +6372,7 @@ TEST_F(AutofillMetricsTest, CreditCardFormEventsAreSegmented) {
   // Set up our form data.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
-  form.origin = GURL("http://example.com/form.html");
+  form.url = GURL("http://example.com/form.html");
   form.action = GURL("http://example.com/submit.html");
   form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
 
@@ -6483,7 +6483,7 @@ TEST_F(AutofillMetricsTest, AddressFormEventsAreSegmented) {
   // Set up our form data.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
-  form.origin = GURL("http://example.com/form.html");
+  form.url = GURL("http://example.com/form.html");
   form.action = GURL("http://example.com/submit.html");
   form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
 
@@ -6571,7 +6571,7 @@ TEST_F(AutofillMetricsTest, AutofillFormSubmittedState) {
   // Start with a form with insufficiently many fields.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
-  form.origin = GURL("http://example.com/form.html");
+  form.url = GURL("http://example.com/form.html");
   form.action = GURL("http://example.com/submit.html");
   form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
 
@@ -6873,7 +6873,7 @@ TEST_F(
     AutofillFormSubmittedState_DoNotCountUnfilledFieldsWithOnlyFillWhenFocused) {
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
-  form.origin = GURL("http://example.com/form.html");
+  form.url = GURL("http://example.com/form.html");
   form.action = GURL("http://example.com/submit.html");
   form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
 
@@ -7004,7 +7004,7 @@ TEST_F(AutofillMetricsTest, UserHappinessFormInteraction_EmptyForm) {
   // Load a fillable form.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
-  form.origin = GURL("http://example.com/form.html");
+  form.url = GURL("http://example.com/form.html");
   form.action = GURL("http://example.com/submit.html");
   form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
 
@@ -7030,7 +7030,7 @@ TEST_F(AutofillMetricsTest, UserHappinessFormInteraction_CreditCardForm) {
   // Load a fillable form.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
-  form.origin = GURL("https://example.com/form.html");
+  form.url = GURL("https://example.com/form.html");
   form.action = GURL("https://example.com/submit.html");
   form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
 
@@ -7199,7 +7199,7 @@ TEST_F(AutofillMetricsTest, UserHappinessFormInteraction_AddressForm) {
   // Load a fillable form.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
-  form.origin = GURL("http://example.com/form.html");
+  form.url = GURL("http://example.com/form.html");
   form.action = GURL("http://example.com/submit.html");
   form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
 
@@ -7447,7 +7447,7 @@ TEST_F(AutofillMetricsTest, FormFillDuration) {
   // Load a fillable form.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
-  form.origin = GURL("http://example.com/form.html");
+  form.url = GURL("http://example.com/form.html");
   form.action = GURL("http://example.com/submit.html");
   form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
 
@@ -7852,7 +7852,7 @@ TEST_F(AutofillMetricsTest, ProfileActionOnFormSubmitted) {
   // Load a fillable form.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
-  form.origin = GURL("http://example.com/form.html");
+  form.url = GURL("http://example.com/form.html");
   form.action = GURL("http://example.com/submit.html");
   form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
 
@@ -7977,7 +7977,7 @@ class AutofillMetricsParseQueryResponseTest : public testing::Test {
  public:
   void SetUp() override {
     FormData form;
-    form.origin = GURL("http://foo.com");
+    form.url = GURL("http://foo.com");
     form.main_frame_origin = url::Origin::Create(GURL("http://foo_root.com"));
     FormFieldData field;
     field.form_control_type = "text";
@@ -8101,7 +8101,7 @@ TEST_F(AutofillMetricsTest, NonsecureCreditCardForm) {
   // Set up our form data.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
-  form.origin = GURL("http://example.com/form.html");
+  form.url = GURL("http://example.com/form.html");
   form.action = GURL("http://example.com/submit.html");
   GURL frame_origin("http://example_root.com/form.html");
   form.main_frame_origin = url::Origin::Create(frame_origin);
@@ -8159,7 +8159,7 @@ TEST_F(AutofillMetricsTest,
   // Set up our form data.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
-  form.origin = GURL("https://example.com/form.html");
+  form.url = GURL("https://example.com/form.html");
   form.action = GURL("http://example.com/submit.html");
   form.main_frame_origin =
       url::Origin::Create(GURL("http://example_root.com/form.html"));
@@ -8286,7 +8286,7 @@ TEST_F(AutofillMetricsTest, MAYBE_AutofillSuggestionShownTest) {
                       false /* include_full_server_credit_card */);
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
-  form.origin = GURL("http://example_cc.com/form.html");
+  form.url = GURL("http://example_cc.com/form.html");
   form.action = GURL("http://example_cc.com/submit.html");
   form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
 
@@ -8325,7 +8325,7 @@ TEST_F(AutofillMetricsTest, DynamicFormMetrics) {
   // Set up our form data.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
-  form.origin = GURL("http://example.com/form.html");
+  form.url = GURL("http://example.com/form.html");
   form.action = GURL("http://example.com/submit.html");
   FormFieldData field;
   std::vector<ServerFieldType> field_types;
@@ -8447,7 +8447,7 @@ TEST_F(AutofillMetricsTest, LogUserHappinessBySecurityLevel_FromFormEvents) {
   // Load a fillable form.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
-  form.origin = GURL("http://example.com/form.html");
+  form.url = GURL("http://example.com/form.html");
   form.action = GURL("http://example.com/submit.html");
   form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
 

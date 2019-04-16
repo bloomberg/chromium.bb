@@ -1202,7 +1202,7 @@ void PasswordAutofillAgent::SendPasswordForms(bool only_visible) {
           form_util::GetCanonicalOriginForDocument(frame->GetDocument());
       password_forms.back().signon_realm =
           GetSignOnRealm(password_forms.back().origin);
-      password_forms.back().form_data.origin = password_forms.back().origin;
+      password_forms.back().form_data.url = password_forms.back().origin;
     }
     if (!password_forms.empty()) {
       sent_request_to_store_ = true;

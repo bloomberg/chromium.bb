@@ -188,12 +188,12 @@ class CreditCardSaveManagerTest : public testing::Test {
                                     bool is_from_non_focusable_form = false) {
     form->name = ASCIIToUTF16("MyForm");
     if (is_https) {
-      form->origin = GURL("https://myform.com/form.html");
+      form->url = GURL("https://myform.com/form.html");
       form->action = GURL("https://myform.com/submit.html");
       form->main_frame_origin =
           url::Origin::Create(GURL("https://myform_root.com/form.html"));
     } else {
-      form->origin = GURL("http://myform.com/form.html");
+      form->url = GURL("http://myform.com/form.html");
       form->action = GURL("http://myform.com/submit.html");
       form->main_frame_origin =
           url::Origin::Create(GURL("http://myform_root.com/form.html"));
@@ -668,7 +668,7 @@ TEST_F(CreditCardSaveManagerTest, LocalCreditCard_LastAndFirstName) {
   // fields.
   FormData credit_card_form;
   credit_card_form.name = ASCIIToUTF16("MyForm");
-  credit_card_form.origin = GURL("https://myform.com/form.html");
+  credit_card_form.url = GURL("https://myform.com/form.html");
   credit_card_form.action = GURL("https://myform.com/submit.html");
   credit_card_form.main_frame_origin =
       url::Origin::Create(GURL("https://myform_root.com/form.html"));
@@ -998,7 +998,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_LastAndFirstName) {
   // fields.
   FormData credit_card_form;
   credit_card_form.name = ASCIIToUTF16("MyForm");
-  credit_card_form.origin = GURL("https://myform.com/form.html");
+  credit_card_form.url = GURL("https://myform.com/form.html");
   credit_card_form.action = GURL("https://myform.com/submit.html");
   credit_card_form.main_frame_origin =
       url::Origin::Create(GURL("https://myform_root.com/form.html"));
@@ -1275,7 +1275,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_MultipleCvcFields) {
   // Set up our credit card form data.
   FormData credit_card_form;
   credit_card_form.name = ASCIIToUTF16("MyForm");
-  credit_card_form.origin = GURL("https://myform.com/form.html");
+  credit_card_form.url = GURL("https://myform.com/form.html");
   credit_card_form.action = GURL("https://myform.com/submit.html");
   credit_card_form.main_frame_origin =
       url::Origin::Create(GURL("http://myform_root.com/form.html"));
@@ -1330,7 +1330,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_NoCvcFieldOnForm) {
   // Set up our credit card form data.  Note that CVC field is missing.
   FormData credit_card_form;
   credit_card_form.name = ASCIIToUTF16("MyForm");
-  credit_card_form.origin = GURL("https://myform.com/form.html");
+  credit_card_form.url = GURL("https://myform.com/form.html");
   credit_card_form.action = GURL("https://myform.com/submit.html");
   credit_card_form.main_frame_origin =
       url::Origin::Create(GURL("http://myform_root.com/form.html"));
@@ -1383,7 +1383,7 @@ TEST_F(CreditCardSaveManagerTest,
   // Set up our credit card form data. Note that CVC field is missing.
   FormData credit_card_form;
   credit_card_form.name = ASCIIToUTF16("MyForm");
-  credit_card_form.origin = GURL("https://myform.com/form.html");
+  credit_card_form.url = GURL("https://myform.com/form.html");
   credit_card_form.action = GURL("https://myform.com/submit.html");
   credit_card_form.main_frame_origin =
       url::Origin::Create(GURL("http://myform_root.com/form.html"));
@@ -1439,7 +1439,7 @@ TEST_F(CreditCardSaveManagerTest,
   // Set up our credit card form data. Note that CVC field is missing.
   FormData credit_card_form;
   credit_card_form.name = ASCIIToUTF16("MyForm");
-  credit_card_form.origin = GURL("https://myform.com/form.html");
+  credit_card_form.url = GURL("https://myform.com/form.html");
   credit_card_form.action = GURL("https://myform.com/submit.html");
   credit_card_form.main_frame_origin =
       url::Origin::Create(GURL("http://myform_root.com/form.html"));
@@ -1497,7 +1497,7 @@ TEST_F(CreditCardSaveManagerTest,
   // Set up our credit card form data. Note that CVC field is missing.
   FormData credit_card_form;
   credit_card_form.name = ASCIIToUTF16("MyForm");
-  credit_card_form.origin = GURL("https://myform.com/form.html");
+  credit_card_form.url = GURL("https://myform.com/form.html");
   credit_card_form.action = GURL("https://myform.com/submit.html");
   credit_card_form.main_frame_origin =
       url::Origin::Create(GURL("http://myform_root.com/form.html"));

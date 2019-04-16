@@ -93,7 +93,7 @@ PasswordForm CreateMinimalCrowdsourcableForm(
     const PasswordForm& observed_form) {
   PasswordForm form = observed_form;
   form.origin = GURL("https://www.foo.com/login");
-  form.form_data.origin = form.origin;
+  form.form_data.url = form.origin;
   autofill::FormFieldData field;
   field.name = ASCIIToUTF16("email");
   field.form_control_type = "text";
@@ -4308,7 +4308,7 @@ TEST_F(PasswordFormManagerTest, FirstLoginVote_NoUsernameSubmitted) {
   // User submits credentials for the observed form.
   PasswordForm submitted_form = *observed_form();
   submitted_form.origin = GURL("https://www.foo.com/login");
-  submitted_form.form_data.origin = submitted_form.origin;
+  submitted_form.form_data.url = submitted_form.origin;
 
   autofill::FormFieldData field;
   field.name = ASCIIToUTF16("password1");
@@ -4400,7 +4400,7 @@ TEST_F(PasswordFormManagerTest, FirstLoginVote_KnownValue) {
   // User submits credentials for the observed form.
   PasswordForm submitted_form = *observed_form();
   submitted_form.origin = GURL("https://www.foo.com/login");
-  submitted_form.form_data.origin = submitted_form.origin;
+  submitted_form.form_data.url = submitted_form.origin;
   submitted_form.username_value = saved_match()->username_value;
   submitted_form.password_value = saved_match()->password_value;
   submitted_form.form_data.fields[0].value = submitted_form.username_value;

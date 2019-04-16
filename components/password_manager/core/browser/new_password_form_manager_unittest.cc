@@ -230,7 +230,7 @@ class NewPasswordFormManagerTest : public testing::Test {
     GURL psl_origin = GURL("https://myaccounts.google.com/a/ServiceLoginAuth");
     GURL psl_action = GURL("https://myaccounts.google.com/a/ServiceLogin");
 
-    observed_form_.origin = origin;
+    observed_form_.url = origin;
     observed_form_.action = action;
     observed_form_.name = ASCIIToUTF16("sign-in");
     observed_form_.unique_renderer_id = 1;
@@ -428,7 +428,7 @@ TEST_F(NewPasswordFormManagerTest, Autofill) {
 
   task_runner_->FastForwardUntilNoTasksRemain();
 
-  EXPECT_EQ(observed_form_.origin, fill_data.origin);
+  EXPECT_EQ(observed_form_.url, fill_data.origin);
   EXPECT_FALSE(fill_data.wait_for_username);
   EXPECT_EQ(observed_form_.fields[1].name, fill_data.username_field.name);
   EXPECT_EQ(saved_match_.username_value, fill_data.username_field.value);
@@ -536,7 +536,7 @@ TEST_F(NewPasswordFormManagerTest, AutofillWithBlacklistedMatch) {
 
   task_runner_->FastForwardUntilNoTasksRemain();
 
-  EXPECT_EQ(observed_form_.origin, fill_data.origin);
+  EXPECT_EQ(observed_form_.url, fill_data.origin);
   EXPECT_EQ(saved_match_.username_value, fill_data.username_field.value);
   EXPECT_EQ(saved_match_.password_value, fill_data.password_field.value);
 }
@@ -852,8 +852,8 @@ TEST_F(NewPasswordFormManagerTest, SaveNewCredentials) {
 
   form_manager_->Save();
 
-  std::string expected_signon_realm = submitted_form.origin.GetOrigin().spec();
-  EXPECT_EQ(submitted_form.origin, saved_form.origin);
+  std::string expected_signon_realm = submitted_form.url.GetOrigin().spec();
+  EXPECT_EQ(submitted_form.url, saved_form.origin);
   EXPECT_EQ(expected_signon_realm, saved_form.signon_realm);
   EXPECT_EQ(new_username, saved_form.username_value);
   EXPECT_EQ(new_password, saved_form.password_value);
@@ -901,8 +901,8 @@ TEST_F(NewPasswordFormManagerTest, SavePSLToAlreadySaved) {
 
   form_manager_->Save();
 
-  EXPECT_EQ(submitted_form.origin, saved_form.origin);
-  EXPECT_EQ(GetSignonRealm(submitted_form.origin), saved_form.signon_realm);
+  EXPECT_EQ(submitted_form.url, saved_form.origin);
+  EXPECT_EQ(GetSignonRealm(submitted_form.url), saved_form.signon_realm);
   EXPECT_EQ(saved_form.username_value, psl_saved_match_.username_value);
   EXPECT_EQ(saved_form.password_value, psl_saved_match_.password_value);
   EXPECT_EQ(saved_form.username_element, psl_saved_match_.username_element);
@@ -1208,8 +1208,8 @@ TEST_F(NewPasswordFormManagerTest, PermanentlyBlacklist) {
 
   form_manager_->PermanentlyBlacklist();
   ASSERT_TRUE(new_blacklisted_form);
-  EXPECT_EQ(observed_form_.origin, new_blacklisted_form->origin);
-  EXPECT_EQ(GetSignonRealm(observed_form_.origin),
+  EXPECT_EQ(observed_form_.url, new_blacklisted_form->origin);
+  EXPECT_EQ(GetSignonRealm(observed_form_.url),
             new_blacklisted_form->signon_realm);
 }
 

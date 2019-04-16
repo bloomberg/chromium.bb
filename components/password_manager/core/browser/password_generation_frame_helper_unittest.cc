@@ -286,7 +286,7 @@ TEST_F(PasswordGenerationFrameHelperTest, ProcessPasswordRequirements) {
     password.form_control_type = "password";
 
     autofill::FormData account_creation_form;
-    account_creation_form.origin = GURL("http://accounts.yahoo.com/");
+    account_creation_form.url = GURL("http://accounts.yahoo.com/");
     account_creation_form.action = GURL("http://accounts.yahoo.com/signup");
     account_creation_form.name = ASCIIToUTF16("account_creation_form");
     account_creation_form.fields.push_back(username);
@@ -354,7 +354,7 @@ TEST_F(PasswordGenerationFrameHelperTest, DetectFormsEligibleForGeneration) {
                                features::kOnlyNewParser});
 
   autofill::FormData login_form;
-  login_form.origin = GURL("http://www.yahoo.com/login/");
+  login_form.url = GURL("http://www.yahoo.com/login/");
   autofill::FormFieldData username;
   username.label = ASCIIToUTF16("username");
   username.name = ASCIIToUTF16("login");
@@ -370,7 +370,7 @@ TEST_F(PasswordGenerationFrameHelperTest, DetectFormsEligibleForGeneration) {
   forms.push_back(&form1);
 
   autofill::FormData account_creation_form;
-  account_creation_form.origin = GURL("http://accounts.yahoo.com/");
+  account_creation_form.url = GURL("http://accounts.yahoo.com/");
   account_creation_form.action = GURL("http://accounts.yahoo.com/signup");
   account_creation_form.name = ASCIIToUTF16("account_creation_form");
   account_creation_form.fields.push_back(username);
@@ -390,7 +390,7 @@ TEST_F(PasswordGenerationFrameHelperTest, DetectFormsEligibleForGeneration) {
   forms.push_back(&form2);
 
   autofill::FormData change_password_form;
-  change_password_form.origin = GURL("http://accounts.yahoo.com/");
+  change_password_form.url = GURL("http://accounts.yahoo.com/");
   change_password_form.action = GURL("http://accounts.yahoo.com/change");
   change_password_form.name = ASCIIToUTF16("change_password_form");
   change_password_form.fields.push_back(password);
