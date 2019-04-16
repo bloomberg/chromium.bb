@@ -54,14 +54,12 @@ namespace blink {
 
 Canvas2DLayerBridge::Canvas2DLayerBridge(const IntSize& size,
                                          AccelerationMode acceleration_mode,
-                                         const CanvasColorParams& color_params,
-                                         bool needs_y_flip)
+                                         const CanvasColorParams& color_params)
     : logger_(std::make_unique<Logger>()),
       have_recorded_draw_commands_(false),
       is_hidden_(false),
       is_deferral_enabled_(true),
       software_rendering_while_hidden_(false),
-      needs_y_flip_(needs_y_flip),
       acceleration_mode_(acceleration_mode),
       color_params_(color_params),
       size_(size),
@@ -304,9 +302,6 @@ CanvasResourceProvider* Canvas2DLayerBridge::GetOrCreateResourceProvider(
     layer_->SetBlendBackgroundColor(ColorParams().GetOpacityMode() != kOpaque);
     layer_->SetNearestNeighbor(resource_host_->FilterQuality() ==
                                kNone_SkFilterQuality);
-    // Canvas has the origin of coordinates on the upper left corner, whereas
-    // textures have it on the lower left corner.
-    layer_->SetFlipped(needs_y_flip_);
     GraphicsLayer::RegisterContentsLayer(layer_.get());
   }
 
