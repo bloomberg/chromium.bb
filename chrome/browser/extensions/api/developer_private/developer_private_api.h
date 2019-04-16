@@ -50,6 +50,12 @@ class ProcessManager;
 
 namespace api {
 
+namespace developer_private {
+
+struct ProfileInfo;
+
+}
+
 class EntryPickerClient;
 
 }  // namespace api
@@ -182,6 +188,9 @@ class DeveloperPrivateAPI : public BrowserContextKeyedAPI,
 
   static BrowserContextKeyedAPIFactory<DeveloperPrivateAPI>*
       GetFactoryInstance();
+
+  static std::unique_ptr<api::developer_private::ProfileInfo> CreateProfileInfo(
+      Profile* profile);
 
   // Convenience method to get the DeveloperPrivateAPI for a profile.
   static DeveloperPrivateAPI* Get(content::BrowserContext* context);
