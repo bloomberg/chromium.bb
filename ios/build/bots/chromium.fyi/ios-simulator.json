@@ -100,6 +100,50 @@
       "xctest": true,
       "host os": "Mac-10.13.6",
       "pool": "Chrome"
+    },
+    {
+      "app": "ios_chrome_ui_payments_egtests",
+      "test args": [
+        "--enable-features=SlimNavigationManager"
+      ],
+      "device type": "iPhone 6s",
+      "os": "12.1",
+      "xctest": true,
+      "host os": "Mac-10.13.6",
+      "pool": "Chrome"
+    },
+    {
+      "app": "ios_chrome_ui_qr_scanner_egtests",
+      "test args": [
+        "--enable-features=SlimNavigationManager"
+      ],
+      "device type": "iPhone 6s",
+      "os": "12.1",
+      "xctest": true,
+      "host os": "Mac-10.13.6",
+      "pool": "Chrome"
+    },
+    {
+      "app": "ios_chrome_ui_settings_egtests",
+      "test args": [
+        "--enable-features=SlimNavigationManager"
+      ],
+      "device type": "iPhone 6s",
+      "os": "12.1",
+      "xctest": true,
+      "host os": "Mac-10.13.6",
+      "pool": "Chrome"
+    },
+    {
+      "app": "ios_chrome_ui_signin_interaction_egtests",
+      "test args": [
+        "--enable-features=SlimNavigationManager"
+      ],
+      "device type": "iPhone 6s",
+      "os": "12.1",
+      "xctest": true,
+      "host os": "Mac-10.13.6",
+      "pool": "Chrome"
     }
   ]
 }
