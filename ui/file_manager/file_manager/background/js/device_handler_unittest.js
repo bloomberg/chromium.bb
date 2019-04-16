@@ -118,33 +118,6 @@ function testMtpMediaDeviceWithImportEnabled(callback) {
       callback);
 }
 
-function testMediaDeviceWithImportDisabled(callback) {
-  mockChrome.commandLinePrivate.cloudImportDisabled = true;
-
-  mockChrome.fileManagerPrivate.onMountCompleted.dispatch({
-    eventType: 'mount',
-    status: 'success',
-    volumeMetadata: {
-      isParentDevice: true,
-      deviceType: 'usb',
-      devicePath: '/device/path',
-      deviceLabel: 'label',
-      hasMedia: true
-    },
-    shouldNotify: true
-  });
-
-  reportPromise(
-      mockChrome.notifications.resolver.promise.then(notifications => {
-        assertEquals(1, Object.keys(notifications).length);
-        assertEquals(
-            'REMOVABLE_DEVICE_NAVIGATION_MESSAGE',
-            notifications['deviceNavigation:/device/path'].message,
-            'Device notification did not have the right message.');
-      }),
-      callback);
-}
-
 function testGoodDeviceNotNavigated() {
   mockChrome.fileManagerPrivate.onMountCompleted.dispatch({
     eventType: 'mount',
@@ -643,14 +616,6 @@ function setupFileSystem(volumeType, volumeId, fileNames) {
 function setupChromeApis() {
   // Mock chrome APIs.
   mockChrome = {
-    commandLinePrivate: {
-      hasSwitch: function(switchName, callback) {
-        if (switchName === 'disable-cloud-import') {
-          callback(mockChrome.commandLinePrivate.cloudImportDisabled);
-        }
-      },
-      cloudImportDisabled: false,
-    },
     extension: {
       inIncognitoContext: false,
     },

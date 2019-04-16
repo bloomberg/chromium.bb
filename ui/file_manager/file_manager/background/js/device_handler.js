@@ -216,14 +216,10 @@ class DeviceHandler extends cr.EventTarget {
              *     of the volume.
              */
             volumeInfo => {
-              return importer.importEnabled().then(
-                  /** @param {boolean} enabled */
-                  enabled => {
-                    if (enabled && importer.isEligibleVolume(volumeInfo)) {
-                      return volumeInfo.resolveDisplayRoot();
-                    }
-                    return Promise.reject('Cloud import disabled.');
-                  });
+              if (importer.isEligibleVolume(volumeInfo)) {
+                return volumeInfo.resolveDisplayRoot();
+              }
+              return Promise.reject('Cloud import disabled.');
             })
         .then(
             /**

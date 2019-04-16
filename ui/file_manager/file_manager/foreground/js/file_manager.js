@@ -621,15 +621,11 @@ FileManager.prototype = /** @struct */ {
         metadataBoxController, this.dialogType, assert(this.volumeManager_));
 
     if (this.dialogType === DialogType.FULL_PAGE) {
-      importer.importEnabled().then(enabled => {
-        if (enabled) {
-          this.importController_ = new importer.ImportController(
-              new importer.RuntimeControllerEnvironment(
-                  this, assert(this.selectionHandler_)),
-              assert(this.mediaScanner_), assert(this.mediaImportHandler_),
-              new importer.RuntimeCommandWidget());
-        }
-      });
+      this.importController_ = new importer.ImportController(
+          new importer.RuntimeControllerEnvironment(
+              this, assert(this.selectionHandler_)),
+          assert(this.mediaScanner_), assert(this.mediaImportHandler_),
+          new importer.RuntimeCommandWidget());
     }
 
     assert(this.fileFilter_);

@@ -518,11 +518,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "disable-cloud-import",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "disable-eol-notification",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
