@@ -1,9 +1,4 @@
-<!DOCTYPE html>
-<meta charset="utf-8">
-<script src="../../../resources/testharness.js"></script>
-<script src="../../../resources/testharnessreport.js"></script>
-<script src="resources/test-helpers.js"></script>
-<script>
+// META: script=resources/test-helpers.js
 promise_test(async t => cleanupSandboxedFileSystem(),
         'Cleanup to setup test environment');
 
@@ -43,7 +38,6 @@ promise_test(async t => {
     const existing_handle = await root.getDirectory('dir-with-contents', { create: true });
     t.add_cleanup(() => existing_handle.removeRecursively());
     const file_handle = await existing_handle.getFile('test-file', { create: true });
-    t.add_cleanup(() => file_handle.remove());
 
     const handle = await root.getDirectory('dir-with-contents', { create: true });
 
@@ -61,4 +55,3 @@ promise_test(async t => {
     await promise_rejects(t, 'TypeMismatchError', root.getDirectory('file-name', { create: false }));
     await promise_rejects(t, 'TypeMismatchError', root.getDirectory('file-name', { create: true }));
 }, 'getDirectory() when a file already exists with the same name');
-</script>

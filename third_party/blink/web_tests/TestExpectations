@@ -5866,8 +5866,8 @@ crbug.com/921583 http/tests/preload/meta-viewport-link-headers.html [ Failure Pa
 crbug.com/921151 [ Linux ] http/tests/security/mixedContent/insecure-iframe-with-hsts.https.html [ Failure Pass ]
 crbug.com/921151 [ Linux ] virtual/outofblink-cors/http/tests/security/mixedContent/insecure-iframe-with-hsts.https.html [ Failure Pass ]
 
-# Writable Files tests depend on mojo interfaces that are only exposed behind a flag.
-crbug.com/922735 fast/filesystem/writable-files/ [ Skip ]
+# Native Filesystem tests depend on mojo interfaces that are only exposed behind a flag.
+crbug.com/853326 external/wpt/native-file-system/ [ Skip ]
 
 # These fail (some time out, some are flaky, etc.) when landing valid changes to Mojo bindings
 # dispatch timing. Many of them seem to fail for different reasons, but pretty consistently in most

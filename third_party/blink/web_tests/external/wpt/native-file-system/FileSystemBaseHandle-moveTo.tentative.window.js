@@ -1,9 +1,4 @@
-﻿<!DOCTYPE html>
-<meta charset="utf-8">
-<script src="../../../resources/testharness.js"></script>
-<script src="../../../resources/testharnessreport.js"></script>
-<script src="resources/test-helpers.js"></script>
-<script>
+// META: script=resources/test-helpers.js
 promise_test(async t => cleanupSandboxedFileSystem(),
     'Cleanup to setup test environment');
 
@@ -33,7 +28,6 @@ promise_test(async t => {
     t.add_cleanup(() => target_dir.removeRecursively());
 
     const new_handle = await old_handle.moveTo(target_dir);
-    t.add_cleanup(() => new_handle.remove());
 
     // Verify new file.
     assert_true(new_handle.isFile);
@@ -76,4 +70,3 @@ promise_test(async t => {
 }, 'moveTo() when target file already exists should overwrite target');
 
 // TODO(mek): Tests to move directories.
-</script>
