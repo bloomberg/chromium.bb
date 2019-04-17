@@ -74,7 +74,7 @@ def Login(service_account_json=None):
   result = cros_build_lib.RunCommand(
       cmd,
       print_cmd=True,
-      mute_output=True,
+      mute_output=False,
       error_code_ok=True)
 
   if result.returncode:
