@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/android/build_info.h"
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/task/post_task.h"
@@ -168,6 +169,10 @@ void CdmMessageFilterAndroid::OnQueryKeySystemSupport(
 
   response->is_persistent_license_supported =
       MediaDrmBridge::IsPersistentLicenseTypeSupported(request.key_system);
+
+  response->is_cbcs_encryption_supported =
+      media::MediaCodecUtil::PlatformSupportsCbcsEncryption(
+          base::android::BuildInfo::GetInstance()->sdk_int());
 }
 
 void CdmMessageFilterAndroid::OnGetPlatformKeySystemNames(
