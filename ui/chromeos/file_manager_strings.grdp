@@ -1253,6 +1253,9 @@
   <message name="IDS_FILE_BROWSER_SELECTION_MENU_BUTTON_TOOLTIP" desc="Tooltip for the button to open the context menu of currently selected items in the Files app.">
     More...
   </message>
+  <message name="IDS_FILE_BROWSER_CONTEXT_MENU_LABEL" desc="Label for Context menu used for Chromevox/screenreader.">
+    Context
+  </message>
 
   <message name="IDS_FILE_BROWSER_TIME_TODAY" desc="File date and time in case the date is today.">
     Today <ph name="TODAY_DAYTIME">$1<ex>6:19 AM</ex></ph>
