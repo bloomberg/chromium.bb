@@ -10,7 +10,6 @@ source_set("ui") {
     "native_content_controller.mm",
   ]
   public_deps = [
-    ":network_activity_indicator_manager",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/common/ui_util",
   ]
@@ -23,17 +22,6 @@ source_set("ui") {
     "//ui/base",
   ]
   allow_circular_includes_from = [ "//ios/chrome/browser/ui/commands" ]
-  configs += [ "//build/config/compiler:enable_arc" ]
-}
-
-source_set("network_activity_indicator_manager") {
-  sources = [
-    "network_activity_indicator_manager.h",
-    "network_activity_indicator_manager.mm",
-  ]
-  deps = [
-    "//base",
-  ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }
 
@@ -53,7 +41,6 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "native_content_controller_unittest.mm",
-    "network_activity_indicator_manager_unittest.mm",
   ]
   deps = [
     ":native_content_controller_test_xib",
