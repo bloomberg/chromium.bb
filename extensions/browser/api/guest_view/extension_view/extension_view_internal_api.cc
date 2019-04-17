@@ -9,8 +9,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/crx_file/id_util.h"
-#include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/stop_find_action.h"
@@ -26,8 +24,7 @@ bool ExtensionViewInternalExtensionFunction::PreRunValidation(
     std::string* error) {
   int instance_id = 0;
   EXTENSION_FUNCTION_PRERUN_VALIDATE(args_->GetInteger(0, &instance_id));
-  guest_ = ExtensionViewGuest::From(render_frame_host()->GetProcess()->GetID(),
-                                    instance_id);
+  guest_ = ExtensionViewGuest::From(source_process_id(), instance_id);
   return guest_ != nullptr;
 }
 

@@ -23,8 +23,6 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
-#include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/mhtml_generation_params.h"
 #include "extensions/common/extension_messages.h"
@@ -278,9 +276,8 @@ void PageCaptureSaveAsMHTMLFunction::ReturnSuccess(int64_t file_size) {
     return;
   }
 
-  int child_id = render_frame_host()->GetProcess()->GetID();
-  ChildProcessSecurityPolicy::GetInstance()->GrantReadFile(
-      child_id, mhtml_path_);
+  ChildProcessSecurityPolicy::GetInstance()->GrantReadFile(source_process_id(),
+                                                           mhtml_path_);
 
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetString("mhtmlFilePath", mhtml_path_.value());

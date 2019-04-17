@@ -57,11 +57,8 @@ DesktopCaptureChooseDesktopMediaFunctionBase::
 
 DesktopCaptureChooseDesktopMediaFunctionBase::
     ~DesktopCaptureChooseDesktopMediaFunctionBase() {
-  // RenderFrameHost may be already destroyed.
-  if (render_frame_host()) {
-    DesktopCaptureRequestsRegistry::GetInstance()->RemoveRequest(
-        render_frame_host()->GetProcess()->GetID(), request_id_);
-  }
+  DesktopCaptureRequestsRegistry::GetInstance()->RemoveRequest(
+      source_process_id(), request_id_);
 }
 
 void DesktopCaptureChooseDesktopMediaFunctionBase::Cancel() {
@@ -213,7 +210,7 @@ DesktopCaptureCancelChooseDesktopMediaFunctionBase::Run() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &request_id));
 
   DesktopCaptureRequestsRegistry::GetInstance()->CancelRequest(
-      render_frame_host()->GetProcess()->GetID(), request_id);
+      source_process_id(), request_id);
   return RespondNow(NoArguments());
 }
 

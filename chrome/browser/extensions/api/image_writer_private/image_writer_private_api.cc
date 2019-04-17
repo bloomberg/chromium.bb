@@ -12,8 +12,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
-#include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/render_process_host.h"
 #include "extensions/browser/api/file_handlers/app_file_handler_util.h"
 
 namespace image_writer_api = extensions::api::image_writer_private;
@@ -97,8 +95,8 @@ bool ImageWriterPrivateWriteFromFileFunction::RunAsync() {
   base::FilePath path;
 
   if (!extensions::app_file_handler_util::ValidateFileEntryAndGetPath(
-          filesystem_name, filesystem_path,
-          render_frame_host()->GetProcess()->GetID(), &path, &error_))
+          filesystem_name, filesystem_path, source_process_id(), &path,
+          &error_))
     return false;
 
   image_writer::OperationManager::Get(GetProfile())

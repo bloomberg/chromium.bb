@@ -59,7 +59,6 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
@@ -1417,11 +1416,10 @@ bool DeveloperPrivateLoadDirectoryFunction::RunAsync() {
     }
     return LoadByFileSystemAPI(directory_url);
   } else {
-    // Check if the DirecotryEntry is the instance of chrome filesystem.
+    // Check if the DirectoryEntry is the instance of chrome filesystem.
     if (!app_file_handler_util::ValidateFileEntryAndGetPath(
-            filesystem_name, filesystem_path,
-            render_frame_host()->GetProcess()->GetID(), &project_base_path_,
-            &error_)) {
+            filesystem_name, filesystem_path, source_process_id(),
+            &project_base_path_, &error_)) {
       SetError("DirectoryEntry of unsupported filesystem.");
       return false;
     }
