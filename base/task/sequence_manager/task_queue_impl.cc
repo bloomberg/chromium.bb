@@ -956,21 +956,19 @@ void TaskQueueImpl::RequeueDeferredNonNestableTask(
     main_thread_only().delayed_work_queue->PushNonNestableTaskToFront(
         std::move(task.task));
   } else {
-    // We're about to push |task| onto an empty |immediate_work_queue|. This
-    // may mean we'd be violating the contract of AtomicFlagSet, it's
-    // only supposed to contain queues where
-    // |any_thread_.immediate_incoming_queue| is non empty but
-    // |immediate_work_queue| is empty. We remedy that by removing ourselves
-    // from that list (a NOP if we're not in the list).
+    // We're about to push |task| onto an empty |immediate_work_queue|
+    // (bypassing |immediate_incoming_queue_|). As such, we no longer need to
+    // reload if we were planning to. The flag must be cleared while holding
+    // the lock to avoid a cross-thread post task setting it again before
+    // we actually make |immediate_work_queue| non-empty.
     if (main_thread_only().immediate_work_queue->Empty()) {
+      base::internal::AutoSchedulerLock lock(any_thread_lock_);
       empty_queues_to_reload_handle_.SetActive(false);
 
-      {
-        base::internal::AutoSchedulerLock lock(any_thread_lock_);
-        any_thread_.immediate_work_queue_empty = false;
-        main_thread_only().immediate_work_queue->PushNonNestableTaskToFront(
-            std::move(task.task));
-      }
+      any_thread_.immediate_work_queue_empty = false;
+      main_thread_only().immediate_work_queue->PushNonNestableTaskToFront(
+          std::move(task.task));
+
     } else {
       main_thread_only().immediate_work_queue->PushNonNestableTaskToFront(
           std::move(task.task));
@@ -1090,7 +1088,6 @@ void TaskQueueImpl::DeletePendingTasks() {
   // TODO(altimin): Add clear() method to DelayedIncomingQueue.
   DelayedIncomingQueue queue_to_delete;
   main_thread_only().delayed_incoming_queue.swap(&queue_to_delete);
-  empty_queues_to_reload_handle_.SetActive(false);
 
   TaskDeque deque;
   {
@@ -1099,6 +1096,7 @@ void TaskQueueImpl::DeletePendingTasks() {
     base::internal::AutoSchedulerLock lock(any_thread_lock_);
     deque.swap(any_thread_.immediate_incoming_queue);
     any_thread_.immediate_work_queue_empty = true;
+    empty_queues_to_reload_handle_.SetActive(false);
   }
 
   LazyNow lazy_now = main_thread_only().time_domain->CreateLazyNow();

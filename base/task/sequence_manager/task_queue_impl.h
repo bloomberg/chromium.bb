@@ -455,6 +455,9 @@ class BASE_EXPORT TaskQueueImpl {
 
   // Handle to our entry within the SequenceManagers |empty_queues_to_reload_|
   // atomic flag set. Used to signal that this queue needs to be reloaded.
+  // If you call SetActive(false) you should do so inside |any_thread_lock_|
+  // because there is a danger a cross thread PostTask might reset it before we
+  // make |immediate_work_queue| non-empty.
   AtomicFlagSet::AtomicFlag empty_queues_to_reload_handle_;
 
   const bool should_monitor_quiescence_;

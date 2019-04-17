@@ -340,6 +340,11 @@ class BASE_EXPORT SequenceManagerImpl
   AsValueWithSelectorResult(internal::WorkQueue* selected_work_queue,
                             bool force_verbose) const;
 
+  // Used in construction of TaskQueueImpl to obtain an AtomicFlag which it can
+  // use to request reload by ReloadEmptyWorkQueues. The lifetime of
+  // TaskQueueImpl is managed by this class and the handle will be released by
+  // TaskQueueImpl::UnregisterTaskQueue which is always called before the
+  // queue's destruction.
   AtomicFlagSet::AtomicFlag GetFlagToRequestReloadForEmptyQueue(
       TaskQueueImpl* task_queue);
 
