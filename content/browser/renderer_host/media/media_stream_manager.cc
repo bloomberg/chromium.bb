@@ -195,18 +195,6 @@ void SendVideoCaptureLogMessage(const std::string& message) {
   MediaStreamManager::SendMessageToNativeLog("video capture: " + message);
 }
 
-MediaStreamType AdjustAudioStreamTypeBasedOnCommandLineSwitches(
-    MediaStreamType stream_type) {
-  if ((stream_type != blink::MEDIA_GUM_DESKTOP_AUDIO_CAPTURE) &&
-      (stream_type != blink::MEDIA_DISPLAY_AUDIO_CAPTURE))
-    return stream_type;
-  const bool audio_support_flag_for_desktop_share =
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableAudioSupportForDesktopShare);
-  return audio_support_flag_for_desktop_share ? stream_type
-                                              : blink::MEDIA_NO_SERVICE;
-}
-
 // Returns MediaStreamDevices for getDisplayMedia() calls.
 // Returns a video device built with DesktopMediaID with fake initializers if
 // |kUseFakeDeviceForMediaStream| is set. Returns a video device with
@@ -1227,8 +1215,7 @@ void MediaStreamManager::SetUpRequest(const std::string& label) {
     return;  // This can happen if the request has been canceled.
   }
 
-  request->SetAudioType(AdjustAudioStreamTypeBasedOnCommandLineSwitches(
-      request->controls.audio.stream_type));
+  request->SetAudioType(request->controls.audio.stream_type);
   request->SetVideoType(request->controls.video.stream_type);
 
   const bool is_display_capture =

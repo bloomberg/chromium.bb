@@ -2028,10 +2028,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableScrollAnchorSerializationName,
      flag_descriptions::kEnableScrollAnchorSerializationDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kScrollAnchorSerialization)},
-    {"disable-audio-support-for-desktop-share",
-     flag_descriptions::kDisableAudioForDesktopShareName,
-     flag_descriptions::kDisableAudioForDesktopShareDescription, kOsAll,
-     SINGLE_VALUE_TYPE(switches::kDisableAudioSupportForDesktopShare)},
 #if defined(OS_ANDROID)
     {"content-suggestions-debug-log",
      flag_descriptions::kContentSuggestionsDebugLogName,

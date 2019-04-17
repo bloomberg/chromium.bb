@@ -503,11 +503,6 @@
     "expiry_milestone": -1
   },
   {
-    "name": "disable-audio-support-for-desktop-share",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "disable-best-effort-tasks",
     "owners": [ "catan-team@chromium.org" ],
     "expiry_milestone": 75

@@ -954,10 +954,6 @@ const char kEnableAggressiveDOMStorageFlushing[] =
 // Enable indication that browser is controlled by automation.
 const char kEnableAutomation[] = "enable-automation";
 
-// Enable audio for desktop share.
-const char kDisableAudioSupportForDesktopShare[] =
-    "disable-audio-support-for-desktop-share";
-
 #if defined(OS_CHROMEOS)
 // Disables panel fitting (used for mirror mode).
 const char kDisablePanelFitting[]           = "disable-panel-fitting";
