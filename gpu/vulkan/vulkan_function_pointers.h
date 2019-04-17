@@ -147,6 +147,14 @@ struct VulkanFunctionPointers {
       vkImportSemaphoreZirconHandleFUCHSIAFn = nullptr;
   PFN_vkGetSemaphoreZirconHandleFUCHSIA vkGetSemaphoreZirconHandleFUCHSIAFn =
       nullptr;
+  PFN_vkCreateBufferCollectionFUCHSIA vkCreateBufferCollectionFUCHSIAFn =
+      nullptr;
+  PFN_vkSetBufferCollectionConstraintsFUCHSIA
+      vkSetBufferCollectionConstraintsFUCHSIAFn = nullptr;
+  PFN_vkGetBufferCollectionPropertiesFUCHSIA
+      vkGetBufferCollectionPropertiesFUCHSIAFn = nullptr;
+  PFN_vkDestroyBufferCollectionFUCHSIA vkDestroyBufferCollectionFUCHSIAFn =
+      nullptr;
 #endif
 
   // Queue functions
@@ -294,6 +302,14 @@ struct VulkanFunctionPointers {
   gpu::GetVulkanFunctionPointers()->vkImportSemaphoreZirconHandleFUCHSIAFn
 #define vkGetSemaphoreZirconHandleFUCHSIA \
   gpu::GetVulkanFunctionPointers()->vkGetSemaphoreZirconHandleFUCHSIAFn
+#define vkCreateBufferCollectionFUCHSIA \
+  gpu::GetVulkanFunctionPointers()->vkCreateBufferCollectionFUCHSIAFn
+#define vkSetBufferCollectionConstraintsFUCHSIA \
+  gpu::GetVulkanFunctionPointers()->vkSetBufferCollectionConstraintsFUCHSIAFn
+#define vkGetBufferCollectionPropertiesFUCHSIA \
+  gpu::GetVulkanFunctionPointers()->vkGetBufferCollectionPropertiesFUCHSIAFn
+#define vkDestroyBufferCollectionFUCHSIA \
+  gpu::GetVulkanFunctionPointers()->vkDestroyBufferCollectionFUCHSIAFn
 #endif
 
 // Queue functions

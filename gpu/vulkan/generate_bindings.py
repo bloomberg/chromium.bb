@@ -95,6 +95,10 @@ VULKAN_DEVICE_FUNCTIONS_LINUX = [
 VULKAN_DEVICE_FUNCTIONS_FUCHSIA = [
 { 'name': 'vkImportSemaphoreZirconHandleFUCHSIA' },
 { 'name': 'vkGetSemaphoreZirconHandleFUCHSIA' },
+{ 'name': 'vkCreateBufferCollectionFUCHSIA' },
+{ 'name': 'vkSetBufferCollectionConstraintsFUCHSIA' },
+{ 'name': 'vkGetBufferCollectionPropertiesFUCHSIA' },
+{ 'name': 'vkDestroyBufferCollectionFUCHSIA' },
 ]
 
 VULKAN_QUEUE_FUNCTIONS = [

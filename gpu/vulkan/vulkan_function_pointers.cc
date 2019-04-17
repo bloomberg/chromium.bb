@@ -344,6 +344,32 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(VkDevice vk_device) {
   if (!vkGetSemaphoreZirconHandleFUCHSIAFn)
     return false;
 
+  vkCreateBufferCollectionFUCHSIAFn =
+      reinterpret_cast<PFN_vkCreateBufferCollectionFUCHSIA>(
+          vkGetDeviceProcAddrFn(vk_device, "vkCreateBufferCollectionFUCHSIA"));
+  if (!vkCreateBufferCollectionFUCHSIAFn)
+    return false;
+
+  vkSetBufferCollectionConstraintsFUCHSIAFn =
+      reinterpret_cast<PFN_vkSetBufferCollectionConstraintsFUCHSIA>(
+          vkGetDeviceProcAddrFn(vk_device,
+                                "vkSetBufferCollectionConstraintsFUCHSIA"));
+  if (!vkSetBufferCollectionConstraintsFUCHSIAFn)
+    return false;
+
+  vkGetBufferCollectionPropertiesFUCHSIAFn =
+      reinterpret_cast<PFN_vkGetBufferCollectionPropertiesFUCHSIA>(
+          vkGetDeviceProcAddrFn(vk_device,
+                                "vkGetBufferCollectionPropertiesFUCHSIA"));
+  if (!vkGetBufferCollectionPropertiesFUCHSIAFn)
+    return false;
+
+  vkDestroyBufferCollectionFUCHSIAFn =
+      reinterpret_cast<PFN_vkDestroyBufferCollectionFUCHSIA>(
+          vkGetDeviceProcAddrFn(vk_device, "vkDestroyBufferCollectionFUCHSIA"));
+  if (!vkDestroyBufferCollectionFUCHSIAFn)
+    return false;
+
 #endif
 
   // Queue functions
