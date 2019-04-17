@@ -229,12 +229,19 @@ IdentityTestEnvironment::BuildIdentityManagerForTests(
 }
 
 IdentityTestEnvironment::~IdentityTestEnvironment() {
+  // Remove the Observer that IdentityTestEnvironment added during its
+  // initialization.
+  identity_manager()->RemoveDiagnosticsObserver(this);
+
   if (owned_account_tracker_service_) {
     owned_account_tracker_service_->Shutdown();
   }
 
-  identity_manager()->RemoveDiagnosticsObserver(this);
-  identity_manager()->Shutdown();
+  // Call shutdown only if we own the IdentityManager.
+  // It is the owner's responsibility to call Shutdown.
+  if (owned_identity_manager_) {
+    owned_identity_manager_->Shutdown();
+  }
 }
 
 IdentityManager* IdentityTestEnvironment::identity_manager() {
