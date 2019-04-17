@@ -4,9 +4,19 @@
 
 #include "components/sync/nigori/nigori_model_type_processor.h"
 
+#include "components/sync/base/time.h"
 #include "components/sync/engine/commit_queue.h"
+#include "components/sync/model_impl/processor_entity.h"
 
 namespace syncer {
+
+namespace {
+
+// TODO(mamir): remove those and adjust the code accordingly.
+const char kNigoriStorageKey[] = "NigoriStorageKey";
+const char kNigoriClientTagHash[] = "NigoriClientTagHash";
+
+}  // namespace
 
 NigoriModelTypeProcessor::NigoriModelTypeProcessor() : bridge_(nullptr) {}
 
@@ -78,25 +88,74 @@ void NigoriModelTypeProcessor::RecordMemoryUsageAndCountsHistograms() {
 
 void NigoriModelTypeProcessor::ModelReadyToSync(
     NigoriSyncBridge* bridge,
-    std::pair<sync_pb::ModelTypeState, sync_pb::EntityMetadata>
-        nigori_metadata) {
+    NigoriMetadataBatch nigori_metadata) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(bridge);
+  DCHECK(!model_ready_to_sync_);
   bridge_ = bridge;
+  model_ready_to_sync_ = true;
+
+  // Abort if the model already experienced an error.
+  if (model_error_) {
+    return;
+  }
+
+  if (nigori_metadata.model_type_state.initial_sync_done() &&
+      nigori_metadata.entity_metadata) {
+    model_type_state_ = std::move(nigori_metadata.model_type_state);
+    sync_pb::EntityMetadata metadata =
+        std::move(*nigori_metadata.entity_metadata);
+    metadata.set_client_tag_hash(kNigoriClientTagHash);
+    entity_ = ProcessorEntity::CreateFromMetadata(kNigoriStorageKey,
+                                                  std::move(metadata));
+  } else {
+    // First time syncing or persisted data are corrupted; initialize metadata.
+    model_type_state_.mutable_progress_marker()->set_data_type_id(
+        sync_pb::EntitySpecifics::kNigoriFieldNumber);
+  }
+  // TODO(mamir): ConnectIfReady();
   NOTIMPLEMENTED();
 }
 
 void NigoriModelTypeProcessor::Put(std::unique_ptr<EntityData> entity_data) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(entity_data);
+  DCHECK(!entity_data->is_deleted());
+  DCHECK(!entity_data->is_folder);
+  DCHECK(!entity_data->non_unique_name.empty());
+  DCHECK(!entity_data->specifics.has_encrypted());
+  DCHECK_EQ(NIGORI, GetModelTypeFromSpecifics(entity_data->specifics));
+  DCHECK(entity_);
+
+  if (!model_type_state_.initial_sync_done()) {
+    // Ignore changes before the initial sync is done.
+    return;
+  }
+
+  if (entity_->MatchesData(*entity_data)) {
+    // Ignore changes that don't actually change anything.
+    return;
+  }
+
+  entity_->MakeLocalChange(std::move(entity_data));
+  // TODO(mamir): NudgeForCommitIfNeeded();
   NOTIMPLEMENTED();
 }
 
-std::pair<sync_pb::ModelTypeState, sync_pb::EntityMetadata>
-NigoriModelTypeProcessor::GetMetadata() {
+NigoriMetadataBatch NigoriModelTypeProcessor::GetMetadata() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  NOTIMPLEMENTED();
-  return std::pair<sync_pb::ModelTypeState, sync_pb::EntityMetadata>(
-      sync_pb::ModelTypeState(), sync_pb::EntityMetadata());
+  DCHECK(IsTrackingMetadata());
+  DCHECK(entity_);
+
+  NigoriMetadataBatch nigori_metadata_batch;
+  nigori_metadata_batch.model_type_state = model_type_state_;
+  nigori_metadata_batch.entity_metadata = entity_->metadata();
+
+  return nigori_metadata_batch;
+}
+
+bool NigoriModelTypeProcessor::IsTrackingMetadata() {
+  return model_type_state_.initial_sync_done();
 }
 
 }  // namespace syncer
