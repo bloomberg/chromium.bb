@@ -122,6 +122,12 @@ TEST_F(SecureOriginAllowlistTest, UnsafelyTreatInsecureOriginAsSecure) {
   EXPECT_FALSE(IsPotentiallyTrustworthy("http://128.example.com/a.html"));
   EXPECT_FALSE(
       IsPotentiallyTrustworthy("http://foobar.127.example.com/a.html"));
+
+  // When port is not specified, default port is assumed.
+  EXPECT_TRUE(IsAllowlistedAsSecureOrigin(
+      url::Origin::Create(GURL("http://example.com:80/a.html"))));
+  EXPECT_FALSE(IsAllowlistedAsSecureOrigin(
+      url::Origin::Create(GURL("http://example.com:8080/a.html"))));
 }
 
 TEST_F(SecureOriginAllowlistTest, HostnamePatterns) {
@@ -151,6 +157,17 @@ TEST_F(SecureOriginAllowlistTest, HostnamePatterns) {
       {"test*.foo.com", "http://testblah.foo.com", false},
       {"*foo.com", "http://testfoo.com", false},
       {"foo*.com", "http://footest.com", false},
+      // With Hostname pattern, all ports are allowed.
+      {"*.foo.com", "http://bar.foo.com:80", true},
+      {"*.foo.com", "http://bar.foo.com:1234", true},
+      // With Hostname pattern, all schemes are allowed.
+      {"*.foo.com", "ws://bar.foo.com", true},
+      {"*.foo.com", "blob:http://bar.foo.com/guid-goes-here", true},
+      // Hostname pattern works on IP addresses, but wildcards must be beyond
+      // eTLD+1.
+      {"*.20.30.40", "http://10.20.30.40", true},
+      {"*.30.40", "http://10.20.30.40", true},
+      {"*.40", "http://10.20.30.40", false},
   };
 
   for (const auto& test : kTestCases) {
@@ -165,6 +182,22 @@ TEST_F(SecureOriginAllowlistTest, HostnamePatterns) {
     EXPECT_EQ(test.expected_secure, IsAllowlistedAsSecureOrigin(input_origin));
     EXPECT_EQ(test.expected_secure, IsPotentiallyTrustworthy(test.test_input));
   }
+}
+
+TEST_F(SecureOriginAllowlistTest, MixOfOriginAndHostnamePatterns) {
+  base::test::ScopedCommandLine scoped_command_line;
+  base::CommandLine* command_line = scoped_command_line.GetProcessCommandLine();
+  command_line->AppendSwitchASCII(
+      switches::kUnsafelyTreatInsecureOriginAsSecure,
+      "http://example.com,*.foo.com,http://10.20.30.40");
+  ResetSecureOriginAllowlistForTesting();
+
+  EXPECT_TRUE(IsAllowlistedAsSecureOrigin(
+      url::Origin::Create(GURL("http://example.com/a.html"))));
+  EXPECT_TRUE(IsAllowlistedAsSecureOrigin(
+      url::Origin::Create(GURL("http://bar.foo.com/b.html"))));
+  EXPECT_TRUE(IsAllowlistedAsSecureOrigin(
+      url::Origin::Create(GURL("http://10.20.30.40/c.html"))));
 }
 
 }  // namespace network
