@@ -38,6 +38,7 @@ class PasswordPendingView : public PasswordBubbleViewBase,
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // views::EditableComboboxListener:
+  // Used for both the username and password editable comboboxes.
   void OnContentChanged(views::EditableCombobox* editable_combobox) override;
 
   // PasswordBubbleViewBase:
@@ -46,6 +47,7 @@ class PasswordPendingView : public PasswordBubbleViewBase,
   views::View* GetInitiallyFocusedView() override;
   int GetDialogButtons() const override;
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
+  bool IsDialogButtonEnabled(ui::DialogButton button) const override;
   gfx::ImageSkia GetWindowIcon() override;
   bool ShouldShowWindowIcon() const override;
   bool ShouldShowCloseButton() const override;
