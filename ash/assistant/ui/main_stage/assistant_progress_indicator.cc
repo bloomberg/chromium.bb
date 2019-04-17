@@ -107,9 +107,8 @@ void AssistantProgressIndicator::VisibilityChanged(views::View* starting_from,
 
   if (!is_drawn_) {
     // Stop all animations.
-    for (int i = 0; i < child_count(); ++i) {
-      child_at(i)->layer()->GetAnimator()->StopAnimating();
-    }
+    for (auto* child : children())
+      child->layer()->GetAnimator()->StopAnimating();
     return;
   }
 
@@ -124,18 +123,17 @@ void AssistantProgressIndicator::VisibilityChanged(views::View* starting_from,
   transform.Scale(kScaleFactor, kScaleFactor);
 
   base::TimeDelta start_offset;
-  for (int i = 0; i < child_count(); ++i) {
-    views::View* view = child_at(i);
+  for (auto* child : children()) {
     if (!start_offset.is_zero()) {
       // Schedule the animations to start after an offset.
-      view->layer()->GetAnimator()->SchedulePauseForProperties(
+      child->layer()->GetAnimator()->SchedulePauseForProperties(
           start_offset,
           ui::LayerAnimationElement::AnimatableProperty::TRANSFORM);
     }
     start_offset += base::TimeDelta::FromMilliseconds(216);
 
     // Schedule transformation animation.
-    view->layer()->GetAnimator()->ScheduleAnimation(
+    child->layer()->GetAnimator()->ScheduleAnimation(
         CreateLayerAnimationSequence(
             // Animate scale up.
             CreateTransformElement(transform,

@@ -201,9 +201,7 @@ class AssistantContainerLayout : public views::LayoutManager {
     const int host_center_x = host->GetBoundsInScreen().CenterPoint().x();
     const int host_height = host->height();
 
-    for (int i = 0; i < host->child_count(); ++i) {
-      views::View* child = host->child_at(i);
-
+    for (auto* child : host->children()) {
       const gfx::Size child_size = child->GetPreferredSize();
 
       // Children are horizontally centered. This means that both the |host|
@@ -393,9 +391,8 @@ void AssistantContainerView::UpdateAnchor() {
 }
 
 void AssistantContainerView::OnUiModeChanged(AssistantUiMode ui_mode) {
-  for (int i = 0; i < child_count(); ++i) {
-    child_at(i)->SetVisible(false);
-  }
+  for (auto* child : children())
+    child->SetVisible(false);
 
   switch (ui_mode) {
     case AssistantUiMode::kMiniUi:

@@ -111,8 +111,8 @@ class DetailedViewContainer : public views::View {
 
   // views::View:
   void Layout() override {
-    for (int i = 0; i < child_count(); ++i)
-      child_at(i)->SetBoundsRect(GetContentsBounds());
+    for (auto* child : children())
+      child->SetBoundsRect(GetContentsBounds());
     views::View::Layout();
   }
 
@@ -147,8 +147,7 @@ int UnifiedSlidersContainerView::GetExpandedHeight() const {
 
 void UnifiedSlidersContainerView::Layout() {
   int y = 0;
-  for (int i = 0; i < child_count(); ++i) {
-    views::View* child = child_at(i);
+  for (auto* child : children()) {
     int height = child->GetHeightForWidth(kTrayMenuWidth);
     child->SetBounds(0, y, kTrayMenuWidth, height);
     y += height;
@@ -161,8 +160,7 @@ gfx::Size UnifiedSlidersContainerView::CalculatePreferredSize() const {
 
 void UnifiedSlidersContainerView::UpdateOpacity() {
   const int height = GetPreferredSize().height();
-  for (int i = 0; i < child_count(); ++i) {
-    views::View* child = child_at(i);
+  for (auto* child : children()) {
     double opacity = 1.0;
     if (child->y() > height) {
       opacity = 0.0;

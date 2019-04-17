@@ -349,8 +349,9 @@ void FrameCaptionButtonContainerView::AnimationProgressed(
   // Slide all buttons to the left of the size button. Usually this is just the
   // minimize button but it can also include a PWA menu button.
   int previous_x = 0;
-  for (int i = 0; i < child_count() && child_at(i) != size_button_; ++i) {
-    views::View* button = child_at(i);
+  for (auto* button : children()) {
+    if (button == size_button_)
+      break;
     button->SetX(previous_x + x_slide);
     previous_x += button->width();
   }

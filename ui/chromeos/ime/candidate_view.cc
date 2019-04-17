@@ -204,11 +204,9 @@ void CandidateView::SetHighlighted(bool highlighted) {
         theme->GetSystemColor(ui::NativeTheme::kColorId_FocusedBorderColor)));
 
     // Cancel currently focused one.
-    for (int i = 0; i < parent()->child_count(); ++i) {
-      CandidateView* view =
-          static_cast<CandidateView*>((parent()->child_at(i)));
+    for (View* view : parent()->children()) {
       if (view != this)
-        view->SetHighlighted(false);
+        static_cast<CandidateView*>(view)->SetHighlighted(false);
     }
   } else {
     SetBackground(nullptr);
@@ -235,17 +233,16 @@ bool CandidateView::OnMouseDragged(const ui::MouseEvent& event) {
     // Moves the drag target to the sibling view.
     gfx::Point location_in_widget(event.location());
     ConvertPointToWidget(this, &location_in_widget);
-    for (int i = 0; i < parent()->child_count(); ++i) {
-      CandidateView* sibling =
-          static_cast<CandidateView*>(parent()->child_at(i));
-      if (sibling == this)
+    for (View* view : parent()->children()) {
+      if (view == this)
         continue;
       gfx::Point location_in_sibling(location_in_widget);
-      ConvertPointFromWidget(sibling, &location_in_sibling);
-      if (sibling->HitTestPoint(location_in_sibling)) {
-        GetWidget()->GetRootView()->SetMouseHandler(sibling);
+      ConvertPointFromWidget(view, &location_in_sibling);
+      if (view->HitTestPoint(location_in_sibling)) {
+        GetWidget()->GetRootView()->SetMouseHandler(view);
+        auto* sibling = static_cast<CandidateView*>(view);
         sibling->SetHighlighted(true);
-        return sibling->OnMouseDragged(ui::MouseEvent(event, this, sibling));
+        return view->OnMouseDragged(ui::MouseEvent(event, this, sibling));
       }
     }
 
