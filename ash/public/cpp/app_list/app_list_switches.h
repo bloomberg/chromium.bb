@@ -17,7 +17,6 @@ ASH_PUBLIC_EXPORT extern const char kDisableAppListDismissOnBlur[];
 ASH_PUBLIC_EXPORT extern const char kEnableAppList[];
 ASH_PUBLIC_EXPORT extern const char kEnableDriveSearchInChromeLauncher[];
 ASH_PUBLIC_EXPORT extern const char kDisableDriveSearchInChromeLauncher[];
-ASH_PUBLIC_EXPORT extern const char kResetAppListInstallState[];
 
 bool ASH_PUBLIC_EXPORT IsAppListSyncEnabled();
 

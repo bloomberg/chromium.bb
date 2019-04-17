@@ -2723,11 +2723,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "reset-app-list-install-state",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "rewrite-leveldb-on-deletion",
     "owners": [ "dullweber" ],
     "expiry_milestone": 75

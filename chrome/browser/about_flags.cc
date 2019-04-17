@@ -172,10 +172,6 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #endif  // OS_MACOSX
 
-#if BUILDFLAG(ENABLE_APP_LIST)
-#include "ash/public/cpp/app_list/app_list_switches.h"
-#endif  // ENABLE_APP_LIST
-
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/common/extension_features.h"
 #include "extensions/common/switches.h"
@@ -1527,13 +1523,6 @@ const FeatureEntry kFeatureEntries[] = {
                                     kAccountConsistencyFeatureVariations,
                                     "AccountConsistencyVariations")},
 #endif
-#if BUILDFLAG(ENABLE_APP_LIST)
-    {"reset-app-list-install-state",
-     flag_descriptions::kResetAppListInstallStateName,
-     flag_descriptions::kResetAppListInstallStateDescription,
-     kOsMac | kOsWin | kOsLinux,
-     SINGLE_VALUE_TYPE(app_list::switches::kResetAppListInstallState)},
-#endif  // BUILDFLAG(ENABLE_APP_LIST)
 #if defined(OS_ANDROID)
     {"enable-accessibility-tab-switcher",
      flag_descriptions::kAccessibilityTabSwitcherName,

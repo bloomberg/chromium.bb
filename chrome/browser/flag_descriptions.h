@@ -1009,9 +1009,6 @@ extern const char kRendererSideResourceSchedulerDescription[];
 extern const char kRequestTabletSiteName[];
 extern const char kRequestTabletSiteDescription[];
 
-extern const char kResetAppListInstallStateName[];
-extern const char kResetAppListInstallStateDescription[];
-
 extern const char kResourceLoadSchedulerName[];
 extern const char kResourceLoadSchedulerDescription[];
 
