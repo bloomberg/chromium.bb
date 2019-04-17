@@ -50681,6 +50681,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="14" label="Merkle integrity error"/>
   <int value="15" label="Invalid integrity header"/>
   <int value="16" label="Variant mismatch"/>
+  <int value="17" label="Certificate's validity period is too long"/>
 </enum>
 
 <enum name="SignedExchangeSignatureVerificationResult">
