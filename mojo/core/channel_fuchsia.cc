@@ -300,8 +300,8 @@ class ChannelFuchsia : public Channel,
       zx_handle_t handles[ZX_CHANNEL_MAX_MSG_HANDLES] = {};
 
       zx_status_t read_result =
-          handle_.read(0, buffer, buffer_capacity, &bytes_read, handles,
-                       base::size(handles), &handles_read);
+          handle_.rea2(0, buffer, handles, buffer_capacity, base::size(handles),
+                       &bytes_read, &handles_read);
       if (read_result == ZX_OK) {
         for (size_t i = 0; i < handles_read; ++i) {
           incoming_handles_.emplace_back(handles[i]);
