@@ -6310,3 +6310,7 @@ crbug.com/952584 external/wpt/portals/portals-adopt-predecessor.html [ Pass Time
 
 # Sheriff 2019-04-17
 crbug.com/953534 [ Mac ] virtual/layout_ng_experimental/external/wpt/css/css-flexbox/ttwf-reftest-flex-wrap.html [ Failure ]
+
+crbug.com/953591 [ Win ] css3/masking/mask-repeat-space-padding.html [ Pass Failure ]
+crbug.com/953591 [ Win ] fast/forms/datalist/input-appearance-range-with-transform.html [ Pass Failure ]
+crbug.com/953591 [ Win ] transforms/matrix-02.html [ Pass Failure ]
