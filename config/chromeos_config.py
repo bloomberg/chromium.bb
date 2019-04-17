@@ -1986,7 +1986,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'kevin-arcnext',
       'kip',
       'kukui',
-      'lakitu',
       'lakitu-gpu',
       'lasilla-ground',
       'leon',
@@ -2070,6 +2069,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'gale', # crbug.com/953701
       'whirlwind', # crbug.com/953701
       'mistral', # contact: roopeshr@
+      'lakitu', # crbug.com/953855#c7
       'lakitu-st', # crbug.com/953855
   ])
 
