@@ -506,11 +506,8 @@ IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
   EXPECT_TRUE(local_address_0.EqualsForSyncPurposes(*local_addresses_1[0]));
 }
 
-// TODO(crbug.com/953152): Flaky on multiple builders and recently regressed on
-// Mac, apparently with
-// https://chromium-review.googlesource.com/c/chromium/src/+/1566296.
 IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
-                       DISABLED_DeleteServerCardMetadataWhenDataGetsRemoved) {
+                       DeleteServerCardMetadataWhenDataGetsRemoved) {
   GetFakeServer()->SetWalletData(
       {CreateSyncWalletCard(/*name=*/"card-1", /*last_four=*/"0001",
                             kDefaultBillingAddressID),
@@ -557,12 +554,8 @@ IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
   EXPECT_EQ(1U, GetServerAddressesMetadata(1).size());
 }
 
-// TODO(crbug.com/953152): Flaky on multiple builders and recently regressed on
-// Mac, apparently with
-// https://chromium-review.googlesource.com/c/chromium/src/+/1566296.
-IN_PROC_BROWSER_TEST_P(
-    TwoClientWalletSyncTest,
-    DISABLED_DeleteServerAddressMetadataWhenDataGetsRemoved) {
+IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
+                       DeleteServerAddressMetadataWhenDataGetsRemoved) {
   GetFakeServer()->SetWalletData(
       {CreateSyncWalletCard(/*name=*/"card-1", /*last_four=*/"0001",
                             kDefaultBillingAddressID),
