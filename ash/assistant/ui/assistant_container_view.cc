@@ -153,38 +153,27 @@ class AssistantContainerLayout : public views::LayoutManager {
 
   // views::LayoutManager:
   gfx::Size GetPreferredSize(const views::View* host) const override {
+    // Our preferred width is the width of our largest visible child.
     int preferred_width = 0;
-
-    for (int i = 0; i < host->child_count(); ++i) {
-      const views::View* child = host->child_at(i);
-
-      // We do not include invisible children in our size calculation.
-      if (!child->visible())
-        continue;
-
-      // Our preferred width is the width of our largest visible child.
-      preferred_width =
-          std::max(child->GetPreferredSize().width(), preferred_width);
+    for (const views::View* child : host->children()) {
+      if (child->visible()) {
+        preferred_width =
+            std::max(child->GetPreferredSize().width(), preferred_width);
+      }
     }
-
     return gfx::Size(preferred_width,
                      GetPreferredHeightForWidth(host, preferred_width));
   }
 
   int GetPreferredHeightForWidth(const views::View* host,
                                  int width) const override {
+    // Our preferred height is the height of our largest visible child.
     int preferred_height = 0;
-
-    for (int i = 0; i < host->child_count(); ++i) {
-      const views::View* child = host->child_at(i);
-
-      // We do not include invisible children in our size calculation.
-      if (!child->visible())
-        continue;
-
-      // Our preferred height is the height of our largest visible child.
-      preferred_height =
-          std::max(child->GetHeightForWidth(width), preferred_height);
+    for (const views::View* child : host->children()) {
+      if (child->visible()) {
+        preferred_height =
+            std::max(child->GetHeightForWidth(width), preferred_height);
+      }
     }
 
     // The height of container view should not exceed work area height to

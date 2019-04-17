@@ -4,6 +4,8 @@
 
 #include "ash/system/unified/unified_system_tray_view.h"
 
+#include <numeric>
+
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
@@ -139,10 +141,10 @@ void UnifiedSlidersContainerView::SetExpandedAmount(double expanded_amount) {
 }
 
 int UnifiedSlidersContainerView::GetExpandedHeight() const {
-  int height = 0;
-  for (int i = 0; i < child_count(); ++i)
-    height += child_at(i)->GetHeightForWidth(kTrayMenuWidth);
-  return height;
+  return std::accumulate(children().cbegin(), children().cend(), 0,
+                         [](int height, const auto* v) {
+                           return height + v->GetHeightForWidth(kTrayMenuWidth);
+                         });
 }
 
 void UnifiedSlidersContainerView::Layout() {

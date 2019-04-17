@@ -44,14 +44,9 @@ int FeaturePodsContainerView::GetCollapsedHeight() const {
 }
 
 void FeaturePodsContainerView::SaveFocus() {
-  focused_button_ = nullptr;
-  for (int i = 0; i < child_count(); ++i) {
-    auto* child = child_at(i);
-    if (child->HasFocus()) {
-      focused_button_ = child;
-      break;
-    }
-  }
+  const auto i = std::find_if(children().cbegin(), children().cend(),
+                              [](const auto* v) { return v->HasFocus(); });
+  focused_button_ = (i == children().cend()) ? nullptr : *i;
 }
 
 void FeaturePodsContainerView::RestoreFocus() {
@@ -131,12 +126,10 @@ void FeaturePodsContainerView::UpdateChildVisibility() {
 }
 
 int FeaturePodsContainerView::GetVisibleCount() const {
-  int visible_count = 0;
-  for (int i = 0; i < child_count(); ++i) {
-    if (static_cast<const FeaturePodButton*>(child_at(i))->visible_preferred())
-      ++visible_count;
-  }
-  return visible_count;
+  return std::count_if(
+      children().cbegin(), children().cend(), [](const auto* v) {
+        return static_cast<const FeaturePodButton*>(v)->visible_preferred();
+      });
 }
 
 gfx::Point FeaturePodsContainerView::GetButtonPosition(

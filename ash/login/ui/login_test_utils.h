@@ -43,7 +43,7 @@ mojom::LoginUserInfoPtr CreateChildUser(const std::string& email);
 mojom::LoginUserInfoPtr CreatePublicAccountUser(const std::string& email);
 
 // Returns true if |view| or any child of it has focus.
-bool HasFocusInAnyChildView(views::View* view);
+bool HasFocusInAnyChildView(const views::View* view);
 
 // Keeps tabbing through |view| until the view loses focus.
 // The number of generated tab events will be limited - if the focus is still

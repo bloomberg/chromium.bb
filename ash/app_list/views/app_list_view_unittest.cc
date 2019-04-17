@@ -569,14 +569,11 @@ class AppListViewFocusTest : public views::ViewsTestBase,
   }
 
   std::vector<views::View*> GetAllSuggestions() {
+    const auto& children = suggestions_container()->children();
     std::vector<views::View*> suggestions;
-    for (int i = 0; i < suggestions_container()->child_count(); ++i) {
-      SearchResultSuggestionChipView* view =
-          static_cast<SearchResultSuggestionChipView*>(
-              suggestions_container()->child_at(i));
-      if (view->visible())
-        suggestions.emplace_back(view);
-    }
+    std::copy_if(children.cbegin(), children.cend(),
+                 std::back_inserter(suggestions),
+                 [](const auto* v) { return v->visible(); });
     return suggestions;
   }
 

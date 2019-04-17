@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <map>
+#include <numeric>
 
 #include "ash/assistant/model/assistant_query.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
@@ -137,23 +138,23 @@ class StackLayout : public views::LayoutManager {
   }
 
   gfx::Size GetPreferredSize(const views::View* host) const override {
-    gfx::Size preferred_size;
-
-    for (int i = 0; i < host->child_count(); ++i)
-      preferred_size.SetToMax(host->child_at(i)->GetPreferredSize());
-    return preferred_size;
+    return std::accumulate(host->children().cbegin(), host->children().cend(),
+                           gfx::Size(), [](gfx::Size size, const auto* v) {
+                             size.SetToMax(v->GetPreferredSize());
+                             return size;
+                           });
   }
 
   int GetPreferredHeightForWidth(const views::View* host,
                                  int width) const override {
-    int preferred_height = 0;
-
-    for (int i = 0; i < host->child_count(); ++i) {
-      preferred_height = std::max(host->child_at(i)->GetHeightForWidth(width),
-                                  preferred_height);
-    }
-
-    return preferred_height;
+    const auto& children = host->children();
+    if (children.empty())
+      return 0;
+    std::vector<int> heights(children.size());
+    std::transform(
+        children.cbegin(), children.cend(), heights.begin(),
+        [width](const views::View* v) { return v->GetHeightForWidth(width); });
+    return *std::max_element(heights.cbegin(), heights.cend());
   }
 
   void Layout(views::View* host) override {

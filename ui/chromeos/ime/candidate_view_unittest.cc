@@ -77,28 +77,27 @@ class CandidateViewTest : public views::ViewsTestBase,
   }
 
   size_t GetHighlightedCount() const {
-    size_t highlighted_count = 0;
-    for (int i = 0; i < container_->child_count(); ++i) {
-      if (!!container_->child_at(i)->background())
-        ++highlighted_count;
-    }
-    return highlighted_count;
+    const auto& children = container_->children();
+    return std::count_if(
+        children.cbegin(), children.cend(),
+        [](const views::View* v) { return !!v->background(); });
   }
 
   int GetHighlightedIndex() const {
-    for (int i = 0; i < container_->child_count(); ++i) {
-      if (!!container_->child_at(i)->background())
-        return i;
-    }
-    return -1;
+    const auto& children = container_->children();
+    const auto it =
+        std::find_if(children.cbegin(), children.cend(),
+                     [](const views::View* v) { return !!v->background(); });
+    return (it == children.cend()) ? -1 : std::distance(children.cbegin(), it);
   }
 
   int GetLastPressedIndexAndReset() {
-    for (int i = 0; i < container_->child_count(); ++i) {
-      if (last_pressed_ == container_->child_at(i)) {
-        last_pressed_ = nullptr;
-        return i;
-      }
+    const auto& children = container_->children();
+    const auto it =
+        std::find(children.cbegin(), children.cend(), last_pressed_);
+    if (it != children.cend()) {
+      last_pressed_ = nullptr;
+      return std::distance(children.cbegin(), it);
     }
 
     DCHECK(!last_pressed_);

@@ -234,18 +234,17 @@ void PageSwitcher::ButtonPressed(views::Button* sender,
   if (!model_ || ignore_button_press_)
     return;
 
-  for (int i = 0; i < buttons_->child_count(); ++i) {
-    if (sender == static_cast<views::Button*>(buttons_->child_at(i))) {
-      if (model_->selected_page() == i)
-        break;
-      UMA_HISTOGRAM_ENUMERATION(
-          kAppListPageSwitcherSourceHistogram,
-          event.IsGestureEvent() ? kTouchPageIndicator : kClickPageIndicator,
-          kMaxAppListPageSwitcherSource);
-      model_->SelectPage(i, true /* animate */);
-      break;
-    }
-  }
+  const auto& children = buttons_->children();
+  const auto it = std::find(children.begin(), children.end(), sender);
+  DCHECK(it != children.end());
+  const int page = std::distance(children.begin(), it);
+  if (page == model_->selected_page())
+    return;
+  UMA_HISTOGRAM_ENUMERATION(
+      kAppListPageSwitcherSourceHistogram,
+      event.IsGestureEvent() ? kTouchPageIndicator : kClickPageIndicator,
+      kMaxAppListPageSwitcherSource);
+  model_->SelectPage(page, true /* animate */);
 }
 
 void PageSwitcher::TotalPagesChanged() {
