@@ -2179,11 +2179,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "link-managed-notice-to-management-page",
-    "owners": [ "chrome-enterprise-team-core@google.com" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "list-all-display-modes",
     "owners": [ "//ui/display/OWNERS" ],
     // This flag is used for debugging and development purposes to list all

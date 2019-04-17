@@ -12,7 +12,6 @@
 #include "base/command_line.h"
 #include "base/debug/debugging_buildflags.h"
 #include "base/debug/profiler.h"
-#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/stl_util.h"
@@ -44,7 +43,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_app_browser_controller.h"
 #include "chrome/browser/ui/webui/inspect_ui.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/content_restriction.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -689,11 +687,7 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
       PinTab(browser_);
       break;
     case IDC_SHOW_MANAGEMENT_PAGE: {
-      bool link_to_management_page = base::FeatureList::IsEnabled(
-          features::kLinkManagedNoticeToChromeUIManagementURL);
-      ShowSingletonTab(browser_,
-                       GURL(link_to_management_page ? kChromeUIManagementURL
-                                                    : kManagedUiLearnMoreUrl));
+      ShowSingletonTab(browser_, GURL(kChromeUIManagementURL));
       break;
     }
     // Hosted App commands
