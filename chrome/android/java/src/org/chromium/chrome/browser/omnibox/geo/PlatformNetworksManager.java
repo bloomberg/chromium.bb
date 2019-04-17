@@ -30,6 +30,7 @@ import android.telephony.CellInfoWcdma;
 import android.telephony.TelephonyManager;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.BuildInfo;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.omnibox.geo.VisibleNetworks.VisibleCell;
 import org.chromium.chrome.browser.omnibox.geo.VisibleNetworks.VisibleWifi;
@@ -317,6 +318,10 @@ class PlatformNetworksManager {
     }
 
     private static boolean hasLocationPermission(Context context) {
+        if (BuildInfo.isAtLeastQ()) {
+            return hasPermission(context, Manifest.permission.ACCESS_FINE_LOCATION);
+        }
+
         return hasPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION)
                 || hasPermission(context, Manifest.permission.ACCESS_FINE_LOCATION);
     }
