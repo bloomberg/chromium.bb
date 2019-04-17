@@ -538,6 +538,8 @@ target(link_target_type, "renderer") {
     "web_ui_extension_data.h",
     "webgraphicscontext3d_provider_impl.cc",
     "webgraphicscontext3d_provider_impl.h",
+    "worker/application_cache_host_for_shared_worker.cc",
+    "worker/application_cache_host_for_shared_worker.h",
     "worker/dedicated_worker_host_factory_client.cc",
     "worker/dedicated_worker_host_factory_client.h",
     "worker/embedded_shared_worker_stub.cc",
