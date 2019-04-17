@@ -18,7 +18,7 @@ assert(
 settings.defaultResourceLoaded = true;
 
 Polymer({
-  is: 'settings-ui',
+  is: 'os-settings-ui',
 
   behaviors: [
     settings.RouteObserverBehavior,

@@ -4,10 +4,10 @@
 
 /**
  * @fileoverview
- * 'settings-menu' shows a menu with a hardcoded set of pages and subpages.
+ * 'os-settings-menu' shows a menu with a hardcoded set of pages and subpages.
  */
 Polymer({
-  is: 'settings-menu',
+  is: 'os-settings-menu',
 
   behaviors: [settings.RouteObserverBehavior],
 
@@ -70,7 +70,7 @@ Polymer({
 
     const path = new URL(event.detail.selected).pathname;
     const route = settings.getRouteForPath(path);
-    assert(route, 'settings-menu has an entry with an invalid route.');
+    assert(route, 'os-settings-menu has an entry with an invalid route.');
     settings.navigateTo(
         route, /* dynamicParams */ null, /* removeSearch */ true);
   },
