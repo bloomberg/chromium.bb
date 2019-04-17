@@ -277,6 +277,10 @@ content::WebContents* PerformanceManagerTabHelper::GetWebContents() const {
   return web_contents();
 }
 
+int64_t PerformanceManagerTabHelper::LastNavigationId() const {
+  return last_navigation_id_;
+}
+
 template <typename Functor, typename NodeType, typename... Args>
 void PerformanceManagerTabHelper::PostToGraph(const base::Location& from_here,
                                               Functor&& functor,
@@ -290,6 +294,7 @@ void PerformanceManagerTabHelper::PostToGraph(const base::Location& from_here,
 }
 
 void PerformanceManagerTabHelper::OnMainFrameNavigation(int64_t navigation_id) {
+  last_navigation_id_ = navigation_id;
   ukm_source_id_ =
       ukm::ConvertToSourceId(navigation_id, ukm::SourceIdType::NAVIGATION_ID);
   PostToGraph(FROM_HERE, &PageNodeImpl::SetUkmSourceId, page_node_.get(),

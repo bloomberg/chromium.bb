@@ -66,6 +66,7 @@ class PerformanceManagerTabHelper
 
   // WebContentsProxy overrides.
   content::WebContents* GetWebContents() const override;
+  int64_t LastNavigationId() const override;
 
   void SetUkmSourceIdForTesting(ukm::SourceId id) { ukm_source_id_ = id; }
 
@@ -97,6 +98,10 @@ class PerformanceManagerTabHelper
   // always supposed to happen.
   bool first_time_favicon_set_ = false;
   bool first_time_title_set_ = false;
+
+  // The last navigation ID that was committed to a main frame in this web
+  // contents.
+  int64_t last_navigation_id_ = 0;
 
   // Maps from RenderFrameHost to the associated PM node.
   std::map<content::RenderFrameHost*, std::unique_ptr<FrameNodeImpl>> frames_;
