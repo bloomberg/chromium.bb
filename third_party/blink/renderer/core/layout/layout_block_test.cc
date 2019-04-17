@@ -97,4 +97,34 @@ TEST_F(LayoutBlockTest, NestedInlineVisualOverflow) {
 #endif
 }
 
+TEST_F(LayoutBlockTest, ContainmentStyleChange) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      * { display: block }
+    </style>
+    <div id=target style="contain:strict">
+      <div>
+        <div>
+          <div id=contained style="position: fixed"></div>
+          <div></div>
+        <div>
+      </div>
+    </div>
+  )HTML");
+
+  Element* target_element = GetDocument().getElementById("target");
+  LayoutBlockFlow* target =
+      ToLayoutBlockFlow(target_element->GetLayoutObject());
+  LayoutBox* contained = ToLayoutBox(GetLayoutObjectByElementId("contained"));
+  EXPECT_TRUE(target->PositionedObjects()->Contains(contained));
+
+  // Remove layout containment. This should cause |contained| to now be
+  // in the positioned objects set for the LayoutView, not |target|.
+  target_element->setAttribute(html_names::kStyleAttr, "contain:style");
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_FALSE(target->PositionedObjects());
+  EXPECT_TRUE(
+      GetDocument().GetLayoutView()->PositionedObjects()->Contains(contained));
+}
+
 }  // namespace blink

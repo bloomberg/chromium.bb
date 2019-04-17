@@ -166,13 +166,13 @@ void LayoutBlock::StyleWillChange(StyleDifference diff,
   if (old_style && Parent()) {
     bool old_style_contains_fixed_position =
         old_style->CanContainFixedPositionObjects(IsDocumentElement()) ||
-        ShouldApplyPaintContainment() || ShouldApplyLayoutContainment();
+        old_style->ContainsPaint() || old_style->ContainsLayout();
     bool old_style_contains_absolute_position =
         old_style_contains_fixed_position ||
         old_style->CanContainAbsolutePositionObjects();
     bool new_style_contains_fixed_position =
         new_style.CanContainFixedPositionObjects(IsDocumentElement()) ||
-        ShouldApplyPaintContainment() || ShouldApplyLayoutContainment();
+        new_style.ContainsPaint() || new_style.ContainsLayout();
     bool new_style_contains_absolute_position =
         new_style_contains_fixed_position ||
         new_style.CanContainAbsolutePositionObjects();
