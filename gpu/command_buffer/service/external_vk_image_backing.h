@@ -85,6 +85,7 @@ class ExternalVkImageBacking : public SharedImageBacking {
   VkFormat vk_format_;
   bool is_write_in_progress_ = false;
   uint32_t reads_in_progress_ = 0;
+  gles2::Texture* texture_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalVkImageBacking);
 };
