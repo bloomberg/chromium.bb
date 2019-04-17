@@ -157,6 +157,11 @@
       div.list-item.target ~  div.list-item.target .target-info {
         display: none;
       }
+
+      .restart-button {
+        margin-inline-start: var(--settings-controlled-by-spacing);
+      }
+
     </style>
     <settings-languages languages="{{languages}}" prefs="{{prefs}}"
         language-helper="{{languageHelper}}">
@@ -210,7 +215,7 @@
 <if expr="chromeos or is_win">
                 <template is="dom-if" if="[[isRestartRequired_(
                         item.language.code, languages.prospectiveUILanguage)]]">
-                  <paper-button on-click="onRestartTap_">
+                  <paper-button class="restart-button" on-click="onRestartTap_">
                     $i18n{restart}
                   </paper-button>
                 </template>
