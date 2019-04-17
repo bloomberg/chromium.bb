@@ -35,7 +35,7 @@ extern "C" {
 #endif
 
 struct weston_compositor;
-struct weston_debug_compositor;
+struct weston_log_context;
 struct wl_display;
 
 void
@@ -60,7 +60,7 @@ typedef void (*weston_debug_scope_cb)(struct weston_debug_stream *stream,
 				      void *user_data);
 
 struct weston_debug_scope *
-weston_compositor_add_debug_scope(struct weston_debug_compositor *compositor,
+weston_compositor_add_debug_scope(struct weston_log_context *compositor,
 				  const char *name,
 				  const char *description,
 				  weston_debug_scope_cb begin_cb,

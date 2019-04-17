@@ -39,13 +39,13 @@
 #include <errno.h>
 #include <sys/time.h>
 
-/** Main weston-debug context
+/** Main weston-log context
  *
  * One per weston_compositor.
  *
  * \internal
  */
-struct weston_debug_compositor {
+struct weston_log_context {
 	struct weston_compositor *compositor;
 	struct wl_listener compositor_destroy_listener;
 	struct wl_global *global;
@@ -82,11 +82,11 @@ struct weston_debug_stream {
 };
 
 static struct weston_debug_scope *
-get_scope(struct weston_debug_compositor *wdc, const char *name)
+get_scope(struct weston_log_context *log_ctx, const char *name)
 {
 	struct weston_debug_scope *scope;
 
-	wl_list_for_each(scope, &wdc->scope_list, compositor_link)
+	wl_list_for_each(scope, &log_ctx->scope_list, compositor_link)
 		if (strcmp(name, scope->name) == 0)
 			return scope;
 
@@ -128,7 +128,7 @@ stream_close_on_failure(struct weston_debug_stream *stream,
 }
 
 static struct weston_debug_stream *
-stream_create(struct weston_debug_compositor *wdc, const char *name,
+stream_create(struct weston_log_context *log_ctx, const char *name,
 	      int32_t streamfd, struct wl_resource *stream_resource)
 {
 	struct weston_debug_stream *stream;
@@ -141,7 +141,7 @@ stream_create(struct weston_debug_compositor *wdc, const char *name,
 	stream->fd = streamfd;
 	stream->resource = stream_resource;
 
-	scope = get_scope(wdc, name);
+	scope = get_scope(log_ctx, name);
 	if (scope) {
 		wl_list_insert(&scope->stream_list, &stream->scope_link);
 
@@ -196,12 +196,12 @@ weston_debug_subscribe(struct wl_client *client,
 		       int32_t streamfd,
 		       uint32_t new_stream_id)
 {
-	struct weston_debug_compositor *wdc;
+	struct weston_log_context *log_ctx;
 	struct wl_resource *stream_resource;
 	uint32_t version;
 	struct weston_debug_stream *stream;
 
-	wdc = wl_resource_get_user_data(global_resource);
+	log_ctx = wl_resource_get_user_data(global_resource);
 	version = wl_resource_get_version(global_resource);
 
 	stream_resource = wl_resource_create(client,
@@ -210,7 +210,7 @@ weston_debug_subscribe(struct wl_client *client,
 	if (!stream_resource)
 		goto fail;
 
-	stream = stream_create(wdc, name, streamfd, stream_resource);
+	stream = stream_create(log_ctx, name, streamfd, stream_resource);
 	if (!stream)
 		goto fail;
 
@@ -233,7 +233,7 @@ static void
 bind_weston_debug(struct wl_client *client,
 		   void *data, uint32_t version, uint32_t id)
 {
-	struct weston_debug_compositor *wdc = data;
+	struct weston_log_context *log_ctx = data;
 	struct weston_debug_scope *scope;
 	struct wl_resource *resource;
 
@@ -245,88 +245,84 @@ bind_weston_debug(struct wl_client *client,
 		return;
 	}
 	wl_resource_set_implementation(resource, &weston_debug_impl,
-				       wdc, NULL);
+				       log_ctx, NULL);
 
-       wl_list_for_each(scope, &wdc->scope_list, compositor_link) {
+       wl_list_for_each(scope, &log_ctx->scope_list, compositor_link) {
 		weston_debug_v1_send_available(resource, scope->name,
 					       scope->desc);
        }
 }
 
 /**
- * Connect weston-compositor structure to weston-debug structure
- * an vice versa.
+ * Connect weston_compositor structure to weston_log_context structure.
  *
  * \param compositor
- * \param wdc
+ * \param log_ctx
  * \return 0 on success, -1 on failure
  *
+ * Sets weston_compositor::weston_log_ctx.
  */
 int
-weston_debug_compositor_setup(struct weston_compositor *compositor,
-			      struct weston_debug_compositor *wdc)
+weston_log_ctx_compositor_setup(struct weston_compositor *compositor,
+			      struct weston_log_context *log_ctx)
 {
-	if (compositor->weston_debug)
+	if (compositor->weston_log_ctx)
 		return -1;
 
-	wdc->compositor = compositor;
-	compositor->weston_debug = wdc;
+	log_ctx->compositor = compositor;
+	compositor->weston_log_ctx = log_ctx;
 
 	return 0;
 }
 
-/** Initialize weston-debug structure
+/** Initialize weston_log_context structure
  *
  * \param compositor The libweston compositor.
  * \return 0 on success, -1 on failure.
  *
- * weston_debug_compositor is a singleton for each weston_compositor.
+ * weston_log_context is a singleton for each weston_compositor.
  *
- * Sets weston_compositor::weston_debug.
- *
- * \internal
  */
-WL_EXPORT struct weston_debug_compositor *
-weston_debug_compositor_create(void)
+WL_EXPORT struct weston_log_context *
+weston_log_ctx_compositor_create(void)
 {
-	struct weston_debug_compositor *wdc;
+	struct weston_log_context *log_ctx;
 
-	wdc = zalloc(sizeof *wdc);
-	if (!wdc)
+	log_ctx = zalloc(sizeof *log_ctx);
+	if (!log_ctx)
 		return NULL;
 
-	wl_list_init(&wdc->scope_list);
+	wl_list_init(&log_ctx->scope_list);
 
-	return wdc;
+	return log_ctx;
 }
 
-/** Destroy weston_debug_compositor structure
+/** Destroy weston_log_context structure
  *
  * \param compositor The libweston compositor whose weston-debug to tear down.
  *
- * Clears weston_compositor::weston_debug.
+ * Clears weston_compositor::weston_log_ctx.
  *
- * \internal
  */
-void
-weston_debug_compositor_destroy(struct weston_compositor *compositor)
+WL_EXPORT void
+weston_log_ctx_compositor_destroy(struct weston_compositor *compositor)
 {
-	struct weston_debug_compositor *wdc = compositor->weston_debug;
+	struct weston_log_context *log_ctx = compositor->weston_log_ctx;
 	struct weston_debug_scope *scope;
 
-	if (wdc->global)
-		wl_global_destroy(wdc->global);
+	if (log_ctx->global)
+		wl_global_destroy(log_ctx->global);
 
-	wl_list_for_each(scope, &wdc->scope_list, compositor_link)
+	wl_list_for_each(scope, &log_ctx->scope_list, compositor_link)
 		weston_log("Internal warning: debug scope '%s' has not been destroyed.\n",
 			   scope->name);
 
 	/* Remove head to not crash if scope removed later. */
-	wl_list_remove(&wdc->scope_list);
+	wl_list_remove(&log_ctx->scope_list);
 
-	free(wdc);
+	free(log_ctx);
 
-	compositor->weston_debug = NULL;
+	compositor->weston_log_ctx = NULL;
 }
 
 /** Enable weston-debug protocol extension
@@ -372,12 +368,12 @@ weston_compositor_enable_debug_protocol(struct weston_compositor *compositor)
 WL_EXPORT bool
 weston_compositor_is_debug_protocol_enabled(struct weston_compositor *wc)
 {
-	return wc->weston_debug->global != NULL;
+	return wc->weston_log_ctx->global != NULL;
 }
 
 /** Register a new debug stream name, creating a debug scope
  *
- * \param wdc The weston_debug_compositor where to add.
+ * \param log_ctx The weston_log_context where to add.
  * \param name The debug stream/scope name; must not be NULL.
  * \param desc The debug scope description for humans; must not be NULL.
  * \param begin_cb Optional callback when a client subscribes to this scope.
@@ -410,7 +406,7 @@ weston_compositor_is_debug_protocol_enabled(struct weston_compositor *wc)
  * \sa weston_debug_stream, weston_debug_scope_cb
  */
 WL_EXPORT struct weston_debug_scope *
-weston_compositor_add_debug_scope(struct weston_debug_compositor *wdc,
+weston_compositor_add_debug_scope(struct weston_log_context *log_ctx,
 				  const char *name,
 				  const char *description,
 				  weston_debug_scope_cb begin_cb,
@@ -423,13 +419,13 @@ weston_compositor_add_debug_scope(struct weston_debug_compositor *wdc,
 		return NULL;
 	}
 
-	if (!wdc) {
+	if (!log_ctx) {
 		weston_log("Error: cannot add debug scope '%s', infra not initialized.\n",
 			   name);
 		return NULL;
 	}
 
-	if (get_scope(wdc, name)){
+	if (get_scope(log_ctx, name)){
 		weston_log("Error: debug scope named '%s' is already registered.\n",
 			   name);
 		return NULL;
@@ -457,16 +453,16 @@ weston_compositor_add_debug_scope(struct weston_debug_compositor *wdc,
 		return NULL;
 	}
 
-	wl_list_insert(wdc->scope_list.prev, &scope->compositor_link);
+	wl_list_insert(log_ctx->scope_list.prev, &scope->compositor_link);
 
 	return scope;
 }
 
-/** Destroy a debug scope
+/** Destroy a log scope
  *
- * \param scope The debug scope to destroy; may be NULL.
+ * \param scope The log scope to destroy; may be NULL.
  *
- * Destroys the debug scope, closing all open streams subscribed to it and
+ * Destroys the log scope, closing all open streams subscribed to it and
  * sending them each a \c weston_debug_stream_v1.failure event.
  *
  * \memberof weston_debug_scope

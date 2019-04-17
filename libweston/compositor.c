@@ -6788,7 +6788,7 @@ debug_scene_graph_cb(struct weston_debug_stream *stream, void *data)
  */
 WL_EXPORT struct weston_compositor *
 weston_compositor_create(struct wl_display *display,
-			 struct weston_debug_compositor *wdc,
+			 struct weston_log_context *log_ctx,
 			 void *user_data)
 {
 	struct weston_compositor *ec;
@@ -6843,7 +6843,7 @@ weston_compositor_create(struct wl_display *display,
 			      ec, bind_presentation))
 		goto fail;
 
-	if (weston_debug_compositor_setup(ec, wdc) < 0)
+	if (weston_log_ctx_compositor_setup(ec, log_ctx) < 0)
 		goto fail;
 
 	if (weston_input_init(ec) != 0)
@@ -6889,7 +6889,7 @@ weston_compositor_create(struct wl_display *display,
 					    timeline_key_binding_handler, ec);
 
 	ec->debug_scene =
-		weston_compositor_add_debug_scope(ec->weston_debug, "scene-graph",
+		weston_compositor_add_debug_scope(ec->weston_log_ctx, "scene-graph",
 						  "Scene graph details\n",
 					  	  debug_scene_graph_cb,
 					  	  ec);
@@ -7196,7 +7196,7 @@ weston_compositor_destroy(struct weston_compositor *compositor)
 
 	weston_debug_scope_destroy(compositor->debug_scene);
 	compositor->debug_scene = NULL;
-	weston_debug_compositor_destroy(compositor);
+	weston_log_ctx_compositor_destroy(compositor);
 
 	free(compositor);
 }

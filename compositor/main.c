@@ -2918,7 +2918,7 @@ int main(int argc, char *argv[])
 	struct wl_listener primary_client_destroyed;
 	struct weston_seat *seat;
 	struct wet_compositor wet = { 0 };
-	struct weston_debug_compositor *wdc = NULL;
+	struct weston_log_context *log_ctx = NULL;
 	int require_input;
 	sigset_t mask;
 
@@ -2962,8 +2962,8 @@ int main(int argc, char *argv[])
 		return EXIT_SUCCESS;
 	}
 
-	wdc = weston_debug_compositor_create();
-	if (!wdc) {
+	log_ctx = weston_log_ctx_compositor_create();
+	if (!log_ctx) {
 		fprintf(stderr, "Failed to initialize weston debug framework.\n");
 		return EXIT_FAILURE;
 	}
@@ -3032,17 +3032,17 @@ int main(int argc, char *argv[])
 			backend = weston_choose_default_backend();
 	}
 
-	wet.compositor = weston_compositor_create(display, wdc, &wet);
+	wet.compositor = weston_compositor_create(display, log_ctx, &wet);
 	if (wet.compositor == NULL) {
 		weston_log("fatal: failed to create compositor\n");
 		goto out;
 	}
 	segv_compositor = wet.compositor;
 
-	log_scope = weston_compositor_add_debug_scope(wdc, "log",
+	log_scope = weston_compositor_add_debug_scope(log_ctx, "log",
 			"Weston and Wayland log\n", NULL, NULL);
 	protocol_scope =
-		weston_compositor_add_debug_scope(wdc,
+		weston_compositor_add_debug_scope(log_ctx,
 			"proto",
 			"Wayland protocol dump for all clients.\n",
 			NULL, NULL);
