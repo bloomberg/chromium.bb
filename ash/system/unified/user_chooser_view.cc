@@ -227,8 +227,8 @@ UserItemButton::UserItemButton(int user_index,
   AddChildView(vertical_labels);
   layout->SetFlexForView(vertical_labels, 1);
 
-  capture_icon_->SetImage(
-      gfx::CreateVectorIcon(kSystemTrayRecordingIcon, kUnifiedMenuIconColor));
+  capture_icon_->SetImage(gfx::CreateVectorIcon(kSystemTrayRecordingIcon,
+                                                kUnifiedRecordingIconColor));
   if (!has_close_button) {
     // Add a padding with the same size as the close button,
     // so as to align all media indicators in a column.

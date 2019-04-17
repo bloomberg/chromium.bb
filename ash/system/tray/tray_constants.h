@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -170,6 +171,7 @@ constexpr SkColor kUnifiedNotificationSeparatorColor =
     SkColorSetRGB(0xdf, 0xe0, 0xe0);
 constexpr SkColor kUnifiedFeaturePodHoverColor =
     SkColorSetRGB(0xff, 0xff, 0xff);
+constexpr SkColor kUnifiedRecordingIconColor = gfx::kGoogleRedDark600;
 
 constexpr gfx::Insets kUnifiedMenuItemPadding(0, 16, 16, 16);
 constexpr gfx::Insets kUnifiedSystemInfoViewPadding(4, 16, 16, 16);
