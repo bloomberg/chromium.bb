@@ -376,6 +376,11 @@ void AudioFocusManager::CreateMediaControllerForSession(
   }
 }
 
+void AudioFocusManager::SuspendAllSessions() {
+  for (auto& row : audio_focus_stack_)
+    row->session()->Suspend(mojom::MediaSession::SuspendType::kUI);
+}
+
 void AudioFocusManager::BindToInterface(
     mojom::AudioFocusManagerRequest request) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
