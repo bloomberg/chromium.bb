@@ -54,19 +54,6 @@ void SurfaceLayerImpl::SetRange(const viz::SurfaceRange& surface_range,
         "ImplSetSurfaceId", "surface_id", surface_range.end().ToString());
   }
 
-  if (surface_range.start() &&
-      surface_range_.start() != surface_range.start() &&
-      surface_range.start()->local_surface_id().is_valid()) {
-    TRACE_EVENT_WITH_FLOW2(
-        TRACE_DISABLED_BY_DEFAULT("viz.surface_id_flow"),
-        "LocalSurfaceId.Submission.Flow",
-        TRACE_ID_GLOBAL(
-            surface_range.start()->local_surface_id().submission_trace_id()),
-        TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "step",
-        "ImplSetOldestAcceptableFallback", "surface_id",
-        surface_range.start()->ToString());
-  }
-
   surface_range_ = surface_range;
   deadline_in_frames_ = deadline_in_frames;
   NoteLayerPropertyChanged();
