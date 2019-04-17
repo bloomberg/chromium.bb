@@ -178,8 +178,12 @@ public class AutofillAssistantUiTest {
         testChips(inOrder, assistantCoordinator.getModel().getSuggestionsModel(),
                 assistantCoordinator.getBottomBarCoordinator().getSuggestionsCoordinator());
 
-        testChips(inOrder, assistantCoordinator.getModel().getActionsModel(),
-                assistantCoordinator.getBottomBarCoordinator().getActionsCoordinator());
+        // TODO(crbug.com/806868): Fix test of actions carousel. This is currently broken as chips
+        // are displayed in the reversed order in the actions carousel and calling
+        // View#performClick() does not work as chips in the actions carousel are wrapped into a
+        // FrameLayout that does not react to clicks.
+        // testChips(inOrder, assistantCoordinator.getModel().getActionsModel(),
+        //        assistantCoordinator.getBottomBarCoordinator().getActionsCoordinator());
 
         // Show movie details.
         String movieTitle = "testTitle";

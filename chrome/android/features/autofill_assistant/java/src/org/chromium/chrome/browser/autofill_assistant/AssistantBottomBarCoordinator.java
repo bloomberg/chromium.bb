@@ -17,8 +17,10 @@ import org.chromium.base.Callback;
 import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.autofill_assistant.R;
+import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantActionsCarouselCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantCarouselCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChip;
+import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantSuggestionsCarouselCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.details.AssistantDetailsCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.header.AssistantHeaderCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.header.AssistantHeaderModel;
@@ -72,8 +74,9 @@ class AssistantBottomBarCoordinator implements CompositorViewResizer {
         mPaymentRequestCoordinator =
                 new AssistantPaymentRequestCoordinator(context, model.getPaymentRequestModel());
         mSuggestionsCoordinator =
-                new AssistantCarouselCoordinator(context, model.getSuggestionsModel());
-        mActionsCoordinator = new AssistantCarouselCoordinator(context, model.getActionsModel());
+                new AssistantSuggestionsCarouselCoordinator(context, model.getSuggestionsModel());
+        mActionsCoordinator =
+                new AssistantActionsCarouselCoordinator(context, model.getActionsModel());
 
         // Add child views to bottom bar container.
         mContent.mBottomBarView.addView(mInfoBoxCoordinator.getView());
