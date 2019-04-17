@@ -25,7 +25,7 @@ class CWSWidgetContainerErrorDialog extends cr.ui.dialogs.BaseDialog {
   initDom_() {
     super.initDom_();
     this.frame_.classList.add('cws-widget-error-dialog-frame');
-    var img = this.document_.createElement('div');
+    const img = this.document_.createElement('div');
     img.className = 'cws-widget-error-dialog-img';
     this.frame_.insertBefore(img, this.text_);
 

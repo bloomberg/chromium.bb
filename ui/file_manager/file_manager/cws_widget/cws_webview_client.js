@@ -43,7 +43,7 @@ class CWSContainerClient extends cr.EventTarget {
       return;
     }
 
-    var data = event.data;
+    const data = event.data;
     switch (data['message']) {
       case 'widget_loaded':
         this.onWidgetLoaded_();
@@ -129,7 +129,7 @@ class CWSContainerClient extends cr.EventTarget {
    * @private
    */
   sendInstallRequest_(itemId) {
-    var event = new Event(CWSContainerClient.Events.REQUEST_INSTALL);
+    const event = new Event(CWSContainerClient.Events.REQUEST_INSTALL);
     event.itemId = itemId;
     this.dispatchEvent(event);
   }
@@ -141,7 +141,7 @@ class CWSContainerClient extends cr.EventTarget {
    * @private
    */
   sendInstallDone_(itemId) {
-    var event = new Event(CWSContainerClient.Events.INSTALL_DONE);
+    const event = new Event(CWSContainerClient.Events.INSTALL_DONE);
     event.itemId = itemId;
     this.dispatchEvent(event);
   }
@@ -153,7 +153,7 @@ class CWSContainerClient extends cr.EventTarget {
    * @private
    */
   postInstallFailureMessage_(itemId) {
-    var message = {message: 'install_failure', item_id: itemId, v: 1};
+    const message = {message: 'install_failure', item_id: itemId, v: 1};
 
     this.postMessage_(message);
   }
@@ -165,7 +165,7 @@ class CWSContainerClient extends cr.EventTarget {
    * @private
    */
   postInstallSuccessMessage_(itemId) {
-    var message = {message: 'install_success', item_id: itemId, v: 1};
+    const message = {message: 'install_success', item_id: itemId, v: 1};
 
     this.postMessage_(message);
   }
@@ -175,41 +175,41 @@ class CWSContainerClient extends cr.EventTarget {
    * @private
    */
   postInitializeMessage_() {
-    new Promise(function(fulfill, reject) {
+    new Promise((fulfill, reject) => {
       this.delegate_.getInstalledItems(
           /**
            * @param {?Array<!string>} items Installed items.
            *     Null on error.
            */
-          function(items) {
+          items => {
             if (!items) {
               reject('Failed to retrive installed items.');
               return;
             }
             fulfill(items);
           });
-    }.bind(this))
-        .then((/**
-                * @param {!Array<string>} preinstalledExtensionIDs
-                */
-               function(preinstalledExtensionIDs) {
-                 var message = {
-                   message: 'initialize',
-                   hl: this.delegate_.strings.UI_LOCALE,
-                   width: this.width_,
-                   height: this.height_,
-                   preinstalled_items: preinstalledExtensionIDs,
-                   v: 1
-                 };
+    })
+        .then(/**
+               * @param {!Array<string>} preinstalledExtensionIDs
+               */
+              preinstalledExtensionIDs => {
+                const message = {
+                  message: 'initialize',
+                  hl: this.delegate_.strings.UI_LOCALE,
+                  width: this.width_,
+                  height: this.height_,
+                  preinstalled_items: preinstalledExtensionIDs,
+                  v: 1
+                };
 
-                 if (this.options_) {
-                   Object.keys(this.options_).forEach(function(key) {
-                     message[key] = this.options_[key];
-                   }.bind(this));
-                 }
+                if (this.options_) {
+                  Object.keys(this.options_).forEach(key => {
+                    message[key] = this.options_[key];
+                  });
+                }
 
-                 this.postMessage_(message);
-               }).bind(this));
+                this.postMessage_(message);
+              });
   }
 
   /**
