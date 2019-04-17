@@ -160,9 +160,7 @@ class StackLayout : public views::LayoutManager {
     const int host_width = host->GetContentsBounds().width();
     const int host_height = host->GetContentsBounds().height();
 
-    for (int i = 0; i < host->child_count(); ++i) {
-      views::View* child = host->child_at(i);
-
+    for (auto* child : host->children()) {
       int child_width = host_width;
       int child_height = host_height;
 

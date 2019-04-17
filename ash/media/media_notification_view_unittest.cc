@@ -315,15 +315,13 @@ TEST_F(MediaNotificationViewTest, ButtonsSanityCheck) {
 
   EXPECT_EQ(5u, button_row()->children().size());
 
-  for (int i = 0; i < button_row()->child_count(); ++i) {
-    const views::Button* child =
-        views::Button::AsButton(button_row()->child_at(i));
+  for (auto* child : button_row()->children()) {
     ASSERT_TRUE(IsMediaButtonType(child->GetClassName()));
 
     EXPECT_TRUE(child->visible());
     EXPECT_LT(kMediaButtonIconSize, child->width());
     EXPECT_LT(kMediaButtonIconSize, child->height());
-    EXPECT_FALSE(child->GetAccessibleName().empty());
+    EXPECT_FALSE(views::Button::AsButton(child)->GetAccessibleName().empty());
   }
 
   EXPECT_TRUE(GetButtonForAction(MediaSessionAction::kPlay));

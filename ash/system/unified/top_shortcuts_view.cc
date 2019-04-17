@@ -117,8 +117,7 @@ void TopShortcutButtonContainer::Layout() {
 gfx::Size TopShortcutButtonContainer::CalculatePreferredSize() const {
   int total_horizontal_size = 0;
   int num_visible = 0;
-  for (int i = 0; i < child_count(); i++) {
-    const views::View* child = child_at(i);
+  for (const auto* child : children()) {
     if (!child->visible())
       continue;
     int child_horizontal_size = child->GetPreferredSize().width();

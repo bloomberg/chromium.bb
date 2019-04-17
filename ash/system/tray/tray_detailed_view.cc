@@ -87,15 +87,13 @@ class ScrollContentsView : public views::View {
       clip_rect.Inset(clip_insets.Scale(paint_info.paint_recording_scale_x(),
                                         paint_info.paint_recording_scale_y()));
       clip_recorder.ClipRect(clip_rect);
-      for (int i = 0; i < child_count(); ++i) {
-        auto* child = child_at(i);
+      for (auto* child : children()) {
         if (child->id() != VIEW_ID_STICKY_HEADER && !child->layer())
           child->Paint(paint_info);
       }
     }
     // Paint sticky headers.
-    for (int i = 0; i < child_count(); ++i) {
-      auto* child = child_at(i);
+    for (auto* child : children()) {
       if (child->id() == VIEW_ID_STICKY_HEADER && !child->layer())
         child->Paint(paint_info);
     }
@@ -118,10 +116,9 @@ class ScrollContentsView : public views::View {
   void Layout() override {
     views::View::Layout();
     headers_.clear();
-    for (int i = 0; i < child_count(); ++i) {
-      views::View* view = child_at(i);
-      if (view->id() == VIEW_ID_STICKY_HEADER)
-        headers_.emplace_back(view);
+    for (auto* child : children()) {
+      if (child->id() == VIEW_ID_STICKY_HEADER)
+        headers_.emplace_back(child);
     }
     PositionHeaderRows();
   }

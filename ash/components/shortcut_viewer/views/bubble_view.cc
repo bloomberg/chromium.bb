@@ -85,8 +85,8 @@ gfx::Size BubbleView::CalculatePreferredSize() const {
   int width = 0;
   int height = 0;
   if (!children().empty()) {
-    for (int i = 0; i < child_count(); ++i) {
-      const auto child_size = child_at(i)->GetPreferredSize();
+    for (const auto* child : children()) {
+      const auto child_size = child->GetPreferredSize();
       height = std::max(height, child_size.height());
       width += child_size.width();
     }

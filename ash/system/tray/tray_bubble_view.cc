@@ -101,9 +101,10 @@ class BottomAlignedBoxLayout : public views::BoxLayout {
     }
 
     int consumed_height = 0;
-    for (int i = host->child_count() - 1;
-         i >= 0 && consumed_height < host->height(); --i) {
-      View* child = host->child_at(i);
+    for (auto i = host->children().rbegin();
+         i != host->children().rend() && consumed_height < host->height();
+         ++i) {
+      View* child = *i;
       if (!child->visible())
         continue;
       gfx::Size size = child->GetPreferredSize();

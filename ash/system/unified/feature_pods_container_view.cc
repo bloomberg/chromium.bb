@@ -20,10 +20,8 @@ void FeaturePodsContainerView::SetExpandedAmount(double expanded_amount) {
     return;
   expanded_amount_ = expanded_amount;
 
-  for (int i = 0; i < child_count(); ++i) {
-    auto* child = static_cast<FeaturePodButton*>(child_at(i));
-    child->SetExpandedAmount(expanded_amount_);
-  }
+  for (auto* view : children())
+    static_cast<FeaturePodButton*>(view)->SetExpandedAmount(expanded_amount_);
   UpdateChildVisibility();
   // We have to call Layout() explicitly here.
   Layout();
@@ -92,8 +90,7 @@ void FeaturePodsContainerView::Layout() {
   UpdateCollapsedSidePadding();
 
   int visible_count = 0;
-  for (int i = 0; i < child_count(); ++i) {
-    views::View* child = child_at(i);
+  for (auto* child : children()) {
     if (!child->visible())
       continue;
 
@@ -120,8 +117,8 @@ void FeaturePodsContainerView::UpdateChildVisibility() {
   changing_visibility_ = true;
 
   int visible_count = 0;
-  for (int i = 0; i < child_count(); ++i) {
-    auto* child = static_cast<FeaturePodButton*>(child_at(i));
+  for (auto* view : children()) {
+    auto* child = static_cast<FeaturePodButton*>(view);
     bool visible = child->visible_preferred() &&
                    (expanded_amount_ > 0.0 ||
                     visible_count < kUnifiedFeaturePodMaxItemsInCollapsed);

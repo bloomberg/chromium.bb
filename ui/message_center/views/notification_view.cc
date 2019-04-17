@@ -644,12 +644,12 @@ void NotificationView::ShrinkTopmostLabel() {
 // Reduce width of the topmost label not to be covered by the control buttons
 // only on non Chrome OS platform.
 #if !defined(OS_CHROMEOS)
-  const int child_count = top_view_->child_count();
-  if (child_count > 0) {
-    const int buttons_width = control_buttons_view_->GetPreferredSize().width();
-    SetBorderRight(top_view_->child_at(0), kTextRightPadding + buttons_width);
-    for (int i = 1; i < child_count; ++i)
-      SetBorderRight(top_view_->child_at(i), kTextRightPadding);
+  const auto& children = top_view_->children();
+  int right =
+      kTextRightPadding + control_buttons_view_->GetPreferredSize().width();
+  for (auto* child : children) {
+    SetBorderRight(child, right);
+    right = kTextRightPadding;
   }
 #endif
 }
