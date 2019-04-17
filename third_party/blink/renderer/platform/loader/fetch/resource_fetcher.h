@@ -445,33 +445,14 @@ struct PLATFORM_EXPORT ResourceFetcherInit final {
   // The given ResourceFetcherProperties is kept until ClearContext() is called.
   ResourceFetcherInit(const ResourceFetcherProperties& properties,
                       FetchContext* context,
-                      scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-      : ResourceFetcherInit(properties,
-                            context,
-                            std::move(task_runner),
-                            nullptr) {}
-  ResourceFetcherInit(const ResourceFetcherProperties& properties,
-                      FetchContext* context,
                       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
                       ResourceFetcher::LoaderFactory* loader_factory);
-  ResourceFetcherInit(const ResourceFetcherProperties& properties,
-                      FetchContext* context,
-                      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-                      ResourceFetcher::LoaderFactory* loader_factory,
-                      ConsoleLogger& console_logger)
-      : properties(properties),
-        context(context),
-        task_runner(std::move(task_runner)),
-        loader_factory(loader_factory),
-        console_logger(console_logger) {
-    DCHECK(context);
-    DCHECK(this->task_runner);
-  }
+
   const Member<const ResourceFetcherProperties> properties;
   const Member<FetchContext> context;
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner;
   const Member<ResourceFetcher::LoaderFactory> loader_factory;
-  const Member<ConsoleLogger> console_logger;
+  Member<ConsoleLogger> console_logger;
   ResourceLoadScheduler::ThrottlingPolicy initial_throttling_policy =
       ResourceLoadScheduler::ThrottlingPolicy::kNormal;
   Member<MHTMLArchive> archive;

@@ -720,7 +720,8 @@ Document::Document(const DocumentInit& initializer,
   } else {
     fetcher_ = MakeGarbageCollected<ResourceFetcher>(ResourceFetcherInit(
         *MakeGarbageCollected<NullResourceFetcherProperties>(),
-        &FetchContext::NullInstance(), GetTaskRunner(TaskType::kNetworking)));
+        &FetchContext::NullInstance(), GetTaskRunner(TaskType::kNetworking),
+        nullptr /* loader_factory */));
   }
   DCHECK(fetcher_);
 

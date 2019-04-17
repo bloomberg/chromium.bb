@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
 #include "third_party/blink/renderer/platform/loader/testing/mock_fetch_context.h"
+#include "third_party/blink/renderer/platform/loader/testing/test_loader_factory.h"
 #include "third_party/blink/renderer/platform/loader/testing/test_resource_fetcher_properties.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
@@ -107,7 +108,8 @@ TEST_F(AllowedByNosniffTest, AllowedOrNot) {
     auto* context = CountUsageMockFetchContext::Create();
     // Bind |properties| to |context| through a ResourceFetcher.
     MakeGarbageCollected<ResourceFetcher>(
-        ResourceFetcherInit(*properties, context, CreateTaskRunner()));
+        ResourceFetcherInit(*properties, context, CreateTaskRunner(),
+                            MakeGarbageCollected<TestLoaderFactory>()));
     Persistent<MockConsoleLogger> logger =
         MakeGarbageCollected<MockConsoleLogger>();
     ResourceResponse response(url);
@@ -218,7 +220,8 @@ TEST_F(AllowedByNosniffTest, Counters) {
     auto* context = CountUsageMockFetchContext::Create();
     // Bind |properties| to |context| through a ResourceFetcher.
     MakeGarbageCollected<ResourceFetcher>(
-        ResourceFetcherInit(*properties, context, CreateTaskRunner()));
+        ResourceFetcherInit(*properties, context, CreateTaskRunner(),
+                            MakeGarbageCollected<TestLoaderFactory>()));
     Persistent<MockConsoleLogger> logger =
         MakeGarbageCollected<MockConsoleLogger>();
     ResourceResponse response(KURL(testcase.url));
@@ -263,7 +266,8 @@ TEST_F(AllowedByNosniffTest, AllTheSchemes) {
     auto* context = CountUsageMockFetchContext::Create();
     // Bind |properties| to |context| through a ResourceFetcher.
     MakeGarbageCollected<ResourceFetcher>(
-        ResourceFetcherInit(*properties, context, CreateTaskRunner()));
+        ResourceFetcherInit(*properties, context, CreateTaskRunner(),
+                            MakeGarbageCollected<TestLoaderFactory>()));
     Persistent<MockConsoleLogger> logger =
         MakeGarbageCollected<MockConsoleLogger>();
     EXPECT_CALL(*logger, AddConsoleMessage(_, _, _))
