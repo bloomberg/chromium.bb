@@ -204,15 +204,14 @@ class MODULES_EXPORT RTCPeerConnection final
 
   void removeStream(MediaStream*, ExceptionState&);
 
-  // Calls one of the below versions (or rejects with an exception) depending on
-  // type, see RTCPeerConnection.idl.
-  ScriptPromise getStats(ScriptState*, blink::ScriptValue callback_or_selector);
-  // Calls LegacyCallbackBasedGetStats().
-  ScriptPromise getStats(ScriptState*,
-                         V8RTCStatsCallback* success_callback,
-                         MediaStreamTrack* selector = nullptr);
-  // Calls PromiseBasedGetStats().
-  ScriptPromise getStats(ScriptState*, MediaStreamTrack* selector = nullptr);
+  // Calls LegacyCallbackBasedGetStats() or PromiseBasedGetStats() (or rejects
+  // with an exception) depending on type, see rtc_peer_connection.idl.
+  ScriptPromise getStats(ScriptState* script_state);
+  ScriptPromise getStats(ScriptState* script_state,
+                         ScriptValue callback_or_selector);
+  ScriptPromise getStats(ScriptState* script_state,
+                         ScriptValue callback_or_selector,
+                         ScriptValue legacy_selector);
   ScriptPromise LegacyCallbackBasedGetStats(
       ScriptState*,
       V8RTCStatsCallback* success_callback,
