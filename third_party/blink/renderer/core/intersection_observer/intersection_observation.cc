@@ -50,7 +50,7 @@ void IntersectionObservation::Compute(unsigned flags) {
     // Compute() method will be called again after the delay period has passed.
     return;
   }
-  if (Observer()->trackVisibility()) {
+  if (target_->isConnected() && Observer()->trackVisibility()) {
     FrameOcclusionState occlusion_state =
         target_->GetDocument().GetFrame()->GetOcclusionState();
     // If we're tracking visibility, and we don't have occlusion information
