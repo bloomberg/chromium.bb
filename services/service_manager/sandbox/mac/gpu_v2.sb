@@ -15,6 +15,7 @@
   (global-name "com.apple.coreservices.launchservicesd")
   (global-name "com.apple.cvmsServ")
   (global-name "com.apple.gpumemd.source")
+  (global-name "com.apple.lsd.mapdb")
   (global-name "com.apple.system.notification_center")
   (global-name "com.apple.tsm.uiserver")
   (global-name "com.apple.windowserver.active")
