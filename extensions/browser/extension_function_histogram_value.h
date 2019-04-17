@@ -1392,6 +1392,7 @@ enum HistogramValue {
   AUTOTESTPRIVATE_SHOWVIRTUALKEYBOARDIFENABLED = 1329,
   FEEDBACKPRIVATE_LOGINFEEDBACKCOMPLETE = 1330,
   FILEMANAGERPRIVATE_SEARCHFILES = 1331,
+  MANAGEMENT_INSTALLREPLACEMENTWEBAPP = 1332,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

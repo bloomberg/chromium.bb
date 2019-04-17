@@ -19,7 +19,7 @@ namespace web_app {
 
 WebAppInstallManager::WebAppInstallManager(Profile* profile,
                                            InstallFinalizer* install_finalizer)
-    : install_finalizer_(install_finalizer), profile_(profile) {}
+    : InstallManager(profile), install_finalizer_(install_finalizer) {}
 
 WebAppInstallManager::~WebAppInstallManager() = default;
 
@@ -37,7 +37,8 @@ void WebAppInstallManager::InstallWebAppFromManifest(
     WebappInstallSource install_source,
     WebAppInstallDialogCallback dialog_callback,
     OnceInstallCallback callback) {
-  auto task = std::make_unique<WebAppInstallTask>(profile_, install_finalizer_);
+  auto task =
+      std::make_unique<WebAppInstallTask>(profile(), install_finalizer_);
   task->InstallWebAppFromManifest(
       contents, install_source, std::move(dialog_callback),
       base::BindOnce(&WebAppInstallManager::OnTaskCompleted,
@@ -52,9 +53,10 @@ void WebAppInstallManager::InstallWebAppFromManifestWithFallback(
     WebappInstallSource install_source,
     WebAppInstallDialogCallback dialog_callback,
     OnceInstallCallback callback) {
-  DCHECK(AreWebAppsUserInstallable(profile_));
+  DCHECK(AreWebAppsUserInstallable(profile()));
 
-  auto task = std::make_unique<WebAppInstallTask>(profile_, install_finalizer_);
+  auto task =
+      std::make_unique<WebAppInstallTask>(profile(), install_finalizer_);
   task->InstallWebAppFromManifestWithFallback(
       contents, force_shortcut_app, install_source, std::move(dialog_callback),
       base::BindOnce(&WebAppInstallManager::OnTaskCompleted,

@@ -40,10 +40,13 @@
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "extensions/common/manifest_handlers/offline_enabled_info.h"
 #include "extensions/common/manifest_handlers/options_page_info.h"
+#include "extensions/common/manifest_handlers/replacement_web_app.h"
 #include "extensions/common/manifest_url_handlers.h"
 #include "extensions/common/permissions/permission_message.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/url_pattern.h"
+#include "url/gurl.h"
+#include "url/url_constants.h"
 
 using content::BrowserThread;
 
@@ -756,11 +759,9 @@ ExtensionFunction::ResponseAction ManagementSetLaunchTypeFunction::Run() {
   return RespondNow(NoArguments());
 }
 
-ManagementGenerateAppForLinkFunction::ManagementGenerateAppForLinkFunction() {
-}
+ManagementGenerateAppForLinkFunction::ManagementGenerateAppForLinkFunction() {}
 
-ManagementGenerateAppForLinkFunction::~ManagementGenerateAppForLinkFunction() {
-}
+ManagementGenerateAppForLinkFunction::~ManagementGenerateAppForLinkFunction() {}
 
 void ManagementGenerateAppForLinkFunction::FinishCreateWebApp(
     const std::string& web_app_id,
@@ -812,10 +813,52 @@ ExtensionFunction::ResponseAction ManagementGenerateAppForLinkFunction::Run() {
           ->GenerateAppForLinkFunctionDelegate(this, browser_context(),
                                                params->title, launch_url);
 
-  // Matched with a Release() in FinishCreateBookmarkApp().
+  // Matched with a Release() in FinishCreateWebApp().
   AddRef();
 
-  // Response is sent async in FinishCreateBookmarkApp().
+  // Response is sent async in FinishCreateWebApp().
+  return RespondLater();
+}
+
+ManagementInstallReplacementWebAppFunction::
+    ManagementInstallReplacementWebAppFunction() {}
+
+ManagementInstallReplacementWebAppFunction::
+    ~ManagementInstallReplacementWebAppFunction() {}
+
+ExtensionFunction::ResponseAction
+ManagementInstallReplacementWebAppFunction::Run() {
+  if (ExtensionsBrowserClient::Get()->IsRunningInForcedAppMode())
+    return RespondNow(Error(keys::kNotAllowedInKioskError));
+
+  if (!user_gesture()) {
+    return RespondNow(
+        Error(keys::kGestureNeededForInstallReplacementWebAppError));
+  }
+
+  DCHECK(ReplacementWebAppInfo::HasReplacementWebApp(extension()));
+  const GURL& web_app_url =
+      ReplacementWebAppInfo::GetReplacementWebApp(extension());
+
+  DCHECK(web_app_url.is_valid());
+  DCHECK(web_app_url.SchemeIs(url::kHttpsScheme));
+
+  auto* api_delegate = ManagementAPI::GetFactoryInstance()
+                           ->Get(browser_context())
+                           ->GetDelegate();
+  if (api_delegate->IsWebAppInstalled(browser_context(), web_app_url)) {
+    return RespondNow(
+        Error(keys::kInstallReplacementWebAppAlreadyInstalledError));
+  }
+
+  // Adds a ref-count.
+  api_delegate->InstallReplacementWebApp(
+      browser_context(), web_app_url,
+      base::BindOnce(
+          &ManagementInstallReplacementWebAppFunction::FinishCreateWebApp,
+          this));
+
+  // Response is sent async in FinishCreateWebApp().
   return RespondLater();
 }
 
@@ -825,6 +868,22 @@ ManagementEventRouter::ManagementEventRouter(content::BrowserContext* context)
 }
 
 ManagementEventRouter::~ManagementEventRouter() {
+}
+
+void ManagementInstallReplacementWebAppFunction::FinishCreateWebApp(
+    ManagementAPIDelegate::InstallWebAppResult result) {
+  ResponseValue response;
+  switch (result) {
+    case ManagementAPIDelegate::InstallWebAppResult::kSuccess:
+      response = NoArguments();
+      break;
+    case ManagementAPIDelegate::InstallWebAppResult::kInvalidWebApp:
+      response = Error(keys::kInstallReplacementWebAppInvalidWebAppError);
+      break;
+    case ManagementAPIDelegate::InstallWebAppResult::kUnknownError:
+      response = Error(keys::kGenerateAppForLinkInstallError);
+  }
+  Respond(std::move(response));
 }
 
 void ManagementEventRouter::OnExtensionLoaded(

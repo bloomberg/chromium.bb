@@ -11,6 +11,7 @@
 #include "base/observer_list.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
+#include "chrome/browser/web_applications/components/web_app_url_loader.h"
 
 enum class WebappInstallSource;
 struct WebApplicationInfo;
@@ -18,6 +19,8 @@ struct WebApplicationInfo;
 namespace content {
 class WebContents;
 }
+
+class Profile;
 
 namespace web_app {
 
@@ -45,6 +48,10 @@ class InstallManager {
       std::unique_ptr<WebApplicationInfo> web_app_info,
       ForInstallableSite for_installable_site,
       WebAppInstallationAcceptanceCallback acceptance_callback)>;
+
+  using WebAppInstallabilityCheckCallback =
+      base::OnceCallback<void(std::unique_ptr<content::WebContents>,
+                              bool is_installable)>;
 
   // Returns true if a web app can be installed for a given |web_contents|.
   virtual bool CanInstallWebApp(content::WebContents* web_contents) = 0;
@@ -99,8 +106,14 @@ class InstallManager {
       std::unique_ptr<WebApplicationInfo> web_application_info,
       OnceInstallCallback callback) = 0;
 
-  InstallManager();
+  explicit InstallManager(Profile* profile);
   virtual ~InstallManager();
+
+  // Loads |web_app_url| in a new WebContents and determines if it is
+  // installable. Returns the WebContents and whether the app is installable or
+  // not.
+  void LoadWebAppAndCheckInstallability(const GURL& web_app_url,
+                                        WebAppInstallabilityCheckCallback);
 
   // Called before the web app system gets destroyed.
   void Reset();
@@ -108,7 +121,12 @@ class InstallManager {
   void AddObserver(InstallManagerObserver* observer);
   void RemoveObserver(InstallManagerObserver* observer);
 
+ protected:
+  Profile* profile() { return profile_; }
+
  private:
+  Profile* profile_;
+  WebAppUrlLoader url_loader_;
   base::ObserverList<InstallManagerObserver, true /*check_empty*/> observers_;
 };
 
