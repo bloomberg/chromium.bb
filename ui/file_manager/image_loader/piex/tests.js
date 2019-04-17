@@ -118,11 +118,10 @@ const puppeteer = require('puppeteer');
     }
   }
 
-  const testTime = await page.evaluate(() => {
-    return window.testTime;
+  await page.evaluate(() => {
+    console.log('test: done total time', window.testTime.toFixed(3));
   });
 
-  console.log('test: done total time', testTime.toFixed(3));
   browser.close();
   server.close();
 
