@@ -7,10 +7,7 @@ according to the user’s **Default Search Engine** (**DSE**). All
 variants are implemented as HTML/CSS/JS, but differ in where they are
 hosted.
 
-*   **Google**: either the **[Remote NTP][remote-ntp]** (as of
-    2017-12-05, the default) or the **[Local NTP][local-ntp]**, with
-    Google branding (as of 2017-12-05, planned to replace the Remote NTP
-    and in experiments on Beta).
+*   **Google**: The **[Local NTP][local-ntp]**, with Google branding.
 
 *   **Bing**, **Yandex**: a **[Third-Party NTP][third-party-ntp]**,
     where the NTP is hosted on third-party servers but Chrome provides
@@ -32,7 +29,6 @@ users the ability to customize them. This includes adding new shortcuts using
 the "Add shortcut" button, deleting/editing shortcuts from the three-dot "Edit
 shortcut" menu (replaces the "X" button), and reordering via click-and-drag.
 
-[remote-ntp]:       #remote-ntp
 [local-ntp]:        #local-ntp
 [third-party-ntp]:  #third_party-ntp
 [engines]:          https://chromium.googlesource.com/chromium/src/+/master/components/search_engines/prepopulated_engines.json
@@ -148,11 +144,6 @@ Middle-slot promos are fetched from Google servers on NTP load.
 
 A non-Google local NTP shows only NTP tiles, with no branding. The tiles
 are centered within the page.
-
-### Remote NTP
-
-The Remote NTP is hosted on Google servers. It is intended for removal,
-and is not documented here.
 
 ### Third-Party NTP
 
