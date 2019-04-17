@@ -10,8 +10,8 @@ namespace blink {
 
 ThreadSafeScriptContainer::RawScriptData::RawScriptData(
     const String& encoding,
-    Vector<BytesChunk> script_text,
-    Vector<BytesChunk> meta_data)
+    Vector<uint8_t> script_text,
+    Vector<uint8_t> meta_data)
     : encoding_(encoding.IsolatedCopy()),
       script_text_(std::move(script_text)),
       meta_data_(std::move(meta_data)),
