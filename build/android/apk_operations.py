@@ -21,6 +21,7 @@ import sys
 import tempfile
 import textwrap
 
+import adb_command_line
 import devil_chromium
 from devil import devil_env
 from devil.android import apk_helper
@@ -323,6 +324,8 @@ def _LaunchUrl(devices, package_name, argv=None, command_line_flags_file=None,
         changer = flag_changer.FlagChanger(device, command_line_flags_file)
         flags = []
         if argv:
+          adb_command_line.CheckBuildTypeSupportsFlags(device,
+                                                       command_line_flags_file)
           flags = shlex.split(argv)
         try:
           changer.ReplaceFlags(flags)
@@ -353,6 +356,8 @@ def _ChangeFlags(devices, argv, command_line_flags_file):
   else:
     flags = shlex.split(argv)
     def update(device):
+      adb_command_line.CheckBuildTypeSupportsFlags(device,
+                                                   command_line_flags_file)
       changer = flag_changer.FlagChanger(device, command_line_flags_file)
       changer.ReplaceFlags(flags)
     device_utils.DeviceUtils.parallel(devices).pMap(update)
