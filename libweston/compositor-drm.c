@@ -114,7 +114,7 @@
  * possible type and use a matching format specifier.
  */
 #define drm_debug(b, ...) \
-	weston_debug_scope_printf((b)->debug, __VA_ARGS__)
+	weston_log_scope_printf((b)->debug, __VA_ARGS__)
 
 #define MAX_CLONED_CONNECTORS 4
 
@@ -3199,7 +3199,7 @@ drm_repaint_begin(struct weston_compositor *compositor)
 	ret = drm_pending_state_alloc(b);
 	b->repaint_data = ret;
 
-	if (weston_debug_scope_is_enabled(b->debug)) {
+	if (weston_log_scope_is_enabled(b->debug)) {
 		char *dbg = weston_compositor_print_scene_graph(compositor);
 		drm_debug(b, "[repaint] Beginning repaint; pending_state %p\n",
 			  ret);
@@ -6769,7 +6769,7 @@ drm_destroy(struct weston_compositor *ec)
 
 	destroy_sprites(b);
 
-	weston_debug_scope_destroy(b->debug);
+	weston_compositor_log_scope_destroy(b->debug);
 	b->debug = NULL;
 	weston_compositor_shutdown(ec);
 
@@ -7499,10 +7499,10 @@ drm_backend_create(struct weston_compositor *compositor,
 	b->pageflip_timeout = config->pageflip_timeout;
 	b->use_pixman_shadow = config->use_pixman_shadow;
 
-	b->debug = weston_compositor_add_debug_scope(compositor->weston_log_ctx,
-						     "drm-backend",
-						     "Debug messages from DRM/KMS backend\n",
-					     	     NULL, NULL);
+	b->debug = weston_compositor_add_log_scope(compositor->weston_log_ctx,
+						   "drm-backend",
+						   "Debug messages from DRM/KMS backend\n",
+						    NULL, NULL);
 
 	compositor->backend = &b->base;
 

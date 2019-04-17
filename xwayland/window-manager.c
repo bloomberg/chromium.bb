@@ -196,7 +196,7 @@ xserver_map_shell_surface(struct weston_wm_window *window,
 static bool
 wm_debug_is_enabled(struct weston_wm *wm)
 {
-	return weston_debug_scope_is_enabled(wm->server->wm_debug);
+	return weston_log_scope_is_enabled(wm->server->wm_debug);
 }
 
 static void __attribute__ ((format (printf, 2, 3)))
@@ -206,12 +206,12 @@ wm_printf(struct weston_wm *wm, const char *fmt, ...)
 	char timestr[128];
 
 	if (wm_debug_is_enabled(wm))
-		weston_debug_scope_printf(wm->server->wm_debug, "%s ",
-				weston_debug_scope_timestamp(wm->server->wm_debug,
+		weston_log_scope_printf(wm->server->wm_debug, "%s ",
+				weston_log_scope_timestamp(wm->server->wm_debug,
 				timestr, sizeof timestr));
 
 	va_start(ap, fmt);
-	weston_debug_scope_vprintf(wm->server->wm_debug, fmt, ap);
+	weston_log_scope_vprintf(wm->server->wm_debug, fmt, ap);
 	va_end(ap);
 }
 static void
@@ -1379,7 +1379,7 @@ weston_wm_handle_property_notify(struct weston_wm *wm, xcb_generic_event_t *even
 
 	if (fp) {
 		fprintf(fp, "%s XCB_PROPERTY_NOTIFY: window %d, ",
-			weston_debug_scope_timestamp(wm->server->wm_debug,
+			weston_log_scope_timestamp(wm->server->wm_debug,
 			timestr, sizeof timestr),
 			property_notify->window);
 		if (property_notify->state == XCB_PROPERTY_DELETE)
@@ -1390,7 +1390,7 @@ weston_wm_handle_property_notify(struct weston_wm *wm, xcb_generic_event_t *even
 					       property_notify->atom);
 
 		if (fclose(fp) == 0)
-			weston_debug_scope_write(wm->server->wm_debug,
+			weston_log_scope_write(wm->server->wm_debug,
 						 logstr, logsize);
 		free(logstr);
 	} else {

@@ -6889,10 +6889,10 @@ weston_compositor_create(struct wl_display *display,
 					    timeline_key_binding_handler, ec);
 
 	ec->debug_scene =
-		weston_compositor_add_debug_scope(ec->weston_log_ctx, "scene-graph",
-						  "Scene graph details\n",
-					  	  debug_scene_graph_cb,
-					  	  ec);
+		weston_compositor_add_log_scope(ec->weston_log_ctx, "scene-graph",
+						"Scene graph details\n",
+						debug_scene_graph_cb,
+						ec);
 
 	return ec;
 
@@ -7194,7 +7194,7 @@ weston_compositor_destroy(struct weston_compositor *compositor)
 	if (compositor->heads_changed_source)
 		wl_event_source_remove(compositor->heads_changed_source);
 
-	weston_debug_scope_destroy(compositor->debug_scene);
+	weston_compositor_log_scope_destroy(compositor->debug_scene);
 	compositor->debug_scene = NULL;
 	weston_log_ctx_compositor_destroy(compositor);
 

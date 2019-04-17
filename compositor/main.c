@@ -163,10 +163,10 @@ custom_handler(const char *fmt, va_list arg)
 	vfprintf(weston_logfile, fmt, arg2);
 	va_end(arg2);
 
-	weston_debug_scope_printf(log_scope, "%s libwayland: ",
-			weston_debug_scope_timestamp(log_scope,
+	weston_log_scope_printf(log_scope, "%s libwayland: ",
+			weston_log_scope_timestamp(log_scope,
 			timestr, sizeof timestr));
-	weston_debug_scope_vprintf(log_scope, fmt, arg);
+	weston_log_scope_vprintf(log_scope, fmt, arg);
 }
 
 static void
@@ -203,11 +203,11 @@ vlog(const char *fmt, va_list ap)
 
 	va_copy(ap2, ap);
 
-	if (weston_debug_scope_is_enabled(log_scope)) {
-		weston_debug_scope_printf(log_scope, "%s ",
-				weston_debug_scope_timestamp(log_scope,
+	if (weston_log_scope_is_enabled(log_scope)) {
+		weston_log_scope_printf(log_scope, "%s ",
+				weston_log_scope_timestamp(log_scope,
 				timestr, sizeof timestr));
-		weston_debug_scope_vprintf(log_scope, fmt, ap);
+		weston_log_scope_vprintf(log_scope, fmt, ap);
 	}
 
 	l = weston_log_timestamp();
@@ -223,7 +223,7 @@ vlog_continue(const char *fmt, va_list argp)
 	va_list argp2;
 
 	va_copy(argp2, argp);
-	weston_debug_scope_vprintf(log_scope, fmt, argp2);
+	weston_log_scope_vprintf(log_scope, fmt, argp2);
 	va_end(argp2);
 
 	return vfprintf(weston_logfile, fmt, argp);
@@ -264,14 +264,14 @@ protocol_log_fn(void *user_data,
 	int i;
 	char type;
 
-	if (!weston_debug_scope_is_enabled(protocol_scope))
+	if (!weston_log_scope_is_enabled(protocol_scope))
 		return;
 
 	fp = open_memstream(&logstr, &logsize);
 	if (!fp)
 		return;
 
-	weston_debug_scope_timestamp(protocol_scope,
+	weston_log_scope_timestamp(protocol_scope,
 			timestr, sizeof timestr);
 	fprintf(fp, "%s ", timestr);
 	fprintf(fp, "client %p %s ", wl_resource_get_client(res),
@@ -334,7 +334,7 @@ protocol_log_fn(void *user_data,
 	fprintf(fp, ")\n");
 
 	if (fclose(fp) == 0)
-		weston_debug_scope_write(protocol_scope, logstr, logsize);
+		weston_log_scope_write(protocol_scope, logstr, logsize);
 
 	free(logstr);
 }
@@ -3039,13 +3039,13 @@ int main(int argc, char *argv[])
 	}
 	segv_compositor = wet.compositor;
 
-	log_scope = weston_compositor_add_debug_scope(log_ctx, "log",
+	log_scope = weston_compositor_add_log_scope(log_ctx, "log",
 			"Weston and Wayland log\n", NULL, NULL);
 	protocol_scope =
-		weston_compositor_add_debug_scope(log_ctx,
-			"proto",
-			"Wayland protocol dump for all clients.\n",
-			NULL, NULL);
+		weston_compositor_add_log_scope(log_ctx,
+						"proto",
+						"Wayland protocol dump for all clients.\n",
+						 NULL, NULL);
 
 	if (debug_protocol) {
 		protologger = wl_display_add_protocol_logger(display,
@@ -3167,9 +3167,9 @@ out:
 	if (protologger)
 		wl_protocol_logger_destroy(protologger);
 
-	weston_debug_scope_destroy(protocol_scope);
+	weston_compositor_log_scope_destroy(protocol_scope);
 	protocol_scope = NULL;
-	weston_debug_scope_destroy(log_scope);
+	weston_compositor_log_scope_destroy(log_scope);
 	log_scope = NULL;
 	weston_compositor_destroy(wet.compositor);
 

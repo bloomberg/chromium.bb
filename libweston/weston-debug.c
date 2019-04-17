@@ -54,8 +54,8 @@ struct weston_log_context {
 
 /** weston-log message scope
  *
- * This is used for scoping debugging messages. Clients can subscribe to
- * only the scopes they are interested in. A scope is identified by its name
+ * This is used for scoping logging/debugging messages. Clients can subscribe
+ * to only the scopes they are interested in. A scope is identified by its name
  * (also referred to as debug stream name).
  */
 struct weston_log_scope {
@@ -371,7 +371,7 @@ weston_compositor_is_debug_protocol_enabled(struct weston_compositor *wc)
 	return wc->weston_log_ctx->global != NULL;
 }
 
-/** Register a new debug stream name, creating a debug scope
+/** Register a new debug stream name, creating a log scope
  *
  * \param log_ctx The weston_log_context where to add.
  * \param name The debug stream/scope name; must not be NULL.
@@ -406,11 +406,11 @@ weston_compositor_is_debug_protocol_enabled(struct weston_compositor *wc)
  * \sa weston_debug_stream, weston_log_scope_cb
  */
 WL_EXPORT struct weston_log_scope *
-weston_compositor_add_debug_scope(struct weston_log_context *log_ctx,
-				  const char *name,
-				  const char *description,
-				  weston_log_scope_cb begin_cb,
-				  void *user_data)
+weston_compositor_add_log_scope(struct weston_log_context *log_ctx,
+				const char *name,
+				const char *description,
+				weston_log_scope_cb begin_cb,
+				void *user_data)
 {
 	struct weston_log_scope *scope;
 
@@ -468,7 +468,7 @@ weston_compositor_add_debug_scope(struct weston_log_context *log_ctx,
  * \memberof weston_log_scope
  */
 WL_EXPORT void
-weston_debug_scope_destroy(struct weston_log_scope *scope)
+weston_compositor_log_scope_destroy(struct weston_log_scope *scope)
 {
 	struct weston_debug_stream *stream;
 
@@ -490,7 +490,7 @@ weston_debug_scope_destroy(struct weston_log_scope *scope)
 
 /** Are there any active subscriptions to the scope?
  *
- * \param scope The debug scope to check; may be NULL.
+ * \param scope The log scope to check; may be NULL.
  * \return True if any streams are open for this scope, false otherwise.
  *
  * As printing some debugging messages may be relatively expensive, one
@@ -510,7 +510,7 @@ weston_debug_scope_destroy(struct weston_log_scope *scope)
  * \memberof weston_log_scope
  */
 WL_EXPORT bool
-weston_debug_scope_is_enabled(struct weston_log_scope *scope)
+weston_log_scope_is_enabled(struct weston_log_scope *scope)
 {
 	if (!scope)
 		return false;
@@ -626,7 +626,7 @@ weston_debug_stream_complete(struct weston_debug_stream *stream)
 	weston_debug_stream_v1_send_complete(stream->resource);
 }
 
-/** Write debug data for a scope
+/** Write log data for a scope
  *
  * \param scope The debug scope to write for; may be NULL, in which case
  *              nothing will be written.
@@ -641,8 +641,8 @@ weston_debug_stream_complete(struct weston_debug_stream *stream)
  * \memberof weston_log_scope
  */
 WL_EXPORT void
-weston_debug_scope_write(struct weston_log_scope *scope,
-			 const char *data, size_t len)
+weston_log_scope_write(struct weston_log_scope *scope,
+		       const char *data, size_t len)
 {
 	struct weston_debug_stream *stream;
 
@@ -655,7 +655,7 @@ weston_debug_scope_write(struct weston_log_scope *scope,
 
 /** Write a formatted string for a scope (varargs)
  *
- * \param scope The debug scope to write for; may be NULL, in which case
+ * \param scope The log scope to write for; may be NULL, in which case
  *              nothing will be written.
  * \param fmt Printf-style format string.
  * \param ap Formatting arguments.
@@ -668,28 +668,28 @@ weston_debug_scope_write(struct weston_log_scope *scope,
  * \memberof weston_log_scope
  */
 WL_EXPORT void
-weston_debug_scope_vprintf(struct weston_log_scope *scope,
-			   const char *fmt, va_list ap)
+weston_log_scope_vprintf(struct weston_log_scope *scope,
+			 const char *fmt, va_list ap)
 {
 	static const char oom[] = "Out of memory";
 	char *str;
 	int len;
 
-	if (!weston_debug_scope_is_enabled(scope))
+	if (!weston_log_scope_is_enabled(scope))
 		return;
 
 	len = vasprintf(&str, fmt, ap);
 	if (len >= 0) {
-		weston_debug_scope_write(scope, str, len);
+		weston_log_scope_write(scope, str, len);
 		free(str);
 	} else {
-		weston_debug_scope_write(scope, oom, sizeof oom - 1);
+		weston_log_scope_write(scope, oom, sizeof oom - 1);
 	}
 }
 
 /** Write a formatted string for a scope
  *
- * \param scope The debug scope to write for; may be NULL, in which case
+ * \param scope The log scope to write for; may be NULL, in which case
  *              nothing will be written.
  * \param fmt Printf-style format string and arguments.
  *
@@ -701,13 +701,13 @@ weston_debug_scope_vprintf(struct weston_log_scope *scope,
  * \memberof weston_log_scope
  */
 WL_EXPORT void
-weston_debug_scope_printf(struct weston_log_scope *scope,
+weston_log_scope_printf(struct weston_log_scope *scope,
 			  const char *fmt, ...)
 {
 	va_list ap;
 
 	va_start(ap, fmt);
-	weston_debug_scope_vprintf(scope, fmt, ap);
+	weston_log_scope_vprintf(scope, fmt, ap);
 	va_end(ap);
 }
 
@@ -723,8 +723,8 @@ weston_debug_scope_printf(struct weston_log_scope *scope,
  * The string is NUL-terminated, even if truncated.
  */
 WL_EXPORT char *
-weston_debug_scope_timestamp(struct weston_log_scope *scope,
-			     char *buf, size_t len)
+weston_log_scope_timestamp(struct weston_log_scope *scope,
+			   char *buf, size_t len)
 {
 	struct timeval tv;
 	struct tm *bdt;
