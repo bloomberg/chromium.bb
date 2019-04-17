@@ -292,6 +292,7 @@ extern const char kPasswordManagerSubPage[];
 extern const char kPaymentsSubPage[];
 extern const char kPeopleSubPage[];
 extern const char kPrintingSettingsSubPage[];
+extern const char kPrivacySubPage[];
 extern const char kResetProfileSettingsSubPage[];
 extern const char kSearchEnginesSubPage[];
 extern const char kSignOutSubPage[];

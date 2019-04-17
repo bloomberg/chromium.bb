@@ -47,9 +47,11 @@
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_client.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/common/extensions/api/file_manager_private_internal.h"
 #include "chrome/common/extensions/api/manifest_types.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/webui_url_constants.h"
 #include "chrome/services/file_util/public/cpp/zip_file_creator.h"
 #include "chromeos/settings/timezone_settings.h"
 #include "components/account_id/account_id.h"
@@ -467,8 +469,13 @@ FileManagerPrivateOpenSettingsSubpageFunction::Run() {
   const std::unique_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  chrome::ShowSettingsSubPageForProfile(ProfileManager::GetActiveUserProfile(),
-                                        params->sub_page);
+  Profile* profile = ProfileManager::GetActiveUserProfile();
+  if (chrome::IsOSSettingsSubPage(params->sub_page)) {
+    chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
+        profile, params->sub_page);
+  } else {
+    chrome::ShowSettingsSubPageForProfile(profile, params->sub_page);
+  }
   return RespondNow(NoArguments());
 }
 

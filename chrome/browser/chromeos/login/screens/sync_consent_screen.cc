@@ -14,6 +14,7 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/webui_url_constants.h"
 #include "components/consent_auditor/consent_auditor.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/driver/sync_service.h"
@@ -53,7 +54,8 @@ void SyncConsentScreen::MaybeLaunchSyncConsentSettings(Profile* profile) {
             [](Profile* profile) {
               profile->GetPrefs()->ClearPref(
                   prefs::kShowSyncSettingsOnSessionStart);
-              chrome::ShowSettingsSubPageForProfile(profile, "syncSetup");
+              chrome::ShowSettingsSubPageForProfile(profile,
+                                                    chrome::kSyncSetupSubPage);
             },
             base::Unretained(profile)),
         kSyncConsentSettingsShowDelay);
