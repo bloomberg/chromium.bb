@@ -169,11 +169,17 @@ std::tuple<bool, std::vector<mojom::AnnotationPtr>> ParseJsonDescAnnotations(
       continue;
 
     const base::Value* const text = desc.FindKey("text");
-    if (!text || !text->is_string() || text->GetString().empty())
+    if (!text || !text->is_string())
       continue;
 
     ReportDescAnnotation(type_lookup->second, score->GetDouble(),
                          text->GetString().empty());
+
+    // Empty text is valid for OCR, but not for labels or captions.
+    if (type_lookup->second != mojom::AnnotationType::kOcr &&
+        text->GetString().empty())
+      continue;
+
     results.push_back(mojom::Annotation::New(
         type_lookup->second, score->GetDouble(), text->GetString()));
   }
