@@ -373,3 +373,12 @@ function elementCenter(element) {
     y: rect.y + rect.height / 2
   };
 }
+
+// Requests an animation frame.
+function raf() {
+  return new Promise((resolve) => {
+    requestAnimationFrame(() => {
+      resolve();
+    });
+  });
+}
