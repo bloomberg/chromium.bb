@@ -23,7 +23,6 @@
 #include "ui/native_theme/native_theme.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/strings/grit/ui_strings.h"
-#include "ui/views/bubble/bubble_border.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/bubble/footnote_container_view.h"
 #include "ui/views/controls/button/image_button.h"
@@ -462,19 +461,22 @@ void BubbleFrameView::SetFootnoteView(View* view) {
 
 gfx::Rect BubbleFrameView::GetUpdatedWindowBounds(
     const gfx::Rect& anchor_rect,
+    const BubbleBorder::Arrow delegate_arrow,
     const gfx::Size& client_size,
     bool adjust_to_fit_available_bounds) {
   gfx::Size size(GetFrameSizeForClientSize(client_size));
 
-  const BubbleBorder::Arrow arrow = bubble_border_->arrow();
-  if (adjust_to_fit_available_bounds && BubbleBorder::has_arrow(arrow)) {
+  if (adjust_to_fit_available_bounds &&
+      BubbleBorder::has_arrow(delegate_arrow)) {
     // Get the desired bubble bounds without adjustment.
     bubble_border_->set_arrow_offset(0);
+    bubble_border_->set_arrow(delegate_arrow);
     // Try to mirror the anchoring if the bubble does not fit in the available
     // bounds.
-    if (bubble_border_->is_arrow_at_center(arrow) ||
+    if (bubble_border_->is_arrow_at_center(delegate_arrow) ||
         preferred_arrow_adjustment_ == PreferredArrowAdjustment::kOffset) {
-      const bool mirror_vertical = BubbleBorder::is_arrow_on_horizontal(arrow);
+      const bool mirror_vertical =
+          BubbleBorder::is_arrow_on_horizontal(delegate_arrow);
       MirrorArrowIfOutOfBounds(mirror_vertical, anchor_rect, size,
                                GetAvailableAnchorWindowBounds());
       MirrorArrowIfOutOfBounds(mirror_vertical, anchor_rect, size,

@@ -13,13 +13,13 @@
 #include "base/time/time.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/views/bubble/bubble_border.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/window/non_client_view.h"
 
 namespace views {
 
-class BubbleBorder;
 class FootnoteContainerView;
 class ImageView;
 
@@ -103,6 +103,7 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
   // does not fit on the monitor or anchor window (if one exists) and
   // |adjust_to_fit_available_bounds| is true.
   gfx::Rect GetUpdatedWindowBounds(const gfx::Rect& anchor_rect,
+                                   const BubbleBorder::Arrow arrow,
                                    const gfx::Size& client_size,
                                    bool adjust_to_fit_available_bounds);
 
