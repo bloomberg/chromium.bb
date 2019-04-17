@@ -171,3 +171,15 @@ crbug.com/929425 [ win nvidia ] Pixel_DirectComposition_ComplexOverlays [ RetryO
 
 # Mark all webview tests as RetryOnFailure due to Nexus 5x driver bug.
 crbug.com/950932 [ android-webview-instrumentation qualcomm-adreno-(tm)-418 ] * [ RetryOnFailure ]
+
+# Mark pixel tests as failure to generate new ref images with gpu raster for android webview.
+crbug.com/899399 Pixel_2DCanvasWebGL [ Failure ]
+crbug.com/899399 Pixel_BackgroundImage [ Failure ]
+crbug.com/899399 Pixel_Canvas2DRedBox [ Failure ]
+crbug.com/899399 Pixel_CanvasDisplayLinearRGBAccelerated2D [ Failure ]
+crbug.com/899399 Pixel_CanvasLowLatency2D [ Failure ]
+crbug.com/899399 Pixel_WebGLGreenTriangle_AA_Alpha [ Failure ]
+crbug.com/899399 Pixel_WebGLGreenTriangle_AA_NoAlpha [ Failure ]
+crbug.com/899399 Pixel_WebGLGreenTriangle_NoAA_Alpha [ Failure ]
+crbug.com/899399 Pixel_WebGLGreenTriangle_NoAA_NoAlpha [ Failure ]
+crbug.com/899399 Pixel_WebGLTransparentGreenTriangle_NoAlpha_ImplicitClear [ Failure ]
