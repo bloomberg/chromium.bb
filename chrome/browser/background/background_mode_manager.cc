@@ -412,6 +412,8 @@ bool BackgroundModeManager::IsBackgroundWithoutWindows() const {
       KeepAliveOrigin::SESSION_RESTORE,
       KeepAliveOrigin::BACKGROUND_MODE_MANAGER_STARTUP,
 
+      KeepAliveOrigin::BACKGROUND_SYNC,
+
       // Notification KeepAlives are not dependent on the Chrome UI being
       // loaded, and can be registered when we were in pure background mode.
       // They just block it to avoid issues. Ignore them when determining if we

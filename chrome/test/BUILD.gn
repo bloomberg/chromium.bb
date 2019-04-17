@@ -608,6 +608,7 @@ test("browser_tests") {
       "../browser/autofill/content_autofill_driver_browsertest.cc",
       "../browser/autofill/form_structure_browsertest.cc",
       "../browser/background_fetch/background_fetch_browsertest.cc",
+      "../browser/background_sync/background_sync_browsertest.cc",
       "../browser/background_sync/background_sync_metrics_browsertest.cc",
       "../browser/banners/app_banner_manager_browsertest.cc",
       "../browser/banners/app_banner_manager_browsertest_base.cc",
