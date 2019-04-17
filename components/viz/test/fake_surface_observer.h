@@ -18,7 +18,7 @@ class FakeSurfaceObserver : public SurfaceObserver {
   // If |damage_display| is true, the observer will indicate display damage when
   // a surface is damaged.
   explicit FakeSurfaceObserver(bool damage_display = true);
-  virtual ~FakeSurfaceObserver();
+  ~FakeSurfaceObserver() override;
 
   const BeginFrameAck& last_ack() const { return last_ack_; }
 

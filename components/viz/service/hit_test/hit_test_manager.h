@@ -24,7 +24,7 @@ class LatestLocalSurfaceIdLookupDelegate;
 class VIZ_SERVICE_EXPORT HitTestManager : public SurfaceObserver {
  public:
   explicit HitTestManager(SurfaceManager* surface_manager);
-  virtual ~HitTestManager();
+  ~HitTestManager() override;
 
   // SurfaceObserver:
   void OnFirstSurfaceActivation(const SurfaceInfo& surface_info) override {}
