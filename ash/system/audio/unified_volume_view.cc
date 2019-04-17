@@ -21,6 +21,7 @@
 #include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/view_class_properties.h"
 
 using chromeos::CrasAudioHandler;
 
@@ -79,6 +80,11 @@ class MoreButton : public views::Button {
 
     SetTooltipText(l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_AUDIO));
     TrayPopupUtils::ConfigureTrayPopupButton(this);
+
+    auto path = std::make_unique<SkPath>();
+    path->addRoundRect(gfx::RectToSkRect(gfx::Rect(CalculatePreferredSize())),
+                       kTrayItemSize / 2, kTrayItemSize / 2);
+    SetProperty(views::kHighlightPathKey, path.release());
   }
 
   ~MoreButton() override = default;

@@ -95,7 +95,7 @@ DateView::DateView(UnifiedSystemTrayController* controller)
 
   SetEnabled(Shell::Get()->system_tray_model()->clock()->IsSettingsAvailable());
 
-  SetFocusPainter(TrayPopupUtils::CreateFocusPainter());
+  SetInstallFocusRingOnFocus(true);
   SetFocusForPlatform();
 
   SetInkDropMode(views::InkDropHostView::InkDropMode::OFF);
@@ -256,7 +256,7 @@ ManagedStateView::ManagedStateView(views::ButtonListener* listener,
       gfx::Size(kUnifiedSystemInfoHeight, kUnifiedSystemInfoHeight));
   AddChildView(image);
 
-  SetFocusPainter(TrayPopupUtils::CreateFocusPainter());
+  SetInstallFocusRingOnFocus(true);
   SetFocusForPlatform();
 
   SetInkDropMode(views::InkDropHostView::InkDropMode::OFF);
@@ -364,7 +364,7 @@ UnifiedSystemInfoView::UnifiedSystemInfoView(
     : enterprise_managed_(new EnterpriseManagedView(controller)),
       supervised_(new SupervisedUserView()) {
   auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kHorizontal, kUnifiedMenuItemPadding,
+      views::BoxLayout::kHorizontal, kUnifiedSystemInfoViewPadding,
       kUnifiedSystemInfoSpacing));
   layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);

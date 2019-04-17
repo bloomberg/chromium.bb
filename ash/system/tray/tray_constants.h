@@ -172,8 +172,11 @@ constexpr SkColor kUnifiedFeaturePodHoverColor =
     SkColorSetRGB(0xff, 0xff, 0xff);
 
 constexpr gfx::Insets kUnifiedMenuItemPadding(0, 16, 16, 16);
+constexpr gfx::Insets kUnifiedSystemInfoViewPadding(4, 16, 16, 16);
+constexpr gfx::Insets kUnifiedSliderRowPadding(0, 12, 8, 16);
 constexpr gfx::Insets kUnifiedSliderPadding(0, 16);
 
+constexpr int kUnifiedSliderViewSpacing = 12;
 constexpr int kUnifiedMenuPadding = 8;
 constexpr int kUnifiedNotificationCenterSpacing = 16;
 constexpr int kUnifiedTrayIconSize = 20;
@@ -224,7 +227,7 @@ constexpr int kUnifiedFeaturePodSpacing = 6;
 constexpr int kUnifiedFeaturePodHoverRadius = 4;
 constexpr int kUnifiedFeaturePodVerticalPadding = 28;
 constexpr int kUnifiedFeaturePodTopPadding = 24;
-constexpr int kUnifiedFeaturePodBottomPadding = 24;
+constexpr int kUnifiedFeaturePodBottomPadding = 20;
 constexpr int kUnifiedFeaturePodHorizontalSidePadding = 12;
 constexpr int kUnifiedFeaturePodHorizontalMiddlePadding = 0;
 constexpr int kUnifiedFeaturePodCollapsedVerticalPadding = 16;
