@@ -229,7 +229,6 @@ const gfx::VectorIcon& AutocompleteMatch::GetVectorIcon(
       return omnibox::kPageIcon;
 
     case Type::SEARCH_WHAT_YOU_TYPED:
-    case Type::SEARCH_HISTORY:
     case Type::SEARCH_SUGGEST:
     case Type::SEARCH_SUGGEST_ENTITY:
     case Type::SEARCH_SUGGEST_PERSONALIZED:
@@ -240,6 +239,14 @@ const gfx::VectorIcon& AutocompleteMatch::GetVectorIcon(
     case Type::CLIPBOARD_TEXT:
     case Type::CLIPBOARD_IMAGE:
       return vector_icons::kSearchIcon;
+
+    case Type::SEARCH_HISTORY: {
+      if (base::FeatureList::IsEnabled(
+              omnibox::kOmniboxSuggestionTransparencyOptions)) {
+        return omnibox::kClockIcon;
+      }
+      return vector_icons::kSearchIcon;
+    }
 
     case Type::EXTENSION_APP_DEPRECATED:
       return omnibox::kExtensionAppIcon;
