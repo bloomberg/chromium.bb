@@ -195,14 +195,13 @@ void KeyboardShortcutItemView::MaybeCalculateAndDoLayout(int width) const {
   // |description_label_view_|.
   shortcut_label_view_->SetBounds(0, 0, shortcut_view_preferred_width,
                                   shortcut_view_height);
-  DCHECK(!shortcut_label_view_->children().empty());
+  const auto& children = shortcut_label_view_->children();
+  DCHECK(!children.empty());
   // Labels in |shortcut_label_view_| are right aligned, so we need to find the
-  // minimum left coordinates of all the lables.
+  // minimum left coordinates of all the labels.
   int min_left = shortcut_view_preferred_width;
-  for (int i = 0; i < shortcut_label_view_->child_count(); ++i) {
-    min_left =
-        std::min(min_left, shortcut_label_view_->child_at(i)->bounds().x());
-  }
+  for (const views::View* label : children)
+    min_left = std::min(min_left, label->bounds().x());
 
   // The width of |description_label_view_| will be dynamically adjusted to fill
   // the spacing.

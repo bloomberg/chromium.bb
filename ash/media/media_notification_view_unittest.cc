@@ -188,14 +188,12 @@ class MediaNotificationViewTest : public AshTestBase {
   views::Label* artist_label() const { return view_->artist_label_; }
 
   views::Button* GetButtonForAction(MediaSessionAction action) const {
-    for (int i = 0; i < button_row()->child_count(); ++i) {
-      views::Button* child = views::Button::AsButton(button_row()->child_at(i));
-
-      if (child->tag() == static_cast<int>(action))
-        return child;
-    }
-
-    return nullptr;
+    const auto& children = button_row()->children();
+    const auto i = std::find_if(
+        children.begin(), children.end(), [action](const views::View* v) {
+          return views::Button::AsButton(v)->tag() == static_cast<int>(action);
+        });
+    return (i == children.end()) ? nullptr : views::Button::AsButton(*i);
   }
 
   bool IsActionButtonVisible(MediaSessionAction action) const {

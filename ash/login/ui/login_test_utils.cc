@@ -89,14 +89,10 @@ mojom::LoginUserInfoPtr CreatePublicAccountUser(const std::string& email) {
   return user;
 }
 
-bool HasFocusInAnyChildView(views::View* view) {
-  if (view->HasFocus())
-    return true;
-  for (int i = 0; i < view->child_count(); ++i) {
-    if (HasFocusInAnyChildView(view->child_at(i)))
-      return true;
-  }
-  return false;
+bool HasFocusInAnyChildView(const views::View* view) {
+  return view->HasFocus() ||
+         std::any_of(view->children().cbegin(), view->children().cend(),
+                     [](const auto* v) { return HasFocusInAnyChildView(v); });
 }
 
 bool TabThroughView(ui::test::EventGenerator* event_generator,

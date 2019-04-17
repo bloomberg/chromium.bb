@@ -5,6 +5,7 @@
 #include "ash/system/tray/tray_bubble_view.h"
 
 #include <algorithm>
+#include <numeric>
 
 #include "ash/public/cpp/ash_features.h"
 #include "base/macros.h"
@@ -424,14 +425,12 @@ gfx::Size TrayBubbleView::CalculatePreferredSize() const {
 }
 
 int TrayBubbleView::GetHeightForWidth(int width) const {
-  int height = GetInsets().height();
   width = std::max(width - GetInsets().width(), 0);
-  for (int i = 0; i < child_count(); ++i) {
-    const View* child = child_at(i);
-    if (child->visible())
-      height += child->GetHeightForWidth(width);
-  }
-
+  const auto visible_height = [width](int height, const views::View* child) {
+    return height + (child->visible() ? child->GetHeightForWidth(width) : 0);
+  };
+  const int height = std::accumulate(children().cbegin(), children().cend(),
+                                     GetInsets().height(), visible_height);
   return (params_.max_height != 0) ? std::min(height, params_.max_height)
                                    : height;
 }

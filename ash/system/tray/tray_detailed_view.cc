@@ -124,19 +124,13 @@ class ScrollContentsView : public views::View {
   }
 
   View::Views GetChildrenInZOrder() override {
-    View::Views children;
-    // Iterate over regular children and later over the sticky headers to keep
-    // the sticky headers above in Z-order.
-    for (int i = 0; i < child_count(); ++i) {
-      if (child_at(i)->id() != VIEW_ID_STICKY_HEADER)
-        children.push_back(child_at(i));
-    }
-    for (int i = 0; i < child_count(); ++i) {
-      if (child_at(i)->id() == VIEW_ID_STICKY_HEADER)
-        children.push_back(child_at(i));
-    }
-    DCHECK_EQ(child_count(), static_cast<int>(children.size()));
-    return children;
+    // Place sticky headers last in the child order so that they wind up on top
+    // in Z order.
+    View::Views children_in_z_order = children();
+    std::stable_partition(
+        children_in_z_order.begin(), children_in_z_order.end(),
+        [](const View* child) { return child->id() != VIEW_ID_STICKY_HEADER; });
+    return children_in_z_order;
   }
 
   void ViewHierarchyChanged(
