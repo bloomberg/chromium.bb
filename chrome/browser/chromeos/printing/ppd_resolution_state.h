@@ -14,6 +14,8 @@ namespace chromeos {
 class PpdResolutionState {
  public:
   PpdResolutionState();
+  PpdResolutionState(PpdResolutionState&& other);
+  PpdResolutionState& operator=(PpdResolutionState&& rhs);
   ~PpdResolutionState();
 
   // Marks PPD resolution was successful and stores |ppd_reference|.

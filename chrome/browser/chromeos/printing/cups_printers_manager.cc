@@ -19,6 +19,7 @@
 #include "base/sequence_checker.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chromeos/printing/ppd_provider_factory.h"
+#include "chrome/browser/chromeos/printing/ppd_resolution_tracker.h"
 #include "chrome/browser/chromeos/printing/printer_event_tracker_factory.h"
 #include "chrome/browser/chromeos/printing/synced_printers_manager.h"
 #include "chrome/browser/chromeos/printing/synced_printers_manager_factory.h"
@@ -361,8 +362,9 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
       const std::vector<PrinterDetector::DetectedPrinter>& detected_list) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
     for (const PrinterDetector::DetectedPrinter& detected : detected_list) {
-      if (base::ContainsKey(configured_printers_index_,
-                            detected.printer.id())) {
+      const std::string& detected_printer_id = detected.printer.id();
+
+      if (base::ContainsKey(configured_printers_index_, detected_printer_id)) {
         // It's already in the configured class, don't need to do anything
         // else here.
         continue;
@@ -375,9 +377,9 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
         printers_[kAutomatic].push_back(detected.printer);
         continue;
       }
-      auto it = detected_printer_ppd_references_.find(detected.printer.id());
-      if (it != detected_printer_ppd_references_.end()) {
-        if (!it->second) {
+      if (ppd_resolution_tracker_.IsResolutionComplete(detected_printer_id)) {
+        if (!ppd_resolution_tracker_.WasResolutionSuccessful(
+                detected_printer_id)) {
           auto printer = detected.printer;
           if (!printer.supports_ippusb()) {
             // We couldn't figure out this printer, so it's in the discovered
@@ -398,7 +400,8 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
           // We have a ppd reference, so we think we can set this up
           // automatically.
           printers_[kAutomatic].push_back(detected.printer);
-          *printers_[kAutomatic].back().mutable_ppd_reference() = *it->second;
+          *printers_[kAutomatic].back().mutable_ppd_reference() =
+              ppd_resolution_tracker_.GetPpdReference(detected_printer_id);
         }
       } else {
         // Didn't find an entry for this printer in the PpdReferences cache.  We
@@ -406,14 +409,13 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
         // PpdReference.  If there's not already an outstanding request for one,
         // start one.  When the request comes back, we'll rerun classification
         // and then should be able to figure out where this printer belongs.
-        if (!base::ContainsKey(inflight_ppd_reference_resolutions_,
-                               detected.printer.id())) {
-          inflight_ppd_reference_resolutions_.insert(detected.printer.id());
+
+        if (!ppd_resolution_tracker_.IsResolutionPending(detected_printer_id)) {
+          ppd_resolution_tracker_.MarkResolutionPending(detected_printer_id);
           ppd_provider_->ResolvePpdReference(
               detected.ppd_search_data,
               base::Bind(&CupsPrintersManagerImpl::ResolvePpdReferenceDone,
-                         weak_ptr_factory_.GetWeakPtr(),
-                         detected.printer.id()));
+                         weak_ptr_factory_.GetWeakPtr(), detected_printer_id));
         }
       }
     }
@@ -454,15 +456,11 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
                                PpdProvider::CallbackResultCode code,
                                const Printer::PpdReference& ref) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
-    inflight_ppd_reference_resolutions_.erase(printer_id);
-
-    // Create the entry. If we got something, populate the entry. Otherwise let
-    // it just remain empty.
-    detected_printer_ppd_references_[printer_id] =
-        (code == PpdProvider::SUCCESS)
-            ? ref
-            : base::Optional<Printer::PpdReference>();
-
+    if (code == PpdProvider::SUCCESS) {
+      ppd_resolution_tracker_.MarkResolutionSuccessful(printer_id, ref);
+    } else {
+      ppd_resolution_tracker_.MarkResolutionFailed(printer_id);
+    }
     RebuildDetectedLists();
   }
 
@@ -496,17 +494,9 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
   // Printer ids that occur in one of our categories or printers.
   std::unordered_set<std::string> known_printer_ids_;
 
-  // This is a dual-purpose structure.  The keys in the map are printer ids.
-  // If an entry exists in this map it means we have received a response from
-  // PpdProvider about a PpdReference for the given printer.  An empty value
-  // means we don't have a PpdReference (and so can't set up this printer
-  // automatically).
-  std::unordered_map<std::string, base::Optional<Printer::PpdReference>>
-      detected_printer_ppd_references_;
-
-  // Printer ids for which we have sent off a request to PpdProvider for a ppd
-  // reference, but have not yet gotten a response.
-  std::unordered_set<std::string> inflight_ppd_reference_resolutions_;
+  // Tracks PpdReference resolution. Also stores USB manufacturer string if
+  // available.
+  PpdResolutionTracker ppd_resolution_tracker_;
 
   // Map from printer id to printers_[kSaved] index for configured
   // printers.
