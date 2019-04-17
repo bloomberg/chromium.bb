@@ -26,7 +26,8 @@
 
 namespace autofill_assistant {
 // Class to execute an assistant script.
-class ScriptExecutor : public ActionDelegate {
+class ScriptExecutor : public ActionDelegate,
+                       public ScriptExecutorDelegate::Listener {
  public:
   // Listens to events on ScriptExecutor.
   // TODO(b/806868): Make global_payload a part of callback instead of the
@@ -100,6 +101,9 @@ class ScriptExecutor : public ActionDelegate {
   // Terminates the running scripts. The script finishes running the current
   // action, then returns a result with at_end set to TERMINATE.
   void Terminate();
+
+  // Override ScriptExecutorDelegate::Listener
+  void OnNavigationStateChanged() override;
 
   // Override ActionDelegate:
   void RunElementChecks(BatchElementChecker* checker,
@@ -181,7 +185,8 @@ class ScriptExecutor : public ActionDelegate {
  private:
   // Helper for WaitForElementVisible that keeps track of the state required to
   // run interrupts while waiting for a specific element.
-  class WaitForDomOperation : public ScriptExecutor::Listener {
+  class WaitForDomOperation : public ScriptExecutor::Listener,
+                              ScriptExecutorDelegate::Listener {
    public:
     // Let the caller know about either the result of looking for the element or
     // of an abnormal result from an interrupt.
@@ -208,6 +213,13 @@ class ScriptExecutor : public ActionDelegate {
     void Terminate();
 
    private:
+    void Start();
+    void Pause();
+    void Continue();
+
+    // Implements ScriptExecutorDelegate::Listener
+    void OnNavigationStateChanged() override;
+
     // Implements ScriptExecutor::Listener
     void OnServerPayloadChanged(const std::string& global_payload,
                                 const std::string& script_payload) override;
@@ -281,19 +293,15 @@ class ScriptExecutor : public ActionDelegate {
   void ProcessAction(Action* action);
   void GetNextActions();
   void OnProcessedAction(std::unique_ptr<ProcessedActionProto> action);
-  void WaitForElement(base::TimeDelta max_wait_time,
-                      const Selector& selectors,
-                      base::OnceCallback<void(bool)> callback);
-  void CheckForElement(const Selector& selectors,
-                       base::OnceCallback<void(bool)> callback);
+  void OnShortWaitForElement(base::OnceCallback<void(bool)> callback,
+                             bool element_found,
+                             const Result* interrupt_result,
+                             const std::set<std::string>& interrupt_paths);
   void OnWaitForElementVisibleWithInterrupts(
       base::OnceCallback<void(ProcessedActionStatusProto)> callback,
       bool element_found,
       const Result* interrupt_result,
       const std::set<std::string>& ran_interrupts);
-  void OnWaitForElementVisibleNoInterrupts(
-      base::OnceCallback<void(ProcessedActionStatusProto)> callback,
-      bool element_found);
   void OnGetPaymentInformation(
       base::OnceCallback<void(std::unique_ptr<PaymentInformation>)> callback,
       std::unique_ptr<PaymentInformation> result);
@@ -322,6 +330,9 @@ class ScriptExecutor : public ActionDelegate {
   std::map<std::string, ScriptStatusProto>* scripts_state_;
   std::unique_ptr<BatchElementChecker> batch_element_checker_;
 
+  // Navigation information relevant to the current action.
+  NavigationInfoProto navigation_info_;
+
   // Paths of the interrupts that were run during the current script.
   std::set<std::string> ran_interrupts_;
 
@@ -335,8 +346,6 @@ class ScriptExecutor : public ActionDelegate {
   // Callback set by Prompt(). This is called when the prompt is terminated
   // without selecting any chips. nullptr unless showing a prompt.
   base::OnceCallback<void()> on_terminate_prompt_;
-
-  RetryTimer retry_timer_;
 
   base::WeakPtrFactory<ScriptExecutor> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(ScriptExecutor);

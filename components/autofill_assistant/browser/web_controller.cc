@@ -250,7 +250,7 @@ bool ConvertPseudoType(const PseudoType pseudo_type,
 // anything but a bug in the client.
 ClientStatus UnexpectedErrorStatus(const std::string& file, int line) {
   ClientStatus status(OTHER_ACTION_STATUS);
-  auto* info = status.mutable_unexpected_error_info();
+  auto* info = status.mutable_details()->mutable_unexpected_error_info();
   info->set_source_file(file);
   info->set_source_line_number(line);
   return status;
@@ -261,7 +261,7 @@ ClientStatus JavaScriptErrorStatus(const std::string& file,
                                    int line,
                                    const runtime::ExceptionDetails* exception) {
   ClientStatus status(UNEXPECTED_JS_ERROR);
-  auto* info = status.mutable_unexpected_error_info();
+  auto* info = status.mutable_details()->mutable_unexpected_error_info();
   info->set_source_file(file);
   info->set_source_line_number(line);
   if (exception) {

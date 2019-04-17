@@ -87,4 +87,20 @@ void FakeScriptExecutorDelegate::SetPaymentRequestOptions(
 
 void FakeScriptExecutorDelegate::CancelPaymentRequest() {}
 
+bool FakeScriptExecutorDelegate::HasNavigationError() {
+  return navigation_error_;
+}
+
+bool FakeScriptExecutorDelegate::IsNavigatingToNewDocument() {
+  return navigating_to_new_document_;
+}
+
+void FakeScriptExecutorDelegate::AddListener(Listener* listener) {
+  listeners_.insert(listener);
+}
+
+void FakeScriptExecutorDelegate::RemoveListener(Listener* listener) {
+  listeners_.erase(listener);
+}
+
 }  // namespace autofill_assistant

@@ -93,6 +93,10 @@ class Controller : public ScriptExecutorDelegate,
   void SetProgress(int progress) override;
   void SetProgressVisible(bool visible) override;
   void SetChips(std::unique_ptr<std::vector<Chip>> chips) override;
+  bool IsNavigatingToNewDocument() override;
+  bool HasNavigationError() override;
+  void AddListener(ScriptExecutorDelegate::Listener* listener) override;
+  void RemoveListener(ScriptExecutorDelegate::Listener* listener) override;
 
   // Stops the controller with |reason| and destroys this. The current status
   // message must contain the error message.
@@ -191,6 +195,8 @@ class Controller : public ScriptExecutorDelegate,
                      const GURL& validated_url) override;
   void DidStartNavigation(
       content::NavigationHandle* navigation_handle) override;
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override;
   void DocumentAvailableInMainFrame() override;
   void RenderProcessGone(base::TerminationStatus status) override;
   void OnWebContentsFocused(
@@ -199,6 +205,7 @@ class Controller : public ScriptExecutorDelegate,
   void OnTouchableAreaChanged(const std::vector<RectF>& areas);
 
   void SelectChip(std::vector<Chip>* chips, int chip_index);
+  void ReportNavigationStateChanged();
 
   ElementArea* touchable_element_area();
   ScriptTracker* script_tracker();
@@ -283,6 +290,13 @@ class Controller : public ScriptExecutorDelegate,
 
   std::unique_ptr<PaymentRequestOptions> payment_request_options_;
   std::unique_ptr<PaymentInformation> payment_request_info_;
+
+  // Value for ScriptExecutorDelegate::IsNavigatingToNewDocument()
+  bool navigating_to_new_document_ = false;
+
+  // Value for ScriptExecutorDelegate::HasNavigationError()
+  bool navigation_error_ = false;
+  std::vector<ScriptExecutorDelegate::Listener*> listeners_;
 
   // Tracks scripts and script execution. It's kept at the end, as it tend to
   // depend on everything the controller support, through script and script

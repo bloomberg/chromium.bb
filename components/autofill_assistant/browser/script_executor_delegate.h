@@ -35,6 +35,13 @@ struct TriggerContext;
 
 class ScriptExecutorDelegate {
  public:
+  class Listener {
+   public:
+    // The values returned by IsNavigatingToNewDocument() or
+    // HasNavigationError() might have changed.
+    virtual void OnNavigationStateChanged() = 0;
+  };
+
   virtual const GURL& GetCurrentURL() = 0;
   virtual Service* GetService() = 0;
   virtual UiController* GetUiController() = 0;
@@ -64,6 +71,37 @@ class ScriptExecutorDelegate {
   void ClearTouchableElementArea() {
     SetTouchableElementArea(ElementAreaProto::default_instance());
   }
+
+  // Returns true if a new document is being fetched for the main frame.
+  //
+  // Navigation ends once a response, with its associated URL has been
+  // committed, whether the response is successful or not.
+  //
+  // Navigation of frames other than the main frame, loading of resource or
+  // navigation to the same document aren't reported.
+  //
+  // Changes to this value is reported to Listener::OnNavigationStateChanged()
+  virtual bool IsNavigatingToNewDocument() = 0;
+
+  // Returns true if Chrome failed to fetch the response for its main document
+  // during its last attempt.
+  //
+  // This is cleared once a page for the main document has been successfully
+  // navigated to a new document.
+  //
+  // Navigation of frames other than the main frame, loading of resource or
+  // navigation to the same document aren't taken into account for this value.
+  //
+  // Changes to this value is reported to Listener::OnNavigationStateChanged()
+  virtual bool HasNavigationError() = 0;
+
+  // Register a listener that can be told about changes. Duplicate calls are
+  // ignored.
+  virtual void AddListener(Listener* listener) = 0;
+
+  // Removes a previously registered listener. Does nothing if no such listeners
+  // exists.
+  virtual void RemoveListener(Listener* listener) = 0;
 
  protected:
   virtual ~ScriptExecutorDelegate() {}

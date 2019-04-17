@@ -93,12 +93,14 @@ ScriptExecutor::ScriptExecutor(
       previous_action_type_(ActionProto::ACTION_INFO_NOT_SET),
       scripts_state_(scripts_state),
       ordered_interrupts_(ordered_interrupts),
-      retry_timer_(kPeriodicElementCheck),
       weak_ptr_factory_(this) {
   DCHECK(delegate_);
   DCHECK(ordered_interrupts_);
 }
-ScriptExecutor::~ScriptExecutor() {}
+
+ScriptExecutor::~ScriptExecutor() {
+  delegate_->RemoveListener(this);
+}
 
 ScriptExecutor::Result::Result() = default;
 ScriptExecutor::Result::~Result() = default;
@@ -106,6 +108,8 @@ ScriptExecutor::Result::~Result() = default;
 void ScriptExecutor::Run(RunScriptCallback callback) {
   DVLOG(2) << "Starting script " << script_path_;
   (*scripts_state_)[script_path_] = SCRIPT_STATUS_RUNNING;
+
+  delegate_->AddListener(this);
 
   callback_ = std::move(callback);
   DCHECK(delegate_->GetService());
@@ -118,6 +122,17 @@ void ScriptExecutor::Run(RunScriptCallback callback) {
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
+void ScriptExecutor::OnNavigationStateChanged() {
+  if (delegate_->IsNavigatingToNewDocument())
+    navigation_info_.set_started(true);
+  else
+    navigation_info_.set_ended(true);
+
+  if (delegate_->HasNavigationError()) {
+    navigation_info_.set_has_error(true);
+  }
+}
+
 void ScriptExecutor::RunElementChecks(BatchElementChecker* checker,
                                       base::OnceCallback<void()> all_done) {
   return checker->Run(delegate_->GetWebController(), std::move(all_done));
@@ -126,18 +141,12 @@ void ScriptExecutor::RunElementChecks(BatchElementChecker* checker,
 void ScriptExecutor::ShortWaitForElement(
     const Selector& selector,
     base::OnceCallback<void(bool)> callback) {
-  retry_timer_.Start(
-      kShortWaitForElementDeadline,
-      base::BindRepeating(&ScriptExecutor::CheckForElement,
-                          weak_ptr_factory_.GetWeakPtr(), selector),
-      std::move(callback));
-}
-
-void ScriptExecutor::CheckForElement(const Selector& selector,
-                                     base::OnceCallback<void(bool)> callback) {
-  delegate_->GetWebController()->ElementCheck(selector,
-                                              /* strict= */ false,
-                                              std::move(callback));
+  wait_for_dom_ = std::make_unique<WaitForDomOperation>(
+      this, kShortWaitForElementDeadline, /* allow_interrupt= */ false,
+      SelectorPredicate::kMatches, selector,
+      base::BindOnce(&ScriptExecutor::OnShortWaitForElement,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  wait_for_dom_->Run();
 }
 
 void ScriptExecutor::WaitForDom(
@@ -520,6 +529,10 @@ void ScriptExecutor::ProcessNextAction() {
 
 void ScriptExecutor::ProcessAction(Action* action) {
   DVLOG(2) << "Begin action: " << *action;
+
+  navigation_info_.Clear();
+  navigation_info_.set_has_error(delegate_->HasNavigationError());
+
   action->ProcessAction(this, base::BindOnce(&ScriptExecutor::OnProcessedAction,
                                              weak_ptr_factory_.GetWeakPtr()));
 }
@@ -541,10 +554,20 @@ void ScriptExecutor::OnProcessedAction(
   if (at_end_ == TERMINATE) {
     // Let the backend know that the script has been terminated. The original
     // action status doesn't matter.
+    processed_action.mutable_status_details()->set_original_status(
+        processed_action.status());
     processed_action.set_status(
         ProcessedActionStatusProto::USER_ABORTED_ACTION);
   }
+  *processed_action.mutable_navigation_info() = navigation_info_;
   if (processed_action.status() != ProcessedActionStatusProto::ACTION_APPLIED) {
+    if (delegate_->HasNavigationError()) {
+      // Overwrite the original error, as the root cause is most likely a
+      // navigation error.
+      processed_action.mutable_status_details()->set_original_status(
+          processed_action.status());
+      processed_action.set_status(ProcessedActionStatusProto::NAVIGATION_ERROR);
+    }
     DVLOG(1) << "Action failed: " << processed_action.status()
              << ", get more actions";
     // Report error immediately, interrupting action processing.
@@ -552,6 +575,18 @@ void ScriptExecutor::OnProcessedAction(
     return;
   }
   ProcessNextAction();
+}
+
+void ScriptExecutor::OnShortWaitForElement(
+    base::OnceCallback<void(bool)> callback,
+    bool element_found,
+    const Result* interrupt_result,
+    const std::set<std::string>& interrupt_paths) {
+  // Interrupts cannot run, so should never be reported.
+  DCHECK(!interrupt_result);
+  DCHECK(interrupt_paths.empty());
+
+  std::move(callback).Run(element_found);
 }
 
 void ScriptExecutor::OnWaitForElementVisibleWithInterrupts(
@@ -572,12 +607,6 @@ void ScriptExecutor::OnWaitForElementVisibleWithInterrupts(
       return;
     }
   }
-  OnWaitForElementVisibleNoInterrupts(std::move(callback), element_found);
-}
-
-void ScriptExecutor::OnWaitForElementVisibleNoInterrupts(
-    base::OnceCallback<void(ProcessedActionStatusProto)> callback,
-    bool element_found) {
   std::move(callback).Run(element_found ? ACTION_APPLIED
                                         : ELEMENT_RESOLUTION_FAILED);
 }
@@ -598,9 +627,24 @@ ScriptExecutor::WaitForDomOperation::WaitForDomOperation(
       retry_timer_(kPeriodicElementCheck),
       weak_ptr_factory_(this) {}
 
-ScriptExecutor::WaitForDomOperation::~WaitForDomOperation() = default;
+ScriptExecutor::WaitForDomOperation::~WaitForDomOperation() {
+  main_script_->delegate_->RemoveListener(this);
+}
 
 void ScriptExecutor::WaitForDomOperation::Run() {
+  main_script_->delegate_->AddListener(this);
+  if (main_script_->delegate_->IsNavigatingToNewDocument())
+    return;  // start paused
+
+  Start();
+}
+
+void ScriptExecutor::WaitForDomOperation::Terminate() {
+  if (interrupt_executor_)
+    interrupt_executor_->Terminate();
+}
+
+void ScriptExecutor::WaitForDomOperation::Start() {
   retry_timer_.Start(
       max_wait_time_,
       base::BindRepeating(&ScriptExecutor::WaitForDomOperation::RunChecks,
@@ -608,6 +652,30 @@ void ScriptExecutor::WaitForDomOperation::Run() {
                           base::Unretained(this)),
       base::BindOnce(&ScriptExecutor::WaitForDomOperation::RunCallback,
                      base::Unretained(this)));
+}
+
+void ScriptExecutor::WaitForDomOperation::Pause() {
+  if (interrupt_executor_) {
+    // If an interrupt is running, it'll be the one to be paused, if necessary.
+    return;
+  }
+
+  retry_timer_.Cancel();
+}
+
+void ScriptExecutor::WaitForDomOperation::Continue() {
+  if (retry_timer_.running() || !callback_)
+    return;
+
+  Start();
+}
+
+void ScriptExecutor::WaitForDomOperation::OnNavigationStateChanged() {
+  if (main_script_->delegate_->IsNavigatingToNewDocument()) {
+    Pause();
+  } else {
+    Continue();
+  }
 }
 
 void ScriptExecutor::WaitForDomOperation::OnServerPayloadChanged(
@@ -636,7 +704,7 @@ void ScriptExecutor::WaitForDomOperation::RunChecks(
     for (const auto* interrupt : *main_script_->ordered_interrupts_) {
       if (ran_interrupts_.find(interrupt->handle.path) !=
           ran_interrupts_.end()) {
-        // Only run an interrupt once in a WaitForDom, to avoid loops.
+        // Only run an interrupt once in a WaitForDomOperation, to avoid loops.
         continue;
       }
 
@@ -649,8 +717,6 @@ void ScriptExecutor::WaitForDomOperation::RunChecks(
                          weak_ptr_factory_.GetWeakPtr(),
                          base::Unretained(interrupt)));
     }
-    // The base::Unretained(this) above are safe, since the pointers belong to
-    // the main script, which own this instance.
   }
 
   batch_element_checker_->Run(
@@ -726,8 +792,8 @@ void ScriptExecutor::WaitForDomOperation::OnInterruptDone(
 
   // Restart. We use the original wait time since the interruption could have
   // triggered any kind of actions, including actions that wait on the user. We
-  // don't trust a previous element_check_result_, since it could have changed.
-  Run();
+  // don't trust a previous element_found_ result, since it could have changed.
+  Start();
 }
 
 void ScriptExecutor::WaitForDomOperation::RunCallback(bool found) {
@@ -775,11 +841,6 @@ void ScriptExecutor::WaitForDomOperation::RestorePreInterruptScroll(
     delegate->GetWebController()->FocusElement(
         main_script_->last_focused_element_selector_, base::DoNothing());
   }
-}
-
-void ScriptExecutor::WaitForDomOperation::Terminate() {
-  if (interrupt_executor_)
-    interrupt_executor_->Terminate();
 }
 
 std::ostream& operator<<(std::ostream& out,

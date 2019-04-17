@@ -362,6 +362,8 @@ message ProcessedActionProto {
 
   optional ProcessedActionStatusProto status = 2;
 
+  optional ProcessedActionStatusDetailsProto status_details = 19;
+
   oneof result_data {
     PromptProto.Choice prompt_choice = 5;
     string html_source = 12;
@@ -371,11 +373,36 @@ message ProcessedActionProto {
     SetFormFieldValueProto.Result set_form_field_value_result = 17;
   }
 
+  // Reports information about navigation that happened while
+  // processing the action. This is meant for debugging.
+  optional NavigationInfoProto navigation_info = 20;
+}
+
+// Extended information about the action status, which provides more details
+// about what happened than a simple ProcessedActionStatusProto can.
+message ProcessedActionStatusDetailsProto {
   // More information included for unexpected errors.
   //
   // Only set for action whose status are OTHER_ACTION_STATUS or
   // UNEXPECTED_JS_ERROR.
-  optional UnexpectedErrorInfoProto unexpected_error_info = 18;
+  optional UnexpectedErrorInfoProto unexpected_error_info = 1;
+
+  // In some case, such as USER_ABORTED_ACTION and NAVIGATION_ERROR, the status
+  // reported by the action is overridden after the action failed, to report a
+  // more appropriate error. When that happens, this field contains the original
+  // status, to help debugging.
+  optional ProcessedActionStatusProto original_status = 2;
+}
+
+message NavigationInfoProto {
+  // Navigation started while processing the current action.
+  optional bool started = 1;
+
+  // Navigation ended while processing the current action.
+  optional bool ended = 2;
+
+  // Navigation failed before or during the processing of the current action.
+  optional bool has_error = 3;
 }
 
 // Extra debugging information included in case of unexpected errors.
@@ -499,6 +526,11 @@ enum ProcessedActionStatusProto {
   // only one is supported. This is generally a scripting error: the selector is
   // not specific enough.
   TOO_MANY_ELEMENTS = 18;
+
+  // The browser failed to navigate to a new document for its main frame. Note
+  // that this doesn't include page load errors, which are reported as
+  // TIMED_OUT.
+  NAVIGATION_ERROR = 19;
 }
 
 // The pseudo type values come from
