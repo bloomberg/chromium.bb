@@ -87,6 +87,9 @@ class WizardController : public BaseScreenDelegate {
   // Skips any enrollment prompts that may be normally shown.
   static void SkipEnrollmentPromptsForTesting();
 
+  // Forces screens that should only appear in chrome branded builds to show.
+  static std::unique_ptr<base::AutoReset<bool>> ForceOfficialBuildForTesting();
+
   // Returns true if OOBE is operating under the
   // Zero-Touch Hands-Off Enrollment Flow.
   static bool UsingHandsOffEnrollment();
@@ -340,11 +343,7 @@ class WizardController : public BaseScreenDelegate {
   BaseScreen* previous_screen_ = nullptr;
 
 // True if running official BUILD.
-#if defined(GOOGLE_CHROME_BUILD)
-  bool is_official_build_ = true;
-#else
-  bool is_official_build_ = false;
-#endif
+  static bool is_official_build_;
 
   // True if full OOBE flow should be shown.
   bool is_out_of_box_ = false;
@@ -388,11 +387,7 @@ class WizardController : public BaseScreenDelegate {
   FRIEND_TEST_ALL_PREFIXES(WizardControllerDeviceStateTest,
                            ControlFlowNoForcedReEnrollmentOnFirstBoot);
 
-  friend class DemoSetupTest;
-  friend class OobeConfigurationTest;
-  friend class HandsOffEnrollmentTest;
   friend class WizardControllerBrokenLocalStateTest;
-  friend class WizardControllerDemoSetupTest;
   friend class WizardControllerDeviceStateTest;
   friend class WizardControllerFlowTest;
   friend class WizardControllerOobeConfigurationTest;

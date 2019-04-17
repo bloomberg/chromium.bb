@@ -1887,6 +1887,7 @@ test("browser_tests") {
         "../browser/chromeos/login/session_login_browsertest.cc",
         "../browser/chromeos/login/signin/device_id_browsertest.cc",
         "../browser/chromeos/login/signin/oauth2_browsertest.cc",
+        "../browser/chromeos/login/sync_consent_interactive_ui_test.cc",
         "../browser/chromeos/login/test/active_directory_login_mixin.cc",
         "../browser/chromeos/login/test/active_directory_login_mixin.h",
         "../browser/chromeos/login/test/device_state_mixin.cc",
@@ -2040,9 +2041,6 @@ test("browser_tests") {
       }
       if (is_chrome_branded) {
         sources += [
-          # The screen this test is checking exists in official build only.
-          "../browser/chromeos/login/sync_consent_interactive_ui_test.cc",
-
           # The KioskNext app is available in Chrome-branded builds only.
           "../browser/ui/ash/kiosk_next_shell_client_browsertest.cc",
         ]
