@@ -103,7 +103,8 @@ void IntersectionObservation::Disconnect() {
   DCHECK(Observer());
   if (target_) {
     Target()->EnsureIntersectionObserverData().RemoveObservation(*Observer());
-    if (target_->isConnected()) {
+    if (target_->isConnected() &&
+        !Target()->EnsureIntersectionObserverData().HasObservations()) {
       target_->GetDocument()
           .EnsureIntersectionObserverController()
           .RemoveTrackedTarget(*target_);
