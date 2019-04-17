@@ -331,7 +331,8 @@ void MediaRecorderHandler::Pause() {
     video_recorder->Pause();
   for (const auto& audio_recorder : audio_recorders_)
     audio_recorder->Pause();
-  webm_muxer_->Pause();
+  if (webm_muxer_)
+    webm_muxer_->Pause();
 }
 
 void MediaRecorderHandler::Resume() {
