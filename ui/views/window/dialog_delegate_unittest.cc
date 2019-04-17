@@ -4,12 +4,10 @@
 
 #include <stddef.h>
 
-#include "base/command_line.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "ui/base/hit_test.h"
-#include "ui/base/ui_base_switches.h"
 #include "ui/events/event_processor.h"
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/bubble/bubble_frame_view.h"
@@ -100,13 +98,6 @@ class TestDialog : public DialogDelegateView {
 
   views::Textfield* input() { return input_; }
 
-  ui::ModalType GetModalType() const override { return modal_type_; }
-  void SetModal() {
-    // Use MODAL_TYPE_CHILD (tab-modal) since it behaves most consistently
-    // between platforms.
-    modal_type_ = ui::MODAL_TYPE_CHILD;
-  }
-
  private:
   views::Textfield* input_;
   bool canceled_ = false;
@@ -118,7 +109,6 @@ class TestDialog : public DialogDelegateView {
   bool show_close_button_ = true;
   bool should_handle_escape_ = false;
   int dialog_buttons_ = ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
-  ui::ModalType modal_type_ = ui::MODAL_TYPE_NONE;
 
   DISALLOW_COPY_AND_ASSIGN(TestDialog);
 };
@@ -130,10 +120,6 @@ class DialogTest : public ViewsTestBase {
 
   void SetUp() override {
     ViewsTestBase::SetUp();
-#if defined(OS_MACOSX)
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kDisableModalAnimations);
-#endif
     InitializeDialog();
     ShowDialog();
   }
@@ -235,7 +221,7 @@ TEST_F(DialogTest, HitTest_HiddenTitle) {
     const int hit;
   } kCases[] = {
       {0, HTTRANSPARENT},
-      {10, HTNOWHERE},
+      {10, HTCAPTION},
       {20, HTNOWHERE},
       {50, HTCLIENT /* Space is reserved for the close button. */},
       {60, HTCLIENT},
@@ -261,32 +247,7 @@ TEST_F(DialogTest, HitTest_HiddenTitleNoCloseButton) {
     const int point;
     const int hit;
   } kCases[] = {
-      {0, HTTRANSPARENT}, {10, HTCLIENT}, {20, HTCLIENT},
-      {50, HTCLIENT},     {60, HTCLIENT}, {1000, HTNOWHERE},
-  };
-
-  for (const auto test_case : kCases) {
-    gfx::Point point(test_case.point, test_case.point);
-    EXPECT_EQ(test_case.hit, frame->NonClientHitTest(point))
-        << " at point " << test_case.point;
-  }
-}
-
-TEST_F(DialogTest, HitTest_Modal_WithTitle) {
-  // Ensure that BubbleFrameView hit-tests as expected when the title is shown
-  // and the modal type is something other than not modal.
-  const NonClientView* view = dialog()->GetWidget()->non_client_view();
-  dialog()->set_title(base::ASCIIToUTF16("Title"));
-  dialog()->GetWidget()->UpdateWindowTitle();
-  dialog()->SetModal();
-  dialog()->GetWidget()->LayoutRootViewIfNecessary();
-  BubbleFrameView* frame = static_cast<BubbleFrameView*>(view->frame_view());
-
-  constexpr struct {
-    const int point;
-    const int hit;
-  } kCases[] = {
-      {0, HTTRANSPARENT}, {10, HTNOWHERE}, {20, HTNOWHERE},
+      {0, HTTRANSPARENT}, {10, HTCAPTION}, {20, HTCLIENT},
       {50, HTCLIENT},     {60, HTCLIENT},  {1000, HTNOWHERE},
   };
 
@@ -297,9 +258,9 @@ TEST_F(DialogTest, HitTest_Modal_WithTitle) {
   }
 }
 
-TEST_F(DialogTest, HitTest_ModalTypeNone_WithTitle) {
+TEST_F(DialogTest, HitTest_WithTitle) {
   // Ensure that BubbleFrameView hit-tests as expected when the title is shown
-  // and the modal type is none.
+  // and the modal type is something other than not modal.
   const NonClientView* view = dialog()->GetWidget()->non_client_view();
   dialog()->set_title(base::ASCIIToUTF16("Title"));
   dialog()->GetWidget()->UpdateWindowTitle();
