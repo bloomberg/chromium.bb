@@ -26,7 +26,10 @@ video::-internal-media-controls-touchless.transparent {
 video::-internal-media-controls-touchless-overlay {
   width: 104px;
   height: 104px;
-  background-color: rgba(32, 33, 36, .9);
+  background-image: -webkit-image-set(url(ic_mid_background.svg) 1x);
+  background-size: 104px;
+  background-position: center;
+  background-repeat: no-repeat;
   position: absolute;
   z-index: 1;
   margin: auto;
@@ -34,7 +37,6 @@ video::-internal-media-controls-touchless-overlay {
   left: 0;
   bottom: 0;
   right: 0;
-  border-radius: 24px;
 }
 
 video::-internal-media-controls-touchless-volume-up-button {
@@ -51,7 +53,7 @@ video::-internal-media-controls-touchless-volume-up-button {
 video::-internal-media-controls-touchless-seek-backward-button {
   width: 30px;
   height: 30px;
-  margin-top: 7px /* (play button height + (2*play button border) - height) / 2 */;
+  margin-top: 7px /* (play button height - height) / 2 */;
   float: left;
   background-image: -webkit-image-set(url(ic_fast_rewind.svg) 1x);
   background-size: 20px;
@@ -61,13 +63,11 @@ video::-internal-media-controls-touchless-seek-backward-button {
 
 
 video::-internal-media-controls-touchless-play-button {
-  width: 40px;
-  height: 40px;
-  border: 2px solid white;
+  width: 44px;
+  height: 44px;
   background-position: center;
   background-size: 24px;
   background-repeat: no-repeat;
-  border-radius: 16px;
   float: left;
 }
 
@@ -82,7 +82,7 @@ video::-internal-media-controls-touchless-play-button.paused {
 video::-internal-media-controls-touchless-seek-forward-button {
   width: 30px;
   height: 30px;
-  margin-top: 7px /* (play button height + (2*play button border) - height) / 2 */;
+  margin-top: 7px /* (play button height - height) / 2 */;
   float: left;
   background-image: -webkit-image-set(url(ic_fast_forward.svg) 1x);
   background-size: 20px;
@@ -103,6 +103,7 @@ video::-internal-media-controls-touchless-volume-down-button {
 }
 
 video::-internal-media-controls-touchless-bottom-container {
+  position: absolute;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
