@@ -1735,12 +1735,6 @@ const char kCertRevocationCheckingEnabled[] = "ssl.rev_checking.enabled";
 const char kCertRevocationCheckingRequiredLocalAnchors[] =
     "ssl.rev_checking.required_for_local_anchors";
 
-// Boolean that specifies whether to allow certificates from the Legacy
-// Symantec Infrastructure, disabling the mitigations documented in
-// https://security.googleblog.com/2017/09/chromes-plan-to-distrust-symantec.html
-const char kCertEnableSymantecLegacyInfrastructure[] =
-    "ssl.enable_symantec_legacy_infrastructure";
-
 // String specifying the minimum TLS version to negotiate. Supported values
 // are "tls1", "tls1.1", "tls1.2", "tls1.3".
 const char kSSLVersionMin[] = "ssl.version_min";

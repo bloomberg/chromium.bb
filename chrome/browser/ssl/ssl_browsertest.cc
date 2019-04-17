@@ -2009,27 +2009,6 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, SymantecEnforcementIsNotDisabled) {
                    ->initial_ssl_config->symantec_enforcement_disabled);
 }
 
-// Enables support for Symantec's Legacy PKI via policy, and then ensures that
-// the SSLConfig is configured to trust the Legacy PKI.
-IN_PROC_BROWSER_TEST_P(SSLUITest, SymantecPrefsCanEnable) {
-  EXPECT_FALSE(last_ssl_config_.symantec_enforcement_disabled);
-  EXPECT_FALSE(CreateDefaultNetworkContextParams()
-                   ->initial_ssl_config->symantec_enforcement_disabled);
-
-  // Enable, and make sure the default network context params reflect the
-  // change.
-  base::RunLoop run_loop;
-  set_ssl_config_updated_callback(run_loop.QuitClosure());
-  ASSERT_NO_FATAL_FAILURE(
-      EnablePolicy(g_browser_process->local_state(),
-                   policy::key::kEnableSymantecLegacyInfrastructure,
-                   prefs::kCertEnableSymantecLegacyInfrastructure));
-  run_loop.Run();
-  EXPECT_TRUE(last_ssl_config_.symantec_enforcement_disabled);
-  EXPECT_TRUE(CreateDefaultNetworkContextParams()
-                  ->initial_ssl_config->symantec_enforcement_disabled);
-}
-
 class CertificateTransparencySSLUITest : public CertVerifierBrowserTest {
  public:
   CertificateTransparencySSLUITest()
