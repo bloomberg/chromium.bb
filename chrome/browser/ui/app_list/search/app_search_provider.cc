@@ -710,7 +710,7 @@ void AppSearchProvider::Start(const base::string16& query) {
 }
 
 void AppSearchProvider::ViewClosing() {
-  ClearResults();
+  ClearResultsSilently();
   for (auto& data_source : data_sources_)
     data_source->ViewClosing();
 }
