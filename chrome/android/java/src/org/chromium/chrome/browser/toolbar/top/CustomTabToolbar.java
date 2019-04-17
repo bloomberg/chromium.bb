@@ -198,6 +198,9 @@ public class CustomTabToolbar
     }
 
     @Override
+    public void destroy() {}
+
+    @Override
     void initialize(ToolbarDataProvider toolbarDataProvider, ToolbarTabController tabController,
             AppMenuButtonHelper appMenuButtonHelper) {
         super.initialize(toolbarDataProvider, tabController, appMenuButtonHelper);

@@ -2429,7 +2429,6 @@ jumbo_split_static_library("browser") {
       "android/ntp/recent_tabs_page_prefs.cc",
       "android/ntp/recent_tabs_page_prefs.h",
       "android/ntp/suggestions_event_reporter_bridge.cc",
-      "android/omnibox/answers_image_bridge.cc",
       "android/omnibox/autocomplete_controller_android.cc",
       "android/omnibox/autocomplete_controller_android.h",
       "android/omnibox/omnibox_prerender.cc",
