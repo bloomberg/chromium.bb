@@ -11,9 +11,6 @@ import fnmatch
 
 
 _NEGATIVE_FILTER = [
-    # Flaky: https://bugs.chromium.org/p/chromedriver/issues/detail?id=528
-    'PageLoadingTest.testShouldDoNothingIfThereIsNothingToGoBackTo',
-
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2532
     'SlowLoadingPageTest.testRefreshShouldBlockUntilPageLoads',
     'PageLoadingTest.testShouldTimeoutIfAPageTakesTooLongToRefresh',
@@ -152,8 +149,8 @@ _OS_NEGATIVE_FILTER['android:chrome'] = [
     # Test is written using local files; doesn't work on Android.
     'UploadTest.testFileUploading',
 
-    # Flaky: https://bugs.chromium.org/p/chromedriver/issues/detail?id=528
-    'PageLoadingTest.testShouldDoNothingIfThereIsNothingToGoBackTo',
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2861
+    'PageLoadingTest.testShouldTimeoutIfAPageTakesTooLongToLoadAfterClick',
 
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=604
     'I18nTest.testShouldBeAbleToActivateIMEEngine',
