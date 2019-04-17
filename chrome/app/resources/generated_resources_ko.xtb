@@ -102,6 +102,7 @@
 <translation id="1145532888383813076">기기, 앱, 웹에서 검색하세요.</translation>
 <translation id="114721135501989771">Google로 Chrome을 더욱 스마트하게</translation>
 <translation id="1149401351239820326">유효기간 월</translation>
+<translation id="1150565364351027703">선글라스</translation>
 <translation id="1151917987301063366"><ph name="HOST" />에서 센서에 액세스하도록 항상 허용</translation>
 <translation id="1153356358378277386">페어링된 기기</translation>
 <translation id="1156488781945104845">현재 시간</translation>
@@ -661,6 +662,7 @@
 <translation id="2045117674524495717">단축키 도움말</translation>
 <translation id="2045969484888636535">쿠키 계속 차단</translation>
 <translation id="204622017488417136">기기가 이전에 설치된 버전의 Chrome으로 돌아갑니다. 사용자 계정과 로컬 데이터가 모두 삭제됩니다. 이 작업은 취소할 수 없습니다.</translation>
+<translation id="2046702855113914483">라면</translation>
 <translation id="2048182445208425546">네트워크 트래픽에 액세스</translation>
 <translation id="2048653237708779538">실행할 수 없는 작업</translation>
 <translation id="2050339315714019657">세로 방향</translation>
@@ -928,6 +930,7 @@
 <translation id="2462752602710430187"><ph name="PRINTER_NAME" /> 추가됨</translation>
 <translation id="2464089476039395325">HTTP 프록시</translation>
 <translation id="2468205691404969808">페이지를 방문하지 않더라도 쿠키를 통해 환경설정 저장</translation>
+<translation id="2468402215065996499">다마고치</translation>
 <translation id="2469375675106140201">맞춤법 검사 맞춤설정</translation>
 <translation id="247051149076336810">파일 공유 URL</translation>
 <translation id="2470702053775288986">지원되지 않는 확장 프로그램이 사용 중지됨</translation>
@@ -1132,6 +1135,7 @@
 <translation id="2770465223704140727">목록에서 삭제</translation>
 <translation id="2770690685823456775">비밀번호를 다른 폴더로 내보냅니다.</translation>
 <translation id="2771268254788431918">모바일 데이터 활성화됨</translation>
+<translation id="2771816809568414714">치즈</translation>
 <translation id="2772936498786524345">닌자</translation>
 <translation id="2773288106548584039">이전 브라우저 지원</translation>
 <translation id="2773802008104670137">컴퓨터에 유해할 수 있는 파일 유형입니다.</translation>
@@ -1655,6 +1659,7 @@
 <translation id="3616113530831147358">오디오</translation>
 <translation id="3616741288025931835">인터넷 사용 기록 삭제(&amp;C)...</translation>
 <translation id="3617891479562106823">배경을 사용할 수 없습니다. 나중에 다시 시도하세요.</translation>
+<translation id="3619115746895587757">카푸치노</translation>
 <translation id="3623574769078102674">이 관리 대상 사용자는 <ph name="MANAGER_EMAIL" />에서 관리합니다.</translation>
 <translation id="3624567683873126087">기기를 잠금 해제하고 Google 계정에 로그인합니다.</translation>
 <translation id="3625258641415618104">스크린샷 캡쳐 사용 중지됨</translation>
@@ -2131,6 +2136,7 @@
 <translation id="4359717112757026264">도시 풍경</translation>
 <translation id="4361142739114356624">이 클라이언트 인증서의 비공개 키가 없거나 잘못되었습니다.</translation>
 <translation id="4363771538994847871">전송 대상을 찾을 수 없습니다. 도움이 필요하세요?</translation>
+<translation id="4364327530094270451">멜론</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" />이(가) 창을 공유합니다.</translation>
 <translation id="4364830672918311045">알림 표시</translation>
 <translation id="4365673000813822030">동기화 작업이 중지되었습니다.</translation>
@@ -2320,6 +2326,7 @@
 <translation id="4690091457710545971">&lt;Intel Wi-Fi 펌웨어에서 csr.lst, fh_regs.lst, radio_reg.lst, monitor.lst.sysmon 의 4개 파일을 생성하였습니다. 처음 3개 파일은 레지스터 덤프를 포함하는 바이너리 파일로 Intel에서 개인정보나 기기 식별 정보를 포함하지 않도록 선언되었습니다. 4번째 파일은 Intel 펌웨어의 실행 기록으로 모든 개인정보나 기기 식별 정보가 삭제되었지만 너무 커서 여기에 표시할 수 없습니다. 이러한 4개 파일은 최근에 발생한 기기의 Wi-Fi 문제로 인해 생성되었으며 관련 문제를 해결하기 위해 Intel과 공유됩니다.&gt;</translation>
 <translation id="469230890969474295">OEM 폴더</translation>
 <translation id="4692623383562244444">검색엔진</translation>
+<translation id="4693155481716051732">초밥</translation>
 <translation id="4694024090038830733">프린터 구성은 관리자가 처리합니다.</translation>
 <translation id="4694604912444486114">원숭이</translation>
 <translation id="4697551882387947560">탐색 세션이 종료될 때</translation>
@@ -2374,6 +2381,7 @@
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" />의 비밀번호</translation>
 <translation id="4777825441726637019">Play 스토어</translation>
 <translation id="4779083564647765204">글꼴 크기</translation>
+<translation id="4779136857077979611">오니기리</translation>
 <translation id="477945296921629067">{NUM_POPUPS,plural, =1{팝업 1개 차단됨}other{팝업 #개 차단됨}}</translation>
 <translation id="4780321648949301421">페이지를 다른 이름으로 저장...</translation>
 <translation id="4785719467058219317">이 웹사이트에 등록되지 않은 보안 키를 사용하고 있습니다.</translation>
@@ -2386,6 +2394,7 @@
 <translation id="4801448226354548035">계정 숨기기</translation>
 <translation id="4801512016965057443">모바일 데이터 로밍 허용</translation>
 <translation id="4804818685124855865">연결 해제</translation>
+<translation id="4804827417948292437">아보카도</translation>
 <translation id="4807098396393229769">카드 명의</translation>
 <translation id="4808667324955055115">팝업 차단됨</translation>
 <translation id="480990236307250886">홈페이지 열기</translation>
@@ -2480,6 +2489,7 @@
 <translation id="4941246025622441835">다음과 같이 기기를 엔터프라이즈 관리용으로 등록할 때 이 기기 요청을 사용합니다.</translation>
 <translation id="4941627891654116707">글꼴 크기</translation>
 <translation id="494286511941020793">프록시 설정 도움말</translation>
+<translation id="4943368462779413526">풋볼</translation>
 <translation id="4943691134276646401">'<ph name="CHROME_EXTENSION_NAME" />'에서 시리얼 포트에 연결하려고 합니다.</translation>
 <translation id="495170559598752135">작업</translation>
 <translation id="4953689047182316270">접근성 이벤트에 응답</translation>
@@ -2549,6 +2559,7 @@
 <translation id="5067399438976153555">항상 사용</translation>
 <translation id="5067867186035333991"><ph name="HOST" />에서 마이크에 액세스하려는 경우 메시지 표시</translation>
 <translation id="5068918910148307423">최근에 닫은 사이트에서 데이터 전송 및 수신을 완료하는 것을 허용하지 않음</translation>
+<translation id="5068919226082848014">피자</translation>
 <translation id="5072052264945641674">커서 크기 조정</translation>
 <translation id="5072836811783999860">관리 북마크 표시</translation>
 <translation id="5074318175948309511">새로운 설정을 적용하기 전에 페이지를 다시 로드해야 할 수도 있습니다.</translation>
@@ -2583,6 +2594,7 @@
 <translation id="5117930984404104619">방문한 URL을 포함하여 다른 확장 프로그램의 동작을 모니터링합니다.</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">하드 디스크가 가득 찼습니다. 다른 위치에 저장하거나 하드 디스크에 더 많은 공간을 확보하시기 바랍니다.</translation>
+<translation id="5123433949759960244">농구공</translation>
 <translation id="5125751979347152379">잘못된 URL입니다.</translation>
 <translation id="5127805178023152808">동기화 사용 안함</translation>
 <translation id="5127881134400491887">네트워크 연결 관리</translation>
@@ -3266,6 +3278,7 @@
 <translation id="6166185671393271715">Chrome으로 비밀번호 가져오기</translation>
 <translation id="6169040057125497443">마이크를 확인하세요.</translation>
 <translation id="6169666352732958425">데스크톱을 전송할 수 없음</translation>
+<translation id="6170470584681422115">샌드위치</translation>
 <translation id="6171948306033499786">인쇄 일시중지</translation>
 <translation id="6173623053897475761">PIN을 다시 입력하세요</translation>
 <translation id="6175314957787328458">Microsoft Domain GUID</translation>
@@ -3696,6 +3709,7 @@
 <translation id="6870888490422746447">공유할 앱 선택:</translation>
 <translation id="6871644448911473373">OCSP 응답자: <ph name="LOCATION" /></translation>
 <translation id="6872781471649843364">입력한 비밀번호가 서버에 의해 거부되었습니다.</translation>
+<translation id="6876155724392614295">자전거</translation>
 <translation id="6878422606530379992">센서가 허용됨</translation>
 <translation id="6880587130513028875">이 페이지에서 이미지가 차단되었습니다.</translation>
 <translation id="6883319974225028188">시스템에서 기기 구성을 저장하지 못했습니다.</translation>
@@ -4262,6 +4276,7 @@
 <translation id="7772127298218883077"><ph name="PRODUCT_NAME" /> 정보</translation>
 <translation id="7772773261844472235">Chromebook 상태 확인</translation>
 <translation id="7773726648746946405">세션 저장소</translation>
+<translation id="7774365994322694683">새</translation>
 <translation id="7776701556330691704">음성을 찾을 수 없음</translation>
 <translation id="7781335840981796660">모든 사용자 계정과 로컬 데이터가 삭제됩니다.</translation>
 <translation id="7782102568078991263">Google의 추천 단어 없음</translation>
@@ -4667,6 +4682,7 @@
 <translation id="8386903983509584791">검색 완료</translation>
 <translation id="8389492867173948260">이 확장 프로그램이 내가 방문하는 다음 웹사이트의 모든 데이터를 읽고 변경하도록 허용합니다.</translation>
 <translation id="8390449457866780408">서버를 사용할 수 없습니다.</translation>
+<translation id="8391218455464584335">레코드판</translation>
 <translation id="8391712576156218334">이미지를 사용할 수 없습니다. 나중에 다시 시도하세요.</translation>
 <translation id="8392234662362215700">키보드 레이아웃을 전환하려면 Control-Shift-Space 키를 누르세요.</translation>
 <translation id="8392451568018454956"><ph name="USER_EMAIL_ADDRESS" />의 옵션 메뉴</translation>

@@ -42,6 +42,7 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="1773601347087397504">Kumuha ng tulong sa paggamit ng Chrome OS</translation>
 <translation id="1795405610103747296">I-install ang Chrome sa iyong telepono. Magpapadala kami ng SMS sa telepono mo: <ph name="PHONE_NUMBER" /></translation>
 <translation id="1812689907177901597">Kapag na-off ito, maaari kang mag-sign in sa mga site ng Google tulad ng Gmail nang hindi nagsa-sign in sa Chrome</translation>
+<translation id="1815759068706561639">Mapanganib ang <ph name="FILE_NAME" /> kaya na-block ito ng Chrome. Pinoprotektahan ka ng Advanced na Proteksyon.</translation>
 <translation id="1860536484129686729">Kailangan ng Chrome ng pahintulot na i-access ang iyong camera para sa site na ito</translation>
 <translation id="1873233029667955273">Hindi Google Chrome ang iyong default na browser</translation>
 <translation id="1874309113135274312">Google Chrome Beta (mDNS-In)</translation>
@@ -67,6 +68,7 @@ Kapag nag-sign in ka pa rin, isasama sa <ph name="ACCOUNT_EMAIL_NEW" /> ang impo
 <translation id="2429317896000329049">Hindi mai-sync ng Google Chrome ang iyong data dahil hindi available ang Pag-sync para sa iyong domain.</translation>
 <translation id="2467438592969358367">Gustong i-export ng Google Chrome ang iyong mga password. I-type ang password mo sa Windows para payagan ito.</translation>
 <translation id="2485422356828889247">I-uninstall</translation>
+<translation id="2521856951867783208">Puwedeng mapanganib ang file na ito kaya na-block ito ng Chrome. Pinoprotektahan ka ng Advanced na Proteksyon.</translation>
 <translation id="2534507159460261402">Google Pay (kinopya sa Chrome)</translation>
 <translation id="2535429035253759792">Hinihiling sa iyo ng administrator mo na muli mong ilunsad ang Chrome para malapat ang update na ito</translation>
 <translation id="2580411288591421699">Hindi ma-install ang parehong bersyon ng Google Chrome na kasalukuyang tumatakbo. Mangyaring isara ang Google Chrome at muling subukan.</translation>
@@ -103,6 +105,7 @@ Pakitingnan ang iyong email sa <ph name="ACCOUNT_EMAIL" /> para sa mga karagdaga
 <translation id="3451115285585441894">Idinaragdag sa Chrome...</translation>
 <translation id="345171907106878721">Idagdag ang iyong sarili sa Chrome</translation>
 <translation id="3479552764303398839">Hindi ngayon</translation>
+<translation id="3481286511616257896">Puwedeng mapanganib ang <ph name="FILE_NAME" /> kaya na-block ito ng Chrome. Pinoprotektahan ka ng Advanced na Proteksyon.</translation>
 <translation id="34857402635545079">I-clear din ang data sa Chrome (<ph name="URL" />)</translation>
 <translation id="3503306920980160878">Kailangan ng Chrome ng access sa iyong lokasyon upang ibahagi ang lokasyon mo sa site na ito</translation>
 <translation id="3576528680708590453">Na-configure ng iyong system administrator ang Google Chrome na magbukas ng alternatibong browser para i-access ang <ph name="TARGET_URL_HOSTNAME" />.</translation>
@@ -227,12 +230,14 @@ Hindi magawang bawiin ng Google Chrome ang iyong mga setting.</translation>
 <translation id="7459554271817304652">I-set up ang Pag-sync upang i-save ang iyong personalized na mga tampok sa browser sa web at i-access ang mga iyon mula sa Google Chrome sa anumang computer.</translation>
 <translation id="7473136999113284234">Awtomatikong nag-a-update ang Chrome upang palagi kang may pinakabagong bersyon.</translation>
 <translation id="7486227612705979895">Ia-access ng Chrome ang iyong Drive para makapagmungkahi sa address bar</translation>
+<translation id="748945194546522577">Mapanganib ang file na ito kaya na-block ito ng Chrome. Pinoprotektahan ka ng Advanced na Proteksyon.</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7552219221109926349">Ipakita ang Chrome OS sa wikang ito</translation>
 <translation id="7561940363513215021">{0,plural, =1{Muling ilulunsad ang Chrome sa loob ng 1 minuto}one{Muling ilulunsad ang Chrome sa loob ng # minuto}other{Muling ilulunsad ang Chrome sa loob ng # na minuto}}</translation>
 <translation id="7589360514048265910">Hindi na makakatanggap ng mga update sa Google Chrome ang computer na ito dahil hindi na sinusuportahan ang Mac OS X 10.9.</translation>
 <translation id="7592736734348559088">Hindi mai-sync ng Google Chrome ang iyong data dahil hindi napapanahon ang mga detalye sa pag-sign in ng iyong account.</translation>
 <translation id="7626032353295482388">Welcome sa Chrome</translation>
+<translation id="7636297873481318396">Mapanganib ang file na ito kaya na-block ito ng Chrome. Pinoprotektahan ka ng Advanced na Proteksyon.</translation>
 <translation id="7641148173327520642">Na-configure ng iyong system administrator ang Google Chrome para buksan ang <ph name="ALTERNATIVE_BROWSER_NAME" /> para ma-access ang <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="7651907282515937834">Logo ng Chrome Enterprise</translation>
 <translation id="7747138024166251722">Hindi makalikha ng pansamantalang direktoryo ang installer. Paki-suri para sa puwang sa disk na walang laman at pahintulot upang i-install ang software.</translation>
@@ -281,6 +286,7 @@ Hindi magawang bawiin ng Google Chrome ang iyong mga setting.</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="8679801911857917785">Kinokontrol din nito kung anong pahina ang ipinapakita kapag sinimulan mo ang Chrome.</translation>
 <translation id="870251953148363156">I-update ang &amp;Google Chrome</translation>
+<translation id="8704255848199359374">Ginagamit nito ang parehong spellchecker na ginagamit sa paghahanap sa Google. Ipinapadala sa Google ang text na tina-type mo sa browser. Puwede mong baguhin palagi ang gawing ito sa mga setting.</translation>
 <translation id="873133009373065397">Hindi matukoy o maitakda ng Google Chrome ang default na browser</translation>
 <translation id="8736674169840206667">Inaatasan ka ng iyong administrator na muling ilunsad ang Chrome para malapat ang update</translation>
 <translation id="8788264404293392165">Ginagamit ang wikang ito para ipakita ang Chrome OS UI</translation>

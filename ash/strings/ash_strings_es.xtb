@@ -12,6 +12,7 @@
 <translation id="1104621072296271835">Tus dispositivos funcionan aún mejor juntos</translation>
 <translation id="112308213915226829">Ocultar estantería automáticamente</translation>
 <translation id="1153356358378277386">Dispositivos vinculados</translation>
+<translation id="1178581264944972037">Pausar</translation>
 <translation id="1195412055398077112">reajustar</translation>
 <translation id="119944043368869598">Eliminar todo</translation>
 <translation id="123828989343052515">Nuevo escritorio</translation>
@@ -365,6 +366,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="6723839937902243910">Batería</translation>
 <translation id="6751826523481687655">El control del rendimiento está activado</translation>
 <translation id="6785414152754474415">La batería se está cargando y está al <ph name="PERCENTAGE" />%.</translation>
+<translation id="6790428901817661496">Reproducir</translation>
 <translation id="6803622936009808957">No se han podido duplicar las pantallas porque no se han encontrado resoluciones compatibles. Se ha utilizado el modo de escritorio ampliado en su lugar.</translation>
 <translation id="6820676911989879663">Haz una pausa</translation>
 <translation id="683971173229319003">Buscar+L</translation>

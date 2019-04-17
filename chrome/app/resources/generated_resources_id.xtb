@@ -102,6 +102,7 @@
 <translation id="1145532888383813076">Telusuri perangkat, aplikasi, dan web.</translation>
 <translation id="114721135501989771">Dapatkan kecanggihan Google di Chrome</translation>
 <translation id="1149401351239820326">Bulan akhir masa berlaku</translation>
+<translation id="1150565364351027703">Kacamata Hitam</translation>
 <translation id="1151917987301063366">Selalu izinkan <ph name="HOST" /> mengakses sensor</translation>
 <translation id="1153356358378277386">Perangkat dihubungkan</translation>
 <translation id="1156488781945104845">Waktu saat ini</translation>
@@ -661,6 +662,7 @@
 <translation id="2045117674524495717">Bantuan Pintasan Keyboard</translation>
 <translation id="2045969484888636535">Lanjutkan pencekalan cookie</translation>
 <translation id="204622017488417136">Perangkat Anda akan dikembalikan ke versi Chrome yang terpasang sebelumnya. Semua akun pengguna dan data lokal akan dihapus. Tindakan ini tidak dapat diurungkan.</translation>
+<translation id="2046702855113914483">Ramen</translation>
 <translation id="2048182445208425546">Mengakses lalu lintas jaringan Anda</translation>
 <translation id="2048653237708779538">Tindakan tidak tersedia</translation>
 <translation id="2050339315714019657">Potret</translation>
@@ -928,6 +930,7 @@
 <translation id="2462752602710430187"><ph name="PRINTER_NAME" /> ditambahkan</translation>
 <translation id="2464089476039395325">Proxy HTTP</translation>
 <translation id="2468205691404969808">Menggunakan cookie untuk mengingat preferensi, meski Anda tidak membuka halaman tersebut</translation>
+<translation id="2468402215065996499">Tamagotchi</translation>
 <translation id="2469375675106140201">Sesuaikan pemeriksaan ejaan</translation>
 <translation id="247051149076336810">URL berbagi file</translation>
 <translation id="2470702053775288986">Ekstensi yang tidak didukung dinonaktifkan</translation>
@@ -1132,6 +1135,7 @@
 <translation id="2770465223704140727">Hapus dari daftar</translation>
 <translation id="2770690685823456775">Ekspor sandi Anda ke folder lain</translation>
 <translation id="2771268254788431918">Data seluler diaktifkan</translation>
+<translation id="2771816809568414714">Keju</translation>
 <translation id="2772936498786524345">Ninja</translation>
 <translation id="2773288106548584039">Dukungan Browser Lama</translation>
 <translation id="2773802008104670137">Jenis file ini dapat membahayakan komputer.</translation>
@@ -1653,6 +1657,7 @@
 <translation id="3616113530831147358">Audio</translation>
 <translation id="3616741288025931835">&amp;Hapus Data browsing...</translation>
 <translation id="3617891479562106823">Background tidak tersedia. Coba lagi nanti.</translation>
+<translation id="3619115746895587757">Cappuccino</translation>
 <translation id="3623574769078102674">Pengguna yang diawasi ini akan dikelola oleh <ph name="MANAGER_EMAIL" />.</translation>
 <translation id="3624567683873126087">Buka kunci perangkat dan login ke Akun Google</translation>
 <translation id="3625258641415618104">Screenshot dinonaktifkan</translation>
@@ -2131,6 +2136,7 @@
 <translation id="4359717112757026264">Pemandangan Kota</translation>
 <translation id="4361142739114356624">Kunci Pribadi untuk Sertifikat Klien ini tidak ditemukan atau tidak valid</translation>
 <translation id="4363771538994847871">Tujuan Transmisi tidak ditemukan. Perlu bantuan?</translation>
+<translation id="4364327530094270451">Melon</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> membagikan jendela.</translation>
 <translation id="4364830672918311045">Tampilkan notifikasi</translation>
 <translation id="4365673000813822030">Ups, Sinkronisasi berhenti bekerja.</translation>
@@ -2320,6 +2326,7 @@
 <translation id="4690091457710545971">&lt;Empat file dibuat oleh firmware Wi-Fi Intel: csr.lst, fh_regs.lst, radio_reg.lst, monitor.lst.sysmon.  Ketiga file pertama adalah file biner yang berisi dump pendaftaran, dan dinyatakan oleh Intel tidak berisi informasi pribadi atau yang mengidentifikasi perangkat.  File terakhir adalah pelacakan eksekusi dari firmware Intel; file tersebut telah dibersihkan dari informasi pribadi atau yang mengidentifikasi perangkat, namun terlalu besar untuk ditampilkan di sini.  Semua file tersebut dibuat untuk merespons masalah Wi-Fi baru-baru ini di perangkat Anda, dan akan dibagikan kepada Intel untuk membantu memecahkan masalah tersebut.&gt;</translation>
 <translation id="469230890969474295">Folder OEM</translation>
 <translation id="4692623383562244444">Mesin telusur</translation>
+<translation id="4693155481716051732">Sushi</translation>
 <translation id="4694024090038830733">Konfigurasi printer ditangani oleh administrator.</translation>
 <translation id="4694604912444486114">Kera</translation>
 <translation id="4697551882387947560">Saat sesi menjelajah berakhir</translation>
@@ -2374,6 +2381,7 @@
 <translation id="4776917500594043016">Sandi untuk <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4777825441726637019">Play Store</translation>
 <translation id="4779083564647765204">Zoom</translation>
+<translation id="4779136857077979611">Onigiri</translation>
 <translation id="477945296921629067">{NUM_POPUPS,plural, =1{Pop-up diblokir}other{# pop-up diblokir}}</translation>
 <translation id="4780321648949301421">Simpan Halaman Sebagai...</translation>
 <translation id="4785719467058219317">Anda menggunakan kunci keamanan yang tidak terdaftar di situs ini</translation>
@@ -2386,6 +2394,7 @@
 <translation id="4801448226354548035">Sembunyikan akun</translation>
 <translation id="4801512016965057443">Izinkan roaming data seluler</translation>
 <translation id="4804818685124855865">Putuskan</translation>
+<translation id="4804827417948292437">Avokad</translation>
 <translation id="4807098396393229769">Nama di kartu</translation>
 <translation id="4808667324955055115">Pop-up diblokir:</translation>
 <translation id="480990236307250886">Buka beranda</translation>
@@ -2480,6 +2489,7 @@
 <translation id="4941246025622441835">Gunakan permintaan perangkat ini saat mendaftarkan perangkat untuk pengelolaan perusahaan:</translation>
 <translation id="4941627891654116707">Ukuran font</translation>
 <translation id="494286511941020793">Bantuan Konfigurasi Proxy</translation>
+<translation id="4943368462779413526">Sepak bola</translation>
 <translation id="4943691134276646401">"<ph name="CHROME_EXTENSION_NAME" />" ingin terhubung ke port serial</translation>
 <translation id="495170559598752135">Tindakan</translation>
 <translation id="4953689047182316270">Merespons Acara Aksesibilitas</translation>
@@ -2549,6 +2559,7 @@
 <translation id="5067399438976153555">Selalu aktif</translation>
 <translation id="5067867186035333991">Tanyakan jika <ph name="HOST" /> ingin mengakses mikrofon Anda</translation>
 <translation id="5068918910148307423">Jangan izinkan situs yang baru ditutup untuk menyelesaikan pengiriman dan penerimaan data</translation>
+<translation id="5068919226082848014">Pizza</translation>
 <translation id="5072052264945641674">Sesuaikan ukuran kursor</translation>
 <translation id="5072836811783999860">Tampilkan bookmark yang dikelola</translation>
 <translation id="5074318175948309511">Halaman ini mungkin perlu dimuat ulang sebelum setelan baru berpengaruh.</translation>
@@ -2583,6 +2594,7 @@
 <translation id="5117930984404104619">Memantau perilaku ekstensi lain, termasuk URL yang dikunjungi</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">Hard disk Anda sudah penuh. Simpan ke lokasi lain atau kosongkan lebih banyak ruang pada hard disk.</translation>
+<translation id="5123433949759960244">Bola basket</translation>
 <translation id="5125751979347152379">URL tidak valid.</translation>
 <translation id="5127805178023152808">Sinkronisasi nonaktif</translation>
 <translation id="5127881134400491887">Mengelola sambungan jaringan</translation>
@@ -3266,6 +3278,7 @@
 <translation id="6166185671393271715">Impor Sandi ke Chrome</translation>
 <translation id="6169040057125497443">Harap periksa mikrofon Anda.</translation>
 <translation id="6169666352732958425">Tidak dapat mentransmisi desktop.</translation>
+<translation id="6170470584681422115">Sandwich</translation>
 <translation id="6171948306033499786">Jeda pencetakan</translation>
 <translation id="6173623053897475761">Ketik PIN Anda lagi</translation>
 <translation id="6175314957787328458">Microsoft Domain GUID</translation>
@@ -3696,6 +3709,7 @@
 <translation id="6870888490422746447">Pilih aplikasi untuk membagikan:</translation>
 <translation id="6871644448911473373">Penanggap OCSP: <ph name="LOCATION" /></translation>
 <translation id="6872781471649843364">Sandi yang Anda masukkan ditolak oleh server.</translation>
+<translation id="6876155724392614295">Sepeda</translation>
 <translation id="6878422606530379992">Sensor diizinkan</translation>
 <translation id="6880587130513028875">Gambar diblokir di halaman ini.</translation>
 <translation id="6883319974225028188">Maaf!  Sistem gagal menyimpan konfigurasi ponsel.</translation>
@@ -4262,6 +4276,7 @@
 <translation id="7772127298218883077">Tentang <ph name="PRODUCT_NAME" /></translation>
 <translation id="7772773261844472235">Periksa status Chromebook Anda</translation>
 <translation id="7773726648746946405">Penyimpanan sesi</translation>
+<translation id="7774365994322694683">Burung</translation>
 <translation id="7776701556330691704">Suara tidak ditemukan</translation>
 <translation id="7781335840981796660">Semua akun dan data lokal pengguna akan dihapus.</translation>
 <translation id="7782102568078991263">Tidak ada lagi saran dari Google</translation>
@@ -4667,6 +4682,7 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="8386903983509584791">Pemindaian selesai</translation>
 <translation id="8389492867173948260">Mengizinkan ekstensi ini membaca dan mengubah semua data Anda di situs yang dibuka:</translation>
 <translation id="8390449457866780408">Server tidak tersedia.</translation>
+<translation id="8391218455464584335">Piringan hitam</translation>
 <translation id="8391712576156218334">Gambar tidak tersedia. Coba lagi nanti.</translation>
 <translation id="8392234662362215700">Tekan Control-Shift-Space untuk mengubah tata letak keyboard.</translation>
 <translation id="8392451568018454956">Menu opsi untuk <ph name="USER_EMAIL_ADDRESS" /></translation>

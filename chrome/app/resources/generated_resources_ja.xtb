@@ -102,6 +102,7 @@
 <translation id="1145532888383813076">デバイス、アプリ、ウェブを検索します。</translation>
 <translation id="114721135501989771">Chrome で Google の最先端技術を活用</translation>
 <translation id="1149401351239820326">有効期限（月）</translation>
+<translation id="1150565364351027703">サングラス</translation>
 <translation id="1151917987301063366"><ph name="HOST" /> によるセンサーへのアクセスを常に許可する</translation>
 <translation id="1153356358378277386">ペア設定されたデバイス</translation>
 <translation id="1156488781945104845">現在の時刻</translation>
@@ -661,6 +662,7 @@
 <translation id="2045117674524495717">キーボード ショートカット ヘルパー</translation>
 <translation id="2045969484888636535">Cookie のブロックを続行する</translation>
 <translation id="204622017488417136">以前インストールしたバージョンの Chrome にデバイスを戻します。すべてのユーザー アカウントとローカルデータは削除されます。この操作は元に戻せません。</translation>
+<translation id="2046702855113914483">ラーメン</translation>
 <translation id="2048182445208425546">ユーザーのネットワーク トラフィックへのアクセス</translation>
 <translation id="2048653237708779538">操作できません</translation>
 <translation id="2050339315714019657">縦</translation>
@@ -928,6 +930,7 @@
 <translation id="2462752602710430187"><ph name="PRINTER_NAME" /> を追加しました</translation>
 <translation id="2464089476039395325">HTTP プロキシ</translation>
 <translation id="2468205691404969808">Cookie を使って設定を保存する（これらのページにアクセスしない場合も Cookie が保持されます）</translation>
+<translation id="2468402215065996499">たまごっち</translation>
 <translation id="2469375675106140201">スペルチェックをカスタマイズ</translation>
 <translation id="247051149076336810">ファイル共有 URL</translation>
 <translation id="2470702053775288986">サポートされていない拡張機能が無効</translation>
@@ -1132,6 +1135,7 @@
 <translation id="2770465223704140727">リストから削除</translation>
 <translation id="2770690685823456775">パスワードを別のフォルダにエクスポートしてください</translation>
 <translation id="2771268254788431918">モバイルデータ有効</translation>
+<translation id="2771816809568414714">チーズ</translation>
 <translation id="2772936498786524345">スニーキー</translation>
 <translation id="2773288106548584039">従来のブラウザのサポート</translation>
 <translation id="2773802008104670137">この種類のファイルはパソコンに危害を及ぼす可能性があります。</translation>
@@ -1655,6 +1659,7 @@
 <translation id="3616113530831147358">音声</translation>
 <translation id="3616741288025931835">閲覧履歴を消去(&amp;C)...</translation>
 <translation id="3617891479562106823">背景を利用できません。しばらくしてからもう一度お試しください。</translation>
+<translation id="3619115746895587757">カプチーノ</translation>
 <translation id="3623574769078102674">この監視対象ユーザーは <ph name="MANAGER_EMAIL" /> によって管理されます。</translation>
 <translation id="3624567683873126087">デバイスのロックを解除して Google アカウントにログインする</translation>
 <translation id="3625258641415618104">スクリーンショットが無効</translation>
@@ -2133,6 +2138,7 @@
 <translation id="4359717112757026264">Cityscape</translation>
 <translation id="4361142739114356624">このクライアント証明書には秘密鍵がないか、秘密鍵が無効です</translation>
 <translation id="4363771538994847871">キャスト先が見つかりません。ヘルプを表示しますか？</translation>
+<translation id="4364327530094270451">メロン</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> がウィンドウを共有しています。</translation>
 <translation id="4364830672918311045">通知を表示</translation>
 <translation id="4365673000813822030">同期は停止されました。</translation>
@@ -2322,6 +2328,7 @@
 <translation id="4690091457710545971">&lt;Intel Wi-Fi ファームウェアにより生成された 4 つのファイル: csr.lst、fh_regs.lst、radio_reg.lst、monitor.lst.sysmon。最初の 3 つはレジスタダンプを含むバイナリ ファイルで、個人情報や端末を特定できる情報を一切含まないことが Intel により表明されています。最後の 1 つは Intel ファームウェアからの実行トレースで、個人情報や端末を特定できる情報は除かれていますが、サイズが大きいためここには表示できません。これらのファイルはご使用の端末で最近発生した Wi-Fi の問題への応答として生成されたもので、問題を調査するために Intel と共有されます。&gt;</translation>
 <translation id="469230890969474295">OEM フォルダ</translation>
 <translation id="4692623383562244444">検索エンジン</translation>
+<translation id="4693155481716051732">お寿司</translation>
 <translation id="4694024090038830733">プリンタの設定を行えるのは管理者のみです。</translation>
 <translation id="4694604912444486114">サル</translation>
 <translation id="4697551882387947560">ブラウザ セッションの終了時</translation>
@@ -2376,6 +2383,7 @@
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> のパスワード</translation>
 <translation id="4777825441726637019">Play ストア</translation>
 <translation id="4779083564647765204">ズーム</translation>
+<translation id="4779136857077979611">おにぎり</translation>
 <translation id="477945296921629067">{NUM_POPUPS,plural, =1{ポップアップがブロックされました}other{# 件のポップアップがブロックされました}}</translation>
 <translation id="4780321648949301421">ページを別名で保存...</translation>
 <translation id="4785719467058219317">このウェブサイトに登録されていないセキュリティ キーを使用しています</translation>
@@ -2388,6 +2396,7 @@
 <translation id="4801448226354548035">アカウントを非表示にする</translation>
 <translation id="4801512016965057443">モバイル データ ローミングを許可する</translation>
 <translation id="4804818685124855865">切断</translation>
+<translation id="4804827417948292437">アボカド</translation>
 <translation id="4807098396393229769">カード名義人（半角英文字）</translation>
 <translation id="4808667324955055115">ポップアップがブロックされました:</translation>
 <translation id="480990236307250886">ホームページを開く</translation>
@@ -2482,6 +2491,7 @@
 <translation id="4941246025622441835">エンタープライズ管理のためにデバイスを登録するときにこのデバイス利用申請を使用する:</translation>
 <translation id="4941627891654116707">フォントサイズ</translation>
 <translation id="494286511941020793">プロキシ設定ヘルプ</translation>
+<translation id="4943368462779413526">フットボール</translation>
 <translation id="4943691134276646401">「<ph name="CHROME_EXTENSION_NAME" />」がシリアルポートへの接続を要求しています</translation>
 <translation id="495170559598752135">操作</translation>
 <translation id="4953689047182316270">ユーザー補助機能のイベントへの応答</translation>
@@ -2551,6 +2561,7 @@
 <translation id="5067399438976153555">常にオン</translation>
 <translation id="5067867186035333991"><ph name="HOST" /> がマイクへのアクセスを必要としているときは確認画面を表示する</translation>
 <translation id="5068918910148307423">最近閉じたサイトがデータの送受信を完了できないようにする</translation>
+<translation id="5068919226082848014">ピザ</translation>
 <translation id="5072052264945641674">カーソルのサイズを調整</translation>
 <translation id="5072836811783999860">管理対象のブックマークを表示</translation>
 <translation id="5074318175948309511">新しい設定を有効にするには、ページの再読み込みが必要な可能性があります。</translation>
@@ -2585,6 +2596,7 @@
 <translation id="5117930984404104619">他の拡張機能の動作を監視（アクセスした URL を含む）</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">ハード ディスクがいっぱいです。別の場所に保存するか、ハード ディスクの空き容量を増やしてください。</translation>
+<translation id="5123433949759960244">バスケットボール</translation>
 <translation id="5125751979347152379">URL が無効です。</translation>
 <translation id="5127805178023152808">同期は無効です</translation>
 <translation id="5127881134400491887">ネットワーク接続の管理</translation>
@@ -3268,6 +3280,7 @@
 <translation id="6166185671393271715">Chrome にパスワードをインポート</translation>
 <translation id="6169040057125497443">マイクを確認してください。</translation>
 <translation id="6169666352732958425">デスクトップをキャストできません。</translation>
+<translation id="6170470584681422115">サンドイッチ</translation>
 <translation id="6171948306033499786">印刷を一時停止</translation>
 <translation id="6173623053897475761">もう一度 PIN を入力してください</translation>
 <translation id="6175314957787328458">Microsoft ドメイン GUID</translation>
@@ -3698,6 +3711,7 @@
 <translation id="6870888490422746447">共有するアプリを選択してください:</translation>
 <translation id="6871644448911473373">OCSP レスポンダ: <ph name="LOCATION" /></translation>
 <translation id="6872781471649843364">入力したパスワードはサーバーによって拒否されました。</translation>
+<translation id="6876155724392614295">自転車</translation>
 <translation id="6878422606530379992">センサーが許可されました</translation>
 <translation id="6880587130513028875">このページの画像はブロックされました。</translation>
 <translation id="6883319974225028188">デバイスの設定を保存できませんでした。</translation>
@@ -4265,6 +4279,7 @@
 <translation id="7772127298218883077"><ph name="PRODUCT_NAME" /> について</translation>
 <translation id="7772773261844472235">Chromebook のステータスを確認</translation>
 <translation id="7773726648746946405">セッション ストレージ</translation>
+<translation id="7774365994322694683">鳥</translation>
 <translation id="7776701556330691704">音声が見つかりません</translation>
 <translation id="7781335840981796660">すべてのユーザー アカウントとローカル データは削除されます。</translation>
 <translation id="7782102568078991263">候補は以上です</translation>
@@ -4670,6 +4685,7 @@
 <translation id="8386903983509584791">スキャンが完了しました</translation>
 <translation id="8389492867173948260">アクセスしたウェブサイト上にある自分の全データの読み取りと変更をこの拡張機能に許可します。</translation>
 <translation id="8390449457866780408">サーバーを使用できません。</translation>
+<translation id="8391218455464584335">レコード</translation>
 <translation id="8391712576156218334">画像を利用できません。しばらくしてからもう一度お試しください。</translation>
 <translation id="8392234662362215700">キーボードのレイアウトを切り替えるには Ctrl+Shift+Space を押してください。</translation>
 <translation id="8392451568018454956"><ph name="USER_EMAIL_ADDRESS" /> のオプション メニュー</translation>

@@ -102,6 +102,7 @@
 <translation id="1145532888383813076">Sök på enheten, i appar och på webben.</translation>
 <translation id="114721135501989771">Få Google-teknik i Chrome</translation>
 <translation id="1149401351239820326">Utgångsmånad</translation>
+<translation id="1150565364351027703">Solglasögon</translation>
 <translation id="1151917987301063366">Låt alltid <ph name="HOST" /> använda enhetens sensorer</translation>
 <translation id="1153356358378277386">Kopplade enheter</translation>
 <translation id="1156488781945104845">Aktuell tid</translation>
@@ -660,6 +661,7 @@
 <translation id="2045117674524495717">Hjälp med kortkommandon</translation>
 <translation id="2045969484888636535">Fortsätt att blockera cookies</translation>
 <translation id="204622017488417136">Enheten kommer att återgå till den tidigare installerade versionen av Chrome. Alla användarkonton och lokala uppgifter kommer att tas bort. Det går inte att ångra åtgärden.</translation>
+<translation id="2046702855113914483">Ramen (nudelsoppa)</translation>
 <translation id="2048182445208425546">Åtkomst till din nätverkstrafik</translation>
 <translation id="2048653237708779538">Åtgärden är inte tillgänglig</translation>
 <translation id="2050339315714019657">Stående</translation>
@@ -927,6 +929,7 @@
 <translation id="2462752602710430187"><ph name="PRINTER_NAME" /> har lagts till</translation>
 <translation id="2464089476039395325">HTTP-proxy</translation>
 <translation id="2468205691404969808">Kommer ihåg med hjälp av cookies vad du brukar välja även om du inte besöker sidorna i fråga</translation>
+<translation id="2468402215065996499">Tamagotchi</translation>
 <translation id="2469375675106140201">Anpassa stavningskontrollen</translation>
 <translation id="247051149076336810">Webbadress för filresurs</translation>
 <translation id="2470702053775288986">Tillägg som inte stöds har inaktiverats</translation>
@@ -1131,6 +1134,7 @@
 <translation id="2770465223704140727">Ta bort från listan</translation>
 <translation id="2770690685823456775">Exportera lösenorden till en annan mapp</translation>
 <translation id="2771268254788431918">Mobildata har aktiverats</translation>
+<translation id="2771816809568414714">Ost</translation>
 <translation id="2772936498786524345">Ninja</translation>
 <translation id="2773288106548584039">Stöd för äldre webbläsare</translation>
 <translation id="2773802008104670137">Den här filtypen kan skada din dator.</translation>
@@ -1654,6 +1658,7 @@
 <translation id="3616113530831147358">Ljud</translation>
 <translation id="3616741288025931835">&amp;Rensa webbinformation...</translation>
 <translation id="3617891479562106823">Inga bakgrunder är tillgängliga. Försök igen senare.</translation>
+<translation id="3619115746895587757">Cappuccino</translation>
 <translation id="3623574769078102674">Denna kontrollerade användare kommer att hanteras av <ph name="MANAGER_EMAIL" />.</translation>
 <translation id="3624567683873126087">Lås upp enheten och logga in på Google-kontot</translation>
 <translation id="3625258641415618104">Skärmdumpar har inaktiverats</translation>
@@ -2132,6 +2137,7 @@
 <translation id="4359717112757026264">Cityscape</translation>
 <translation id="4361142739114356624">Det här klientcertifikatets privata nyckel saknas eller är tom</translation>
 <translation id="4363771538994847871">Ingen Cast-destination hittades. Behöver du hjälp?</translation>
+<translation id="4364327530094270451">Melon</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> delar ett fönster.</translation>
 <translation id="4364830672918311045">Visa aviseringar</translation>
 <translation id="4365673000813822030">Oj, synkroniseringen har slutat fungera.</translation>
@@ -2321,6 +2327,7 @@
 <translation id="4690091457710545971">&lt;Fyra filer som genererats av Intels Wi-Fi-firmware: csr.lst, fh_regs.lst, radio_reg.lst och monitor.lst.sysmon. De tre första är binärfiler med registerdumpar, och Intel intygar att de inte innehåller några personliga uppgifter eller uppgifter som kan identifiera en enhet. Den sista filen är en körningsspårning från Intels firmware. Alla personliga uppgifter eller uppgifter som kan identifiera en enhet har tagits bort från den, men filen är för stor att visa här. Filerna genererades på grund av problem med Wi-Fi på enheten nyligen och delas med Intel så att de kan hjälpa till med felsökningen.&gt;</translation>
 <translation id="469230890969474295">OEM-mapp</translation>
 <translation id="4692623383562244444">Sökmotorer</translation>
+<translation id="4693155481716051732">Sushi</translation>
 <translation id="4694024090038830733">Skrivarkonfigurationen hanteras av administratören.</translation>
 <translation id="4694604912444486114">Apa</translation>
 <translation id="4697551882387947560">När surfningen avslutas</translation>
@@ -2375,6 +2382,7 @@
 <translation id="4776917500594043016">Lösenord för <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4777825441726637019">Play Butik</translation>
 <translation id="4779083564647765204">Zooma in</translation>
+<translation id="4779136857077979611">Onigiri (risbollar)</translation>
 <translation id="477945296921629067">{NUM_POPUPS,plural, =1{Popup-fönster har blockerats}other{# popup-fönster har blockerats}}</translation>
 <translation id="4780321648949301421">Spara sida som...</translation>
 <translation id="4785719467058219317">Säkerhetsnyckeln som du använder är inte registrerad på den här webbplatsen</translation>
@@ -2387,6 +2395,7 @@
 <translation id="4801448226354548035">Dölj konton</translation>
 <translation id="4801512016965057443">Tillåt mobil dataroaming</translation>
 <translation id="4804818685124855865">Koppla från</translation>
+<translation id="4804827417948292437">Avokado</translation>
 <translation id="4807098396393229769">Namn på kort</translation>
 <translation id="4808667324955055115">Popup-fönster har blockerats</translation>
 <translation id="480990236307250886">Öppna startsidan</translation>
@@ -2481,6 +2490,7 @@
 <translation id="4941246025622441835">Använd den här enhetsanmälan när enheten upptas för företagshantering:</translation>
 <translation id="4941627891654116707">Teckenstorlek</translation>
 <translation id="494286511941020793">Hjälp för proxykonfiguration</translation>
+<translation id="4943368462779413526">Amerikansk fotboll</translation>
 <translation id="4943691134276646401"><ph name="CHROME_EXTENSION_NAME" /> vill ansluta till en serieport</translation>
 <translation id="495170559598752135">Åtgärder</translation>
 <translation id="4953689047182316270">Svara på tillgänglighetshändelser</translation>
@@ -2550,6 +2560,7 @@
 <translation id="5067399438976153555">Alltid på</translation>
 <translation id="5067867186035333991">Fråga om <ph name="HOST" /> vill använda din mikrofon</translation>
 <translation id="5068918910148307423">Tillåt inte att webbplatser som nyligen har stängts får slutföra överföringen av data som skickas och tas emot</translation>
+<translation id="5068919226082848014">Pizza</translation>
 <translation id="5072052264945641674">Ändra markörstorlek</translation>
 <translation id="5072836811783999860">Visa hanterade bokmärken</translation>
 <translation id="5074318175948309511">Den här sidan kan behöva läsas in igen innan den nya inställningen börjar gälla.</translation>
@@ -2584,6 +2595,7 @@
 <translation id="5117930984404104619">Bevaka hur övriga tillägg fungerar, däribland besökta webbadresser</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">Hårddisken är full. Spara på en annan plats eller gör mer plats på hårddisken.</translation>
+<translation id="5123433949759960244">Basketboll</translation>
 <translation id="5125751979347152379">Ogiltig webbadress.</translation>
 <translation id="5127805178023152808">Synkronisering är av</translation>
 <translation id="5127881134400491887">Hantera nätverksanslutningar</translation>
@@ -3267,6 +3279,7 @@
 <translation id="6166185671393271715">Importera lösenord till Chrome</translation>
 <translation id="6169040057125497443">Kontrollera mikrofonen.</translation>
 <translation id="6169666352732958425">Det gick inte att casta skrivbordet.</translation>
+<translation id="6170470584681422115">Smörgås</translation>
 <translation id="6171948306033499786">Pausa utskriften</translation>
 <translation id="6173623053897475761">Skriv pinkoden en gång till</translation>
 <translation id="6175314957787328458">Grafiskt användargränssnitt för Microsoft-domänen</translation>
@@ -3697,6 +3710,7 @@
 <translation id="6870888490422746447">Välj en app som du vill dela till:</translation>
 <translation id="6871644448911473373">OCSP-svarare: <ph name="LOCATION" /></translation>
 <translation id="6872781471649843364">Det angivna lösenordet avvisades av servern.</translation>
+<translation id="6876155724392614295">Cykel</translation>
 <translation id="6878422606530379992">Användning av sensorer har tillåtits</translation>
 <translation id="6880587130513028875">Bilder är blockerade på den här sidan.</translation>
 <translation id="6883319974225028188">Det gick inte att spara enhetskonfigurationen.</translation>
@@ -4263,6 +4277,7 @@
 <translation id="7772127298218883077">Om <ph name="PRODUCT_NAME" /></translation>
 <translation id="7772773261844472235">Kontrollera Chromebooks status</translation>
 <translation id="7773726648746946405">Sessionslagring</translation>
+<translation id="7774365994322694683">Fågel</translation>
 <translation id="7776701556330691704">Inga röster hittades</translation>
 <translation id="7781335840981796660">Alla användarkonton och all lokal data tas bort.</translation>
 <translation id="7782102568078991263">Inga fler förslag från Google</translation>
@@ -4668,6 +4683,7 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8386903983509584791">Sökningen har slutförts</translation>
 <translation id="8389492867173948260">Tillåt det här tillägget att läsa och ändra all din data på webbplatser du besöker</translation>
 <translation id="8390449457866780408">Servern är inte tillgänglig.</translation>
+<translation id="8391218455464584335">Vinylskiva</translation>
 <translation id="8391712576156218334">Bilden är inte tillgänglig. Försök igen senare.</translation>
 <translation id="8392234662362215700">Tryck på Ctrl + Skift + blanksteg om du vill byta tangentbordslayout.</translation>
 <translation id="8392451568018454956">Alternativmenyn för <ph name="USER_EMAIL_ADDRESS" /></translation>

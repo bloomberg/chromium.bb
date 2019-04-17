@@ -12,6 +12,7 @@
 <translation id="1104621072296271835">Laitteesi toimivat entistä paremmin yhdessä</translation>
 <translation id="112308213915226829">Piilota hylly automaattisesti</translation>
 <translation id="1153356358378277386">Laiteparit</translation>
+<translation id="1178581264944972037">Tauko</translation>
 <translation id="1195412055398077112">kuvasta rajataan pois osa</translation>
 <translation id="119944043368869598">Tyhjennä kaikki</translation>
 <translation id="123828989343052515">Uusi työtila</translation>
@@ -367,6 +368,7 @@
 <translation id="6723839937902243910">Virta</translation>
 <translation id="6751826523481687655">Tehokkuuden seuranta on käytössä</translation>
 <translation id="6785414152754474415">Akussa on virtaa <ph name="PERCENTAGE" /> %, ja laite on kytketty laturiin.</translation>
+<translation id="6790428901817661496">Toista</translation>
 <translation id="6803622936009808957">Näyttöjen peilaaminen ei onnistunut, sillä tuettua resoluutiota ei löytynyt. Sen sijaan valittiin työpöydän laajennus.</translation>
 <translation id="6820676911989879663">Pidä tauko</translation>
 <translation id="683971173229319003">Haku+L</translation>

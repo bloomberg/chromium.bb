@@ -102,6 +102,7 @@
 <translation id="1145532888383813076">Cihazınızda, uygulamalarda, web'de arama yapın.</translation>
 <translation id="114721135501989771">Google zekası Chrome'da</translation>
 <translation id="1149401351239820326">Son kullanım tarihinin ayı</translation>
+<translation id="1150565364351027703">Güneş Gözlüğü</translation>
 <translation id="1151917987301063366"><ph name="HOST" /> sitesinin sensörlere erişmesine her zaman izin ver</translation>
 <translation id="1153356358378277386">Eşlenen cihazlar</translation>
 <translation id="1156488781945104845">Şu anki saat:</translation>
@@ -661,6 +662,7 @@
 <translation id="2045117674524495717">Klavye Kısayolu Yardımcısı</translation>
 <translation id="2045969484888636535">Çerezleri engellemeye devam et</translation>
 <translation id="204622017488417136">Cihazınız Chrome'un bundan önce yüklenmiş olan sürümüne geri dönecektir. Tüm kullanıcı hesapları ve yerel veriler silinecektir. Bu işlem geri alınamaz.</translation>
+<translation id="2046702855113914483">Japon eriştesi</translation>
 <translation id="2048182445208425546">Ağ trafiğinize erişme</translation>
 <translation id="2048653237708779538">İşlem kullanılamıyor</translation>
 <translation id="2050339315714019657">Dikey</translation>
@@ -928,6 +930,7 @@
 <translation id="2462752602710430187"><ph name="PRINTER_NAME" /> eklendi</translation>
 <translation id="2464089476039395325">HTTP Proxy'si</translation>
 <translation id="2468205691404969808">Belirtilen sayfaları ziyaret etmiyor olsanız bile tercihlerinizi hatırlamak için çerezler kullanır</translation>
+<translation id="2468402215065996499">Tamagotchi</translation>
 <translation id="2469375675106140201">Yazım denetimini özelleştir</translation>
 <translation id="247051149076336810">Dosya paylaşım URL'si</translation>
 <translation id="2470702053775288986">Desteklenmeyen uzantılar devre dışı bırakıldı</translation>
@@ -1132,6 +1135,7 @@
 <translation id="2770465223704140727">Listeden kaldır</translation>
 <translation id="2770690685823456775">Şifrelerinizi başka bir klasöre dışa aktarın</translation>
 <translation id="2771268254788431918">Mobil veri etkinleştirildi</translation>
+<translation id="2771816809568414714">Peynir</translation>
 <translation id="2772936498786524345">Ninja</translation>
 <translation id="2773288106548584039">Eski Tarayıcı Desteği</translation>
 <translation id="2773802008104670137">Bu dosya türü bilgisayarınıza zarar verebilir.</translation>
@@ -1655,6 +1659,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="3616113530831147358">Ses</translation>
 <translation id="3616741288025931835">Tarama Verilerini &amp;Temizle...</translation>
 <translation id="3617891479562106823">Arka planlar kullanılamıyor. Daha sonra tekrar deneyin.</translation>
+<translation id="3619115746895587757">Kapuçino</translation>
 <translation id="3623574769078102674">Denetlenen bu kullanıcı <ph name="MANAGER_EMAIL" /> tarafından yönetilecek.</translation>
 <translation id="3624567683873126087">Cihazın kilidini aç ve Google Hesabı'nda oturum aç</translation>
 <translation id="3625258641415618104">Ekran görüntüleri devre dışı</translation>
@@ -2133,6 +2138,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="4359717112757026264">Şehir manzaraları</translation>
 <translation id="4361142739114356624">Bu İstemci Sertifikası'nın Özel Anahtarı eksik veya geçersiz</translation>
 <translation id="4363771538994847871">Hiç Yayınlama hedefi bulunamadı. Yardıma ihtiyacınız var mı?</translation>
+<translation id="4364327530094270451">Kavun</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" />, bir pencereyi paylaşıyor.</translation>
 <translation id="4364830672918311045">Bildirimleri görüntüleme</translation>
 <translation id="4365673000813822030">Hata, Senkronizasyonun çalışması durdu.</translation>
@@ -2322,6 +2328,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="4690091457710545971">&lt;Intel Kablosuz donanım yazılımı tarafından dört dosya oluşturuldu: csr.lst, fh_regs.lst, radio_reg.lst, monitor.lst.sysmon. İlk üç dosya, kayıt dökümlerini içeren ikili dosyalardır ve Intel, bu dosyalarda kimlik veya cihaz bilgilerini tanımlayan bilgilerin yer almadığını teyit etmektedir. Son dosya, Intel donanım yazılımındaki bir yürütme izidir. Bu dosyadaki kimlik ve cihaz bilgileri temizlenmiştir, ancak dosya burada görüntülenemeyecek kadar büyüktür. Bu dosyalar, cihazınızla ilgili son kablosuz bağlantı sorunlarına yanıt olarak oluşturulmuştur ve bu sorunların giderilmesinde yardımcı olması için Intel ile paylaşılacaktır.&gt;</translation>
 <translation id="469230890969474295">OEM Klasörü</translation>
 <translation id="4692623383562244444">Arama motorları</translation>
+<translation id="4693155481716051732">Suşi</translation>
 <translation id="4694024090038830733">Yazıcı yapılandırması yönetici tarafından gerçekleştirilir.</translation>
 <translation id="4694604912444486114">Maymun</translation>
 <translation id="4697551882387947560">Göz atma oturumu sona erdiğinde</translation>
@@ -2376,6 +2383,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> için şifre</translation>
 <translation id="4777825441726637019">Play Store</translation>
 <translation id="4779083564647765204">Yakınlaştır</translation>
+<translation id="4779136857077979611">Onigiri</translation>
 <translation id="477945296921629067">{NUM_POPUPS,plural, =1{Pop-up engellendi}other{# pop-up engellendi}}</translation>
 <translation id="4780321648949301421">Sayfayı Farklı Kaydet...</translation>
 <translation id="4785719467058219317">Bu web sitesine kaydettirilmemiş bir anahtar kullanıyorsunuz</translation>
@@ -2388,6 +2396,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="4801448226354548035">Hesapları gizle</translation>
 <translation id="4801512016965057443">Mobil veri dolaşımına izin ver</translation>
 <translation id="4804818685124855865">Bağlantıyı kes</translation>
+<translation id="4804827417948292437">Avokado</translation>
 <translation id="4807098396393229769">Kartın üzerindeki ad</translation>
 <translation id="4808667324955055115">Engellenen pop-up'lar:</translation>
 <translation id="480990236307250886">Ana sayfayı aç</translation>
@@ -2482,6 +2491,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="4941246025622441835">Cihazın kurumsal yönetim için kaydını yaparken şu cihaz talebini kullan:</translation>
 <translation id="4941627891654116707">Yazı tipi boyutu</translation>
 <translation id="494286511941020793">Proxy Yapılandırması Yardımı</translation>
+<translation id="4943368462779413526">Futbol</translation>
 <translation id="4943691134276646401">"<ph name="CHROME_EXTENSION_NAME" />" bir seri bağlantı noktasına bağlanmak istiyor</translation>
 <translation id="495170559598752135">İşlemler</translation>
 <translation id="4953689047182316270">Erişilebilirlikle İlgili Etkinliklere Yanıt Verme</translation>
@@ -2551,6 +2561,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="5067399438976153555">Her zaman açık</translation>
 <translation id="5067867186035333991"><ph name="HOST" /> sitesi mikrofonuma erişmek isterse sor</translation>
 <translation id="5068918910148307423">Yeni kapatılan sitelerin veri gönderme ve alma işlemini bitirmesine izin verme</translation>
+<translation id="5068919226082848014">Pizza</translation>
 <translation id="5072052264945641674">İmleç boyutunu ayarla</translation>
 <translation id="5072836811783999860">Yönetilen yer işaretlerini göster</translation>
 <translation id="5074318175948309511">Yeni ayarların geçerli olması için bu sayfanın tekrar yüklenmesi gerekebilir.</translation>
@@ -2585,6 +2596,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="5117930984404104619">Ziyaret edilen URL'ler de dahil olmak üzere diğer uzantıların davranışını izleme</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">Sabit diskiniz dolu. Lütfen başka bir yere kaydedin veya sabit diskinizde yer açın.</translation>
+<translation id="5123433949759960244">Basketbol</translation>
 <translation id="5125751979347152379">Geçersiz URL.</translation>
 <translation id="5127805178023152808">Senkronizasyon kapalı</translation>
 <translation id="5127881134400491887">Ağ bağlantılarını yönetme</translation>
@@ -3269,6 +3281,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="6166185671393271715">Şifreleri Chrome'a Aktar</translation>
 <translation id="6169040057125497443">Lütfen mikrofonunuzu kontrol edin.</translation>
 <translation id="6169666352732958425">Masaüstü yayınlanamıyor.</translation>
+<translation id="6170470584681422115">Sandviç</translation>
 <translation id="6171948306033499786">Yazdırmayı duraklat</translation>
 <translation id="6173623053897475761">PIN'inizi tekrar yazın</translation>
 <translation id="6175314957787328458">Microsoft Etki Alanı GUID'si</translation>
@@ -3699,6 +3712,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="6870888490422746447">Paylaşımda bulunmak için bir uygulama seçin:</translation>
 <translation id="6871644448911473373">OCSP Yanıtlayanı: <ph name="LOCATION" /></translation>
 <translation id="6872781471649843364">Girdiğiniz şifre, sunucu tarafından reddedildi.</translation>
+<translation id="6876155724392614295">Bisiklet</translation>
 <translation id="6878422606530379992">Sensörlere izin verildi</translation>
 <translation id="6880587130513028875">Bu sayfadaki resimler engellendi.</translation>
 <translation id="6883319974225028188">Hay aksi! Sistem cihaz yapılandırmasını kaydedemedi.</translation>
@@ -4265,6 +4279,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="7772127298218883077"><ph name="PRODUCT_NAME" /> hakkında</translation>
 <translation id="7772773261844472235">Chromebook'unuzun durumunu kontrol edin</translation>
 <translation id="7773726648746946405">Oturum depolama</translation>
+<translation id="7774365994322694683">Kuş</translation>
 <translation id="7776701556330691704">Hiçbir ses bulunamadı</translation>
 <translation id="7781335840981796660">Tüm kullanıcı hesapları ve yerel veriler kaldırılır.</translation>
 <translation id="7782102568078991263">Google'dan başka öneri yok</translation>
@@ -4669,6 +4684,7 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8386903983509584791">Tarama tamamlandı</translation>
 <translation id="8389492867173948260">Bu uzantının ziyaret ettiğiniz web sitelerindeki tüm verilerinizi okuması ve değiştirmesine izin verin:</translation>
 <translation id="8390449457866780408">Sunucu kullanılamıyor.</translation>
+<translation id="8391218455464584335">Vinil</translation>
 <translation id="8391712576156218334">Görüntü kullanılamıyor. Daha sonra tekrar deneyin.</translation>
 <translation id="8392234662362215700">Klavye düzenini değiştirmek için Control-Üst Karakter-Boşluk tuşlarına basın.</translation>
 <translation id="8392451568018454956"><ph name="USER_EMAIL_ADDRESS" /> seçenekler menüsü</translation>

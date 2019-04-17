@@ -102,6 +102,7 @@
 <translation id="1145532888383813076">Tìm kiếm trong thiết bị, ứng dụng và trên web.</translation>
 <translation id="114721135501989771">Trải nghiệm Google thông minh trong Chrome</translation>
 <translation id="1149401351239820326">Tháng hết hạn</translation>
+<translation id="1150565364351027703">Kính mát</translation>
 <translation id="1151917987301063366">Luôn cho phép <ph name="HOST" /> sử dụng các cảm biến của thiết bị</translation>
 <translation id="1153356358378277386">Thiết bị được ghép nối</translation>
 <translation id="1156488781945104845">Thời gian hiện tại</translation>
@@ -661,6 +662,7 @@
 <translation id="2045117674524495717">Trình trợ giúp phím tắt</translation>
 <translation id="2045969484888636535">Tiếp tục chặn cookie</translation>
 <translation id="204622017488417136">Thiết bị của bạn sẽ được quay lại phiên bản Chrome đã cài đặt trước đó. Tất cả các tài khoản người dùng và dữ liệu cục bộ sẽ bị xóa. Không thể hoàn tác thao tác này.</translation>
+<translation id="2046702855113914483">Mỳ tôm</translation>
 <translation id="2048182445208425546">Truy cập lưu lượng mạng của bạn</translation>
 <translation id="2048653237708779538">Không thể thực hiện hành động này</translation>
 <translation id="2050339315714019657">Khổ dọc</translation>
@@ -928,6 +930,7 @@
 <translation id="2462752602710430187">Đã thêm <ph name="PRINTER_NAME" /></translation>
 <translation id="2464089476039395325">Proxy HTTP</translation>
 <translation id="2468205691404969808">Sử dụng cookie để ghi nhớ tùy chọn của bạn, ngay cả khi bạn không truy cập vào các trang đó</translation>
+<translation id="2468402215065996499">Máy nuôi thú ảo</translation>
 <translation id="2469375675106140201">Tùy chỉnh tính năng kiểm tra chính tả</translation>
 <translation id="247051149076336810">URL chia sẻ tệp</translation>
 <translation id="2470702053775288986">Tiện ích không được hỗ trợ đã bị tắt</translation>
@@ -1132,6 +1135,7 @@
 <translation id="2770465223704140727">Xóa khỏi danh sách</translation>
 <translation id="2770690685823456775">Xuất mật khẩu của bạn sang thư mục khác</translation>
 <translation id="2771268254788431918">Đã kích hoạt dữ liệu di động</translation>
+<translation id="2771816809568414714">Pho mát</translation>
 <translation id="2772936498786524345">Lén lút</translation>
 <translation id="2773288106548584039">Hỗ trợ trình duyệt cũ</translation>
 <translation id="2773802008104670137">Loại tệp này có thể gây hại cho máy tính của bạn.</translation>
@@ -1655,6 +1659,7 @@
 <translation id="3616113530831147358">Âm thanh</translation>
 <translation id="3616741288025931835">&amp;Xoá Dữ liệu Duyệt web...</translation>
 <translation id="3617891479562106823">Không có nền. Hãy thử lại sau.</translation>
+<translation id="3619115746895587757">Cà phê cappuccino</translation>
 <translation id="3623574769078102674">Người dùng bị giám sát này sẽ được quản lý bởi <ph name="MANAGER_EMAIL" />.</translation>
 <translation id="3624567683873126087">Mở khóa thiết bị và đăng nhập vào Tài khoản Google</translation>
 <translation id="3625258641415618104">Đã tắt chụp ảnh màn hình</translation>
@@ -2133,6 +2138,7 @@
 <translation id="4359717112757026264">Cảnh quan thành phố</translation>
 <translation id="4361142739114356624">Khóa cá nhân cho chứng chỉ ứng dụng này còn thiếu hoặc không hợp lệ</translation>
 <translation id="4363771538994847871">Không tìm thấy đích Truyền nào. Bạn cần trợ giúp?</translation>
+<translation id="4364327530094270451">Quả dưa</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> đang chia sẻ một cửa sổ.</translation>
 <translation id="4364830672918311045">Hiển thị thông báo</translation>
 <translation id="4365673000813822030">Rất tiếc, Đồng bộ hóa đã ngừng hoạt động.</translation>
@@ -2322,6 +2328,7 @@
 <translation id="4690091457710545971">&lt;Bốn tệp do chương trình cơ sở Intel Wi-Fi tạo ra: csr.lst, fh_regs.lst, radio_reg.lst, monitor.lst.sysmon.  Ba tệp đầu tiên là tệp nhị phân có chứa nội dung kết xuất đăng ký và được Intel xác nhận là không chứa thông tin nhận dạng cá nhân hoặc thiết bị.  Tệp cuối cùng là dấu vết thực thi từ chương trình cơ sở Intel; tệp này đã được xóa mọi thông tin nhận dạng cá nhân hoặc thiết bị, nhưng kích thước tệp quá lớn nên không hiển thị được ở đây.  Các tệp này được tạo do các sự cố Wi-Fi xảy ra gần đây với thiết bị của bạn và sẽ được chia sẻ với Intel để giúp khắc phục các sự cố này.&gt;</translation>
 <translation id="469230890969474295">Thư mục OEM</translation>
 <translation id="4692623383562244444">Công cụ tìm kiếm</translation>
+<translation id="4693155481716051732">Sushi</translation>
 <translation id="4694024090038830733">Chỉ quản trị viên mới có thể thiết lập cấu hình máy in.</translation>
 <translation id="4694604912444486114">Khỉ</translation>
 <translation id="4697551882387947560">Khi phiên duyệt kết thúc</translation>
@@ -2376,6 +2383,7 @@
 <translation id="4776917500594043016">Mật khẩu cho <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4777825441726637019">Cửa hàng Play</translation>
 <translation id="4779083564647765204">Thu phóng</translation>
+<translation id="4779136857077979611">Cơm nắm Onigiri</translation>
 <translation id="477945296921629067">{NUM_POPUPS,plural, =1{Đã chặn cửa sổ bật lên}other{Đã chặn # cửa sổ bật lên}}</translation>
 <translation id="4780321648949301421">Lưu trang làm...</translation>
 <translation id="4785719467058219317">Bạn đang sử dụng một khóa bảo mật chưa đăng ký với trang web này</translation>
@@ -2388,6 +2396,7 @@
 <translation id="4801448226354548035">Ẩn tài khoản</translation>
 <translation id="4801512016965057443">Cho phép chuyển vùng dữ liệu di động</translation>
 <translation id="4804818685124855865">Ngắt kết nối</translation>
+<translation id="4804827417948292437">Quả bơ</translation>
 <translation id="4807098396393229769">Tên trên thẻ</translation>
 <translation id="4808667324955055115">Đã chặn cửa sổ bật lên:</translation>
 <translation id="480990236307250886">Mở trang chủ</translation>
@@ -2482,6 +2491,7 @@
 <translation id="4941246025622441835">Sử dụng yêu cầu thiết bị này khi đăng ký thiết bị để quản lý doanh nghiệp:</translation>
 <translation id="4941627891654116707">Cỡ chữ</translation>
 <translation id="494286511941020793">Trợ giúp Cấu hình Proxy</translation>
+<translation id="4943368462779413526">Bóng đá</translation>
 <translation id="4943691134276646401">"<ph name="CHROME_EXTENSION_NAME" />" muốn kết nối với một cổng nối tiếp</translation>
 <translation id="495170559598752135">Tác vụ</translation>
 <translation id="4953689047182316270">Phản hồi các sự kiện trợ năng</translation>
@@ -2551,6 +2561,7 @@
 <translation id="5067399438976153555">Luôn bật</translation>
 <translation id="5067867186035333991">Hỏi nếu <ph name="HOST" /> muốn truy cập micrô của bạn</translation>
 <translation id="5068918910148307423">Không cho phép các trang web đóng gần đây hoàn tất gửi và nhận dữ liệu</translation>
+<translation id="5068919226082848014">Pizza</translation>
 <translation id="5072052264945641674">Điều chỉnh kích thước con trỏ</translation>
 <translation id="5072836811783999860">Hiển thị dấu trang được quản lý</translation>
 <translation id="5074318175948309511">Có thể cần phải tải lại trang này trước khi cài đặt mới có hiệu lực.</translation>
@@ -2585,6 +2596,7 @@
 <translation id="5117930984404104619">Giám sát hoạt động của các tiện ích khác, bao gồm cả các URL đã truy cập</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">Đĩa cứng của bạn đã đầy.  Hãy lưu vào một vị trí khác hoặc tạo thêm dung lượng trống trên đĩa cứng.</translation>
+<translation id="5123433949759960244">Bóng rổ</translation>
 <translation id="5125751979347152379">URL không hợp lệ.</translation>
 <translation id="5127805178023152808">Đồng bộ hóa đã tắt</translation>
 <translation id="5127881134400491887">Quản lý kết nối mạng</translation>
@@ -3268,6 +3280,7 @@
 <translation id="6166185671393271715">Nhập mật khẩu vào Chrome</translation>
 <translation id="6169040057125497443">Vui lòng kiểm tra micrô của bạn.</translation>
 <translation id="6169666352732958425">Không thể truyền màn hình nền.</translation>
+<translation id="6170470584681422115">Sandwich</translation>
 <translation id="6171948306033499786">Tạm dừng in</translation>
 <translation id="6173623053897475761">Nhập lại mã PIN</translation>
 <translation id="6175314957787328458">GUID Tên miền của Microsoft</translation>
@@ -3698,6 +3711,7 @@
 <translation id="6870888490422746447">Chọn một ứng dụng để chia sẻ:</translation>
 <translation id="6871644448911473373">Phản hồi OCSP: <ph name="LOCATION" /></translation>
 <translation id="6872781471649843364">Mật khẩu bạn nhập đã bị máy chủ từ chối.</translation>
+<translation id="6876155724392614295">Xe đạp</translation>
 <translation id="6878422606530379992">Được phép sử dụng cảm biến</translation>
 <translation id="6880587130513028875">Hình ảnh đã bị chặn trên trang này.</translation>
 <translation id="6883319974225028188">Rất tiếc! Hệ thống không lưu được cấu hình thiết bị.</translation>
@@ -4264,6 +4278,7 @@
 <translation id="7772127298218883077">Giới thiệu về <ph name="PRODUCT_NAME" /></translation>
 <translation id="7772773261844472235">Xem trạng thái Chromebook của bạn</translation>
 <translation id="7773726648746946405">Bộ nhớ phiên</translation>
+<translation id="7774365994322694683">Chim</translation>
 <translation id="7776701556330691704">Không tìm thấy giọng nói nào</translation>
 <translation id="7781335840981796660">Tất cả tài khoản người dùng và dữ liệu trên máy đều sẽ bị xóa.</translation>
 <translation id="7782102568078991263">Không có đề xuất nào khác từ Google</translation>
@@ -4669,6 +4684,7 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8386903983509584791">Đã quét xong</translation>
 <translation id="8389492867173948260">Cho phép tiện ích này đọc và thay đổi tất cả dữ liệu trên các trang web bạn truy cập:</translation>
 <translation id="8390449457866780408">Máy chủ không khả dụng.</translation>
+<translation id="8391218455464584335">Vinyl</translation>
 <translation id="8391712576156218334">Không có hình ảnh. Hãy thử lại sau.</translation>
 <translation id="8392234662362215700">Ấn Control-Shift-Space để chuyển đổi bố cục bàn phím.</translation>
 <translation id="8392451568018454956">Menu tùy chọn dành cho <ph name="USER_EMAIL_ADDRESS" /></translation>

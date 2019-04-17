@@ -102,6 +102,7 @@
 <translation id="1145532888383813076">Zoek op je apparaat, in apps en op internet.</translation>
 <translation id="114721135501989771">Google-functies in Chrome</translation>
 <translation id="1149401351239820326">Vervalmaand</translation>
+<translation id="1150565364351027703">Zonnebril</translation>
 <translation id="1151917987301063366"><ph name="HOST" /> altijd toegang tot sensoren geven</translation>
 <translation id="1153356358378277386">Gekoppelde apparaten</translation>
 <translation id="1156488781945104845">Huidige tijd</translation>
@@ -661,6 +662,7 @@
 <translation id="2045117674524495717">Helper voor sneltoetsen</translation>
 <translation id="2045969484888636535">Cookies blijven blokkeren</translation>
 <translation id="204622017488417136">Je apparaat wordt hersteld naar de vorige geïnstalleerde versie van Chrome. Alle gebruikersaccounts en lokale gegevens worden verwijderd. Dit kan niet ongedaan worden gemaakt.</translation>
+<translation id="2046702855113914483">Noedelsoep</translation>
 <translation id="2048182445208425546">Toegang tot je netwerkverkeer</translation>
 <translation id="2048653237708779538">Actie niet beschikbaar</translation>
 <translation id="2050339315714019657">Staand</translation>
@@ -928,6 +930,7 @@
 <translation id="2462752602710430187"><ph name="PRINTER_NAME" /> toegevoegd</translation>
 <translation id="2464089476039395325">HTTP-proxy</translation>
 <translation id="2468205691404969808">Maakt gebruik van cookies om je voorkeuren te onthouden, zelfs als je deze pagina's niet bezoekt</translation>
+<translation id="2468402215065996499">Tamagotchi</translation>
 <translation id="2469375675106140201">Spellingcontrole aanpassen</translation>
 <translation id="247051149076336810">URL voor fileshare</translation>
 <translation id="2470702053775288986">Niet-ondersteunde extensies uitgeschakeld</translation>
@@ -1132,6 +1135,7 @@
 <translation id="2770465223704140727">Verwijderen uit lijst</translation>
 <translation id="2770690685823456775">Exporteer je wachtwoorden naar een andere map</translation>
 <translation id="2771268254788431918">Mobiele data geactiveerd</translation>
+<translation id="2771816809568414714">Kaas</translation>
 <translation id="2772936498786524345">Sluiper</translation>
 <translation id="2773288106548584039">Ondersteuning voor oudere browsers</translation>
 <translation id="2773802008104670137">Dit type bestand kan je computer beschadigen.</translation>
@@ -1655,6 +1659,7 @@
 <translation id="3616113530831147358">Audio</translation>
 <translation id="3616741288025931835">&amp;Browsegegevens wissen</translation>
 <translation id="3617891479562106823">Achtergronden zijn niet beschikbaar. Probeer het later opnieuw.</translation>
+<translation id="3619115746895587757">Cappuccino</translation>
 <translation id="3623574769078102674">Deze gebruiker met beperkte rechten wordt beheerd door <ph name="MANAGER_EMAIL" />.</translation>
 <translation id="3624567683873126087">Apparaat ontgrendelen en inloggen op Google-account</translation>
 <translation id="3625258641415618104">Screenshots uitgeschakeld</translation>
@@ -2133,6 +2138,7 @@
 <translation id="4359717112757026264">Stadsgezicht</translation>
 <translation id="4361142739114356624">De privésleutel voor dit clientcertificaat ontbreekt of is ongeldig</translation>
 <translation id="4363771538994847871">Er zijn geen Cast-bestemmingen gevonden. Hulp nodig?</translation>
+<translation id="4364327530094270451">Meloen</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> deelt een venster.</translation>
 <translation id="4364830672918311045">Meldingen weergeven</translation>
 <translation id="4365673000813822030">De synchronisatie werkt niet meer.</translation>
@@ -2322,6 +2328,7 @@
 <translation id="4690091457710545971">&lt;Vier bestanden gegenereerd door wifi-firmware van Intel: csr.lst, fh_regs.lst, radio_reg.lst, monitor.lst.sysmon. De eerste drie zijn binaire bestanden met registerdumps. Hiervan wordt door Intel verzekerd dat deze geen persoonlijke of apparaatidentificerende gegevens bevatten. Het laatste bestand is een bestand waarin uitvoering wordt bijgehouden. Alle persoonlijke of apparaatidentificerende gegevens zijn uit dit bestand verwijderd, maar het is te groot om hier weer te geven. Deze bestanden zijn gegenereerd als reactie op recente wifi-problemen met je apparaat en worden gedeeld met Intel om deze problemen op te lossen.&gt;</translation>
 <translation id="469230890969474295">OEM-map</translation>
 <translation id="4692623383562244444">Zoekmachines</translation>
+<translation id="4693155481716051732">Sushi</translation>
 <translation id="4694024090038830733">De printerconfiguratie wordt bepaald door de beheerder.</translation>
 <translation id="4694604912444486114">Aap</translation>
 <translation id="4697551882387947560">Wanneer de browsingsessie eindigt</translation>
@@ -2376,6 +2383,7 @@
 <translation id="4776917500594043016">Wachtwoord voor <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4777825441726637019">Play Store</translation>
 <translation id="4779083564647765204">Zoom</translation>
+<translation id="4779136857077979611">Onigiri</translation>
 <translation id="477945296921629067">{NUM_POPUPS,plural, =1{Pop-up geblokkeerd}other{# pop-ups geblokkeerd}}</translation>
 <translation id="4780321648949301421">Bewaar pagina als...</translation>
 <translation id="4785719467058219317">Je gebruikt een beveiligingssleutel die niet is geregistreerd voor deze website</translation>
@@ -2388,6 +2396,7 @@
 <translation id="4801448226354548035">Accounts verbergen</translation>
 <translation id="4801512016965057443">Mobiele dataroaming toestaan</translation>
 <translation id="4804818685124855865">Verbinding verbreken</translation>
+<translation id="4804827417948292437">Avocado</translation>
 <translation id="4807098396393229769">Naam op pas</translation>
 <translation id="4808667324955055115">Pop-ups geblokkeerd:</translation>
 <translation id="480990236307250886">Open de homepage</translation>
@@ -2482,6 +2491,7 @@
 <translation id="4941246025622441835">Gebruik deze apparaataanvraag wanneer het apparaat wordt geactiveerd voor bedrijfsbeheer:</translation>
 <translation id="4941627891654116707">Lettergrootte</translation>
 <translation id="494286511941020793">Ondersteuning voor proxyconfiguratie</translation>
+<translation id="4943368462779413526">Amerikaanse voetbal</translation>
 <translation id="4943691134276646401">'<ph name="CHROME_EXTENSION_NAME" />' wil verbinden met een seriële poort</translation>
 <translation id="495170559598752135">Acties</translation>
 <translation id="4953689047182316270">Reageren op toegankelijkheidsgebeurtenissen</translation>
@@ -2551,6 +2561,7 @@
 <translation id="5067399438976153555">Altijd ingeschakeld</translation>
 <translation id="5067867186035333991">Vragen of <ph name="HOST" /> toegang wil tot je microfoon</translation>
 <translation id="5068918910148307423">Niet toestaan dat onlangs gesloten sites het verzenden en ontvangen van gegevens voltooien</translation>
+<translation id="5068919226082848014">Pizza</translation>
 <translation id="5072052264945641674">Grootte van muisaanwijzer aanpassen</translation>
 <translation id="5072836811783999860">Beheerde bladwijzers weergeven</translation>
 <translation id="5074318175948309511">Deze pagina moet eventueel opnieuw worden geladen voordat de nieuwe instellingen van kracht zijn.</translation>
@@ -2585,6 +2596,7 @@
 <translation id="5117930984404104619">Het gedrag van andere extensies controleren, waaronder bezochte URL's</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">Je vaste schijf is vol. Sla op een andere locatie op of maak ruimte vrij op de vaste schijf.</translation>
+<translation id="5123433949759960244">Basketbal</translation>
 <translation id="5125751979347152379">Ongeldige URL.</translation>
 <translation id="5127805178023152808">Synchronisatie is uitgeschakeld</translation>
 <translation id="5127881134400491887">Netwerkverbindingen beheren</translation>
@@ -3238,7 +3250,7 @@
 <translation id="6122095009389448667">Bekijken van het klembord door deze site blijven blokkeren</translation>
 <translation id="6122875415561139701">Schrijfbewerking is niet toegestaan op: <ph name="DEVICE_NAME" />.</translation>
 <translation id="6124650939968185064">De volgende extensies zijn afhankelijk van deze extensie:</translation>
-<translation id="6124698108608891449">Deze site heeft meer machtigingen nodig.</translation>
+<translation id="6124698108608891449">Deze site heeft meer rechten nodig.</translation>
 <translation id="6125479973208104919">Je moet je account opnieuw toevoegen aan deze <ph name="DEVICE_TYPE" />.</translation>
 <translation id="6129691635767514872">De geselecteerde gegevens zijn verwijderd uit Chrome en van gesynchroniseerde apparaten. Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekopdrachten en activiteit uit andere Google-services) beschikbaar zijn via <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="6129938384427316298">Opmerking van Netscape-certificaat</translation>
@@ -3268,6 +3280,7 @@
 <translation id="6166185671393271715">Wachtwoorden importeren in Chrome</translation>
 <translation id="6169040057125497443">Controleer je microfoon</translation>
 <translation id="6169666352732958425">Kan desktop niet casten.</translation>
+<translation id="6170470584681422115">Sandwich</translation>
 <translation id="6171948306033499786">Afdrukken onderbreken</translation>
 <translation id="6173623053897475761">Typ je pincode nog een keer</translation>
 <translation id="6175314957787328458">Microsoft-domein-GUID</translation>
@@ -3417,7 +3430,7 @@
 <translation id="641081527798843608">Overeenkomst van onderwerp</translation>
 <translation id="6412931879992742813">Nieuw incognitovenster</translation>
 <translation id="6415900369006735853">Verbinding maken met internet via je telefoon</translation>
-<translation id="6416743254476733475">Je moet iets toestaan of blokkeren op je computer.</translation>
+<translation id="6416743254476733475">Toestaan of blokkeren op je computer.</translation>
 <translation id="6417265370957905582">Google Assistent</translation>
 <translation id="6418160186546245112">Terugzetten naar de vorige geïnstalleerde versie van <ph name="IDS_SHORT_PRODUCT_NAME" /></translation>
 <translation id="6418481728190846787">Toegang permanent verwijderen voor alle apps</translation>
@@ -3698,6 +3711,7 @@
 <translation id="6870888490422746447">Kies een app waarmee je wilt delen:</translation>
 <translation id="6871644448911473373">OCSP-beantwoorder: <ph name="LOCATION" /></translation>
 <translation id="6872781471649843364">Het wachtwoord dat je hebt opgegeven, is afgewezen door de server.</translation>
+<translation id="6876155724392614295">Fiets</translation>
 <translation id="6878422606530379992">Sensoren toegestaan</translation>
 <translation id="6880587130513028875">Er zijn afbeeldingen op deze pagina geblokkeerd.</translation>
 <translation id="6883319974225028188">Het systeem kan de apparaatconfiguratie niet opslaan.</translation>
@@ -4264,6 +4278,7 @@
 <translation id="7772127298218883077">Over <ph name="PRODUCT_NAME" /></translation>
 <translation id="7772773261844472235">Je Chromebook-status controleren</translation>
 <translation id="7773726648746946405">Sessie-opslag</translation>
+<translation id="7774365994322694683">Vogel</translation>
 <translation id="7776701556330691704">Geen stemmen gevonden</translation>
 <translation id="7781335840981796660">Alle gebruikersaccounts en lokale gegevens worden verwijderd.</translation>
 <translation id="7782102568078991263">Geen verdere suggesties van Google</translation>
@@ -4668,6 +4683,7 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="8386903983509584791">Scan voltooid</translation>
 <translation id="8389492867173948260">Hiermee kan deze extensie al je gegevens lezen en wijzigen op de websites die je bezoekt:</translation>
 <translation id="8390449457866780408">Server niet beschikbaar.</translation>
+<translation id="8391218455464584335">Lp</translation>
 <translation id="8391712576156218334">De afbeelding is niet beschikbaar. Probeer het later opnieuw.</translation>
 <translation id="8392234662362215700">Druk op Ctrl-Shift-spatiebalk om de toetsenbordindeling te wijzigen.</translation>
 <translation id="8392451568018454956">Optiemenu voor <ph name="USER_EMAIL_ADDRESS" /></translation>

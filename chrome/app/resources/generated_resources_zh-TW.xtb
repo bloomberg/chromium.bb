@@ -102,6 +102,7 @@
 <translation id="1145532888383813076">搜尋你的裝置、應用程式和網路。</translation>
 <translation id="114721135501989771">在 Chrome 中體驗 Google 智慧功能</translation>
 <translation id="1149401351239820326">到期月份</translation>
+<translation id="1150565364351027703">太陽眼鏡</translation>
 <translation id="1151917987301063366">一律允許 <ph name="HOST" /> 存取感應器</translation>
 <translation id="1153356358378277386">配對裝置</translation>
 <translation id="1156488781945104845">目前時間</translation>
@@ -661,6 +662,7 @@
 <translation id="2045117674524495717">鍵盤快速鍵說明</translation>
 <translation id="2045969484888636535">繼續封鎖 Cookie</translation>
 <translation id="204622017488417136">你的裝置將還原至上一個安裝的 Chrome 版本，且所有使用者帳戶和本機資料都會遭到移除。這項操作無法復原。</translation>
+<translation id="2046702855113914483">拉麵</translation>
 <translation id="2048182445208425546">存取你的網路流量</translation>
 <translation id="2048653237708779538">無法執行操作</translation>
 <translation id="2050339315714019657">縱向</translation>
@@ -927,6 +929,7 @@
 <translation id="2462752602710430187">已新增「<ph name="PRINTER_NAME" />」</translation>
 <translation id="2464089476039395325">HTTP Proxy</translation>
 <translation id="2468205691404969808">使用 Cookie 記住你的偏好設定 (即使你沒有造訪這些網頁)</translation>
+<translation id="2468402215065996499">電子寵物</translation>
 <translation id="2469375675106140201">自訂拼字檢查</translation>
 <translation id="247051149076336810">檔案共用網址</translation>
 <translation id="2470702053775288986">已停用不支援的擴充功能</translation>
@@ -1131,6 +1134,7 @@
 <translation id="2770465223704140727">從清單中移除</translation>
 <translation id="2770690685823456775">將你的密碼匯出至其他資料夾</translation>
 <translation id="2771268254788431918">已啟用行動數據</translation>
+<translation id="2771816809568414714">乳酪</translation>
 <translation id="2772936498786524345">忍者</translation>
 <translation id="2773288106548584039">舊版瀏覽器支援</translation>
 <translation id="2773802008104670137">這類檔案可能會損害你的電腦。</translation>
@@ -1654,6 +1658,7 @@
 <translation id="3616113530831147358">音訊</translation>
 <translation id="3616741288025931835">清除瀏覽資料(&amp;C)...</translation>
 <translation id="3617891479562106823">目前無法存取背景，請稍後再試。</translation>
+<translation id="3619115746895587757">卡布奇諾</translation>
 <translation id="3623574769078102674">受監管的使用者將由 <ph name="MANAGER_EMAIL" /> 負責管理。</translation>
 <translation id="3624567683873126087">解鎖裝置並登入 Google 帳戶</translation>
 <translation id="3625258641415618104">已停用螢幕擷取畫面</translation>
@@ -2131,6 +2136,7 @@
 <translation id="4359717112757026264">城市景觀</translation>
 <translation id="4361142739114356624">這個用戶端憑證沒有私密金鑰或私密金鑰無效</translation>
 <translation id="4363771538994847871">找不到 Cast 目的地。需要協助嗎？</translation>
+<translation id="4364327530094270451">瓜</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> 正在共用視窗。</translation>
 <translation id="4364830672918311045">顯示通知</translation>
 <translation id="4365673000813822030">糟糕，同步處理已停止運作。</translation>
@@ -2320,6 +2326,7 @@
 <translation id="4690091457710545971">&lt;Intel Wi-Fi 韌體產生了 4 個檔案：csr.lst、fh_regs.lst、radio_reg.lst 和 monitor.lst.sysmon。前三個檔案為包含暫存器傾印的二進位檔案，且 Intel 表示當中並未包含任何個人資訊或裝置識別資訊。最後一個檔案是 Intel 韌體的執行追蹤記錄，其中的個人資訊或裝置識別資訊已全部遭到清除，但由於檔案過大而無法顯示在這裡。這些檔案的產生原因是裝置的 Wi-Fi 最近出現問題所導致，系統會將檔案提供給 Intel 以協助排解這些問題。&gt;</translation>
 <translation id="469230890969474295">OEM 資料夾</translation>
 <translation id="4692623383562244444">搜尋引擎</translation>
+<translation id="4693155481716051732">壽司</translation>
 <translation id="4694024090038830733">印表機設定是由管理員管理。</translation>
 <translation id="4694604912444486114">猴子</translation>
 <translation id="4697551882387947560">瀏覽工作階段結束時</translation>
@@ -2374,6 +2381,7 @@
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> 的密碼</translation>
 <translation id="4777825441726637019">Play 商店</translation>
 <translation id="4779083564647765204">縮放</translation>
+<translation id="4779136857077979611">飯糰</translation>
 <translation id="477945296921629067">{NUM_POPUPS,plural, =1{已封鎖彈出式視窗}other{已封鎖 # 個彈出式視窗}}</translation>
 <translation id="4780321648949301421">另存網頁...</translation>
 <translation id="4785719467058219317">你目前使用的安全金鑰並未在這個網站註冊</translation>
@@ -2386,6 +2394,7 @@
 <translation id="4801448226354548035">隱藏帳戶</translation>
 <translation id="4801512016965057443">允許行動數據漫遊</translation>
 <translation id="4804818685124855865">中斷連線</translation>
+<translation id="4804827417948292437">酪梨</translation>
 <translation id="4807098396393229769">持卡人姓名</translation>
 <translation id="4808667324955055115">已封鎖彈出式視窗：</translation>
 <translation id="480990236307250886">開啟首頁</translation>
@@ -2480,6 +2489,7 @@
 <translation id="4941246025622441835">為企業管理服務註冊裝置時使用這個裝置申請單：</translation>
 <translation id="4941627891654116707">字型大小</translation>
 <translation id="494286511941020793">Proxy 設定說明</translation>
+<translation id="4943368462779413526">足球</translation>
 <translation id="4943691134276646401">「<ph name="CHROME_EXTENSION_NAME" />」要求與序列埠連線</translation>
 <translation id="495170559598752135">動作</translation>
 <translation id="4953689047182316270">回應協助工具活動</translation>
@@ -2549,6 +2559,7 @@
 <translation id="5067399438976153555">一律啟用</translation>
 <translation id="5067867186035333991">當 <ph name="HOST" /> 要求存取麥克風時詢問我。</translation>
 <translation id="5068918910148307423">禁止最近關閉的網站完成資料的傳送及接收</translation>
+<translation id="5068919226082848014">披薩</translation>
 <translation id="5072052264945641674">調整游標大小</translation>
 <translation id="5072836811783999860">顯示受管理書籤</translation>
 <translation id="5074318175948309511">你可能需要重新載入這個網頁，新設定才會生效。</translation>
@@ -2583,6 +2594,7 @@
 <translation id="5117930984404104619">監控其他擴充功能的行為 (包括造訪過的網址)。</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">你的硬碟已滿。請選擇其他儲存位置，或清出足夠的硬碟空間。</translation>
+<translation id="5123433949759960244">籃球</translation>
 <translation id="5125751979347152379">網址無效。</translation>
 <translation id="5127805178023152808">同步功能已停用</translation>
 <translation id="5127881134400491887">管理網路連線</translation>
@@ -3266,6 +3278,7 @@
 <translation id="6166185671393271715">將密碼匯入 Chrome 中</translation>
 <translation id="6169040057125497443">請檢查麥克風。</translation>
 <translation id="6169666352732958425">無法投放桌面。</translation>
+<translation id="6170470584681422115">三明治</translation>
 <translation id="6171948306033499786">暫停列印</translation>
 <translation id="6173623053897475761">重新輸入 PIN 碼</translation>
 <translation id="6175314957787328458">Microsoft 網域 GUID</translation>
@@ -3696,6 +3709,7 @@
 <translation id="6870888490422746447">選擇要共用的應用程式：</translation>
 <translation id="6871644448911473373">OCSP 回應程式：<ph name="LOCATION" /></translation>
 <translation id="6872781471649843364">輸入的密碼遭到伺服器拒絕。</translation>
+<translation id="6876155724392614295">自行車</translation>
 <translation id="6878422606530379992">可使用感應器</translation>
 <translation id="6880587130513028875">系統已封鎖此網頁的圖片。</translation>
 <translation id="6883319974225028188">糟糕！  系統無法儲存裝置設定。</translation>
@@ -4261,6 +4275,7 @@
 <translation id="7772127298218883077">關於 <ph name="PRODUCT_NAME" /></translation>
 <translation id="7772773261844472235">檢查 Chromebook 狀態</translation>
 <translation id="7773726648746946405">工作階段儲存空間</translation>
+<translation id="7774365994322694683">鳥</translation>
 <translation id="7776701556330691704">找不到語音</translation>
 <translation id="7781335840981796660">系統將移除所有使用者帳戶和本機資料。</translation>
 <translation id="7782102568078991263">沒有更多來自 Google 的建議</translation>
@@ -4665,6 +4680,7 @@
 <translation id="8386903983509584791">掃描完成</translation>
 <translation id="8389492867173948260">允許這個擴充功能讀取及變更你在造訪過的網站留下的所有資料：</translation>
 <translation id="8390449457866780408">無法與伺服器連線。</translation>
+<translation id="8391218455464584335">黑膠</translation>
 <translation id="8391712576156218334">目前無法存取圖片，請稍後再試。</translation>
 <translation id="8392234662362215700">按下 Ctrl + Shift + 空格鍵可切換鍵盤配置。</translation>
 <translation id="8392451568018454956"><ph name="USER_EMAIL_ADDRESS" /> 的選項選單</translation>
