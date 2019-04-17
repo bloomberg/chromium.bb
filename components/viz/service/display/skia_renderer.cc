@@ -1404,12 +1404,12 @@ void SkiaRenderer::DrawTileDrawQuad(const TileDrawQuad* quad,
   // overlapping content so the entire image is valid for sampling.
   gfx::RectF valid_texel_bounds(gfx::SizeF(quad->texture_size));
   if (quad->IsRightEdge()) {
-    // Restrict the width to match tex coords
-    valid_texel_bounds.set_width(quad->tex_coord_rect.width());
+    // Restrict the width to match far side of texture coords
+    valid_texel_bounds.set_width(quad->tex_coord_rect.right());
   }
   if (quad->IsBottomEdge()) {
-    // Restrict the height to match tex coords
-    valid_texel_bounds.set_height(quad->tex_coord_rect.height());
+    // Restrict the height to match far side of texture coords
+    valid_texel_bounds.set_height(quad->tex_coord_rect.bottom());
   }
 
   AddQuadToBatch(image, valid_texel_bounds, params);
