@@ -13,4 +13,5 @@ var CrPolicyStrings = CrPolicyStrings || {
   controlledSettingNoOwner: 'owner',
   controlledSettingExtension: 'extension: $1',
   controlledSettingExtensionWithoutName: 'extension',
+  controlledSettingParent: 'parent',
 };

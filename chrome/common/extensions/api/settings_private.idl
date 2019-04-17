@@ -13,7 +13,8 @@ namespace settingsPrivate {
     USER_POLICY,
     OWNER,
     PRIMARY_USER,
-    EXTENSION
+    EXTENSION,
+    PARENT
   };
 
   enum Enforcement { ENFORCED, RECOMMENDED };

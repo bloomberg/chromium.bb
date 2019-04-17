@@ -114,6 +114,8 @@ Polymer({
           loadTimeData.getString('controlledSettingWithOwner'),
       controlledSettingNoOwner:
           loadTimeData.getString('controlledSettingNoOwner'),
+      controlledSettingParent:
+          loadTimeData.getString('controlledSettingParent'),
       // </if>
     };
 
