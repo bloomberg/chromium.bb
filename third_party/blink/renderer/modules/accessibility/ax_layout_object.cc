@@ -230,7 +230,7 @@ ax::mojom::Role AXLayoutObject::NativeRoleIgnoringAria() const {
   // ARIA 1.2 (and Core-AAM 1.1) state that elements which are focusable
   // and not hidden must be included in the accessibility tree.
   if (layout_object_->IsTableSection()) {
-    if (CanSetFocusAttribute())
+    if (node && node->IsElementNode() && ToElement(node)->SupportsFocus())
       return ax::mojom::Role::kGroup;
     return ax::mojom::Role::kIgnored;
   }
@@ -3153,7 +3153,7 @@ ax::mojom::Role AXLayoutObject::DetermineTableRowRole() const {
   if (!parent)
     return ax::mojom::Role::kGenericContainer;
 
-  if (parent->GetLayoutObject()->IsTableSection())
+  if (parent->RoleValue() == ax::mojom::Role::kGroup)
     parent = parent->ParentObjectUnignored();
 
   if (parent->RoleValue() == ax::mojom::Role::kLayoutTable)
@@ -3173,7 +3173,7 @@ ax::mojom::Role AXLayoutObject::DetermineTableCellRole() const {
     return ax::mojom::Role::kGenericContainer;
 
   AXObject* grandparent = parent->ParentObjectUnignored();
-  if (grandparent && grandparent->GetLayoutObject()->IsTableSection())
+  if (grandparent && grandparent->RoleValue() == ax::mojom::Role::kGroup)
     grandparent = grandparent->ParentObjectUnignored();
 
   if (!grandparent || !grandparent->IsTableLikeRole())
