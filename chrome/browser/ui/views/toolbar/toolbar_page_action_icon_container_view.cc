@@ -4,12 +4,14 @@
 
 #include "chrome/browser/ui/views/toolbar/toolbar_page_action_icon_container_view.h"
 
+#include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/autofill/payments/local_card_migration_icon_view.h"
 #include "chrome/browser/ui/views/autofill/payments/save_card_icon_view.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/profiles/avatar_toolbar_button.h"
+#include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/widget/widget.h"
 
@@ -46,8 +48,14 @@ ToolbarPageActionIconContainerView::~ToolbarPageActionIconContainerView() =
     default;
 
 void ToolbarPageActionIconContainerView::UpdateAllIcons() {
-  for (PageActionIconView* icon_view : page_action_icons_)
+  const ui::ThemeProvider* theme_provider = GetThemeProvider();
+  const SkColor icon_color =
+      theme_provider->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
+
+  for (PageActionIconView* icon_view : page_action_icons_) {
+    icon_view->SetIconColor(icon_color);
     icon_view->Update();
+  }
 
   if (avatar_)
     avatar_->UpdateIcon();
@@ -83,13 +91,18 @@ void ToolbarPageActionIconContainerView::UpdatePageActionIcon(
 }
 
 SkColor ToolbarPageActionIconContainerView::GetPageActionInkDropColor() const {
-  return GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_TextfieldDefaultColor);
+  return GetToolbarInkDropBaseColor(this);
 }
 
 content::WebContents*
 ToolbarPageActionIconContainerView::GetWebContentsForPageActionIconView() {
   return browser_->tab_strip_model()->GetActiveWebContents();
+}
+
+void ToolbarPageActionIconContainerView::OnNativeThemeChanged(
+    const ui::NativeTheme* theme) {
+  // Update icon color.
+  UpdateAllIcons();
 }
 
 bool ToolbarPageActionIconContainerView::FocusInactiveBubbleForIcon(
