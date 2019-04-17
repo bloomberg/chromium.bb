@@ -543,9 +543,10 @@ TEST_F(FidlGenJsTest, RawReceiveFidlMessage) {
   uint8_t data[1024];
   zx_handle_t handles[1];
   uint32_t actual_bytes, actual_handles;
-  ASSERT_EQ(helper.server().read(0, data, base::size(data), &actual_bytes,
-                                 handles, base::size(handles), &actual_handles),
-            ZX_OK);
+  ASSERT_EQ(
+      helper.server().rea2(0, data, handles, base::size(data),
+                           base::size(handles), &actual_bytes, &actual_handles),
+      ZX_OK);
   EXPECT_EQ(actual_bytes, 16u);
   EXPECT_EQ(actual_handles, 0u);
 
@@ -575,9 +576,10 @@ TEST_F(FidlGenJsTest, RawReceiveFidlMessageWithSimpleArg) {
   uint8_t data[1024];
   zx_handle_t handles[1];
   uint32_t actual_bytes, actual_handles;
-  ASSERT_EQ(helper.server().read(0, data, base::size(data), &actual_bytes,
-                                 handles, base::size(handles), &actual_handles),
-            ZX_OK);
+  ASSERT_EQ(
+      helper.server().rea2(0, data, handles, base::size(data),
+                           base::size(handles), &actual_bytes, &actual_handles),
+      ZX_OK);
   // 24 rather than 20 because everything's 8 aligned.
   EXPECT_EQ(actual_bytes, 24u);
   EXPECT_EQ(actual_handles, 0u);
@@ -608,9 +610,10 @@ TEST_F(FidlGenJsTest, RawReceiveFidlMessageWithStringArg) {
   uint8_t data[1024];
   zx_handle_t handles[1];
   uint32_t actual_bytes, actual_handles;
-  ASSERT_EQ(helper.server().read(0, data, base::size(data), &actual_bytes,
-                                 handles, base::size(handles), &actual_handles),
-            ZX_OK);
+  ASSERT_EQ(
+      helper.server().rea2(0, data, handles, base::size(data),
+                           base::size(handles), &actual_bytes, &actual_handles),
+      ZX_OK);
   EXPECT_EQ(actual_handles, 0u);
 
   fidl::Message message(
@@ -639,9 +642,10 @@ TEST_F(FidlGenJsTest, RawReceiveFidlMessageWithMultipleArgs) {
   uint8_t data[1024];
   zx_handle_t handles[1];
   uint32_t actual_bytes, actual_handles;
-  ASSERT_EQ(helper.server().read(0, data, base::size(data), &actual_bytes,
-                                 handles, base::size(handles), &actual_handles),
-            ZX_OK);
+  ASSERT_EQ(
+      helper.server().rea2(0, data, handles, base::size(data),
+                           base::size(handles), &actual_bytes, &actual_handles),
+      ZX_OK);
   EXPECT_EQ(actual_handles, 0u);
 
   fidl::Message message(
