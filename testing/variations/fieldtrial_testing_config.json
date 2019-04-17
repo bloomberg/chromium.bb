@@ -2207,6 +2207,22 @@
             ]
         }
     ],
+    "GpuRasterizationViewportRestriction": [
+        {
+            "platforms": [
+                "android",
+                "android_webview"
+            ],
+            "experiments": [
+                {
+                    "name": "Disabled",
+                    "disable_features": [
+                        "EnableGpuRasterizationViewportRestriction"
+                    ]
+                }
+            ]
+        }
+    ],
     "GpuScheduler": [
         {
             "platforms": [
@@ -4135,21 +4151,6 @@
                 },
                 {
                     "name": "Disabled"
-                }
-            ]
-        }
-    ],
-    "RemoveGpuRasterizationViewportRestriction": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "RemoveRestriction",
-                    "disable_features": [
-                        "EnableGpuRasterizationViewportRestriction"
-                    ]
                 }
             ]
         }
