@@ -219,10 +219,7 @@ TEST_F(BrowserCommandControllerTest, AvatarAcceleratorEnabledOnDesktop) {
   EXPECT_EQ(enabled, command_updater->IsCommandEnabled(IDC_SHOW_AVATAR_MENU));
 }
 
-TEST_F(BrowserCommandControllerTest, AvatarMenuAlwaysDisabledInIncognitoMode) {
-  if (!profiles::IsMultipleProfilesEnabled())
-    return;
-
+TEST_F(BrowserCommandControllerTest, AvatarMenuAlwaysEnabledInIncognitoMode) {
   // Set up a profile with an off the record profile.
   TestingProfile::Builder normal_builder;
   std::unique_ptr<TestingProfile> original_profile = normal_builder.Build();
@@ -236,8 +233,8 @@ TEST_F(BrowserCommandControllerTest, AvatarMenuAlwaysDisabledInIncognitoMode) {
   chrome::BrowserCommandController command_controller(otr_browser.get());
   const CommandUpdater* command_updater = &command_controller;
 
-  // The avatar menu should be disabled.
-  EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_SHOW_AVATAR_MENU));
+  // The avatar menu should be enabled.
+  EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_SHOW_AVATAR_MENU));
   // The command line is reset at the end of every test by the test suite.
 }
 

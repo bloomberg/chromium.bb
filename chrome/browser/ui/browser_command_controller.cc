@@ -916,11 +916,13 @@ void BrowserCommandController::InitCommandState() {
                                         !guest_session);
 #if defined(OS_CHROMEOS)
   command_updater_.UpdateCommandEnabled(IDC_TAKE_SCREENSHOT, true);
-#else
-  // Chrome OS uses the system tray menu to handle multi-profiles.
-  if (normal_window && (guest_session || !profile()->IsOffTheRecord())) {
+  // Chrome OS uses the system tray menu to handle multi-profiles. Avatar menu
+  // is only required in incognito mode.
+  if (profile()->IsIncognito())
     command_updater_.UpdateCommandEnabled(IDC_SHOW_AVATAR_MENU, true);
-  }
+#else
+  if (normal_window)
+    command_updater_.UpdateCommandEnabled(IDC_SHOW_AVATAR_MENU, true);
 #endif
 
   UpdateShowSyncState(true);
