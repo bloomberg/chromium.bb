@@ -261,6 +261,11 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
   }
   bool gl_disabled = gl::GetGLImplementation() == gl::kGLImplementationDisabled;
 
+  // Compute passthrough decoder status before ComputeGpuFeatureInfo below.
+  gpu_info_.passthrough_cmd_decoder =
+      gles2::UsePassthroughCommandDecoder(command_line) &&
+      gles2::PassthroughCommandDecoderSupported();
+
   // We need to collect GL strings (VENDOR, RENDERER) for blacklisting purposes.
   if (!gl_disabled && !use_swiftshader) {
     if (!CollectGraphicsInfo(&gpu_info_, gpu_preferences_))
@@ -370,10 +375,6 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
   }
   UMA_HISTOGRAM_BOOLEAN("GPU.Sandbox.InitializedSuccessfully",
                         gpu_info_.sandboxed);
-
-  gpu_info_.passthrough_cmd_decoder =
-      gles2::UsePassthroughCommandDecoder(command_line) &&
-      gles2::PassthroughCommandDecoderSupported();
 
   init_successful_ = true;
 #if defined(USE_OZONE)
@@ -520,6 +521,7 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
 
 void GpuInit::AdjustInfoToSwiftShader() {
   gpu_info_for_hardware_gpu_ = gpu_info_;
+  gpu_info_.passthrough_cmd_decoder = false;
   gpu_feature_info_for_hardware_gpu_ = gpu_feature_info_;
   gpu_feature_info_ = ComputeGpuFeatureInfoForSwiftShader();
   CollectContextGraphicsInfo(&gpu_info_, gpu_preferences_);
