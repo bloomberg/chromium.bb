@@ -143,6 +143,7 @@ js2gtest("browser_tests_js_mojo_lite_webui") {
     "engagement/site_engagement_browsertest.js",
     "interventions_internals_browsertest.js",
     "media/media_engagement_browsertest.js",
+    "usb_internals_browsertest.js",
   ]
 
   if (is_win || is_mac || is_desktop_linux || is_chromeos) {
