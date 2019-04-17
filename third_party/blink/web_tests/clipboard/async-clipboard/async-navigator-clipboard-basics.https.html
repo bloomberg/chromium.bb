@@ -21,33 +21,44 @@ test(() => {
 promise_test(async () => {
   await getPermissions();
   const blob = new Blob(['hello'], {type: 'text/plain'});
-  await navigator.clipboard.write({'text/plain': blob});
-}, 'navigator.clipboard.write({string : text/plain Blob}) succeeds');
+  const item = new ClipboardItem({'text/plain': blob});
+
+  await navigator.clipboard.write([item]);
+}, 'navigator.clipboard.write([text/plain ClipboardItem]) succeeds');
 
 promise_test(async t => {
   await getPermissions();
-  await promise_rejects(t, new TypeError(),
-                         navigator.clipboard.write());
-}, 'navigator.clipboard.write() fails (expect {string : Blob})');
+  const blob1 = new Blob(['hello'], {type: 'text/plain'});
+  const blob2 = new Blob(['world'], {type: 'text/plain'});
+
+  const item1 = new ClipboardItem({'text/plain': blob1});
+  const item2 = new ClipboardItem({'text/plain': blob2});
+
+  await promise_rejects(t, "NotAllowedError",
+      navigator.clipboard.write([item1, item2]));
+}, 'navigator.clipboard.write([>1 ClipboardItems]) fails (not implemented)');
 
 promise_test(async t => {
   await getPermissions();
-  await promise_rejects(t, new TypeError(),
-                         navigator.clipboard.write(null));
-}, 'navigator.clipboard.write(null) fails (expect {string : Blob})');
+  await promise_rejects(t, new TypeError(), navigator.clipboard.write());
+}, 'navigator.clipboard.write() fails (expect [ClipboardItem])');
+
+promise_test(async t => {
+  await getPermissions();
+  await promise_rejects(t, new TypeError(), navigator.clipboard.write(null));
+}, 'navigator.clipboard.write(null) fails (expect [ClipboardItem])');
 
 promise_test(async t => {
   await getPermissions();
   await promise_rejects(t, new TypeError(),
                          navigator.clipboard.write('Bad string'));
-}, 'navigator.clipboard.write(DOMString) fails (expect {string : Blob})');
+}, 'navigator.clipboard.write(DOMString) fails (expect [ClipboardItem])');
 
 promise_test(async t => {
   await getPermissions();
   const blob = new Blob(['hello'], {type: 'text/plain'});
-  await promise_rejects(t, 'NotAllowedError',
-                         navigator.clipboard.write(blob));
-}, 'navigator.clipboard.write(Blob) fails (expect {string : Blob})');
+  await promise_rejects(t, new TypeError(), navigator.clipboard.write(blob));
+}, 'navigator.clipboard.write(Blob) fails (expect [ClipboardItem])');
 
 promise_test(async () => {
   await getPermissions();
@@ -64,6 +75,7 @@ promise_test(async () => {
   await getPermissions();
   const result = await navigator.clipboard.read();
   assert_true(result instanceof Object);
+  assert_true(result[0] instanceof ClipboardItem);
 }, 'navigator.clipboard.read() succeeds');
 
 promise_test(async () => {

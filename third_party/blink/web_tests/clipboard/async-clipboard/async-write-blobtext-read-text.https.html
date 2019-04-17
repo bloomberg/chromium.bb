@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
-<title>Async Clipboard write ([text/plain Blob]) -> readText tests</title>
+<title>
+  Async Clipboard write ([text/plain ClipboardItem]) -> readText tests
+</title>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
 <script src="../../http/tests/resources/permissions-helper.js"></script>
@@ -11,14 +13,15 @@ async function readWriteTest(textInput) {
     await PermissionsHelper.setPermission('clipboard-write', 'granted');
 
     const blobInput = new Blob([textInput], {type: 'text/plain'});
+    const clipboardItem = new ClipboardItem({'text/plain': blobInput});
 
-    await navigator.clipboard.write({'text/plain': blobInput});
+    await navigator.clipboard.write([clipboardItem]);
     const textOutput = await navigator.clipboard.readText();
 
     assert_equals(textOutput, textInput);
   }, 'Verify write and read clipboard given text: ' + textInput);
 }
 
-readWriteTest('Clipboard write ([text/plain Blob]) -> read text test');
+readWriteTest('Clipboard write ([text/plain ClipboardItem]) -> read text test');
 readWriteTest('non-Latin1 text encoding test データ');
 </script>

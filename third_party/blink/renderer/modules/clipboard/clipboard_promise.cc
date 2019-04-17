@@ -61,16 +61,15 @@ ScriptPromise ClipboardPromise::CreateForReadText(ScriptState* script_state) {
 // static
 ScriptPromise ClipboardPromise::CreateForWrite(
     ScriptState* script_state,
-    HeapVector<std::pair<String, Member<Blob>>> clipboard_item) {
+    const HeapVector<Member<ClipboardItem>>& items) {
   ClipboardPromise* clipboard_promise =
       MakeGarbageCollected<ClipboardPromise>(script_state);
-  HeapVector<std::pair<String, Member<Blob>>>* blob_map =
-      MakeGarbageCollected<HeapVector<std::pair<String, Member<Blob>>>>(
-          clipboard_item);
+  HeapVector<Member<ClipboardItem>>* items_copy =
+      MakeGarbageCollected<HeapVector<Member<ClipboardItem>>>(items);
   clipboard_promise->GetTaskRunner()->PostTask(
       FROM_HERE,
       WTF::Bind(&ClipboardPromise::HandleWrite,
-                WrapPersistent(clipboard_promise), WrapPersistent(blob_map)));
+                WrapPersistent(clipboard_promise), WrapPersistent(items_copy)));
   return clipboard_promise->script_promise_resolver_->Promise();
 }
 
@@ -181,24 +180,24 @@ void ClipboardPromise::HandleReadWithPermission(PermissionStatus status) {
 
   Vector<String> available_types =
       SystemClipboard::GetInstance().ReadAvailableTypes();
-  HeapVector<std::pair<String, Member<Blob>>> clipboard_item;
-  clipboard_item.ReserveInitialCapacity(available_types.size());
+  HeapVector<std::pair<String, Member<Blob>>> items;
+  items.ReserveInitialCapacity(available_types.size());
   for (String& type_to_read : available_types) {
     std::unique_ptr<ClipboardReader> reader =
         ClipboardReader::Create(type_to_read);
-    if (reader) {
-      clipboard_item.emplace_back(std::move(type_to_read),
-                                  reader->ReadFromSystem());
-    }
+    if (reader)
+      items.emplace_back(std::move(type_to_read), reader->ReadFromSystem());
   }
 
-  if (!clipboard_item.size()) {
+  if (!items.size()) {
     script_promise_resolver_->Reject(DOMException::Create(
         DOMExceptionCode::kDataError, "No valid data on clipboard."));
     return;
   }
 
-  script_promise_resolver_->Resolve(std::move(clipboard_item));
+  HeapVector<Member<ClipboardItem>> clipboard_items = {
+      MakeGarbageCollected<ClipboardItem>(items)};
+  script_promise_resolver_->Resolve(clipboard_items);
 }
 
 void ClipboardPromise::HandleReadText() {
@@ -220,10 +219,25 @@ void ClipboardPromise::HandleReadTextWithPermission(PermissionStatus status) {
 }
 
 void ClipboardPromise::HandleWrite(
-    HeapVector<std::pair<String, Member<Blob>>>* clipboard_item) {
+    HeapVector<Member<ClipboardItem>>* clipboard_items) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  CHECK(clipboard_item);
-  clipboard_item_ = std::move(*clipboard_item);
+  CHECK(clipboard_items);
+
+  if (clipboard_items->size() > 1) {
+    script_promise_resolver_->Reject(DOMException::Create(
+        DOMExceptionCode::kNotAllowedError,
+        "Support for multiple ClipboardItems is not implemented."));
+    return;
+  }
+  if (!clipboard_items->size()) {
+    // Do nothing if there are no ClipboardItems.
+    script_promise_resolver_->Resolve();
+    return;
+  }
+
+  // For now, we only process the first ClipboardItem.
+  ClipboardItem* clipboard_item = (*clipboard_items)[0];
+  clipboard_item_data_ = clipboard_item->GetItems();
 
   CheckWritePermission(WTF::Bind(&ClipboardPromise::HandleWriteWithPermission,
                                  WrapPersistent(this)));
@@ -237,21 +251,11 @@ void ClipboardPromise::HandleWriteWithPermission(PermissionStatus status) {
     return;
   }
 
-  // Check that incoming dictionary isn't empty. If it is, it's possible that
-  // Javascript bindings implicitly converted an Object (like a Blob) into {},
-  // an empty dictionary.
-  if(!clipboard_item_.size()) {
-    script_promise_resolver_->Reject(
-          DOMException::Create(DOMExceptionCode::kNotAllowedError,
-                               "No items in input."));
-      return;
-  }
-
   // Check that all blobs have valid MIME types.
   // Also, Blobs may have a full MIME type with args
   // (ex. 'text/plain;charset=utf-8'), whereas the type must not have args
   // (ex. 'text/plain' only), so ensure that Blob->type is contained in type.
-  for (const auto& type_and_blob : clipboard_item_) {
+  for (const auto& type_and_blob : clipboard_item_data_) {
     String type = type_and_blob.first;
     String type_with_args = type_and_blob.second->type();
     if (!ClipboardWriter::IsValidType(type)) {
@@ -277,14 +281,15 @@ void ClipboardPromise::HandleWriteWithPermission(PermissionStatus status) {
 void ClipboardPromise::WriteNextRepresentation() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   clipboard_writer_.reset();  // The previous write is done.
-  if (clipboard_representation_index_ == clipboard_item_.size()) {
+  if (clipboard_representation_index_ == clipboard_item_data_.size()) {
     SystemClipboard::GetInstance().CommitWrite();
     script_promise_resolver_->Resolve();
     return;
   }
-  const String& type = clipboard_item_[clipboard_representation_index_].first;
+  const String& type =
+      clipboard_item_data_[clipboard_representation_index_].first;
   const Member<Blob>& blob =
-      clipboard_item_[clipboard_representation_index_].second;
+      clipboard_item_data_[clipboard_representation_index_].second;
   clipboard_representation_index_++;
 
   DCHECK(!clipboard_writer_);
@@ -317,13 +322,13 @@ void ClipboardPromise::RejectFromReadOrDecodeFailure() {
   script_promise_resolver_->Reject(DOMException::Create(
       DOMExceptionCode::kDataError,
       "Failed to read or decode Blob for clipboard item type " +
-          clipboard_item_[clipboard_representation_index_].first + "."));
+          clipboard_item_data_[clipboard_representation_index_].first + "."));
 }
 
 void ClipboardPromise::Trace(blink::Visitor* visitor) {
   visitor->Trace(script_state_);
   visitor->Trace(script_promise_resolver_);
-  visitor->Trace(clipboard_item_);
+  visitor->Trace(clipboard_item_data_);
   ContextLifecycleObserver::Trace(visitor);
 }
 
