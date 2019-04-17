@@ -128,8 +128,9 @@ class CommandDispatcher(object):
     and/or incomplete names.
     """
     commands = self.enumerate_commands()
-    if name_asked in commands:
-      return commands[name_asked]
+    name_to_dash = name_asked.replace('_', '-')
+    if name_to_dash in commands:
+      return commands[name_to_dash]
 
     # An exact match was not found. Try to be smart and look if there's
     # something similar.
