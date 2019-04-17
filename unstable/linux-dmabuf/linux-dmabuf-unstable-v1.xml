@@ -28,6 +28,7 @@
     <description summary="factory for creating dmabuf-based wl_buffers">
       Following the interfaces from:
       https://www.khronos.org/registry/egl/extensions/EXT/EGL_EXT_image_dma_buf_import.txt
+      https://www.khronos.org/registry/EGL/extensions/EXT/EGL_EXT_image_dma_buf_import_modifiers.txt
       and the Linux DRM sub-system's AddFb2 ioctl.
 
       This interface offers ways to create generic dmabuf-based
@@ -129,8 +130,16 @@
         binds to this interface. A roundtrip after binding guarantees that
         the client has received all supported format-modifier pairs.
 
+        For legacy support, DRM_FORMAT_MOD_INVALID (that is, modifier_hi ==
+        0x00ffffff and modifier_lo == 0xffffffff) is allowed in this event.
+        It indicates that the server can support the format with an implicit
+        modifier. When a plane has DRM_FORMAT_MOD_INVALID as its modifier, it
+        is as if no explicit modifier is specified. The effective modifier
+        will be derived from the dmabuf.
+
         For the definition of the format and modifier codes, see the
-        zwp_linux_buffer_params_v1::create request.
+        zwp_linux_buffer_params_v1::create and zwp_linux_buffer_params_v1::add
+        requests.
       </description>
       <arg name="format" type="uint" summary="DRM_FORMAT code"/>
       <arg name="modifier_hi" type="uint"
@@ -196,6 +205,11 @@
         This is an opaque token. Drivers use this token to express tiling,
         compression, etc. driver-specific modifications to the base format
         defined by the DRM fourcc code.
+
+        Warning: It should be an error if the format/modifier pair was not
+        advertised with the modifier event. This is not enforced yet because
+        some implementations always accept DRM_FORMAT_MOD_INVALID. Also
+        version 2 of this protocol does not have the modifier event.
 
         This request raises the PLANE_IDX error if plane_idx is too large.
         The error PLANE_SET is raised if attempting to set a plane that
