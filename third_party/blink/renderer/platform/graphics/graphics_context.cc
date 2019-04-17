@@ -762,33 +762,16 @@ void GraphicsContext::DrawRect(const IntRect& rect) {
   }
 }
 
-template <typename TextPaintInfo>
-void GraphicsContext::DrawTextInternal(const Font& font,
-                                       const TextPaintInfo& text_info,
-                                       const FloatPoint& point,
-                                       const PaintFlags& flags,
-                                       const cc::NodeHolder& node_holder) {
-  if (ContextDisabled())
-    return;
-
-  font.DrawText(canvas_, text_info, point, device_scale_factor_, node_holder,
-                DarkModeFlags(this, flags));
-}
-
 void GraphicsContext::DrawText(const Font& font,
                                const TextRunPaintInfo& text_info,
                                const FloatPoint& point,
                                const PaintFlags& flags,
                                const cc::NodeHolder& node_holder) {
-  DrawTextInternal(font, text_info, point, flags, node_holder);
-}
+  if (ContextDisabled())
+    return;
 
-void GraphicsContext::DrawText(const Font& font,
-                               const NGTextFragmentPaintInfo& text_info,
-                               const FloatPoint& point,
-                               const PaintFlags& flags,
-                               const cc::NodeHolder& node_holder) {
-  DrawTextInternal(font, text_info, point, flags, node_holder);
+  font.DrawText(canvas_, text_info, point, device_scale_factor_, node_holder,
+                DarkModeFlags(this, flags));
 }
 
 template <typename DrawTextFunc>
