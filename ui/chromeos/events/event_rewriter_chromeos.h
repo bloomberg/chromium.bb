@@ -59,10 +59,12 @@ class EventRewriterChromeOS : public ui::EventRewriter {
     // 2017 keyboard layout: Browser Forward is gone and Play/Pause
     // key is added between Brightness Up and Mute.
     kKbdTopRowLayout2 = 2,
+    // Keyboard layout and handling for Wilco.
+    kKbdTopRowLayoutWilco = 3,
 
     kKbdTopRowLayoutDefault = kKbdTopRowLayout1,
     kKbdTopRowLayoutMin = kKbdTopRowLayout1,
-    kKbdTopRowLayoutMax = kKbdTopRowLayout2
+    kKbdTopRowLayoutMax = kKbdTopRowLayoutWilco
   };
 
   // Things that keyboard-related rewriter phases can change about an Event.
@@ -177,6 +179,11 @@ class EventRewriterChromeOS : public ui::EventRewriter {
 
   void DeviceKeyPressedOrReleased(int device_id);
 
+  // By default the top row (F1-F12) keys are system keys for back, forward,
+  // brightness, volume, etc. However, windows for v2 apps can optionally
+  // request raw function keys for these keys.
+  bool ForceTopRowAsFunctionKeys() const;
+
   // Adds a device to |device_id_to_info_| only if no failure occurs in
   // retrieving the top row layout from udev, and returns the device type of
   // this keyboard even if it wasn't stored in |device_id_to_info_|.
@@ -225,9 +232,15 @@ class EventRewriterChromeOS : public ui::EventRewriter {
   void RewriteLocatedEvent(const ui::Event& event, int* flags);
   int RewriteModifierClick(const ui::MouseEvent& event, int* flags);
 
+  // Handle Fn/Action key remapping for Wilco keyboard layout.
+  bool RewriteTopRowKeysForLayoutWilco(
+      const ui::KeyEvent& key_event,
+      bool search_is_pressed,
+      ui::EventRewriterChromeOS::MutableKeyState* state);
+
   // Take the keys being pressed into consideration, in contrast to
-  // RewriteKeyEvent which computes the rewritten event and event rewrite status
-  // in stateless way.
+  // RewriteKeyEvent which computes the rewritten event and event rewrite
+  // status in stateless way.
   void RewriteKeyEventInContext(const ui::KeyEvent& event,
                                 std::unique_ptr<ui::Event>* rewritten_event,
                                 ui::EventRewriteStatus* status);
