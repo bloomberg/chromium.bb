@@ -255,7 +255,6 @@ std::unique_ptr<RenderPass> CreateRenderPass() {
 
   SharedQuadState* shared_state = pass->CreateAndAppendSharedQuadState();
   shared_state->opacity = 1.f;
-  shared_state->has_surface_damage = true;
   return pass;
 }
 

@@ -151,7 +151,6 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
       const gfx::Transform& target_transform,
       const ClipData& clip_rect,
       RenderPass* dest_render_pass,
-      bool has_surface_damage,
       const RoundedCornerInfo& rounded_corner_info,
       const gfx::Rect& occluding_damage_rect,
       bool occluding_damage_rect_valid);
@@ -164,7 +163,6 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
       const gfx::Rect& visible_quad_layer_rect,
       const ClipData& clip_rect,
       RenderPass* dest_render_pass,
-      bool has_surface_damage,
       const RoundedCornerInfo& rounded_corner_info,
       const gfx::Rect& occluding_damage_rect,
       bool occluding_damage_rect_valid);
@@ -178,7 +176,6 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
       const ClipData& clip_rect,
       RenderPass* dest_pass,
       const SurfaceId& surface_id,
-      bool has_surface_damage,
       const RoundedCornerInfo& rounded_corner_info,
       const gfx::Rect& occluding_damage_rect,
       bool occluding_damage_rect_valid);
