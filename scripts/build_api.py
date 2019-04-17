@@ -20,7 +20,6 @@ from chromite.api.gen.chromite.api import build_api_pb2
 from chromite.api.gen.chromite.api import depgraph_pb2
 from chromite.api.gen.chromite.api import image_pb2
 from chromite.api.gen.chromite.api import sdk_pb2
-from chromite.api.gen.chromite.api import test_archive_pb2
 from chromite.api.gen.chromite.api import test_pb2
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
@@ -283,7 +282,6 @@ def RegisterServices(router):
   router.Register(depgraph_pb2)
   router.Register(image_pb2)
   router.Register(sdk_pb2)
-  router.Register(test_archive_pb2)
   router.Register(test_pb2)
 
 

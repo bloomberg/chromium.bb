@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='chromiumos',
   syntax='proto3',
   serialized_options=_b('Z4go.chromium.org/chromiumos/infra/proto/go/chromiumos'),
-  serialized_pb=_b('\n\x1f\x63hromiumos/builder_config.proto\x12\nchromiumos\x1a\x1egoogle/protobuf/wrappers.proto\"\xb3\x05\n\rBuilderConfig\x12(\n\x02id\x18\x01 \x01(\x0b\x32\x1c.chromiumos.BuilderConfig.Id\x12\x32\n\x07general\x18\x02 \x01(\x0b\x32!.chromiumos.BuilderConfig.General\x12<\n\x0corchestrator\x18\x03 \x01(\x0b\x32&.chromiumos.BuilderConfig.Orchestrator\x12\x36\n\tartifacts\x18\x04 \x01(\x0b\x32#.chromiumos.BuilderConfig.Artifacts\x12\x30\n\x06\x63hrome\x18\x05 \x01(\x0b\x32 .chromiumos.BuilderConfig.Chrome\x1a\x89\x01\n\x02Id\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0e\n\x06\x62ranch\x18\x02 \x01(\t\x12/\n\x04type\x18\x03 \x01(\x0e\x32!.chromiumos.BuilderConfig.Id.Type\"4\n\x04Type\x12\x14\n\x10TYPE_UNSPECIFIED\x10\x00\x12\x06\n\x02\x43Q\x10\x01\x12\x0e\n\nPOSTSUBMIT\x10\x02\x1a\x37\n\x07General\x12,\n\x08\x63ritical\x18\x01 \x01(\x0b\x32\x1a.google.protobuf.BoolValue\x1a \n\x0cOrchestrator\x12\x10\n\x08\x63hildren\x18\x01 \x03(\t\x1a\x98\x01\n\tArtifacts\x12@\n\tprebuilts\x18\x01 \x01(\x0e\x32-.chromiumos.BuilderConfig.Artifacts.Prebuilts\"I\n\tPrebuilts\x12\x19\n\x15PREBUILTS_UNSPECIFIED\x10\x00\x12\n\n\x06PUBLIC\x10\x01\x12\x0b\n\x07PRIVATE\x10\x02\x12\x08\n\x04NONE\x10\x03\x1a\x1a\n\x06\x43hrome\x12\x10\n\x08internal\x18\x01 \x01(\x08\"D\n\x0e\x42uilderConfigs\x12\x32\n\x0f\x62uilder_configs\x18\x01 \x03(\x0b\x32\x19.chromiumos.BuilderConfigB6Z4go.chromium.org/chromiumos/infra/proto/go/chromiumosb\x06proto3')
+  serialized_pb=_b('\n\x1f\x63hromiumos/builder_config.proto\x12\nchromiumos\x1a\x1egoogle/protobuf/wrappers.proto\"\xb4\x07\n\rBuilderConfig\x12(\n\x02id\x18\x01 \x01(\x0b\x32\x1c.chromiumos.BuilderConfig.Id\x12\x32\n\x07general\x18\x02 \x01(\x0b\x32!.chromiumos.BuilderConfig.General\x12<\n\x0corchestrator\x18\x03 \x01(\x0b\x32&.chromiumos.BuilderConfig.Orchestrator\x12\x36\n\tartifacts\x18\x04 \x01(\x0b\x32#.chromiumos.BuilderConfig.Artifacts\x12\x30\n\x06\x63hrome\x18\x05 \x01(\x0b\x32 .chromiumos.BuilderConfig.Chrome\x1a\x89\x01\n\x02Id\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0e\n\x06\x62ranch\x18\x02 \x01(\t\x12/\n\x04type\x18\x03 \x01(\x0e\x32!.chromiumos.BuilderConfig.Id.Type\"4\n\x04Type\x12\x14\n\x10TYPE_UNSPECIFIED\x10\x00\x12\x06\n\x02\x43Q\x10\x01\x12\x0e\n\nPOSTSUBMIT\x10\x02\x1a\x37\n\x07General\x12,\n\x08\x63ritical\x18\x01 \x01(\x0b\x32\x1a.google.protobuf.BoolValue\x1a \n\x0cOrchestrator\x12\x10\n\x08\x63hildren\x18\x01 \x03(\t\x1a\x99\x03\n\tArtifacts\x12@\n\tprebuilts\x18\x01 \x01(\x0e\x32-.chromiumos.BuilderConfig.Artifacts.Prebuilts\x12I\n\x0e\x61rtifact_types\x18\x02 \x03(\x0e\x32\x31.chromiumos.BuilderConfig.Artifacts.ArtifactTypes\"I\n\tPrebuilts\x12\x19\n\x15PREBUILTS_UNSPECIFIED\x10\x00\x12\n\n\x06PUBLIC\x10\x01\x12\x0b\n\x07PRIVATE\x10\x02\x12\x08\n\x04NONE\x10\x03\"\xb3\x01\n\rArtifactTypes\x12\x1e\n\x1a\x41RTIFACT_TYPES_UNSPECIFIED\x10\x00\x12\r\n\tIMAGE_ZIP\x10\x01\x12\x17\n\x13TEST_UPDATE_PAYLOAD\x10\x02\x12\x12\n\x0e\x41UTOTEST_FILES\x10\x03\x12\x0e\n\nTAST_FILES\x10\x04\x12\x17\n\x13PINNED_GUEST_IMAGES\x10\x05\x12\x0c\n\x08\x46IRMWARE\x10\x06\x12\x0f\n\x0b\x45\x42UILD_LOGS\x10\x07\x1a\x1a\n\x06\x43hrome\x12\x10\n\x08internal\x18\x01 \x01(\x08\"D\n\x0e\x42uilderConfigs\x12\x32\n\x0f\x62uilder_configs\x18\x01 \x03(\x0b\x32\x19.chromiumos.BuilderConfigB6Z4go.chromium.org/chromiumos/infra/proto/go/chromiumosb\x06proto3')
   ,
   dependencies=[google_dot_protobuf_dot_wrappers__pb2.DESCRIPTOR,])
 
@@ -77,10 +77,56 @@ _BUILDERCONFIG_ARTIFACTS_PREBUILTS = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=670,
-  serialized_end=743,
+  serialized_start=745,
+  serialized_end=818,
 )
 _sym_db.RegisterEnumDescriptor(_BUILDERCONFIG_ARTIFACTS_PREBUILTS)
+
+_BUILDERCONFIG_ARTIFACTS_ARTIFACTTYPES = _descriptor.EnumDescriptor(
+  name='ArtifactTypes',
+  full_name='chromiumos.BuilderConfig.Artifacts.ArtifactTypes',
+  filename=None,
+  file=DESCRIPTOR,
+  values=[
+    _descriptor.EnumValueDescriptor(
+      name='ARTIFACT_TYPES_UNSPECIFIED', index=0, number=0,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='IMAGE_ZIP', index=1, number=1,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='TEST_UPDATE_PAYLOAD', index=2, number=2,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='AUTOTEST_FILES', index=3, number=3,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='TAST_FILES', index=4, number=4,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='PINNED_GUEST_IMAGES', index=5, number=5,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='FIRMWARE', index=6, number=6,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='EBUILD_LOGS', index=7, number=7,
+      serialized_options=None,
+      type=None),
+  ],
+  containing_type=None,
+  serialized_options=None,
+  serialized_start=821,
+  serialized_end=1000,
+)
+_sym_db.RegisterEnumDescriptor(_BUILDERCONFIG_ARTIFACTS_ARTIFACTTYPES)
 
 
 _BUILDERCONFIG_ID = _descriptor.Descriptor(
@@ -202,12 +248,20 @@ _BUILDERCONFIG_ARTIFACTS = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='artifact_types', full_name='chromiumos.BuilderConfig.Artifacts.artifact_types', index=1,
+      number=2, type=14, cpp_type=8, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
     _BUILDERCONFIG_ARTIFACTS_PREBUILTS,
+    _BUILDERCONFIG_ARTIFACTS_ARTIFACTTYPES,
   ],
   serialized_options=None,
   is_extendable=False,
@@ -216,7 +270,7 @@ _BUILDERCONFIG_ARTIFACTS = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=591,
-  serialized_end=743,
+  serialized_end=1000,
 )
 
 _BUILDERCONFIG_CHROME = _descriptor.Descriptor(
@@ -245,8 +299,8 @@ _BUILDERCONFIG_CHROME = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=745,
-  serialized_end=771,
+  serialized_start=1002,
+  serialized_end=1028,
 )
 
 _BUILDERCONFIG = _descriptor.Descriptor(
@@ -304,7 +358,7 @@ _BUILDERCONFIG = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=80,
-  serialized_end=771,
+  serialized_end=1028,
 )
 
 
@@ -334,8 +388,8 @@ _BUILDERCONFIGS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=773,
-  serialized_end=841,
+  serialized_start=1030,
+  serialized_end=1098,
 )
 
 _BUILDERCONFIG_ID.fields_by_name['type'].enum_type = _BUILDERCONFIG_ID_TYPE
@@ -345,8 +399,10 @@ _BUILDERCONFIG_GENERAL.fields_by_name['critical'].message_type = google_dot_prot
 _BUILDERCONFIG_GENERAL.containing_type = _BUILDERCONFIG
 _BUILDERCONFIG_ORCHESTRATOR.containing_type = _BUILDERCONFIG
 _BUILDERCONFIG_ARTIFACTS.fields_by_name['prebuilts'].enum_type = _BUILDERCONFIG_ARTIFACTS_PREBUILTS
+_BUILDERCONFIG_ARTIFACTS.fields_by_name['artifact_types'].enum_type = _BUILDERCONFIG_ARTIFACTS_ARTIFACTTYPES
 _BUILDERCONFIG_ARTIFACTS.containing_type = _BUILDERCONFIG
 _BUILDERCONFIG_ARTIFACTS_PREBUILTS.containing_type = _BUILDERCONFIG_ARTIFACTS
+_BUILDERCONFIG_ARTIFACTS_ARTIFACTTYPES.containing_type = _BUILDERCONFIG_ARTIFACTS
 _BUILDERCONFIG_CHROME.containing_type = _BUILDERCONFIG
 _BUILDERCONFIG.fields_by_name['id'].message_type = _BUILDERCONFIG_ID
 _BUILDERCONFIG.fields_by_name['general'].message_type = _BUILDERCONFIG_GENERAL
