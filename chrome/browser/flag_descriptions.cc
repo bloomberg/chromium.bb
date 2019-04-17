@@ -2733,12 +2733,6 @@ const char kIntentPickerDescription[] =
     "When going to a site that has URL managable by a PWA, show the intent"
     "picker to allow user to open the URL in the app.";
 
-const char kLinkManagedNoticeToChromeUIManagementURLName[] =
-    "Link managed notice to the management page";
-const char kLinkManagedNoticeToChromeUIManagementURLDescription[] =
-    "Makes the managed notice 'Managed by your organization' a link to "
-    "chrome://management";
-
 const char kOmniboxDriveSuggestionsName[] =
     "Omnibox Google Drive Document suggestions";
 const char kOmniboxDriveSuggestionsDescriptions[] =

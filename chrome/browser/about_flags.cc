@@ -2840,12 +2840,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kShowManagedUiDescription,
      kOsWin | kOsMac | kOsLinux | kOsCrOS,
      FEATURE_VALUE_TYPE(features::kShowManagedUi)},
-
-    {"link-managed-notice-to-management-page",
-     flag_descriptions::kLinkManagedNoticeToChromeUIManagementURLName,
-     flag_descriptions::kLinkManagedNoticeToChromeUIManagementURLDescription,
-     kOsWin | kOsMac | kOsLinux,
-     FEATURE_VALUE_TYPE(features::kLinkManagedNoticeToChromeUIManagementURL)},
 #endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 
 #if !defined(OS_ANDROID)
