@@ -7,15 +7,8 @@
 
 #include <memory>
 
-#include "base/at_exit.h"
-#include "base/test/scoped_task_environment.h"
-#include "testing/gtest/include/gtest/gtest.h"
-
-#if defined(USE_OZONE)
-namespace ui {
-class OzoneGpuTestHelper;
-}
-#endif
+#include "base/files/file_path.h"
+#include "media/gpu/test/video_test_environment.h"
 
 namespace media {
 namespace test {
@@ -24,7 +17,7 @@ class Video;
 
 // Test environment for video decode tests. Performs setup and teardown once for
 // the entire test run.
-class VideoPlayerTestEnvironment : public ::testing::Environment {
+class VideoPlayerTestEnvironment : public VideoTestEnvironment {
  public:
   static VideoPlayerTestEnvironment* Create(
       const base::FilePath& video_path,
@@ -33,11 +26,6 @@ class VideoPlayerTestEnvironment : public ::testing::Environment {
       bool output_frames,
       bool use_vd);
   ~VideoPlayerTestEnvironment() override;
-
-  // Set up the video decode test environment, only called once.
-  void SetUp() override;
-  // Tear down the video decode test environment, only called once.
-  void TearDown() override;
 
   // Get the video the tests will be ran on.
   const media::test::Video* Video() const;
@@ -48,27 +36,16 @@ class VideoPlayerTestEnvironment : public ::testing::Environment {
   // Check whether we should use VD-based video decoders instead of VDA-based.
   bool UseVD() const;
 
-  // Get the name of the current test.
-  base::FilePath::StringType GetTestName() const;
-
  private:
   VideoPlayerTestEnvironment(std::unique_ptr<media::test::Video> video,
                              bool enable_validator,
                              bool output_frames,
                              bool use_vd);
 
-  std::unique_ptr<base::test::ScopedTaskEnvironment> task_environment_;
   const std::unique_ptr<media::test::Video> video_;
   const bool enable_validator_;
   const bool output_frames_;
   const bool use_vd_;
-
-  // An exit manager is required to run callbacks on shutdown.
-  base::AtExitManager at_exit_manager;
-
-#if defined(USE_OZONE)
-  std::unique_ptr<ui::OzoneGpuTestHelper> gpu_helper_;
-#endif
 };
 }  // namespace test
 }  // namespace media
