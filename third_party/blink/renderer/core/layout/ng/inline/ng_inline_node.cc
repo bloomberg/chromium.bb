@@ -434,8 +434,7 @@ void NGInlineNode::ComputeOffsetMapping(LayoutBlockFlow* layout_block_flow,
   // text-transform CSS property changes text length.
   NGOffsetMappingBuilder& mapping_builder = builder.GetOffsetMappingBuilder();
   mapping_builder.SetDestinationString(data->text_content);
-  data->offset_mapping =
-      std::make_unique<NGOffsetMapping>(mapping_builder.Build());
+  data->offset_mapping = mapping_builder.Build();
   DCHECK(data->offset_mapping);
 }
 
