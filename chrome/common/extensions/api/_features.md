@@ -286,8 +286,8 @@ The `min_manifest_version` property specifies the minimum manifest version to be
 allowed to access a feature. Extensions with a lesser manifest version cannot
 access the feature.
 
-The only accepted value is `2`, as this is currently the highest possible
-manifest version.
+Accepted values are `2` and `3`, as 3 is currently the highest possible manifest
+version.
 
 ### noparent
 

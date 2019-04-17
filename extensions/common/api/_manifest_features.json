@@ -153,6 +153,11 @@
       ]
     }
   ],
+  "host_permissions": {
+    "channel": "dev",
+    "extension_types": ["extension"],
+    "min_manifest_version": 3
+  },
   "icons": {
     "channel": "stable",
     "extension_types": "all"
