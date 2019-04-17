@@ -16,6 +16,8 @@
 #if defined(OS_CHROMEOS)
 #include "media/base/scopedfd_helper.h"
 #include "media/gpu/linux/platform_video_frame_utils.h"
+#include "media/gpu/video_frame_mapper.h"
+#include "media/gpu/video_frame_mapper_factory.h"
 #endif
 
 namespace media {
@@ -115,6 +117,43 @@ bool ConvertVideoFrameToARGB(const VideoFrame* src_frame,
   }
 }
 
+// Copy memory based |src_frame| buffer to |dst_frame| buffer.
+bool CopyVideoFrame(const VideoFrame* src_frame,
+                    scoped_refptr<VideoFrame> dst_frame) {
+  LOG_ASSERT(src_frame->IsMappable());
+#if defined(OS_CHROMEOS)
+  // If |dst_frame| is a Dmabuf-backed VideoFrame, we need to map its underlying
+  // buffer into memory. We use a VideoFrameMapper to create a memory-based
+  // VideoFrame that refers to the |dst_frame|'s buffer.
+  if (dst_frame->storage_type() == VideoFrame::STORAGE_DMABUFS) {
+    auto video_frame_mapper = VideoFrameMapperFactory::CreateMapper(true);
+    LOG_ASSERT(video_frame_mapper);
+    dst_frame = video_frame_mapper->Map(std::move(dst_frame));
+    if (!dst_frame) {
+      LOG(ERROR) << "Failed to map DMABuf video frame.";
+      return false;
+    }
+  }
+#endif  // defined(OS_CHROMEOS)
+  LOG_ASSERT(dst_frame->IsMappable());
+  LOG_ASSERT(src_frame->format() == dst_frame->format());
+
+  // Copy every plane's content from |src_frame| to |dst_frame|.
+  const size_t num_planes = VideoFrame::NumPlanes(dst_frame->format());
+  LOG_ASSERT(dst_frame->layout().planes().size() == num_planes);
+  LOG_ASSERT(src_frame->layout().planes().size() == num_planes);
+  for (size_t i = 0; i < num_planes; ++i) {
+    // |width| in libyuv::CopyPlane() is in bytes, not pixels.
+    gfx::Size plane_size = VideoFrame::PlaneSize(dst_frame->format(), i,
+                                                 dst_frame->natural_size());
+    libyuv::CopyPlane(
+        src_frame->data(i), src_frame->layout().planes()[i].stride,
+        dst_frame->data(i), dst_frame->layout().planes()[i].stride,
+        plane_size.width(), plane_size.height());
+  }
+  return true;
+}
+
 }  // namespace
 
 bool ConvertVideoFrame(const VideoFrame* src_frame, VideoFrame* dst_frame) {
@@ -155,37 +194,47 @@ scoped_refptr<VideoFrame> ConvertVideoFrame(const VideoFrame* src_frame,
   return dst_frame;
 }
 
-scoped_refptr<VideoFrame> CloneVideoFrameWithLayout(
+scoped_refptr<VideoFrame> CloneVideoFrame(
     const VideoFrame* const src_frame,
-    const VideoFrameLayout& dst_layout) {
+    const VideoFrameLayout& dst_layout,
+    VideoFrame::StorageType dst_storage_type) {
   if (!src_frame)
     return nullptr;
+  if (!src_frame->IsMappable()) {
+    LOG(ERROR) << "The source video frame must be memory-backed VideoFrame";
+    return nullptr;
+  }
 
-  LOG_ASSERT(src_frame->IsMappable());
-  LOG_ASSERT(src_frame->format() == dst_layout.format());
-  // Create VideoFrame, which allocates and owns data.
-  auto dst_frame = VideoFrame::CreateFrameWithLayout(
-      dst_layout, src_frame->visible_rect(), src_frame->natural_size(),
-      src_frame->timestamp(), false /* zero_initialize_memory*/);
+  scoped_refptr<VideoFrame> dst_frame;
+  switch (dst_storage_type) {
+#if defined(OS_CHROMEOS)
+    case VideoFrame::STORAGE_DMABUFS:
+      dst_frame = CreatePlatformVideoFrame(
+          dst_layout.format(), dst_layout.coded_size(),
+          src_frame->visible_rect(), src_frame->visible_rect().size(),
+          src_frame->timestamp(), gfx::BufferUsage::GPU_READ_CPU_READ_WRITE);
+      break;
+#endif
+    case VideoFrame::STORAGE_OWNED_MEMORY:
+      // Create VideoFrame, which allocates and owns data.
+      dst_frame = VideoFrame::CreateFrameWithLayout(
+          dst_layout, src_frame->visible_rect(), src_frame->natural_size(),
+          src_frame->timestamp(), false /* zero_initialize_memory*/);
+      break;
+    default:
+      LOG(ERROR) << "Clone video frame must have the ownership of the buffer";
+      return nullptr;
+  }
+
   if (!dst_frame) {
     LOG(ERROR) << "Failed to create VideoFrame";
     return nullptr;
   }
 
-  // Copy every plane's content from |src_frame| to |dst_frame|.
-  const size_t num_planes = VideoFrame::NumPlanes(dst_layout.format());
-  LOG_ASSERT(dst_layout.planes().size() == num_planes);
-  LOG_ASSERT(src_frame->layout().planes().size() == num_planes);
-  for (size_t i = 0; i < num_planes; ++i) {
-    // |width| in libyuv::CopyPlane() is in bytes, not pixels.
-    gfx::Size plane_size = VideoFrame::PlaneSize(dst_frame->format(), i,
-                                                 dst_frame->natural_size());
-    libyuv::CopyPlane(
-        src_frame->data(i), src_frame->layout().planes()[i].stride,
-        dst_frame->data(i), dst_frame->layout().planes()[i].stride,
-        plane_size.width(), plane_size.height());
+  if (!CopyVideoFrame(src_frame, dst_frame)) {
+    LOG(ERROR) << "Failed to copy VideoFrame";
+    return nullptr;
   }
-
   return dst_frame;
 }
 

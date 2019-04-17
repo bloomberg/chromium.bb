@@ -76,13 +76,5 @@ scoped_refptr<VideoFrame> TextureRef::ExportVideoFrame(
 #endif
 }
 
-bool TextureRef::IsDirectlyMappable() const {
-#if defined(OS_CHROMEOS)
-  return frame_->layout().planes()[0].modifier == DRM_FORMAT_MOD_LINEAR;
-#else
-  return false;
-#endif
-}
-
 }  // namespace test
 }  // namespace media

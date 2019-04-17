@@ -483,7 +483,7 @@ source_set("android_video_decode_accelerator_unittests") {
 if (use_v4l2_codec || use_vaapi || is_mac || is_win) {
   test("video_encode_accelerator_unittest") {
     deps = [
-      "test:encode_helpers",
+      "test:helpers",
       "//base",
       "//base/test:test_support",
       "//media:test_support",
@@ -645,6 +645,7 @@ test("video_decode_accelerator_tests") {
     ":buildflags",
     "test:frame_file_writer",
     "test:frame_validator",
+    "test:helpers",
     "test:video_player",
     "test:video_player_test_environment",
     "test:video_player_thumbnail_renderer",
