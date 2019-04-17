@@ -237,44 +237,6 @@ TEST_F(SSLConfigServiceManagerPrefTest, NoTLS11Max) {
   EXPECT_LE(network::mojom::SSLVersion::kTLS12, initial_config_->version_max);
 }
 
-// Tests that Symantec's legacy infrastructure can be enabled.
-TEST_F(SSLConfigServiceManagerPrefTest, SymantecLegacyInfrastructure) {
-  scoped_refptr<TestingPrefStore> local_state_store(new TestingPrefStore());
-
-  TestingPrefServiceSimple local_state;
-  SSLConfigServiceManager::RegisterPrefs(local_state.registry());
-
-  std::unique_ptr<SSLConfigServiceManager> config_manager =
-      SetUpConfigServiceManager(&local_state);
-
-  // By default, Symantec's legacy infrastructure should be disabled when
-  // not using any pref service.
-  EXPECT_FALSE(net::CertVerifier::Config().disable_symantec_enforcement);
-  EXPECT_FALSE(network::mojom::SSLConfig::New()->symantec_enforcement_disabled);
-
-  // Using a pref service without any preference set should result in
-  // Symantec's legacy infrastructure being disabled.
-  EXPECT_FALSE(initial_config_->symantec_enforcement_disabled);
-
-  // Enabling the local preference should result in Symantec's legacy
-  // infrastructure being enabled.
-  local_state.SetUserPref(prefs::kCertEnableSymantecLegacyInfrastructure,
-                          std::make_unique<base::Value>(true));
-  // Wait for the SSLConfigServiceManagerPref to be notified of the preferences
-  // being changed, and for it to notify the test fixture of the change.
-  ASSERT_NO_FATAL_FAILURE(WaitForUpdate());
-  EXPECT_TRUE(observed_configs_[0]->symantec_enforcement_disabled);
-
-  // Disabling the local preference should result in Symantec's legacy
-  // infrastructure being disabled.
-  local_state.SetUserPref(prefs::kCertEnableSymantecLegacyInfrastructure,
-                          std::make_unique<base::Value>(false));
-  // Wait for the SSLConfigServiceManagerPref to be notified of the preferences
-  // being changed, and for it to notify the test fixture of the change.
-  ASSERT_NO_FATAL_FAILURE(WaitForUpdate());
-  EXPECT_FALSE(observed_configs_[1]->symantec_enforcement_disabled);
-}
-
 TEST_F(SSLConfigServiceManagerPrefTest, H2ClientCertCoalescingPref) {
   scoped_refptr<TestingPrefStore> local_state_store(new TestingPrefStore());
 

@@ -701,7 +701,6 @@ extern const char kNtlmV2Enabled[];
 
 extern const char kCertRevocationCheckingEnabled[];
 extern const char kCertRevocationCheckingRequiredLocalAnchors[];
-extern const char kCertEnableSymantecLegacyInfrastructure[];
 extern const char kSSLVersionMin[];
 extern const char kSSLVersionMax[];
 extern const char kCipherSuiteBlacklist[];
