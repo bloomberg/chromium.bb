@@ -137,7 +137,7 @@ class AccountReconcilor : public KeyedService,
 
  private:
   friend class AccountReconcilorTest;
-  friend class DiceBrowserTestBase;
+  friend class DiceBrowserTest;
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorEndpointParamTest,
                            IdentityManagerRegistration);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorEndpointParamTest, Reauth);
