@@ -384,19 +384,6 @@ inline DocumentLoader* FrameFetchContext::MasterDocumentLoader() const {
   return &frame_or_imported_document_->GetMasterDocumentLoader();
 }
 
-void FrameFetchContext::DispatchDidChangeResourcePriority(
-    uint64_t identifier,
-    ResourceLoadPriority load_priority,
-    int intra_priority_value) {
-  if (GetResourceFetcherProperties().IsDetached())
-    return;
-  TRACE_EVENT1("devtools.timeline", "ResourceChangePriority", "data",
-               inspector_change_resource_priority_event::Data(
-                   MasterDocumentLoader(), identifier, load_priority));
-  probe::DidChangeResourcePriority(GetFrame(), MasterDocumentLoader(),
-                                   identifier, load_priority);
-}
-
 void FrameFetchContext::PrepareRequest(
     ResourceRequest& request,
     const FetchInitiatorInfo& initiator_info,

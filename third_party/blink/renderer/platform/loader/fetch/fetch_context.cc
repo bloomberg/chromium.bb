@@ -65,10 +65,6 @@ void FetchContext::Trace(blink::Visitor* visitor) {
   visitor->Trace(resource_fetcher_properties_);
 }
 
-void FetchContext::DispatchDidChangeResourcePriority(uint64_t,
-                                                     ResourceLoadPriority,
-                                                     int) {}
-
 void FetchContext::AddAdditionalRequestHeaders(ResourceRequest&) {}
 
 mojom::FetchCacheMode FetchContext::ResourceRequestCachePolicy(

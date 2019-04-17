@@ -10,6 +10,7 @@
 #include "base/containers/span.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_load_priority.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace blink {
@@ -42,6 +43,11 @@ class PLATFORM_EXPORT ResourceLoadObserver
                                const ResourceResponse& redirect_response,
                                ResourceType,
                                const FetchInitiatorInfo&) = 0;
+
+  // Called when the priority of the request changes.
+  virtual void DidChangePriority(uint64_t identifier,
+                                 ResourceLoadPriority,
+                                 int intra_priority_value) = 0;
 
   enum ResponseSource { kFromMemoryCache, kNotFromMemoryCache };
   // Called when a response is received.

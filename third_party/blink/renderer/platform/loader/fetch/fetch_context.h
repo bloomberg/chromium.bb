@@ -105,10 +105,6 @@ class PLATFORM_EXPORT FetchContext
       ResourceType,
       FetchParameters::DeferOption) const;
 
-  virtual void DispatchDidChangeResourcePriority(uint64_t identifier,
-                                                 ResourceLoadPriority,
-                                                 int intra_priority_value);
-
   // This internally dispatches WebLocalFrameClient::WillSendRequest and hooks
   // request interceptors like ServiceWorker and ApplicationCache.
   // This may modify the request.

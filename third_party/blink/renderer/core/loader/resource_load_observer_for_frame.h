@@ -33,6 +33,9 @@ class CORE_EXPORT ResourceLoadObserverForFrame final
                        const ResourceResponse& redirect_response,
                        ResourceType,
                        const FetchInitiatorInfo&) override;
+  void DidChangePriority(uint64_t identifier,
+                         ResourceLoadPriority,
+                         int intra_priority_value) override;
   void DidReceiveResponse(uint64_t identifier,
                           const ResourceRequest& request,
                           const ResourceResponse& response,
