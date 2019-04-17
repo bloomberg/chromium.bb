@@ -402,11 +402,17 @@ Status GetActiveElement(Session* session,
                         WebView* web_view,
                         std::unique_ptr<base::Value>* value) {
   base::ListValue args;
-  return web_view->CallFunction(
+  Status status = web_view->CallFunction(
       session->GetCurrentFrameId(),
-      "function() { return document.activeElement || document.body }",
-      args,
+      "function() { return document.activeElement || document.body }", args,
       value);
+  if (status.IsError()) {
+    return status;
+  }
+  if (value->get()->is_none()) {
+    return Status(kNoSuchElement);
+  }
+  return status;
 }
 
 Status IsElementFocused(
