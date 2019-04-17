@@ -14,7 +14,9 @@
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 
 namespace views {
-class View;
+class MenuButton;
+class MenuModelAdapter;
+class MenuRunner;
 }  // namespace views
 
 class ExtensionsMenuButton : public HoverButton,
@@ -46,8 +48,26 @@ class ExtensionsMenuButton : public HoverButton,
                                   const gfx::Point& point,
                                   ui::MenuSourceType source_type) override;
 
+  // Callback for MenuModelAdapter.
+  void OnMenuClosed();
+
+  // Configures the secondary (right-hand-side) view of this HoverButton.
+  void ConfigureSecondaryView();
+
   Browser* const browser_;
   const std::unique_ptr<ToolbarActionViewController> controller_;
+
+  // TODO(pbos): There's complicated configuration code in place since menus
+  // can't be triggered from ImageButtons. When MenuRunner::RunMenuAt accepts
+  // views::Buttons, turn this into a views::ImageButton and use
+  // image_button_factory.h methods to configure it.
+  views::MenuButton* context_menu_button_ = nullptr;
+
+  // Responsible for converting the context menu model into |menu_|.
+  std::unique_ptr<views::MenuModelAdapter> menu_adapter_;
+
+  // Responsible for running the menu.
+  std::unique_ptr<views::MenuRunner> menu_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionsMenuButton);
 };
