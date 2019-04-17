@@ -256,8 +256,8 @@ void SignedExchangeLoader::ProceedWithResponse() {
   DCHECK(body_data_pipe_adapter_);
   DCHECK(pending_body_consumer_.is_valid());
 
-  body_data_pipe_adapter_->Start();
   client_->OnStartLoadingResponseBody(std::move(pending_body_consumer_));
+  body_data_pipe_adapter_->Start();
 }
 
 void SignedExchangeLoader::SetPriority(net::RequestPriority priority,
@@ -357,9 +357,10 @@ void SignedExchangeLoader::OnHTTPExchangeFound(
     return;
   }
 
+  client_->OnStartLoadingResponseBody(std::move(pending_body_consumer_));
+
   // Start reading.
   body_data_pipe_adapter_->Start();
-  client_->OnStartLoadingResponseBody(std::move(pending_body_consumer_));
 }
 
 void SignedExchangeLoader::FinishReadingBody(int result) {
