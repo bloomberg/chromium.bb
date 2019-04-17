@@ -434,6 +434,8 @@ TabStrip::TabStrip(TabbedPane::Orientation orientation,
   layout->set_main_axis_alignment(BoxLayout::MAIN_AXIS_ALIGNMENT_START);
   layout->SetDefaultFlex(0);
   SetLayoutManager(std::move(layout));
+
+  GetViewAccessibility().OverrideRole(ax::mojom::Role::kIgnored);
 }
 
 TabStrip::~TabStrip() = default;
