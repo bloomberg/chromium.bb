@@ -1490,7 +1490,7 @@ String XMLHttpRequest::getAllResponseHeaders() const {
       continue;
 
     if (!same_origin_request_ &&
-        !cors::IsOnAccessControlResponseHeaderWhitelist(it->key) &&
+        !cors::IsCorsSafelistedResponseHeader(it->key) &&
         access_control_expose_header_set.find(it->key.Ascii().data()) ==
             access_control_expose_header_set.end())
       continue;
@@ -1525,8 +1525,7 @@ const AtomicString& XMLHttpRequest::getResponseHeader(
                             : network::mojom::FetchCredentialsMode::kSameOrigin,
           response_);
 
-  if (!same_origin_request_ &&
-      !cors::IsOnAccessControlResponseHeaderWhitelist(name) &&
+  if (!same_origin_request_ && !cors::IsCorsSafelistedResponseHeader(name) &&
       access_control_expose_header_set.find(name.Ascii().data()) ==
           access_control_expose_header_set.end()) {
     LogConsoleError(GetExecutionContext(),
