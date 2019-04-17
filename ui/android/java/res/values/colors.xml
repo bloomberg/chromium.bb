@@ -10,11 +10,11 @@
     <color name="default_text_color">@color/default_text_color_dark</color>
     <color name="default_text_color_inverse">@color/default_text_color_light</color>
     <color name="default_text_color_secondary">@color/modern_grey_700</color>
+    <color name="default_text_color_tertiary" tools:ignore="UnusedResources">@color/modern_grey_900_alpha_38</color>
     <!-- Text color for non-clickable blue text. -->
     <color name="default_text_color_blue" tools:ignore="UnusedResources">@color/modern_blue_600</color>
     <!-- Text color for clickable text. -->
     <color name="default_text_color_link">@color/modern_blue_600</color>
-    <color name="disabled_text_color">@color/black_alpha_38</color>
     <color name="disabled_text_color_link">@color/modern_grey_800_alpha_38</color>
     <color name="error_text_color">@color/default_red</color>
 
@@ -34,6 +34,7 @@
     <color name="default_icon_color_blue" tools:ignore="UnusedResources">
         @color/modern_blue_600
     </color>
+    <color name="light_icon_color" tools:ignore="UnusedResources">@color/modern_grey_500</color>
     <color name="hairline_stroke_color">@color/modern_grey_300</color>
 
     <!-- Common background and branding color. -->

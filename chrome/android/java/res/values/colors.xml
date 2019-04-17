@@ -18,9 +18,6 @@
     <color name="light_active_color">@color/modern_blue_600</color>
     <color name="control_highlight_color">@color/modern_grey_800_alpha_38</color>
 
-    <!-- Icon colors for drawables. -->
-    <color name="light_icon_color">@color/modern_grey_500</color>
-
     <!-- Other colors -->
     <color name="dark_action_bar_color">#263238</color>
     <color name="dark_status_bar_color">#161E21</color>
@@ -32,7 +29,6 @@
     <color name="black_alpha_20">#33000000</color>
     <color name="black_alpha_24">#3D000000</color>
     <color name="black_alpha_30">#4D000000</color>
-    <color name="black_alpha_40">#66000000</color>
     <color name="black_alpha_65">#A6000000</color>
     <color name="white_alpha_65">#A6FFFFFF</color>
     <color name="white_alpha_90">#E6FFFFFF</color>
@@ -180,8 +176,7 @@
     <!-- Photo Picker colors -->
     <color name="photo_picker_tile_bg_color">@color/modern_grey_200</color>
     <color name="photo_picker_special_tile_bg_color">@color/modern_grey_300</color>
-    <color name="photo_picker_special_tile_color">@color/black_alpha_40</color>
-    <color name="photo_picker_special_tile_disabled_color">@color/modern_grey_400</color>
+    <color name="photo_picker_special_tile_text_color">@color/default_text_color_secondary_list</color>
 
     <!-- Bookmark widget colors -->
     <color name="bookmark_widget_pressed_highlight">@color/black_alpha_11</color>

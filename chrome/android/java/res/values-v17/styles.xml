@@ -678,7 +678,7 @@
         <item name="android:textColor">@color/secondary_text_default_material_light</item>
     </style>
     <style name="TextAppearance.PhotoPickerSpecialTile" parent="TextAppearance.BlackTitle2">
-        <item name="android:textColor">@color/photo_picker_special_tile_color</item>
+        <item name="android:textColor">@color/photo_picker_special_tile_text_color</item>
     </style>
     <style name="TextAppearance.SearchEngineRecentTitle" parent="TextAppearance.RobotoMediumStyle">
         <item name="android:textColor">@color/default_text_color_link</item>

@@ -71,7 +71,7 @@
             android:layout_width="48dp"
             android:layout_height="48dp"
             tools:ignore="ContentDescription"
-            android:tint="@color/photo_picker_special_tile_color" />
+            android:tint="@color/photo_picker_tile_bg_color" />
 
         <TextView
             android:id="@+id/special_tile_label"
