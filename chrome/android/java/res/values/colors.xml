@@ -76,7 +76,7 @@
 
     <!--  Distilled Page Prefs colors -->
     <color name="distilled_page_prefs_selected">#999999</color>
-    <color name="distilled_page_prefs_unselected">@android:color/white</color>
+    <color name="distilled_page_prefs_unselected">@color/popup_bg_color</color>
 
     <!-- Preferences Colors -->
     <color name="pref_accent_color">@color/light_active_color</color>
