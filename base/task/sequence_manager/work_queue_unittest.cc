@@ -8,10 +8,13 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/task/sequence_manager/lazy_now.h"
 #include "base/task/sequence_manager/real_time_domain.h"
-#include "base/task/sequence_manager/sequence_manager_impl.h"
+#include "base/task/sequence_manager/sequence_manager.h"
 #include "base/task/sequence_manager/task_queue_impl.h"
 #include "base/task/sequence_manager/work_queue_sets.h"
+#include "base/time/default_tick_clock.h"
+#include "base/time/time.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace base {
@@ -35,19 +38,22 @@ struct Cancelable {
   WeakPtrFactory<Cancelable> weak_ptr_factory;
 };
 
+class RealTimeDomainFake : public RealTimeDomain {
+ public:
+  LazyNow CreateLazyNow() const override {
+    return LazyNow(DefaultTickClock::GetInstance());
+  }
+
+  TimeTicks Now() const override { return TimeTicks::Now(); }
+};
+
 }  // namespace
 
 class WorkQueueTest : public testing::Test {
  public:
   void SetUp() override {
-    dummy_sequence_manager_ =
-        SequenceManagerImpl::CreateUnbound(SequenceManager::Settings{});
-    scoped_refptr<AssociatedThreadId> thread_checker =
-        dummy_sequence_manager_->associated_thread();
-    thread_checker->BindToCurrentThread();
-    time_domain_.reset(new RealTimeDomain());
-    dummy_sequence_manager_->RegisterTimeDomain(time_domain_.get());
-    task_queue_ = std::make_unique<TaskQueueImpl>(dummy_sequence_manager_.get(),
+    time_domain_.reset(new RealTimeDomainFake());
+    task_queue_ = std::make_unique<TaskQueueImpl>(/*sequence_manager=*/nullptr,
                                                   time_domain_.get(),
                                                   TaskQueue::Spec("test"));
 
@@ -62,7 +68,6 @@ class WorkQueueTest : public testing::Test {
   void TearDown() override {
     work_queue_sets_->RemoveQueue(work_queue_.get());
     task_queue_->UnregisterTaskQueue();
-    dummy_sequence_manager_->UnregisterTimeDomain(time_domain_.get());
   }
 
  protected:
@@ -91,7 +96,6 @@ class WorkQueueTest : public testing::Test {
   }
 
   std::unique_ptr<MockObserver> mock_observer_;
-  std::unique_ptr<SequenceManagerImpl> dummy_sequence_manager_;
   std::unique_ptr<RealTimeDomain> time_domain_;
   std::unique_ptr<TaskQueueImpl> task_queue_;
   std::unique_ptr<WorkQueue> work_queue_;
