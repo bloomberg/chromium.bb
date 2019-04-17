@@ -27,12 +27,15 @@ piex wasm raw image preview / thumbnail test page
     }
 
     process(resolve, reject) {
+      // TODO(noel): when we move over to using the file system for reading
+      // images, remove this length checking code and instead put it in the
+      // readFromFileSystem helper.
       if (this.length <= 0 || this.length >= Math.pow(2, 30))
         throw new Error('invalid image length');
 
       this.memory = Module._malloc(this.length);
       if (!this.memory)
-        throw Error('image malloc failure');
+        throw new Error('image malloc failure');
 
       this.callback = Module.addFunction((result) => {
         resolve(this.result = result);
@@ -74,9 +77,9 @@ piex wasm raw image preview / thumbnail test page
         throw new Error('failed to extract thumbnail');
 
       const view = new Uint8Array(this.source.buffer, offset, length);
+      thumbnail.data = new Uint8Array(view);
       if (thumbnail.format == 1)  // RGB
         thumbnail.size = thumbnail.width * thumbnail.height * 3;
-      thumbnail.data = new Uint8Array(view);
       thumbnail.type = 'thumbnail';
 
       return thumbnail;
@@ -247,7 +250,7 @@ piex wasm raw image preview / thumbnail test page
     document.body.innerHTML = `<pre>${image}</pre>`;
 
     // Fetch the image in an array buffer.
-    let time = performance.now();
+    let time = window.performance.now();
     const buffer = await fetch(image).then((response) => {
       if (!response.ok)
         throw new Error('failed fetching image ' + image);
