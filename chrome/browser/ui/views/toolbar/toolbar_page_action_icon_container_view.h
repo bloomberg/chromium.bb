@@ -45,6 +45,9 @@ class ToolbarPageActionIconContainerView : public ToolbarIconContainerView,
   SkColor GetPageActionInkDropColor() const override;
   content::WebContents* GetWebContentsForPageActionIconView() override;
 
+  // views::View:
+  void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
+
   autofill::LocalCardMigrationIconView* local_card_migration_icon_view() const {
     return local_card_migration_icon_view_;
   }
