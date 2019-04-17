@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.infobar;
 import android.graphics.Bitmap;
 
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ResourceId;
 import org.chromium.chrome.browser.permissions.AndroidPermissionRequester;
 import org.chromium.chrome.browser.tab.Tab;
@@ -26,8 +27,8 @@ public class PermissionInfoBar
     protected PermissionInfoBar(Tab tab, int[] contentSettingsTypes, int iconDrawableId,
             Bitmap iconBitmap, String message, String linkText, String primaryButtonText,
             String secondaryButtonText) {
-        super(iconDrawableId, iconBitmap, message, linkText, primaryButtonText,
-                secondaryButtonText);
+        super(iconDrawableId, R.color.infobar_icon_drawable_color, iconBitmap, message, linkText,
+                primaryButtonText, secondaryButtonText);
         mTab = tab;
         mContentSettingsTypes = contentSettingsTypes;
     }

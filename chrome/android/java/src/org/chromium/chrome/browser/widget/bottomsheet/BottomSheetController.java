@@ -13,6 +13,8 @@ import org.chromium.chrome.browser.ActivityTabProvider.HintlessActivityTabObserv
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager.OverlayPanelManagerObserver;
+import org.chromium.chrome.browser.init.ActivityLifecycleDispatcher;
+import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
@@ -36,7 +38,7 @@ import java.util.Set;
  * and call {@link #requestShowContent(BottomSheetContent, boolean)} which will return true if the
  * content was actually shown (see full doc on method).
  */
-public class BottomSheetController {
+public class BottomSheetController implements Destroyable {
     /** The initial capacity for the priority queue handling pending content show requests. */
     private static final int INITIAL_QUEUE_CAPACITY = 1;
 
@@ -48,6 +50,9 @@ public class BottomSheetController {
 
     /** A handle to the {@link SnackbarManager} that manages snackbars inside the bottom sheet. */
     private final SnackbarManager mSnackbarManager;
+
+    /** A {@link VrModeObserver} that observers events of entering and exiting VR mode. */
+    private final VrModeObserver mVrModeObserver;
 
     /** A queue for content that is waiting to be shown in the {@link BottomSheet}. */
     private PriorityQueue<BottomSheetContent> mContentQueue;
@@ -79,6 +84,7 @@ public class BottomSheetController {
     /**
      * Build a new controller of the bottom sheet.
      * @param activity An activity for context.
+     * @param lifecycleDispatcher The {@link ActivityLifecycleDispatcher} for the {@code activity}.
      * @param activityTabProvider The provider of the activity's current tab.
      * @param scrim The scrim that shows when the bottom sheet is opened.
      * @param bottomSheet The bottom sheet that this class will be controlling.
@@ -87,6 +93,7 @@ public class BottomSheetController {
      *                                         Contextual Search is showing.
      */
     public BottomSheetController(final Activity activity,
+            final ActivityLifecycleDispatcher lifecycleDispatcher,
             final ActivityTabProvider activityTabProvider, final ScrimView scrim,
             BottomSheet bottomSheet, OverlayPanelManager overlayManager,
             boolean suppressSheetForContextualSearch) {
@@ -101,6 +108,8 @@ public class BottomSheetController {
         // Initialize the queue with a comparator that checks content priority.
         mContentQueue = new PriorityQueue<>(INITIAL_QUEUE_CAPACITY,
                 (content1, content2) -> content2.getPriority() - content1.getPriority());
+
+        lifecycleDispatcher.register(this);
 
         final TabObserver tabObserver = new EmptyTabObserver() {
             @Override
@@ -119,7 +128,7 @@ public class BottomSheetController {
             }
         };
 
-        VrModuleProvider.registerVrModeObserver(new VrModeObserver() {
+        mVrModeObserver = new VrModeObserver() {
             @Override
             public void onEnterVr() {
                 suppressSheet(StateChangeReason.VR);
@@ -129,7 +138,8 @@ public class BottomSheetController {
             public void onExitVr() {
                 unsuppressSheet();
             }
-        });
+        };
+        VrModuleProvider.registerVrModeObserver(mVrModeObserver);
 
         mTabProvider.addObserverAndTrigger(new HintlessActivityTabObserver() {
             @Override
@@ -225,6 +235,12 @@ public class BottomSheetController {
                 }
             });
         }
+    }
+
+    // Destroyable implementation.
+    @Override
+    public void destroy() {
+        VrModuleProvider.unregisterVrModeObserver(mVrModeObserver);
     }
 
     /**

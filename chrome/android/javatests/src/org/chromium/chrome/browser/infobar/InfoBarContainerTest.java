@@ -295,6 +295,10 @@ public class InfoBarContainerTest {
         final ViewGroup decorView =
                 (ViewGroup) mActivityTestRule.getActivity().getWindow().getDecorView();
         final InfoBarContainer infoBarContainer = mActivityTestRule.getInfoBarContainer();
+        final InfoBarContainerView infoBarContainerView =
+                infoBarContainer.getContainerViewForTesting();
+
+        Assert.assertNotNull("InfoBarContainerView should not be null.", infoBarContainerView);
 
         // Detect layouts. Note this doesn't actually need to be atomic (just final).
         final AtomicInteger layoutCount = new AtomicInteger();
@@ -334,18 +338,16 @@ public class InfoBarContainerTest {
             public void run() {
                 decorView.getWindowVisibleDisplayFrame(fullDisplayFrame);
                 decorView.getWindowVisibleDisplayFrame(fullDisplayFrameMinusContainer);
-                fullDisplayFrameMinusContainer.bottom -= infoBarContainer.getHeight();
+                fullDisplayFrameMinusContainer.bottom -= infoBarContainerView.getHeight();
                 int windowLocation[] = new int[2];
-                infoBarContainer.getLocationInWindow(windowLocation);
-                containerDisplayFrame.set(
-                        windowLocation[0],
-                        windowLocation[1],
-                        windowLocation[0] + infoBarContainer.getWidth(),
-                        windowLocation[1] + infoBarContainer.getHeight());
+                infoBarContainerView.getLocationInWindow(windowLocation);
+                containerDisplayFrame.set(windowLocation[0], windowLocation[1],
+                        windowLocation[0] + infoBarContainerView.getWidth(),
+                        windowLocation[1] + infoBarContainerView.getHeight());
 
                 // The InfoBarContainer subtracts itself from the transparent region.
                 Region transparentRegion = new Region(fullDisplayFrame);
-                infoBarContainer.gatherTransparentRegion(transparentRegion);
+                infoBarContainerView.gatherTransparentRegion(transparentRegion);
                 Assert.assertEquals(
                         "Values did not match. Expected: " + transparentRegion.getBounds()
                                 + ", actual: " + fullDisplayFrameMinusContainer,

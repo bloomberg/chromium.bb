@@ -56,7 +56,7 @@ public class DuplicateDownloadInfoBar extends ConfirmInfoBar {
      */
     private DuplicateDownloadInfoBar(Context context, String filePath, boolean isOfflinePage,
             String pageUrl, boolean isIncognito, boolean duplicateRequestExists) {
-        super(R.drawable.infobar_downloading, null, null, null,
+        super(R.drawable.infobar_downloading, R.color.infobar_icon_drawable_color, null, null, null,
                 context.getString(R.string.duplicate_download_infobar_download_button),
                 context.getString(R.string.cancel));
         mFilePath = filePath;

@@ -65,6 +65,7 @@ import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.toolbar.HomeButton;
 import org.chromium.chrome.browser.toolbar.KeyboardNavigationListener;
 import org.chromium.chrome.browser.toolbar.TabCountProvider;
 import org.chromium.chrome.browser.toolbar.TabCountProvider.TabCountObserver;
@@ -134,7 +135,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
 
     private ViewGroup mToolbarButtonsContainer;
     protected @Nullable ToggleTabStackButton mToggleTabStackButton;
-    protected @Nullable ImageButton mHomeButton;
+    protected @Nullable HomeButton mHomeButton;
     private TextView mUrlBar;
     protected View mUrlActionContainer;
     protected ImageView mToolbarShadow;
@@ -385,6 +386,12 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
 
             setWillNotDraw(false);
         }
+    }
+
+    @Override
+    void destroy() {
+        super.destroy();
+        if (mHomeButton != null) mHomeButton.destroy();
     }
 
     /**

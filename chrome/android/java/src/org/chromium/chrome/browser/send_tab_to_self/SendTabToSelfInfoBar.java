@@ -16,7 +16,7 @@ import org.chromium.chrome.browser.infobar.InfoBarCompactLayout;
 public class SendTabToSelfInfoBar extends InfoBar {
     public SendTabToSelfInfoBar() {
         // TODO(crbug.com/949233): Update this to the right icon
-        super(R.drawable.infobar_chrome, null, null);
+        super(R.drawable.infobar_chrome, R.color.default_icon_color_blue, null, null);
     }
 
     @Override

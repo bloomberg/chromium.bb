@@ -73,7 +73,8 @@ public class BottomSheetControllerTest {
             ScrimView scrim = new ScrimView(mActivityTestRule.getActivity(), null, coordinator);
 
             mSheetController = new BottomSheetController(activity,
-                    activity.getActivityTabProvider(), scrim, mBottomSheet,
+                    activity.getLifecycleDispatcher(), activity.getActivityTabProvider(), scrim,
+                    mBottomSheet,
                     activity.getCompositorViewHolder().getLayoutManager().getOverlayPanelManager(),
                     true);
 

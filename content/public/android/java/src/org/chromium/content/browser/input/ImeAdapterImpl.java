@@ -29,6 +29,7 @@ import android.view.inputmethod.ExtractedText;
 import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputMethodManager;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.UserData;
@@ -191,8 +192,9 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver, UserData
         mWebContents = (WebContentsImpl) webContents;
         mViewDelegate = mWebContents.getViewAndroidDelegate();
         assert mViewDelegate != null;
+        // Use application context here to avoid leaking the activity context.
         InputMethodManagerWrapper wrapper =
-                createDefaultInputMethodManagerWrapper(mWebContents.getContext());
+                createDefaultInputMethodManagerWrapper(ContextUtils.getApplicationContext());
 
         // Deep copy newConfig so that we can notice the difference.
         mCurrentConfig = new Configuration(getContainerView().getResources().getConfiguration());
