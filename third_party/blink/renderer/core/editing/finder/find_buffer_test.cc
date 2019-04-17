@@ -645,4 +645,10 @@ TEST_F(FindBufferTest, SelectMultipleTest) {
   EXPECT_EQ(0u, buffer.FindMatches("find", 0)->CountForTesting());
 }
 
+TEST_F(FindBufferTest, NullRange) {
+  SetBodyContent("x<div></div>");
+  FindBuffer buffer(WholeDocumentRange());
+  EXPECT_EQ(0u, buffer.FindMatches("find", 0)->CountForTesting());
+}
+
 }  // namespace blink

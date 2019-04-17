@@ -317,13 +317,17 @@ void FindBuffer::CollectScopedForcedUpdates(Node& start_node,
 void FindBuffer::CollectTextUntilBlockBoundary(
     const EphemeralRangeInFlatTree& range) {
   DCHECK(range.IsNotNull() && !range.IsCollapsed()) << range;
+
+  node_after_block_ = nullptr;
+  const Node* const first_node = range.StartPosition().NodeAsRangeFirstNode();
+  if (!first_node)
+    return;
   // Get first visible text node from |start_position|.
   Node* node =
       GetVisibleTextNode(*range.StartPosition().NodeAsRangeFirstNode());
-  if (!node || !node->isConnected()) {
-    node_after_block_ = nullptr;
+  if (!node || !node->isConnected())
     return;
-  }
+
   Node& block_ancestor = GetLowestDisplayBlockInclusiveAncestor(*node);
   const Node* just_after_block = FlatTreeTraversal::Next(
       FlatTreeTraversal::LastWithinOrSelf(block_ancestor));
