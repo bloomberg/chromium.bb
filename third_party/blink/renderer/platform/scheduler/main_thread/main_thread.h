@@ -25,7 +25,6 @@ class PLATFORM_EXPORT MainThread : public Thread {
   ~MainThread() override;
 
   // Thread implementation.
-  void Init() override;
   ThreadScheduler* Scheduler() override;
   PlatformThreadId ThreadId() const override;
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() const override;

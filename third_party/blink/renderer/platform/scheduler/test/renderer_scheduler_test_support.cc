@@ -35,7 +35,6 @@ class SimpleThread : public Thread {
 
   ThreadScheduler* Scheduler() override { return scheduler_; }
 
-  void Init() override {}
   bool IsCurrentThread() const { return WTF::IsMainThread(); }
 
  private:
