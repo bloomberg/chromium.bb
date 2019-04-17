@@ -280,7 +280,7 @@ String WorkletAnimation::playState() {
 
 void WorkletAnimation::play(ExceptionState& exception_state) {
   DCHECK(IsMainThread());
-  if (play_state_ == Animation::kPending)
+  if (play_state_ == Animation::kPending || play_state_ == Animation::kRunning)
     return;
 
   if (play_state_ == Animation::kPaused) {
