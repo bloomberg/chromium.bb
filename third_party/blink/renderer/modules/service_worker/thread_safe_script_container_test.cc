@@ -49,8 +49,8 @@ class ThreadSafeScriptContainerTest : public ::testing::Test {
               auto data =
                   std::make_unique<ThreadSafeScriptContainer::RawScriptData>(
                       String::FromUTF8("utf-8") /* encoding */,
-                      Vector<Vector<char>>() /* script_text */,
-                      Vector<Vector<char>>() /* meta_data */);
+                      Vector<uint8_t>() /* script_text */,
+                      Vector<uint8_t>() /* meta_data */);
               *out_data = data.get();
               container->AddOnIOThread(KURL(kKeyUrl), std::move(data));
               waiter->Signal();
