@@ -138,7 +138,8 @@ class CONTENT_EXPORT RenderAccessibilityImpl
                  int action_request_id);
   void OnLoadInlineTextBoxes(const blink::WebAXObject& obj);
   void OnGetImageData(const blink::WebAXObject& obj, const gfx::Size& max_size);
-  void AddPluginTreeToUpdate(AXContentTreeUpdate* update);
+  void AddPluginTreeToUpdate(AXContentTreeUpdate* update,
+                             bool invalidate_plugin_subtree);
 
   // Creates and takes ownership of an instance of the class that automatically
   // labels images for accessibility.
@@ -192,6 +193,7 @@ class CONTENT_EXPORT RenderAccessibilityImpl
                                                       ui::AXTreeData>;
   std::unique_ptr<PluginAXTreeSerializer> plugin_serializer_;
   PluginAXTreeSource* plugin_tree_source_;
+  blink::WebAXObject plugin_host_node_;
 
   // Current location of every object, so we can detect when it moves.
   std::unordered_map<int, ui::AXRelativeBounds> locations_;
