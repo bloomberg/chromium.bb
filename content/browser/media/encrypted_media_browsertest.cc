@@ -356,8 +356,6 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_Encryption_CENS) {
                       media::kError);
 }
 
-#if !defined(OS_ANDROID)
-// TODO(crbug.com/813845): Enable CBCS support on Chrome for Android.
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_Encryption_CBCS) {
   std::string expected_result =
       BUILDFLAG(ENABLE_CBCS_ENCRYPTION_SCHEME) ? media::kEnded : media::kError;
@@ -380,7 +378,6 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest,
   RunMultipleFileTest("bear-640x360-v_frag-cenc.mp4",
                       "bear-640x360-a_frag-cbcs.mp4", expected_result);
 }
-#endif  // !defined(OS_ANDROID)
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
 
 IN_PROC_BROWSER_TEST_F(EncryptedMediaTest, UnknownKeySystemThrowsException) {
