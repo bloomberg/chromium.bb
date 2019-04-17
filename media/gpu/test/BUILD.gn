@@ -10,16 +10,30 @@ source_set("helpers") {
   sources = [
     "image.cc",
     "image.h",
-    "video_accelerator_unittest_helpers.h",
     "video_frame_helpers.cc",
     "video_frame_helpers.h",
+    "video_test_environment.cc",
+    "video_test_environment.h",
   ]
   deps = [
     "//base:base",
+    "//base/test:test_config",
+    "//base/test:test_support",
     "//media:test_support",
     "//media/gpu",
+    "//mojo/core/embedder:embedder",
     "//third_party/libyuv",
   ]
+  public_deps = [
+    "//testing/gtest",
+  ]
+
+  if (use_ozone) {
+    deps += [ "//ui/ozone" ]
+  }
+  if (use_vaapi) {
+    deps += [ "//media/gpu/vaapi" ]
+  }
 }
 
 source_set("render_helpers") {
@@ -150,19 +164,10 @@ static_library("video_player_test_environment") {
     "//media/test/data/",
   ]
   deps = [
+    ":helpers",
     ":video_player",
-    "//base/test:test_config",
-    "//base/test:test_support",
     "//media/gpu",
-    "//mojo/core/embedder:embedder",
-    "//testing/gtest:gtest",
   ]
-  if (use_ozone) {
-    deps += [ "//ui/ozone" ]
-  }
-  if (use_vaapi) {
-    deps += [ "//media/gpu/vaapi" ]
-  }
 }
 
 static_library("image_processor") {
