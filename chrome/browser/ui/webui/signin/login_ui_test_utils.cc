@@ -193,11 +193,16 @@ class SigninViewControllerTestUtil {
     content::WebContents* dialog_web_contents =
         signin_view_controller->GetModalDialogWebContentsForTesting();
     DCHECK_NE(dialog_web_contents, nullptr);
+    std::string confirm_button_selector =
+        "document.querySelector('sync-confirmation-app').shadowRoot."
+        "querySelector('#confirmButton')";
     std::string message;
     std::string find_button_js =
         "if (document.readyState != 'complete') {"
         "  window.domAutomationController.send('DocumentNotReady');"
-        "} else if (document.getElementById('confirmButton') == null) {"
+        "} else if (" +
+        confirm_button_selector +
+        " == null) {"
         "  window.domAutomationController.send('NotFound');"
         "} else {"
         "  window.domAutomationController.send('Ok');"
@@ -209,9 +214,8 @@ class SigninViewControllerTestUtil {
 
     // This cannot be a synchronous call, because it closes the window as a side
     // effect, which may cause the javascript execution to never finish.
-    content::ExecuteScriptAsync(
-        dialog_web_contents,
-        "document.getElementById('confirmButton').click();");
+    content::ExecuteScriptAsync(dialog_web_contents,
+                                confirm_button_selector + ".click();");
     return true;
 #endif
   }
