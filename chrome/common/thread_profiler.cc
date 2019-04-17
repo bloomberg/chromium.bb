@@ -159,6 +159,9 @@ void ThreadProfiler::SetMainThreadTaskRunner(
 }
 
 void ThreadProfiler::AddAuxUnwinder(std::unique_ptr<base::Unwinder> unwinder) {
+  if (!StackSamplingConfiguration::Get()->IsProfilerEnabledForCurrentProcess())
+    return;
+
   aux_unwinder_ = std::move(unwinder);
   startup_profiler_->AddAuxUnwinder(aux_unwinder_.get());
   if (periodic_profiler_)
