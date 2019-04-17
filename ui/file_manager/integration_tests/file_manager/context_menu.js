@@ -326,6 +326,9 @@ async function checkContextMenuInDriveFolder(
   chrome.test.assertTrue(!!await remoteCall.callRemoteTestUtil(
       'selectFolderInTree', appId, ['My Drive']));
 
+  // Wait for My Drive to load.
+  await remoteCall.waitUntilCurrentDirectoryIsChanged(appId, '/My Drive');
+
   // Expand 'My Drive'.
   chrome.test.assertTrue(!!await remoteCall.callRemoteTestUtil(
       'expandSelectedFolderInTree', appId, []));
@@ -333,6 +336,10 @@ async function checkContextMenuInDriveFolder(
   // Select the folder.
   await remoteCall.callRemoteTestUtil(
       'selectFolderInTree', appId, [folderName]);
+
+  // Wait the folder to load.
+  await remoteCall.waitUntilCurrentDirectoryIsChanged(
+      appId, '/My Drive/' + folderName);
 
   // Right-click inside the file list.
   chrome.test.assertTrue(!!await remoteCall.callRemoteTestUtil(

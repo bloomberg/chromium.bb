@@ -177,14 +177,22 @@ testcase.drivePinFileMobileNetwork = async () => {
   chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
       'fakeMouseRightClick', appId, ['.table-row[selected]']));
 
+  // Wait menu to appear and click on toggle pinned.
   await remoteCall.waitForElement(appId, '#file-context-menu:not([hidden])');
-  await remoteCall.waitForElement(appId, ['[command="#toggle-pinned"]']);
-  await remoteCall.callRemoteTestUtil(
-      'fakeMouseClick', appId, ['[command="#toggle-pinned"]']);
+  await remoteCall.waitAndClickElement(
+      appId, '[command="#toggle-pinned"]:not([hidden]):not([disabled])');
+
+  // Wait the toggle pinned async action to finish, so the next call to display
+  // context menu is after the action has finished.
   await remoteCall.waitForElement(appId, '#file-context-menu[hidden]');
+  // TODO(crbug.com/953616): Change wait for a deterministic option.
+  await wait(100);
+
+  // Open context menu again.
   chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
       'fakeEvent', appId, ['#file-list', 'contextmenu']));
 
+  // Check: File is pinned.
   await remoteCall.waitForElement(appId, '[command="#toggle-pinned"][checked]');
   await repeatUntil(async () => {
     const idSet =
@@ -242,14 +250,22 @@ testcase.PRE_driveMigratePinnedFile = async () => {
   chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
       'fakeMouseRightClick', appId, ['.table-row[selected]']));
 
+  // Wait menu to appear and click on toggle pinned.
   await remoteCall.waitForElement(appId, '#file-context-menu:not([hidden])');
-  await remoteCall.waitForElement(appId, ['[command="#toggle-pinned"]']);
-  await remoteCall.callRemoteTestUtil(
-      'fakeMouseClick', appId, ['[command="#toggle-pinned"]']);
+  await remoteCall.waitAndClickElement(
+      appId, '[command="#toggle-pinned"]:not([hidden]):not([disabled])');
+
+  // Wait the toggle pinned async action to finish, so the next call to display
+  // context menu is after the action has finished.
   await remoteCall.waitForElement(appId, '#file-context-menu[hidden]');
+  // TODO(crbug.com/953616): Change wait for a deterministic option.
+  await wait(100);
+
+  // Open context menu again.
   chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
       'fakeEvent', appId, ['#file-list', 'contextmenu']));
 
+  // Check: File is pinned.
   await remoteCall.waitForElement(appId, '[command="#toggle-pinned"][checked]');
 };
 
