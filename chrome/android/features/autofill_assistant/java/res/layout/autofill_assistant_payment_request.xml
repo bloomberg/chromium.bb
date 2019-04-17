@@ -9,8 +9,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:gravity="center"
-    android:background="@color/modern_primary_color" >
+    android:gravity="center" >
 
     <LinearLayout
         android:id="@+id/payment_container_layout"
