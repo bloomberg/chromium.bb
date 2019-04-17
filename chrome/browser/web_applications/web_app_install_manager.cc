@@ -37,6 +37,8 @@ void WebAppInstallManager::InstallWebAppFromManifest(
     WebappInstallSource install_source,
     WebAppInstallDialogCallback dialog_callback,
     OnceInstallCallback callback) {
+  DCHECK(AreWebAppsUserInstallable(profile()));
+
   auto task =
       std::make_unique<WebAppInstallTask>(profile(), install_finalizer_);
   task->InstallWebAppFromManifest(
