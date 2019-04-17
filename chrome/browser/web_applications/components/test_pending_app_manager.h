@@ -39,6 +39,10 @@ class TestPendingAppManager : public PendingAppManager {
     deduped_uninstall_count_ = 0;
   }
 
+  const std::map<GURL, InstallSource>& installed_apps() const {
+    return installed_apps_;
+  }
+
   void SimulatePreviouslyInstalledApp(const GURL& url,
                                       InstallSource install_source);
 

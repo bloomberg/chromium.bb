@@ -41,6 +41,8 @@ void PendingAppManager::SynchronizeInstalledApps(
                      [&install_source](const InstallOptions& install_options) {
                        return install_options.install_source == install_source;
                      }));
+  // Only one concurrent SynchronizeInstalledApps() expected per InstallSource.
+  DCHECK(!base::ContainsKey(synchronize_requests_, install_source));
 
   std::vector<GURL> current_urls = GetInstalledAppUrls(install_source);
   std::sort(current_urls.begin(), current_urls.end());
@@ -61,11 +63,6 @@ void PendingAppManager::SynchronizeInstalledApps(
         base::BindOnce(std::move(callback), SynchronizeResult::kSuccess));
     return;
   }
-
-  // TODO(calamity): Move this to the top of the function once PolicyPrefsTest
-  // no longer crashes because of it.
-  // Only one concurrent SynchronizeInstalledApps() expected per InstallSource.
-  DCHECK(!base::ContainsKey(synchronize_requests_, install_source));
 
   // Add the callback to a map and call once all installs/uninstalls finish.
   synchronize_requests_.insert_or_assign(
