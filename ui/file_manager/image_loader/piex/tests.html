@@ -27,12 +27,6 @@ piex wasm raw image preview / thumbnail test page
     }
 
     process(resolve, reject) {
-      // TODO(noel): when we move over to using the file system for reading
-      // images, remove this length checking code and instead put it in the
-      // readFromFileSystem helper.
-      if (this.length <= 0 || this.length >= Math.pow(2, 30))
-        throw new Error('invalid image length');
-
       this.memory = Module._malloc(this.length);
       if (!this.memory)
         throw new Error('image malloc failure');
@@ -96,7 +90,7 @@ piex wasm raw image preview / thumbnail test page
       document.title = 'createFileSystem';
 
       function failed(error) {
-        reject(new Error('Creating file system: ' + error.name));
+        reject(new Error('Creating file system: ' + error));
       }
 
       function createdFileSystem(fileSystem) {
@@ -122,7 +116,7 @@ piex wasm raw image preview / thumbnail test page
       }).catch(reject);
 
       function failure(error) {
-        reject(new Error('Writing file system: ' + error.name));
+        reject(new Error('Writing file system: ' + error));
       }
 
       function writeEntry(fileEntry) {
@@ -143,11 +137,17 @@ piex wasm raw image preview / thumbnail test page
       document.title = image;
 
       function failure(error) {
-        reject(new Error('Reading file system: ' + error.name));
+        reject(new Error('Reading file system: ' + error));
+      }
+
+      function invalid(size) {
+        return size <= 0 || size >= Math.pow(2, 30);
       }
 
       function readEntry(fileEntry) {
         fileEntry.file((file) => {
+          if (invalid(file.size))
+            return failure('invalid file size');
           const reader = new FileReader();
           reader.onerror = failure;
           reader.onload = () => resolve(reader.result);
@@ -251,11 +251,7 @@ piex wasm raw image preview / thumbnail test page
 
     // Fetch the image in an array buffer.
     let time = window.performance.now();
-    const buffer = await fetch(image).then((response) => {
-      if (!response.ok)
-        throw new Error('failed fetching image ' + image);
-      return response.arrayBuffer();
-    }).catch(onerror);
+    const buffer = await readFromFileSystem(image).catch(onerror);
     if (!buffer)
       return;
 
