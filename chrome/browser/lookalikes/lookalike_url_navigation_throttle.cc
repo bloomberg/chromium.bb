@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -30,6 +31,9 @@
 #include "content/public/browser/navigation_handle.h"
 
 namespace {
+
+const base::FeatureParam<bool> kEnableInterstitialForTopSites{
+    &features::kLookalikeUrlNavigationSuggestionsUI, "topsites", false};
 
 using lookalikes::LookalikeUrlNavigationThrottle;
 using MatchType = LookalikeUrlInterstitialPage::MatchType;
@@ -390,8 +394,14 @@ ThrottleCheckResult LookalikeUrlNavigationThrottle::PerformChecks(
 
 bool LookalikeUrlNavigationThrottle::ShouldDisplayInterstitial(
     MatchType match_type) const {
-  return interstitials_enabled_ && match_type != MatchType::kEditDistance &&
-         match_type != MatchType::kEditDistanceSiteEngagement;
+  if (!interstitials_enabled_) {
+    return false;
+  }
+  if (match_type == MatchType::kSiteEngagement) {
+    return true;
+  }
+  return match_type == MatchType::kTopSite &&
+         kEnableInterstitialForTopSites.Get();
 }
 
 bool LookalikeUrlNavigationThrottle::GetMatchingDomain(
