@@ -7,20 +7,13 @@
 #include "ash/dbus/display_service_provider.h"
 #include "ash/dbus/liveness_service_provider.h"
 #include "ash/dbus/url_handler_service_provider.h"
-#include "ash/shell.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/services/cros_dbus_service.h"
 #include "dbus/object_path.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace ash {
 
-AshDBusServices::AshDBusServices() {
-  dbus::Bus* system_bus =
-      chromeos::DBusThreadManager::IsInitialized() &&
-              !chromeos::DBusThreadManager::Get()->IsUsingFakes()
-          ? chromeos::DBusThreadManager::Get()->GetSystemBus()
-          : nullptr;
+AshDBusServices::AshDBusServices(dbus::Bus* system_bus) {
   display_service_ = chromeos::CrosDBusService::Create(
       system_bus, chromeos::kDisplayServiceName,
       dbus::ObjectPath(chromeos::kDisplayServicePath),

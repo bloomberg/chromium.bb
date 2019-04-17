@@ -11,15 +11,18 @@
 
 namespace chromeos {
 class CrosDBusService;
-}  // namespace chromeos
+}
+
+namespace dbus {
+class Bus;
+}
 
 namespace ash {
 
-// Handles starting/stopping the D-Bus thread for ash services and also
-// manages the liftime of the ash D-Bus services.
+// Owns and manages the lifetime of the ash D-Bus services.
 class AshDBusServices {
  public:
-  AshDBusServices();
+  explicit AshDBusServices(dbus::Bus* system_bus);
   ~AshDBusServices();
 
  private:

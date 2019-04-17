@@ -25,6 +25,7 @@
 #include "ash/cast_config_controller.h"
 #include "ash/components/tap_visualizer/public/mojom/tap_visualizer.mojom.h"
 #include "ash/custom_tab/arc_custom_tab_controller.h"
+#include "ash/dbus/ash_dbus_helper.h"
 #include "ash/dbus/ash_dbus_services.h"
 #include "ash/detachable_base/detachable_base_handler.h"
 #include "ash/detachable_base/detachable_base_notification_controller.h"
@@ -174,13 +175,13 @@
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/trace_event/trace_event.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power/power_policy_controller.h"
 #include "chromeos/system/devicemode.h"
 #include "components/exo/file_helper.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/viz/host/host_frame_sink_manager.h"
+#include "dbus/bus.h"
 #include "services/preferences/public/cpp/pref_service_factory.h"
 #include "services/preferences/public/mojom/preferences.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -280,11 +281,11 @@ Shell* Shell::instance_ = nullptr;
 Shell* Shell::CreateInstance(ShellInitParams init_params) {
   CHECK(!instance_);
   instance_ = new Shell(std::move(init_params.delegate), init_params.connector);
-  instance_->Init(init_params.context_factory,
-                  init_params.context_factory_private,
-                  std::move(init_params.initial_display_prefs),
-                  std::move(init_params.gpu_interface_provider),
-                  std::move(init_params.keyboard_ui_factory));
+  instance_->Init(
+      init_params.context_factory, init_params.context_factory_private,
+      std::move(init_params.initial_display_prefs),
+      std::move(init_params.gpu_interface_provider),
+      std::move(init_params.keyboard_ui_factory), init_params.dbus_bus);
   return instance_;
 }
 
@@ -971,7 +972,8 @@ void Shell::Init(
     ui::ContextFactoryPrivate* context_factory_private,
     std::unique_ptr<base::Value> initial_display_prefs,
     std::unique_ptr<ws::GpuInterfaceProvider> gpu_interface_provider,
-    std::unique_ptr<keyboard::KeyboardUIFactory> keyboard_ui_factory) {
+    std::unique_ptr<keyboard::KeyboardUIFactory> keyboard_ui_factory,
+    scoped_refptr<dbus::Bus> dbus_bus) {
   if (::features::IsSingleProcessMash()) {
     // In SingleProcessMash mode ScreenMus is not created, which means Ash needs
     // to set the WindowManagerFrameValues.
@@ -990,12 +992,9 @@ void Shell::Init(
   if (!::features::IsMultiProcessMash()) {
     // DBus clients only needed in Ash. For MultiProcessMash these are
     // initialized in AshService::InitializeDBusClients.
-    dbus::Bus* bus = chromeos::DBusThreadManager::IsInitialized()
-                         ? chromeos::DBusThreadManager::Get()->GetSystemBus()
-                         : nullptr;
-    if (bus) {
+    if (dbus_bus) {
       // Required by DetachableBaseHandler.
-      chromeos::HammerdClient::Initialize(bus);
+      chromeos::HammerdClient::Initialize(dbus_bus.get());
     } else {
       // Required by DetachableBaseHandler.
       chromeos::HammerdClient::InitializeFake();
@@ -1312,8 +1311,10 @@ void Shell::Init(
 
   notification_reporter_ = std::make_unique<NotificationReporter>();
 
-  // Initialize the D-Bus thread and services for ash.
-  ash_dbus_services_ = std::make_unique<AshDBusServices>();
+  // Initialize the D-Bus bus and services for ash.
+  if (!::features::IsMultiProcessMash())
+    ash_dbus_helper_ = AshDBusHelper::CreateWithExistingBus(dbus_bus);
+  ash_dbus_services_ = std::make_unique<AshDBusServices>(dbus_bus.get());
 
   // By this point ash shell should have initialized its D-Bus signal
   // listeners, so inform the session manager that Ash is initialized.
