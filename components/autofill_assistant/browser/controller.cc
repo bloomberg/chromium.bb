@@ -723,10 +723,13 @@ void Controller::UpdatePaymentRequestActions() {
   bool shipping_address_ok = !payment_request_options_->request_shipping ||
                              payment_request_info_->shipping_address;
 
+  bool payment_method_ok = !payment_request_options_->request_payment_method ||
+                           payment_request_info_->card;
+
   bool terms_ok = payment_request_info_->terms_and_conditions != NOT_SELECTED;
 
-  bool continue_button_enabled = contact_info_ok && shipping_address_ok &&
-                                 payment_request_info_->card && terms_ok;
+  bool continue_button_enabled =
+      contact_info_ok && shipping_address_ok && payment_method_ok && terms_ok;
 
   auto chips = std::make_unique<std::vector<Chip>>();
   chips->emplace_back();
