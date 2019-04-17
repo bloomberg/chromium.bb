@@ -6,6 +6,7 @@
 
 #include "base/test/metrics/histogram_tester.h"
 #include "cc/debug/rendering_stats_instrumentation.h"
+#include "cc/test/fake_compositor_frame_reporting_controller.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
@@ -15,10 +16,16 @@ class CompositorTimingHistoryTest;
 
 class TestCompositorTimingHistory : public CompositorTimingHistory {
  public:
-  TestCompositorTimingHistory(CompositorTimingHistoryTest* test,
-                              RenderingStatsInstrumentation* rendering_stats)
-      : CompositorTimingHistory(false, RENDERER_UMA, rendering_stats),
+  TestCompositorTimingHistory(
+      CompositorTimingHistoryTest* test,
+      RenderingStatsInstrumentation* rendering_stats,
+      CompositorFrameReportingController* reporting_controller)
+      : CompositorTimingHistory(false,
+                                RENDERER_UMA,
+                                rendering_stats,
+                                reporting_controller),
         test_(test) {}
+
   TestCompositorTimingHistory(const TestCompositorTimingHistory&) = delete;
   TestCompositorTimingHistory& operator=(const TestCompositorTimingHistory&) =
       delete;
@@ -33,7 +40,11 @@ class CompositorTimingHistoryTest : public testing::Test {
  public:
   CompositorTimingHistoryTest()
       : rendering_stats_(RenderingStatsInstrumentation::Create()),
-        timing_history_(this, rendering_stats_.get()) {
+        reporting_controller_(
+            std::make_unique<FakeCompositorFrameReportingController>()),
+        timing_history_(this,
+                        rendering_stats_.get(),
+                        reporting_controller_.get()) {
     AdvanceNowBy(base::TimeDelta::FromMilliseconds(1));
     timing_history_.SetRecordingEnabled(true);
   }
@@ -77,6 +88,7 @@ class CompositorTimingHistoryTest : public testing::Test {
 
  protected:
   std::unique_ptr<RenderingStatsInstrumentation> rendering_stats_;
+  std::unique_ptr<CompositorFrameReportingController> reporting_controller_;
   TestCompositorTimingHistory timing_history_;
   base::TimeTicks now_;
 };

@@ -170,8 +170,6 @@ class CC_EXPORT ProxyImpl : public LayerTreeHostImplClient,
 
   DelayedUniqueNotifier smoothness_priority_expiration_notifier_;
 
-  RenderingStatsInstrumentation* rendering_stats_instrumentation_;
-
   std::unique_ptr<LayerTreeHostImpl> host_impl_;
 
   // Use accessors instead of this variable directly.

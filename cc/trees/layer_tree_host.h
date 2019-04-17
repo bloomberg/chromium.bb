@@ -56,6 +56,7 @@ struct PresentationFeedback;
 }
 
 namespace cc {
+
 class HeadsUpDisplayLayer;
 class Layer;
 class LayerTreeHostClient;
