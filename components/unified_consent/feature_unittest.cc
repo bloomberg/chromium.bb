@@ -4,6 +4,7 @@
 
 #include "components/unified_consent/feature.h"
 
+#include "build/build_config.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/unified_consent/scoped_unified_consent.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -11,8 +12,14 @@
 namespace unified_consent {
 
 TEST(UnifiedConsentFeatureTest, FeatureState) {
+#if defined(OS_LINUX) || defined(OS_WIN) || \
+    (defined(OS_MACOSX) && !defined(OS_IOS))
+  // Unified consent is enabled by default.
+  EXPECT_TRUE(IsUnifiedConsentFeatureEnabled());
+#else
   // Unified consent is disabled by default.
   EXPECT_FALSE(IsUnifiedConsentFeatureEnabled());
+#endif
 
   {
     ScopedUnifiedConsent scoped_disabled(UnifiedConsentFeatureState::kDisabled);
