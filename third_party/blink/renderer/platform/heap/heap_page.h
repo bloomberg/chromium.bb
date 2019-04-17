@@ -67,11 +67,12 @@ constexpr size_t kBlinkPageBaseMask = ~kBlinkPageOffsetMask;
 constexpr size_t kBlinkPagesPerRegion = 10;
 
 // TODO(nya): Replace this with something like #if ENABLE_NACL.
-#if 0
+#if defined(ARCH_CPU_PPC64)
 // NaCl's system page size is 64 KiB. This causes a problem in Oilpan's heap
 // layout because Oilpan allocates two guard pages for each Blink page (whose
 // size is kBlinkPageSize = 2^17 = 128 KiB). So we don't use guard pages in
 // NaCl.
+// The same issue holds for ppc64 systems, which use a 64k page size.
 constexpr size_t kBlinkGuardPageSize = 0;
 #else
 constexpr size_t kBlinkGuardPageSize = base::kSystemPageSize;
