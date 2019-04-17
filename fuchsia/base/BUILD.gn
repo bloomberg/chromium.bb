@@ -56,7 +56,6 @@ source_set("test_support") {
     ":base",
     ":modular",
     "//base",
-    "//fuchsia:web_fidl",
     "//third_party/fuchsia-sdk/sdk:modular",
     "//third_party/fuchsia-sdk/sdk:web",
     "//url",

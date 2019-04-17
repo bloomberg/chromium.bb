@@ -13,7 +13,6 @@
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_base.h"
 #include "fuchsia/engine/browser/context_impl.h"
-#include "fuchsia/fidl/chromium/web/cpp/fidl.h"
 
 namespace cr_fuchsia {
 
@@ -31,8 +30,6 @@ class WebEngineBrowserTest : public content::BrowserTestBase {
   // Creates a Frame for this Context.
   // |listener|: If set, specifies the navigation listener for the Frame.
   fuchsia::web::FramePtr CreateFrame(
-      fuchsia::web::NavigationEventListener* listener);
-  chromium::web::FramePtr CreateLegacyFrame(
       fuchsia::web::NavigationEventListener* listener);
 
   // Gets the client object for the Context service.

@@ -74,7 +74,6 @@ source_set("legacy_message_port_bridge") {
 
 component("web_engine_core") {
   deps = [
-    ":legacy_message_port_bridge",
     ":mojom",
     ":web_engine_pak",
     "//base",
@@ -84,7 +83,6 @@ component("web_engine_core") {
     "//content/public/child",
     "//content/public/common",
     "//content/public/renderer",
-    "//fuchsia:web_fidl",
     "//fuchsia/base",
     "//fuchsia/base:modular",
     "//mojo/public/cpp/bindings",
@@ -139,16 +137,6 @@ component("web_engine_core") {
     "context_provider_impl.h",
     "context_provider_main.cc",
     "context_provider_main.h",
-    "legacy_context_bridge.cc",
-    "legacy_context_bridge.h",
-    "legacy_context_provider_bridge.cc",
-    "legacy_context_provider_bridge.h",
-    "legacy_frame_bridge.cc",
-    "legacy_frame_bridge.h",
-    "legacy_navigation_controller_bridge.cc",
-    "legacy_navigation_controller_bridge.h",
-    "legacy_navigation_event_listener_bridge.cc",
-    "legacy_navigation_event_listener_bridge.h",
     "renderer/on_load_script_injector.cc",
     "renderer/on_load_script_injector.h",
     "renderer/web_engine_content_renderer_client.cc",
@@ -205,7 +193,6 @@ source_set("browsertest_core") {
     ":web_engine_core",
     "//content/public/browser",
     "//content/test:test_support",
-    "//fuchsia:web_fidl",
     "//net:test_support",
     "//testing/gtest",
     "//third_party/fuchsia-sdk/sdk:web",
@@ -216,9 +203,7 @@ source_set("browsertest_core") {
 test("web_engine_browsertests") {
   sources = [
     "browser/context_impl_browsertest.cc",
-    "browser/context_impl_legacy_browsertest.cc",
     "browser/frame_impl_browsertest.cc",
-    "browser/frame_impl_legacy_browsertest.cc",
   ]
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
   data = [
@@ -241,7 +226,6 @@ test("web_engine_browsertests") {
 
 test("web_engine_unittests") {
   sources = [
-    "context_provider_impl_legacy_unittest.cc",
     "context_provider_impl_unittest.cc",
     "fake_context.cc",
     "fake_context.h",
@@ -250,7 +234,6 @@ test("web_engine_unittests") {
     ":web_engine_core",
     "//base/test:run_all_unittests",
     "//base/test:test_support",
-    "//fuchsia:web_fidl",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/fuchsia-sdk/sdk:web",

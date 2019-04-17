@@ -34,7 +34,6 @@
 #include "base/test/test_timeouts.h"
 #include "fuchsia/engine/common.h"
 #include "fuchsia/engine/fake_context.h"
-#include "fuchsia/engine/legacy_context_provider_bridge.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/multiprocess_func_list.h"
 
