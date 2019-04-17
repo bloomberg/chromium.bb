@@ -122,10 +122,17 @@ class KeyboardAccessoryModernView extends KeyboardAccessoryView {
         mBarItemsView.post(mBarItemsView::invalidateItemDecorations);
     }
 
+    @Override
+    void setVisible(boolean visible) {
+        super.setVisible(visible);
+        if (visible) mBarItemsView.post(mBarItemsView::invalidateItemDecorations);
+    }
+
     void setKeyboardToggleVisibility(boolean hasActiveTab) {
         mKeyboardToggle.setVisibility(hasActiveTab ? VISIBLE : GONE);
         mSheetTitle.setVisibility(hasActiveTab ? VISIBLE : GONE);
         mBarItemsView.setVisibility(hasActiveTab ? GONE : VISIBLE);
+        if (!hasActiveTab) mBarItemsView.post(mBarItemsView::invalidateItemDecorations);
     }
 
     void setSheetTitle(String title) {
