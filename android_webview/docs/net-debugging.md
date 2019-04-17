@@ -16,7 +16,17 @@ check with `adb shell getprop ro.build.type`). Flags cannot be enabled on
 production builds of Android.
 ***
 
-1. Pick a name for the JSON file (any name will work, e.g., `jsonFile=foo.json`)
+1. Figure out the app's data directory
+   ```sh
+   # appPackageName is the package name of whatever app you're interested (ex.
+   # WebView shell is "org.chromium.webview_shell").
+   appDataDir="$(adb shell dumpsys package ${appPackageName} | grep 'dataDir=' | sed 's/^ *dataDir=//')" && \
+   ```
+1. Pick a name for the JSON file. This must be under the WebView folder in the
+   app's data directory (ex. `jsonFile="${appDataDir}/app_webview/foo.json"`).
+   **Note:** it's important this is inside the data directory, otherwise
+   multiple WebView apps might try (and succeed) to write to the file
+   simultaneously.
 1. Kill the app, if running
 1. Set the netlog flag:
    ```sh
@@ -26,9 +36,6 @@ production builds of Android.
    when finished
 1. Get the netlog off the device:
    ```sh
-   # appPackageName is the package name of whatever app you're interested (ex.
-   # WebView shell is "org.chromium.webview_shell").
-   appDataDir="$(adb shell pm dump ${appPackageName} | grep 'dataDir=' | sed 's/^ *dataDir=//')" && \
    adb pull "${appDataDir}/app_webview/${jsonFile}"
    ```
 1. Import the JSON file into [the NetLog
