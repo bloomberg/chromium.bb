@@ -524,7 +524,8 @@ NotificationViewMD::NotificationViewMD(const Notification& notification)
   control_buttons_view_->set_owned_by_client();
 
   // |header_row_| contains app_icon, app_name, control buttons, etc...
-  header_row_ = new NotificationHeaderView(control_buttons_view_.get(), this);
+  header_row_ = new NotificationHeaderView(this);
+  header_row_->AddChildView(control_buttons_view_.get());
   AddChildView(header_row_);
 
   // |content_row_| contains title, message, image, progressbar, etc...

@@ -6,6 +6,7 @@
 #define UI_MESSAGE_CENTER_VIEWS_NOTIFICATION_HEADER_VIEW_H_
 
 #include "base/macros.h"
+#include "base/timer/timer.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/message_center/message_center_export.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
@@ -18,13 +19,9 @@ class Label;
 
 namespace message_center {
 
-class NotificationControlButtonsView;
-class TimestampView;
-
 class MESSAGE_CENTER_EXPORT NotificationHeaderView : public views::Button {
  public:
-  NotificationHeaderView(NotificationControlButtonsView* control_buttons_view,
-                         views::ButtonListener* listener);
+  explicit NotificationHeaderView(views::ButtonListener* listener);
   void SetAppIcon(const gfx::ImageSkia& img);
   void SetAppName(const base::string16& name);
   void SetAppNameElideBehavior(gfx::ElideBehavior elide_behavior);
@@ -74,17 +71,22 @@ class MESSAGE_CENTER_EXPORT NotificationHeaderView : public views::Button {
 
   const gfx::ImageSkia& app_icon_for_testing() const;
 
+  const base::string16& timestamp_for_testing() const;
+
  private:
   // Update visibility for both |summary_text_view_| and |timestamp_view_|.
   void UpdateSummaryTextVisibility();
 
   SkColor accent_color_ = kNotificationDefaultAccentColor;
 
+  // Timer that updates the timestamp over time.
+  base::OneShotTimer timestamp_update_timer_;
+
   views::Label* app_name_view_ = nullptr;
   views::Label* summary_text_divider_ = nullptr;
   views::Label* summary_text_view_ = nullptr;
   views::Label* timestamp_divider_ = nullptr;
-  TimestampView* timestamp_view_ = nullptr;
+  views::Label* timestamp_view_ = nullptr;
   views::ImageView* app_icon_view_ = nullptr;
   views::ImageView* expand_button_ = nullptr;
 
