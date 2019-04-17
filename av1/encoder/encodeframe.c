@@ -1489,7 +1489,11 @@ static void encode_b(const AV1_COMP *const cpi, TileDataEnc *tile_data,
     x->rdmult = x->cb_rdmult;
   }
 
-  if (!dry_run) av1_set_coeff_buffer(cpi, x, mi_row, mi_col);
+  if (!dry_run) {
+    x->mbmi_ext->cb_offset = x->cb_offset;
+    assert(x->cb_offset <
+           (1 << num_pels_log2_lookup[cpi->common.seq_params.sb_size]));
+  }
 
   encode_superblock(cpi, tile_data, td, tp, dry_run, mi_row, mi_col, bsize,
                     rate);
@@ -4262,6 +4266,8 @@ static void encode_sb_row(AV1_COMP *cpi, ThreadData *td, TileDataEnc *tile_data,
     x->sb_energy_level = 0;
     if (cm->delta_q_info.delta_q_present_flag)
       setup_delta_q(cpi, x, tile_info, mi_row, mi_col, num_planes);
+
+    td->mb.cb_coef_buff = av1_get_cb_coeff_buffer(cpi, mi_row, mi_col);
 
     int dummy_rate;
     int64_t dummy_dist;

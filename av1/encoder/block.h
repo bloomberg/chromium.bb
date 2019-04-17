@@ -75,7 +75,6 @@ typedef struct {
 
 typedef struct {
   // TODO(angiebird): Reduce the buffer size according to sb_type
-  CB_COEFF_BUFFER *cb_coef_buff;
   CANDIDATE_MV ref_mv_stack[MODE_CTX_REF_FRAMES][MAX_REF_MV_STACK_SIZE];
   uint16_t weight[MODE_CTX_REF_FRAMES][MAX_REF_MV_STACK_SIZE];
   int_mv global_mvs[REF_FRAMES];
@@ -434,6 +433,8 @@ struct macroblock {
   // [Saved stat index]
   COMP_RD_STATS comp_rd_stats[MAX_COMP_RD_STATS];
   int comp_rd_stats_idx;
+
+  CB_COEFF_BUFFER *cb_coef_buff;
 };
 
 static INLINE int is_rect_tx_allowed_bsize(BLOCK_SIZE bsize) {

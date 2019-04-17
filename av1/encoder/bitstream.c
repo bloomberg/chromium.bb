@@ -367,16 +367,16 @@ static void pack_txb_tokens(aom_writer *w, AV1_COMMON *cm, MACROBLOCK *const x,
                                                          blk_col)];
 
   if (tx_size == plane_tx_size || plane) {
+    const CB_COEFF_BUFFER *cb_coef_buff = x->cb_coef_buff;
     const int txb_offset =
         x->mbmi_ext->cb_offset / (TX_SIZE_W_MIN * TX_SIZE_H_MIN);
-    tran_low_t *tcoeff_txb =
-        x->mbmi_ext->cb_coef_buff->tcoeff[plane] + x->mbmi_ext->cb_offset;
-    uint16_t *eob_txb = x->mbmi_ext->cb_coef_buff->eobs[plane] + txb_offset;
-    uint8_t *txb_skip_ctx_txb =
-        x->mbmi_ext->cb_coef_buff->txb_skip_ctx[plane] + txb_offset;
-    int *dc_sign_ctx_txb =
-        x->mbmi_ext->cb_coef_buff->dc_sign_ctx[plane] + txb_offset;
-    tran_low_t *tcoeff = BLOCK_OFFSET(tcoeff_txb, block);
+    const tran_low_t *tcoeff_txb =
+        cb_coef_buff->tcoeff[plane] + x->mbmi_ext->cb_offset;
+    const uint16_t *eob_txb = cb_coef_buff->eobs[plane] + txb_offset;
+    const uint8_t *txb_skip_ctx_txb =
+        cb_coef_buff->txb_skip_ctx[plane] + txb_offset;
+    const int *dc_sign_ctx_txb = cb_coef_buff->dc_sign_ctx[plane] + txb_offset;
+    const tran_low_t *tcoeff = BLOCK_OFFSET(tcoeff_txb, block);
     const uint16_t eob = eob_txb[block];
     TXB_CTX txb_ctx = { txb_skip_ctx_txb[block], dc_sign_ctx_txb[block] };
     av1_write_coeffs_txb(cm, xd, w, blk_row, blk_col, plane, tx_size, tcoeff,
@@ -1712,6 +1712,7 @@ static void write_modes(AV1_COMP *const cpi, const TileInfo *const tile,
 
     for (mi_col = mi_col_start; mi_col < mi_col_end;
          mi_col += cm->seq_params.mib_size) {
+      cpi->td.mb.cb_coef_buff = av1_get_cb_coeff_buffer(cpi, mi_row, mi_col);
       write_modes_sb(cpi, tile, w, &tok, tok_end, mi_row, mi_col,
                      cm->seq_params.sb_size);
     }

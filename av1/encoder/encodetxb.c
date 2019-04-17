@@ -73,17 +73,6 @@ void av1_alloc_txb_buf(AV1_COMP *cpi) {
 
 void av1_free_txb_buf(AV1_COMP *cpi) { aom_free(cpi->coeff_buffer_base); }
 
-void av1_set_coeff_buffer(const AV1_COMP *const cpi, MACROBLOCK *const x,
-                          int mi_row, int mi_col) {
-  const AV1_COMMON *const cm = &cpi->common;
-  int mib_size_log2 = cm->seq_params.mib_size_log2;
-  int stride = (cm->mi_cols >> mib_size_log2) + 1;
-  int offset = (mi_row >> mib_size_log2) * stride + (mi_col >> mib_size_log2);
-  x->mbmi_ext->cb_coef_buff = &cpi->coeff_buffer_base[offset];
-  x->mbmi_ext->cb_offset = x->cb_offset;
-  assert(x->cb_offset < (1 << num_pels_log2_lookup[cm->seq_params.sb_size]));
-}
-
 static void write_golomb(aom_writer *w, int level) {
   int x = level + 1;
   int i = x;
@@ -638,17 +627,17 @@ static void write_coeffs_txb_wrap(const AV1_COMMON *cm, MACROBLOCK *x,
                                   aom_writer *w, int plane, int block,
                                   int blk_row, int blk_col, TX_SIZE tx_size) {
   MACROBLOCKD *xd = &x->e_mbd;
+  const CB_COEFF_BUFFER *cb_coef_buff = x->cb_coef_buff;
   const int txb_offset =
       x->mbmi_ext->cb_offset / (TX_SIZE_W_MIN * TX_SIZE_H_MIN);
-  tran_low_t *tcoeff_txb =
-      x->mbmi_ext->cb_coef_buff->tcoeff[plane] + x->mbmi_ext->cb_offset;
-  uint16_t *eob_txb = x->mbmi_ext->cb_coef_buff->eobs[plane] + txb_offset;
-  uint8_t *txb_skip_ctx_txb =
-      x->mbmi_ext->cb_coef_buff->txb_skip_ctx[plane] + txb_offset;
-  int *dc_sign_ctx_txb =
-      x->mbmi_ext->cb_coef_buff->dc_sign_ctx[plane] + txb_offset;
-  tran_low_t *tcoeff = BLOCK_OFFSET(tcoeff_txb, block);
-  uint16_t eob = eob_txb[block];
+  const tran_low_t *tcoeff_txb =
+      cb_coef_buff->tcoeff[plane] + x->mbmi_ext->cb_offset;
+  const uint16_t *eob_txb = cb_coef_buff->eobs[plane] + txb_offset;
+  const uint8_t *txb_skip_ctx_txb =
+      cb_coef_buff->txb_skip_ctx[plane] + txb_offset;
+  const int *dc_sign_ctx_txb = cb_coef_buff->dc_sign_ctx[plane] + txb_offset;
+  const tran_low_t *tcoeff = BLOCK_OFFSET(tcoeff_txb, block);
+  const uint16_t eob = eob_txb[block];
   TXB_CTX txb_ctx = { txb_skip_ctx_txb[block], dc_sign_ctx_txb[block] };
   av1_write_coeffs_txb(cm, xd, w, blk_row, blk_col, plane, tx_size, tcoeff, eob,
                        &txb_ctx);
@@ -2008,11 +1997,11 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
                2);
   }
 
+  CB_COEFF_BUFFER *cb_coef_buff = x->cb_coef_buff;
   const int txb_offset =
       x->mbmi_ext->cb_offset / (TX_SIZE_W_MIN * TX_SIZE_H_MIN);
-  uint16_t *eob_txb = x->mbmi_ext->cb_coef_buff->eobs[plane] + txb_offset;
-  uint8_t *txb_skip_ctx_txb =
-      x->mbmi_ext->cb_coef_buff->txb_skip_ctx[plane] + txb_offset;
+  uint16_t *eob_txb = cb_coef_buff->eobs[plane] + txb_offset;
+  uint8_t *txb_skip_ctx_txb = cb_coef_buff->txb_skip_ctx[plane] + txb_offset;
   txb_skip_ctx_txb[block] = txb_ctx.txb_skip_ctx;
   eob_txb[block] = eob;
 
@@ -2021,8 +2010,7 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
     return;
   }
 
-  tran_low_t *tcoeff_txb =
-      x->mbmi_ext->cb_coef_buff->tcoeff[plane] + x->mbmi_ext->cb_offset;
+  tran_low_t *tcoeff_txb = cb_coef_buff->tcoeff[plane] + x->mbmi_ext->cb_offset;
   tran_low_t *tcoeff = BLOCK_OFFSET(tcoeff_txb, block);
   const int segment_id = mbmi->segment_id;
   const int seg_eob = av1_get_tx_eob(&cpi->common.seg, segment_id, tx_size);
@@ -2116,8 +2104,7 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
 #endif  // CONFIG_ENTROPY_STATS
     if (allow_update_cdf)
       update_cdf(ec_ctx->dc_sign_cdf[plane_type][dc_sign_ctx], dc_sign, 2);
-    int *dc_sign_ctx_txb =
-        x->mbmi_ext->cb_coef_buff->dc_sign_ctx[plane] + txb_offset;
+    int *dc_sign_ctx_txb = cb_coef_buff->dc_sign_ctx[plane] + txb_offset;
     dc_sign_ctx_txb[block] = dc_sign_ctx;
   }
 
@@ -2154,4 +2141,14 @@ void av1_update_txb_context(const AV1_COMP *cpi, ThreadData *td,
     printf("DRY_RUN_COSTCOEFFS is not supported yet\n");
     assert(0);
   }
+}
+
+CB_COEFF_BUFFER *av1_get_cb_coeff_buffer(const struct AV1_COMP *cpi, int mi_row,
+                                         int mi_col) {
+  const AV1_COMMON *const cm = &cpi->common;
+  const int mib_size_log2 = cm->seq_params.mib_size_log2;
+  const int stride = (cm->mi_cols >> mib_size_log2) + 1;
+  const int offset =
+      (mi_row >> mib_size_log2) * stride + (mi_col >> mib_size_log2);
+  return cpi->coeff_buffer_base + offset;
 }
