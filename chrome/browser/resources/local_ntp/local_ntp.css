@@ -239,14 +239,14 @@ html[dir=rtl] #fakebox-search-icon {
 
 #fakebox-text {
   bottom: 4px;
-  color: rgb(var(--GG600-rgb));
+  color: rgb(var(--GG700-rgb));
   font-size: 14px;
   left: 0;
   margin-top: 1px;
   overflow: hidden;
   padding-inline-start: 20px;
   position: absolute;
-  right: 13px;
+  right: 44px;
   text-align: initial;
   text-overflow: ellipsis;
   top: 4px;
