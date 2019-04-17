@@ -529,7 +529,7 @@ void TestWebFrameClient::DidStopLoading() {
 void TestWebFrameClient::BeginNavigation(
     std::unique_ptr<WebNavigationInfo> info) {
   navigation_callback_.Cancel();
-  if (DocumentLoader::WillLoadUrlAsEmpty(info->url_request.Url()) ||
+  if (DocumentLoader::WillLoadUrlAsEmpty(info->url_request.Url()) &&
       !frame_->HasCommittedFirstRealLoad()) {
     CommitNavigation(std::move(info));
     return;

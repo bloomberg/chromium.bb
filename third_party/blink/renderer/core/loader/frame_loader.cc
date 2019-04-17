@@ -96,6 +96,7 @@
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
+#include "third_party/blink/renderer/platform/bindings/v8_dom_activity_logger.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_request.h"
 #include "third_party/blink/renderer/platform/instance_counters.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
@@ -931,6 +932,20 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
   if (frame_->IsMainFrame() && origin_document &&
       frame_->GetPage() == origin_document->GetPage()) {
     LocalFrame::ConsumeTransientUserActivation(frame_);
+  }
+
+  // The main resource request gets logged here, because V8DOMActivityLogger
+  // is looked up based on the current v8::Context. When the request actually
+  // begins, the v8::Context may no longer be on the stack.
+  if (V8DOMActivityLogger* activity_logger =
+          V8DOMActivityLogger::CurrentActivityLoggerIfIsolatedWorld()) {
+    if (!DocumentLoader::WillLoadUrlAsEmpty(url)) {
+      Vector<String> argv;
+      argv.push_back("Main resource");
+      argv.push_back(url.GetString());
+      activity_logger->LogEvent("blinkRequestResource", argv.size(),
+                                argv.data());
+    }
   }
 
   Client()->BeginNavigation(
