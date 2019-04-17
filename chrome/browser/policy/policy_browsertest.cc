@@ -6689,13 +6689,14 @@ IN_PROC_BROWSER_TEST_P(PromotionalTabsEnabledPolicyTest, RunTest) {
       // Only the NTP should show.
       EXPECT_EQ(tab_strip->count(), 1);
       if (url.possibly_invalid_spec() != chrome::kChromeUINewTabURL)
-        EXPECT_TRUE(search::IsNTPURL(url, browser()->profile())) << url;
+        EXPECT_TRUE(search::IsNTPOrRelatedURL(url, browser()->profile()))
+            << url;
       break;
     case BooleanPolicy::kNotConfigured:
     case BooleanPolicy::kTrue:
       // One or more onboarding tabs should show.
       EXPECT_NE(url.possibly_invalid_spec(), chrome::kChromeUINewTabURL);
-      EXPECT_FALSE(search::IsNTPURL(url, browser()->profile())) << url;
+      EXPECT_FALSE(search::IsNTPOrRelatedURL(url, browser()->profile())) << url;
       break;
   }
 }

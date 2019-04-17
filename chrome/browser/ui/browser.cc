@@ -1112,7 +1112,7 @@ bool Browser::ShouldPreserveAbortedURLs(WebContents* source) {
   if (!profile || !source->GetController().GetLastCommittedEntry())
     return false;
   GURL committed_url(source->GetController().GetLastCommittedEntry()->GetURL());
-  return search::IsNTPURL(committed_url, profile);
+  return search::IsNTPOrRelatedURL(committed_url, profile);
 }
 
 void Browser::SetFocusToLocationBar() {
