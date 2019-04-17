@@ -699,8 +699,10 @@ void BridgedNativeWidgetHostImpl::ClearAssociationForView(const View* view) {
 }
 
 void BridgedNativeWidgetHostImpl::ReorderChildViews() {
-  std::map<NSView*, int> rank;
   Widget* widget = native_widget_mac_->GetWidget();
+  if (!widget->GetRootView())
+    return;
+  std::map<NSView*, int> rank;
   RankNSViewsRecursive(widget->GetRootView(), &rank);
   if (bridge_impl_)
     bridge_impl_->SortSubviews(std::move(rank));
