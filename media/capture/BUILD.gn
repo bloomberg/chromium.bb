@@ -284,6 +284,7 @@ jumbo_component("capture_lib") {
     deps += [
       "//build/config/linux/libdrm",
       "//chromeos/dbus/power",
+      "//components/chromeos_camera/common",
       "//media/capture/video/chromeos/mojo:cros_camera",
       "//third_party/libsync",
     ]

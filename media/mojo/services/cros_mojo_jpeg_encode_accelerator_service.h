@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_MOJO_SERVICES_MOJO_JPEG_ENCODE_ACCELERATOR_SERVICE_H_
-#define MEDIA_MOJO_SERVICES_MOJO_JPEG_ENCODE_ACCELERATOR_SERVICE_H_
+#ifndef MEDIA_MOJO_SERVICES_CROS_MOJO_JPEG_ENCODE_ACCELERATOR_SERVICE_H_
+#define MEDIA_MOJO_SERVICES_CROS_MOJO_JPEG_ENCODE_ACCELERATOR_SERVICE_H_
 
 #include <stdint.h>
 
@@ -12,8 +12,8 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
+#include "components/chromeos_camera/common/jpeg_encode_accelerator.mojom.h"
 #include "media/gpu/gpu_jpeg_encode_accelerator_factory.h"
-#include "media/mojo/interfaces/jpeg_encode_accelerator.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
 #include "media/video/jpeg_encode_accelerator.h"
 
@@ -21,13 +21,13 @@ namespace media {
 
 // Implementation of a mojom::JpegEncodeAccelerator which runs in the GPU
 // process, and wraps a JpegEncodeAccelerator.
-class MEDIA_MOJO_EXPORT MojoJpegEncodeAcceleratorService
+class MEDIA_MOJO_EXPORT CrOSMojoJpegEncodeAcceleratorService
     : public mojom::JpegEncodeAccelerator,
       public JpegEncodeAccelerator::Client {
  public:
   static void Create(mojom::JpegEncodeAcceleratorRequest request);
 
-  ~MojoJpegEncodeAcceleratorService() override;
+  ~CrOSMojoJpegEncodeAcceleratorService() override;
 
   // JpegEncodeAccelerator::Client implementation.
   void VideoFrameReady(int32_t buffer_id, size_t encoded_picture_size) override;
@@ -40,7 +40,7 @@ class MEDIA_MOJO_EXPORT MojoJpegEncodeAcceleratorService
   // This constructor internally calls
   // GpuJpegEncodeAcceleratorFactory::GetAcceleratorFactories() to
   // fill |accelerator_factory_functions_|.
-  MojoJpegEncodeAcceleratorService();
+  CrOSMojoJpegEncodeAcceleratorService();
 
   // mojom::JpegEncodeAccelerator implementation.
   void Initialize(InitializeCallback callback) override;
@@ -69,9 +69,9 @@ class MEDIA_MOJO_EXPORT MojoJpegEncodeAcceleratorService
 
   THREAD_CHECKER(thread_checker_);
 
-  DISALLOW_COPY_AND_ASSIGN(MojoJpegEncodeAcceleratorService);
+  DISALLOW_COPY_AND_ASSIGN(CrOSMojoJpegEncodeAcceleratorService);
 };
 
 }  // namespace media
 
-#endif  // MEDIA_MOJO_SERVICES_MOJO_JPEG_ENCODE_ACCELERATOR_SERVICE_H_
+#endif  // MEDIA_MOJO_SERVICES_CROS_MOJO_JPEG_ENCODE_ACCELERATOR_SERVICE_H_
