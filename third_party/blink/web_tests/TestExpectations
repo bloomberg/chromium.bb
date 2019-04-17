@@ -2095,8 +2095,8 @@ crbug.com/498539 http/tests/devtools/tracing/timeline-misc/timeline-bound-functi
 crbug.com/498539 virtual/nobinary-for-devtools/http/tests/devtools/tracing/timeline-misc/timeline-bound-function.js [ Pass Failure ]
 crbug.com/498539 virtual/threaded/http/tests/devtools/tracing/timeline-misc/timeline-bound-function.js [ Pass Failure ]
 
-crbug.com/498539 crbug.com/794869 crbug.com/798548 [ Win ] http/tests/devtools/elements/styles-4/styles-update-from-js.js [ Crash Pass Failure ]
-crbug.com/498539 crbug.com/794869 crbug.com/798548 [ Win ] virtual/nobinary-for-devtools/http/tests/devtools/elements/styles-4/styles-update-from-js.js [ Crash Pass Failure ]
+crbug.com/498539 crbug.com/794869 crbug.com/798548 crbug.com/946716 [ Win ] http/tests/devtools/elements/styles-4/styles-update-from-js.js [ Crash Pass Failure Timeout ]
+crbug.com/498539 crbug.com/794869 crbug.com/798548 crbug.com/946716 [ Win ] virtual/nobinary-for-devtools/http/tests/devtools/elements/styles-4/styles-update-from-js.js [ Crash Pass Failure Timeout ]
 crbug.com/498539 crbug.com/794869 crbug.com/798548 [ Mac ] http/tests/devtools/elements/styles-4/styles-update-from-js.js [ Crash Pass Failure ]
 crbug.com/498539 crbug.com/794869 crbug.com/798548 [ Mac ] virtual/nobinary-for-devtools/http/tests/devtools/elements/styles-4/styles-update-from-js.js [ Crash Pass Failure ]
 crbug.com/498539 crbug.com/794869 crbug.com/798548 [ Linux ] http/tests/devtools/elements/styles-4/styles-update-from-js.js [ Crash Pass Failure ]
@@ -6315,3 +6315,6 @@ crbug.com/953534 [ Mac ] virtual/layout_ng_experimental/external/wpt/css/css-fle
 crbug.com/953591 [ Win ] css3/masking/mask-repeat-space-padding.html [ Pass Failure ]
 crbug.com/953591 [ Win ] fast/forms/datalist/input-appearance-range-with-transform.html [ Pass Failure ]
 crbug.com/953591 [ Win ] transforms/matrix-02.html [ Pass Failure ]
+crbug.com/938884 [ Win7 ] http/tests/devtools/elements/styles-3/styles-add-blank-property.js [ Timeout Pass ]
+crbug.com/938884 [ Win7 ] virtual/nobinary-for-devtools/http/tests/devtools/elements/styles-3/styles-add-blank-property.js [ Timeout Pass ]
+
