@@ -19,7 +19,6 @@
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/renderer/fixed_received_data.h"
 #include "content/public/renderer/request_peer.h"
 #include "content/renderer/loader/navigation_response_override_parameters.h"
 #include "content/renderer/loader/request_extra_data.h"

@@ -5,7 +5,6 @@
 #include "content/renderer/loader/sync_load_context.h"
 #include "base/bind.h"
 #include "base/threading/thread.h"
-#include "content/public/renderer/fixed_received_data.h"
 #include "content/renderer/loader/sync_load_response.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -109,32 +108,6 @@ class SyncLoadContextTest : public testing::Test {
             nullptr /* download_to_blob_registry */));
   }
 
-  static void RunSyncLoadContextViaNonDataPipe(
-      network::ResourceRequest* request,
-      SyncLoadResponse* response,
-      std::string expected_data,
-      base::WaitableEvent* redirect_or_response_event,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-    DCHECK(task_runner->BelongsToCurrentThread());
-    auto* context = new SyncLoadContext(
-        request, std::make_unique<MockSharedURLLoaderFactoryInfo>(), response,
-        redirect_or_response_event, nullptr /* terminate_sync_load_event */,
-        base::TimeDelta::FromSeconds(60) /* timeout */,
-        nullptr /* download_to_blob_registry */, task_runner);
-
-    // Override |resource_dispatcher_| for testing.
-    auto dispatcher = std::make_unique<MockResourceDispatcher>();
-    context->request_id_ =
-        dispatcher->CreatePendingRequest(base::WrapUnique(context));
-    context->resource_dispatcher_ = std::move(dispatcher);
-
-    // Simulate the response.
-    context->OnReceivedResponse(network::ResourceResponseInfo());
-    context->OnReceivedData(std::make_unique<FixedReceivedData>(
-        expected_data.data(), expected_data.size()));
-    context->OnCompletedRequest(network::URLLoaderCompletionStatus(net::OK));
-  }
-
   static void RunSyncLoadContextViaDataPipe(
       network::ResourceRequest* request,
       SyncLoadResponse* response,
@@ -186,32 +159,6 @@ TEST_F(SyncLoadContextTest, StartAsyncWithWaitableEvent) {
   StartAsyncWithWaitableEventOnLoadingThread(std::move(request),
                                              std::move(factory_info), &response,
                                              &redirect_or_response_event);
-
-  // Wait until the response is received.
-  redirect_or_response_event.Wait();
-
-  // Check if |response| is set properly after the WaitableEvent fires.
-  EXPECT_EQ(net::OK, response.error_code);
-  EXPECT_EQ(expected_data, response.data);
-}
-
-TEST_F(SyncLoadContextTest, ResponseBodyViaNonDataPipe) {
-  GURL expected_url = GURL("https://example.com");
-  std::string expected_data = "foobarbaz";
-
-  // Create and exercise SyncLoadContext on the |loading_thread_|.
-  auto request = std::make_unique<network::ResourceRequest>();
-  request->url = expected_url;
-  SyncLoadResponse response;
-  base::WaitableEvent redirect_or_response_event(
-      base::WaitableEvent::ResetPolicy::MANUAL,
-      base::WaitableEvent::InitialState::NOT_SIGNALED);
-  loading_thread_.task_runner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&SyncLoadContextTest::RunSyncLoadContextViaNonDataPipe,
-                     request.get(), &response, expected_data,
-                     &redirect_or_response_event,
-                     loading_thread_.task_runner()));
 
   // Wait until the response is received.
   redirect_or_response_event.Wait();

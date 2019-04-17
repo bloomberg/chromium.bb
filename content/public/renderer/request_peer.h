@@ -34,25 +34,6 @@ namespace content {
 // for more information.
 class CONTENT_EXPORT RequestPeer {
  public:
-  // This class represents data gotten from the Browser process. Each data
-  // consists of |payload|, |length|, |encoded_data_length| and
-  // |encoded_body_length|. The payload is valid only when the data instance is
-  // valid.
-  // In order to work with Chrome resource loading IPC, it is desirable to
-  // reclaim data in FIFO order in a RequestPeer in terms of performance.
-  // |payload|, |length|, |encoded_data_length| and |encoded_body_length|
-  // functions are thread-safe, but the data object itself must be destroyed on
-  // the original thread.
-  class CONTENT_EXPORT ReceivedData {
-   public:
-    virtual ~ReceivedData() {}
-    virtual const char* payload() = 0;
-    virtual int length() = 0;
-  };
-
-  // A ThreadSafeReceivedData can be deleted on ANY thread.
-  class CONTENT_EXPORT ThreadSafeReceivedData : public ReceivedData {};
-
   // Called as upload progress is made.
   // note: only for requests with upload progress enabled.
   virtual void OnUploadProgress(uint64_t position, uint64_t size) = 0;
@@ -70,16 +51,9 @@ class CONTENT_EXPORT RequestPeer {
   virtual void OnReceivedResponse(
       const network::ResourceResponseInfo& info) = 0;
 
-  // Called when the response body becomes available. This method is only called
-  // if |pass_response_pipe_to_peer| was set to true when calling StartAsync.
-  // TODO(mek): Deprecate OnReceivedData in favor of this method, and always use
-  // this codepath.
+  // Called when the response body becomes available.
   virtual void OnStartLoadingResponseBody(
       mojo::ScopedDataPipeConsumerHandle body) = 0;
-
-  // Called when a chunk of response data is available. This method may
-  // be called multiple times or not at all if an error occurs.
-  virtual void OnReceivedData(std::unique_ptr<ReceivedData> data) = 0;
 
   // Called when the transfer size is updated. This method may be called
   // multiple times or not at all. The transfer size is the length of the

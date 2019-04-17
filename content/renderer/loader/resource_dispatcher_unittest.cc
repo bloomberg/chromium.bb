@@ -21,7 +21,6 @@
 #include "base/test/scoped_task_environment.h"
 #include "content/common/appcache_interfaces.h"
 #include "content/public/common/content_features.h"
-#include "content/public/renderer/fixed_received_data.h"
 #include "content/public/renderer/request_peer.h"
 #include "content/public/renderer/resource_dispatcher_delegate.h"
 #include "content/renderer/loader/navigation_response_override_parameters.h"
@@ -214,10 +213,6 @@ class TestResourceDispatcherDelegate : public ResourceDispatcherDelegate {
     void OnStartLoadingResponseBody(
         mojo::ScopedDataPipeConsumerHandle body) override {
       body_handle_ = std::move(body);
-    }
-
-    void OnReceivedData(std::unique_ptr<ReceivedData> data) override {
-      NOTREACHED();
     }
 
     void OnTransferSizeUpdated(int transfer_size_diff) override {}

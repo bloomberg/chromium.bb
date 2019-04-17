@@ -27,7 +27,6 @@
 #include "content/public/common/navigation_policy.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/url_utils.h"
-#include "content/public/renderer/fixed_received_data.h"
 #include "content/public/renderer/request_peer.h"
 #include "content/public/renderer/resource_dispatcher_delegate.h"
 #include "content/renderer/loader/request_extra_data.h"

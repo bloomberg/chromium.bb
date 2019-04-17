@@ -24,7 +24,6 @@ struct ResourceResponseInfo;
 
 namespace content {
 
-class ReceivedData;
 class ResourceDispatcher;
 
 // Listens for request response data and stores it so that it can be compared
@@ -41,7 +40,6 @@ class TestRequestPeer : public RequestPeer {
   void OnReceivedResponse(const network::ResourceResponseInfo& info) override;
   void OnStartLoadingResponseBody(
       mojo::ScopedDataPipeConsumerHandle body) override;
-  void OnReceivedData(std::unique_ptr<ReceivedData> data) override;
   void OnTransferSizeUpdated(int transfer_size_diff) override;
   void OnReceivedCachedMetadata(const char* data, int len) override;
   void OnCompletedRequest(
