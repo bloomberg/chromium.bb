@@ -48,7 +48,7 @@ class RTCRtpSender final : public ScriptWrappable {
 
   MediaStreamTrack* track();
   RTCDtlsTransport* transport();
-  RTCDtlsTransport* rtcp_transport();
+  RTCDtlsTransport* rtcpTransport();
   ScriptPromise replaceTrack(ScriptState*, MediaStreamTrack*);
   RTCDTMFSender* dtmf();
   static RTCRtpCapabilities* getCapabilities(const String& kind);

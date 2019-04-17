@@ -5658,7 +5658,6 @@ interface RTCDtlsTransport : EventTarget
     getter onstatechange
     getter state
     method constructor
-    method getRemoteCertificates
     setter onerror
     setter onstatechange
 interface RTCError : DOMException
@@ -5816,7 +5815,7 @@ interface RTCRtpReceiver
     static method getCapabilities
     attribute @@toStringTag
     getter jitterBufferDelayHint
-    getter rtcp_transport
+    getter rtcpTransport
     getter track
     getter transport
     method constructor
@@ -5829,7 +5828,7 @@ interface RTCRtpSender
     static method getCapabilities
     attribute @@toStringTag
     getter dtmf
-    getter rtcp_transport
+    getter rtcpTransport
     getter track
     getter transport
     method constructor

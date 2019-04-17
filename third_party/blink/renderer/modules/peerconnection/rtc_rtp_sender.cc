@@ -328,7 +328,7 @@ RTCDtlsTransport* RTCRtpSender::transport() {
   return transport_;
 }
 
-RTCDtlsTransport* RTCRtpSender::rtcp_transport() {
+RTCDtlsTransport* RTCRtpSender::rtcpTransport() {
   // Chrome does not support turning off RTCP-mux.
   return nullptr;
 }

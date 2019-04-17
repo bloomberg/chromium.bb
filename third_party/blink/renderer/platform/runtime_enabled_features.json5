@@ -1209,7 +1209,7 @@
     // Enables the use of the RTCDtlsTransport object.
     {
       name: "RTCDtlsTransport",
-      status: "experimental",
+      status: "stable",
     },
     // Enables the use of the RTCIceTransport with extensions.
     {

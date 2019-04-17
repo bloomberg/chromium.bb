@@ -44,7 +44,7 @@ class RTCRtpReceiver final : public ScriptWrappable {
 
   MediaStreamTrack* track() const;
   RTCDtlsTransport* transport();
-  RTCDtlsTransport* rtcp_transport();
+  RTCDtlsTransport* rtcpTransport();
   double jitterBufferDelayHint(bool&, ExceptionState&);
   void setJitterBufferDelayHint(double, bool, ExceptionState&);
   RTCRtpReceiveParameters* getParameters();
