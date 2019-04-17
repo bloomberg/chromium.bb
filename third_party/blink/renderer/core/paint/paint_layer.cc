@@ -1113,7 +1113,10 @@ void PaintLayer::SetNeedsCompositingInputsUpdateInternal() {
         // "contain: strict" element has "position: sticky". This was causing
         // crashes because PaintLayerScrollableArea::sticky_constraints_map_ was
         // not updated correctly in some cases (see crbug.com/949887).
-        !current->GetLayoutObject().IsStickyPositioned())
+        !current->GetLayoutObject().IsStickyPositioned() &&
+        // TODO(rego): Disable CompositingInputsRoot optimization for iframes
+        // (see crbug.com/953159).
+        !current->GetLayoutObject().IsLayoutIFrame())
       break;
   }
 
