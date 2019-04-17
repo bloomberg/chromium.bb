@@ -58,20 +58,16 @@ NSString* const kPrivacyTableViewId = @"kPrivacyTableViewId";
 namespace {
 
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
-  SectionIdentifierOtherDevices = kSectionIdentifierEnumZero,
-  SectionIdentifierWebServices,
-  SectionIdentifierCanMakePayment,
+  SectionIdentifierWebServices = kSectionIdentifierEnumZero,
   SectionIdentifierClearBrowsingData,
 };
 
 typedef NS_ENUM(NSInteger, ItemType) {
-  ItemTypeOtherDevicesHeader = kItemTypeEnumZero,
-  ItemTypeOtherDevicesHandoff,
-  ItemTypeWebServicesHeader,
-  ItemTypeWebServicesShowSuggestions,
+  ItemTypeOtherDevicesHandoff = kItemTypeEnumZero,
+  ItemTypeWebServicesPaymentSwitch,
   ItemTypeWebServicesSendUsageData,
+  ItemTypeWebServicesShowSuggestions,
   ItemTypeWebServicesFooter,
-  ItemTypeCanMakePaymentSwitch,
   ItemTypeClearBrowsingDataClear,
 };
 
@@ -159,36 +155,16 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   TableViewModel* model = self.tableViewModel;
 
-  // Other Devices Section
-  [model addSectionWithIdentifier:SectionIdentifierOtherDevices];
-  TableViewTextHeaderFooterItem* otherDevicesHeader =
-      [[TableViewTextHeaderFooterItem alloc]
-          initWithType:ItemTypeOtherDevicesHeader];
-  otherDevicesHeader.text =
-      l10n_util::GetNSString(IDS_IOS_OPTIONS_CONTINUITY_LABEL);
-  [model setHeader:otherDevicesHeader
-      forSectionWithIdentifier:SectionIdentifierOtherDevices];
+  // Web Services Section
+  [model addSectionWithIdentifier:SectionIdentifierWebServices];
   [model addItem:[self handoffDetailItem]
-      toSectionWithIdentifier:SectionIdentifierOtherDevices];
-
+      toSectionWithIdentifier:SectionIdentifierWebServices];
+  [model addItem:[self canMakePaymentItem]
+      toSectionWithIdentifier:SectionIdentifierWebServices];
   if (!unified_consent::IsUnifiedConsentFeatureEnabled()) {
-    // Add "Web services" section only if the unified consent is disabled.
-    // Otherwise the metrics reporting and show suggestions feature are
-    // available in the Google services settings.
-    [model addSectionWithIdentifier:SectionIdentifierWebServices];
-    TableViewTextHeaderFooterItem* webServicesHeader =
-        [[TableViewTextHeaderFooterItem alloc]
-            initWithType:ItemTypeWebServicesHeader];
-    webServicesHeader.text =
-        l10n_util::GetNSString(IDS_IOS_OPTIONS_WEB_SERVICES_LABEL);
-    [model setHeader:webServicesHeader
-        forSectionWithIdentifier:SectionIdentifierWebServices];
     // When unified consent flag is enabled, the show suggestions feature and
     // metrics reporting feature are available in the "Google Services and sync"
     // settings.
-    _showSuggestionsItem = [self showSuggestionsSwitchItem];
-    [model addItem:_showSuggestionsItem
-        toSectionWithIdentifier:SectionIdentifierWebServices];
     if (base::FeatureList::IsEnabled(kUmaCellular)) {
       [model addItem:[self sendUsageToggleSwitchItem]
           toSectionWithIdentifier:SectionIdentifierWebServices];
@@ -196,15 +172,14 @@ typedef NS_ENUM(NSInteger, ItemType) {
       [model addItem:[self sendUsageDetailItem]
           toSectionWithIdentifier:SectionIdentifierWebServices];
     }
+    _showSuggestionsItem = [self showSuggestionsSwitchItem];
+    [model addItem:_showSuggestionsItem
+        toSectionWithIdentifier:SectionIdentifierWebServices];
 
     [model setFooter:[self showSuggestionsFooterItem]
         forSectionWithIdentifier:SectionIdentifierWebServices];
   }
 
-  // CanMakePayment Section
-  [model addSectionWithIdentifier:SectionIdentifierCanMakePayment];
-  [model addItem:[self canMakePaymentItem]
-      toSectionWithIdentifier:SectionIdentifierCanMakePayment];
 
   // Clear Browsing Section
   [model addSectionWithIdentifier:SectionIdentifierClearBrowsingData];
@@ -257,8 +232,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 - (TableViewItem*)canMakePaymentItem {
-  SettingsSwitchItem* canMakePaymentItem =
-      [[SettingsSwitchItem alloc] initWithType:ItemTypeCanMakePaymentSwitch];
+  SettingsSwitchItem* canMakePaymentItem = [[SettingsSwitchItem alloc]
+      initWithType:ItemTypeWebServicesPaymentSwitch];
   canMakePaymentItem.text =
       l10n_util::GetNSString(IDS_SETTINGS_CAN_MAKE_PAYMENT_TOGGLE_LABEL);
   canMakePaymentItem.on = [self isCanMakePaymentEnabled];
@@ -328,7 +303,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     [switchCell.switchView addTarget:self
                               action:@selector(showSuggestionsToggled:)
                     forControlEvents:UIControlEventValueChanged];
-  } else if (itemType == ItemTypeCanMakePaymentSwitch) {
+  } else if (itemType == ItemTypeWebServicesPaymentSwitch) {
     SettingsSwitchCell* switchCell =
         base::mac::ObjCCastStrict<SettingsSwitchCell>(cell);
     [switchCell.switchView addTarget:self
@@ -395,7 +370,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
             initWithBrowserState:_browserState];
       }
       break;
-    case ItemTypeCanMakePaymentSwitch:
+    case ItemTypeWebServicesPaymentSwitch:
     case ItemTypeWebServicesShowSuggestions:
     default:
       break;
@@ -465,9 +440,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 - (void)canMakePaymentSwitchChanged:(UISwitch*)sender {
-  NSIndexPath* switchPath = [self.tableViewModel
-      indexPathForItemType:ItemTypeCanMakePaymentSwitch
-         sectionIdentifier:SectionIdentifierCanMakePayment];
+  NSIndexPath* switchPath =
+      [self.tableViewModel indexPathForItemType:ItemTypeWebServicesPaymentSwitch
+                              sectionIdentifier:SectionIdentifierWebServices];
 
   SettingsSwitchItem* switchItem =
       base::mac::ObjCCastStrict<SettingsSwitchItem>(
