@@ -79,6 +79,13 @@ const SAConstants = {
   KEY_PRESS_DURATION_MS: 100,
 
   /**
+   * Commands that can be assigned to specific switches.
+   * @enum {string}
+   * @const
+   */
+  Command: {MENU: 'menu', NEXT: 'next', PREVIOUS: 'previous', SELECT: 'select'},
+
+  /**
    * Actions available in the Switch Access Menu.
    * @enum {string}
    * @const
