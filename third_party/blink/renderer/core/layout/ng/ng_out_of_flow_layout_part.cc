@@ -491,8 +491,8 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::LayoutDescendant(
     // This is a new formatting context, so whatever happened on the outside
     // doesn't concern us.
     MinMaxSizeInput input(container_content_size.block_size);
-    min_max_size = node.ComputeMinMaxSize(descendant_writing_mode, input,
-                                          &descendant_constraint_space);
+    min_max_size = ComputeMinAndMaxContentSizeForOutOfFlow(
+        descendant_constraint_space, node, border_padding, input);
   }
 
   base::Optional<NGLogicalSize> replaced_size;

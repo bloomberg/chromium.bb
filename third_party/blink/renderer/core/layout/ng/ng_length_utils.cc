@@ -330,7 +330,17 @@ MinMaxSize ComputeMinAndMaxContentContribution(
     // Replaced elements may size themselves using aspect ratios and block
     // sizes, so we pass that on as well.
     if (box->IsTable() || box->IsTablePart() || box->IsLayoutReplaced()) {
-      return {box->MinPreferredLogicalWidth(), box->MaxPreferredLogicalWidth()};
+      bool needs_size_reset = false;
+      if (!box->HasOverrideContainingBlockContentLogicalHeight()) {
+        box->SetOverrideContainingBlockContentLogicalHeight(
+            input.percentage_resolution_block_size);
+        needs_size_reset = true;
+      }
+      MinMaxSize result{box->MinPreferredLogicalWidth(),
+                        box->MaxPreferredLogicalWidth()};
+      if (needs_size_reset)
+        box->ClearOverrideContainingBlockContentSize();
+      return result;
     }
   }
 
@@ -362,6 +372,27 @@ MinMaxSize ComputeMinAndMaxContentContribution(
   if (IsParallelWritingMode(parent_writing_mode, child_writing_mode))
     box->SetPreferredLogicalWidthsFromNG(sizes);
   return sizes;
+}
+
+MinMaxSize ComputeMinAndMaxContentSizeForOutOfFlow(
+    const NGConstraintSpace& constraint_space,
+    NGLayoutInputNode node,
+    const NGBoxStrut& border_padding,
+    const MinMaxSizeInput& input) {
+  LayoutBox* box = node.GetLayoutBox();
+  if (!box->PreferredLogicalWidthsDirty() &&
+      !box->NeedsPreferredWidthsRecalculation()) {
+    return MinMaxSize{box->MinPreferredLogicalWidth(),
+                      box->MaxPreferredLogicalWidth()};
+  }
+
+  MinMaxSize result = node.ComputeMinMaxSize(node.Style().GetWritingMode(),
+                                             input, &constraint_space);
+  // Cache these computed values.
+  MinMaxSize contribution = ComputeMinAndMaxContentContribution(
+      node.Style().GetWritingMode(), node.Style(), border_padding, result);
+  box->SetPreferredLogicalWidthsFromNG(contribution);
+  return result;
 }
 
 LayoutUnit ComputeInlineSizeForFragment(
@@ -1121,8 +1152,10 @@ LayoutUnit CalculateChildPercentageBlockSizeForMinMax(
           ? NGSizeIndefinite
           : (block_size - border_padding.BlockSum()).ClampNegativeToZero();
 
+  // For OOF-positioned nodes, use the parent (containing-block) size.
   if (child_percentage_block_size == NGSizeIndefinite &&
-      node.UseParentPercentageResolutionBlockSizeForChildren())
+      (node.UseParentPercentageResolutionBlockSizeForChildren() ||
+       node.IsOutOfFlowPositioned()))
     child_percentage_block_size = parent_percentage_block_size;
 
   return child_percentage_block_size;
