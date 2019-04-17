@@ -187,7 +187,7 @@ def ConvertSdkManifests():
   with open(build_output_path, 'w') as buildfile:
     buildfile.write(_GENERATED_PREAMBLE)
 
-    for part in toplevel_meta['new_parts']:
+    for part in toplevel_meta['parts']:
       parsed = json.load(open(os.path.join(sdk_base_dir, part['meta'])))
 
       convert_function = _CONVERSION_FUNCTION_MAP.get(part['type'])
