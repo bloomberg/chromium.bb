@@ -22,7 +22,9 @@ WebAppUiDelegateImpl::WebAppUiDelegateImpl(Profile* profile)
   WebAppProvider::Get(profile_)->set_ui_delegate(this);
 }
 
-WebAppUiDelegateImpl::~WebAppUiDelegateImpl() {
+WebAppUiDelegateImpl::~WebAppUiDelegateImpl() = default;
+
+void WebAppUiDelegateImpl::Shutdown() {
   WebAppProvider::Get(profile_)->set_ui_delegate(nullptr);
 }
 
@@ -30,6 +32,9 @@ size_t WebAppUiDelegateImpl::GetNumWindowsForApp(const AppId& app_id) {
   size_t num_windows_for_app = 0;
   for (Browser* browser : *BrowserList::GetInstance()) {
     if (browser->profile() != profile_)
+      continue;
+
+    if (!browser->web_app_controller())
       continue;
 
     if (browser->web_app_controller()->GetAppId() == app_id)

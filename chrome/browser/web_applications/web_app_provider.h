@@ -115,7 +115,7 @@ class WebAppProvider : public WebAppProviderBase,
   std::unique_ptr<WebAppDatabaseFactory> database_factory_;
   std::unique_ptr<WebAppDatabase> database_;
   std::unique_ptr<WebAppIconManager> icon_manager_;
-  WebAppUiDelegate* ui_delegate_;
+  WebAppUiDelegate* ui_delegate_ = nullptr;
 
   // New generalized subsystems:
   std::unique_ptr<AppRegistrar> registrar_;
