@@ -178,30 +178,39 @@ class EulaTest : public OobeBaseTest {
         consented);
   }
 
-  // Waits until |blocking_closure| finishes executing.
-  void WaitForBlockingCall(base::OnceClosure blocking_closure) {
+  // Calls |GoogleUpdateSettings::SetCollectStatsConsent| asynchronously on its
+  // task runner. Blocks until task is executed.
+  void SetGoogleCollectStatsConsent(bool consented) {
     base::RunLoop runloop;
-    base::PostTaskWithTraitsAndReply(FROM_HERE, {base::MayBlock()},
-                                     std::move(blocking_closure),
-                                     runloop.QuitClosure());
+    GoogleUpdateSettings::CollectStatsConsentTaskRunner()->PostTaskAndReply(
+        FROM_HERE, SetCollectStatsConsentClosure(consented),
+        runloop.QuitClosure());
     runloop.Run();
   }
 
-  // Waits and returns the result of evaluating |blocking_closure|.
-  bool EvaluateBlocking(base::OnceCallback<bool()> blocking_closure) {
-    bool result = false;
+  // Calls |GoogleUpdateSettings::GetCollectStatsConsent| asynchronously on its
+  // task runner. Blocks until task is executed and returns the result.
+  bool GetGoogleCollectStatsConsent() {
+    bool consented = false;
+
+    // Callback runs after GetCollectStatsConsent is executed. Sets the local
+    // variable |consented| to the result of GetCollectStatsConsent.
+    auto on_get_collect_stats_consent_callback =
+        [](base::OnceClosure quit_closure, bool* consented_out,
+           bool consented_result) {
+          *consented_out = consented_result;
+          std::move(quit_closure).Run();
+        };
+
     base::RunLoop runloop;
-    base::PostTaskWithTraitsAndReplyWithResult(
-        FROM_HERE, {base::MayBlock()}, std::move(blocking_closure),
-        base::BindOnce(
-            [](base::RepeatingClosure quit_closure, bool* result_out,
-               bool evaluation_result) {
-              *result_out = evaluation_result;
-              quit_closure.Run();
-            },
-            runloop.QuitClosure(), &result));
+    base::PostTaskAndReplyWithResult(
+        GoogleUpdateSettings::CollectStatsConsentTaskRunner(), FROM_HERE,
+        base::BindOnce(&GoogleUpdateSettings::GetCollectStatsConsent),
+        base::BindOnce(on_get_collect_stats_consent_callback,
+                       runloop.QuitClosure(), &consented));
     runloop.Run();
-    return result;
+
+    return consented;
   }
 
  private:
@@ -281,7 +290,7 @@ IN_PROC_BROWSER_TEST_F(EulaTest, DisplaysTpmPassword) {
 // Verifies statistic collection accepted flow.
 // Advaces to the next screen and verifies stats collection is enabled.
 // Flaky on LSAN/ASAN: crbug.com/952482.
-IN_PROC_BROWSER_TEST_F(EulaTest, DISABLED_EnableUsageStats) {
+IN_PROC_BROWSER_TEST_F(EulaTest, EnableUsageStats) {
   ShowEulaScreen();
 
   // Verify that toggle is enabled by default.
@@ -294,8 +303,7 @@ IN_PROC_BROWSER_TEST_F(EulaTest, DISABLED_EnableUsageStats) {
       ProfileManager::GetActiveUserProfile(), false);
   g_browser_process->local_state()->SetBoolean(
       metrics::prefs::kMetricsReportingEnabled, false);
-
-  WaitForBlockingCall(SetCollectStatsConsentClosure(false));
+  SetGoogleCollectStatsConsent(false);
 
   // Start Listening for StatsReportingController updates.
   base::RunLoop runloop;
@@ -312,8 +320,7 @@ IN_PROC_BROWSER_TEST_F(EulaTest, DISABLED_EnableUsageStats) {
   EXPECT_TRUE(StatsReportingController::Get()->IsEnabled());
   EXPECT_TRUE(g_browser_process->local_state()->GetBoolean(
       metrics::prefs::kMetricsReportingEnabled));
-  EXPECT_TRUE(EvaluateBlocking(
-      base::BindOnce(&GoogleUpdateSettings::GetCollectStatsConsent)));
+  EXPECT_TRUE(GetGoogleCollectStatsConsent());
 }
 
 // Verify statistic collection denied flow. Clicks on usage stats toggle,
@@ -331,8 +338,7 @@ IN_PROC_BROWSER_TEST_F(EulaTest, DisableUsageStats) {
       ProfileManager::GetActiveUserProfile(), true);
   g_browser_process->local_state()->SetBoolean(
       metrics::prefs::kMetricsReportingEnabled, true);
-
-  WaitForBlockingCall(SetCollectStatsConsentClosure(true));
+  SetGoogleCollectStatsConsent(true);
 
   // Start Listening for StatsReportingController updates.
   base::RunLoop runloop;
@@ -351,8 +357,7 @@ IN_PROC_BROWSER_TEST_F(EulaTest, DisableUsageStats) {
   EXPECT_FALSE(StatsReportingController::Get()->IsEnabled());
   EXPECT_FALSE(g_browser_process->local_state()->GetBoolean(
       metrics::prefs::kMetricsReportingEnabled));
-  EXPECT_FALSE(EvaluateBlocking(
-      base::BindOnce(&GoogleUpdateSettings::GetCollectStatsConsent)));
+  EXPECT_FALSE(GetGoogleCollectStatsConsent());
 }
 
 // Tests that clicking on "Learn more" button opens a help dialog.
