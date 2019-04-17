@@ -244,15 +244,16 @@ class ArcAuthServiceTest : public InProcessBrowserTest {
   void SetAccountAndProfile(const user_manager::UserType user_type) {
     const AccountId account_id(
         AccountId::FromUserEmailGaiaId(kFakeUserName, kFakeGaiaId));
+    const user_manager::User* user = nullptr;
     switch (user_type) {
       case user_manager::USER_TYPE_CHILD:
-        GetFakeUserManager()->AddChildUser(account_id);
+        user = GetFakeUserManager()->AddChildUser(account_id);
         break;
       case user_manager::USER_TYPE_REGULAR:
-        GetFakeUserManager()->AddUser(account_id);
+        user = GetFakeUserManager()->AddUser(account_id);
         break;
       case user_manager::USER_TYPE_PUBLIC_ACCOUNT:
-        GetFakeUserManager()->AddPublicAccountUser(account_id);
+        user = GetFakeUserManager()->AddPublicAccountUser(account_id);
         break;
       default:
         ADD_FAILURE() << "Unexpected user type " << user_type;
@@ -273,6 +274,9 @@ class ArcAuthServiceTest : public InProcessBrowserTest {
         CreateProfileForIdentityTestEnvironment(profile_builder);
     identity_test_environment_adaptor_ =
         std::make_unique<IdentityTestEnvironmentProfileAdaptor>(profile_.get());
+
+    chromeos::ProfileHelper::Get()->SetUserToProfileMappingForTesting(
+        user, profile_.get());
 
     auto* identity_test_env =
         identity_test_environment_adaptor_->identity_test_env();
