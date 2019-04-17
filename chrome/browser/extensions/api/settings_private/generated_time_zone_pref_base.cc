@@ -37,7 +37,7 @@ void GeneratedTimeZonePrefBase::OnTimeZoneResolverUpdated() {
 void GeneratedTimeZonePrefBase::UpdateTimeZonePrefControlledBy(
     settings_api::PrefObject* out_pref) const {
   if (profile_->IsChild()) {
-    out_pref->controlled_by = settings_api::CONTROLLED_BY_USER_POLICY;
+    out_pref->controlled_by = settings_api::ControlledBy::CONTROLLED_BY_PARENT;
     out_pref->enforcement = settings_api::ENFORCEMENT_ENFORCED;
   } else if (chromeos::system::TimeZoneResolverManager::
                  IsTimeZoneResolutionPolicyControlled()) {
