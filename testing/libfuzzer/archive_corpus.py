@@ -25,8 +25,6 @@ def main():
                       nargs='+')
   parser.add_argument('--output', metavar='output_archive_name.zip',
                       required=True)
-  parser.add_argument('--dry_run', default=False, action='store_true',
-                      help="Don't actually create the output archive.")
 
   args = parser.parse_args()
   corpus_files = []
@@ -40,9 +38,6 @@ def main():
       for filename in filenames:
         full_filename = os.path.join(dirpath, filename)
         corpus_files.append(full_filename)
-
-  if args.dry_run:
-    return
 
   with zipfile.ZipFile(seed_corpus_path, 'w') as z:
     # Turn warnings into errors to interrupt the build: crbug.com/653920.

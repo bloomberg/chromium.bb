@@ -74,12 +74,6 @@ template("fuzzer_test") {
           }
         }
 
-        # Tell the script not to actually zip the seed corpus if we have been
-        # instructed not to build it.
-        if (!archive_seed_corpus) {
-          args += [ "--dry_run" ]
-        }
-
         outputs = [
           out,
         ]
@@ -87,7 +81,9 @@ template("fuzzer_test") {
         deps = [ "//testing/libfuzzer:seed_corpus" ] + seed_corpus_deps
       }
 
-      test_deps += [ ":" + target_name + "_seed_corpus" ]
+      if (!archive_seed_corpus) {
+        test_deps += [ ":" + target_name + "_seed_corpus" ]
+      }
     }
 
     if (defined(invoker.dict) || defined(invoker.libfuzzer_options) ||
