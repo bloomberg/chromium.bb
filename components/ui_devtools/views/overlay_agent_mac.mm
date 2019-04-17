@@ -70,6 +70,7 @@ protocol::Response OverlayAgentMac::enable() {
 protocol::Response OverlayAgentMac::disable() {
   if (is_pretarget_handler_)
     RemovePreTargetHandler();
+  hideHighlight();
   dom_agent()->RemoveObserver(this);
   return OverlayAgentViews::disable();
 }
