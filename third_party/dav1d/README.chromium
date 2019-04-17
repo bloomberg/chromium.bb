@@ -3,13 +3,13 @@ Short Name: dav1d
 URL: https://code.videolan.org/videolan/dav1d
 Version: dce4e788614bf8c2e353b7157e7b59b34b177779
 License: 2-Clause BSD
-License File: LICENSE, copied from: libdav1d/COPYING
+License File: LICENSE
 Security Critical: yes
 Source: https://code.videolan.org/videolan/dav1d
 
 --[ DESCRIPTION ] ------------------
 This contains the source to the dav1d video decoder; used for AV1 decoding in
-Chromium.
+Chromium. The LICENSE file is copied from libdav1d/COPYING.
 
 
 --[ UPDATING ] ------------------
