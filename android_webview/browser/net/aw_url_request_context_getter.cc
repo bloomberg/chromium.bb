@@ -207,19 +207,20 @@ AwURLRequestContextGetter::AwURLRequestContextGetter(
   // For net-log, use default capture mode and no channel information.
   // WebView can enable net-log only using commandline in userdebug
   // devices so there is no need to complicate things here. The net_log
-  // file is written under app_webview directory. The user is required to
-  // provide a file name using --log-net-log=<filename.json> and then
-  // pull the file to desktop and then import it to chrome://net-internals
-  // There is no good way to shutdown net-log at the moment. The file will
-  // always be truncated.
+  // file is written at an absolute path specified by the user using
+  // --log-net-log=<filename.json>. Note: the absolute path should be a
+  // subdirectory of the app's data directory, otherwise multiple WebView apps
+  // may write to the same file. The user should then 'adb pull' the file to
+  // desktop and then import it to chrome://net-internals There is no good way
+  // to shutdown net-log at the moment. The file will always be truncated.
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(network::switches::kLogNetLog)) {
-    FilePath net_log_path;
-    base::PathService::Get(base::DIR_ANDROID_APP_DATA, &net_log_path);
-    FilePath log_name =
+  // Note: Netlog is handled by the Network Service when that is enabled.
+  if (command_line.HasSwitch(network::switches::kLogNetLog) &&
+      !base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    // Assume the user gave us a path we can write to
+    FilePath net_log_path =
         command_line.GetSwitchValuePath(network::switches::kLogNetLog);
-    net_log_path = net_log_path.Append(log_name);
 
     std::unique_ptr<base::DictionaryValue> constants_dict =
         net::GetNetConstants();
