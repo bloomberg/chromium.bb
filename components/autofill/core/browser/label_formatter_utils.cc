@@ -245,4 +245,48 @@ base::string16 GetLabelPhone(const AutofillProfile& profile,
                    data_util::GetCountryCodeWithFallback(profile, app_locale)));
 }
 
+bool HaveSameEmailAddresses(const std::vector<AutofillProfile*>& profiles,
+                            const std::string& app_locale) {
+  bool first_email_found = false;
+  base::string16 first_email;
+
+  for (const AutofillProfile* profile : profiles) {
+    base::string16 email_from_profile = GetLabelEmail(*profile, app_locale);
+
+    if (!first_email_found) {
+      // Store the first email address whether it's empty or not because we
+      // consider "" and "hao.le@aol.com" to be different email addresses.
+      first_email_found = true;
+      first_email = email_from_profile;
+    } else if (email_from_profile != first_email) {
+      return false;
+    }
+  }
+  return true;
+}
+
+bool HaveSamePhoneNumbers(const std::vector<AutofillProfile*>& profiles,
+                          const std::string& app_locale) {
+  bool first_phone_found = false;
+  base::string16 first_phone;
+
+  for (const AutofillProfile* profile : profiles) {
+    base::string16 phone_from_profile = GetLabelPhone(*profile, app_locale);
+
+    if (!first_phone_found) {
+      // Store the first phone number whether it's empty or not because we
+      // consider "" and "(514) 873-1100" to be different phone numbers.
+      first_phone_found = true;
+      first_phone = phone_from_profile;
+    } else if (!(first_phone.empty() && phone_from_profile.empty()) &&
+               !i18n::PhoneNumbersMatch(first_phone, phone_from_profile,
+                                        base::UTF16ToASCII(profile->GetInfo(
+                                            ADDRESS_HOME_COUNTRY, app_locale)),
+                                        app_locale)) {
+      return false;
+    }
+  }
+  return true;
+}
+
 }  // namespace autofill
