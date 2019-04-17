@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.autofill_assistant.overlay;
 import android.graphics.RectF;
 
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.compositor.CompositorViewResizer;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.browser.widget.ScrimView.ScrimParams;
@@ -24,12 +25,14 @@ public class AssistantOverlayCoordinator {
     private final ScrimView mScrim;
     private boolean mScrimEnabled;
 
-    public AssistantOverlayCoordinator(ChromeActivity activity, AssistantOverlayModel model) {
+    public AssistantOverlayCoordinator(ChromeActivity activity, AssistantOverlayModel model,
+            CompositorViewResizer viewResizer) {
         mActivity = activity;
         mScrim = mActivity.getScrim();
         mEventFilter = new AssistantOverlayEventFilter(
                 mActivity, mActivity.getFullscreenManager(), mActivity.getCompositorViewHolder());
-        mDrawable = new AssistantOverlayDrawable(mActivity, mActivity.getFullscreenManager());
+        mDrawable = new AssistantOverlayDrawable(
+                mActivity, mActivity.getFullscreenManager(), viewResizer);
 
         // Listen for changes in the state.
         // TODO(crbug.com/806868): Bind model to view through a ViewBinder instead.

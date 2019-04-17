@@ -14,6 +14,7 @@ import org.chromium.chrome.browser.autofill.keyboard_accessory.bar_component.Key
 import org.chromium.chrome.browser.autofill.keyboard_accessory.data.KeyboardAccessoryData;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.data.PropertyProvider;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.sheet_component.AccessorySheetCoordinator;
+import org.chromium.chrome.browser.compositor.CompositorViewResizer;
 import org.chromium.components.autofill.AutofillDelegate;
 import org.chromium.components.autofill.AutofillSuggestion;
 import org.chromium.ui.DropdownPopupWindow;
@@ -134,8 +135,8 @@ class ManualFillingCoordinator implements ManualFillingComponent {
     }
 
     @Override
-    public KeyboardExtensionSizeManager getKeyboardExtensionSizeManager() {
-        return mMediator.getKeyboardExtensionSizeManager();
+    public CompositorViewResizer getKeyboardExtensionViewResizer() {
+        return mMediator.getKeyboardExtensionViewResizer();
     }
 
     @Override
