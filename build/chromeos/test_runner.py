@@ -15,6 +15,9 @@ import socket
 import sys
 import tempfile
 
+# The following non-std imports are fetched via vpython. See the list at
+# //.vpython
+import dateutil.parser  # pylint: disable=import-error
 import psutil  # pylint: disable=import-error
 
 CHROMIUM_SRC_PATH = os.path.abspath(os.path.join(
@@ -187,7 +190,11 @@ class RemoteTest(object):
       if test_proc.returncode == 0:
         break
 
-    self.post_run(test_proc.returncode)
+    ret = self.post_run(test_proc.returncode)
+    # Allow post_run to override test proc return code. (Useful when the host
+    # side Tast bin returns 0 even for failed tests.)
+    if ret is not None:
+      return ret
     return test_proc.returncode
 
   def post_run(self, return_code):
@@ -215,6 +222,13 @@ class TastTest(RemoteTest):
     self._tests = args.tests
     self._conditional = args.conditional
     self._use_host_tast = args.use_host_tast_bin
+
+    if self._use_host_tast and not self._logs_dir:
+      # The host-side Tast bin returns 0 when tests fail, so we need to capture
+      # and parse its json results to reliably determine if tests fail.
+      raise TestFormatError(
+          'When using the host-side Tast bin, "--logs-dir" must be passed in '
+          'order to parse its results.')
 
   @property
   def suite_name(self):
@@ -304,6 +318,59 @@ class TastTest(RemoteTest):
       else:
         self._test_cmd.append('--tast')
         self._test_cmd.extend(self._tests)
+
+  def post_run(self, return_code):
+    # If we don't need to parse the host-side Tast tool's results, fall back to
+    # the parent method's default behavior.
+    if not self._use_host_tast:
+      return super(TastTest, self).post_run(return_code)
+
+    # TODO(crbug.com/952085): Switch to streamed_results.jsonl after jsonlines
+    # becomes available as a wheel.
+    tast_results_path = os.path.join(self._logs_dir, 'results.json')
+    if not os.path.exists(tast_results_path):
+      logging.error(
+         'Tast results not found at %s. Falling back to generic result '
+         'reporting.', tast_results_path)
+      return super(TastTest, self).post_run(return_code)
+
+    # See the link below for the format of the results:
+    # https://godoc.org/chromium.googlesource.com/chromiumos/platform/tast.git/src/chromiumos/cmd/tast/run#TestResult
+    with open(tast_results_path) as f:
+      tast_results = json.load(f)
+
+    suite_results = base_test_result.TestRunResults()
+    for test in tast_results:
+      errors = test['errors']
+      start, end = test['start'], test['end']
+      # Use dateutil to parse the timestamps since datetime can't handle
+      # nanosecond precision.
+      duration = dateutil.parser.parse(end) - dateutil.parser.parse(start)
+      duration_ms = duration.total_seconds() * 1000
+      if bool(test['skipReason']):
+        result = base_test_result.ResultType.SKIP
+      elif errors:
+        result = base_test_result.ResultType.FAIL
+      else:
+        result = base_test_result.ResultType.PASS
+      error_log = ''
+      if errors:
+        # See the link below for the format of these errors:
+        # https://godoc.org/chromium.googlesource.com/chromiumos/platform/tast.git/src/chromiumos/tast/testing#Error
+        for err in errors:
+          error_log += str(err['stack']) + '\n'
+      base_result = base_test_result.BaseTestResult(
+          test['name'], result, duration=duration_ms, log=error_log)
+      suite_results.AddResult(base_result)
+
+    if self._test_launcher_summary_output:
+      with open(self._test_launcher_summary_output, 'w') as f:
+        json.dump(json_results.GenerateResultsDict([suite_results]), f)
+
+    if not suite_results.DidRunPass():
+      return 1
+    return 0
+
 
 
 class GTestTest(RemoteTest):
