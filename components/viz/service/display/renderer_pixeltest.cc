@@ -1794,16 +1794,14 @@ using VideoSkiaRendererPixelHiLoTest = VideoRendererPixelHiLoTest<SkiaRenderer>;
 TEST_P(VideoGLRendererPixelHiLoTest, SimpleYUVRect) {
   SimpleYUVRect();
 }
-// TODO(crbug.com/936822): Enable this test.
-TEST_P(VideoSkiaRendererPixelHiLoTest, DISABLED_SimpleYUVRect) {
+TEST_P(VideoSkiaRendererPixelHiLoTest, SimpleYUVRect) {
   SimpleYUVRect();
 }
 
 TEST_P(VideoGLRendererPixelHiLoTest, ClippedYUVRect) {
   ClippedYUVRect();
 }
-// TODO(crbug.com/936822): Enable this test.
-TEST_P(VideoSkiaRendererPixelHiLoTest, DISABLED_ClippedYUVRect) {
+TEST_P(VideoSkiaRendererPixelHiLoTest, ClippedYUVRect) {
   ClippedYUVRect();
 }
 

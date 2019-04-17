@@ -342,7 +342,13 @@ sk_sp<SkImage> SkiaOutputSurfaceImpl::MakePromiseSkImageFromYUV(
     yuva_sizes[i].set(metadata.size.width(), metadata.size.height());
     auto& image_context = promise_image_cache_[metadata.resource_id];
     if (!image_context) {
-      image_context = std::make_unique<ImageContext>(metadata);
+      // color_space is ignored by makeYUVAPromiseTexture below. Passing nullptr
+      // removes some LOG spam.
+      image_context = std::make_unique<ImageContext>(
+          metadata.mailbox_holder.mailbox, metadata.size,
+          metadata.resource_format, nullptr /* color_space */,
+          metadata.alpha_type, metadata.origin,
+          metadata.mailbox_holder.sync_token);
     }
     if (image_context->sync_token.HasData()) {
       resource_sync_tokens_.push_back(image_context->sync_token);
