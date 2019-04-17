@@ -56,6 +56,8 @@ ash::mojom::AssistantAllowedState IsAssistantAllowedForProfile(
                                          ULOC_UK,
                                          ULOC_US,
                                          "da",
+                                         "en_AU",
+                                         "en_NZ",
                                          "nb",
                                          "nl",
                                          "nn",
