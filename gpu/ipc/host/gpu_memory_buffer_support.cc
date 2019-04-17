@@ -15,7 +15,7 @@
 namespace gpu {
 
 bool AreNativeGpuMemoryBuffersEnabled() {
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) || defined(OS_FUCHSIA)
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableNativeGpuMemoryBuffers);
 #else
