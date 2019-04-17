@@ -230,7 +230,16 @@ ComputeMinAndMaxContentContribution(WritingMode writing_mode,
 MinMaxSize ComputeMinAndMaxContentContribution(
     const ComputedStyle& parent_style,
     NGLayoutInputNode child,
-    const MinMaxSizeInput& input);
+    const MinMaxSizeInput&);
+
+// Computes the min/max-content size for an out-of-flow positioned node and
+// returns it, using the cache where possible. ALways computes it in the writing
+// mode of the node itself.
+MinMaxSize ComputeMinAndMaxContentSizeForOutOfFlow(
+    const NGConstraintSpace&,
+    NGLayoutInputNode,
+    const NGBoxStrut& border_padding,
+    const MinMaxSizeInput&);
 
 // Returns inline size of the node's border box by resolving the computed value
 // in style.logicalWidth (Length) to a layout unit, adding border and padding,
