@@ -10,6 +10,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
 #include <memory>
 #include <string>
 #include <vector>
@@ -64,6 +65,16 @@ class span {
 template <typename T>
 span<T> SpanFrom(const std::vector<T>& v) {
   return span<T>(v.data(), v.size());
+}
+
+template <size_t N>
+span<uint8_t> SpanFrom(const char (&str)[N]) {
+  return span<uint8_t>(reinterpret_cast<const uint8_t*>(str), N - 1);
+}
+
+inline span<uint8_t> SpanFrom(const char* str) {
+  return str ? span<uint8_t>(reinterpret_cast<const uint8_t*>(str), strlen(str))
+             : span<uint8_t>();
 }
 
 inline span<uint8_t> SpanFrom(const std::string& v) {
