@@ -546,14 +546,6 @@ void AuthenticationService::HandleForgottenIdentity(
   }
 
   // Sign the user out.
-  //
-  // The authenticated id is removed from the device (either by the user or
-  // when an invalid credentials is received from the server). There is no
-  // upstream entry in enum |signin_metrics::ProfileSignout| for this event. The
-  // temporary solution is to map this to |ABORT_SIGNIN|.
-  //
-  // TODO(msarda): http://crbug.com/416823 Add another entry in Chromium
-  // upstream for |signin_metrics| that matches the device identity was lost.
   SignOut(signin_metrics::ABORT_SIGNIN, nil);
   SetPromptForSignIn(should_prompt);
 }
