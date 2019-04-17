@@ -18,6 +18,7 @@ source_set("earl_grey_support") {
     "coverage_utils.mm",
     "disabled_test_macros.h",
     "earl_grey_app.h",
+    "earl_grey_app.mm",
     "earl_grey_test.h",
     "matchers.h",
     "matchers.mm",
@@ -39,6 +40,7 @@ source_set("eg_app_support+eg2") {
     "coverage_utils.h",
     "coverage_utils.mm",
     "earl_grey_app.h",
+    "earl_grey_app.mm",
   ]
 }
 
