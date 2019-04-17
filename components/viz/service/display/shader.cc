@@ -602,13 +602,6 @@ void FragmentShader::SetRoundedCornerFunctions(
         vec4 ApplyRoundedCorner(vec4 src) {
           vec2 rcCoord = gl_FragCoord.xy - roundedCornerRect.xy;
 
-          // If outside bounds, then just clip everything.
-          if (rcCoord.x < 0.0 || rcCoord.y < 0.0 ||
-              rcCoord.x > roundedCornerRect.z ||
-              rcCoord.y > roundedCornerRect.w) {
-            return vec4(0.0);
-          }
-
           vec4 isCorner = IsCorner(rcCoord);
 
           // Get the radius to use based on the corner this fragment lies in.
