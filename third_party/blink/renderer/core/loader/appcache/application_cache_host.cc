@@ -40,6 +40,7 @@
 #include "third_party/blink/public/platform/web_url_response.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/renderer/core/events/application_cache_error_event.h"
+#include "third_party/blink/renderer/core/events/current_input_event.h"
 #include "third_party/blink/renderer/core/events/progress_event.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/frame/hosts_using_features.h"
@@ -50,6 +51,7 @@
 #include "third_party/blink/renderer/core/inspector/inspector_application_cache_agent.h"
 #include "third_party/blink/renderer/core/loader/appcache/application_cache.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
+#include "third_party/blink/renderer/core/loader/frame_load_request.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/core/page/frame_tree.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -158,9 +160,11 @@ void ApplicationCacheHost::SelectCacheWithManifest(const KURL& manifest_url) {
     // navigation algorithm. The navigation will not result in the same resource
     // being loaded, because "foreign" entries are never picked during
     // navigation. see ApplicationCacheGroup::selectCache()
-    frame->ScheduleNavigation(*document, document->Url(),
-                              WebFrameLoadType::kReplaceCurrentItem,
-                              UserGestureStatus::kNone);
+    FrameLoadRequest request(document, ResourceRequest(document->Url()));
+    request.SetClientRedirect(ClientRedirectPolicy::kClientRedirect);
+    if (const WebInputEvent* input_event = CurrentInputEvent::Get())
+      request.SetInputStartTime(input_event->TimeStamp());
+    frame->Navigate(request, WebFrameLoadType::kReplaceCurrentItem);
   }
 }
 
