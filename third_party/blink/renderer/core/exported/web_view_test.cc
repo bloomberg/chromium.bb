@@ -3504,6 +3504,8 @@ TEST_F(WebViewTest, DoNotFocusCurrentFrameOnNavigateFromLocalFrame) {
       local_frame->GetDocument(),
       web_url_request_with_target_start.ToResourceRequest(), "_top");
   local_frame->Loader().StartNavigation(request_with_target_start);
+  frame_test_helpers::PumpPendingRequestsForFrameToLoad(
+      To<WebLocalFrameImpl>(web_view_impl->MainFrame()->FirstChild()));
   EXPECT_FALSE(client.DidFocusCalled());
 
   web_view_helper.Reset();  // Remove dependency on locally scoped client.

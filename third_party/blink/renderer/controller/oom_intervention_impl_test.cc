@@ -271,6 +271,11 @@ TEST_F(OomInterventionImplTest, V1DetectionAdsNavigation) {
   WebFrame* non_ad_iframe = web_view_helper_.LocalMainFrame()->FindFrameByName(
       WebString::FromUTF8("non-ad"));
 
+  frame_test_helpers::PumpPendingRequestsForFrameToLoad(
+      ad_iframe->ToWebLocalFrame());
+  frame_test_helpers::PumpPendingRequestsForFrameToLoad(
+      non_ad_iframe->ToWebLocalFrame());
+
   auto* local_adframe = To<LocalFrame>(WebFrame::ToCoreFrame(*ad_iframe));
   local_adframe->SetIsAdSubframe(blink::mojom::AdFrameType::kRootAd);
   auto* local_non_adframe =
@@ -278,12 +283,20 @@ TEST_F(OomInterventionImplTest, V1DetectionAdsNavigation) {
 
   EXPECT_TRUE(local_adframe->IsAdSubframe());
   EXPECT_FALSE(local_non_adframe->IsAdSubframe());
+  EXPECT_EQ(local_adframe->GetDocument()->Url().GetString(), "data:text/html,");
+  EXPECT_EQ(local_non_adframe->GetDocument()->Url().GetString(),
+            "data:text/html,");
 
   RunDetection(true, true, false);
 
+  EXPECT_TRUE(page->Paused());
+  intervention_.reset();
+
+  // The about:blank navigation won't actually happen until the page unpauses.
+  frame_test_helpers::PumpPendingRequestsForFrameToLoad(
+      ad_iframe->ToWebLocalFrame());
   EXPECT_EQ(local_adframe->GetDocument()->Url().GetString(), "about:blank");
   EXPECT_NE(local_non_adframe->GetDocument()->Url().GetString(), "about:blank");
-  EXPECT_TRUE(page->Paused());
 }
 
 TEST_F(OomInterventionImplTest, V2DetectionV8PurgeMemory) {

@@ -78,7 +78,6 @@
 #include "third_party/blink/renderer/core/timing/window_performance.h"
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
-#include "third_party/blink/renderer/platform/bindings/v8_dom_activity_logger.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 #include "third_party/blink/renderer/platform/loader/cors/cors.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
@@ -1102,18 +1101,6 @@ void DocumentLoader::StartLoadingInternal() {
 
   // Many parties are interested in resource loading, so we will notify
   // them through various DispatchXXX methods on FrameFetchContext.
-
-  if (!archive_) {
-    V8DOMActivityLogger* activity_logger =
-        V8DOMActivityLogger::CurrentActivityLoggerIfIsolatedWorld();
-    if (activity_logger) {
-      Vector<String> argv;
-      argv.push_back("Main resource");
-      argv.push_back(url_.GetString());
-      activity_logger->LogEvent("blinkRequestResource", argv.size(),
-                                argv.data());
-    }
-  }
 
   GetFrameLoader().Progress().WillStartLoading(main_resource_identifier_,
                                                ResourceLoadPriority::kVeryHigh);
