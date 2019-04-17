@@ -139,7 +139,6 @@ class AshTestHelper {
   std::unique_ptr<AshTestViewsDelegate> test_views_delegate_;
 
   // Flags for whether various services were initialized here.
-  bool dbus_thread_manager_initialized_ = false;
   bool bluez_dbus_manager_initialized_ = false;
   bool power_policy_controller_initialized_ = false;
 
