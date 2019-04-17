@@ -35,6 +35,10 @@ class RootWindow;
 class Window;
 }  // namespace aura
 
+namespace dbus {
+class Bus;
+}
+
 namespace display {
 class DisplayChangeObserver;
 class DisplayConfigurator;
@@ -94,6 +98,7 @@ class AccessibilityController;
 class AccessibilityDelegate;
 class AccessibilityFocusRingController;
 class ArcCustomTabController;
+class AshDBusHelper;
 class AshDBusServices;
 class AshDisplayController;
 class AshFocusRules;
@@ -663,7 +668,8 @@ class ASH_EXPORT Shell : public SessionObserver,
             ui::ContextFactoryPrivate* context_factory_private,
             std::unique_ptr<base::Value> initial_display_prefs,
             std::unique_ptr<ws::GpuInterfaceProvider> gpu_interface_provider,
-            std::unique_ptr<keyboard::KeyboardUIFactory> keyboard_ui_factory);
+            std::unique_ptr<keyboard::KeyboardUIFactory> keyboard_ui_factory,
+            scoped_refptr<dbus::Bus> dbus_bus);
 
   // Initializes the display manager and related components.
   void InitializeDisplayManager();
@@ -722,6 +728,7 @@ class ASH_EXPORT Shell : public SessionObserver,
       accessibility_focus_ring_controller_;
   std::unique_ptr<AppListControllerImpl> app_list_controller_;
   std::unique_ptr<ArcCustomTabController> arc_custom_tab_controller_;
+  std::unique_ptr<AshDBusHelper> ash_dbus_helper_;
   std::unique_ptr<AshDBusServices> ash_dbus_services_;
   std::unique_ptr<AshDisplayController> ash_display_controller_;
   std::unique_ptr<AssistantController> assistant_controller_;

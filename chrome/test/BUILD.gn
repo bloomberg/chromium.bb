@@ -5228,7 +5228,10 @@ if (!is_android) {
     }
 
     if (is_chromeos) {
-      deps += [ "//chrome/browser/media/router:test_support" ]
+      deps += [
+        "//chrome/browser/media/router:test_support",
+        "//chromeos/dbus",
+      ]
       sources -= [
         "../browser/ui/signin_view_controller_interactive_uitest.cc",
 

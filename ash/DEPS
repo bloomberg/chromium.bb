@@ -21,6 +21,7 @@ include_rules = [
   "+components/viz/common",
   "+components/viz/host",
   "+components/wallpaper",
+  "+dbus",
   "+extensions/common/constants.h",
   "+gpu/config",
   "+media",
@@ -61,8 +62,6 @@ include_rules = [
   "+chromeos/constants",
   # TODO(https://crbug.com/940810): Eliminate this.
   "+chromeos/dbus/audio",
-  # TODO(https://crbug.com/951017): Eliminate this.
-  "+chromeos/dbus/dbus_thread_manager.h",
   "+chromeos/dbus/hammerd",
   # TODO(https://crbug.com/644348): Eliminate this.
   "+chromeos/dbus/power",

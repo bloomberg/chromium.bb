@@ -56,6 +56,7 @@ class GpuHost;
 
 namespace ash {
 
+class AshDBusHelper;
 class NetworkConnectDelegateMus;
 
 // Used to export Ash's mojo services, specifically the interfaces defined in
@@ -109,6 +110,8 @@ class ASH_EXPORT AshService : public service_manager::Service,
   std::unique_ptr<aura::Env> env_;
 
   std::unique_ptr<views::ViewsDelegate> views_delegate_;
+
+  std::unique_ptr<AshDBusHelper> ash_dbus_helper_;
 
   std::unique_ptr<NetworkConnectDelegateMus> network_connect_delegate_;
   std::unique_ptr<chromeos::system::ScopedFakeStatisticsProvider>
