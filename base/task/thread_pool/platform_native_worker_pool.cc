@@ -75,24 +75,23 @@ void PlatformNativeWorkerPool::JoinForTesting() {
 }
 
 void PlatformNativeWorkerPool::RunNextSequenceImpl() {
-  BindToCurrentThread();
-
   scoped_refptr<Sequence> sequence = GetWork();
-  DCHECK(sequence);
-
-  sequence = task_tracker_->RunAndPopNextTask(std::move(sequence), this);
 
   if (sequence) {
-    ScopedWorkersExecutor workers_executor(this);
-    ScopedReenqueueExecutor reenqueue_executor;
-    auto sequence_and_transaction =
-        SequenceAndTransaction::FromSequence(std::move(sequence));
-    AutoSchedulerLock auto_lock(lock_);
-    ReEnqueueSequenceLockRequired(&workers_executor, &reenqueue_executor,
-                                  std::move(sequence_and_transaction));
-  }
+    BindToCurrentThread();
+    sequence = task_tracker_->RunAndPopNextTask(std::move(sequence));
+    UnbindFromCurrentThread();
 
-  UnbindFromCurrentThread();
+    if (sequence) {
+      ScopedWorkersExecutor workers_executor(this);
+      ScopedReenqueueExecutor reenqueue_executor;
+      auto sequence_and_transaction =
+          SequenceAndTransaction::FromSequence(std::move(sequence));
+      AutoSchedulerLock auto_lock(lock_);
+      ReEnqueueSequenceLockRequired(&workers_executor, &reenqueue_executor,
+                                    std::move(sequence_and_transaction));
+    }
+  }
 }
 
 scoped_refptr<Sequence> PlatformNativeWorkerPool::GetWork() {
@@ -102,6 +101,11 @@ scoped_refptr<Sequence> PlatformNativeWorkerPool::GetWork() {
   // There can be more pending threadpool work than Sequences in the
   // PriorityQueue after RemoveSequence().
   if (priority_queue_.IsEmpty())
+    return nullptr;
+
+  // Enforce the CanRunPolicy.
+  const TaskPriority priority = priority_queue_.PeekSortKey().priority();
+  if (!task_tracker_->CanRunPriority(priority))
     return nullptr;
   return priority_queue_.PopSequence();
 }
@@ -125,7 +129,10 @@ void PlatformNativeWorkerPool::EnsureEnoughWorkersLockRequired(
     return;
   // Ensure that there is at least one pending threadpool work per Sequence in
   // the PriorityQueue.
-  const size_t desired_num_pending_threadpool_work = priority_queue_.Size();
+  const size_t desired_num_pending_threadpool_work =
+      GetNumQueuedCanRunBestEffortSequences() +
+      GetNumQueuedCanRunForegroundSequences();
+
   if (desired_num_pending_threadpool_work > num_pending_threadpool_work_) {
     static_cast<ScopedWorkersExecutor*>(executor)
         ->set_num_threadpool_work_to_submit(
@@ -147,6 +154,12 @@ size_t PlatformNativeWorkerPool::GetMaxConcurrentNonBlockedTasksDeprecated()
 void PlatformNativeWorkerPool::ReportHeartbeatMetrics() const {
   // Native thread pools do not provide the capability to determine the
   // number of worker threads created.
+}
+
+void PlatformNativeWorkerPool::DidUpdateCanRunPolicy() {
+  ScopedWorkersExecutor executor(this);
+  AutoSchedulerLock auto_lock(lock_);
+  EnsureEnoughWorkersLockRequired(&executor);
 }
 
 }  // namespace internal

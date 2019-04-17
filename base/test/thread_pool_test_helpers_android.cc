@@ -19,7 +19,7 @@ class ThreadPoolTestHelpers {
 // static
 void ThreadPoolTestHelpers::SetThreadPoolExecutionFenceEnabledForTesting(
     bool execution_fence_enabled) {
-  ThreadPool::GetInstance()->SetExecutionFenceEnabled(execution_fence_enabled);
+  ThreadPool::GetInstance()->SetCanRun(!execution_fence_enabled);
 }
 
 }  // namespace base

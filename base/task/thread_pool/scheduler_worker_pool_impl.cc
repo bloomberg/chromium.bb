@@ -208,7 +208,6 @@ class SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl
   ~SchedulerWorkerDelegateImpl() override;
 
   // SchedulerWorker::Delegate:
-  void OnCanScheduleSequence(scoped_refptr<Sequence> sequence) override;
   SchedulerWorker::ThreadLabel GetThreadLabel() const override;
   void OnMainEntry(const SchedulerWorker* worker) override;
   scoped_refptr<Sequence> GetWork(SchedulerWorker* worker) override;
@@ -554,11 +553,6 @@ SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::
 SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::
     ~SchedulerWorkerDelegateImpl() = default;
 
-void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::
-    OnCanScheduleSequence(scoped_refptr<Sequence> sequence) {
-  outer_->OnCanScheduleSequence(std::move(sequence));
-}
-
 SchedulerWorker::ThreadLabel
 SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::GetThreadLabel() const {
   return SchedulerWorker::ThreadLabel::POOLED;
@@ -624,13 +618,14 @@ SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::GetWork(
     return nullptr;
   }
 
-  // Enforce that no more than |max_best_effort_tasks_| BEST_EFFORT tasks run
-  // concurrently.
-  const bool next_sequence_is_best_effort =
-      outer_->priority_queue_.PeekSortKey().priority() ==
-      TaskPriority::BEST_EFFORT;
-  if (next_sequence_is_best_effort && outer_->num_running_best_effort_tasks_ >=
-                                          outer_->max_best_effort_tasks_) {
+  // Enforce the CanRunPolicy and that no more than |max_best_effort_tasks_|
+  // BEST_EFFORT tasks run concurrently.
+  const TaskPriority priority =
+      outer_->priority_queue_.PeekSortKey().priority();
+  if (!outer_->task_tracker_->CanRunPriority(priority) ||
+      (priority == TaskPriority::BEST_EFFORT &&
+       outer_->num_running_best_effort_tasks_ >=
+           outer_->max_best_effort_tasks_)) {
     OnWorkerBecomesIdleLockRequired(worker);
     return nullptr;
   }
@@ -639,23 +634,19 @@ SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::GetWork(
   worker_only().is_running_task = true;
   ++outer_->num_running_tasks_;
   DCHECK(!outer_->idle_workers_stack_.Contains(worker));
+  DCHECK_LE(outer_->num_running_tasks_, outer_->max_tasks_);
+  DCHECK_LE(outer_->num_running_tasks_, kMaxNumberOfWorkers);
 
   // Running BEST_EFFORT task bookkeeping.
-  if (next_sequence_is_best_effort) {
+  if (priority == TaskPriority::BEST_EFFORT) {
     write_worker().is_running_best_effort_task = true;
     ++outer_->num_running_best_effort_tasks_;
+    DCHECK_LE(outer_->num_running_best_effort_tasks_,
+              outer_->max_best_effort_tasks_);
   }
 
   // Pop the Sequence from which to run a task from the PriorityQueue.
-  scoped_refptr<Sequence> sequence = outer_->priority_queue_.PopSequence();
-
-  // Sanity check: A worker should not get work if the number of awake workers
-  // is more than the *desired* number of awake workers. It should instead be
-  // added to the idle stack.
-  DCHECK_LE(outer_->GetNumAwakeWorkersLockRequired(),
-            outer_->GetDesiredNumAwakeWorkersLockRequired());
-
-  return sequence;
+  return outer_->priority_queue_.PopSequence();
 }
 
 void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::DidRunTask(
@@ -1029,21 +1020,33 @@ size_t SchedulerWorkerPoolImpl::GetNumAwakeWorkersLockRequired() const {
 }
 
 size_t SchedulerWorkerPoolImpl::GetDesiredNumAwakeWorkersLockRequired() const {
-  const size_t num_running_or_queued_best_effort_sequences =
-      num_running_best_effort_tasks_ +
-      priority_queue_.GetNumSequencesWithPriority(TaskPriority::BEST_EFFORT);
-  const size_t num_running_or_queued_foreground_sequences =
-      num_running_tasks_ + priority_queue_.Size() -
-      num_running_or_queued_best_effort_sequences;
+  // Number of BEST_EFFORT sequences that are running or queued and allowed to
+  // run by the CanRunPolicy.
+  const size_t num_running_or_queued_can_run_best_effort_sequences =
+      num_running_best_effort_tasks_ + GetNumQueuedCanRunBestEffortSequences();
 
-  const size_t workers_for_best_effort_sequences = std::min(
-      num_running_or_queued_best_effort_sequences, max_best_effort_tasks_);
+  const size_t workers_for_best_effort_sequences =
+      std::max(std::min(num_running_or_queued_can_run_best_effort_sequences,
+                        max_best_effort_tasks_),
+               num_running_best_effort_tasks_);
+
+  // Number of USER_{VISIBLE|BLOCKING} sequences that are running or queued.
+  const size_t num_running_or_queued_foreground_sequences =
+      (num_running_tasks_ - num_running_best_effort_tasks_) +
+      GetNumQueuedCanRunForegroundSequences();
+
   const size_t workers_for_foreground_sequences =
       num_running_or_queued_foreground_sequences;
 
   return std::min(
       {workers_for_best_effort_sequences + workers_for_foreground_sequences,
        max_tasks_, kMaxNumberOfWorkers});
+}
+
+void SchedulerWorkerPoolImpl::DidUpdateCanRunPolicy() {
+  ScopedWorkersExecutor executor(this);
+  AutoSchedulerLock auto_lock(lock_);
+  EnsureEnoughWorkersLockRequired(&executor);
 }
 
 void SchedulerWorkerPoolImpl::EnsureEnoughWorkersLockRequired(

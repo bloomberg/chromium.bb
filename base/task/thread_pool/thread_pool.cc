@@ -35,12 +35,12 @@ ThreadPool::InitParams::~InitParams() = default;
 
 ThreadPool::ScopedExecutionFence::ScopedExecutionFence() {
   DCHECK(g_thread_pool);
-  g_thread_pool->SetExecutionFenceEnabled(true);
+  g_thread_pool->SetCanRun(false);
 }
 
 ThreadPool::ScopedExecutionFence::~ScopedExecutionFence() {
   DCHECK(g_thread_pool);
-  g_thread_pool->SetExecutionFenceEnabled(false);
+  g_thread_pool->SetCanRun(true);
 }
 
 #if !defined(OS_NACL)
