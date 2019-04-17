@@ -46,7 +46,6 @@
  * \internal
  */
 struct weston_log_context {
-	struct weston_compositor *compositor;
 	struct wl_listener compositor_destroy_listener;
 	struct wl_global *global;
 	struct wl_list scope_list; /**< weston_log_scope::compositor_link */
@@ -266,12 +265,10 @@ int
 weston_log_ctx_compositor_setup(struct weston_compositor *compositor,
 			      struct weston_log_context *log_ctx)
 {
-	if (compositor->weston_log_ctx)
-		return -1;
+	assert(!compositor->weston_log_ctx);
+	assert(log_ctx);
 
-	log_ctx->compositor = compositor;
 	compositor->weston_log_ctx = log_ctx;
-
 	return 0;
 }
 
