@@ -1024,7 +1024,7 @@ void HTMLDocumentParser::ResumeParsingAfterPause() {
   DCHECK(!IsPaused());
 
   CheckIfBodyStylesheetAdded();
-  if (IsPaused())
+  if (IsStopped() || IsPaused())
     return;
 
   if (have_background_parser_) {
