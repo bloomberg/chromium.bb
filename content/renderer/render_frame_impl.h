@@ -1235,10 +1235,6 @@ class CONTENT_EXPORT RenderFrameImpl
       const GURL& url,
       const CommitNavigationParams& commit_params);
 
-  // Creates a placeholder document loader, while navigation is taking place,
-  // either in the browser or in the renderer.
-  bool CreatePlaceholderDocumentLoader(const blink::WebNavigationInfo& info);
-
   // Sends a FrameHostMsg_BeginNavigation to the browser
   void BeginNavigationInternal(std::unique_ptr<blink::WebNavigationInfo> info);
 
@@ -1284,8 +1280,14 @@ class CONTENT_EXPORT RenderFrameImpl
   bool ShouldDisplayErrorPageForFailedLoad(int error_code,
                                            const GURL& unreachable_url);
 
+  // |document_state| and |transition_type| correspond to the document which
+  // triggered this request. For main resource requests (navigations),
+  // |document_state| is a newly created one, and will be used for committing
+  // the navigation and creating the new document.
   void WillSendRequestInternal(blink::WebURLRequest& request,
-                               ResourceType resource_type);
+                               ResourceType resource_type,
+                               DocumentState* document_state,
+                               ui::PageTransition transition_type);
 
   // Returns the URL being loaded by the |frame_|'s request.
   GURL GetLoadingUrl() const;
