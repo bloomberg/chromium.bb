@@ -213,9 +213,7 @@ class BuilderStatusManager(object):
     details = []
 
     if failure_messages:
-      for x in failure_messages:
-        details.append('The %s stage failed: %s' % (
-            x.stage_name, x.exception_message))
+      details.append('the builder failed')
 
     if not details:
       details = ['cbuildbot failed']

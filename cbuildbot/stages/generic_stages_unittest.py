@@ -624,8 +624,7 @@ class BuilderStageGetBuildFailureMessage(AbstractStageTestCase):
     msg = stage.GetBuildFailureMessage()
     self.assertTrue(stage._run.config.name in msg.message_summary)
     self.assertTrue(stage._run.ConstructDashboardURL() in msg.message_summary)
-    self.assertTrue('TacoStage' in msg.message_summary)
-    self.assertTrue(str(exception) in msg.message_summary)
+    self.assertTrue('the builder failed' in msg.message_summary)
 
 
 class MasterConfigBuilderStageTest(AbstractStageTestCase):

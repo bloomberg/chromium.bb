@@ -104,7 +104,7 @@ class BuilderStatusManagerTest(cros_test_lib.MockTestCase):
         builder_status_lib.BuilderStatusManager.CreateBuildFailureMessage(
             slave, overlays, dashboard_url, failure_messages))
 
-    self.assertTrue('stage failed' in build_msg.message_summary)
+    self.assertTrue('the builder failed' in build_msg.message_summary)
     self.assertTrue(build_msg.internal)
     self.assertEqual(build_msg.builder, slave)
 
