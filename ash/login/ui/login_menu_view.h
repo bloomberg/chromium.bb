@@ -62,7 +62,7 @@ class ASH_EXPORT LoginMenuView : public LoginBaseBubbleView {
   void VisibilityChanged(View* starting_from, bool is_visible) override;
 
  private:
-  int FindNextItem(bool reverse);
+  views::View* FindNextItem(bool reverse);
 
   // Owned by this class.
   views::ScrollView* scroller_ = nullptr;

@@ -4,6 +4,8 @@
 
 #include "ash/login/ui/login_menu_view.h"
 
+#include <algorithm>
+#include <iterator>
 #include <memory>
 #include <utility>
 
@@ -193,7 +195,7 @@ void LoginMenuView::OnFocus() {
 bool LoginMenuView::OnKeyPressed(const ui::KeyEvent& event) {
   const ui::KeyboardCode key = event.key_code();
   if (key == ui::VKEY_UP || key == ui::VKEY_DOWN) {
-    contents_->child_at(FindNextItem(key == ui::VKEY_UP))->RequestFocus();
+    FindNextItem(key == ui::VKEY_UP)->RequestFocus();
     return true;
   }
 
@@ -205,17 +207,21 @@ void LoginMenuView::VisibilityChanged(View* starting_from, bool is_visible) {
     contents_->child_at(selected_index_)->RequestFocus();
 }
 
-int LoginMenuView::FindNextItem(bool reverse) {
+views::View* LoginMenuView::FindNextItem(bool reverse) {
+  const auto& children = contents_->children();
   const auto is_item = [](views::View* v) {
     return !static_cast<MenuItemView*>(v)->item().is_group;
   };
-  const int delta = reverse ? -1 : 1;
-  int i = selected_index_ + delta;
-  for (; i >= 0 && i < contents_->child_count() &&
-         !is_item(contents_->child_at(i));
-       i += delta)
-    ;
-  return (i < 0 || i == contents_->child_count()) ? selected_index_ : i;
+  const auto begin = std::next(children.begin(), selected_index_);
+  if (reverse) {
+    // Subtle: make_reverse_iterator() will result in an iterator that refers to
+    // the element before its argument, which is what we want.
+    const auto i = std::find_if(std::make_reverse_iterator(begin),
+                                children.rend(), is_item);
+    return (i == children.rend()) ? *begin : *i;
+  }
+  const auto i = std::find_if(std::next(begin), children.end(), is_item);
+  return (i == children.end()) ? *begin : *i;
 }
 
 }  // namespace ash
