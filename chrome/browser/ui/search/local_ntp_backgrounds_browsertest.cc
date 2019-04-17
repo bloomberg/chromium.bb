@@ -102,8 +102,8 @@ IN_PROC_BROWSER_TEST_F(LocalNTPCustomBackgroundsTest, AttributionSetAndReset) {
   bool result = false;
   EXPECT_TRUE(instant_test_utils::GetBoolFromJS(
       active_tab,
-      "document.querySelector('.attr1').innerText === 'attr1' && "
-      "document.querySelector('.attr2').innerText === 'attr2'",
+      "document.querySelector('#attr1').innerText === 'attr1' && "
+      "document.querySelector('#attr2').innerText === 'attr2'",
       &result));
   EXPECT_TRUE(result);
 
@@ -302,8 +302,8 @@ IN_PROC_BROWSER_TEST_F(LocalNTPCustomBackgroundsThemeTest,
   bool result = false;
   ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
       active_tab,
-      "document.querySelector('.attr1').innerText === 'attr1' && "
-      "document.querySelector('.attr2').innerText === 'attr2'",
+      "document.querySelector('#attr1').innerText === 'attr1' && "
+      "document.querySelector('#attr2').innerText === 'attr2'",
       &result));
   EXPECT_TRUE(result);
   // Apply a custom background still count as using default theme
@@ -328,8 +328,8 @@ IN_PROC_BROWSER_TEST_F(LocalNTPCustomBackgroundsThemeTest,
   // Check that the custom background element maintains the correct attribution.
   ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
       active_tab,
-      "document.querySelector('.attr1').innerText === 'attr1' && "
-      "document.querySelector('.attr2').innerText === 'attr2'",
+      "document.querySelector('#attr1').innerText === 'attr1' && "
+      "document.querySelector('#attr2').innerText === 'attr2'",
       &result));
   EXPECT_TRUE(result);
 }

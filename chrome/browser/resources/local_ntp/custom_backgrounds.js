@@ -69,6 +69,8 @@ customBackgrounds.KEYCODES = {
  * @const
  */
 customBackgrounds.IDS = {
+  ATTR1: 'attr1',
+  ATTR2: 'attr2',
   ATTRIBUTIONS: 'custom-bg-attr',
   BACK: 'bg-sel-back',
   BACK_CIRCLE: 'bg-sel-back-circle',
@@ -107,8 +109,8 @@ customBackgrounds.IDS = {
  * @const
  */
 customBackgrounds.CLASSES = {
-  ATTR_1: 'attr1',
-  ATTR_2: 'attr2',
+  ATTR_SMALL: 'attr-small',
+  ATTR_COMMON: 'attr-common',
   ATTR_LINK: 'attr-link',
   COLLECTION_DIALOG: 'is-col-sel',
   COLLECTION_SELECTED: 'bg-selected',  // Highlight selected tile
@@ -220,17 +222,21 @@ customBackgrounds.setAttribution = function(
     attributionLine1, attributionLine2, attributionActionUrl) {
   var attributionBox = $(customBackgrounds.IDS.ATTRIBUTIONS);
   var attr1 = document.createElement('div');
+  attr1.setAttribute('id', customBackgrounds.IDS.ATTR1);
   var attr2 = document.createElement('div');
+  attr2.setAttribute('id', customBackgrounds.IDS.ATTR2);
+
   if (attributionLine1 !== '') {
     // Shouldn't be changed from textContent for security assurances.
     attr1.textContent = attributionLine1;
-    attr1.classList.add(customBackgrounds.CLASSES.ATTR_1);
+    attr1.classList.add(customBackgrounds.CLASSES.ATTR_COMMON);
     $(customBackgrounds.IDS.ATTRIBUTIONS).appendChild(attr1);
   }
   if (attributionLine2 !== '') {
     // Shouldn't be changed from textContent for security assurances.
     attr2.textContent = attributionLine2;
-    attr2.classList.add(customBackgrounds.CLASSES.ATTR_2);
+    attr2.classList.add(customBackgrounds.CLASSES.ATTR_SMALL);
+    attr2.classList.add(customBackgrounds.CLASSES.ATTR_COMMON);
     attributionBox.appendChild(attr2);
   }
   if (attributionActionUrl !== '') {
