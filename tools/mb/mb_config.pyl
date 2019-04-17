@@ -2156,7 +2156,7 @@
     },
 
     'gpu_fyi_tests': {
-      'mixins': ['gpu_tests', 'dawn_tests', 'internal_gles_conform_tests'],
+      'mixins': ['gpu_tests', 'internal_gles_conform_tests'],
     },
 
     'gpu_tests': {
