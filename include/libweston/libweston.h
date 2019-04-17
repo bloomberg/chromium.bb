@@ -1168,7 +1168,7 @@ struct weston_compositor {
 	struct weston_touch_calibrator *touch_calibrator;
 
 	struct weston_log_context *weston_log_ctx;
-	struct weston_debug_scope *debug_scene;
+	struct weston_log_scope *debug_scene;
 };
 
 struct weston_buffer {

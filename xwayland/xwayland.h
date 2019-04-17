@@ -54,7 +54,7 @@ struct weston_xserver {
 	weston_xwayland_spawn_xserver_func_t spawn_func;
 	void *user_data;
 
-	struct weston_debug_scope *wm_debug;
+	struct weston_log_scope *wm_debug;
 };
 
 struct weston_wm {

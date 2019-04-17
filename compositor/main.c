@@ -122,8 +122,8 @@ struct wet_compositor {
 };
 
 static FILE *weston_logfile = NULL;
-static struct weston_debug_scope *log_scope;
-static struct weston_debug_scope *protocol_scope;
+static struct weston_log_scope *log_scope;
+static struct weston_log_scope *protocol_scope;
 
 static int cached_tm_mday = -1;
 

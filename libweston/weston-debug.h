@@ -44,44 +44,44 @@ weston_compositor_enable_debug_protocol(struct weston_compositor *);
 bool
 weston_compositor_is_debug_protocol_enabled(struct weston_compositor *);
 
-struct weston_debug_scope;
+struct weston_log_scope;
 struct weston_debug_stream;
 
-/** weston_debug_scope callback
+/** weston_log_scope callback
  *
  * \param stream The debug stream.
  * \param user_data The \c user_data argument given to
  * weston_compositor_add_debug_scope()
  *
- * \memberof weston_debug_scope
+ * \memberof weston_log_scope
  * \sa weston_debug_stream
  */
-typedef void (*weston_debug_scope_cb)(struct weston_debug_stream *stream,
+typedef void (*weston_log_scope_cb)(struct weston_debug_stream *stream,
 				      void *user_data);
 
-struct weston_debug_scope *
+struct weston_log_scope *
 weston_compositor_add_debug_scope(struct weston_log_context *compositor,
 				  const char *name,
 				  const char *description,
-				  weston_debug_scope_cb begin_cb,
+				  weston_log_scope_cb begin_cb,
 				  void *user_data);
 
 void
-weston_debug_scope_destroy(struct weston_debug_scope *scope);
+weston_debug_scope_destroy(struct weston_log_scope *scope);
 
 bool
-weston_debug_scope_is_enabled(struct weston_debug_scope *scope);
+weston_debug_scope_is_enabled(struct weston_log_scope *scope);
 
 void
-weston_debug_scope_write(struct weston_debug_scope *scope,
+weston_debug_scope_write(struct weston_log_scope *scope,
 			 const char *data, size_t len);
 
 void
-weston_debug_scope_vprintf(struct weston_debug_scope *scope,
+weston_debug_scope_vprintf(struct weston_log_scope *scope,
 			   const char *fmt, va_list ap);
 
 void
-weston_debug_scope_printf(struct weston_debug_scope *scope,
+weston_debug_scope_printf(struct weston_log_scope *scope,
 			  const char *fmt, ...)
 			  __attribute__ ((format (printf, 2, 3)));
 
@@ -102,7 +102,7 @@ void
 weston_debug_stream_complete(struct weston_debug_stream *stream);
 
 char *
-weston_debug_scope_timestamp(struct weston_debug_scope *scope,
+weston_debug_scope_timestamp(struct weston_log_scope *scope,
 			     char *buf, size_t len);
 
 #ifdef  __cplusplus

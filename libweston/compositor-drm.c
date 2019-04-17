@@ -354,7 +354,7 @@ struct drm_backend {
 
 	bool fb_modifiers;
 
-	struct weston_debug_scope *debug;
+	struct weston_log_scope *debug;
 };
 
 struct drm_mode {

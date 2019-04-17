@@ -49,19 +49,19 @@ struct weston_log_context {
 	struct weston_compositor *compositor;
 	struct wl_listener compositor_destroy_listener;
 	struct wl_global *global;
-	struct wl_list scope_list; /**< weston_debug_scope::compositor_link */
+	struct wl_list scope_list; /**< weston_log_scope::compositor_link */
 };
 
-/** weston-debug message scope
+/** weston-log message scope
  *
  * This is used for scoping debugging messages. Clients can subscribe to
  * only the scopes they are interested in. A scope is identified by its name
  * (also referred to as debug stream name).
  */
-struct weston_debug_scope {
+struct weston_log_scope {
 	char *name;
 	char *desc;
-	weston_debug_scope_cb begin_cb;
+	weston_log_scope_cb begin_cb;
 	void *user_data;
 	struct wl_list stream_list; /**< weston_debug_stream::scope_link */
 	struct wl_list compositor_link;
@@ -71,7 +71,7 @@ struct weston_debug_scope {
  *
  * A client provides a file descriptor for the server to write debug
  * messages into. A weston_debug_stream is associated to one
- * weston_debug_scope via the scope name, and the scope provides the messages.
+ * weston_log_scope via the scope name, and the scope provides the messages.
  * There can be several streams for the same scope, all streams getting the
  * same messages.
  */
@@ -81,10 +81,10 @@ struct weston_debug_stream {
 	struct wl_list scope_link;
 };
 
-static struct weston_debug_scope *
+static struct weston_log_scope *
 get_scope(struct weston_log_context *log_ctx, const char *name)
 {
-	struct weston_debug_scope *scope;
+	struct weston_log_scope *scope;
 
 	wl_list_for_each(scope, &log_ctx->scope_list, compositor_link)
 		if (strcmp(name, scope->name) == 0)
@@ -132,7 +132,7 @@ stream_create(struct weston_log_context *log_ctx, const char *name,
 	      int32_t streamfd, struct wl_resource *stream_resource)
 {
 	struct weston_debug_stream *stream;
-	struct weston_debug_scope *scope;
+	struct weston_log_scope *scope;
 
 	stream = zalloc(sizeof *stream);
 	if (!stream)
@@ -234,7 +234,7 @@ bind_weston_debug(struct wl_client *client,
 		   void *data, uint32_t version, uint32_t id)
 {
 	struct weston_log_context *log_ctx = data;
-	struct weston_debug_scope *scope;
+	struct weston_log_scope *scope;
 	struct wl_resource *resource;
 
 	resource = wl_resource_create(client,
@@ -308,7 +308,7 @@ WL_EXPORT void
 weston_log_ctx_compositor_destroy(struct weston_compositor *compositor)
 {
 	struct weston_log_context *log_ctx = compositor->weston_log_ctx;
-	struct weston_debug_scope *scope;
+	struct weston_log_scope *scope;
 
 	if (log_ctx->global)
 		wl_global_destroy(log_ctx->global);
@@ -402,17 +402,17 @@ weston_compositor_is_debug_protocol_enabled(struct weston_compositor *wc)
  * The debug scope must be destroyed before destroying the
  * \c weston_compositor.
  *
- * \memberof weston_debug_scope
- * \sa weston_debug_stream, weston_debug_scope_cb
+ * \memberof weston_log_scope
+ * \sa weston_debug_stream, weston_log_scope_cb
  */
-WL_EXPORT struct weston_debug_scope *
+WL_EXPORT struct weston_log_scope *
 weston_compositor_add_debug_scope(struct weston_log_context *log_ctx,
 				  const char *name,
 				  const char *description,
-				  weston_debug_scope_cb begin_cb,
+				  weston_log_scope_cb begin_cb,
 				  void *user_data)
 {
-	struct weston_debug_scope *scope;
+	struct weston_log_scope *scope;
 
 	if (!name || !description) {
 		weston_log("Error: cannot add a debug scope without name or description.\n");
@@ -465,10 +465,10 @@ weston_compositor_add_debug_scope(struct weston_log_context *log_ctx,
  * Destroys the log scope, closing all open streams subscribed to it and
  * sending them each a \c weston_debug_stream_v1.failure event.
  *
- * \memberof weston_debug_scope
+ * \memberof weston_log_scope
  */
 WL_EXPORT void
-weston_debug_scope_destroy(struct weston_debug_scope *scope)
+weston_debug_scope_destroy(struct weston_log_scope *scope)
 {
 	struct weston_debug_stream *stream;
 
@@ -507,10 +507,10 @@ weston_debug_scope_destroy(struct weston_debug_scope *scope)
  * scope is initialized to NULL before creation and set to NULL after
  * destruction.
  *
- * \memberof weston_debug_scope
+ * \memberof weston_log_scope
  */
 WL_EXPORT bool
-weston_debug_scope_is_enabled(struct weston_debug_scope *scope)
+weston_debug_scope_is_enabled(struct weston_log_scope *scope)
 {
 	if (!scope)
 		return false;
@@ -638,10 +638,10 @@ weston_debug_stream_complete(struct weston_debug_stream *stream)
  * The behavioral details for each stream are the same as for
  * weston_debug_stream_write().
  *
- * \memberof weston_debug_scope
+ * \memberof weston_log_scope
  */
 WL_EXPORT void
-weston_debug_scope_write(struct weston_debug_scope *scope,
+weston_debug_scope_write(struct weston_log_scope *scope,
 			 const char *data, size_t len)
 {
 	struct weston_debug_stream *stream;
@@ -665,10 +665,10 @@ weston_debug_scope_write(struct weston_debug_scope *scope,
  * The behavioral details for each stream are the same as for
  * weston_debug_stream_write().
  *
- * \memberof weston_debug_scope
+ * \memberof weston_log_scope
  */
 WL_EXPORT void
-weston_debug_scope_vprintf(struct weston_debug_scope *scope,
+weston_debug_scope_vprintf(struct weston_log_scope *scope,
 			   const char *fmt, va_list ap)
 {
 	static const char oom[] = "Out of memory";
@@ -698,10 +698,10 @@ weston_debug_scope_vprintf(struct weston_debug_scope *scope,
  * The behavioral details for each stream are the same as for
  * weston_debug_stream_write().
  *
- * \memberof weston_debug_scope
+ * \memberof weston_log_scope
  */
 WL_EXPORT void
-weston_debug_scope_printf(struct weston_debug_scope *scope,
+weston_debug_scope_printf(struct weston_log_scope *scope,
 			  const char *fmt, ...)
 {
 	va_list ap;
@@ -723,7 +723,7 @@ weston_debug_scope_printf(struct weston_debug_scope *scope,
  * The string is NUL-terminated, even if truncated.
  */
 WL_EXPORT char *
-weston_debug_scope_timestamp(struct weston_debug_scope *scope,
+weston_debug_scope_timestamp(struct weston_log_scope *scope,
 			     char *buf, size_t len)
 {
 	struct timeval tv;
