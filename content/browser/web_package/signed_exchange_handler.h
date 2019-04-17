@@ -180,6 +180,7 @@ class SignedExchangeHandlerFactory {
   virtual ~SignedExchangeHandlerFactory() {}
 
   virtual std::unique_ptr<SignedExchangeHandler> Create(
+      const GURL& outer_url,
       std::unique_ptr<net::SourceStream> body,
       SignedExchangeHandler::ExchangeHeadersCallback headers_callback,
       std::unique_ptr<SignedExchangeCertFetcherFactory>

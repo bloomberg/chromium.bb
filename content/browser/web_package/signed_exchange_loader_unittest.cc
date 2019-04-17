@@ -106,9 +106,9 @@ TEST_F(SignedExchangeLoaderTest, Simple) {
   response.headers = new net::HttpResponseHeaders(
       net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.size()));
 
-  MockSignedExchangeHandlerFactory factory(
-      SignedExchangeLoadResult::kSuccess, net::OK,
-      GURL("https://publisher.example.com/"), "text/html", {});
+  MockSignedExchangeHandlerFactory factory({MockSignedExchangeHandlerParams(
+      resource_request.url, SignedExchangeLoadResult::kSuccess, net::OK,
+      GURL("https://publisher.example.com/"), "text/html", {})});
 
   SignedExchangeLoader::SetSignedExchangeHandlerFactoryForTest(&factory);
   std::unique_ptr<SignedExchangeLoader> signed_exchange_loader =

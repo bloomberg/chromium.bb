@@ -176,6 +176,7 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
     return resource_request_;
   }
   const ResourceRequest& LastResourceRequest() const;
+  const ResourceResponse* LastResourceResponse() const;
 
   virtual void SetRevalidatingRequest(const ResourceRequest&);
 

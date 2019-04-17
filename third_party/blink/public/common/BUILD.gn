@@ -101,6 +101,7 @@ source_set("headers") {
     "service_worker/service_worker_types.h",
     "service_worker/service_worker_utils.h",
     "user_agent/user_agent_metadata.h",
+    "web_package/signed_exchange_consts.h",
   ]
 
   public_deps = [

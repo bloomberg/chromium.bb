@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/core/html/parser/html_preload_scanner.h"
 #include "third_party/blink/renderer/core/html/parser/html_srcset_parser.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/loader/alternate_signed_exchange_resource_info.h"
 #include "third_party/blink/renderer/core/loader/importance_attribute.h"
 #include "third_party/blink/renderer/core/loader/link_load_parameters.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_fetch_request.h"
@@ -465,7 +466,9 @@ void PreloadHelper::LoadLinksFromHeader(
     Document* document,
     CanLoadResources can_load_resources,
     MediaPreloadPolicy media_policy,
-    ViewportDescriptionWrapper* viewport_description_wrapper) {
+    ViewportDescriptionWrapper* viewport_description_wrapper,
+    std::unique_ptr<AlternateSignedExchangeResourceInfo>
+        alternate_resource_info) {
   if (header_value.IsEmpty())
     return;
   LinkHeaderSet header_set(header_value);
@@ -478,7 +481,33 @@ void PreloadHelper::LoadLinksFromHeader(
     if (media_policy == kOnlyLoadNonMedia && header.IsViewportDependent())
       continue;
 
-    const LinkLoadParameters params(header, base_url);
+    LinkLoadParameters params(header, base_url);
+    if (alternate_resource_info && params.rel.IsLinkPreload()) {
+      DCHECK(
+          RuntimeEnabledFeatures::SignedExchangeSubresourcePrefetchEnabled());
+      // TODO(crbug.com/935267): Support image_srcset and image_sizes.
+      const auto* alternative_resource =
+          alternate_resource_info->FindMatchingEntry(params.href);
+      if (alternative_resource &&
+          alternative_resource->alternative_url().IsValid()) {
+        params.href = alternative_resource->alternative_url();
+        // Change the rel to "prefetch" to trigger the prefetch logic. This
+        // request will be handled by a PrefetchURLLoader in the browser
+        // process. Note that this is triggered only during prefetch of the
+        // parent resource
+        //
+        // The prefetched signed exchange will be stored in the browser process.
+        // It will be passed to the renderer process in the next navigation, and
+        // the header integrity and the inner URL will be checked before
+        // processing the inner response. This renderer process can't add a new,
+        // undesirable alternative resource association that affects the next
+        // navigation, but can only populate things in the cache that can be
+        // used by the next navigation only when they requested the same URL
+        // with the same association mapping. TODO(crbug.com/935267): Implement
+        // this logic.
+        params.rel = LinkRelAttribute("prefetch");
+      }
+    }
     // Sanity check to avoid re-entrancy here.
     if (params.href == base_url)
       continue;

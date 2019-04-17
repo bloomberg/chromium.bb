@@ -78,19 +78,35 @@ SignedExchangeHandlerFactory* g_signed_exchange_factory_for_testing_ = nullptr;
 
 }  // namespace
 
-class SignedExchangeLoader::ResponseTimingInfo {
+class SignedExchangeLoader::OuterResponseInfo {
  public:
-  explicit ResponseTimingInfo(const network::ResourceResponseHead& response)
+  explicit OuterResponseInfo(const network::ResourceResponseHead& response)
       : request_start_(response.request_start),
         response_start_(response.response_start),
         request_time_(response.request_time),
         response_time_(response.response_time),
-        load_timing_(response.load_timing) {}
+        load_timing_(response.load_timing) {
+    if (base::FeatureList::IsEnabled(
+            features::kSignedExchangeSubresourcePrefetch) &&
+        response.headers) {
+      response.headers->GetNormalizedHeader("link", &link_header_);
+    }
+  }
 
   network::ResourceResponseHead CreateRedirectResponseHead() const {
     network::ResourceResponseHead response_head;
     response_head.encoded_data_length = 0;
-    std::string buf(base::StringPrintf("HTTP/1.1 %d %s\r\n", 303, "See Other"));
+    std::string buf;
+    if (link_header_.empty()) {
+      buf = base::StringPrintf("HTTP/1.1 %d %s\r\n", 303, "See Other");
+    } else {
+      DCHECK(base::FeatureList::IsEnabled(
+          features::kSignedExchangeSubresourcePrefetch));
+      buf = base::StringPrintf(
+          "HTTP/1.1 %d %s\r\n"
+          "link: %s\r\n",
+          303, "See Other", link_header_.c_str());
+    }
     response_head.headers = new net::HttpResponseHeaders(
         net::HttpUtil::AssembleRawHeaders(buf.c_str(), buf.size()));
     response_head.encoded_data_length = 0;
@@ -108,8 +124,9 @@ class SignedExchangeLoader::ResponseTimingInfo {
   const base::Time request_time_;
   const base::Time response_time_;
   const net::LoadTimingInfo load_timing_;
+  std::string link_header_;
 
-  DISALLOW_COPY_AND_ASSIGN(ResponseTimingInfo);
+  DISALLOW_COPY_AND_ASSIGN(OuterResponseInfo);
 };
 
 SignedExchangeLoader::SignedExchangeLoader(
@@ -127,8 +144,7 @@ SignedExchangeLoader::SignedExchangeLoader(
     scoped_refptr<SignedExchangePrefetchMetricRecorder> metric_recorder,
     const std::string& accept_langs)
     : outer_request_(outer_request),
-      outer_response_timing_info_(
-          std::make_unique<ResponseTimingInfo>(outer_response)),
+      outer_response_info_(std::make_unique<OuterResponseInfo>(outer_response)),
       outer_response_(outer_response),
       forwarding_client_(std::move(forwarding_client)),
       url_loader_client_binding_(this),
@@ -218,6 +234,7 @@ void SignedExchangeLoader::OnStartLoadingResponseBody(
 
   if (g_signed_exchange_factory_for_testing_) {
     signed_exchange_handler_ = g_signed_exchange_factory_for_testing_->Create(
+        outer_request_.url,
         std::make_unique<DataPipeToSourceStream>(std::move(body)),
         base::BindOnce(&SignedExchangeLoader::OnHTTPExchangeFound,
                        weak_factory_.GetWeakPtr()),
@@ -301,22 +318,22 @@ void SignedExchangeLoader::OnHTTPExchangeFound(
     // Make a fallback redirect to |request_url|.
     DCHECK(!fallback_url_);
     fallback_url_ = request_url;
-    DCHECK(outer_response_timing_info_);
+    DCHECK(outer_response_info_);
     forwarding_client_->OnReceiveRedirect(
         CreateRedirectInfo(request_url, outer_request_, outer_response_,
                            true /* is_fallback_redirect */),
-        std::move(outer_response_timing_info_)->CreateRedirectResponseHead());
+        std::move(outer_response_info_)->CreateRedirectResponseHead());
     forwarding_client_.reset();
     return;
   }
   DCHECK_EQ(result, SignedExchangeLoadResult::kSuccess);
   inner_request_url_ = request_url;
 
-  DCHECK(outer_response_timing_info_);
+  DCHECK(outer_response_info_);
   forwarding_client_->OnReceiveRedirect(
       CreateRedirectInfo(request_url, outer_request_, outer_response_,
                          false /* is_fallback_redirect */),
-      std::move(outer_response_timing_info_)->CreateRedirectResponseHead());
+      std::move(outer_response_info_)->CreateRedirectResponseHead());
   forwarding_client_.reset();
 
   const base::Optional<net::SSLInfo>& ssl_info = resource_response.ssl_info;

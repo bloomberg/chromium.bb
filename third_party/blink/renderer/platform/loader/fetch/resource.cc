@@ -450,6 +450,12 @@ const ResourceRequest& Resource::LastResourceRequest() const {
   return redirect_chain_.back().request_;
 }
 
+const ResourceResponse* Resource::LastResourceResponse() const {
+  if (!redirect_chain_.size())
+    return nullptr;
+  return &redirect_chain_.back().redirect_response_;
+}
+
 void Resource::SetRevalidatingRequest(const ResourceRequest& request) {
   SECURITY_CHECK(redirect_chain_.IsEmpty());
   SECURITY_CHECK(!is_unused_preload_);

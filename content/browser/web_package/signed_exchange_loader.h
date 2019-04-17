@@ -109,7 +109,7 @@ class CONTENT_EXPORT SignedExchangeLoader final
       SignedExchangeHandlerFactory* factory);
 
  private:
-  class ResponseTimingInfo;
+  class OuterResponseInfo;
 
   // Called from |signed_exchange_handler_| when it finds an origin-signed HTTP
   // exchange.
@@ -126,8 +126,8 @@ class CONTENT_EXPORT SignedExchangeLoader final
 
   const network::ResourceRequest outer_request_;
 
-  // This timing info is used to create a dummy redirect response.
-  std::unique_ptr<const ResponseTimingInfo> outer_response_timing_info_;
+  // This info is used to create a dummy redirect response.
+  std::unique_ptr<const OuterResponseInfo> outer_response_info_;
 
   // The outer response of signed HTTP exchange which was received from network.
   const network::ResourceResponseHead outer_response_;
