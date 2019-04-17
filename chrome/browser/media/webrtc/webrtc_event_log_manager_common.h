@@ -155,6 +155,11 @@ enum class WebRtcEventLoggingUploadUma {
 
 void UmaRecordWebRtcEventLoggingUpload(WebRtcEventLoggingUploadUma result);
 
+// Success is signalled by 0.
+// All negative values signal errors.
+// Positive values are not used.
+void UmaRecordWebRtcEventLoggingNetErrorType(int net_error);
+
 // For a given Chrome session, this is a unique key for PeerConnections.
 // It's not, however, unique between sessions (after Chrome is restarted).
 struct WebRtcEventLogPeerConnectionKey {

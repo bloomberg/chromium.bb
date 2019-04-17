@@ -313,6 +313,9 @@ void WebRtcEventLogUploaderImpl::OnURLLoadComplete(
   const bool upload_successful =
       (response_body.get() != nullptr && !response_body->empty());
 
+  // NetError() is 0 when no error occurred.
+  UmaRecordWebRtcEventLoggingNetErrorType(url_loader_->NetError());
+
   DCHECK(history_file_writer_);
   if (upload_successful) {
     if (!history_file_writer_->WriteUploadId(*response_body)) {
