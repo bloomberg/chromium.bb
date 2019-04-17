@@ -121,6 +121,9 @@ void ExternalVkImageBacking::Destroy() {
                       ->GetVulkanQueue());
   vkDestroyImage(device(), image_, nullptr);
   vkFreeMemory(device(), memory_, nullptr);
+
+  if (texture_)
+    texture_->RemoveLightweightRef(have_context());
 }
 
 bool ExternalVkImageBacking::ProduceLegacyMailbox(
@@ -153,49 +156,52 @@ ExternalVkImageBacking::ProduceGLTexture(SharedImageManager* manager,
 
   gl::GLApi* api = gl::g_current_gl_context;
 
-  constexpr GLenum target = GL_TEXTURE_2D;
-  constexpr GLenum get_target = GL_TEXTURE_BINDING_2D;
-  GLuint internal_format = viz::TextureStorageFormat(format());
+  if (!texture_) {
+    constexpr GLenum target = GL_TEXTURE_2D;
+    constexpr GLenum get_target = GL_TEXTURE_BINDING_2D;
+    GLuint internal_format = viz::TextureStorageFormat(format());
 
-  GLuint memory_object;
-  api->glCreateMemoryObjectsEXTFn(1, &memory_object);
-  api->glImportMemoryFdEXTFn(memory_object, memory_size_,
-                             GL_HANDLE_TYPE_OPAQUE_FD_EXT, memory_fd);
-  GLuint texture_service_id;
-  api->glGenTexturesFn(1, &texture_service_id);
-  GLint old_texture_binding = 0;
-  api->glGetIntegervFn(get_target, &old_texture_binding);
-  api->glBindTextureFn(target, texture_service_id);
-  api->glTexParameteriFn(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  api->glTexParameteriFn(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  api->glTexParameteriFn(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  api->glTexParameteriFn(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  api->glTexStorageMem2DEXTFn(GL_TEXTURE_2D, 1, internal_format, size().width(),
-                              size().height(), memory_object, 0);
+    GLuint memory_object;
+    api->glCreateMemoryObjectsEXTFn(1, &memory_object);
+    api->glImportMemoryFdEXTFn(memory_object, memory_size_,
+                               GL_HANDLE_TYPE_OPAQUE_FD_EXT, memory_fd);
+    GLuint texture_service_id;
+    api->glGenTexturesFn(1, &texture_service_id);
 
-  gles2::Texture* texture = new gles2::Texture(texture_service_id);
-  texture->SetLightweightRef();
-  texture->SetTarget(target, 1);
-  texture->sampler_state_.min_filter = GL_LINEAR;
-  texture->sampler_state_.mag_filter = GL_LINEAR;
-  texture->sampler_state_.wrap_t = GL_CLAMP_TO_EDGE;
-  texture->sampler_state_.wrap_s = GL_CLAMP_TO_EDGE;
-  // If the backing is already cleared, no need to clear it again.
-  gfx::Rect cleared_rect;
-  if (is_cleared_)
-    cleared_rect = gfx::Rect(size());
+    GLint old_texture_binding = 0;
+    api->glGetIntegervFn(get_target, &old_texture_binding);
+    api->glBindTextureFn(target, texture_service_id);
+    api->glTexParameteriFn(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    api->glTexParameteriFn(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    api->glTexParameteriFn(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    api->glTexParameteriFn(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    api->glTexStorageMem2DEXTFn(GL_TEXTURE_2D, 1, internal_format,
+                                size().width(), size().height(), memory_object,
+                                0);
 
-  GLenum gl_format = viz::GLDataFormat(format());
-  GLenum gl_type = viz::GLDataType(format());
-  texture->SetLevelInfo(target, 0, internal_format, size().width(),
-                        size().height(), 1, 0, gl_format, gl_type,
-                        cleared_rect);
-  texture->SetImmutable(true);
+    texture_ = new gles2::Texture(texture_service_id);
+    texture_->SetLightweightRef();
+    texture_->SetTarget(target, 1);
+    texture_->sampler_state_.min_filter = GL_LINEAR;
+    texture_->sampler_state_.mag_filter = GL_LINEAR;
+    texture_->sampler_state_.wrap_t = GL_CLAMP_TO_EDGE;
+    texture_->sampler_state_.wrap_s = GL_CLAMP_TO_EDGE;
+    // If the backing is already cleared, no need to clear it again.
+    gfx::Rect cleared_rect;
+    if (is_cleared_)
+      cleared_rect = gfx::Rect(size());
 
-  api->glBindTextureFn(target, old_texture_binding);
+    GLenum gl_format = viz::GLDataFormat(format());
+    GLenum gl_type = viz::GLDataType(format());
+    texture_->SetLevelInfo(target, 0, internal_format, size().width(),
+                           size().height(), 1, 0, gl_format, gl_type,
+                           cleared_rect);
+    texture_->SetImmutable(true);
 
+    api->glBindTextureFn(target, old_texture_binding);
+  }
   return std::make_unique<ExternalVkImageGlRepresentation>(
-      manager, this, tracker, texture, texture_service_id);
+      manager, this, tracker, texture_, texture_->service_id());
 #else  // !defined(OS_LINUX) && !defined(OS_FUCHSIA)
 #error Unsupported OS
 #endif
