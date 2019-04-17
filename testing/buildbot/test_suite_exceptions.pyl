@@ -1571,8 +1571,6 @@
       'Win 7 Tests x64 (1)',  # 64-bit win is unsupported by the layout tests.
       'Win10 Tests x64 (dbg)',
 
-      'Win10 Tests x64', # TODO(tikuta): enable this (crbug.com/950584)
-
       # chromium.mac. TODO(https://crbug.com/944117): Remove this.
       'mac-dummy-rel',
     ],
@@ -1848,6 +1846,12 @@
             }
           ],
         },
+      },
+      'Win10 Tests x64': {
+        'args': [
+          '--target',
+          'Release_x64',
+        ],
       },
       'Win10 Tests x64 (dbg)': {
         'args': [
