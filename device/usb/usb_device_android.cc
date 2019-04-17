@@ -28,15 +28,16 @@ scoped_refptr<UsbDeviceAndroid> UsbDeviceAndroid::Create(
     JNIEnv* env,
     base::WeakPtr<UsbServiceAndroid> service,
     const JavaRef<jobject>& usb_device) {
+  auto* build_info = base::android::BuildInfo::GetInstance();
   ScopedJavaLocalRef<jobject> wrapper =
       Java_ChromeUsbDevice_create(env, usb_device);
+
   uint16_t device_version = 0;
-  if (base::android::BuildInfo::GetInstance()->sdk_int() >=
-      base::android::SDK_VERSION_MARSHMALLOW)
+  if (build_info->sdk_int() >= base::android::SDK_VERSION_MARSHMALLOW)
     device_version = Java_ChromeUsbDevice_getDeviceVersion(env, wrapper);
+
   base::string16 manufacturer_string, product_string, serial_number;
-  if (base::android::BuildInfo::GetInstance()->sdk_int() >=
-      base::android::SDK_VERSION_LOLLIPOP) {
+  if (build_info->sdk_int() >= base::android::SDK_VERSION_LOLLIPOP) {
     ScopedJavaLocalRef<jstring> manufacturer_jstring =
         Java_ChromeUsbDevice_getManufacturerName(env, wrapper);
     if (!manufacturer_jstring.is_null())
@@ -45,11 +46,17 @@ scoped_refptr<UsbDeviceAndroid> UsbDeviceAndroid::Create(
         Java_ChromeUsbDevice_getProductName(env, wrapper);
     if (!product_jstring.is_null())
       product_string = ConvertJavaStringToUTF16(env, product_jstring);
-    ScopedJavaLocalRef<jstring> serial_jstring =
-        Java_ChromeUsbDevice_getSerialNumber(env, wrapper);
-    if (!serial_jstring.is_null())
-      serial_number = ConvertJavaStringToUTF16(env, serial_jstring);
+
+    // Reading the serial number requires device access permission when
+    // targeting the Q SDK.
+    if (service->HasDevicePermission(wrapper) || !build_info->is_at_least_q()) {
+      ScopedJavaLocalRef<jstring> serial_jstring =
+          Java_ChromeUsbDevice_getSerialNumber(env, wrapper);
+      if (!serial_jstring.is_null())
+        serial_number = ConvertJavaStringToUTF16(env, serial_jstring);
+    }
   }
+
   return base::WrapRefCounted(new UsbDeviceAndroid(
       env, service,
       0x0200,  // USB protocol version, not provided by the Android API.
@@ -64,7 +71,7 @@ scoped_refptr<UsbDeviceAndroid> UsbDeviceAndroid::Create(
 void UsbDeviceAndroid::RequestPermission(ResultCallback callback) {
   if (!permission_granted_ && service_) {
     request_permission_callbacks_.push_back(std::move(callback));
-    service_->RequestDevicePermission(j_object_, device_id_);
+    service_->RequestDevicePermission(j_object_);
   } else {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), permission_granted_));
