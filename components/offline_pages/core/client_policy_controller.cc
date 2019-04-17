@@ -13,6 +13,21 @@
 using LifetimeType = offline_pages::LifetimePolicy::LifetimeType;
 
 namespace offline_pages {
+namespace {
+
+// Generates a client policy from the input values.
+const OfflinePageClientPolicy MakePolicy(const std::string& name_space,
+                                         LifetimeType lifetime_type,
+                                         const base::TimeDelta& expire_period,
+                                         size_t page_limit,
+                                         size_t pages_allowed_per_url) {
+  return OfflinePageClientPolicyBuilder(name_space, lifetime_type, page_limit,
+                                        pages_allowed_per_url)
+      .SetExpirePeriod(expire_period)
+      .Build();
+}
+
+}  // namespace
 
 ClientPolicyController::ClientPolicyController() {
   policies_.clear();
@@ -102,22 +117,21 @@ ClientPolicyController::ClientPolicyController() {
   policies_.emplace(kDefaultNamespace,
                     MakePolicy(kDefaultNamespace, LifetimeType::TEMPORARY,
                                base::TimeDelta::FromDays(1), 10, 1));
+
+  for (const auto& policy_item : policies_) {
+    const std::string& name = policy_item.first;
+    if (policy_item.second.feature_policy.is_removed_on_cache_reset)
+      cache_reset_namespaces_.push_back(name);
+    if (policy_item.second.feature_policy.is_supported_by_download)
+      download_namespaces_.push_back(name);
+    if (policy_item.second.feature_policy.is_user_requested_download)
+      user_requested_download_namespaces_.push_back(name);
+    if (policy_item.second.feature_policy.is_supported_by_recent_tabs)
+      recent_tab_namespaces_.push_back(name);
+  }
 }
 
 ClientPolicyController::~ClientPolicyController() {}
-
-// static
-const OfflinePageClientPolicy ClientPolicyController::MakePolicy(
-    const std::string& name_space,
-    LifetimeType lifetime_type,
-    const base::TimeDelta& expire_period,
-    size_t page_limit,
-    size_t pages_allowed_per_url) {
-  return OfflinePageClientPolicyBuilder(name_space, lifetime_type, page_limit,
-                                        pages_allowed_per_url)
-      .SetExpirePeriod(expire_period)
-      .Build();
-}
 
 const OfflinePageClientPolicy& ClientPolicyController::GetPolicy(
     const std::string& name_space) const {
@@ -153,42 +167,17 @@ bool ClientPolicyController::IsUserRequestedDownload(
 
 const std::vector<std::string>&
 ClientPolicyController::GetNamespacesRemovedOnCacheReset() const {
-  if (cache_reset_namespace_cache_)
-    return *cache_reset_namespace_cache_;
-
-  cache_reset_namespace_cache_ = std::make_unique<std::vector<std::string>>();
-  for (const auto& policy_item : policies_) {
-    if (policy_item.second.feature_policy.is_removed_on_cache_reset)
-      cache_reset_namespace_cache_->emplace_back(policy_item.first);
-  }
-  return *cache_reset_namespace_cache_;
+  return cache_reset_namespaces_;
 }
 
 const std::vector<std::string>&
 ClientPolicyController::GetNamespacesSupportedByDownload() const {
-  if (download_namespace_cache_)
-    return *download_namespace_cache_;
-
-  download_namespace_cache_ = std::make_unique<std::vector<std::string>>();
-  for (const auto& policy_item : policies_) {
-    if (policy_item.second.feature_policy.is_supported_by_download)
-      download_namespace_cache_->emplace_back(policy_item.first);
-  }
-  return *download_namespace_cache_;
+  return download_namespaces_;
 }
 
 const std::vector<std::string>&
 ClientPolicyController::GetNamespacesForUserRequestedDownload() const {
-  if (user_requested_download_namespace_cache_)
-    return *user_requested_download_namespace_cache_;
-
-  user_requested_download_namespace_cache_ =
-      std::make_unique<std::vector<std::string>>();
-  for (const auto& policy_item : policies_) {
-    if (policy_item.second.feature_policy.is_user_requested_download)
-      user_requested_download_namespace_cache_->emplace_back(policy_item.first);
-  }
-  return *user_requested_download_namespace_cache_;
+  return user_requested_download_namespaces_;
 }
 
 bool ClientPolicyController::IsShownAsRecentlyVisitedSite(
@@ -198,16 +187,7 @@ bool ClientPolicyController::IsShownAsRecentlyVisitedSite(
 
 const std::vector<std::string>&
 ClientPolicyController::GetNamespacesShownAsRecentlyVisitedSite() const {
-  if (recent_tab_namespace_cache_)
-    return *recent_tab_namespace_cache_;
-
-  recent_tab_namespace_cache_ = std::make_unique<std::vector<std::string>>();
-  for (const auto& policy_item : policies_) {
-    if (policy_item.second.feature_policy.is_supported_by_recent_tabs)
-      recent_tab_namespace_cache_->emplace_back(policy_item.first);
-  }
-
-  return *recent_tab_namespace_cache_;
+  return recent_tab_namespaces_;
 }
 
 bool ClientPolicyController::IsRestrictedToTabFromClientId(
@@ -216,39 +196,9 @@ bool ClientPolicyController::IsRestrictedToTabFromClientId(
       .feature_policy.is_restricted_to_tab_from_client_id;
 }
 
-const std::vector<std::string>&
-ClientPolicyController::GetNamespacesRestrictedToTabFromClientId() const {
-  if (restricted_to_tab_from_client_id_cache_)
-    return *restricted_to_tab_from_client_id_cache_;
-
-  restricted_to_tab_from_client_id_cache_ =
-      std::make_unique<std::vector<std::string>>();
-  for (const auto& policy_item : policies_) {
-    if (policy_item.second.feature_policy.is_restricted_to_tab_from_client_id)
-      restricted_to_tab_from_client_id_cache_->emplace_back(policy_item.first);
-  }
-
-  return *restricted_to_tab_from_client_id_cache_;
-}
-
 bool ClientPolicyController::IsDisabledWhenPrefetchDisabled(
     const std::string& name_space) const {
   return GetPolicy(name_space).feature_policy.disabled_when_prefetch_disabled;
-}
-
-const std::vector<std::string>&
-ClientPolicyController::GetNamespacesDisabledWhenPrefetchDisabled() const {
-  if (disabled_when_prefetch_disabled_cache_)
-    return *disabled_when_prefetch_disabled_cache_;
-
-  disabled_when_prefetch_disabled_cache_ =
-      std::make_unique<std::vector<std::string>>();
-  for (const auto& policy_item : policies_) {
-    if (policy_item.second.feature_policy.disabled_when_prefetch_disabled)
-      disabled_when_prefetch_disabled_cache_->emplace_back(policy_item.first);
-  }
-
-  return *disabled_when_prefetch_disabled_cache_;
 }
 
 bool ClientPolicyController::IsSuggested(const std::string& name_space) const {
@@ -258,12 +208,6 @@ bool ClientPolicyController::IsSuggested(const std::string& name_space) const {
 bool ClientPolicyController::ShouldAllowDownloads(
     const std::string& name_space) const {
   return GetPolicy(name_space).feature_policy.should_allow_download;
-}
-
-void ClientPolicyController::AddPolicyForTest(
-    const std::string& name_space,
-    const OfflinePageClientPolicyBuilder& builder) {
-  policies_.emplace(name_space, builder.Build());
 }
 
 }  // namespace offline_pages
