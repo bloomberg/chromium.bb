@@ -302,7 +302,7 @@ class OmniboxViewViews : public OmniboxView,
 
   // Tracking state before and after a possible change.
   State state_before_change_;
-  bool ime_composing_before_change_;
+  bool ime_composing_before_change_ = false;
 
   // |location_bar_view_| can be NULL in tests.
   LocationBarView* location_bar_view_;
@@ -315,18 +315,23 @@ class OmniboxViewViews : public OmniboxView,
 #endif
 
   // True if any mouse button is currently depressed.
-  bool is_mouse_pressed_;
+  bool is_mouse_pressed_ = false;
+
+  // Applies a minimum threshold to drag events after unelision. Because the
+  // text shifts after unelision, we don't want unintentional mouse drags to
+  // change the selection.
+  bool filter_drag_events_for_unelision_ = false;
 
   // Should we select all the text when we see the mouse button get released?
   // We select in response to a click that focuses the omnibox, but we defer
   // until release, setting this variable back to false if we saw a drag, to
   // allow the user to select just a portion of the text.
-  bool select_all_on_mouse_release_;
+  bool select_all_on_mouse_release_ = false;
 
   // Indicates if we want to select all text in the omnibox when we get a
   // GESTURE_TAP. We want to select all only when the textfield is not in focus
   // and gets a tap. So we use this variable to remember focus state before tap.
-  bool select_all_on_gesture_tap_;
+  bool select_all_on_gesture_tap_ = false;
 
   // The time of the first character insert operation that has not yet been
   // painted. Used to measure omnibox responsiveness with a histogram.

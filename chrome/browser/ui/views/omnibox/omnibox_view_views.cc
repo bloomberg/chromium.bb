@@ -191,11 +191,7 @@ OmniboxViewViews::OmniboxViewViews(OmniboxEditController* controller,
     : OmniboxView(controller, std::move(client)),
       popup_window_mode_(popup_window_mode),
       saved_selection_for_focus_change_(gfx::Range::InvalidRange()),
-      ime_composing_before_change_(false),
       location_bar_view_(location_bar),
-      is_mouse_pressed_(false),
-      select_all_on_mouse_release_(false),
-      select_all_on_gesture_tap_(false),
       latency_histogram_state_(NOT_ACTIVE),
       friendly_suggestion_text_prefix_length_(0),
       scoped_compositor_observer_(this),
@@ -1038,13 +1034,21 @@ bool OmniboxViewViews::OnMousePressed(const ui::MouseEvent& event) {
   // perform the unelision at the same time as we make the partial selection,
   // which is on mousedown.
   if (!select_all_on_mouse_release_ &&
-      UnapplySteadyStateElisions(UnelisionGesture::OTHER))
+      UnapplySteadyStateElisions(UnelisionGesture::OTHER)) {
     TextChanged();
+    filter_drag_events_for_unelision_ = true;
+  }
 
   return handled;
 }
 
 bool OmniboxViewViews::OnMouseDragged(const ui::MouseEvent& event) {
+  if (filter_drag_events_for_unelision_ &&
+      !ExceededDragThreshold(event.root_location() -
+                             GetLastClickRootLocation())) {
+    return true;
+  }
+
   if (HasTextBeingDragged())
     CloseOmniboxPopup();
 
@@ -1067,9 +1071,11 @@ void OmniboxViewViews::OnMouseReleased(const ui::MouseEvent& event) {
   }
   select_all_on_mouse_release_ = false;
 
+  is_mouse_pressed_ = false;
+  filter_drag_events_for_unelision_ = false;
+
   // Make an unelision check on mouse release. This handles the drag selection
   // case, in which we defer uneliding until mouse release.
-  is_mouse_pressed_ = false;
   if (UnapplySteadyStateElisions(UnelisionGesture::MOUSE_RELEASE))
     TextChanged();
 }

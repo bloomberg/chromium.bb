@@ -745,7 +745,7 @@ class OmniboxViewViewsSteadyStateElisionsTest : public OmniboxViewViewsTest {
   }
 
   ui::MouseEvent CreateMouseEvent(ui::EventType type, const gfx::Point& point) {
-    return ui::MouseEvent(type, point, gfx::Point(), ui::EventTimeForNow(),
+    return ui::MouseEvent(type, point, point, ui::EventTimeForNow(),
                           ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
   }
 
@@ -995,6 +995,17 @@ TEST_F(OmniboxViewViewsSteadyStateElisionsTest, MouseDoubleClickDrag) {
       ui::ET_MOUSE_PRESSED, GetPointInTextAtXOffset(4 * kCharacterWidth)));
   ExpectFullUrlDisplayed();
   size_t start, end;
+  omnibox_view()->GetSelectionBounds(&start, &end);
+  EXPECT_EQ(12U, start);
+  EXPECT_EQ(19U, end);
+
+  // Expect that negligible drags are ignored immediately after unelision, as
+  // the text has likely shifted, and we don't want to accidentally change the
+  // selection.
+  gfx::Point drag_point = GetPointInTextAtXOffset(4 * kCharacterWidth);
+  drag_point.Offset(1, 1);  // Offset test point one pixel in each dimension.
+  omnibox_textfield()->OnMouseDragged(
+      CreateMouseEvent(ui::ET_MOUSE_DRAGGED, drag_point));
   omnibox_view()->GetSelectionBounds(&start, &end);
   EXPECT_EQ(12U, start);
   EXPECT_EQ(19U, end);
