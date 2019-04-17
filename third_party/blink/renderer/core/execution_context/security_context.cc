@@ -100,6 +100,9 @@ bool SecurityContext::IsSandboxed(WebSandboxFlags mask) const {
       case WebSandboxFlags::kPresentationController:
         return !feature_policy_->IsFeatureEnabled(
             mojom::FeaturePolicyFeature::kPresentation);
+      case WebSandboxFlags::kDownloads:
+        return !feature_policy_->IsFeatureEnabled(
+            mojom::FeaturePolicyFeature::kDownloadsWithoutUserActivation);
       default:
         // Any other flags fall through to the bitmask test below
         break;

@@ -134,6 +134,9 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
   HTMLFrameOwnerElement(const QualifiedName& tag_name, Document&);
 
   void SetSandboxFlags(WebSandboxFlags);
+  void SetAllowedToDownloadWithoutUserActivation(bool allowed) {
+    frame_policy_.allowed_to_download_without_user_activation = allowed;
+  }
 
   bool LoadOrRedirectSubframe(const KURL&,
                               const AtomicString& frame_name,

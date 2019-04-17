@@ -55,6 +55,11 @@
       depends_on: ["ExperimentalProductivityFeatures"],
     },
     {
+      name: "DownloadsWithoutUserActivation",
+      feature_policy_name: "downloads-without-user-activation",
+      depends_on: ["FeaturePolicyForSandbox"],
+    },
+    {
       name: "EncryptedMedia",
       feature_policy_name: "encrypted-media",
     },

@@ -56,7 +56,9 @@ const SandboxFlagFeaturePolicyPairs& SandboxFlagsWithFeaturePolicies() {
         {WebSandboxFlags::kOrientationLock,
          mojom::FeaturePolicyFeature::kOrientationLock},
         {WebSandboxFlags::kPresentationController,
-         mojom::FeaturePolicyFeature::kPresentation}}));
+         mojom::FeaturePolicyFeature::kPresentation},
+        {WebSandboxFlags::kDownloads,
+         mojom::FeaturePolicyFeature::kDownloadsWithoutUserActivation}}));
   return array;
 }
 

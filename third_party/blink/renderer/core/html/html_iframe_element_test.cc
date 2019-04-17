@@ -11,7 +11,7 @@
 
 namespace blink {
 
-constexpr size_t expected_number_of_sandbox_features = 8;
+constexpr size_t expected_number_of_sandbox_features = 9;
 
 class HTMLIFrameElementTest : public testing::Test {
  public:
