@@ -89,6 +89,7 @@ static void simple_motion_search_based_split_fast(
     BLOCK_SIZE bsize, int *partition_none_allowed, int *partition_horz_allowed,
     int *partition_vert_allowed, int *do_rectangular_split,
     int *do_square_split) {
+  aom_clear_system_state();
   const NN_CONFIG *nn_config = NULL;
   float split_only_thresh = 1.0f;
   if (bsize == BLOCK_128X128) {
@@ -114,6 +115,7 @@ static void simple_motion_search_based_split_fast(
   float score = 0.0f;
   get_res_var_features(cpi, x, mi_row, mi_col, bsize, features);
   av1_nn_predict(features, nn_config, &score);
+  aom_clear_system_state();
 
   if (score > split_only_thresh) {
     *partition_none_allowed = 0;
