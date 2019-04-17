@@ -72,6 +72,45 @@ bool IsDataOrAbout(const GURL& url) {
          url.scheme() == url::kDataScheme;
 }
 
+// Helper function to determine whether a navigation from |current_rfh| to
+// |dest_url| should swap BrowsingInstances to ensure that |dest_url| ends up
+// in a dedicated process.  This is the case when |dest_url| has an origin that
+// was just isolated dynamically, where leaving the navigation in the current
+// BrowsingInstance would leave |dest_url| without a dedicated process, since
+// dynamic origin isolation applies only to future BrowsingInstances.  In the
+// common case where |current_rfh| is a main frame, and there are no scripting
+// references to it from other windows, it is safe to swap BrowsingInstances to
+// ensure the new isolated origin takes effect.  Note that this applies even to
+// same-site navigations, as well as to renderer-initiated navigations.
+bool ShouldSwapBrowsingInstancesForDynamicIsolation(
+    RenderFrameHostImpl* current_rfh,
+    const GURL& dest_url) {
+  // Only main frames are eligible to swap BrowsingInstances.
+  if (!current_rfh->frame_tree_node()->IsMainFrame())
+    return false;
+
+  // Skip cases when there are other windows that might script this one.
+  SiteInstanceImpl* current_instance = current_rfh->GetSiteInstance();
+  if (current_instance->GetRelatedActiveContentsCount() > 1u)
+    return false;
+
+  // Check whether |dest_url| would require a dedicated process if we left it
+  // in the current BrowsingInstance.  If so, there's no need to swap
+  // BrowsingInstances.
+  if (SiteInstanceImpl::DoesSiteRequireDedicatedProcess(
+          current_instance->GetIsolationContext(), dest_url)) {
+    return false;
+  }
+
+  // Finally, check whether |dest_url| would require a dedicated process if we
+  // were to swap to a fresh BrowsingInstance.  To check this, use a new
+  // IsolationContext, rather than current_instance->GetIsolationContext().
+  IsolationContext future_isolation_context(
+      current_instance->GetBrowserContext());
+  return SiteInstanceImpl::DoesSiteRequireDedicatedProcess(
+      future_isolation_context, dest_url);
+}
+
 }  // namespace
 
 RenderFrameHostManager::RenderFrameHostManager(FrameTreeNode* frame_tree_node,
@@ -1020,6 +1059,18 @@ bool RenderFrameHostManager::ShouldSwapBrowsingInstancesForNavigation(
   if (current_is_view_source_mode != new_is_view_source_mode)
     return true;
 
+  // If the target URL's origin was dynamically isolated, and the isolation
+  // wouldn't apply in the current BrowsingInstance, see if this navigation can
+  // safely swap to a new BrowsingInstance where this isolation would take
+  // effect.  This helps protect sites that have just opted into process
+  // isolation, ensuring that the next navigation (e.g., a form submission
+  // after user has typed in a password) can utilize a dedicated process when
+  // possible (e.g., when there are no existing script references).
+  if (ShouldSwapBrowsingInstancesForDynamicIsolation(render_frame_host_.get(),
+                                                     new_effective_url)) {
+    return true;
+  }
+
   return false;
 }
 
@@ -1520,6 +1571,14 @@ bool RenderFrameHostManager::IsRendererTransferNeededForNavigation(
   // We do not currently swap processes for navigations in webview tag guests.
   if (rfh->GetSiteInstance()->GetSiteURL().SchemeIs(kGuestScheme))
     return false;
+
+  // Attempt a transfer if |dest_url|'s origin was dynamically isolated, and
+  // this navigation is eligible to perform a BrowsingInstance swap to ensure
+  // that |dest_url| is placed into a dedicated process. This is important to
+  // check before IsCurrentlySameSite() below, since in this case we might swap
+  // BrowsingInstances even for same-site navigations.
+  if (ShouldSwapBrowsingInstancesForDynamicIsolation(rfh, dest_url))
+    return true;
 
   // TODO(nasko, nick): These following --site-per-process checks are
   // overly simplistic. Update them to match all the cases

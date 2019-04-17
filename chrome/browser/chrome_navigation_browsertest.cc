@@ -1439,6 +1439,8 @@ IN_PROC_BROWSER_TEST_F(SiteIsolationForPasswordSitesBrowserTest,
 
   // foo.com should not be isolated to start with. Verify that a cross-site
   // iframe does not become an OOPIF.
+  EXPECT_FALSE(
+      contents->GetMainFrame()->GetSiteInstance()->RequiresDedicatedProcess());
   std::string kAppendIframe = R"(
       var i = document.createElement('iframe');
       i.id = 'child';
@@ -1458,8 +1460,19 @@ IN_PROC_BROWSER_TEST_F(SiteIsolationForPasswordSitesBrowserTest,
   EXPECT_TRUE(content::ExecJs(contents, kFillAndSubmit));
   observer.Wait();
 
-  // Open a fresh tab (forcing a new BrowsingInstance), navigate to foo.com,
-  // and verify that a cross-site iframe now becomes an OOPIF.
+  // Since there were no script references from other windows, we should've
+  // swapped BrowsingInstances and put the result of the form submission into a
+  // dedicated process, locked to foo.com.  Check that a cross-site iframe now
+  // becomes an OOPIF.
+  EXPECT_TRUE(
+      contents->GetMainFrame()->GetSiteInstance()->RequiresDedicatedProcess());
+  EXPECT_TRUE(ExecJs(contents, kAppendIframe));
+  EXPECT_TRUE(NavigateIframeToURL(contents, "child", bar_url));
+  child = ChildFrameAt(contents->GetMainFrame(), 0);
+  EXPECT_TRUE(child->IsCrossProcessSubframe());
+
+  // Open a fresh tab (also forcing a new BrowsingInstance), navigate to
+  // foo.com, and verify that a cross-site iframe becomes an OOPIF.
   AddBlankTabAndShow(browser());
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
   content::WebContents* new_contents =
