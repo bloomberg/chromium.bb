@@ -60,4 +60,9 @@ base::TimeDelta MockBackgroundSyncController::GetNextEventDelay(
          pow(parameters->retry_delay_factor, num_attempts - 1);
 }
 
+std::unique_ptr<BackgroundSyncController::BackgroundSyncEventKeepAlive>
+MockBackgroundSyncController::CreateBackgroundSyncEventKeepAlive() {
+  return nullptr;
+}
+
 }  // namespace content
