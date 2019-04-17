@@ -18,6 +18,8 @@ import org.chromium.base.Callback;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ContentSettingsType;
+import org.chromium.chrome.browser.browserservices.Origin;
+import org.chromium.chrome.browser.browserservices.permissiondelegation.TrustedWebActivityPermissionManager;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.website.ContentSettingValues;
 import org.chromium.chrome.browser.preferences.website.ContentSettingsResources;
@@ -122,19 +124,31 @@ class PermissionParamsListBuilder {
         builder.append(nameString);
         builder.append(" – "); // en-dash.
         String status_text = "";
-        switch (permission.setting) {
-            case ContentSettingValues.ALLOW:
-                status_text = mContext.getString(R.string.page_info_permission_allowed);
-                break;
-            case ContentSettingValues.BLOCK:
-                status_text = mContext.getString(R.string.page_info_permission_blocked);
-                break;
-            default:
-                assert false : "Invalid setting " + permission.setting + " for permission "
-                               + permission.type;
+
+        String managedBy = null;
+        if (permission.type == ContentSettingsType.CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
+            TrustedWebActivityPermissionManager manager = TrustedWebActivityPermissionManager.get();
+            managedBy = manager.getDelegateAppName(new Origin(mFullUrl));
         }
-        if (WebsitePreferenceBridge.isPermissionControlledByDSE(permission.type, mFullUrl, false)) {
-            status_text = statusTextForDSEPermission(permission.setting);
+        if (managedBy != null) {
+            status_text = String.format(
+                    mContext.getString(R.string.website_notification_managed_by_app), managedBy);
+        } else {
+            switch (permission.setting) {
+                case ContentSettingValues.ALLOW:
+                    status_text = mContext.getString(R.string.page_info_permission_allowed);
+                    break;
+                case ContentSettingValues.BLOCK:
+                    status_text = mContext.getString(R.string.page_info_permission_blocked);
+                    break;
+                default:
+                    assert false : "Invalid setting " + permission.setting + " for permission "
+                                   + permission.type;
+            }
+            if (WebsitePreferenceBridge.isPermissionControlledByDSE(
+                        permission.type, mFullUrl, false)) {
+                status_text = statusTextForDSEPermission(permission.setting);
+            }
         }
         builder.append(status_text);
         permissionParams.status = builder;
