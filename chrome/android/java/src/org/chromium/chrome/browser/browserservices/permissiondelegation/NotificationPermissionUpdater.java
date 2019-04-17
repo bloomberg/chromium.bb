@@ -16,6 +16,7 @@ import android.support.annotation.WorkerThread;
 import org.chromium.base.Log;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.browserservices.BrowserServicesMetrics;
 import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.browserservices.TrustedWebActivityClient;
@@ -60,6 +61,11 @@ public class NotificationPermissionUpdater {
      * - Otherwise, it does nothing.
      */
     public void onOriginVerified(Origin origin, String packageName) {
+        if (!ChromeFeatureList.isEnabled(
+                ChromeFeatureList.TRUSTED_WEB_ACTIVITY_NOTIFICATION_DELEGATION_ENROLMENT)) {
+            return;
+        }
+
         // If the client doesn't handle browsable Intents for the URL, we don't do anything special
         // for the origin's notifications.
         if (!appHandlesBrowsableIntent(packageName, origin.uri())) {
@@ -83,6 +89,11 @@ public class NotificationPermissionUpdater {
      * app was installed.
      */
     public void onClientAppUninstalled(Origin origin) {
+        if (!ChromeFeatureList.isEnabled(
+                ChromeFeatureList.TRUSTED_WEB_ACTIVITY_NOTIFICATION_DELEGATION_ENROLMENT)) {
+            return;
+        }
+
         // See if there is any other app installed that could handle the notifications (and update
         // to that apps notification permission if it exists).
         boolean couldConnect = mTrustedWebActivityClient.checkNotificationPermission(origin,

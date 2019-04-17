@@ -320,6 +320,8 @@ public abstract class ChromeFeatureList {
     public static final String TRANSLATE_ANDROID_MANUAL_TRIGGER = "TranslateAndroidManualTrigger";
     public static final String TRUSTED_WEB_ACTIVITY = "TrustedWebActivity";
     public static final String TRUSTED_WEB_ACTIVITY_POST_MESSAGE = "TrustedWebActivityPostMessage";
+    public static final String TRUSTED_WEB_ACTIVITY_NOTIFICATION_DELEGATION_ENROLMENT =
+            "TrustedWebActivityNotificationDelegationAutoEnrolment";
     public static final String VIDEO_PERSISTENCE = "VideoPersistence";
     public static final String UNIFIED_CONSENT = "UnifiedConsent";
     public static final String USAGE_STATS = "UsageStats";

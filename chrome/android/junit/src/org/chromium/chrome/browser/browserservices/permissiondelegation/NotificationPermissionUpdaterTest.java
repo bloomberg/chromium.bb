@@ -19,7 +19,9 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -29,18 +31,25 @@ import org.robolectric.shadows.ShadowPackageManager;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.browserservices.TrustedWebActivityClient;
+import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 
 /**
  * Tests for {@link NotificationPermissionUpdater}.
  */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
+@EnableFeatures(ChromeFeatureList.TRUSTED_WEB_ACTIVITY_NOTIFICATION_DELEGATION_ENROLMENT)
 public class NotificationPermissionUpdaterTest {
     private static final Origin ORIGIN = new Origin("https://www.website.com");
     private static final String PACKAGE_NAME = "com.package.name";
     private static final String OTHER_PACKAGE_NAME = "com.other.package.name";
+
+    @Rule
+    public TestRule mProcessor = new Features.JUnitProcessor();
 
     @Mock public TrustedWebActivityPermissionManager mPermissionManager;
     @Mock public TrustedWebActivityClient mTrustedWebActivityClient;
