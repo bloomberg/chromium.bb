@@ -899,6 +899,11 @@ def DefaultSettings():
       # builders run gce tests.
       gce_tests=[],
 
+      # Whether to run CPEExport stage. This stage generates portage depgraph
+      # data that is used for bugs reporting (see go/why-cpeexport). Only
+      # release builders should run this stage.
+      run_cpeexport=False,
+
       # A list of TastVMTestConfig objects describing Tast-based test suites
       # that should be run in a VM.
       tast_vm_tests=[],
@@ -1026,9 +1031,9 @@ def DefaultSettings():
       # Use SDK as opposed to building the chroot from source.
       use_sdk=True,
 
-      # Bootstrap from previous SDK instead of Gentoo stage3 when building chroot
-      # from source (only applicable with use_sdk=False).
-      self_bootstrap = False,
+      # Bootstrap from previous SDK instead of Gentoo stage3 when building
+      # chroot from source (only applicable with use_sdk=False).
+      self_bootstrap=False,
 
       # The description string to print out for config when user runs --list.
       description=None,

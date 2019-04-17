@@ -675,6 +675,7 @@ def GeneralTemplates(site_config):
       sign_types=['recovery'],
       push_image=True,
       upload_symbols=True,
+      run_cpeexport=True,
       binhost_bucket='gs://chromeos-dev-installer',
       binhost_key='RELEASE_BINHOST',
       binhost_base_url='https://commondatastorage.googleapis.com/'

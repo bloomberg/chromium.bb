@@ -232,9 +232,12 @@ class SimpleBuilder(generic_builders.Builder):
         [test_stages.ImageTestStage, board],
         [artifact_stages.UploadPrebuiltsStage, board],
         [artifact_stages.DevInstallerPrebuiltsStage, board],
-        [artifact_stages.CPEExportStage, board],
-        [artifact_stages.UploadTestArtifactsStage, board],
     ]
+
+    if config.run_cpeexport:
+      stage_list += [[artifact_stages.CPEExportStage, board]]
+
+    stage_list += [[artifact_stages.UploadTestArtifactsStage, board]]
 
     stage_objs = [self._GetStageInstance(*x, builder_run=builder_run)
                   for x in stage_list]
