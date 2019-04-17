@@ -67,8 +67,6 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kDerelictIdleTimeout[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kDisableArcDataWipe[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kDisableArcOptInVerification[];
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-extern const char kDisableCaptivePortalBypassProxy[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kDisableDemoMode[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kDisableDeviceDisabling[];

@@ -1650,13 +1650,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kCreditCardAssistDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillCreditCardAssist)},
 #endif  // OS_ANDROID
-#if defined(OS_CHROMEOS)
-    {"disable-captive-portal-bypass-proxy",
-     flag_descriptions::kCaptivePortalBypassProxyName,
-     flag_descriptions::kCaptivePortalBypassProxyDescription, kOsCrOS,
-     SINGLE_DISABLE_VALUE_TYPE(
-         chromeos::switches::kDisableCaptivePortalBypassProxy)},
-#endif  // OS_CHROMEOS
     {"ssl-committed-interstitials",
      flag_descriptions::kSSLCommittedInterstitialsName,
      flag_descriptions::kSSLCommittedInterstitialsDescription, kOsAll,
