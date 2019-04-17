@@ -52,6 +52,18 @@ struct CommonCredentialInfo {
   array<uint8> client_data_json;
 };
 
+// Content of user verification method extension returned by both
+// Authenticator::MakeCredential and Authenticator::GetAssertion.
+// See https://w3c.github.io/webauthn/#sctn-uvm-extension
+// Registry of the available values, see
+// https://fidoalliance.org/specs/fido-v2.0-id-20180227/fido-registry-v2.0-id-20180227.html#user-verification-methods
+[EnableIf=is_android]
+struct UvmEntry {
+  uint32 user_verification_method;
+  uint16 key_protection_type;
+  uint16 matcher_protection_type;
+};
+
 // The public key and attestation returned by Authenticator::MakeCredential.
 struct MakeCredentialAuthenticatorResponse {
   CommonCredentialInfo info;
@@ -68,6 +80,16 @@ struct MakeCredentialAuthenticatorResponse {
   // extension output. If so, |hmac_create_secret| contains the actual value.
   bool echo_hmac_create_secret;
   bool hmac_create_secret;
+
+  // Only supported by fido2 devices on android, will eventually supported by
+  // other platform.
+  // True if getClientExtensionResults() called on the returned
+  // PublicKeyCredential instance should contain an 'uvm' extension output.
+  // If so, |user_verification_methods| contains the actual value.
+  [EnableIf=is_android]
+  bool echo_user_verification_methods;
+  [EnableIf=is_android]
+  array<UvmEntry>? user_verification_methods;
 };
 
 struct GetAssertionAuthenticatorResponse {
@@ -89,6 +111,16 @@ struct GetAssertionAuthenticatorResponse {
   // If so, |appid_extension| contains the actual value.
   bool echo_appid_extension;
   bool appid_extension;
+
+  // Only supported by fido2 devices on android, will eventually supported by
+  // other platform.
+  // True if getClientExtensionResults() called on the returned
+  // PublicKeyCredential instance should contain an 'uvm' extension output.
+  // If so, |user_verification_methods| contains the actual value.
+  [EnableIf=is_android]
+  bool echo_user_verification_methods;
+  [EnableIf=is_android]
+  array<UvmEntry>? user_verification_methods;
 };
 
 // Information about the relying party. These fields take arbitrary input.
@@ -193,6 +225,13 @@ struct PublicKeyCredentialRequestOptions {
   // There may be multiple sets if multiple caBLE credentials have been
   // registered with the relying party.
   array<CableAuthentication> cable_authentication_data;
+
+  // Only supported by fido2 devices on android, will eventually supported by
+  // other platform.
+  // Whether the user verification method extension is requested by
+  // the RP. See https://w3c.github.io/webauthn/#sctn-uvm-extension
+  [EnableIf=is_android]
+  bool user_verification_methods;
 };
 
 // See https://w3c.github.io/webauthn/#enumdef-attestationconveyancepreference
@@ -267,6 +306,13 @@ struct PublicKeyCredentialCreationOptions {
   // The contents of the hmacCreateSecret extension, if any. See
   // https://fidoalliance.org/specs/fido-v2.0-rd-20180702/fido-client-to-authenticator-protocol-v2.0-rd-20180702.html#sctn-hmac-secret-extension
   bool hmac_create_secret;
+
+  // Only supported by fido2 devices on android, will eventually supported by
+  // other platform.
+  // Whether the user verification method extension is requested by
+  // the RP. See https://w3c.github.io/webauthn/#sctn-uvm-extension
+  [EnableIf=is_android]
+  bool user_verification_methods;
 };
 
 enum PublicKeyCredentialType {
