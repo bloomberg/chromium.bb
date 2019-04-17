@@ -102,7 +102,7 @@ public class ImageFetcherBridge {
      * @param clientName The UMA client name to report the metrics to.
      * @param eventId The event to report.
      */
-    public void reportEvent(String clientName, @CachedImageFetcherEvent int eventId) {
+    public void reportEvent(String clientName, @ImageFetcherEvent int eventId) {
         assert mNativeImageFetcherBridge != 0;
         nativeReportEvent(mNativeImageFetcherBridge, clientName, eventId);
     }

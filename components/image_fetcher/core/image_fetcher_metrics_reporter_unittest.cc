@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/image_fetcher/core/cache/cached_image_fetcher_metrics_reporter.h"
+#include "components/image_fetcher/core/image_fetcher_metrics_reporter.h"
 
 #include <string>
 
@@ -16,8 +16,7 @@ namespace {
 const char kUmaClientName[] = "foo";
 const char kUmaClientNameOther[] = "bar";
 
-const char kCachedImageFetcherEventHistogramName[] =
-    "CachedImageFetcher.Events";
+const char kImageFetcherEventHistogramName[] = "ImageFetcher.Events";
 const char kCacheLoadHistogramName[] =
     "CachedImageFetcher.ImageLoadFromCacheTime";
 const char kCacheLoadHistogramNameJava[] =
@@ -33,44 +32,43 @@ const char kTimeSinceLastCacheLRUEviction[] =
 
 }  // namespace
 
-class CachedImageFetcherMetricsReporterTest : public testing::Test {
+class ImageFetcherMetricsReporterTest : public testing::Test {
  public:
-  CachedImageFetcherMetricsReporterTest() {}
-  ~CachedImageFetcherMetricsReporterTest() override = default;
+  ImageFetcherMetricsReporterTest() {}
+  ~ImageFetcherMetricsReporterTest() override = default;
 
   base::HistogramTester& histogram_tester() { return histogram_tester_; }
 
  private:
   base::HistogramTester histogram_tester_;
 
-  DISALLOW_COPY_AND_ASSIGN(CachedImageFetcherMetricsReporterTest);
+  DISALLOW_COPY_AND_ASSIGN(ImageFetcherMetricsReporterTest);
 };
 
-TEST_F(CachedImageFetcherMetricsReporterTest, TestReportEvent) {
-  CachedImageFetcherMetricsReporter::ReportEvent(
-      kUmaClientName, CachedImageFetcherEvent::kCacheHit);
-  CachedImageFetcherMetricsReporter::ReportEvent(
-      kUmaClientNameOther, CachedImageFetcherEvent::kCacheHit);
-  histogram_tester().ExpectBucketCount(kCachedImageFetcherEventHistogramName,
-                                       CachedImageFetcherEvent::kCacheHit, 2);
+TEST_F(ImageFetcherMetricsReporterTest, TestReportEvent) {
+  ImageFetcherMetricsReporter::ReportEvent(kUmaClientName,
+                                           ImageFetcherEvent::kCacheHit);
+  ImageFetcherMetricsReporter::ReportEvent(kUmaClientNameOther,
+                                           ImageFetcherEvent::kCacheHit);
+  histogram_tester().ExpectBucketCount(kImageFetcherEventHistogramName,
+                                       ImageFetcherEvent::kCacheHit, 2);
   histogram_tester().ExpectBucketCount(
-      std::string(kCachedImageFetcherEventHistogramName)
+      std::string(kImageFetcherEventHistogramName)
           .append(".")
           .append(kUmaClientName),
-      CachedImageFetcherEvent::kCacheHit, 1);
+      ImageFetcherEvent::kCacheHit, 1);
   histogram_tester().ExpectBucketCount(
-      std::string(kCachedImageFetcherEventHistogramName)
+      std::string(kImageFetcherEventHistogramName)
           .append(".")
           .append(kUmaClientNameOther),
-      CachedImageFetcherEvent::kCacheHit, 1);
+      ImageFetcherEvent::kCacheHit, 1);
 }
 
-TEST_F(CachedImageFetcherMetricsReporterTest,
-       TestReportImageLoadFromCacheTime) {
-  CachedImageFetcherMetricsReporter::ReportImageLoadFromCacheTime(
-      kUmaClientName, base::Time());
-  CachedImageFetcherMetricsReporter::ReportImageLoadFromCacheTime(
-      kUmaClientNameOther, base::Time());
+TEST_F(ImageFetcherMetricsReporterTest, TestReportImageLoadFromCacheTime) {
+  ImageFetcherMetricsReporter::ReportImageLoadFromCacheTime(kUmaClientName,
+                                                            base::Time());
+  ImageFetcherMetricsReporter::ReportImageLoadFromCacheTime(kUmaClientNameOther,
+                                                            base::Time());
   histogram_tester().ExpectTotalCount(kCacheLoadHistogramName, 2);
   histogram_tester().ExpectTotalCount(
       std::string(kCacheLoadHistogramName).append(".").append(kUmaClientName),
@@ -81,11 +79,10 @@ TEST_F(CachedImageFetcherMetricsReporterTest,
                                       1);
 }
 
-TEST_F(CachedImageFetcherMetricsReporterTest,
-       TestReportImageLoadFromCacheTimeJava) {
-  CachedImageFetcherMetricsReporter::ReportImageLoadFromCacheTimeJava(
-      kUmaClientName, base::Time());
-  CachedImageFetcherMetricsReporter::ReportImageLoadFromCacheTimeJava(
+TEST_F(ImageFetcherMetricsReporterTest, TestReportImageLoadFromCacheTimeJava) {
+  ImageFetcherMetricsReporter::ReportImageLoadFromCacheTimeJava(kUmaClientName,
+                                                                base::Time());
+  ImageFetcherMetricsReporter::ReportImageLoadFromCacheTimeJava(
       kUmaClientNameOther, base::Time());
   histogram_tester().ExpectTotalCount(kCacheLoadHistogramNameJava, 2);
   histogram_tester().ExpectTotalCount(std::string(kCacheLoadHistogramNameJava)
@@ -98,11 +95,11 @@ TEST_F(CachedImageFetcherMetricsReporterTest,
                                       1);
 }
 
-TEST_F(CachedImageFetcherMetricsReporterTest,
+TEST_F(ImageFetcherMetricsReporterTest,
        TestReportTotalFetchFromNativeTimeJava) {
-  CachedImageFetcherMetricsReporter::ReportTotalFetchFromNativeTimeJava(
+  ImageFetcherMetricsReporter::ReportTotalFetchFromNativeTimeJava(
       kUmaClientName, base::Time());
-  CachedImageFetcherMetricsReporter::ReportTotalFetchFromNativeTimeJava(
+  ImageFetcherMetricsReporter::ReportTotalFetchFromNativeTimeJava(
       kUmaClientNameOther, base::Time());
   histogram_tester().ExpectTotalCount(kTotalFetchFromNativeHistogramNameJava,
                                       2);
@@ -118,11 +115,10 @@ TEST_F(CachedImageFetcherMetricsReporterTest,
       1);
 }
 
-TEST_F(CachedImageFetcherMetricsReporterTest,
-       TestReportImageLoadFromNetworkTime) {
-  CachedImageFetcherMetricsReporter::ReportImageLoadFromNetworkTime(
-      kUmaClientName, base::Time());
-  CachedImageFetcherMetricsReporter::ReportImageLoadFromNetworkTime(
+TEST_F(ImageFetcherMetricsReporterTest, TestReportImageLoadFromNetworkTime) {
+  ImageFetcherMetricsReporter::ReportImageLoadFromNetworkTime(kUmaClientName,
+                                                              base::Time());
+  ImageFetcherMetricsReporter::ReportImageLoadFromNetworkTime(
       kUmaClientNameOther, base::Time());
   histogram_tester().ExpectTotalCount(kNetworkLoadHistogramName, 2);
   histogram_tester().ExpectTotalCount(
@@ -134,11 +130,11 @@ TEST_F(CachedImageFetcherMetricsReporterTest,
                                       1);
 }
 
-TEST_F(CachedImageFetcherMetricsReporterTest,
+TEST_F(ImageFetcherMetricsReporterTest,
        TestReportImageLoadFromNetworkAfterCacheHit) {
-  CachedImageFetcherMetricsReporter::ReportImageLoadFromNetworkAfterCacheHit(
+  ImageFetcherMetricsReporter::ReportImageLoadFromNetworkAfterCacheHit(
       kUmaClientName, base::Time());
-  CachedImageFetcherMetricsReporter::ReportImageLoadFromNetworkAfterCacheHit(
+  ImageFetcherMetricsReporter::ReportImageLoadFromNetworkAfterCacheHit(
       kUmaClientNameOther, base::Time());
   histogram_tester().ExpectTotalCount(kNetworkLoadAfterCacheHitHistogram, 2);
   histogram_tester().ExpectTotalCount(
@@ -153,9 +149,9 @@ TEST_F(CachedImageFetcherMetricsReporterTest,
       1);
 }
 
-TEST_F(CachedImageFetcherMetricsReporterTest,
+TEST_F(ImageFetcherMetricsReporterTest,
        TestReportTimeSinceLastCacheLRUEviction) {
-  CachedImageFetcherMetricsReporter::ReportTimeSinceLastCacheLRUEviction(
+  ImageFetcherMetricsReporter::ReportTimeSinceLastCacheLRUEviction(
       base::Time());
   histogram_tester().ExpectTotalCount(kTimeSinceLastCacheLRUEviction, 1);
 }

@@ -105,7 +105,7 @@ public class InMemoryCachedImageFetcher extends ImageFetcher {
                 callback.onResult(bitmap);
             });
         } else {
-            reportEvent(clientName, CachedImageFetcherEvent.JAVA_IN_MEMORY_CACHE_HIT);
+            reportEvent(clientName, ImageFetcherEvent.JAVA_IN_MEMORY_CACHE_HIT);
             callback.onResult(cachedBitmap);
         }
     }

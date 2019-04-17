@@ -14,10 +14,10 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "components/image_fetcher/core/cache/cached_image_fetcher_metrics_reporter.h"
 #include "components/image_fetcher/core/cache/image_data_store_disk.h"
 #include "components/image_fetcher/core/cache/image_metadata_store_leveldb.h"
 #include "components/image_fetcher/core/cache/proto/cached_image_metadata.pb.h"
+#include "components/image_fetcher/core/image_fetcher_metrics_reporter.h"
 #include "components/leveldb_proto/testing/fake_db.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -32,8 +32,7 @@ namespace {
 
 constexpr char kPrefLastStartupEviction[] =
     "cached_image_fetcher_last_startup_eviction_time";
-constexpr char kCachedImageFetcherEventHistogramName[] =
-    "CachedImageFetcher.Events";
+constexpr char kImageFetcherEventHistogramName[] = "ImageFetcher.Events";
 constexpr char kImageUrl[] = "http://gstatic.img.com/foo.jpg";
 constexpr char kImageUrlHashed[] = "3H7UODDH3WKDWK6FQ3IZT3LQMVBPYJ4M";
 constexpr char kImageData[] = "data";
@@ -305,11 +304,11 @@ TEST_F(CachedImageFetcherImageCacheTest, Eviction) {
   RunUntilIdle();
 
   histogram_tester().ExpectBucketCount(
-      kCachedImageFetcherEventHistogramName,
-      CachedImageFetcherEvent::kCacheStartupEvictionStarted, 1);
+      kImageFetcherEventHistogramName,
+      ImageFetcherEvent::kCacheStartupEvictionStarted, 1);
   histogram_tester().ExpectBucketCount(
-      kCachedImageFetcherEventHistogramName,
-      CachedImageFetcherEvent::kCacheStartupEvictionFinished, 1);
+      kImageFetcherEventHistogramName,
+      ImageFetcherEvent::kCacheStartupEvictionFinished, 1);
 }
 
 TEST_F(CachedImageFetcherImageCacheTest, EvictionWhenFull) {
