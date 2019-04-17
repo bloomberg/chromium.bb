@@ -75,6 +75,8 @@ enum class ErrorLocation {
   kAcquireCurrentStage = 1,
   kStationaryReferenceCreation = 2,
   kGetTransformBetweenOrigins = 3,
+  kGamepadMissingTimestamp = 4,
+  kGamepadMissingOrigin = 5,
 };
 
 void TraceError(ErrorLocation location, HRESULT hr) {
@@ -495,8 +497,17 @@ void MixedRealityRenderLoop::StartPresenting() {
 }
 
 mojom::XRGamepadDataPtr MixedRealityRenderLoop::GetNextGamepadData() {
-  // Not yet implemented.
-  return nullptr;
+  if (!timestamp_) {
+    TraceError(ErrorLocation::kGamepadMissingTimestamp, E_UNEXPECTED);
+    return nullptr;
+  }
+
+  if (!origin_) {
+    TraceError(ErrorLocation::kGamepadMissingOrigin, E_UNEXPECTED);
+    return nullptr;
+  }
+
+  return input_helper_->GetWebVRGamepadData(origin_, timestamp_);
 }
 
 struct EyeToWorldDecomposed {

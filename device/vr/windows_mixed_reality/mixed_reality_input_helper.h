@@ -12,9 +12,36 @@
 #include <vector>
 
 #include "base/synchronization/lock.h"
+#include "device/gamepad/public/cpp/gamepads.h"
+#include "device/vr/public/mojom/isolated_xr_service.mojom.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
 
 namespace device {
+struct ButtonData {
+  bool pressed;
+  bool touched;
+  double value;
+
+  double x_axis;
+  double y_axis;
+};
+
+enum class ButtonName {
+  kSelect,
+  kGrip,
+  kTouchpad,
+  kThumbstick,
+};
+
+struct ParsedInputState {
+  mojom::XRInputSourceStatePtr source_state;
+  std::unordered_map<ButtonName, ButtonData> button_data;
+  GamepadPose gamepad_pose;
+  ParsedInputState();
+  ~ParsedInputState();
+  ParsedInputState(ParsedInputState&& other);
+};
+
 class MixedRealityInputHelper {
  public:
   MixedRealityInputHelper(HWND hwnd);
@@ -25,12 +52,18 @@ class MixedRealityInputHelper {
       Microsoft::WRL::ComPtr<ABI::Windows::Perception::IPerceptionTimestamp>
           timestamp);
 
+  mojom::XRGamepadDataPtr GetWebVRGamepadData(
+      Microsoft::WRL::ComPtr<
+          ABI::Windows::Perception::Spatial::ISpatialCoordinateSystem> origin,
+      Microsoft::WRL::ComPtr<ABI::Windows::Perception::IPerceptionTimestamp>
+          timestamp);
+
   void Dispose();
 
  private:
   bool EnsureSpatialInteractionManager();
 
-  mojom::XRInputSourceStatePtr LockedParseWindowsSourceState(
+  ParsedInputState LockedParseWindowsSourceState(
       Microsoft::WRL::ComPtr<
           ABI::Windows::UI::Input::Spatial::ISpatialInteractionSourceState>
           state,

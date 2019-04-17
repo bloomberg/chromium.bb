@@ -24892,6 +24892,7 @@ Called by update_net_error_codes.py.-->
   <int value="10" label="GAMEPAD_SOURCE_TEST"/>
   <int value="11" label="GAMEPAD_SOURCE_WIN_XINPUT"/>
   <int value="12" label="GAMEPAD_SOURCE_WIN_RAW"/>
+  <int value="13" label="GAMEPAD_SOURCE_WIN_MR"/>
 </enum>
 
 <enum name="GamepadVendorProduct">
