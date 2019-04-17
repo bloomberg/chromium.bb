@@ -8,10 +8,14 @@
 #include "base/strings/string_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/language/core/browser/pref_names.h"
+#include "components/prefs/pref_service.h"
+#include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/service_manager_connection.h"
@@ -83,6 +87,7 @@ class FakeAnnotator : public image_annotation::mojom::Annotator {
   }
 
   void AnnotateImage(const std::string& image_id,
+                     const std::string& description_language_tag,
                      image_annotation::mojom::ImageProcessorPtr image_processor,
                      AnnotateImageCallback callback) override {
     if (return_error_code_) {
@@ -105,7 +110,7 @@ class FakeAnnotator : public image_annotation::mojom::Annotator {
     image_annotation::mojom::AnnotationPtr label_annotation =
         image_annotation::mojom::Annotation::New(
             image_annotation::mojom::AnnotationType::kLabel, 1.0,
-            image_filename + " Label");
+            image_filename + " '" + description_language_tag + "' Label");
 
     // Return enabled results as an annotation.
     std::vector<image_annotation::mojom::AnnotationPtr> annotations;
@@ -210,6 +215,20 @@ class ImageAnnotationBrowserTest : public InProcessBrowserTest {
     ui::AXMode mode = ui::kAXModeComplete;
     mode.set_mode(ui::AXMode::kLabelImages, true);
     web_contents->SetAccessibilityMode(mode);
+
+    SetAcceptLanguages("en,fr");
+  }
+
+  void SetAcceptLanguages(const std::string& accept_languages) {
+    content::BrowserContext* context =
+        static_cast<content::BrowserContext*>(browser()->profile());
+    DCHECK(context);
+
+    PrefService* prefs = user_prefs::UserPrefs::Get(context);
+    DCHECK(prefs);
+
+    prefs->Set(language::prefs::kAcceptLanguages,
+               base::Value(accept_languages));
   }
 
  protected:
@@ -233,7 +252,7 @@ IN_PROC_BROWSER_TEST_F(ImageAnnotationBrowserTest,
 
   content::WaitForAccessibilityTreeToContainNodeWithName(
       web_contents,
-      "Appears to say: red.png Annotation. Appears to be: red.png Label");
+      "Appears to say: red.png Annotation. Appears to be: red.png 'en' Label");
 }
 
 IN_PROC_BROWSER_TEST_F(ImageAnnotationBrowserTest, ImagesInLinks) {
@@ -344,5 +363,26 @@ IN_PROC_BROWSER_TEST_F(ImageAnnotationBrowserTest, ImageWithSrcSet) {
       browser()->tab_strip_model()->GetActiveWebContents();
   content::WaitForAccessibilityTreeToContainNodeWithName(
       web_contents,
-      "Appears to say: red.png Annotation. Appears to be: red.png Label");
+      "Appears to say: red.png Annotation. Appears to be: red.png 'en' Label");
+}
+
+IN_PROC_BROWSER_TEST_F(ImageAnnotationBrowserTest, AnnotationLanguages) {
+  FakeAnnotator::SetReturnOcrResults(true);
+  FakeAnnotator::SetReturnLabelResults(true);
+
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server_.GetURL("/image_annotation.html"));
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  content::WaitForAccessibilityTreeToContainNodeWithName(
+      web_contents,
+      "Appears to say: red.png Annotation. Appears to be: red.png 'en' Label");
+
+  SetAcceptLanguages("fr,en");
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server_.GetURL("/image_annotation.html"));
+  web_contents = browser()->tab_strip_model()->GetActiveWebContents();
+  content::WaitForAccessibilityTreeToContainNodeWithName(
+      web_contents,
+      "Appears to say: red.png Annotation. Appears to be: red.png 'fr' Label");
 }

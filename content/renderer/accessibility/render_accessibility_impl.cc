@@ -17,6 +17,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -72,6 +73,13 @@ void SetAccessibilityCrashKey(ui::AXMode mode) {
   if (ax_mode_crash_key)
     base::debug::SetCrashKeyString(ax_mode_crash_key, mode.ToString());
 }
+
+// Returns the first language in the accept languages list.
+std::string GetPreferredLanguage(const std::string& accept_languages) {
+  const std::vector<std::string> tokens = base::SplitString(
+      accept_languages, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  return tokens.empty() ? "" : tokens[0];
+}
 }
 
 namespace content {
@@ -124,6 +132,7 @@ RenderAccessibilityImpl::RenderAccessibilityImpl(RenderFrameImpl* render_frame,
                                                  ui::AXMode mode)
     : RenderFrameObserver(render_frame),
       render_frame_(render_frame),
+      pref_watcher_binding_(this),
       tree_source_(render_frame, mode),
       serializer_(&tree_source_),
       plugin_tree_source_(nullptr),
@@ -164,6 +173,13 @@ RenderAccessibilityImpl::RenderAccessibilityImpl(RenderFrameImpl* render_frame,
   image_annotation_debugging_ =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           ::switches::kEnableExperimentalAccessibilityLabelsDebugging);
+
+  blink::mojom::RendererPreferenceWatcherPtr pref_watcher_ptr;
+  pref_watcher_binding_.Bind(mojo::MakeRequest(&pref_watcher_ptr));
+
+  if (render_frame->render_view())
+    render_frame_->render_view()->RegisterRendererPreferenceWatcher(
+        std::move(pref_watcher_ptr));
 }
 
 RenderAccessibilityImpl::~RenderAccessibilityImpl() = default;
@@ -249,6 +265,13 @@ bool RenderAccessibilityImpl::OnMessageReceived(const IPC::Message& message) {
   IPC_END_MESSAGE_MAP()
   during_action_ = false;
   return handled;
+}
+
+void RenderAccessibilityImpl::NotifyUpdate(
+    blink::mojom::RendererPreferencesPtr new_prefs) {
+  if (ax_image_annotator_)
+    ax_image_annotator_->set_preferred_language(
+        GetPreferredLanguage(new_prefs->accept_languages));
 }
 
 void RenderAccessibilityImpl::HandleWebAccessibilityEvent(
@@ -930,8 +953,14 @@ void RenderAccessibilityImpl::CreateAXImageAnnotator() {
   image_annotation::mojom::AnnotatorPtr annotator_ptr;
   render_frame()->GetRemoteInterfaces()->GetInterface(
       mojo::MakeRequest(&annotator_ptr));
-  ax_image_annotator_ =
-      std::make_unique<AXImageAnnotator>(this, std::move(annotator_ptr));
+
+  const std::string preferred_language =
+      render_frame()->render_view()
+          ? GetPreferredLanguage(
+                render_frame()->render_view()->GetAcceptLanguages())
+          : std::string();
+  ax_image_annotator_ = std::make_unique<AXImageAnnotator>(
+      this, preferred_language, std::move(annotator_ptr));
   tree_source_.AddImageAnnotator(ax_image_annotator_.get());
 }
 

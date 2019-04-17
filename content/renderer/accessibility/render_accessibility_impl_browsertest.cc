@@ -64,7 +64,9 @@ class TestAXImageAnnotator : public AXImageAnnotator {
  public:
   TestAXImageAnnotator(TestRenderAccessibilityImpl* const render_accessibility,
                        image_annotation::mojom::AnnotatorPtr annotator_ptr)
-      : AXImageAnnotator(render_accessibility, std::move(annotator_ptr)) {}
+      : AXImageAnnotator(render_accessibility,
+                         std::string() /* preferred_language */,
+                         std::move(annotator_ptr)) {}
   ~TestAXImageAnnotator() override = default;
 
  private:
@@ -97,6 +99,7 @@ class MockAnnotationService : public image_annotation::mojom::Annotator {
   }
 
   void AnnotateImage(const std::string& image_id,
+                     const std::string& /* description_language_tag */,
                      image_annotation::mojom::ImageProcessorPtr image_processor,
                      AnnotateImageCallback callback) override {
     image_ids_.push_back(image_id);

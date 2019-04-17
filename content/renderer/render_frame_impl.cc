@@ -4045,7 +4045,7 @@ RenderFrameImpl::CreateWorkerFetchContext() {
   blink::mojom::RendererPreferenceWatcherPtr watcher;
   blink::mojom::RendererPreferenceWatcherRequest watcher_request =
       mojo::MakeRequest(&watcher);
-  render_view()->RegisterRendererPreferenceWatcherForWorker(std::move(watcher));
+  render_view()->RegisterRendererPreferenceWatcher(std::move(watcher));
 
   scoped_refptr<WebWorkerFetchContextImpl> worker_fetch_context =
       WebWorkerFetchContextImpl::Create(
@@ -4078,7 +4078,7 @@ RenderFrameImpl::CreateWorkerFetchContextForPlzDedicatedWorker(
   blink::mojom::RendererPreferenceWatcherPtr watcher;
   blink::mojom::RendererPreferenceWatcherRequest watcher_request =
       mojo::MakeRequest(&watcher);
-  render_view()->RegisterRendererPreferenceWatcherForWorker(std::move(watcher));
+  render_view()->RegisterRendererPreferenceWatcher(std::move(watcher));
 
   scoped_refptr<WebWorkerFetchContextImpl> worker_fetch_context =
       static_cast<DedicatedWorkerHostFactoryClient*>(factory_client)
