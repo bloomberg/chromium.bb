@@ -234,6 +234,7 @@ PasswordPendingView::PasswordPendingView(content::WebContents* web_contents,
     password_dropdown_ =
         CreatePasswordEditableCombobox(password_form, are_passwords_revealed_)
             .release();
+    password_dropdown_->set_listener(this);
 
     password_view_button_ =
         CreatePasswordViewButton(this, are_passwords_revealed_).release();
@@ -290,10 +291,14 @@ void PasswordPendingView::ButtonPressed(views::Button* sender,
 
 void PasswordPendingView::OnContentChanged(
     views::EditableCombobox* editable_combobox) {
-  bool is_update_before = model()->IsCurrentStateUpdate();
+  bool is_update_state_before = model()->IsCurrentStateUpdate();
+  bool is_ok_button_enabled_before =
+      IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK);
   UpdateUsernameAndPasswordInModel();
-  // May be the buttons should be updated.
-  if (is_update_before != model()->IsCurrentStateUpdate()) {
+  // Maybe the buttons should be updated.
+  if (is_update_state_before != model()->IsCurrentStateUpdate() ||
+      is_ok_button_enabled_before !=
+          IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK)) {
     DialogModelChanged();
     GetDialogClientView()->Layout();
   }
@@ -348,6 +353,11 @@ base::string16 PasswordPendingView::GetDialogButtonLabel(
   }
 
   return l10n_util::GetStringUTF16(message);
+}
+
+bool PasswordPendingView::IsDialogButtonEnabled(ui::DialogButton button) const {
+  return button != ui::DIALOG_BUTTON_OK ||
+         !model()->pending_password().password_value.empty();
 }
 
 gfx::ImageSkia PasswordPendingView::GetWindowIcon() {
