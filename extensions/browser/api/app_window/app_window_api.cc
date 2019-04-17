@@ -190,8 +190,7 @@ ExtensionFunction::ResponseAction AppWindowCreateFunction::Run() {
           content::RenderFrameHost* existing_frame =
               existing_window->web_contents()->GetMainFrame();
           int frame_id = MSG_ROUTING_NONE;
-          if (render_frame_host()->GetProcess()->GetID() ==
-              existing_frame->GetProcess()->GetID()) {
+          if (source_process_id() == existing_frame->GetProcess()->GetID()) {
             frame_id = existing_frame->GetRoutingID();
           }
 
@@ -374,8 +373,7 @@ ExtensionFunction::ResponseAction AppWindowCreateFunction::Run() {
     create_params.show_on_lock_screen = true;
   }
 
-  create_params.creator_process_id =
-      render_frame_host()->GetProcess()->GetID();
+  create_params.creator_process_id = source_process_id();
 
   AppWindow* app_window = nullptr;
   if (action_type == api::app_runtime::ACTION_TYPE_NONE) {

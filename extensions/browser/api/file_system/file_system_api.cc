@@ -30,8 +30,6 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
-#include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/api/extensions_api_client.h"
@@ -241,8 +239,8 @@ ExtensionFunction::ResponseAction FileSystemGetDisplayPathFunction::Run() {
   base::FilePath file_path;
   std::string error;
   if (!app_file_handler_util::ValidateFileEntryAndGetPath(
-          filesystem_name, filesystem_path,
-          render_frame_host()->GetProcess()->GetID(), &file_path, &error)) {
+          filesystem_name, filesystem_path, source_process_id(), &file_path,
+          &error)) {
     return RespondNow(Error(error));
   }
 
@@ -294,8 +292,7 @@ void FileSystemEntryFunction::AddEntryToResult(const base::FilePath& path,
                                                const std::string& id_override,
                                                base::DictionaryValue* result) {
   GrantedFileEntry file_entry = app_file_handler_util::CreateFileEntry(
-      browser_context(), extension(),
-      render_frame_host()->GetProcess()->GetID(), path, is_directory_);
+      browser_context(), extension(), source_process_id(), path, is_directory_);
   base::ListValue* entries;
   bool success = result->GetList("entries", &entries);
   DCHECK(success);
@@ -330,8 +327,8 @@ ExtensionFunction::ResponseAction FileSystemGetWritableEntryFunction::Run() {
 
   std::string error;
   if (!app_file_handler_util::ValidateFileEntryAndGetPath(
-          filesystem_name, filesystem_path,
-          render_frame_host()->GetProcess()->GetID(), &path_, &error)) {
+          filesystem_name, filesystem_path, source_process_id(), &path_,
+          &error)) {
     return RespondNow(Error(error));
   }
 
@@ -375,8 +372,8 @@ ExtensionFunction::ResponseAction FileSystemIsWritableEntryFunction::Run() {
 
   content::ChildProcessSecurityPolicy* policy =
       content::ChildProcessSecurityPolicy::GetInstance();
-  int renderer_id = render_frame_host()->GetProcess()->GetID();
-  bool is_writable = policy->CanReadWriteFileSystem(renderer_id, filesystem_id);
+  bool is_writable =
+      policy->CanReadWriteFileSystem(source_process_id(), filesystem_id);
 
   return RespondNow(OneArgument(std::make_unique<base::Value>(is_writable)));
 }
@@ -803,8 +800,8 @@ ExtensionFunction::ResponseAction FileSystemRetainEntryFunction::Run() {
     EXTENSION_FUNCTION_VALIDATE(args_->GetString(2, &filesystem_path));
     std::string error;
     if (!app_file_handler_util::ValidateFileEntryAndGetPath(
-            filesystem_name, filesystem_path,
-            render_frame_host()->GetProcess()->GetID(), &path, &error)) {
+            filesystem_name, filesystem_path, source_process_id(), &path,
+            &error)) {
       return RespondNow(Error(error));
     }
 
