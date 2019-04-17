@@ -975,6 +975,9 @@ void DiskCacheLPMFuzzer::RunCommands(
                uint32_t offset, uint32_t len, int rv) {
               std::move(callback).Run(rv);
 
+              if (rv < 0)
+                return;
+
               int64_t* start_tmp = &start->data;
               CHECK_LE(offset, *start_tmp);
               CHECK_LE(*start_tmp, offset + len);
