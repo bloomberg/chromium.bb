@@ -861,15 +861,10 @@ ConflictResolution::Type ClientTagBasedModelTypeProcessor::ResolveConflict(
     // The remote data isn't actually changing from the last remote data that
     // was seen, so it must have been a re-encryption and can be ignored.
     resolution_type = ConflictResolution::IGNORE_REMOTE_ENCRYPTION;
-  } else if (entity->RequiresCommitData()) {
-    // TODO(crbug.com/951752): This is wrong, but since we don't have the local
-    // data, this is the best we could do. We should fix this be loading the
-    // local data and resolve the conflict accordingly.
-    resolution_type = ConflictResolution::USE_REMOTE;
   } else {
     // There's a real data conflict here; let the bridge resolve it.
     ConflictResolution resolution =
-        bridge_->ResolveConflict(entity->commit_data(), remote_data);
+        bridge_->ResolveConflict(entity->storage_key(), remote_data);
     resolution_type = resolution.type();
     new_data = resolution.ExtractData();
   }

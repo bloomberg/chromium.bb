@@ -281,13 +281,18 @@ std::string PrintersSyncBridge::GetStorageKey(const EntityData& entity_data) {
 
 // Picks the entity with the most recent updated time as the canonical version.
 ConflictResolution PrintersSyncBridge::ResolveConflict(
-    const EntityData& local_data,
+    const std::string& storage_key,
     const EntityData& remote_data) const {
-  DCHECK(local_data.specifics.has_printer());
   DCHECK(remote_data.specifics.has_printer());
 
-  const sync_pb::PrinterSpecifics& local_printer =
-      local_data.specifics.printer();
+  auto iter = all_data_.find(storage_key);
+  // If the local printer doesn't exist, it must have been deleted. In this
+  // case, use the remote one.
+  if (iter == all_data_.end()) {
+    return ConflictResolution::UseRemote();
+  }
+  const sync_pb::PrinterSpecifics& local_printer = *iter->second;
+
   const sync_pb::PrinterSpecifics& remote_printer =
       remote_data.specifics.printer();
 
