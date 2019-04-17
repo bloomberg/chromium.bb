@@ -11,6 +11,8 @@ import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.Nullable;
 import android.support.graphics.drawable.VectorDrawableCompat;
+import android.support.v4.widget.ImageViewCompat;
+import android.support.v7.content.res.AppCompatResources;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
@@ -259,6 +261,10 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
         }
 
         mSpecialTileIcon.setImageDrawable(image);
+        ApiCompatibilityUtils.setImageTintList(mSpecialTileIcon,
+                AppCompatResources.getColorStateList(
+                        mContext, R.color.default_icon_color_secondary_list));
+        ImageViewCompat.setImageTintMode(mSpecialTileIcon, PorterDuff.Mode.SRC_IN);
         mSpecialTileLabel.setText(labelStringId);
 
         // Reset visibility, since #initialize() sets mSpecialTile visibility to GONE.
@@ -347,19 +353,9 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
             bgColorId = R.color.photo_picker_tile_bg_color;
         } else {
             bgColorId = R.color.photo_picker_special_tile_bg_color;
-            int fgColorId;
-            if (!anySelection) {
-                fgColorId = R.color.photo_picker_special_tile_color;
-            } else {
-                fgColorId = R.color.photo_picker_special_tile_disabled_color;
-            }
-
+            mSpecialTileLabel.setEnabled(!anySelection);
+            mSpecialTileIcon.setEnabled(!anySelection);
             setEnabled(!anySelection);
-            mSpecialTileLabel.setTextColor(ApiCompatibilityUtils.getColor(resources, fgColorId));
-            Drawable drawable = mSpecialTileIcon.getDrawable();
-            int color = ApiCompatibilityUtils.getColor(resources, fgColorId);
-            drawable.setColorFilter(color, PorterDuff.Mode.SRC_IN);
-            mSpecialTileIcon.invalidate();
         }
 
         setBackgroundColor(ApiCompatibilityUtils.getColor(resources, bgColorId));
