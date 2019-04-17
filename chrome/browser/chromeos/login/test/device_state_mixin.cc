@@ -32,21 +32,27 @@ void DeviceStateMixin::SetState(State state) {
 
 void DeviceStateMixin::SetDeviceState() {
   DCHECK(!is_setup_);
+  DCHECK(domain_.empty() || state_ == State::OOBE_COMPLETED_CLOUD_ENROLLED);
   is_setup_ = true;
   switch (state_) {
     case State::BEFORE_OOBE:
     case State::OOBE_COMPLETED_UNOWNED:
       install_attributes_.Get()->Clear();
       return;
-    case State::OOBE_COMPLETED_CLOUD_ENROLLED:
-      install_attributes_.Get()->SetCloudManaged(kFakeDomain, kFakeDeviceId);
+    case State::OOBE_COMPLETED_CLOUD_ENROLLED: {
+      const std::string domain = !domain_.empty() ? domain_ : kFakeDomain;
+      install_attributes_.Get()->SetCloudManaged(domain, kFakeDeviceId);
       return;
+    }
     case State::OOBE_COMPLETED_ACTIVE_DIRECTORY_ENROLLED:
       install_attributes_.Get()->SetActiveDirectoryManaged(kFakeDomain,
                                                            kFakeDeviceId);
       return;
     case State::OOBE_COMPLETED_CONSUMER_OWNED:
       install_attributes_.Get()->SetConsumerOwned();
+      return;
+    case State::OOBE_COMPLETED_DEMO_MODE:
+      install_attributes_.Get()->SetDemoMode(kFakeDeviceId);
       return;
   }
 }
