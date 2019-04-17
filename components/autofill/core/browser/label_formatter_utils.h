@@ -103,8 +103,9 @@ base::string16 GetLabelName(const AutofillProfile& profile,
 // |profile|. If |focused_field_type| is a street address field, then returns
 // non-street-address data, e.g. Lowell, MA 01852.
 //
-// If the focused type is not a street address field and if |form_has_street_
-// address| is true, then returns street-address data, e.g. 375 Merrimack St.
+// If the focused type is not a street address field and if
+// |form_has_street_address| is true, then returns street-address data, e.g. 375
+// Merrimack St.
 //
 // If the focused type is not a street address field and if the form does not
 // have a street address, then returns the parts of the address in the form
@@ -162,6 +163,18 @@ base::string16 GetLabelEmail(const AutofillProfile& profile,
 // national format, if possible.
 base::string16 GetLabelPhone(const AutofillProfile& profile,
                              const std::string& app_locale);
+
+// Returns true if all |profiles| have the same email address. Note that the
+// absence of an email address and an actual email address, e.g.
+// joe.bray@aol.com, are considered different email addresses.
+bool HaveSameEmailAddresses(const std::vector<AutofillProfile*>& profiles,
+                            const std::string& app_locale);
+
+// Returns true if all |profiles| have the same phone number after
+// normalization. Note that the absence of a phone number and an actual phone
+// number, e.g. (401) 847-8720, are considered different phone numbers.
+bool HaveSamePhoneNumbers(const std::vector<AutofillProfile*>& profiles,
+                          const std::string& app_locale);
 
 }  // namespace autofill
 
