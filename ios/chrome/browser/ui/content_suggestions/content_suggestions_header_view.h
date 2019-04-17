@@ -30,6 +30,10 @@
 @property(nonatomic, strong) UIView* fakeLocationBar;
 @property(nonatomic, strong) UILabel* searchHintLabel;
 
+// Adds the separator to the searchField. Must be called after the searchField
+// is added as a subview.
+- (void)addSeparatorToSearchField:(UIView*)searchField;
+
 // Adds the |toolbarView| to the view implementing this protocol.
 // Can only be added once.
 - (void)addToolbarView:(UIView*)toolbarView;

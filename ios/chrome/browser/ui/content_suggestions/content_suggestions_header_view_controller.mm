@@ -230,6 +230,8 @@ using base::UserMetricsAction;
     self.logoVendor.view.translatesAutoresizingMaskIntoConstraints = NO;
     self.fakeOmnibox.translatesAutoresizingMaskIntoConstraints = NO;
 
+    [self.headerView addSeparatorToSearchField:self.fakeOmnibox];
+
     // -headerForView is regularly called before self.headerView has been added
     // to the view hierarchy, so there's no simple way to get the correct
     // safeAreaInsets.  Since this situation is universally called for the full

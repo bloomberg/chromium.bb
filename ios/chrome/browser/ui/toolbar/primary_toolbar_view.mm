@@ -18,6 +18,7 @@
 #import "ios/chrome/browser/ui/util/dynamic_type_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
+#include "ui/gfx/ios/uikit_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -150,6 +151,21 @@
   [self setUpLocationBar];
   [self setUpProgressBar];
   [self setUpCollapsedToolbarButton];
+
+  // Add the separator here as there is no need to have a property.
+  UIView* separator = [[UIView alloc] init];
+  separator.backgroundColor = [UIColor colorWithWhite:0
+                                                alpha:kToolbarSeparatorAlpha];
+  separator.translatesAutoresizingMaskIntoConstraints = NO;
+  [self addSubview:separator];
+  [NSLayoutConstraint activateConstraints:@[
+    [separator.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
+    [separator.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
+    [separator.topAnchor constraintEqualToAnchor:self.bottomAnchor],
+    [separator.heightAnchor
+        constraintEqualToConstant:ui::AlignValueToUpperPixel(
+                                      kToolbarSeparatorHeight)],
+  ]];
 
   [self setUpConstraints];
 }

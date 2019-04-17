@@ -55,6 +55,8 @@ CGFloat ToolbarHeight() {
 
 @property(nonatomic, strong, readwrite) UIButton* voiceSearchButton;
 
+@property(nonatomic, strong) UIView* separator;
+
 // Layout constraints for fake omnibox background image and blur.
 @property(nonatomic, strong) NSLayoutConstraint* fakeLocationBarTopConstraint;
 @property(nonatomic, strong)
@@ -219,6 +221,25 @@ CGFloat ToolbarHeight() {
   ]];
 }
 
+- (void)addSeparatorToSearchField:(UIView*)searchField {
+  DCHECK(searchField.superview == self);
+
+  self.separator = [[UIView alloc] init];
+  self.separator.backgroundColor =
+      [UIColor colorWithWhite:0 alpha:kToolbarSeparatorAlpha];
+  self.separator.alpha = 0;
+  self.separator.translatesAutoresizingMaskIntoConstraints = NO;
+  [searchField addSubview:self.separator];
+  [NSLayoutConstraint activateConstraints:@[
+    [self.separator.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
+    [self.separator.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
+    [self.separator.topAnchor constraintEqualToAnchor:searchField.bottomAnchor],
+    [self.separator.heightAnchor
+        constraintEqualToConstant:ui::AlignValueToUpperPixel(
+                                      kToolbarSeparatorHeight)],
+  ]];
+}
+
 - (CGFloat)searchFieldProgressForOffset:(CGFloat)offset
                          safeAreaInsets:(UIEdgeInsets)safeAreaInsets {
   // The scroll offset at which point searchField's frame should stop growing.
@@ -275,6 +296,8 @@ CGFloat ToolbarHeight() {
   } else {
     self.alpha = 1;
   }
+
+  self.separator.alpha = percent;
 
   // Grow the blur to cover the safeArea top.
   self.fakeToolbarTopConstraint.constant = -safeAreaInsets.top * percent;
