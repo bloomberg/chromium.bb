@@ -88,6 +88,8 @@ source_set("lib") {
     "notification_scheduler_context.h",
     "proto_conversion.cc",
     "proto_conversion.h",
+    "scheduled_notification_manager.cc",
+    "scheduled_notification_manager.h",
     "scheduler_config.cc",
     "scheduler_config.h",
     "scheduler_utils.cc",
@@ -113,6 +115,7 @@ source_set("unit_tests") {
     "impression_history_tracker_unittest.cc",
     "impression_store_unittest.cc",
     "proto_conversion_unittest.cc",
+    "scheduled_notification_manager_unittest.cc",
     "scheduler_utils_unittest.cc",
   ]
 
