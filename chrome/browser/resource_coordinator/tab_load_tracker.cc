@@ -223,8 +223,10 @@ void TabLoadTracker::OnPageAlmostIdle(content::WebContents* web_contents) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // TabManager::ResourceCoordinatorSignalObserver filters late notifications
   // so here we can assume the event pertains to a live web_contents and
-  // its most recent navigation.
-  DCHECK(base::ContainsKey(tabs_, web_contents));
+  // its most recent navigation. However, the graph tracks contents that aren't
+  // tracked by this object.
+  if (!base::ContainsKey(tabs_, web_contents))
+    return;
 
   MaybeTransitionToLoaded(web_contents);
 }
