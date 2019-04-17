@@ -161,7 +161,7 @@ std::unique_ptr<ShortcutInfo> ShortcutHelper::CreateShortcutInfo(
   shortcut_info->minimum_splash_image_size_in_px =
       GetMinimumSplashImageSizeInPx();
   shortcut_info->splash_image_url =
-      blink::ManifestIconSelector::FindBestMatchingIcon(
+      blink::ManifestIconSelector::FindBestMatchingSquareIcon(
           manifest.icons, shortcut_info->ideal_splash_image_size_in_px,
           shortcut_info->minimum_splash_image_size_in_px,
           blink::Manifest::ImageResource::Purpose::ANY);

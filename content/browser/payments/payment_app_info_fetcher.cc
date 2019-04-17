@@ -256,7 +256,7 @@ void PaymentAppInfoFetcher::SelfDeleteFetcher::FetchPaymentAppManifestCallback(
     return;
   }
 
-  icon_url_ = blink::ManifestIconSelector::FindBestMatchingLandscapeIcon(
+  icon_url_ = blink::ManifestIconSelector::FindBestMatchingIcon(
       manifest.icons, kPaymentAppIdealIconSize, kPaymentAppMinimumIconSize,
       ManifestIconDownloader::kMaxWidthToHeightRatio,
       blink::Manifest::ImageResource::Purpose::ANY);

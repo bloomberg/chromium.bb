@@ -13,18 +13,18 @@
 namespace blink {
 
 // static
-BLINK_COMMON_EXPORT GURL ManifestIconSelector::FindBestMatchingIcon(
+BLINK_COMMON_EXPORT GURL ManifestIconSelector::FindBestMatchingSquareIcon(
     const std::vector<blink::Manifest::ImageResource>& icons,
     int ideal_icon_size_in_px,
     int minimum_icon_size_in_px,
     blink::Manifest::ImageResource::Purpose purpose) {
-  return FindBestMatchingLandscapeIcon(
-      icons, ideal_icon_size_in_px, minimum_icon_size_in_px,
-      1 /*max_width_to_height_ratio */, purpose);
+  return FindBestMatchingIcon(icons, ideal_icon_size_in_px,
+                              minimum_icon_size_in_px,
+                              1 /*max_width_to_height_ratio */, purpose);
 }
 
 // static
-BLINK_COMMON_EXPORT GURL ManifestIconSelector::FindBestMatchingLandscapeIcon(
+BLINK_COMMON_EXPORT GURL ManifestIconSelector::FindBestMatchingIcon(
     const std::vector<blink::Manifest::ImageResource>& icons,
     int ideal_icon_height_in_px,
     int minimum_icon_height_in_px,

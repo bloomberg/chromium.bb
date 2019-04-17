@@ -128,7 +128,7 @@ KURL BackgroundFetchIconLoader::PickBestIconForDisplay(
     icons.emplace_back(candidate_icon);
   }
 
-  return KURL(ManifestIconSelector::FindBestMatchingIcon(
+  return KURL(ManifestIconSelector::FindBestMatchingSquareIcon(
       std::move(icons), icon_display_size_pixels_.height, kMinimumIconSizeInPx,
       Manifest::ImageResource::Purpose::ANY));
 }

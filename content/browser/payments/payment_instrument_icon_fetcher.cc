@@ -75,7 +75,7 @@ void DownloadBestMatchingIcon(
         callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  GURL icon_url = blink::ManifestIconSelector::FindBestMatchingLandscapeIcon(
+  GURL icon_url = blink::ManifestIconSelector::FindBestMatchingIcon(
       icons, kPaymentAppIdealIconSize, kPaymentAppMinimumIconSize,
       ManifestIconDownloader::kMaxWidthToHeightRatio,
       blink::Manifest::ImageResource::Purpose::ANY);
