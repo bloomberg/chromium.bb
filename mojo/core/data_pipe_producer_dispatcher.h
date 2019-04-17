@@ -55,7 +55,7 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipeProducerDispatcher final
                       uint32_t* num_ports,
                       uint32_t* num_handles) override;
   bool EndSerialize(void* destination,
-                    ports::UserMessageEvent::PortAttachment* ports,
+                    ports::PortName* ports,
                     PlatformHandle* handles) override;
   bool BeginTransit() override;
   void CompleteTransitAndClose() override;
@@ -64,7 +64,7 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipeProducerDispatcher final
   static scoped_refptr<DataPipeProducerDispatcher> Deserialize(
       const void* data,
       size_t num_bytes,
-      const ports::UserMessageEvent::PortAttachment* ports,
+      const ports::PortName* ports,
       size_t num_ports,
       PlatformHandle* handles,
       size_t num_handles);

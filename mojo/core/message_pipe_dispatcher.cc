@@ -273,15 +273,14 @@ void MessagePipeDispatcher::StartSerialize(uint32_t* num_bytes,
   *num_handles = 0;
 }
 
-bool MessagePipeDispatcher::EndSerialize(
-    void* destination,
-    ports::UserMessageEvent::PortAttachment* ports,
-    PlatformHandle* handles) {
+bool MessagePipeDispatcher::EndSerialize(void* destination,
+                                         ports::PortName* ports,
+                                         PlatformHandle* handles) {
   SerializedState* state = static_cast<SerializedState*>(destination);
   state->pipe_id = pipe_id_;
   state->endpoint = static_cast<int8_t>(endpoint_);
   memset(state->padding, 0, sizeof(state->padding));
-  ports[0].name = port_.name();
+  ports[0] = port_.name();
   return true;
 }
 
@@ -314,7 +313,7 @@ void MessagePipeDispatcher::CancelTransit() {
 scoped_refptr<Dispatcher> MessagePipeDispatcher::Deserialize(
     const void* data,
     size_t num_bytes,
-    const ports::UserMessageEvent::PortAttachment* ports,
+    const ports::PortName* ports,
     size_t num_ports,
     PlatformHandle* handles,
     size_t num_handles) {
@@ -325,10 +324,8 @@ scoped_refptr<Dispatcher> MessagePipeDispatcher::Deserialize(
 
   ports::Node* node = Core::Get()->GetNodeController()->node();
   ports::PortRef port;
-  if (node->GetPort(ports[0].name, &port) != ports::OK ||
-      ports[0].slot_id != ports::kDefaultSlotId) {
+  if (node->GetPort(ports[0], &port) != ports::OK)
     return nullptr;
-  }
 
   ports::PortStatus status;
   if (node->GetStatus(port, &status) != ports::OK)
