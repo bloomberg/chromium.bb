@@ -346,6 +346,7 @@ source_set("eg_tests") {
     "//components/prefs",
     "//components/search_engines",
     "//components/strings",
+    "//components/ukm/ios:features",
     "//ios/chrome/app:app_internal",
     "//ios/chrome/app/strings",
     "//ios/chrome/app/theme",
