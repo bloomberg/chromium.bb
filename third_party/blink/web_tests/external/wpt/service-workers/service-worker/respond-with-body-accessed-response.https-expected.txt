@@ -1,0 +1,23 @@
+This is a testharness.js-based test.
+PASS initialize global state
+PASS test: type=basic
+FAIL test: type=opaque promise_test: Unhandled rejection with value: "Failed to load url:TestRequest?type=opaque"
+PASS test: type=default
+PASS test: type=basic&clone=1
+FAIL test: type=opaque&clone=1 promise_test: Unhandled rejection with value: "Failed to load url:TestRequest?type=opaque&clone=1"
+PASS test: type=default&clone=1
+PASS test: type=basic&clone=2
+FAIL test: type=opaque&clone=2 promise_test: Unhandled rejection with value: "Failed to load url:TestRequest?type=opaque&clone=2"
+PASS test: type=default&clone=2
+PASS test: type=basic&passThroughCache=true
+FAIL test: type=opaque&passThroughCache=true promise_test: Unhandled rejection with value: "Failed to load url:TestRequest?type=opaque&passThroughCache=true"
+PASS test: type=default&passThroughCache=true
+PASS test: type=basic&clone=1&passThroughCache=true
+FAIL test: type=opaque&clone=1&passThroughCache=true promise_test: Unhandled rejection with value: "Failed to load url:TestRequest?type=opaque&clone=1&passThroughCache=true"
+PASS test: type=default&clone=1&passThroughCache=true
+PASS test: type=basic&clone=2&passThroughCache=true
+FAIL test: type=opaque&clone=2&passThroughCache=true promise_test: Unhandled rejection with value: "Failed to load url:TestRequest?type=opaque&clone=2&passThroughCache=true"
+PASS test: type=default&clone=2&passThroughCache=true
+PASS restore global state
+Harness: the test ran to completion.
+

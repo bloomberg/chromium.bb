@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL Origin header and 308 redirect promise_test: Unhandled rejection with value: object "ReferenceError: window is not defined"
+Harness: the test ran to completion.
+
