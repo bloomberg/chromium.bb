@@ -87,7 +87,7 @@ base::string16 AccessibilityLabelsBubbleModel::GetLinkText() const {
 }
 
 GURL AccessibilityLabelsBubbleModel::GetHelpPageURL() const {
-  return GURL(chrome::kPrivacyLearnMoreURL);
+  return GURL(chrome::kAccessibilityLabelsLearnMoreURL);
 }
 
 void AccessibilityLabelsBubbleModel::OpenHelpPage() {

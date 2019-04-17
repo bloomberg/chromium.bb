@@ -6,6 +6,9 @@
 
 namespace chrome {
 
+const char kAccessibilityLabelsLearnMoreURL[] =
+    "https://support.google.com/chrome/?p=image_descriptions";
+
 const char kAutomaticSettingsResetLearnMoreURL[] =
     "https://support.google.com/chrome/?p=ui_automatic_settings_reset";
 
