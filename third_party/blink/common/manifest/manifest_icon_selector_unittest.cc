@@ -55,10 +55,10 @@ class ManifestIconSelectorTest : public testing::TestWithParam<bool> {
       int minimum_icon_size_in_px,
       blink::Manifest::ImageResource::Purpose purpose) {
     if (selects_square_only_) {
-      return ManifestIconSelector::FindBestMatchingIcon(
+      return ManifestIconSelector::FindBestMatchingSquareIcon(
           icons, ideal_icon_size_in_px, minimum_icon_size_in_px, purpose);
     }
-    return ManifestIconSelector::FindBestMatchingLandscapeIcon(
+    return ManifestIconSelector::FindBestMatchingIcon(
         icons, ideal_icon_size_in_px, minimum_icon_size_in_px,
         kMaxWidthToHeightRatio, purpose);
   }

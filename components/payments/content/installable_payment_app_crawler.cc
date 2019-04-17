@@ -376,11 +376,10 @@ void InstallablePaymentAppCrawler::DownloadAndDecodeWebAppIcon(
   // different platforms.
   const int kPaymentAppIdealIconSize = 32;
   const int kPaymentAppMinimumIconSize = 0;
-  GURL best_icon_url =
-      blink::ManifestIconSelector::FindBestMatchingLandscapeIcon(
-          manifest_icons, kPaymentAppIdealIconSize, kPaymentAppMinimumIconSize,
-          content::ManifestIconDownloader::kMaxWidthToHeightRatio,
-          blink::Manifest::ImageResource::Purpose::ANY);
+  GURL best_icon_url = blink::ManifestIconSelector::FindBestMatchingIcon(
+      manifest_icons, kPaymentAppIdealIconSize, kPaymentAppMinimumIconSize,
+      content::ManifestIconDownloader::kMaxWidthToHeightRatio,
+      blink::Manifest::ImageResource::Purpose::ANY);
   if (!best_icon_url.is_valid()) {
     log_.Error("No suitable icon found in web app manifest \"" +
                web_app_manifest_url.spec() +

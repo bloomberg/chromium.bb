@@ -664,7 +664,7 @@ void InstallableManager::CheckAndFetchBestIcon(int ideal_icon_size_in_px,
   IconProperty& icon = icons_[purpose];
   icon.fetched = true;
 
-  GURL icon_url = blink::ManifestIconSelector::FindBestMatchingIcon(
+  GURL icon_url = blink::ManifestIconSelector::FindBestMatchingSquareIcon(
       manifest().icons, ideal_icon_size_in_px, minimum_icon_size_in_px,
       purpose);
 

@@ -25,7 +25,7 @@ class BLINK_COMMON_EXPORT ManifestIconSelector {
   // |purpose|.
   //
   // Returns the icon url if a suitable icon is found. An empty URL otherwise.
-  static GURL FindBestMatchingIcon(
+  static GURL FindBestMatchingSquareIcon(
       const std::vector<blink::Manifest::ImageResource>& icons,
       int ideal_icon_size_in_px,
       int minimum_icon_size_in_px,
@@ -33,7 +33,7 @@ class BLINK_COMMON_EXPORT ManifestIconSelector {
 
   // Identical to FindBestMatchingSquareIcon, but finds landscape icons as well
   // as square icons.
-  static GURL FindBestMatchingLandscapeIcon(
+  static GURL FindBestMatchingIcon(
       const std::vector<blink::Manifest::ImageResource>& icons,
       int ideal_icon_height_in_px,
       int minimum_icon_height_in_px,
