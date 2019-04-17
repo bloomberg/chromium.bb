@@ -71,7 +71,6 @@ class CONTENT_EXPORT RTCVideoDecoder
   // Called on WebRTC DecodingThread.
   int32_t Decode(const webrtc::EncodedImage& inputImage,
                  bool missingFrames,
-                 const webrtc::CodecSpecificInfo* codecSpecificInfo,
                  int64_t renderTimeMs) override;
   // Called on WebRTC DecodingThread.
   int32_t RegisterDecodeCompleteCallback(
