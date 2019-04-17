@@ -44,6 +44,8 @@ public class ChromeImageViewPreference extends Preference {
     // The string resource ID to use for the ImageView widget content description.
     @StringRes
     private int mContentDescriptionRes;
+    // Whether the ImageView should be enabled.
+    private boolean mImageViewEnabled = true;
 
     /**
      * Constructor for use in Java.
@@ -82,7 +84,8 @@ public class ChromeImageViewPreference extends Preference {
             button.setImageDrawable(buttonImg);
             button.setBackgroundColor(Color.TRANSPARENT);
             button.setVisibility(View.VISIBLE);
-            button.setOnClickListener(mListener);
+            button.setEnabled(mImageViewEnabled);
+            if (mImageViewEnabled) button.setOnClickListener(mListener);
 
             if (mContentDescriptionRes != 0) {
                 button.setContentDescription(view.getResources().getString(mContentDescriptionRes));
@@ -108,6 +111,13 @@ public class ChromeImageViewPreference extends Preference {
         mContentDescriptionRes = contentDescriptionRes;
         mListener = listener;
         notifyChanged();
+    }
+
+    /**
+     * Enables/Disables the ImageView, allowing for clicks to pass through (when disabled).
+     */
+    public void setImageViewEnabled(boolean enabled) {
+        mImageViewEnabled = enabled;
     }
 
     /**

@@ -31,6 +31,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ContentSettingsType;
 import org.chromium.chrome.browser.browserservices.Origin;
+import org.chromium.chrome.browser.browserservices.permissiondelegation.TrustedWebActivityPermissionManager;
 import org.chromium.chrome.browser.notifications.channels.SiteChannelsManager;
 import org.chromium.chrome.browser.preferences.ChromeImageViewPreference;
 import org.chromium.chrome.browser.preferences.ManagedPreferenceDelegate;
@@ -361,7 +362,70 @@ public class SingleWebsitePreferences extends PreferenceFragment
         }
     }
 
+    private Intent getNotificationSettingsIntent(String packageName) {
+        Intent intent = new Intent();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            intent.setAction(Settings.ACTION_APP_NOTIFICATION_SETTINGS);
+            intent.putExtra(Settings.EXTRA_APP_PACKAGE, packageName);
+        } else {
+            intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+            intent.setData(Uri.parse("package:" + packageName));
+        }
+        return intent;
+    }
+
+    /**
+     * Replaces a Preference with a read-only copy. The new Preference retains
+     * its key and the order within the preference screen, but gets a new
+     * summary and (intentionally) loses its click handler.
+     * @return A read-only copy of the preference passed in as |oldPreference|.
+     */
+    private ChromeImageViewPreference replaceWithReadOnlyCopyOf(
+            Preference oldPreference, String newSummary) {
+        ChromeImageViewPreference newPreference =
+                new ChromeImageViewPreference(oldPreference.getContext());
+        newPreference.setKey(oldPreference.getKey());
+        setUpPreferenceCommon(newPreference);
+        newPreference.setSummary(newSummary);
+
+        // This preference is read-only so should not attempt to persist to shared prefs.
+        newPreference.setPersistent(false);
+
+        newPreference.setOrder(oldPreference.getOrder());
+        getPreferenceScreen().removePreference(oldPreference);
+        getPreferenceScreen().addPreference(newPreference);
+        return newPreference;
+    }
+
+    private void setupNotificationManagedByPreference(
+            ChromeImageViewPreference preference, Intent settingsIntent) {
+        preference.setImageView(
+                R.drawable.permission_popups, R.string.website_notification_settings, null);
+        // By disabling the ImageView, clicks will go through to the preference.
+        preference.setImageViewEnabled(false);
+
+        preference.setOnPreferenceClickListener(unused -> {
+            startActivity(settingsIntent);
+            return true;
+        });
+    }
+
     private void setUpNotificationsPreference(Preference preference) {
+        TrustedWebActivityPermissionManager manager = TrustedWebActivityPermissionManager.get();
+        Origin origin = new Origin(mSite.getAddress().getOrigin());
+        String managedBy = manager.getDelegateAppName(origin);
+        if (managedBy != null) {
+            final Intent notificationSettingsIntent =
+                    getNotificationSettingsIntent(manager.getDelegatePackageName(origin));
+            String summaryText = String.format(
+                    getResources().getString(R.string.website_notification_managed_by_app),
+                    managedBy);
+            ChromeImageViewPreference newPreference =
+                    replaceWithReadOnlyCopyOf(preference, summaryText);
+            setupNotificationManagedByPreference(newPreference, notificationSettingsIntent);
+            return;
+        }
+
         final @ContentSettingValues @Nullable Integer value =
                 mSite.getPermission(PermissionInfo.Type.NOTIFICATION);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -374,46 +438,37 @@ public class SingleWebsitePreferences extends PreferenceFragment
                 getPreferenceScreen().removePreference(preference);
                 return;
             }
-            // On Android O this preference is read-only, so we replace the existing pref with a
-            // regular Preference that takes users to OS settings on click.
-            Preference newPreference = new Preference(preference.getContext());
-            newPreference.setKey(preference.getKey());
-            setUpPreferenceCommon(newPreference);
 
+            String overrideSummary;
             if (isPermissionControlledByDSE(
                         ContentSettingsType.CONTENT_SETTINGS_TYPE_NOTIFICATIONS)) {
-                newPreference.setSummary(getResources().getString(
+                overrideSummary = getResources().getString(
                         value != null && value == ContentSettingValues.ALLOW
                                 ? R.string.website_settings_permissions_allow_dse
-                                : R.string.website_settings_permissions_block_dse));
+                                : R.string.website_settings_permissions_block_dse);
             } else {
-                newPreference.setSummary(
-                        getResources().getString(ContentSettingsResources.getSiteSummary(value)));
+                overrideSummary =
+                        getResources().getString(ContentSettingsResources.getSiteSummary(value));
             }
 
+            // On Android O this preference is read-only, so we replace the existing pref with a
+            // regular Preference that takes users to OS settings on click.
+            ChromeImageViewPreference newPreference =
+                    replaceWithReadOnlyCopyOf(preference, overrideSummary);
             newPreference.setDefaultValue(value);
 
-            // This preference is read-only so should not attempt to persist to shared prefs.
-            newPreference.setPersistent(false);
-
-            newPreference.setOnPreferenceClickListener(new OnPreferenceClickListener() {
-                @Override
-                public boolean onPreferenceClick(Preference preference) {
-                    // There is no guarantee that a channel has been initialized yet for sites
-                    // that were granted permission before the channel-initialization-on-grant
-                    // code was in place. However, getChannelIdForOrigin will fall back to the
-                    // generic Sites channel if no specific channel has been created for the given
-                    // origin, so it is safe to open the channel settings for whatever channel ID
-                    // it returns.
-                    String channelId = SiteChannelsManager.getInstance().getChannelIdForOrigin(
-                            mSite.getAddress().getOrigin());
-                    launchOsChannelSettings(preference.getContext(), channelId);
-                    return true;
-                }
+            newPreference.setOnPreferenceClickListener(unused -> {
+                // There is no guarantee that a channel has been initialized yet for sites
+                // that were granted permission before the channel-initialization-on-grant
+                // code was in place. However, getChannelIdForOrigin will fall back to the
+                // generic Sites channel if no specific channel has been created for the given
+                // origin, so it is safe to open the channel settings for whatever channel ID
+                // it returns.
+                String channelId = SiteChannelsManager.getInstance().getChannelIdForOrigin(
+                        mSite.getAddress().getOrigin());
+                launchOsChannelSettings(preference.getContext(), channelId);
+                return true;
             });
-            newPreference.setOrder(preference.getOrder());
-            getPreferenceScreen().removePreference(preference);
-            getPreferenceScreen().addPreference(newPreference);
         } else {
             setUpListPreference(preference, value);
             if (isPermissionControlledByDSE(ContentSettingsType.CONTENT_SETTINGS_TYPE_NOTIFICATIONS)
