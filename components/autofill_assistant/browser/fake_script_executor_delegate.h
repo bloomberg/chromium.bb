@@ -44,7 +44,6 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
   void SetChips(std::unique_ptr<std::vector<Chip>> chips) override;
   void SetPaymentRequestOptions(
       std::unique_ptr<PaymentRequestOptions> options) override;
-  void CancelPaymentRequest() override;
   bool HasNavigationError() override;
   bool IsNavigatingToNewDocument() override;
   void AddListener(Listener* listener) override;

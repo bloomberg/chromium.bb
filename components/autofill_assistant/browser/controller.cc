@@ -277,13 +277,12 @@ void Controller::ReportNavigationStateChanged() {
   }
 }
 
-void Controller::StopAndShutdown(Metrics::DropOutReason reason) {
+void Controller::EnterStoppedState() {
   ClearInfoBox();
   SetDetails(nullptr);
   SetChips(nullptr);
   SetPaymentRequestOptions(nullptr);
   EnterState(AutofillAssistantState::STOPPED);
-  client_->Shutdown(reason);
 }
 
 void Controller::EnterState(AutofillAssistantState state) {
@@ -462,20 +461,10 @@ void Controller::OnScriptExecuted(const std::string& script_path,
       client_->Shutdown(Metrics::SCRIPT_SHUTDOWN);
       return;
 
-    case ScriptExecutor::TERMINATE:
-      // TODO(crbug.com/806868): Distinguish shutdown from terminate: Users
-      // should be allowed to undo shutdown, but not terminate.
-      //
-      // There should have been a previous call to Terminate() that set the
-      // reason, thus SAFETY_NET_TERMINATE should never be logged, unless
-      // there's a bug.
-      DCHECK_NE(terminate_reason_, Metrics::SAFETY_NET_TERMINATE);
-      client_->Shutdown(terminate_reason_);
-      return;
-
     case ScriptExecutor::SHUTDOWN_GRACEFULLY:
       GetWebController()->ClearCookie();
-      StopAndShutdown(Metrics::SCRIPT_SHUTDOWN);
+      EnterStoppedState();
+      client_->Shutdown(Metrics::SCRIPT_SHUTDOWN);
       return;
 
     case ScriptExecutor::CLOSE_CUSTOM_TAB:
@@ -610,18 +599,13 @@ AutofillAssistantState Controller::GetState() {
   return state_;
 }
 
-bool Controller::Terminate(Metrics::DropOutReason reason) {
+void Controller::WillShutdown(Metrics::DropOutReason reason) {
   StopPeriodicScriptChecks();
   if (!will_shutdown_) {
     UiController* ui_controller = GetUiController();
     will_shutdown_ = true;
     ui_controller->WillShutdown(reason);
   }
-  if (script_tracker_ && !script_tracker_->Terminate()) {
-    terminate_reason_ = reason;
-    return false;
-  }
-  return true;
 }
 
 void Controller::OnScriptSelected(const std::string& script_path) {
@@ -761,7 +745,8 @@ void Controller::OnFatalError(const std::string& error_message,
 
   StopPeriodicScriptChecks();
   SetStatusMessage(error_message);
-  StopAndShutdown(reason);
+  EnterStoppedState();
+  client_->Shutdown(reason);
 }
 
 void Controller::OnNoRunnableScripts() {
@@ -943,24 +928,6 @@ void Controller::SetPaymentRequestOptions(
   payment_request_options_ = std::move(options);
   UpdatePaymentRequestActions();
   GetUiController()->OnPaymentRequestChanged(payment_request_options_.get());
-}
-
-void Controller::CancelPaymentRequest() {
-  payment_request_info_.reset();
-
-  if (!payment_request_options_)
-    return;
-
-  auto callback = std::move(payment_request_options_->callback);
-  SetPaymentRequestOptions(nullptr);
-
-  if (!callback) {
-    NOTREACHED();
-    return;
-  }
-  auto result = std::make_unique<PaymentInformation>();
-  result->succeed = false;
-  std::move(callback).Run(std::move(result));
 }
 
 ElementArea* Controller::touchable_element_area() {

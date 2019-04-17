@@ -75,12 +75,6 @@ class ScriptExecutor : public ActionDelegate,
 
     // Reset all state and restart.
     RESTART,
-
-    // Autofill Assistant is shutting down.
-    //
-    // Returned after ScriptExecutor::Terminate has been called while running a
-    // script.
-    TERMINATE,
   };
 
   // Contains the result of the Run operation.
@@ -97,10 +91,6 @@ class ScriptExecutor : public ActionDelegate,
 
   using RunScriptCallback = base::OnceCallback<void(const Result&)>;
   void Run(RunScriptCallback callback);
-
-  // Terminates the running scripts. The script finishes running the current
-  // action, then returns a result with at_end set to TERMINATE.
-  void Terminate();
 
   // Override ScriptExecutorDelegate::Listener
   void OnNavigationStateChanged() override;
@@ -124,8 +114,7 @@ class ScriptExecutor : public ActionDelegate,
   void GetPaymentInformation(
       std::unique_ptr<PaymentRequestOptions> options) override;
   void GetFullCard(GetFullCardCallback callback) override;
-  void Prompt(std::unique_ptr<std::vector<Chip>> chips,
-              base::OnceCallback<void()> on_terminate) override;
+  void Prompt(std::unique_ptr<std::vector<Chip>> chips) override;
   void CancelPrompt() override;
   void FillAddressForm(
       const autofill::AutofillProfile* profile,

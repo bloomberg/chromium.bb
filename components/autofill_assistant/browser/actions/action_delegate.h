@@ -97,12 +97,7 @@ class ActionDelegate {
   // scripts, even though we're in the middle of a script. This includes
   // allowing access to the touchable elements set previously, in the same
   // script.
-  //
-  // |on_terminate| is called if the prompt is terminated, by Autofill Assistant
-  // shutting down. The action should return immediately with client error
-  // USER_ABORTED_ACTION.
-  virtual void Prompt(std::unique_ptr<std::vector<Chip>> chips,
-                      base::OnceCallback<void()> on_terminate) = 0;
+  virtual void Prompt(std::unique_ptr<std::vector<Chip>> chips) = 0;
 
   // Remove all chips from the UI.
   virtual void CancelPrompt() = 0;

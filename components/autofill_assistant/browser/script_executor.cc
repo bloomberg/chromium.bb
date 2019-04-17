@@ -61,9 +61,6 @@ std::ostream& operator<<(std::ostream& out,
     case ScriptExecutor::RESTART:
       out << "RESTART";
       break;
-    case ScriptExecutor::TERMINATE:
-      out << "TERMINATE";
-      break;
       // Intentionally no default case to make compilation fail if a new value
       // was added to the enum but not to this list.
   }
@@ -215,8 +212,7 @@ void ScriptExecutor::OnGetFullCard(GetFullCardCallback callback,
   std::move(callback).Run(std::move(card), cvc);
 }
 
-void ScriptExecutor::Prompt(std::unique_ptr<std::vector<Chip>> chips,
-                            base::OnceCallback<void()> on_terminate) {
+void ScriptExecutor::Prompt(std::unique_ptr<std::vector<Chip>> chips) {
   if (touchable_element_area_) {
     // SetChips reproduces the end-of-script appearance and behavior during
     // script execution. This includes allowing access to touchable elements,
@@ -242,7 +238,6 @@ void ScriptExecutor::Prompt(std::unique_ptr<std::vector<Chip>> chips,
 
   delegate_->EnterState(AutofillAssistantState::PROMPT);
   delegate_->SetChips(std::move(chips));
-  on_terminate_prompt_ = std::move(on_terminate);
 }
 
 void ScriptExecutor::CancelPrompt() {
@@ -368,23 +363,6 @@ void ScriptExecutor::Shutdown() {
     at_end_ = SHUTDOWN_GRACEFULLY;
   } else {
     at_end_ = SHUTDOWN;
-  }
-}
-
-void ScriptExecutor::Terminate() {
-  if (wait_for_dom_)
-    wait_for_dom_->Terminate();
-  at_end_ = TERMINATE;
-  should_stop_script_ = true;
-
-  // Force PR and other prompt-based actions to end.
-  //
-  // TODO(b/128300038): get rid of this special case. Instead, delete actions
-  // without waiting for them to return.
-  delegate_->CancelPaymentRequest();
-  if (on_terminate_prompt_) {
-    std::move(on_terminate_prompt_).Run();
-    CancelPrompt();
   }
 }
 
@@ -551,14 +529,6 @@ void ScriptExecutor::OnProcessedAction(
   processed_actions_.emplace_back(*processed_action_proto);
 
   auto& processed_action = processed_actions_.back();
-  if (at_end_ == TERMINATE) {
-    // Let the backend know that the script has been terminated. The original
-    // action status doesn't matter.
-    processed_action.mutable_status_details()->set_original_status(
-        processed_action.status());
-    processed_action.set_status(
-        ProcessedActionStatusProto::USER_ABORTED_ACTION);
-  }
   *processed_action.mutable_navigation_info() = navigation_info_;
   if (processed_action.status() != ProcessedActionStatusProto::ACTION_APPLIED) {
     if (delegate_->HasNavigationError()) {
@@ -637,11 +607,6 @@ void ScriptExecutor::WaitForDomOperation::Run() {
     return;  // start paused
 
   Start();
-}
-
-void ScriptExecutor::WaitForDomOperation::Terminate() {
-  if (interrupt_executor_)
-    interrupt_executor_->Terminate();
 }
 
 void ScriptExecutor::WaitForDomOperation::Start() {

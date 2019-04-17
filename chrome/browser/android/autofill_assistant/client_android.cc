@@ -258,11 +258,10 @@ void ClientAndroid::Shutdown(Metrics::DropOutReason reason) {
   if (!controller_)
     return;
 
-  if (!controller_->Terminate(reason)) {
-    // Controller is responsible for calling Shutdown(reason) again once it's
-    // done.
-    return;
-  }
+  // Lets the controller and the ui controller know shutdown is about to happen.
+  // TODO(b/128300038): Replace Controller::WillShutdown with a Detach call on
+  // ui_controller_android_.
+  controller_->WillShutdown(reason);
 
   Metrics::RecordDropOut(reason);
 

@@ -127,9 +127,7 @@ void PromptAction::UpdateChips() {
                                             weak_ptr_factory_.GetWeakPtr(), i);
   }
   SetDefaultChipType(chips.get());
-  delegate_->Prompt(std::move(chips),
-                    base::BindOnce(&PromptAction::OnTerminated,
-                                   weak_ptr_factory_.GetWeakPtr()));
+  delegate_->Prompt(std::move(chips));
   precondition_changed_ = false;
 }
 
@@ -197,14 +195,4 @@ void PromptAction::OnSuggestionChosen(int choice_index) {
       proto_.prompt().choices(choice_index);
   std::move(callback_).Run(std::move(processed_action_proto_));
 }
-
-void PromptAction::OnTerminated() {
-  if (!callback_) {
-    NOTREACHED();
-    return;
-  }
-  UpdateProcessedAction(USER_ABORTED_ACTION);
-  std::move(callback_).Run(std::move(processed_action_proto_));
-}
-
 }  // namespace autofill_assistant

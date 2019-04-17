@@ -85,8 +85,6 @@ void FakeScriptExecutorDelegate::SetPaymentRequestOptions(
   payment_request_options_ = std::move(options);
 }
 
-void FakeScriptExecutorDelegate::CancelPaymentRequest() {}
-
 bool FakeScriptExecutorDelegate::HasNavigationError() {
   return navigation_error_;
 }

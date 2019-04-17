@@ -44,11 +44,9 @@ class PromptActionTest : public testing::Test {
                                      base::OnceCallback<void()> all_done) {
           checker->Run(&mock_web_controller_, std::move(all_done));
         }));
-    ON_CALL(mock_action_delegate_, Prompt(_, _))
-        .WillByDefault(Invoke([this](std::unique_ptr<std::vector<Chip>> chips,
-                                     base::OnceCallback<void()> on_terminate) {
+    ON_CALL(mock_action_delegate_, Prompt(_))
+        .WillByDefault(Invoke([this](std::unique_ptr<std::vector<Chip>> chips) {
           chips_ = std::move(chips);
-          on_terminate_ = std::move(on_terminate);
         }));
     prompt_proto_ = proto_.mutable_prompt();
   }
@@ -64,7 +62,6 @@ class PromptActionTest : public testing::Test {
   ActionProto proto_;
   PromptProto* prompt_proto_;
   std::unique_ptr<std::vector<Chip>> chips_;
-  base::OnceCallback<void()> on_terminate_;
 };
 
 TEST_F(PromptActionTest, ChoicesMissing) {
@@ -215,13 +212,14 @@ TEST_F(PromptActionTest, Terminate) {
   ok_proto->set_name("Ok");
   ok_proto->set_chip_type(HIGHLIGHTED_ACTION);
   ok_proto->set_server_payload("ok");
+  {
+    PromptAction action(proto_);
+    action.ProcessAction(&mock_action_delegate_, callback_.Get());
+  }
 
-  PromptAction action(proto_);
-  action.ProcessAction(&mock_action_delegate_, callback_.Get());
-
-  EXPECT_CALL(callback_, Run(Pointee(Property(&ProcessedActionProto::status,
-                                              USER_ABORTED_ACTION))));
-  std::move(on_terminate_).Run();
+  // Chips pointing to a deleted action do nothing.
+  ASSERT_THAT(chips_, Pointee(SizeIs(1)));
+  std::move((*chips_)[0].callback).Run();
 }
 
 }  // namespace
