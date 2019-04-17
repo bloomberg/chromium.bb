@@ -238,6 +238,13 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
   // Called when this surface's activation no longer has to block on the parent.
   void ResetBlockActivationOnParent();
 
+  // Notifies that this surface is no longer the primary surface of the
+  // embedder. All future CompositorFrames will activate as soon as they arrive
+  // and if a pending frame currently exists it will immediately activate as
+  // well. This allows the client to not wait for acks from the fallback
+  // surfaces and be able to submit to the primary surface.
+  void SetIsFallbackAndMaybeActivate();
+
  private:
   struct FrameData {
     FrameData(CompositorFrame&& frame,
@@ -256,19 +263,10 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
     PresentedCallback presented_callback;
   };
 
-  // Rejects CompositorFrames submitted to surfaces referenced from this
-  // CompositorFrame as fallbacks. This saves some CPU cycles to allow
-  // children to catch up to the parent.
-  void RejectCompositorFramesToFallbackSurfaces();
-
   // Updates surface references of the surface using the referenced
   // surfaces from the most recent CompositorFrame.
   // Modifies surface references stored in SurfaceManager.
   void UpdateSurfaceReferences();
-
-  // Called to prevent additional CompositorFrames from being accepted into this
-  // surface. Once a Surface is closed, it cannot accept CompositorFrames again.
-  void Close();
 
   // Updates the set of allocation groups referenced by the active frame. Calls
   // RegisterEmbedder and UnregisterEmbedder on the allocation groups as
@@ -314,7 +312,6 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
 
   base::Optional<FrameData> pending_frame_data_;
   base::Optional<FrameData> active_frame_data_;
-  bool closed_ = false;
   bool seen_first_frame_activation_ = false;
   bool seen_first_surface_embedding_ = false;
   bool seen_first_surface_dependency_ = false;
@@ -343,6 +340,8 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
   // resolved, the corresponding SurfaceAllocationGroup will call back into this
   // surface to let us know.
   base::flat_set<SurfaceAllocationGroup*> blocking_allocation_groups_;
+
+  bool is_fallback_ = false;
 
   bool is_latency_info_taken_ = false;
 

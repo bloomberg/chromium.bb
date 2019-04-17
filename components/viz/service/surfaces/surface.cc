@@ -41,6 +41,8 @@ Surface::Surface(const SurfaceInfo& surface_info,
                            "Surface", this, "surface_info",
                            surface_info.ToString());
   allocation_group_->RegisterSurface(this);
+  is_fallback_ =
+      allocation_group_->GetLastReference().IsNewerThan(surface_id());
 }
 
 Surface::~Surface() {
@@ -87,31 +89,6 @@ void Surface::RefResources(const std::vector<TransferableResource>& resources) {
 void Surface::UnrefResources(const std::vector<ReturnedResource>& resources) {
   if (surface_client_)
     surface_client_->UnrefResources(resources);
-}
-
-void Surface::RejectCompositorFramesToFallbackSurfaces() {
-  for (const SurfaceRange& surface_range :
-       GetPendingFrame().metadata.referenced_surfaces) {
-    // Only close the fallback surface if it exists, has a different
-    // LocalSurfaceId than the primary surface but has the same FrameSinkId
-    // as the primary surface.
-    if (!surface_range.start() ||
-        surface_range.start() == surface_range.end() ||
-        surface_range.start()->frame_sink_id() !=
-            surface_range.end().frame_sink_id()) {
-      continue;
-    }
-    Surface* fallback_surface =
-        surface_manager_->GetLatestInFlightSurface(surface_range);
-
-    // A misbehaving client may report a non-existent surface ID as a
-    // |referenced_surface|. In that case, |surface| would be nullptr, and
-    // there is nothing to do here.
-    if (fallback_surface &&
-        fallback_surface->surface_id() != surface_range.end()) {
-      fallback_surface->Close();
-    }
-  }
 }
 
 void Surface::UpdateSurfaceReferences() {
@@ -202,8 +179,10 @@ void Surface::OnSurfaceDependencyAdded() {
   ActivatePendingFrame(base::nullopt);
 }
 
-void Surface::Close() {
-  closed_ = true;
+void Surface::SetIsFallbackAndMaybeActivate() {
+  is_fallback_ = true;
+  if (HasPendingFrame())
+    ActivatePendingFrameForDeadline(base::nullopt);
 }
 
 bool Surface::QueueFrame(
@@ -217,9 +196,6 @@ bool Surface::QueueFrame(
                          TRACE_EVENT_SCOPE_THREAD);
     return false;
   }
-
-  if (closed_)
-    return true;
 
   is_latency_info_taken_ = false;
 
@@ -255,7 +231,6 @@ bool Surface::QueueFrame(
   } else {
     pending_frame_data_ =
         FrameData(std::move(frame), frame_index, std::move(presented_callback));
-    RejectCompositorFramesToFallbackSurfaces();
 
     // If the deadline is in the past, then the CompositorFrame will activate
     // immediately.
@@ -481,14 +456,18 @@ void Surface::ActivateFrame(FrameData frame_data,
 
 FrameDeadline Surface::ResolveFrameDeadline(
     const CompositorFrame& current_frame) {
+  // Fallback surfaces should activate immediately so that the client receives
+  // the ack and can submit a frame to the primary surface.
+  if (is_fallback_)
+    return FrameDeadline::MakeZero();
+
   // If there is an embedder of this surface that has already activated, that
   // means the embedder doesn't wish to block on this surface, i.e. either it
   // had a zero deadline or its deadline has already passed. If we don't have an
   // active frame already, active this frame immediately so we have something to
   // show.
   if (!HasActiveFrame() &&
-      allocation_group_->GetLastActiveReference().IsSameOrNewerThan(
-          surface_id())) {
+      allocation_group_->GetLastActiveReference() == surface_id()) {
     return FrameDeadline::MakeZero();
   }
 
