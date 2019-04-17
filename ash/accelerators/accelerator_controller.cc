@@ -66,6 +66,7 @@
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
 #include "base/bind.h"
+#include "base/json/json_reader.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/optional.h"
@@ -110,6 +111,10 @@ using message_center::SystemNotificationWarningLevel;
 // Toast id and duration for voice interaction shortcuts
 const char kVoiceInteractionErrorToastId[] = "voice_interaction_error";
 const int kToastDurationMs = 2500;
+
+// Path of the json file that contains side volume button location info.
+const char kSideVolumeButtonLocationFilePath[] =
+    "/usr/share/chromeos-assets/side_volume_button/location.json";
 
 // Ensures that there are no word breaks at the "+"s in the shortcut texts such
 // as "Ctrl+Shift+Space".
@@ -1020,13 +1025,26 @@ void HandleTouchHudModeChange() {
 
 }  // namespace
 
+constexpr const char* AcceleratorController::kVolumeButtonRegion;
+constexpr const char* AcceleratorController::kVolumeButtonSide;
+constexpr const char* AcceleratorController::kVolumeButtonRegionKeyboard;
+constexpr const char* AcceleratorController::kVolumeButtonRegionScreen;
+constexpr const char* AcceleratorController::kVolumeButtonSideLeft;
+constexpr const char* AcceleratorController::kVolumeButtonSideRight;
+constexpr const char* AcceleratorController::kVolumeButtonSideTop;
+constexpr const char* AcceleratorController::kVolumeButtonSideBottom;
+
 ////////////////////////////////////////////////////////////////////////////////
 // AcceleratorController, public:
 
 AcceleratorController::AcceleratorController()
     : accelerator_manager_(std::make_unique<ui::AcceleratorManager>()),
-      accelerator_history_(std::make_unique<ui::AcceleratorHistory>()) {
+      accelerator_history_(std::make_unique<ui::AcceleratorHistory>()),
+      side_volume_button_location_file_path_(
+          base::FilePath(kSideVolumeButtonLocationFilePath)) {
   Init();
+
+  ParseSideVolumeButtonLocationInfo();
 }
 
 AcceleratorController::~AcceleratorController() = default;
@@ -1408,11 +1426,12 @@ void AcceleratorController::PerformAction(AcceleratorAction action,
   if (restriction != RESTRICTION_NONE)
     return;
 
-  // TODO(minch): For VOLUME_DOWN and VOLUME_UP. Do the calculation based on
-  // accelerator.source_device_id() and
-  // ui::InputDeviceManager::GetInstance()->GetOtherInputDevices() to see
-  // whether we need to flip its action on current screen orientation for side
-  // volume button. http://crbug.com/937907.
+  // TODO(minch): For VOLUME_DOWN and VOLUME_UP. Check whether the action is
+  // from side volume button based on accelerator.source_device_id() and
+  // ui::InputDeviceManager::GetInstance()->GetUncategorizedDevices(). Do the
+  // calculation whether we need to flip its action on
+  // SideVolumeButtonLocation and current screen orientation.
+  // http://crbug.com/937907.
 
   // If your accelerator invokes more than one line of code, please either
   // implement it in your module's controller code or pull it into a HandleFoo()
@@ -1834,9 +1853,24 @@ void AcceleratorController::MaybeShowConfirmationDialog(
   confirmation_dialog_ = dialog->GetWeakPtr();
 }
 
-AcceleratorConfirmationDialog*
-AcceleratorController::confirmation_dialog_for_testing() {
-  return confirmation_dialog_.get();
+void AcceleratorController::ParseSideVolumeButtonLocationInfo() {
+  if (!base::PathExists(side_volume_button_location_file_path_))
+    return;
+
+  std::string location_info;
+  if (!base::ReadFileToString(side_volume_button_location_file_path_,
+                              &location_info) ||
+      location_info.empty()) {
+    return;
+  }
+
+  std::unique_ptr<base::DictionaryValue> info_in_dict =
+      base::DictionaryValue::From(
+          base::JSONReader::ReadDeprecated(location_info));
+  info_in_dict->GetString(kVolumeButtonRegion,
+                          &side_volume_button_location_.region);
+  info_in_dict->GetString(kVolumeButtonSide,
+                          &side_volume_button_location_.side);
 }
 
 }  // namespace ash
