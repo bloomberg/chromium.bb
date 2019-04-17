@@ -21,9 +21,8 @@ ScriptPromise Clipboard::readText(ScriptState* script_state) {
   return ClipboardPromise::CreateForReadText(script_state);
 }
 
-ScriptPromise Clipboard::write(
-    ScriptState* script_state,
-    HeapVector<std::pair<String, Member<Blob>>> data) {
+ScriptPromise Clipboard::write(ScriptState* script_state,
+                               const HeapVector<Member<ClipboardItem>>& data) {
   return ClipboardPromise::CreateForWrite(script_state, std::move(data));
 }
 

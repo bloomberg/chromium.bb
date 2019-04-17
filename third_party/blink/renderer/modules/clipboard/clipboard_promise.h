@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/fileapi/blob.h"
+#include "third_party/blink/renderer/modules/clipboard/clipboard_item.h"
 #include "third_party/blink/renderer/modules/clipboard/clipboard_writer.h"
 
 namespace blink {
@@ -25,15 +26,14 @@ class ClipboardPromise final
   USING_GARBAGE_COLLECTED_MIXIN(ClipboardPromise);
 
  public:
-  explicit ClipboardPromise(ScriptState*);
+  ClipboardPromise(ScriptState*);
   virtual ~ClipboardPromise();
 
   // Creates promise to execute Clipboard API functions off the main thread.
   static ScriptPromise CreateForRead(ScriptState*);
   static ScriptPromise CreateForReadText(ScriptState*);
-  static ScriptPromise CreateForWrite(
-      ScriptState*,
-      HeapVector<std::pair<String, Member<Blob>>>);
+  static ScriptPromise CreateForWrite(ScriptState*,
+                                      const HeapVector<Member<ClipboardItem>>&);
   static ScriptPromise CreateForWriteText(ScriptState*, const String&);
 
   // For rejections originating from ClipboardWriter.
@@ -58,7 +58,7 @@ class ClipboardPromise final
   // Checks Read/Write permission (interacting with PermissionService).
   void HandleRead();
   void HandleReadText();
-  void HandleWrite(HeapVector<std::pair<String, Member<Blob>>>*);
+  void HandleWrite(HeapVector<Member<ClipboardItem>>*);
   void HandleWriteText(const String&);
 
   // Reads/Writes after permission check.
@@ -80,7 +80,7 @@ class ClipboardPromise final
 
   // Only for use in writeText().
   String plain_text_;
-  HeapVector<std::pair<String, Member<Blob>>> clipboard_item_;
+  HeapVector<std::pair<String, Member<Blob>>> clipboard_item_data_;
   // Index of clipboard representation currently being processed.
   wtf_size_t clipboard_representation_index_;
 
