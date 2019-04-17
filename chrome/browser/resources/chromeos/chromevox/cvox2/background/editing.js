@@ -266,14 +266,17 @@ function AutomationRichEditableText(node) {
 
   var root = this.node_.root;
   if (!root || !root.selectionStartObject || !root.selectionEndObject ||
-      root.selectionStartOffset === undefined ||
-      root.selectionEndOffset === undefined)
+      !root.focusObject || root.selectionStartOffset === undefined ||
+      root.selectionEndOffset === undefined || root.focusOffset === undefined)
     return;
 
-  this.anchorLine_ = new editing.EditableLine(
+  this.startLine_ = new editing.EditableLine(
       root.selectionStartObject, root.selectionStartOffset,
       root.selectionStartObject, root.selectionStartOffset);
-  this.focusLine_ = new editing.EditableLine(
+
+  // TODO(nektar): |focus| below should be |end|. Change once new selection code
+  // lands.
+  this.endLine_ = new editing.EditableLine(
       root.focusObject, root.focusOffset, root.focusObject, root.focusOffset);
 
   this.line_ = new editing.EditableLine(
@@ -361,27 +364,30 @@ AutomationRichEditableText.prototype = {
   onUpdate: function(eventFrom) {
     var root = this.node_.root;
     if (!root.selectionStartObject || !root.selectionEndObject ||
-        root.selectionStartOffset === undefined ||
-        root.selectionEndOffset === undefined)
+        !root.focusObject || root.selectionStartOffset === undefined ||
+        root.selectionEndOffset === undefined || root.focusOffset === undefined)
       return;
 
-    var anchorLine = new editing.EditableLine(
+    var startLine = new editing.EditableLine(
         root.selectionStartObject, root.selectionStartOffset,
         root.selectionStartObject, root.selectionStartOffset);
-    var focusLine = new editing.EditableLine(
+
+    // TODO(nektar): |focus| below should be |end|. Change once new selection
+    // code lands.
+    var endLine = new editing.EditableLine(
         root.focusObject, root.focusOffset, root.focusObject, root.focusOffset);
 
-    var prevAnchorLine = this.anchorLine_;
-    var prevFocusLine = this.focusLine_;
-    this.anchorLine_ = anchorLine;
-    this.focusLine_ = focusLine;
+    var prevStartLine = this.startLine_;
+    var prevEndLine = this.endLine_;
+    this.startLine_ = startLine;
+    this.endLine_ = endLine;
 
     // Compute the current line based upon whether the current selection was
     // extended from anchor or focus. The default behavior is to compute lines
     // via focus.
-    var baseLineOnStart = prevFocusLine.isSameLineAndSelection(focusLine);
+    var baseLineOnStart = prevEndLine.isSameLineAndSelection(endLine);
     var isSameSelection =
-        baseLineOnStart && prevAnchorLine.isSameLineAndSelection(anchorLine);
+        baseLineOnStart && prevStartLine.isSameLineAndSelection(startLine);
 
     var cur;
     if (isSameSelection && this.line_) {
@@ -411,8 +417,8 @@ AutomationRichEditableText.prototype = {
 
     // We must validate the previous lines as state changes in the accessibility
     // tree may have invalidated the lines.
-    if (anchorLine.isSameLine(prevAnchorLine) &&
-        focusLine.isSameLine(prevFocusLine)) {
+    if (startLine.isSameLine(prevStartLine) &&
+        endLine.isSameLine(prevEndLine)) {
       // Intra-line changes.
       var text = cur.text;
       if (text == '\n')
@@ -462,14 +468,14 @@ AutomationRichEditableText.prototype = {
     // unordered (i.e. anchor is where the selection starts and focus
     // where it ends). The latter is correct. Change this once Blink
     // ax gets fixed.
-    var curBase = baseLineOnStart ? focusLine : anchorLine;
+    var curBase = baseLineOnStart ? endLine : startLine;
 
     if ((cur.startContainer_.role == RoleType.TEXT_FIELD ||
          (cur.startContainer_ == prev.startContainer_ &&
           cur.endContainer_ == prev.endContainer_)) &&
         cur.startContainerValue_ != prev.startContainerValue_) {
       // This block catches text changes between |prev| and | cur|. Note that we
-      // can end up here if |prevAnchorLine| or |prevFocusLine| were invalid
+      // can end up here if |prevStartLine| or |prevEndLine| were invalid
       // above for intra-line changes. This block therefore catches all text
       // changes including those that occur within a single line and up to those
       // that occur within a static text. It also catches text changes that
@@ -497,12 +503,12 @@ AutomationRichEditableText.prototype = {
           .go();
     } else if (
         !cur.hasCollapsedSelection() &&
-        (curBase.isSameLine(prevAnchorLine) ||
-         curBase.isSameLine(prevFocusLine))) {
+        (curBase.isSameLine(prevStartLine) ||
+         curBase.isSameLine(prevEndLine))) {
       // This is a selection that gets extended from the same anchor.
 
       // Speech requires many more states than braille.
-      var curExtent = baseLineOnStart ? anchorLine : focusLine;
+      var curExtent = baseLineOnStart ? startLine : endLine;
       var text = '';
       var suffixMsg = '';
       if (curBase.isBeforeLine(curExtent)) {
