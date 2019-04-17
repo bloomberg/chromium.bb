@@ -75,7 +75,7 @@ void ConsistencyCookieManagerAndroid::UpdateCookie() {
       kCookieName, cookie_value,
       "." + GaiaUrls::GetInstance()->gaia_url().host(), /*path=*/"/",
       /*creation=*/now, /*expiration=*/expiry, /*last_access=*/now,
-      /*secure=*/true, /*httponly=*/false, net::CookieSameSite::DEFAULT_MODE,
+      /*secure=*/true, /*httponly=*/false, net::CookieSameSite::NO_RESTRICTION,
       net::COOKIE_PRIORITY_DEFAULT);
   cookie_manager->SetCanonicalCookie(
       cookie, "https", net::CookieOptions(),

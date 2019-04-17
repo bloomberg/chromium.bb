@@ -46,16 +46,14 @@ class SiteDataCountingHelperTest : public testing::Test {
     base::RunLoop run_loop;
     int tasks = urls.size();
 
-    int i = 0;
     for (const std::string& url_string : urls) {
       GURL url(url_string);
-      // Cookies need a unique creation time.
-      base::Time time = creation_time + base::TimeDelta::FromMilliseconds(i++);
       std::unique_ptr<net::CanonicalCookie> cookie =
           net::CanonicalCookie::CreateSanitizedCookie(
-              url, "name", "A=1", url.host(), url.path(), time, base::Time(),
-              time, url.SchemeIsCryptographic(), false,
-              net::CookieSameSite::DEFAULT_MODE, net::COOKIE_PRIORITY_DEFAULT);
+              url, "name", "A=1", url.host(), url.path(), creation_time,
+              base::Time(), creation_time, url.SchemeIsCryptographic(), false,
+              net::CookieSameSite::NO_RESTRICTION,
+              net::COOKIE_PRIORITY_DEFAULT);
       net::CookieOptions options;
       options.set_include_httponly();
       cookie_manager->SetCanonicalCookie(

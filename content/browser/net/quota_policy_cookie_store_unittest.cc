@@ -91,7 +91,7 @@ class QuotaPolicyCookieStoreTest : public testing::Test {
                  const base::Time& creation) {
     store_->AddCookie(net::CanonicalCookie(name, value, domain, path, creation,
                                            creation, base::Time(), false, false,
-                                           net::CookieSameSite::DEFAULT_MODE,
+                                           net::CookieSameSite::NO_RESTRICTION,
                                            net::COOKIE_PRIORITY_DEFAULT));
   }
 

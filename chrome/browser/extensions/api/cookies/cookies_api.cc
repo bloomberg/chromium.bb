@@ -323,11 +323,11 @@ ExtensionFunction::ResponseAction CookiesSetFunction::Run() {
         base::Time::FromDoubleT(*parsed_args_->details.expiration_date);
   }
 
-  net::CookieSameSite same_site = net::CookieSameSite::DEFAULT_MODE;
+  net::CookieSameSite same_site = net::CookieSameSite::NO_RESTRICTION;
   switch (parsed_args_->details.same_site) {
     case api::cookies::SAME_SITE_STATUS_NONE:
     case api::cookies::SAME_SITE_STATUS_NO_RESTRICTION:
-      same_site = net::CookieSameSite::DEFAULT_MODE;
+      same_site = net::CookieSameSite::NO_RESTRICTION;
       break;
     case api::cookies::SAME_SITE_STATUS_LAX:
       same_site = net::CookieSameSite::LAX_MODE;

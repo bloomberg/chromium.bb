@@ -79,7 +79,7 @@ class SQLitePersistentCookieStorePerfTest : public testing::Test {
     std::string domain_name(base::StringPrintf(".domain_%d.com", domain_num));
     return CanonicalCookie(base::StringPrintf("Cookie_%d", cookie_num), "1",
                            domain_name, "/", t, t, t, false, false,
-                           CookieSameSite::DEFAULT_MODE,
+                           CookieSameSite::NO_RESTRICTION,
                            COOKIE_PRIORITY_DEFAULT);
   }
 

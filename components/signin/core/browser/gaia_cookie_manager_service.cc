@@ -644,7 +644,7 @@ void GaiaCookieManagerService::ForceOnCookieChangeProcessing() {
       std::make_unique<net::CanonicalCookie>(
           kGaiaCookieName, std::string(), "." + google_url.host(), "/",
           base::Time(), base::Time(), base::Time(), false, false,
-          net::CookieSameSite::DEFAULT_MODE, net::COOKIE_PRIORITY_DEFAULT));
+          net::CookieSameSite::NO_RESTRICTION, net::COOKIE_PRIORITY_DEFAULT));
   OnCookieChange(*cookie, network::mojom::CookieChangeCause::UNKNOWN_DELETION);
 }
 

@@ -236,7 +236,7 @@ std::unique_ptr<CookieMonster> CreateMonsterFromStoreForGC(
     std::unique_ptr<CanonicalCookie> cc(std::make_unique<CanonicalCookie>(
         "a", "1", base::StringPrintf("h%05d.izzle", i), "/path", creation_time,
         expiration_time, base::Time(), secure, false,
-        CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT));
+        CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT));
     cc->SetLastAccessDate(last_access_time);
     store->AddCookie(*cc);
   }
