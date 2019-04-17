@@ -38,6 +38,8 @@
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
 #include "base/command_line.h"
+#include "base/files/scoped_temp_dir.h"
+#include "base/json/json_writer.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
@@ -265,6 +267,22 @@ class AcceleratorControllerTest : public AshTestBase {
   void SetKeyboardBrightnessControlDelegate(
       std::unique_ptr<KeyboardBrightnessControlDelegate> delegate) {
     Shell::Get()->keyboard_brightness_control_delegate_ = std::move(delegate);
+  }
+
+  bool WriteJsonFile(const base::FilePath& file_path,
+                     const std::string& json_string) const {
+    if (!base::DirectoryExists(file_path.DirName()))
+      base::CreateDirectory(file_path.DirName());
+
+    int data_size = static_cast<int>(json_string.size());
+    int bytes_written =
+        base::WriteFile(file_path, json_string.data(), data_size);
+    if (bytes_written != data_size) {
+      LOG(ERROR) << " Wrote " << bytes_written << " byte(s) instead of "
+                 << data_size << " to " << file_path.value();
+      return false;
+    }
+    return true;
   }
 
  private:
@@ -1036,6 +1054,38 @@ TEST_F(AcceleratorControllerTest, PreferredReservedAccelerators) {
       GetController()->IsReserved(ui::Accelerator(ui::VKEY_A, ui::EF_NONE)));
   EXPECT_FALSE(
       GetController()->IsPreferred(ui::Accelerator(ui::VKEY_A, ui::EF_NONE)));
+}
+
+TEST_F(AcceleratorControllerTest, SideVolumeButtonLocation) {
+  // |side_volume_button_location_| should be empty when location info file
+  // doesn't exist.
+  EXPECT_TRUE(GetController()
+                  ->side_volume_button_location_for_testing()
+                  .region.empty());
+  EXPECT_TRUE(
+      GetController()->side_volume_button_location_for_testing().side.empty());
+
+  // Tests that |side_volume_button_location_| is read correctly if the location
+  // file exists.
+  base::DictionaryValue location;
+  location.SetString(AcceleratorController::kVolumeButtonRegion,
+                     AcceleratorController::kVolumeButtonRegionScreen);
+  location.SetString(AcceleratorController::kVolumeButtonSide,
+                     AcceleratorController::kVolumeButtonSideLeft);
+  std::string json_location;
+  base::JSONWriter::Write(location, &json_location);
+  base::ScopedTempDir file_tmp_dir;
+  ASSERT_TRUE(file_tmp_dir.CreateUniqueTempDir());
+  base::FilePath file_path = file_tmp_dir.GetPath().Append("location.json");
+  ASSERT_TRUE(WriteJsonFile(file_path, json_location));
+  EXPECT_TRUE(base::PathExists(file_path));
+  GetController()->set_side_volume_button_file_path_for_testing(file_path);
+  GetController()->ParseSideVolumeButtonLocationInfo();
+  EXPECT_EQ(AcceleratorController::kVolumeButtonRegionScreen,
+            GetController()->side_volume_button_location_for_testing().region);
+  EXPECT_EQ(AcceleratorController::kVolumeButtonSideLeft,
+            GetController()->side_volume_button_location_for_testing().side);
+  base::DeleteFile(file_path, false);
 }
 
 namespace {
