@@ -189,6 +189,17 @@ ScriptPromise DisplayLockContext::acquire(ScriptState* script_state,
   // If we're already connected then we need to ensure that we update our layout
   // size based on the options and we have cleared the painted output.
   if (ConnectedToView()) {
+    if (!ElementSupportsDisplayLocking()) {
+      // The element has up-to-date style and doesn't satisfy the containment
+      // requirement, so we unlock and reject now.
+      // If the style needs recalc we would instead check containment after
+      // style recalc for this element.
+      DCHECK(!element_->NeedsStyleRecalc());
+      state_ = kUnlocked;
+      return GetRejectedPromise(script_state,
+                                rejection_names::kContainmentNotSatisfied);
+    }
+
     acquire_resolver_ =
         MakeGarbageCollected<ScriptPromiseResolver>(script_state);
     if (auto* layout_object = element_->GetLayoutObject()) {
@@ -337,7 +348,25 @@ bool DisplayLockContext::ShouldStyle(LifecycleTarget target) const {
 }
 
 void DisplayLockContext::DidStyle(LifecycleTarget target) {
+  if (state_ == kUnlocked)
+    return;
+
   if (target == kSelf) {
+    // We must have "contain: style layout" for display locking.
+    // Note that we should always have this containment after every style
+    // update. Otherwise, proceeding with layout may cause unexpected behavior.
+    // By rejecting the promise, the behavior can be detected by script.
+    // TODO(rakina): If this is after acquire's promise is resolved and update()
+    // commit() isn't in progress, the web author won't know that the element
+    // got unlocked. Figure out how to notify the author.
+    if (!ElementSupportsDisplayLocking()) {
+      FinishUpdateResolver(kReject, rejection_names::kContainmentNotSatisfied);
+      FinishCommitResolver(kReject, rejection_names::kContainmentNotSatisfied);
+      FinishAcquireResolver(kReject, rejection_names::kContainmentNotSatisfied);
+      state_ = kUnlocked;
+      return;
+    }
+
     if (blocked_style_traversal_type_ == kStyleUpdateSelf)
       blocked_style_traversal_type_ = kStyleUpdateNotRequired;
     return;
@@ -349,19 +378,6 @@ void DisplayLockContext::DidStyle(LifecycleTarget target) {
   blocked_style_traversal_type_ = kStyleUpdateNotRequired;
 
   MarkElementsForWhitespaceReattachment();
-  // We must have "contain: style layout" for display locking.
-  // Note that we should also have this containment even if we're forcing
-  // this update to happen. Otherwise, proceeding with layout may cause
-  // unexpected behavior. By rejecting the promise, the behavior can be detected
-  // by script.
-  if (!ElementSupportsDisplayLocking()) {
-    bool should_stay_locked = state_ == kUpdating && !commit_resolver_;
-    FinishUpdateResolver(kReject, rejection_names::kContainmentNotSatisfied);
-    FinishCommitResolver(kReject, rejection_names::kContainmentNotSatisfied);
-    FinishAcquireResolver(kReject, rejection_names::kContainmentNotSatisfied);
-    state_ = should_stay_locked ? kLocked : kUnlocked;
-    return;
-  }
 
   if (state_ == kUpdating)
     update_budget_->DidPerformPhase(DisplayLockBudget::Phase::kStyle);

@@ -1,7 +1,5 @@
-<!doctype HTML>
-
 <!--
-Runs an acquire on an element with no containment, which fails.
+Runs an acquire on an element with no containment after recalc, which fails.
 -->
 
 <style>
@@ -13,7 +11,7 @@ Runs an acquire on an element with no containment, which fails.
 </style>
 
 <div id="log"></div>
-<div id="container"></div>
+<div id="container" style="contain: style layout;"></div>
 
 <script>
 // TODO(vmpstr): In WPT this needs to be replaced with reftest-wait.
@@ -29,6 +27,7 @@ function finishTest(status_string) {
 
 function runTest() {
   let container = document.getElementById("container");
+  container.style = "";
   container.displayLock.acquire({ timeout: Infinity }).then(
     () => { finishTest("FAIL"); },
     (e) => { finishTest("PASS " + e.message); });

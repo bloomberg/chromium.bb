@@ -98,6 +98,11 @@ TEST_F(DisplayLockBudgetTest, StrictYieldingBudget) {
   // can do minimal work to ensure we have a context, ignoring containment and
   // other requirements.
   SetBodyInnerHTML(R"HTML(
+    <style>
+      div {
+        contain: style layout;
+      }
+    </style>
     <div id="container"></div>
   )HTML");
 
@@ -273,6 +278,11 @@ TEST_F(DisplayLockBudgetTest, YieldingBudget) {
   // can do minimal work to ensure we have a context, ignoring containment and
   // other requirements.
   SetBodyInnerHTML(R"HTML(
+    <style>
+      div {
+        contain: style layout;
+      }
+    </style>
     <div id="container"></div>
   )HTML");
 
