@@ -38,22 +38,18 @@ _NEGATIVE_FILTER = [
     'FormHandlingTest.testShouldNotBeAbleToSubmitAFormThatDoesNotExist',
     'PositionAndSizeTest.testShouldGetCoordinatesInViewPortOfAnElementInAFrame',
     'PositionAndSizeTest.testShouldGetCoordinatesInViewPortOfAnElementInANestedFrame',
-    'BasicKeyboardInterfaceTest.testSelectionSelectBySymbol',
-    'BasicKeyboardInterfaceTest.testSelectionSelectByWord',
-    'BasicMouseInterfaceTest.testMovingMouseToRelativeElementOffset',
-    'BasicMouseInterfaceTest.testMovingMouseToRelativeZeroElementOffset',
-    'BasicMouseInterfaceTest.testCanMoveOverAndOutOfAnElement',
-    'BasicMouseInterfaceTest.testMoveMouseByOffsetOverAndOutOfAnElement',
-    'CombinedInputActionsTest.testClickAfterMoveToAnElementWithAnOffsetShouldUseLastMousePosition',
-    'CombinedInputActionsTest.testChordControlCutAndPaste',
     'DragAndDropTest.testDragAndDropElementWithOffsetInScrolledDiv',
     'DragAndDropTest.canDragAnElementNotVisibleInTheCurrentViewportDueToAParentOverflow',
     'LocationContextTest.testShouldSetAndGetLatitude',
     'LocationContextTest.testShouldSetAndGetLongitude',
+
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1960
+    'CombinedInputActionsTest.testChordControlCutAndPaste',
 ]
 
 _READY_TO_RUN_FILTER = [
     # marked as not yet implemented with chrome but already works
+    'ProxySettingTest.canUsePACThatOnlyProxiesCertainHosts',
 ]
 
 _OS_NEGATIVE_FILTER = {}
@@ -198,7 +194,6 @@ _OS_NEGATIVE_FILTER['android:chrome'] = [
     'CorrectEventFiringTest.testShouldFireTwoClickEventsWhenClickingOnALabel',
     'CorrectEventFiringTest.testShouldIssueClickEvents',
     'CorrectEventFiringTest.testShouldFireMouseMoveEventWhenClicking',
-    'CombinedInputActionsTest.testChordControlCutAndPaste',
     'BasicKeyboardInterfaceTest.testSendingKeysWithShiftPressed',
     'BasicKeyboardInterfaceTest.testBasicKeyboardInputOnActiveElement',
     'BasicKeyboardInterfaceTest.testSendingKeyUp',
@@ -224,6 +219,9 @@ _OS_NEGATIVE_FILTER['android:chrome'] = [
 
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2697
     'CorrectEventFiringTest.testShouldEmitClickEventWhenClickingOnATextInputElement',
+
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2860
+    'UploadTest.testUploadingWithInvisibleFileInput',
 ]
 
 _OS_NEGATIVE_FILTER['android:chrome_stable'] = (
