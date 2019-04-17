@@ -82,7 +82,7 @@ public class DOMUtils {
      * @param id The element's id to check.
      * @return whether the media has ended.
      */
-    private static boolean isMediaEnded(final WebContents webContents, final String id)
+    public static boolean isMediaEnded(final WebContents webContents, final String id)
             throws InterruptedException, TimeoutException {
         return getNodeField("ended", webContents, id, Boolean.class);
     }

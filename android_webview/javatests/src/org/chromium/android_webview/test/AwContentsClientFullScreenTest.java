@@ -4,8 +4,6 @@
 
 package org.chromium.android_webview.test;
 
-import static org.junit.Assert.assertNotEquals;
-
 import static org.chromium.android_webview.test.AwActivityTestRule.WAIT_TIMEOUT_MS;
 
 import android.support.test.InstrumentationRegistry;
@@ -402,10 +400,20 @@ public class AwContentsClientFullScreenTest {
         });
     }
 
-    private void assertKeepScreenOnActive(final View view, final boolean expected)
+    private void assertKeepScreenOnActive(final View view, final boolean expectKeepScreenOn)
             throws Exception {
-        Assert.assertEquals(expected, getKeepScreenOnOnInstrumentationThread(view));
-        assertNotEquals(expected, DOMUtils.isMediaPaused(getWebContentsOnUiThread(), VIDEO_ID));
+        Assert.assertEquals(expectKeepScreenOn, getKeepScreenOnOnInstrumentationThread(view));
+
+        // Note: we're currently checking this after the above assertion to ensure that the timing
+        // of failure is as close to the assertEquals check below.
+        boolean ended = DOMUtils.isMediaEnded(getWebContentsOnUiThread(), VIDEO_ID);
+        // If this fails, consider increasing the media length.
+        Assert.assertFalse("Media playback should not end too early to test this.", ended);
+
+        boolean expectPaused = !expectKeepScreenOn;
+        boolean paused = DOMUtils.isMediaPaused(getWebContentsOnUiThread(), VIDEO_ID);
+        Assert.assertEquals(
+                "The playback should be paused/not paused as expected.", expectPaused, paused);
     }
 
     private boolean getKeepScreenOnOnInstrumentationThread(final View view) {
