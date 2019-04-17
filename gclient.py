@@ -1675,9 +1675,23 @@ it or fix the checkout.
             (modified_files and not self._options.force)):
           # There are modified files in this entry. Keep warning until
           # removed.
-          print(('\nWARNING: \'%s\' is no longer part of this client.  '
-                 'It is recommended that you manually remove it.\n') %
-                    entry_fixed)
+          self.add_dependency(
+              GitDependency(
+                  parent=self,
+                  name=entry,
+                  url=prev_url,
+                  managed=False,
+                  custom_deps={},
+                  custom_vars={},
+                  custom_hooks=[],
+                  deps_file=None,
+                  should_process=True,
+                  should_recurse=False,
+                  relative=None,
+                  condition=None))
+          print(('\nWARNING: \'%s\' is no longer part of this client.\n'
+                 'It is recommended that you manually remove it or use '
+                 '\'gclient sync -D\' next time.') % entry_fixed)
         else:
           # Delete the entry
           print('\n________ deleting \'%s\' in \'%s\'' % (

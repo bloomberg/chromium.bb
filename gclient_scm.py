@@ -222,7 +222,8 @@ class GitWrapper(SCMWrapper):
 
   def __init__(self, url=None, *args, **kwargs):
     """Removes 'git+' fake prefix from git URL."""
-    if url.startswith('git+http://') or url.startswith('git+https://'):
+    if url and (url.startswith('git+http://') or
+                url.startswith('git+https://')):
       url = url[4:]
     SCMWrapper.__init__(self, url, *args, **kwargs)
     filter_kwargs = { 'time_throttle': 1, 'out_fh': self.out_fh }
