@@ -267,6 +267,13 @@ bool WizardController::skip_post_login_screens_ = false;
 bool WizardController::skip_enrollment_prompts_ = false;
 
 // static
+#if defined(GOOGLE_CHROME_BUILD)
+bool WizardController::is_official_build_ = true;
+#else
+bool WizardController::is_official_build_ = false;
+#endif
+
+// static
 WizardController* WizardController::default_controller() {
   auto* host = chromeos::LoginDisplayHost::default_host();
   return host ? host->GetWizardController() : nullptr;
@@ -578,11 +585,10 @@ void WizardController::ShowTermsOfServiceScreen() {
 }
 
 void WizardController::ShowSyncConsentScreen() {
-#if defined(GOOGLE_CHROME_BUILD)
-  SetCurrentScreen(GetScreen(OobeScreen::SCREEN_SYNC_CONSENT));
-#else
-  OnSyncConsentFinished();
-#endif
+  if (is_official_build_)
+    SetCurrentScreen(GetScreen(OobeScreen::SCREEN_SYNC_CONSENT));
+  else
+    OnSyncConsentFinished();
 }
 
 void WizardController::ShowFingerprintSetupScreen() {
@@ -1563,6 +1569,12 @@ void WizardController::SkipPostLoginScreensForTesting() {
 // static
 void WizardController::SkipEnrollmentPromptsForTesting() {
   skip_enrollment_prompts_ = true;
+}
+
+// static
+std::unique_ptr<base::AutoReset<bool>>
+WizardController::ForceOfficialBuildForTesting() {
+  return std::make_unique<base::AutoReset<bool>>(&is_official_build_, true);
 }
 
 // static

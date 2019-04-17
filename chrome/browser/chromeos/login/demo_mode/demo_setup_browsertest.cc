@@ -153,7 +153,7 @@ class DemoSetupTest : public LoginManagerTest {
   void SetUpOnMainThread() override {
     LoginManagerTest::SetUpOnMainThread();
     DisableConfirmationDialogAnimations();
-    WizardController::default_controller()->is_official_build_ = true;
+    official_build_override_ = WizardController::ForceOfficialBuildForTesting();
     DisconnectAllNetworks();
   }
 
@@ -442,6 +442,7 @@ class DemoSetupTest : public LoginManagerTest {
   base::ScopedTempDir fake_demo_resources_dir_;
   policy::MockCloudPolicyStore mock_policy_store_;
   base::test::ScopedFeatureList scoped_feature_list_;
+  std::unique_ptr<base::AutoReset<bool>> official_build_override_;
 
   DISALLOW_COPY_AND_ASSIGN(DemoSetupTest);
 };
