@@ -279,6 +279,13 @@ class AutocompleteProvider
   // culling.
   static const size_t kMaxMatches;
 
+  // Used to determine if we're in keyword mode, if experimental keyword
+  // mode is enabled, and if we're confident that the user is intentionally
+  // (not accidentally) in keyword mode. Combined, this method returns
+  // whether the caller should perform steps that are only valid in this state.
+  static bool InExplicitExperimentalKeywordMode(const AutocompleteInput& input,
+                                                const base::string16& keyword);
+
  protected:
   friend class base::RefCountedThreadSafe<AutocompleteProvider>;
   FRIEND_TEST_ALL_PREFIXES(BookmarkProviderTest, InlineAutocompletion);

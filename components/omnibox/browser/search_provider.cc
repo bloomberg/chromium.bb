@@ -1366,17 +1366,12 @@ int SearchProvider::GetVerbatimRelevance(bool* relevance_from_server) const {
 
 bool SearchProvider::ShouldCurbDefaultSuggestions() const {
   // Only curb if the global experimental keyword feature is enabled, we're
-  // in keyword mode and the user selected the mode explicitly. For now, we
-  // consider entering keyword mode with spaces to be unintentional and all
-  // other methods as intentional. In this experimental mode, we don't want
-  // non-keyword suggestions if we're not confident that the user entered
-  // keyword mode explicitly.
-  return OmniboxFieldTrial::IsExperimentalKeywordModeEnabled() &&
-         keyword_input_.prefer_keyword() &&
-         keyword_input_.keyword_mode_entry_method() !=
-             OmniboxEventProto::SPACE_AT_END &&
-         keyword_input_.keyword_mode_entry_method() !=
-             OmniboxEventProto::SPACE_IN_MIDDLE;
+  // in keyword mode and we believe the user selected the mode explicitly.
+  if (providers_.has_keyword_provider())
+    return InExplicitExperimentalKeywordMode(input_,
+                                             providers_.keyword_provider());
+  else
+    return false;
 }
 
 int SearchProvider::CalculateRelevanceForVerbatim() const {
