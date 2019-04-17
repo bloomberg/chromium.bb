@@ -653,10 +653,6 @@ IPCMessageSender* NativeExtensionBindingsSystem::GetIPCMessageSender() {
   return ipc_message_sender_.get();
 }
 
-RendererMessagingService* NativeExtensionBindingsSystem::GetMessagingService() {
-  return &messaging_service_;
-}
-
 void NativeExtensionBindingsSystem::OnExtensionPermissionsUpdated(
     const ExtensionId& id) {
   feature_cache_.InvalidateExtension(id);

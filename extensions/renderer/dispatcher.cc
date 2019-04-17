@@ -73,10 +73,10 @@
 #include "extensions/renderer/messaging_util.h"
 #include "extensions/renderer/module_system.h"
 #include "extensions/renderer/native_extension_bindings_system.h"
+#include "extensions/renderer/native_renderer_messaging_service.h"
 #include "extensions/renderer/process_info_native_handler.h"
 #include "extensions/renderer/render_frame_observer_natives.h"
 #include "extensions/renderer/renderer_extension_registry.h"
-#include "extensions/renderer/renderer_messaging_service.h"
 #include "extensions/renderer/runtime_custom_bindings.h"
 #include "extensions/renderer/safe_builtins.h"
 #include "extensions/renderer/script_context.h"
@@ -899,7 +899,7 @@ void Dispatcher::OnDeliverMessage(int worker_thread_id,
                                   const PortId& target_port_id,
                                   const Message& message) {
   DCHECK_EQ(kMainThreadId, worker_thread_id);
-  bindings_system_->GetMessagingService()->DeliverMessage(
+  bindings_system_->messaging_service()->DeliverMessage(
       script_context_set_.get(), target_port_id, message,
       NULL);  // All render frames.
 }
@@ -913,7 +913,7 @@ void Dispatcher::OnDispatchOnConnect(
   DCHECK_EQ(kMainThreadId, worker_thread_id);
   DCHECK(!target_port_id.is_opener);
 
-  bindings_system_->GetMessagingService()->DispatchOnConnect(
+  bindings_system_->messaging_service()->DispatchOnConnect(
       script_context_set_.get(), target_port_id, channel_name, source, info,
       NULL);  // All render frames.
 }
@@ -922,7 +922,7 @@ void Dispatcher::OnDispatchOnDisconnect(int worker_thread_id,
                                         const PortId& port_id,
                                         const std::string& error_message) {
   DCHECK_EQ(kMainThreadId, worker_thread_id);
-  bindings_system_->GetMessagingService()->DispatchOnDisconnect(
+  bindings_system_->messaging_service()->DispatchOnDisconnect(
       script_context_set_.get(), port_id, error_message,
       NULL);  // All render frames.
 }
