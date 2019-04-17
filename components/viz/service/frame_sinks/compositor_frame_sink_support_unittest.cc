@@ -1213,4 +1213,52 @@ TEST_F(CompositorFrameSinkSupportTest,
   EXPECT_EQ(SubmitResult::SURFACE_OWNED_BY_ANOTHER_CLIENT, result);
 }
 
+// This test verifies that the parent sequence number of the submitted
+// CompositorFrames can decrease as long as the embed token changes as well.
+TEST_F(CompositorFrameSinkSupportTest, SubmitAfterReparenting) {
+  LocalSurfaceId local_surface_id1(2, base::UnguessableToken::Create());
+  LocalSurfaceId local_surface_id2(1, base::UnguessableToken::Create());
+
+  ASSERT_NE(local_surface_id1.embed_token(), local_surface_id2.embed_token());
+
+  CompositorFrame frame =
+      CompositorFrameBuilder().AddDefaultRenderPass().Build();
+  SubmitResult result = support_->MaybeSubmitCompositorFrame(
+      local_surface_id1, std::move(frame), base::nullopt, 0,
+      mojom::CompositorFrameSink::SubmitCompositorFrameSyncCallback());
+  EXPECT_EQ(SubmitResult::ACCEPTED, result);
+
+  frame = CompositorFrameBuilder().AddDefaultRenderPass().Build();
+  result = support_->MaybeSubmitCompositorFrame(
+      local_surface_id2, std::move(frame), base::nullopt, 0,
+      mojom::CompositorFrameSink::SubmitCompositorFrameSyncCallback());
+
+  // Even though |local_surface_id2| has a smaller parent sequence number than
+  // |local_surface_id1|, the submit should still succeed because it has a
+  // different embed token.
+  EXPECT_EQ(SubmitResult::ACCEPTED, result);
+}
+
+// This test verifies that surfaces created with a new embed token are not
+// compared against the evicted parent sequence number of the previous embed
+// token.
+TEST_F(CompositorFrameSinkSupportTest, EvictThenReparent) {
+  LocalSurfaceId local_surface_id1(2, base::UnguessableToken::Create());
+  LocalSurfaceId local_surface_id2(1, base::UnguessableToken::Create());
+
+  ASSERT_NE(local_surface_id1.embed_token(), local_surface_id2.embed_token());
+
+  support_->EvictSurface(local_surface_id1);
+  CompositorFrame frame =
+      CompositorFrameBuilder().AddDefaultRenderPass().Build();
+  support_->SubmitCompositorFrame(local_surface_id2, std::move(frame));
+  manager_.surface_manager()->GarbageCollectSurfaces();
+
+  // Even though |local_surface_id2| has a smaller parent sequence number than
+  // |local_surface_id1|, it should not be evicted because it has a different
+  // embed token.
+  EXPECT_TRUE(
+      GetSurfaceForId(SurfaceId(support_->frame_sink_id(), local_surface_id2)));
+}
+
 }  // namespace viz
