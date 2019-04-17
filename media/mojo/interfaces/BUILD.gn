@@ -23,7 +23,6 @@ mojom("interfaces") {
     "demuxer_stream.mojom",
     "display_media_information.mojom",
     "interface_factory.mojom",
-    "jpeg_encode_accelerator.mojom",
     "key_system_support.mojom",
     "media_log.mojom",
     "media_metrics_provider.mojom",

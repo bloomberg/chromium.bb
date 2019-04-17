@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/mojo/services/mojo_jpeg_encode_accelerator_service.h"
+#include "media/mojo/services/cros_mojo_jpeg_encode_accelerator_service.h"
 
 #include <stdint.h>
 
@@ -32,21 +32,21 @@ const int kJpegQuality = 90;
 namespace media {
 
 // static
-void MojoJpegEncodeAcceleratorService::Create(
+void CrOSMojoJpegEncodeAcceleratorService::Create(
     mojom::JpegEncodeAcceleratorRequest request) {
-  auto* jpeg_encoder = new MojoJpegEncodeAcceleratorService();
+  auto* jpeg_encoder = new CrOSMojoJpegEncodeAcceleratorService();
   mojo::MakeStrongBinding(base::WrapUnique(jpeg_encoder), std::move(request));
 }
 
-MojoJpegEncodeAcceleratorService::MojoJpegEncodeAcceleratorService()
+CrOSMojoJpegEncodeAcceleratorService::CrOSMojoJpegEncodeAcceleratorService()
     : accelerator_factory_functions_(
           GpuJpegEncodeAcceleratorFactory::GetAcceleratorFactories()) {}
 
-MojoJpegEncodeAcceleratorService::~MojoJpegEncodeAcceleratorService() {
+CrOSMojoJpegEncodeAcceleratorService::~CrOSMojoJpegEncodeAcceleratorService() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 
-void MojoJpegEncodeAcceleratorService::VideoFrameReady(
+void CrOSMojoJpegEncodeAcceleratorService::VideoFrameReady(
     int32_t bitstream_buffer_id,
     size_t encoded_picture_size) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -54,14 +54,15 @@ void MojoJpegEncodeAcceleratorService::VideoFrameReady(
                      ::media::JpegEncodeAccelerator::Status::ENCODE_OK);
 }
 
-void MojoJpegEncodeAcceleratorService::NotifyError(
+void CrOSMojoJpegEncodeAcceleratorService::NotifyError(
     int32_t bitstream_buffer_id,
     ::media::JpegEncodeAccelerator::Status error) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   NotifyEncodeStatus(bitstream_buffer_id, 0, error);
 }
 
-void MojoJpegEncodeAcceleratorService::Initialize(InitializeCallback callback) {
+void CrOSMojoJpegEncodeAcceleratorService::Initialize(
+    InitializeCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   // When adding non-chromeos platforms, VideoCaptureGpuJpegEncoder::Initialize
@@ -89,7 +90,7 @@ void MojoJpegEncodeAcceleratorService::Initialize(InitializeCallback callback) {
   std::move(callback).Run(true);
 }
 
-void MojoJpegEncodeAcceleratorService::EncodeWithFD(
+void CrOSMojoJpegEncodeAcceleratorService::EncodeWithFD(
     int32_t buffer_id,
     mojo::ScopedHandle input_handle,
     uint32_t input_buffer_size,
@@ -197,7 +198,7 @@ void MojoJpegEncodeAcceleratorService::EncodeWithFD(
 #endif
 }
 
-void MojoJpegEncodeAcceleratorService::NotifyEncodeStatus(
+void CrOSMojoJpegEncodeAcceleratorService::NotifyEncodeStatus(
     int32_t bitstream_buffer_id,
     size_t encoded_picture_size,
     ::media::JpegEncodeAccelerator::Status error) {

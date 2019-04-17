@@ -12,6 +12,7 @@
 #include "base/files/scoped_file.h"
 #include "base/memory/singleton.h"
 #include "base/threading/thread.h"
+#include "components/chromeos_camera/common/jpeg_encode_accelerator.mojom.h"
 #include "media/capture/capture_export.h"
 #include "media/capture/video/chromeos/mojo/cros_camera_service.mojom.h"
 #include "media/capture/video/video_capture_device_factory.h"
@@ -27,6 +28,9 @@ class WaitableEvent;
 }  // namespace base
 
 namespace media {
+
+using MojoJpegEncodeAcceleratorFactoryCB =
+    base::RepeatingCallback<void(media::mojom::JpegEncodeAcceleratorRequest)>;
 
 class CAPTURE_EXPORT CameraClientObserver {
  public:

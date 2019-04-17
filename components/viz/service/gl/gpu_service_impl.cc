@@ -43,7 +43,9 @@
 #include "media/gpu/gpu_video_encode_accelerator_factory.h"
 #include "media/gpu/ipc/service/gpu_video_decode_accelerator.h"
 #include "media/gpu/ipc/service/media_gpu_channel_manager.h"
-#include "media/mojo/services/mojo_jpeg_encode_accelerator_service.h"
+#if defined(OS_CHROMEOS)
+#include "media/mojo/services/cros_mojo_jpeg_encode_accelerator_service.h"
+#endif  // defined(OS_CHROMEOS)
 #include "media/mojo/services/mojo_mjpeg_decode_accelerator_service.h"
 #include "media/mojo/services/mojo_video_encode_accelerator_provider.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -397,18 +399,18 @@ void GpuServiceImpl::CreateArcProtectedBufferManagerOnMainThread(
           protected_buffer_manager_),
       std::move(pbm_request));
 }
+
+void GpuServiceImpl::CreateJpegEncodeAccelerator(
+    media::mojom::JpegEncodeAcceleratorRequest jea_request) {
+  DCHECK(io_runner_->BelongsToCurrentThread());
+  media::CrOSMojoJpegEncodeAcceleratorService::Create(std::move(jea_request));
+}
 #endif  // defined(OS_CHROMEOS)
 
 void GpuServiceImpl::CreateJpegDecodeAccelerator(
     media::mojom::MjpegDecodeAcceleratorRequest jda_request) {
   DCHECK(io_runner_->BelongsToCurrentThread());
   media::MojoMjpegDecodeAcceleratorService::Create(std::move(jda_request));
-}
-
-void GpuServiceImpl::CreateJpegEncodeAccelerator(
-    media::mojom::JpegEncodeAcceleratorRequest jea_request) {
-  DCHECK(io_runner_->BelongsToCurrentThread());
-  media::MojoJpegEncodeAcceleratorService::Create(std::move(jea_request));
 }
 
 void GpuServiceImpl::CreateVideoEncodeAcceleratorProvider(
