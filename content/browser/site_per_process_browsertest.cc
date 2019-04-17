@@ -12656,8 +12656,17 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTouchActionTest,
     EXPECT_EQ(expected_touch_action, whitelisted_touch_action.value());
 }
 
+// Flaky on Android. http://crbug.com/951513
+#if defined(OS_ANDROID)
+#define MAYBE_EffectiveTouchActionPropagatesAcrossNestedFrames \
+  DISABLED_EffectiveTouchActionPropagatesAcrossNestedFrames
+#else
+#define MAYBE_EffectiveTouchActionPropagatesAcrossNestedFrames \
+  EffectiveTouchActionPropagatesAcrossNestedFrames
+#endif
+
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTouchActionTest,
-                       EffectiveTouchActionPropagatesAcrossNestedFrames) {
+                       MAYBE_EffectiveTouchActionPropagatesAcrossNestedFrames) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b(c))"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
