@@ -648,14 +648,11 @@ typedef struct SPEED_FEATURES {
   int simple_motion_search_prune_rect;
 
   // Perform simple motion search before none_partition to decide if we
-  // want to split directly without trying other partition types.
-  int simple_motion_search_split_only;
-
-  // Determines the type of model used by simple_motion_search_split_only. Only
-  // valids when simple_motion_search_split_only is >= 1. Set to 1 for the
-  // slower model that uses 5 subpixel searches, and 2 for the faster model that
-  // uses 1 fullpixel search.
-  int simple_motion_search_split_speed;
+  // want to remove all partitions other than PARTITION_SPLIT. If set to 0, this
+  // model is disabled. If set to 1, the model attempts to perform
+  // PARTITION_SPLIT only. If set to 2, the model also attempts to prune
+  // PARTITION_SPLIT.
+  int simple_motion_search_split;
 
   // Use features from simple_motion_search to terminate prediction block
   // partition after PARTITION_NONE

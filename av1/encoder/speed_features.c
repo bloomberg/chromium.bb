@@ -117,6 +117,8 @@ static void set_good_speed_feature_framesize_dependent(
     sf->ml_early_term_after_part_split_level = 1;
   }
 
+  // TODO(chiyotsai@google.com): Try to replace two pass partition search with
+  // other speed features.
   if (is_720p_or_larger && speed >= CONFIG_2PASS_PARTITION_SEARCH_LVL_START &&
       speed < CONFIG_2PASS_PARTITION_SEARCH_LVL_END) {
     sf->two_pass_partition_search = 1;
@@ -128,7 +130,7 @@ static void set_good_speed_feature_framesize_dependent(
     } else if (is_480p_or_larger) {
       sf->use_square_partition_only_threshold = BLOCK_64X64;
 
-      sf->simple_motion_search_split_only = 2;
+      sf->simple_motion_search_split = 2;
     } else {
       sf->use_square_partition_only_threshold = BLOCK_32X32;
     }
@@ -141,9 +143,6 @@ static void set_good_speed_feature_framesize_dependent(
       sf->ml_partition_search_breakout_thresh[4] = -1;   // BLOCK_128X128
 
       sf->firstpass_simple_motion_search_early_term = 1;
-      // TODO(chiyotsai@google.com): Try to disable two pass partition search
-      // and turn on hdres
-      sf->simple_motion_search_split_speed = 1;
       sf->ml_early_term_after_part_split_level = 2;
     }
   }
@@ -172,7 +171,6 @@ static void set_good_speed_feature_framesize_dependent(
   }
 
   if (speed >= 3) {
-    sf->simple_motion_search_split_speed = 2;
     sf->ml_early_term_after_part_split_level = 0;
     if (is_720p_or_larger) {
       sf->partition_search_breakout_dist_thr = (1 << 25);
@@ -186,11 +184,12 @@ static void set_good_speed_feature_framesize_dependent(
         sf->two_pass_partition_search;
 
     // TODO(Venkat): Clean-up frame type dependency for
-    // simple_motion_search_split_only in partition search function and set the
+    // simple_motion_search_split in partition search function and set the
     // speed feature accordingly
-    // TODO(Venkat): Evaluate this speed feature for speed 1 & 2
-    sf->simple_motion_search_split_only =
-        cm->allow_screen_content_tools ? 1 : 2;
+    // TODO(any): The models and thresholds used by simple_motion_split is
+    // trained and tuned on speed 1 and 2. We might get better performance if we
+    // readjust them for speed 3 and 4.
+    sf->simple_motion_search_split = cm->allow_screen_content_tools ? 1 : 2;
   }
 
   if (speed >= 4) {
@@ -269,7 +268,7 @@ static void set_good_speed_features_framesize_independent(
     // speed.
     sf->prune_single_motion_modes_by_simple_trans = 1;
 
-    sf->simple_motion_search_split_only = 1;
+    sf->simple_motion_search_split = 1;
     sf->simple_motion_search_early_term_none = 1;
 
     sf->disable_wedge_search_var_thresh = 0;
@@ -742,7 +741,6 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   sf->skip_obmc_in_uniform_mv_field = 0;
   sf->skip_wm_in_uniform_mv_field = 0;
   sf->adaptive_interp_filter_search = 0;
-  sf->simple_motion_search_split_speed = 2;
 
   for (i = 0; i < TX_SIZES; i++) {
     sf->intra_y_mode_mask[i] = INTRA_ALL;
@@ -768,7 +766,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   for (i = 0; i < PARTITION_BLOCK_SIZES; ++i) {
     sf->ml_partition_search_breakout_thresh[i] = -1;  // -1 means not enabled.
   }
-  sf->simple_motion_search_split_only = 0;
+  sf->simple_motion_search_split = 0;
   sf->simple_motion_search_prune_rect = 0;
   sf->simple_motion_search_early_term_none = 0;
 

@@ -2701,7 +2701,7 @@ static void rd_pick_partition(AV1_COMP *const cpi, ThreadData *td,
   // Use simple_motion_search to prune partitions. This must be done prior to
   // PARTITION_SPLIT to propagate the initial mvs to a smaller blocksize.
   const int try_split_only =
-      cpi->sf.simple_motion_search_split_only && do_square_split &&
+      cpi->sf.simple_motion_search_split && do_square_split &&
       bsize >= BLOCK_8X8 && mi_row + mi_size_high[bsize] <= cm->mi_rows &&
       mi_col + mi_size_wide[bsize] <= cm->mi_cols && !frame_is_intra_only(cm) &&
       !av1_superres_scaled(cm);
@@ -4244,7 +4244,7 @@ static void encode_sb_row(AV1_COMP *cpi, ThreadData *td, TileDataEnc *tile_data,
     PC_TREE *const pc_root = td->pc_root[mib_size_log2 - MIN_MIB_SIZE_LOG2];
     pc_root->index = 0;
 
-    if ((sf->simple_motion_search_split_only ||
+    if ((sf->simple_motion_search_split ||
          sf->simple_motion_search_prune_rect ||
          sf->simple_motion_search_early_term_none ||
          sf->firstpass_simple_motion_search_early_term) &&
