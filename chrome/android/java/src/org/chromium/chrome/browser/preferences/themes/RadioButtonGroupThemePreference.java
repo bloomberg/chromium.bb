@@ -14,6 +14,7 @@ import org.chromium.chrome.browser.preferences.themes.ThemePreferences.ThemeSett
 import org.chromium.chrome.browser.widget.RadioButtonWithDescription;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 /**
  * A radio button group Preference used for Themes. Currently, it has 3 options: System default,
@@ -29,7 +30,9 @@ public class RadioButtonGroupThemePreference
         // Inflating from XML.
         setLayoutResource(R.layout.radio_button_group_theme_preference);
 
-        mButtons = new ArrayList<>(ThemeSetting.NUM_ENTRIES);
+        // Initialize entries with null objects so that calling ArrayList#set() would not throw
+        // java.lang.IndexOutOfBoundsException.
+        mButtons = new ArrayList<>(Collections.nCopies(ThemeSetting.NUM_ENTRIES, null));
     }
 
     /**
