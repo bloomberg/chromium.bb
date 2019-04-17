@@ -282,6 +282,22 @@ void RenderFrameHostManager::DidNavigateFrame(
     RenderFrameHostImpl* render_frame_host,
     bool was_caused_by_user_gesture,
     bool is_same_document_navigation) {
+  // Record the metrics about the state of the old frame at the moment when
+  // we navigate away from it as it matters for whether the page is eligible
+  // for being put into back-forward cache.
+  // TODO(altimin, crbug.com/933147): Remove this logic after we are done with
+  // implementing back-forward cache.
+  if (!render_frame_host->GetParent() && !is_same_document_navigation) {
+    if (NavigationEntryImpl* last_committed_entry =
+            delegate_->GetControllerForRenderManager()
+                .GetLastCommittedEntry()) {
+      if (last_committed_entry->back_forward_cache_metrics()) {
+        last_committed_entry->back_forward_cache_metrics()->RecordFeatureUsage(
+            render_frame_host);
+      }
+    }
+  }
+
   CommitPendingIfNecessary(render_frame_host, was_caused_by_user_gesture,
                            is_same_document_navigation);
 

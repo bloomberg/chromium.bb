@@ -5512,6 +5512,11 @@ void RenderFrameImpl::DidChangeCpuTiming(base::TimeDelta time) {
     observer.DidChangeCpuTiming(time);
 }
 
+void RenderFrameImpl::DidChangeActiveSchedulerTrackedFeatures(
+    uint64_t features_mask) {
+  GetFrameHost()->UpdateActiveSchedulerTrackedFeatures(features_mask);
+}
+
 void RenderFrameImpl::DidObserveLoadingBehavior(
     blink::WebLoadingBehaviorFlag behavior) {
   for (auto& observer : observers_)

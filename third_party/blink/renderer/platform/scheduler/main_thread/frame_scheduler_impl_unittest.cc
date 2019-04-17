@@ -49,6 +49,8 @@ class FrameSchedulerDelegateForTesting : public FrameScheduler::Delegate {
     update_task_time_calls_++;
   }
 
+  void UpdateActiveSchedulerTrackedFeatures(uint64_t features_mask) override {}
+
   int update_task_time_calls_ = 0;
 };
 

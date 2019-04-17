@@ -403,6 +403,8 @@ class FrameSchedulerDelegateWithUkmSourceId : public FrameScheduler::Delegate {
 
   void UpdateTaskTime(base::TimeDelta time) override {}
 
+  void UpdateActiveSchedulerTrackedFeatures(uint64_t features_mask) override {}
+
  private:
   ukm::SourceId source_id_;
 };

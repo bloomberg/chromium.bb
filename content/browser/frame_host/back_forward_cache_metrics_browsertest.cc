@@ -262,4 +262,32 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheMetricsBrowserTest, CloneAndGoBack) {
                                    UkmEntry{id6, {{last_navigation_id, id4}}}));
 }
 
+IN_PROC_BROWSER_TEST_F(BackForwardCacheMetricsBrowserTest, Features_MainFrame) {
+  ukm::TestAutoSetUkmRecorder recorder;
+
+  const GURL url1(embedded_test_server()->GetURL(
+      "/back_forward_cache/page_with_pageshow.html"));
+  const GURL url2(embedded_test_server()->GetURL("/title1.html"));
+
+  EXPECT_TRUE(NavigateToURL(shell(), url1));
+  EXPECT_TRUE(NavigateToURL(shell(), url2));
+
+  {
+    TestNavigationObserver navigation_observer(shell()->web_contents());
+    shell()->GoBackOrForward(-1);
+    navigation_observer.WaitForNavigationFinished();
+  }
+
+  constexpr int kPageShowFeature = 6;
+
+  ASSERT_EQ(navigation_ids_.size(), static_cast<size_t>(3));
+  // ukm::SourceId id1 = ToSourceId(navigation_ids_[0]);
+  // ukm::SourceId id2 = ToSourceId(navigation_ids_[1]);
+  ukm::SourceId id3 = ToSourceId(navigation_ids_[2]);
+
+  EXPECT_THAT(GetEntries(&recorder, "HistoryNavigation", {"MainFrameFeatures"}),
+              testing::ElementsAre(UkmEntry{
+                  id3, {{"MainFrameFeatures", 1 << kPageShowFeature}}}));
+}
+
 }  // namespace content

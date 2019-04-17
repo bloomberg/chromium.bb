@@ -1528,6 +1528,10 @@ void LocalFrame::UpdateTaskTime(base::TimeDelta time) {
   Client()->DidChangeCpuTiming(time);
 }
 
+void LocalFrame::UpdateActiveSchedulerTrackedFeatures(uint64_t features_mask) {
+  Client()->DidChangeActiveSchedulerTrackedFeatures(features_mask);
+}
+
 const mojom::blink::ReportingServiceProxyPtr& LocalFrame::GetReportingService()
     const {
   if (!reporting_service_) {

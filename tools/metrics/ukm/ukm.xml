@@ -2645,6 +2645,13 @@ be describing additional metrics about the same event.
       navigation which loaded the page we're trying to navigate back to.
     </summary>
   </metric>
+  <metric name="MainFrameFeatures">
+    <summary>
+      Bitmask of features used by the main frames of the previous page load. See
+      blink::SchedulingPolicy::Feature for the meaning for the individual
+      features.
+    </summary>
+  </metric>
   <metric name="NavigatedToTheMostRecentEntryForDocument">
     <summary>
       Boolean for whether we navigated to the same navigation entry as the one
