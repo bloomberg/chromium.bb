@@ -13,14 +13,13 @@ class NGPhysicalBoxFragmentTest : public NGLayoutTest {
   NGPhysicalBoxFragmentTest() : NGLayoutTest() {}
 
   const NGPhysicalBoxFragment& GetBodyFragment() const {
-    return *ToLayoutBlockFlow(GetDocument().body()->GetLayoutObject())
+    return *To<LayoutBlockFlow>(GetDocument().body()->GetLayoutObject())
                 ->CurrentFragment();
   }
 
   const NGPhysicalBoxFragment& GetPhysicalBoxFragmentByElementId(
       const char* id) {
-    LayoutBlockFlow* layout_object =
-        ToLayoutBlockFlow(GetLayoutObjectByElementId(id));
+    auto* layout_object = To<LayoutBlockFlow>(GetLayoutObjectByElementId(id));
     DCHECK(layout_object);
     const NGPhysicalBoxFragment* fragment = layout_object->CurrentFragment();
     DCHECK(fragment);

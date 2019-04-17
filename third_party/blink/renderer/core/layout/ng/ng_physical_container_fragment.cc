@@ -67,10 +67,11 @@ void NGPhysicalContainerFragment::AddOutlineRectsForNormalChildren(
     // added when we iterate the continuation chain.
     // See NGPhysicalBoxFragment::AddSelfOutlineRects().
     if (LayoutObject* child_layout_object = child->GetLayoutObject()) {
+      auto* child_layout_block_flow =
+          DynamicTo<LayoutBlockFlow>(child_layout_object);
       if (child_layout_object->IsElementContinuation() ||
-          (child_layout_object->IsLayoutBlockFlow() &&
-           ToLayoutBlockFlow(child_layout_object)
-               ->IsAnonymousBlockContinuation()))
+          (child_layout_block_flow &&
+           child_layout_block_flow->IsAnonymousBlockContinuation()))
         continue;
     }
 

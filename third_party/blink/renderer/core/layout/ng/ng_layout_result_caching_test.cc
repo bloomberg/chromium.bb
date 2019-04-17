@@ -39,8 +39,8 @@ TEST_F(NGLayoutResultCachingTest, HitDifferentExclusionSpace) {
     </div>
   )HTML");
 
-  LayoutBlockFlow* test = ToLayoutBlockFlow(GetLayoutObjectByElementId("test"));
-  LayoutBlockFlow* src = ToLayoutBlockFlow(GetLayoutObjectByElementId("src"));
+  auto* test = To<LayoutBlockFlow>(GetLayoutObjectByElementId("test"));
+  auto* src = To<LayoutBlockFlow>(GetLayoutObjectByElementId("src"));
 
   const NGConstraintSpace& space =
       src->GetCachedLayoutResult()->GetConstraintSpaceForCaching();
@@ -79,8 +79,8 @@ TEST_F(NGLayoutResultCachingTest, HitDifferentBFCOffset) {
     </div>
   )HTML");
 
-  LayoutBlockFlow* test = ToLayoutBlockFlow(GetLayoutObjectByElementId("test"));
-  LayoutBlockFlow* src = ToLayoutBlockFlow(GetLayoutObjectByElementId("src"));
+  auto* test = To<LayoutBlockFlow>(GetLayoutObjectByElementId("test"));
+  auto* src = To<LayoutBlockFlow>(GetLayoutObjectByElementId("src"));
 
   const NGConstraintSpace& space =
       src->GetCachedLayoutResult()->GetConstraintSpaceForCaching();
@@ -140,8 +140,8 @@ TEST_F(NGLayoutResultCachingTest, MissDescendantAboveBlockStart1) {
     </div>
   )HTML");
 
-  LayoutBlockFlow* test = ToLayoutBlockFlow(GetLayoutObjectByElementId("test"));
-  LayoutBlockFlow* src = ToLayoutBlockFlow(GetLayoutObjectByElementId("src"));
+  auto* test = To<LayoutBlockFlow>(GetLayoutObjectByElementId("test"));
+  auto* src = To<LayoutBlockFlow>(GetLayoutObjectByElementId("src"));
 
   const NGConstraintSpace& space =
       src->GetCachedLayoutResult()->GetConstraintSpaceForCaching();
@@ -177,8 +177,8 @@ TEST_F(NGLayoutResultCachingTest, MissDescendantAboveBlockStart2) {
     </div>
   )HTML");
 
-  LayoutBlockFlow* test = ToLayoutBlockFlow(GetLayoutObjectByElementId("test"));
-  LayoutBlockFlow* src = ToLayoutBlockFlow(GetLayoutObjectByElementId("src"));
+  auto* test = To<LayoutBlockFlow>(GetLayoutObjectByElementId("test"));
+  auto* src = To<LayoutBlockFlow>(GetLayoutObjectByElementId("src"));
 
   const NGConstraintSpace& space =
       src->GetCachedLayoutResult()->GetConstraintSpaceForCaching();
@@ -212,8 +212,8 @@ TEST_F(NGLayoutResultCachingTest, MissFloatInitiallyIntruding1) {
     </div>
   )HTML");
 
-  LayoutBlockFlow* test = ToLayoutBlockFlow(GetLayoutObjectByElementId("test"));
-  LayoutBlockFlow* src = ToLayoutBlockFlow(GetLayoutObjectByElementId("src"));
+  auto* test = To<LayoutBlockFlow>(GetLayoutObjectByElementId("test"));
+  auto* src = To<LayoutBlockFlow>(GetLayoutObjectByElementId("src"));
 
   const NGConstraintSpace& space =
       src->GetCachedLayoutResult()->GetConstraintSpaceForCaching();
@@ -247,8 +247,8 @@ TEST_F(NGLayoutResultCachingTest, MissFloatInitiallyIntruding2) {
     </div>
   )HTML");
 
-  LayoutBlockFlow* test = ToLayoutBlockFlow(GetLayoutObjectByElementId("test"));
-  LayoutBlockFlow* src = ToLayoutBlockFlow(GetLayoutObjectByElementId("src"));
+  auto* test = To<LayoutBlockFlow>(GetLayoutObjectByElementId("test"));
+  auto* src = To<LayoutBlockFlow>(GetLayoutObjectByElementId("src"));
 
   const NGConstraintSpace& space =
       src->GetCachedLayoutResult()->GetConstraintSpaceForCaching();
@@ -281,8 +281,8 @@ TEST_F(NGLayoutResultCachingTest, MissFloatWillIntrude1) {
     </div>
   )HTML");
 
-  LayoutBlockFlow* test = ToLayoutBlockFlow(GetLayoutObjectByElementId("test"));
-  LayoutBlockFlow* src = ToLayoutBlockFlow(GetLayoutObjectByElementId("src"));
+  auto* test = To<LayoutBlockFlow>(GetLayoutObjectByElementId("test"));
+  auto* src = To<LayoutBlockFlow>(GetLayoutObjectByElementId("src"));
 
   const NGConstraintSpace& space =
       src->GetCachedLayoutResult()->GetConstraintSpaceForCaching();
@@ -315,8 +315,8 @@ TEST_F(NGLayoutResultCachingTest, MissFloatWillIntrude2) {
     </div>
   )HTML");
 
-  LayoutBlockFlow* test = ToLayoutBlockFlow(GetLayoutObjectByElementId("test"));
-  LayoutBlockFlow* src = ToLayoutBlockFlow(GetLayoutObjectByElementId("src"));
+  auto* test = To<LayoutBlockFlow>(GetLayoutObjectByElementId("test"));
+  auto* src = To<LayoutBlockFlow>(GetLayoutObjectByElementId("src"));
 
   const NGConstraintSpace& space =
       src->GetCachedLayoutResult()->GetConstraintSpaceForCaching();
@@ -349,8 +349,8 @@ TEST_F(NGLayoutResultCachingTest, MissPushedByFloats1) {
     </div>
   )HTML");
 
-  LayoutBlockFlow* test = ToLayoutBlockFlow(GetLayoutObjectByElementId("test"));
-  LayoutBlockFlow* src = ToLayoutBlockFlow(GetLayoutObjectByElementId("src"));
+  auto* test = To<LayoutBlockFlow>(GetLayoutObjectByElementId("test"));
+  auto* src = To<LayoutBlockFlow>(GetLayoutObjectByElementId("src"));
 
   const NGConstraintSpace& space =
       src->GetCachedLayoutResult()->GetConstraintSpaceForCaching();
@@ -383,8 +383,8 @@ TEST_F(NGLayoutResultCachingTest, MissPushedByFloats2) {
     </div>
   )HTML");
 
-  LayoutBlockFlow* test = ToLayoutBlockFlow(GetLayoutObjectByElementId("test"));
-  LayoutBlockFlow* src = ToLayoutBlockFlow(GetLayoutObjectByElementId("src"));
+  auto* test = To<LayoutBlockFlow>(GetLayoutObjectByElementId("test"));
+  auto* src = To<LayoutBlockFlow>(GetLayoutObjectByElementId("src"));
 
   const NGConstraintSpace& space =
       src->GetCachedLayoutResult()->GetConstraintSpaceForCaching();

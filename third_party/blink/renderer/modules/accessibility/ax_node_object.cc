@@ -1853,11 +1853,9 @@ ax::mojom::Role AXNodeObject::AriaRoleAttribute() const {
 static LayoutBlockFlow* NonInlineBlockFlow(LayoutObject* object) {
   LayoutObject* current = object;
   while (current) {
-    if (current->IsLayoutBlockFlow()) {
-      LayoutBlockFlow* block_flow = ToLayoutBlockFlow(current);
-      if (!block_flow->IsAtomicInlineLevel())
-        return block_flow;
-    }
+    auto* block_flow = DynamicTo<LayoutBlockFlow>(current);
+    if (block_flow && !block_flow->IsAtomicInlineLevel())
+      return block_flow;
     current = current->Parent();
   }
 
