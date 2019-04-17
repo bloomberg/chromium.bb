@@ -39,6 +39,7 @@ class AX_EXPORT AXNode final {
                                 const AXNode* ordered_set) = 0;
     virtual int32_t GetSetSize(const AXNode& node,
                                const AXNode* ordered_set) = 0;
+    virtual bool GetTreeUpdateInProgressState() const = 0;
   };
 
   // The constructor requires a parent, id, and index in parent, but

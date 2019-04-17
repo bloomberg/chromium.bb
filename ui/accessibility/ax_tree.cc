@@ -8,6 +8,7 @@
 
 #include <set>
 
+#include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
@@ -370,6 +371,11 @@ const std::set<AXTreeID> AXTree::GetAllChildTreeIds() const {
 }
 
 bool AXTree::Unserialize(const AXTreeUpdate& update) {
+  // Set update state to true.
+  // tree_update_in_progress_ gets set back to false whenever this function
+  // exits.
+  base::AutoReset<bool> update_state_resetter(&tree_update_in_progress_, true);
+
   AXTreeUpdateState update_state;
   int32_t old_root_id = root_ ? root_->id() : 0;
 
@@ -491,6 +497,10 @@ bool AXTree::Unserialize(const AXTreeUpdate& update) {
     }
     changes.push_back(AXTreeObserver::Change(node, change));
   }
+
+  // Tree is no longer updating.
+  SetTreeUpdateInProgressState(false);
+
   for (AXTreeObserver& observer : observers_) {
     observer.OnAtomicUpdateFinished(this, root_->id() != old_root_id, changes);
   }
@@ -1135,6 +1145,14 @@ int32_t AXTree::GetSetSize(const AXNode& node, const AXNode* ordered_set) {
   if (ordered_set_info_map_.find(node.id()) == ordered_set_info_map_.end())
     ComputeSetSizePosInSetAndCache(node, ordered_set);
   return ordered_set_info_map_[node.id()].set_size;
+}
+
+bool AXTree::GetTreeUpdateInProgressState() const {
+  return tree_update_in_progress_;
+}
+
+void AXTree::SetTreeUpdateInProgressState(bool set_tree_update_value) {
+  tree_update_in_progress_ = set_tree_update_value;
 }
 
 }  // namespace ui

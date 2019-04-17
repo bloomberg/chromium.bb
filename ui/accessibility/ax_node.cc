@@ -601,6 +601,10 @@ int32_t AXNode::GetPosInSet() {
     return 0;
   }
 
+  // If tree is being updated, return 0.
+  if (tree()->GetTreeUpdateInProgressState())
+    return 0;
+
   // See AXTree::GetPosInSet
   return tree_->GetPosInSet(*this, ordered_set);
 }
@@ -618,6 +622,10 @@ int32_t AXNode::GetSetSize() {
   if (IsItemLike(data().role))
     ordered_set = GetOrderedSet();
   if (!ordered_set)
+    return 0;
+
+  // If tree is being updated, return 0.
+  if (tree()->GetTreeUpdateInProgressState())
     return 0;
 
   // See AXTree::GetSetSize

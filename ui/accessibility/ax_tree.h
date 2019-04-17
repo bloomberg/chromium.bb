@@ -147,6 +147,9 @@ class AX_EXPORT AXTree : public AXNode::OwnerTree {
   // set_size values, minimizing the size of the cache.
   int32_t GetSetSize(const AXNode& node, const AXNode* ordered_set) override;
 
+  bool GetTreeUpdateInProgressState() const override;
+  void SetTreeUpdateInProgressState(bool set_tree_update_value);
+
   // Language detection statistics
   std::unique_ptr<AXLanguageInfoStats> language_info_stats;
 
@@ -267,6 +270,9 @@ class AX_EXPORT AXTree : public AXNode::OwnerTree {
 
   // AXTree owns pointers so copying is non-trivial.
   DISALLOW_COPY_AND_ASSIGN(AXTree);
+
+  // Indicates if the tree is updating.
+  bool tree_update_in_progress_ = false;
 };
 
 }  // namespace ui
