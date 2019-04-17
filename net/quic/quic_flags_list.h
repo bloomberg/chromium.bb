@@ -324,4 +324,4 @@ QUIC_FLAG(bool,
 // alarm.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_ignore_tlpr_if_sending_ping,
-          false)
+          true)
