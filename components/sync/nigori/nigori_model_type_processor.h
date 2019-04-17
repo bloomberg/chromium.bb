@@ -18,6 +18,7 @@
 namespace syncer {
 
 class NigoriSyncBridge;
+class ProcessorEntity;
 
 class NigoriModelTypeProcessor : public ModelTypeProcessor,
                                  public ModelTypeControllerDelegate,
@@ -45,16 +46,29 @@ class NigoriModelTypeProcessor : public ModelTypeProcessor,
   void RecordMemoryUsageAndCountsHistograms() override;
 
   // NigoriLocalChangeProcessor implementation.
-  void ModelReadyToSync(
-      NigoriSyncBridge* bridge,
-      std::pair<sync_pb::ModelTypeState, sync_pb::EntityMetadata>
-          nigori_metadata) override;
+  void ModelReadyToSync(NigoriSyncBridge* bridge,
+                        NigoriMetadataBatch nigori_metadata) override;
   void Put(std::unique_ptr<EntityData> entity_data) override;
-  std::pair<sync_pb::ModelTypeState, sync_pb::EntityMetadata> GetMetadata()
-      override;
+  NigoriMetadataBatch GetMetadata() override;
 
  private:
+  bool IsTrackingMetadata();
+  // The bridge owns this processor instance so the pointer should never become
+  // invalid.
   NigoriSyncBridge* bridge_;
+
+  // The model type metadata (progress marker, initial sync done, etc).
+  sync_pb::ModelTypeState model_type_state_;
+
+  // Whether the model has initialized its internal state for sync (and provided
+  // metadata).
+  bool model_ready_to_sync_ = false;
+
+  // The first model error that occurred, if any. Stored to track model state
+  // and so it can be passed to sync if it happened prior to sync being ready.
+  base::Optional<ModelError> model_error_;
+
+  std::unique_ptr<ProcessorEntity> entity_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
