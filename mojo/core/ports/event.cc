@@ -148,13 +148,6 @@ ScopedEvent Event::Clone() const {
   return nullptr;
 }
 
-UserMessageEvent::PortAttachment::PortAttachment() = default;
-
-UserMessageEvent::PortAttachment::PortAttachment(const PortAttachment&) =
-    default;
-
-UserMessageEvent::PortAttachment::~PortAttachment() = default;
-
 UserMessageEvent::~UserMessageEvent() = default;
 
 UserMessageEvent::UserMessageEvent(size_t num_ports)
@@ -206,8 +199,7 @@ ScopedEvent UserMessageEvent::Deserialize(const PortName& port_name,
 
   const auto* in_names =
       reinterpret_cast<const PortName*>(in_descriptors + data->num_ports);
-  for (size_t i = 0; i < data->num_ports; ++i)
-    event->ports()[i].name = in_names[i];
+  std::copy(in_names, in_names + data->num_ports, event->ports());
   return std::move(event);
 }
 
@@ -243,8 +235,7 @@ void UserMessageEvent::SerializeData(void* buffer) const {
 
   auto* port_names_data =
       reinterpret_cast<PortName*>(ports_data + ports_.size());
-  for (size_t i = 0; i < ports_.size(); ++i)
-    port_names_data[i] = ports_[i].name;
+  std::copy(ports_.begin(), ports_.end(), port_names_data);
 }
 
 PortAcceptedEvent::PortAcceptedEvent(const PortName& port_name)
