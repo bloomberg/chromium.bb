@@ -155,7 +155,7 @@ bool ParsedCookie::IsValid() const {
 
 CookieSameSite ParsedCookie::SameSite() const {
   return (same_site_index_ == 0)
-             ? CookieSameSite::DEFAULT_MODE
+             ? CookieSameSite::NO_RESTRICTION
              : StringToCookieSameSite(pairs_[same_site_index_].second);
 }
 

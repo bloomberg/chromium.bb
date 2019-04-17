@@ -503,7 +503,7 @@ CookieSameSite DBCookieSameSiteToCookieSameSite(DBCookieSameSite value) {
   }
 
   NOTREACHED();
-  return CookieSameSite::DEFAULT_MODE;
+  return CookieSameSite::NO_RESTRICTION;
 }
 
 // Increments a specified TimeDelta by the duration between this object's
@@ -550,7 +550,7 @@ bool CreateV10Schema(sql::Database* db) {
       "firstpartyonly INTEGER NOT NULL DEFAULT %d,"
       "UNIQUE (host_key, name, path))",
       CookiePriorityToDBCookiePriority(COOKIE_PRIORITY_DEFAULT),
-      CookieSameSiteToDBCookieSameSite(CookieSameSite::DEFAULT_MODE)));
+      CookieSameSiteToDBCookieSameSite(CookieSameSite::NO_RESTRICTION)));
   if (!db->Execute(stmt.c_str()))
     return false;
 

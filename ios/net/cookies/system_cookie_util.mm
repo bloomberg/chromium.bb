@@ -79,7 +79,7 @@ net::CanonicalCookie CanonicalCookieFromSystemCookie(
       base::Time(), [cookie isSecure], [cookie isHTTPOnly],
       // TODO(mkwst): When iOS begins to support 'SameSite' and 'Priority'
       // attributes, pass them through here.
-      net::CookieSameSite::DEFAULT_MODE, net::COOKIE_PRIORITY_DEFAULT);
+      net::CookieSameSite::NO_RESTRICTION, net::COOKIE_PRIORITY_DEFAULT);
 }
 
 void ReportGetCookiesForURLResult(SystemCookieStoreType store_type,
