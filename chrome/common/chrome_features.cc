@@ -370,7 +370,7 @@ const base::Feature kIntentPicker {
 // Uses KidsManagement UrlClassification instead of SafeSearch for supervised
 // accounts.
 const base::Feature kKidsManagementUrlClassification{
-    "KidsManagementUrlClassification", base::FEATURE_DISABLED_BY_DEFAULT};
+    "KidsManagementUrlClassification", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables or disables the Location Settings Dialog (LSD). The LSD is an Android
 // system-level geolocation permission prompt.
