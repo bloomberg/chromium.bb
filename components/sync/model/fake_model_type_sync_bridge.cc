@@ -359,7 +359,7 @@ bool FakeModelTypeSyncBridge::SupportsGetStorageKey() const {
 }
 
 ConflictResolution FakeModelTypeSyncBridge::ResolveConflict(
-    const EntityData& local_data,
+    const std::string& storage_key,
     const EntityData& remote_data) const {
   DCHECK(conflict_resolution_);
   return std::move(*conflict_resolution_);

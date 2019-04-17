@@ -402,15 +402,13 @@ bool SyncableServiceBasedBridge::SupportsGetStorageKey() const {
 }
 
 ConflictResolution SyncableServiceBasedBridge::ResolveConflict(
-    const EntityData& local_data,
+    const std::string& storage_key,
     const EntityData& remote_data) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!remote_data.is_deleted()) {
     return ConflictResolution::UseRemote();
   }
-
-  DCHECK(!local_data.is_deleted());
 
   // Ignore local changes for extensions/apps when server had a delete, to
   // avoid unwanted reinstall of an uninstalled extension.
