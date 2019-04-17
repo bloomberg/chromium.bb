@@ -4932,6 +4932,15 @@ interface RTCDataChannelEvent : Event
     attribute @@toStringTag
     getter channel
     method constructor
+interface RTCDtlsTransport : EventTarget
+    attribute @@toStringTag
+    getter iceTransport
+    getter onerror
+    getter onstatechange
+    getter state
+    method constructor
+    setter onerror
+    setter onstatechange
 interface RTCError : DOMException
     attribute @@toStringTag
     getter errorDetail
@@ -4963,6 +4972,23 @@ interface RTCIceCandidate
     getter usernameFragment
     method constructor
     method toJSON
+interface RTCIceTransport : EventTarget
+    attribute @@toStringTag
+    getter gatheringState
+    getter ongatheringstatechange
+    getter onselectedcandidatepairchange
+    getter onstatechange
+    getter role
+    getter state
+    method constructor
+    method getLocalCandidates
+    method getLocalParameters
+    method getRemoteCandidates
+    method getRemoteParameters
+    method getSelectedCandidatePair
+    setter ongatheringstatechange
+    setter onselectedcandidatepairchange
+    setter onstatechange
 interface RTCPeerConnection : EventTarget
     static method generateCertificate
     attribute @@toStringTag
@@ -5025,7 +5051,9 @@ interface RTCPeerConnectionIceEvent : Event
 interface RTCRtpReceiver
     static method getCapabilities
     attribute @@toStringTag
+    getter rtcpTransport
     getter track
+    getter transport
     method constructor
     method getContributingSources
     method getParameters
@@ -5035,7 +5063,9 @@ interface RTCRtpSender
     static method getCapabilities
     attribute @@toStringTag
     getter dtmf
+    getter rtcpTransport
     getter track
+    getter transport
     method constructor
     method getParameters
     method getStats

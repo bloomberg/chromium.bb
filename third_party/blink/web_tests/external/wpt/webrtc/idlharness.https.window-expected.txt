@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 506 tests; 440 PASS, 66 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 506 tests; 442 PASS, 64 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS Test driver for asyncInitCertificate
 PASS Test driver for asyncInitTransports
@@ -230,7 +230,7 @@ PASS RTCRtpSender interface: existence and properties of interface prototype obj
 PASS RTCRtpSender interface: existence and properties of interface prototype object's @@unscopables property
 PASS RTCRtpSender interface: attribute track
 PASS RTCRtpSender interface: attribute transport
-FAIL RTCRtpSender interface: attribute rtcpTransport assert_true: The prototype object must have a property "rtcpTransport" expected true got false
+PASS RTCRtpSender interface: attribute rtcpTransport
 PASS RTCRtpSender interface: operation getCapabilities(DOMString)
 FAIL RTCRtpSender interface: operation setParameters(RTCRtpSendParameters) assert_equals: property has wrong .length expected 1 but got 0
 PASS RTCRtpSender interface: operation getParameters()
@@ -242,7 +242,7 @@ PASS RTCRtpSender must be primary interface of new RTCPeerConnection().addTransc
 PASS Stringification of new RTCPeerConnection().addTransceiver('audio').sender
 PASS RTCRtpSender interface: new RTCPeerConnection().addTransceiver('audio').sender must inherit property "track" with the proper type
 PASS RTCRtpSender interface: new RTCPeerConnection().addTransceiver('audio').sender must inherit property "transport" with the proper type
-FAIL RTCRtpSender interface: new RTCPeerConnection().addTransceiver('audio').sender must inherit property "rtcpTransport" with the proper type assert_inherits: property "rtcpTransport" not found in prototype chain
+PASS RTCRtpSender interface: new RTCPeerConnection().addTransceiver('audio').sender must inherit property "rtcpTransport" with the proper type
 PASS RTCRtpSender interface: new RTCPeerConnection().addTransceiver('audio').sender must inherit property "getCapabilities(DOMString)" with the proper type
 PASS RTCRtpSender interface: calling getCapabilities(DOMString) on new RTCPeerConnection().addTransceiver('audio').sender with too few arguments must throw TypeError
 PASS RTCRtpSender interface: new RTCPeerConnection().addTransceiver('audio').sender must inherit property "setParameters(RTCRtpSendParameters)" with the proper type
@@ -262,7 +262,7 @@ PASS RTCRtpReceiver interface: existence and properties of interface prototype o
 PASS RTCRtpReceiver interface: existence and properties of interface prototype object's @@unscopables property
 PASS RTCRtpReceiver interface: attribute track
 PASS RTCRtpReceiver interface: attribute transport
-FAIL RTCRtpReceiver interface: attribute rtcpTransport assert_true: The prototype object must have a property "rtcpTransport" expected true got false
+PASS RTCRtpReceiver interface: attribute rtcpTransport
 PASS RTCRtpReceiver interface: operation getCapabilities(DOMString)
 PASS RTCRtpReceiver interface: operation getParameters()
 PASS RTCRtpReceiver interface: operation getContributingSources()
@@ -272,7 +272,7 @@ PASS RTCRtpReceiver must be primary interface of new RTCPeerConnection().addTran
 PASS Stringification of new RTCPeerConnection().addTransceiver('audio').receiver
 PASS RTCRtpReceiver interface: new RTCPeerConnection().addTransceiver('audio').receiver must inherit property "track" with the proper type
 PASS RTCRtpReceiver interface: new RTCPeerConnection().addTransceiver('audio').receiver must inherit property "transport" with the proper type
-FAIL RTCRtpReceiver interface: new RTCPeerConnection().addTransceiver('audio').receiver must inherit property "rtcpTransport" with the proper type assert_inherits: property "rtcpTransport" not found in prototype chain
+PASS RTCRtpReceiver interface: new RTCPeerConnection().addTransceiver('audio').receiver must inherit property "rtcpTransport" with the proper type
 PASS RTCRtpReceiver interface: new RTCPeerConnection().addTransceiver('audio').receiver must inherit property "getCapabilities(DOMString)" with the proper type
 PASS RTCRtpReceiver interface: calling getCapabilities(DOMString) on new RTCPeerConnection().addTransceiver('audio').receiver with too few arguments must throw TypeError
 PASS RTCRtpReceiver interface: new RTCPeerConnection().addTransceiver('audio').receiver must inherit property "getParameters()" with the proper type
@@ -312,14 +312,14 @@ PASS RTCDtlsTransport interface: existence and properties of interface prototype
 PASS RTCDtlsTransport interface: existence and properties of interface prototype object's @@unscopables property
 PASS RTCDtlsTransport interface: attribute iceTransport
 PASS RTCDtlsTransport interface: attribute state
-PASS RTCDtlsTransport interface: operation getRemoteCertificates()
+FAIL RTCDtlsTransport interface: operation getRemoteCertificates() assert_own_property: interface prototype object missing non-static operation expected property "getRemoteCertificates" missing
 PASS RTCDtlsTransport interface: attribute onstatechange
 PASS RTCDtlsTransport interface: attribute onerror
 PASS RTCDtlsTransport must be primary interface of idlTestObjects.dtlsTransport
 PASS Stringification of idlTestObjects.dtlsTransport
 PASS RTCDtlsTransport interface: idlTestObjects.dtlsTransport must inherit property "iceTransport" with the proper type
 PASS RTCDtlsTransport interface: idlTestObjects.dtlsTransport must inherit property "state" with the proper type
-PASS RTCDtlsTransport interface: idlTestObjects.dtlsTransport must inherit property "getRemoteCertificates()" with the proper type
+FAIL RTCDtlsTransport interface: idlTestObjects.dtlsTransport must inherit property "getRemoteCertificates()" with the proper type assert_inherits: property "getRemoteCertificates" not found in prototype chain
 PASS RTCDtlsTransport interface: idlTestObjects.dtlsTransport must inherit property "onstatechange" with the proper type
 PASS RTCDtlsTransport interface: idlTestObjects.dtlsTransport must inherit property "onerror" with the proper type
 FAIL RTCIceTransport interface: existence and properties of interface object assert_throws: interface object didn't throw TypeError when called as a constructor function "function() {

@@ -40,7 +40,7 @@ RTCDtlsTransport* RTCRtpReceiver::transport() {
   return transport_;
 }
 
-RTCDtlsTransport* RTCRtpReceiver::rtcp_transport() {
+RTCDtlsTransport* RTCRtpReceiver::rtcpTransport() {
   // Chrome does not support turning off RTCP-mux.
   return nullptr;
 }

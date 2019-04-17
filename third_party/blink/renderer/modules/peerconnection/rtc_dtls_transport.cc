@@ -78,11 +78,6 @@ String RTCDtlsTransport::state() const {
   return TransportStateToString(current_state_.state());
 }
 
-const HeapVector<Member<DOMArrayBuffer>>&
-RTCDtlsTransport::getRemoteCertificates() const {
-  return remote_certificates_;
-}
-
 RTCIceTransport* RTCDtlsTransport::iceTransport() const {
   return ice_transport_;
 }
@@ -131,7 +126,6 @@ ExecutionContext* RTCDtlsTransport::GetExecutionContext() const {
 }
 
 void RTCDtlsTransport::Trace(Visitor* visitor) {
-  visitor->Trace(remote_certificates_);
   visitor->Trace(ice_transport_);
   DtlsTransportProxy::Delegate::Trace(visitor);
   EventTargetWithInlineData::Trace(visitor);
