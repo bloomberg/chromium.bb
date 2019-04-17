@@ -37,7 +37,8 @@ void IOSChromePasswordManagerDriver::FormsEligibleForGenerationFound(
 
 void IOSChromePasswordManagerDriver::FormEligibleForGenerationFound(
     const autofill::NewPasswordFormGenerationData& form) {
-  if (GetPasswordGenerationHelper()->IsGenerationEnabled(
+  if (GetPasswordGenerationHelper() &&
+      GetPasswordGenerationHelper()->IsGenerationEnabled(
           /*log_debug_data*/ true)) {
     [delegate_ formEligibleForGenerationFound:form];
   }
