@@ -168,7 +168,9 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
   void AppendEditableItems();
   void AppendLanguageSettings();
   void AppendSpellingSuggestionItems();
-  void AppendAccessibilityLabelsItems();
+  // Returns true if the items were appended. This might not happen in all
+  // cases, e.g. these are only appended if a screen reader is enabled.
+  bool AppendAccessibilityLabelsItems();
   void AppendSearchProvider();
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   void AppendAllExtensionItems();
