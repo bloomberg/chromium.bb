@@ -11,13 +11,23 @@
 
 namespace {
 
-// Synthetic build id to use for V8 modules.
-const char kV8BuildId[] = "5555555517284E1E874EFA4EB754964B999";
+// Synthetic build ids to use for V8 modules. The difference is in the digit
+// after the leading 5's.
+// clang-format off
+const char kV8EmbeddedCodeRangeBuildId[] =
+    "5555555507284E1E874EFA4EB754964B999";
+const char kV8CodeRangeBuildId[] =
+    "5555555517284E1E874EFA4EB754964B999";
+// clang-format on
 
 class V8Module : public base::ModuleCache::Module {
  public:
-  V8Module(const v8::MemoryRange& memory_range, const std::string& descriptor)
-      : memory_range_(memory_range), descriptor_(descriptor) {}
+  V8Module(const v8::MemoryRange& memory_range,
+           const std::string& build_id,
+           const std::string& descriptor)
+      : memory_range_(memory_range),
+        build_id_(build_id),
+        descriptor_(descriptor) {}
 
   V8Module(const V8Module&) = delete;
   V8Module& operator=(const V8Module&) = delete;
@@ -27,7 +37,7 @@ class V8Module : public base::ModuleCache::Module {
     return reinterpret_cast<uintptr_t>(memory_range_.start);
   }
 
-  std::string GetId() const override { return kV8BuildId; }
+  std::string GetId() const override { return build_id_; }
 
   base::FilePath GetDebugBasename() const override {
     return base::FilePath().AppendASCII(base::StrCat({"V8 ", descriptor_}));
@@ -39,6 +49,7 @@ class V8Module : public base::ModuleCache::Module {
 
  private:
   const v8::MemoryRange memory_range_;
+  const std::string build_id_;
   const std::string descriptor_;
 };
 
@@ -51,10 +62,11 @@ V8Unwinder::~V8Unwinder() = default;
 
 void V8Unwinder::AddNonNativeModules(base::ModuleCache* module_cache) {
   std::vector<std::unique_ptr<base::ModuleCache::Module>> modules;
-  modules.emplace_back(
-      std::make_unique<V8Module>(unwind_state_.code_range, "Code Range"));
   modules.emplace_back(std::make_unique<V8Module>(
-      unwind_state_.embedded_code_range, "Embedded Code Range"));
+      unwind_state_.embedded_code_range, kV8EmbeddedCodeRangeBuildId,
+      "Embedded Code Range"));
+  modules.emplace_back(std::make_unique<V8Module>(
+      unwind_state_.code_range, kV8CodeRangeBuildId, "Code Range"));
   for (auto& module : modules) {
     v8_modules_.insert(module.get());
     module_cache->AddNonNativeModule(std::move(module));
