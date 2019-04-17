@@ -93,19 +93,35 @@ if (enable_vulkan) {
     }
   }
 
+  jumbo_static_library("test_support") {
+    testonly = true
+    sources = [
+      "tests/native_window.h",
+    ]
+    deps = [
+      "//ui/gfx",
+      "//ui/gfx:native_widget_types",
+    ]
+    if (use_x11) {
+      sources += [ "tests/native_window_x11.cc" ]
+      deps += [ "//ui/gfx/x" ]
+      configs += [ "//build/config/linux:x11" ]
+    }
+  }
+
   # TODO(cblume): These tests should run on each platform -- crbug.com/858614
   if (use_x11) {
     test("vulkan_tests") {
       sources = [
         "tests/basic_vulkan_test.cc",
         "tests/basic_vulkan_test.h",
-        "tests/native_window.h",
         "tests/vulkan_test.cc",
         "tests/vulkan_tests_main.cc",
         "vulkan_fence_helper_unittest.cc",
       ]
 
       deps = [
+        ":test_support",
         "//base:base",
         "//base/test:test_support",
         "//components/viz/common:vulkan_context_provider",
@@ -116,12 +132,6 @@ if (enable_vulkan) {
         "//ui/gfx:native_widget_types",
         "//ui/gfx/geometry",
       ]
-
-      if (use_x11) {
-        sources += [ "tests/native_window_x11.cc" ]
-        deps += [ "//ui/gfx/x" ]
-        configs += [ "//build/config/linux:x11" ]
-      }
     }
   }
 }
