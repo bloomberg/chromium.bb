@@ -229,6 +229,10 @@ constexpr base::TimeDelta kThrottle = base::TimeDelta::FromSeconds(1);
 // The minimum dimension required for description annotation.
 constexpr int32_t kDescDim = Annotator::kDescMinDimension;
 
+// The description language to use in tests that don't exercise
+// language-handling logic.
+constexpr char kDescLang[] = "";
+
 // An image processor that holds and exposes the callbacks it is passed.
 class TestImageProcessor : public mojom::ImageProcessor {
  public:
@@ -399,7 +403,7 @@ TEST(AnnotatorTest, OcrSuccessAndCache) {
     std::vector<mojom::Annotation> annotations;
 
     annotator.AnnotateImage(
-        kImage1Url, processor.GetPtr(),
+        kImage1Url, kDescLang, processor.GetPtr(),
         base::BindOnce(&ReportResult, &error, &annotations));
     test_task_env.RunUntilIdle();
 
@@ -465,7 +469,7 @@ TEST(AnnotatorTest, OcrSuccessAndCache) {
     std::vector<mojom::Annotation> annotations;
 
     annotator.AnnotateImage(
-        kImage1Url, processor.GetPtr(),
+        kImage1Url, kDescLang, processor.GetPtr(),
         base::BindOnce(&ReportResult, &error, &annotations));
     test_task_env.RunUntilIdle();
 
@@ -502,7 +506,7 @@ TEST(AnnotatorTest, DescriptionSuccess) {
   base::Optional<mojom::AnnotateImageError> error;
   std::vector<mojom::Annotation> annotations;
 
-  annotator.AnnotateImage(kImage1Url, processor.GetPtr(),
+  annotator.AnnotateImage(kImage1Url, kDescLang, processor.GetPtr(),
                           base::BindOnce(&ReportResult, &error, &annotations));
   test_task_env.RunUntilIdle();
 
@@ -609,7 +613,7 @@ TEST(AnnotatorTest, DoubleOcrResult) {
   base::Optional<mojom::AnnotateImageError> error;
   std::vector<mojom::Annotation> annotations;
 
-  annotator.AnnotateImage(kImage1Url, processor.GetPtr(),
+  annotator.AnnotateImage(kImage1Url, kDescLang, processor.GetPtr(),
                           base::BindOnce(&ReportResult, &error, &annotations));
   test_task_env.RunUntilIdle();
 
@@ -724,7 +728,7 @@ TEST(AnnotatorTest, HttpError) {
   base::Optional<mojom::AnnotateImageError> error;
   std::vector<mojom::Annotation> annotations;
 
-  annotator.AnnotateImage(kImage1Url, processor.GetPtr(),
+  annotator.AnnotateImage(kImage1Url, kDescLang, processor.GetPtr(),
                           base::BindOnce(&ReportResult, &error, &annotations));
   test_task_env.RunUntilIdle();
 
@@ -779,7 +783,7 @@ TEST(AnnotatorTest, BackendError) {
   base::Optional<mojom::AnnotateImageError> error;
   std::vector<mojom::Annotation> annotations;
 
-  annotator.AnnotateImage(kImage1Url, processor.GetPtr(),
+  annotator.AnnotateImage(kImage1Url, kDescLang, processor.GetPtr(),
                           base::BindOnce(&ReportResult, &error, &annotations));
   test_task_env.RunUntilIdle();
 
@@ -862,7 +866,7 @@ TEST(AnnotatorTest, OcrBackendError) {
   base::Optional<mojom::AnnotateImageError> error;
   std::vector<mojom::Annotation> annotations;
 
-  annotator.AnnotateImage(kImage1Url, processor.GetPtr(),
+  annotator.AnnotateImage(kImage1Url, kDescLang, processor.GetPtr(),
                           base::BindOnce(&ReportResult, &error, &annotations));
   test_task_env.RunUntilIdle();
 
@@ -956,7 +960,7 @@ TEST(AnnotatorTest, DescriptionBackendError) {
   base::Optional<mojom::AnnotateImageError> error;
   std::vector<mojom::Annotation> annotations;
 
-  annotator.AnnotateImage(kImage1Url, processor.GetPtr(),
+  annotator.AnnotateImage(kImage1Url, kDescLang, processor.GetPtr(),
                           base::BindOnce(&ReportResult, &error, &annotations));
   test_task_env.RunUntilIdle();
 
@@ -1046,7 +1050,7 @@ TEST(AnnotatorTest, ServerError) {
   base::Optional<mojom::AnnotateImageError> error;
   std::vector<mojom::Annotation> annotations;
 
-  annotator.AnnotateImage(kImage1Url, processor.GetPtr(),
+  annotator.AnnotateImage(kImage1Url, kDescLang, processor.GetPtr(),
                           base::BindOnce(&ReportResult, &error, &annotations));
   test_task_env.RunUntilIdle();
 
@@ -1104,7 +1108,7 @@ TEST(AnnotatorTest, AdultError) {
   base::Optional<mojom::AnnotateImageError> error;
   std::vector<mojom::Annotation> annotations;
 
-  annotator.AnnotateImage(kImage1Url, processor.GetPtr(),
+  annotator.AnnotateImage(kImage1Url, kDescLang, processor.GetPtr(),
                           base::BindOnce(&ReportResult, &error, &annotations));
   test_task_env.RunUntilIdle();
 
@@ -1181,7 +1185,7 @@ TEST(AnnotatorTest, ProcessorFails) {
 
   for (int i = 0; i < 3; ++i) {
     annotator.AnnotateImage(
-        kImage1Url, processor[i].GetPtr(),
+        kImage1Url, kDescLang, processor[i].GetPtr(),
         base::BindOnce(&ReportResult, &error[i], &annotations[i]));
   }
   test_task_env.RunUntilIdle();
@@ -1240,6 +1244,76 @@ TEST(AnnotatorTest, ProcessorFails) {
                   Bucket(static_cast<int32_t>(ClientResult::kSucceeded), 2)));
 }
 
+// Test a case that was previously buggy: when one client requests annotations,
+// then fails local processing, then another client makes the same request.
+TEST(AnnotatorTest, ProcessorFailedPreviously) {
+  base::test::ScopedTaskEnvironment test_task_env(
+      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
+  TestServerURLLoaderFactory test_url_factory(
+      "https://ia-pa.googleapis.com/v1/");
+  data_decoder::TestDataDecoderService test_dd_service;
+  base::HistogramTester histogram_tester;
+
+  Annotator annotator(
+      GURL(kTestServerUrl), std::string() /* api_key */, kThrottle,
+      1 /* batch_size */, 1.0 /* min_ocr_confidence */,
+      test_url_factory.AsSharedURLLoaderFactory(), test_dd_service.connector());
+
+  TestImageProcessor processor[2];
+  base::Optional<mojom::AnnotateImageError> error[2];
+  std::vector<mojom::Annotation> annotations[2];
+
+  // Processor 1 makes a request for annotation of a given image.
+  annotator.AnnotateImage(
+      kImage1Url, kDescLang, processor[0].GetPtr(),
+      base::BindOnce(&ReportResult, &error[0], &annotations[0]));
+  test_task_env.RunUntilIdle();
+
+  // Annotator should have asked processor 1 for the image's pixels.
+  ASSERT_THAT(processor[0].callbacks(), SizeIs(1));
+  ASSERT_THAT(processor[1].callbacks(), IsEmpty());
+
+  // Make processor 1 fail by returning empty bytes.
+  std::move(processor[0].callbacks()[0]).Run({}, 0, 0);
+  processor[0].callbacks().pop_back();
+  test_task_env.RunUntilIdle();
+
+  // Processor 2 makes a request for annotation of the same image.
+  annotator.AnnotateImage(
+      kImage1Url, kDescLang, processor[1].GetPtr(),
+      base::BindOnce(&ReportResult, &error[1], &annotations[1]));
+  test_task_env.RunUntilIdle();
+
+  // Annotator should have asked processor 2 for the image's pixels.
+  ASSERT_THAT(processor[1].callbacks(), SizeIs(1));
+
+  // Send back image data.
+  std::move(processor[1].callbacks()[0]).Run({1, 2, 3}, kDescDim, kDescDim);
+  processor[1].callbacks().pop_back();
+  test_task_env.RunUntilIdle();
+
+  // No request should be sent yet (because service is waiting to batch up
+  // multiple requests).
+  EXPECT_THAT(test_url_factory.requests(), IsEmpty());
+  test_task_env.FastForwardBy(base::TimeDelta::FromSeconds(1));
+
+  // HTTP request for image 1 should have been made.
+  test_url_factory.ExpectRequestAndSimulateResponse(
+      "annotation", {} /* expected_headers */,
+      ReformatJson(base::StringPrintf(kTemplateRequest, kImage1Url, "AQID")),
+      kOcrSuccessResponse, net::HTTP_OK);
+  test_task_env.RunUntilIdle();
+
+  // Annotator should have called all callbacks, but request 1 received an error
+  // when we returned empty bytes.
+  ASSERT_THAT(error,
+              ElementsAre(mojom::AnnotateImageError::kFailure, base::nullopt));
+  EXPECT_THAT(annotations[0], IsEmpty());
+  EXPECT_THAT(annotations[1],
+              UnorderedElementsAre(AnnotatorEq(mojom::AnnotationType::kOcr, 1.0,
+                                               "Region 1\nRegion 2")));
+}
+
 // Test that work is reassigned if processor dies.
 TEST(AnnotatorTest, ProcessorDies) {
   base::test::ScopedTaskEnvironment test_task_env(
@@ -1260,7 +1334,7 @@ TEST(AnnotatorTest, ProcessorDies) {
 
   for (int i = 0; i < 3; ++i) {
     annotator.AnnotateImage(
-        kImage1Url, processor[i].GetPtr(),
+        kImage1Url, kDescLang, processor[i].GetPtr(),
         base::BindOnce(&ReportResult, &error[i], &annotations[i]));
   }
   test_task_env.RunUntilIdle();
@@ -1335,13 +1409,13 @@ TEST(AnnotatorTest, ConcurrentSameBatch) {
 
   // Request OCR for images 1, 2 and 3.
   annotator.AnnotateImage(
-      kImage1Url, processor[0].GetPtr(),
+      kImage1Url, kDescLang, processor[0].GetPtr(),
       base::BindOnce(&ReportResult, &error[0], &annotations[0]));
   annotator.AnnotateImage(
-      kImage2Url, processor[1].GetPtr(),
+      kImage2Url, kDescLang, processor[1].GetPtr(),
       base::BindOnce(&ReportResult, &error[1], &annotations[1]));
   annotator.AnnotateImage(
-      kImage3Url, processor[2].GetPtr(),
+      kImage3Url, kDescLang, processor[2].GetPtr(),
       base::BindOnce(&ReportResult, &error[2], &annotations[2]));
   test_task_env.RunUntilIdle();
 
@@ -1422,7 +1496,7 @@ TEST(AnnotatorTest, ConcurrentSeparateBatches) {
 
   // Request OCR for image 1.
   annotator.AnnotateImage(
-      kImage1Url, processor[0].GetPtr(),
+      kImage1Url, kDescLang, processor[0].GetPtr(),
       base::BindOnce(&ReportResult, &error[0], &annotations[0]));
   test_task_env.RunUntilIdle();
 
@@ -1442,7 +1516,7 @@ TEST(AnnotatorTest, ConcurrentSeparateBatches) {
 
   // Request OCR for image 2.
   annotator.AnnotateImage(
-      kImage2Url, processor[1].GetPtr(),
+      kImage2Url, kDescLang, processor[1].GetPtr(),
       base::BindOnce(&ReportResult, &error[1], &annotations[1]));
   test_task_env.RunUntilIdle();
 
@@ -1566,7 +1640,7 @@ TEST(AnnotatorTest, DuplicateWork) {
 
   // First request annotation of the image with processor 1.
   annotator.AnnotateImage(
-      kImage1Url, processor[0].GetPtr(),
+      kImage1Url, kDescLang, processor[0].GetPtr(),
       base::BindOnce(&ReportResult, &error[0], &annotations[0]));
   test_task_env.RunUntilIdle();
 
@@ -1578,7 +1652,7 @@ TEST(AnnotatorTest, DuplicateWork) {
 
   // Now request annotation of the image with processor 2.
   annotator.AnnotateImage(
-      kImage1Url, processor[1].GetPtr(),
+      kImage1Url, kDescLang, processor[1].GetPtr(),
       base::BindOnce(&ReportResult, &error[1], &annotations[1]));
   test_task_env.RunUntilIdle();
 
@@ -1596,7 +1670,7 @@ TEST(AnnotatorTest, DuplicateWork) {
 
   // Now request annotation of the image with processor 3.
   annotator.AnnotateImage(
-      kImage1Url, processor[2].GetPtr(),
+      kImage1Url, kDescLang, processor[2].GetPtr(),
       base::BindOnce(&ReportResult, &error[2], &annotations[2]));
   test_task_env.RunUntilIdle();
 
@@ -1613,7 +1687,7 @@ TEST(AnnotatorTest, DuplicateWork) {
   test_task_env.FastForwardBy(base::TimeDelta::FromSeconds(1));
   EXPECT_THAT(test_url_factory.requests(), SizeIs(1));
   annotator.AnnotateImage(
-      kImage1Url, processor[3].GetPtr(),
+      kImage1Url, kDescLang, processor[3].GetPtr(),
       base::BindOnce(&ReportResult, &error[3], &annotations[3]));
   test_task_env.RunUntilIdle();
 
@@ -1674,13 +1748,13 @@ TEST(AnnotatorTest, DescPolicy) {
 
   // Request annotation for images 1, 2 and 3.
   annotator.AnnotateImage(
-      kImage1Url, processor[0].GetPtr(),
+      kImage1Url, kDescLang, processor[0].GetPtr(),
       base::BindOnce(&ReportResult, &error[0], &annotations[0]));
   annotator.AnnotateImage(
-      kImage2Url, processor[1].GetPtr(),
+      kImage2Url, kDescLang, processor[1].GetPtr(),
       base::BindOnce(&ReportResult, &error[1], &annotations[1]));
   annotator.AnnotateImage(
-      kImage3Url, processor[2].GetPtr(),
+      kImage3Url, kDescLang, processor[2].GetPtr(),
       base::BindOnce(&ReportResult, &error[2], &annotations[2]));
   test_task_env.RunUntilIdle();
 
@@ -1856,6 +1930,199 @@ TEST(AnnotatorTest, DescPolicy) {
       false, 1);
 }
 
+// Test that description language preferences are sent to the server.
+TEST(AnnotatorTest, DescLanguage) {
+  base::test::ScopedTaskEnvironment test_task_env(
+      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
+  TestServerURLLoaderFactory test_url_factory(
+      "https://ia-pa.googleapis.com/v1/");
+  data_decoder::TestDataDecoderService test_dd_service;
+  base::HistogramTester histogram_tester;
+
+  Annotator annotator(
+      GURL(kTestServerUrl), std::string() /* api_key */, kThrottle,
+      3 /* batch_size */, 1.0 /* min_ocr_confidence */,
+      test_url_factory.AsSharedURLLoaderFactory(), test_dd_service.connector());
+
+  TestImageProcessor processor[3];
+  base::Optional<mojom::AnnotateImageError> error[3];
+  std::vector<mojom::Annotation> annotations[3];
+
+  // Request annotation for one image in two languages, and one other image in
+  // one language.
+  annotator.AnnotateImage(
+      kImage1Url, "fr", processor[0].GetPtr(),
+      base::BindOnce(&ReportResult, &error[0], &annotations[0]));
+  annotator.AnnotateImage(
+      kImage1Url, "en-AU", processor[1].GetPtr(),
+      base::BindOnce(&ReportResult, &error[1], &annotations[1]));
+  annotator.AnnotateImage(
+      kImage2Url, "en-US", processor[2].GetPtr(),
+      base::BindOnce(&ReportResult, &error[2], &annotations[2]));
+  test_task_env.RunUntilIdle();
+
+  // Annotator should have asked processor 1 and 2 for image 1's pixels and
+  // processor 3 for image 2's pixels.
+  ASSERT_THAT(processor[0].callbacks(), SizeIs(1));
+  ASSERT_THAT(processor[1].callbacks(), SizeIs(1));
+  ASSERT_THAT(processor[2].callbacks(), SizeIs(1));
+
+  // Send back image data. Image 2 is out of policy.
+  std::move(processor[0].callbacks()[0]).Run({1, 2, 3}, kDescDim, kDescDim);
+  processor[0].callbacks().pop_back();
+  std::move(processor[1].callbacks()[0]).Run({1, 2, 3}, kDescDim, kDescDim);
+  processor[1].callbacks().pop_back();
+  std::move(processor[2].callbacks()[0])
+      .Run({4, 5, 6}, Annotator::kDescMinDimension - 1,
+           Annotator::kDescMinDimension);
+  processor[2].callbacks().pop_back();
+  test_task_env.RunUntilIdle();
+
+  // No request should be sent yet (because service is waiting to batch up
+  // multiple requests).
+  EXPECT_THAT(test_url_factory.requests(), IsEmpty());
+  test_task_env.FastForwardBy(base::TimeDelta::FromSeconds(1));
+
+  // A single HTTP request for all images should have been sent.
+  test_url_factory.ExpectRequestAndSimulateResponse(
+      "annotation", {} /* expected_headers */,
+      // Image requests should include the preferred language in their image IDs
+      // and description parameters (except for image 2 which should not include
+      // description parameters).
+      ReformatJson(R"(
+        {
+          "imageRequests": [
+            {
+              "imageId": "https://www.example.com/image2.jpg en-US",
+              "imageBytes": "BAUG",
+              "engineParameters": [
+                {"ocrParameters": {}}
+              ]
+            },
+            {
+              "imageId": "https://www.example.com/image1.jpg en-AU",
+              "imageBytes": "AQID",
+              "engineParameters": [
+                {"ocrParameters": {}},
+                {
+                  "descriptionParameters": {
+                    "preferredLanguages": ["en-AU"]
+                  }
+                }
+              ]
+            },
+            {
+              "imageId": "https://www.example.com/image1.jpg fr",
+              "imageBytes": "AQID",
+              "engineParameters": [
+                {"ocrParameters": {}},
+                {
+                  "descriptionParameters": {
+                    "preferredLanguages": ["fr"]
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      )"),
+      R"(
+        {
+          "results": [
+            {
+              "imageId": "https://www.example.com/image1.jpg en-AU",
+              "engineResults": [
+                {
+                  "status": {},
+                  "ocrEngine": {
+                    "ocrRegions": [{
+                      "words": [{
+                        "detectedText": "1",
+                        "confidenceScore": 1.0
+                      }]
+                    }]
+                  }
+                },
+                {
+                  "status": {},
+                  "descriptionEngine": {
+                    "descriptionList": {
+                      "descriptions": [{
+                        "type": "CAPTION",
+                        "text": "This is an example image.",
+                        "score": 1.0
+                      }]
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "imageId": "https://www.example.com/image1.jpg fr",
+              "engineResults": [
+                {
+                  "status": {},
+                  "ocrEngine": {
+                    "ocrRegions": [{
+                      "words": [{
+                        "detectedText": "1",
+                        "confidenceScore": 1.0
+                      }]
+                    }]
+                  }
+                },
+                {
+                  "status": {},
+                  "descriptionEngine": {
+                    "descriptionList": {
+                      "descriptions": [{
+                        "type": "CAPTION",
+                        "text": "Ceci est un exemple d'image.",
+                        "score": 1.0
+                      }]
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "imageId": "https://www.example.com/image2.jpg en-US",
+              "engineResults": [
+                {
+                  "status": {},
+                  "ocrEngine": {
+                    "ocrRegions": [{
+                      "words": [{
+                        "detectedText": "2",
+                        "confidenceScore": 1.0
+                      }]
+                    }]
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      )",
+      net::HTTP_OK);
+  test_task_env.RunUntilIdle();
+
+  // Annotator should have called each callback with its corresponding results.
+  ASSERT_THAT(error, ElementsAre(base::nullopt, base::nullopt, base::nullopt));
+  EXPECT_THAT(
+      annotations[0],
+      UnorderedElementsAre(AnnotatorEq(mojom::AnnotationType::kOcr, 1.0, "1"),
+                           AnnotatorEq(mojom::AnnotationType::kCaption, 1.0,
+                                       "Ceci est un exemple d'image.")));
+  EXPECT_THAT(
+      annotations[1],
+      UnorderedElementsAre(AnnotatorEq(mojom::AnnotationType::kOcr, 1.0, "1"),
+                           AnnotatorEq(mojom::AnnotationType::kCaption, 1.0,
+                                       "This is an example image.")));
+  EXPECT_THAT(annotations[2], UnorderedElementsAre(AnnotatorEq(
+                                  mojom::AnnotationType::kOcr, 1.0, "2")));
+}
+
 // Test that the specified API key is sent, but only to Google-associated server
 // domains.
 TEST(AnnotatorTest, ApiKey) {
@@ -1875,7 +2142,8 @@ TEST(AnnotatorTest, ApiKey) {
                         test_dd_service.connector());
     TestImageProcessor processor;
 
-    annotator.AnnotateImage(kImage1Url, processor.GetPtr(), base::DoNothing());
+    annotator.AnnotateImage(kImage1Url, kDescLang, processor.GetPtr(),
+                            base::DoNothing());
     test_task_env.RunUntilIdle();
 
     // Annotator should have asked processor for pixels.
@@ -1908,7 +2176,8 @@ TEST(AnnotatorTest, ApiKey) {
                         test_dd_service.connector());
     TestImageProcessor processor;
 
-    annotator.AnnotateImage(kImage1Url, processor.GetPtr(), base::DoNothing());
+    annotator.AnnotateImage(kImage1Url, kDescLang, processor.GetPtr(),
+                            base::DoNothing());
     test_task_env.RunUntilIdle();
 
     // Annotator should have asked processor for pixels.
@@ -1938,7 +2207,8 @@ TEST(AnnotatorTest, ApiKey) {
                         test_dd_service.connector());
     TestImageProcessor processor;
 
-    annotator.AnnotateImage(kImage1Url, processor.GetPtr(), base::DoNothing());
+    annotator.AnnotateImage(kImage1Url, kDescLang, processor.GetPtr(),
+                            base::DoNothing());
     test_task_env.RunUntilIdle();
 
     // Annotator should have asked processor for pixels.

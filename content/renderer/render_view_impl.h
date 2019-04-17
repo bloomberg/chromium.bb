@@ -215,7 +215,7 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
 
   // Registers a watcher to observe changes in the
   // blink::mojom::RendererPreferences.
-  void RegisterRendererPreferenceWatcherForWorker(
+  void RegisterRendererPreferenceWatcher(
       blink::mojom::RendererPreferenceWatcherPtr watcher);
 
   // IPC::Listener implementation (via RenderWidget inheritance).

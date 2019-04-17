@@ -15,6 +15,8 @@
 #include "content/public/renderer/render_accessibility.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/renderer/accessibility/blink_ax_tree_source.h"
+#include "mojo/public/cpp/bindings/binding.h"
+#include "third_party/blink/public/mojom/renderer_preference_watcher.mojom.h"
 #include "third_party/blink/public/web/web_ax_context.h"
 #include "third_party/blink/public/web/web_ax_object.h"
 #include "ui/accessibility/ax_relative_bounds.h"
@@ -60,7 +62,8 @@ class RenderFrameImpl;
 // (e.g., change focus, or click on a button).
 class CONTENT_EXPORT RenderAccessibilityImpl
     : public RenderAccessibility,
-             RenderFrameObserver {
+      public RenderFrameObserver,
+      public blink::mojom::RendererPreferenceWatcher {
  public:
   // Request a one-time snapshot of the accessibility tree without
   // enabling accessibility if it wasn't already enabled.
@@ -84,6 +87,9 @@ class CONTENT_EXPORT RenderAccessibilityImpl
                                 ui::PageTransition transition) override;
   void AccessibilityModeChanged() override;
   bool OnMessageReceived(const IPC::Message& message) override;
+
+  // blink::mojom::RendererPreferenceObserver implementation.
+  void NotifyUpdate(blink::mojom::RendererPreferencesPtr new_prefs) override;
 
   // Called when an accessibility notification occurs in Blink.
   void HandleWebAccessibilityEvent(const blink::WebAXObject& obj,
@@ -170,6 +176,9 @@ class CONTENT_EXPORT RenderAccessibilityImpl
 
   // Manages the automatic image annotations, if enabled.
   std::unique_ptr<AXImageAnnotator> ax_image_annotator_;
+
+  // The Mojo binding for this object as a RenderPreferenceWatcher.
+  mojo::Binding<blink::mojom::RendererPreferenceWatcher> pref_watcher_binding_;
 
   // Events from Blink are collected until they are ready to be
   // sent to the browser.

@@ -1744,7 +1744,7 @@ void RenderViewImpl::DidCommitProvisionalHistoryLoad() {
   history_navigation_virtual_time_pauser_.UnpauseVirtualTime();
 }
 
-void RenderViewImpl::RegisterRendererPreferenceWatcherForWorker(
+void RenderViewImpl::RegisterRendererPreferenceWatcher(
     blink::mojom::RendererPreferenceWatcherPtr watcher) {
   renderer_preference_watchers_.AddPtr(std::move(watcher));
 }
