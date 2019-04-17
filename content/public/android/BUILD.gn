@@ -82,7 +82,6 @@ android_library("content_java") {
     "//third_party/blink/public/mojom:android_mojo_bindings_java",
     "//third_party/blink/public/mojom:mojom_core_java",
     "//third_party/blink/public/mojom:mojom_platform_java",
-    "//third_party/blink/public/mojom:speech_recognition_error_code_java",
     "//third_party/jsr-305:jsr_305_javalib",
     "//ui/android:ui_java",
     "//ui/gfx/geometry/mojo:mojo_java",

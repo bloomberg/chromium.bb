@@ -101,6 +101,7 @@ mojom("mojom_platform") {
     "service_worker/service_worker_stream_handle.mojom",
     "site_engagement/site_engagement.mojom",
     "speech/speech_recognition_error.mojom",
+    "speech/speech_recognition_error_code.mojom",
     "speech/speech_recognition_grammar.mojom",
     "speech/speech_recognition_result.mojom",
     "speech/speech_recognizer.mojom",
@@ -134,7 +135,6 @@ mojom("mojom_platform") {
     ":android_mojo_bindings",
     ":authenticator_test_mojo_bindings",
     ":mojom_mhtml_load_result",
-    ":speech_recognition_error_code",
     ":web_client_hints_types_mojo_bindings",
     ":web_feature_mojo_bindings",
     "//components/payments/mojom",
@@ -224,17 +224,6 @@ mojom("android_mojo_bindings") {
 
   # Don't scramble message IDs so they are redistributable to external tests.
   scramble_message_ids = false
-}
-
-# Kept separate from "mojom_platform" because the Java bindings are needed by
-# Android's implementation of speech recognition.
-mojom_component("speech_recognition_error_code") {
-  sources = [
-    "speech/speech_recognition_error_code.mojom",
-  ]
-
-  macro_prefix = "SPEECH_RECOGNITION_ERROR_CODE_MOJOM"
-  output_prefix = "speech_recognition_error_code_mojom"
 }
 
 # This target can include mojom interfaces which do use types that are
