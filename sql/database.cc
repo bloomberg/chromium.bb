@@ -267,20 +267,6 @@ void Database::RecordEvent(Events event, size_t count) {
 }
 
 bool Database::Open(const base::FilePath& path) {
-  if (!histogram_tag_.empty()) {
-    int64_t size_64 = 0;
-    if (base::GetFileSize(path, &size_64)) {
-      int sample = base::saturated_cast<int>(size_64 / 1024);
-      std::string full_histogram_name = "Sqlite.SizeKB." + histogram_tag_;
-      base::HistogramBase* histogram = base::Histogram::FactoryGet(
-          full_histogram_name, 1, 1000000, 50,
-          base::HistogramBase::kUmaTargetedHistogramFlag);
-      if (histogram)
-        histogram->Add(sample);
-      UMA_HISTOGRAM_COUNTS_1M("Sqlite.SizeKB", sample);
-    }
-  }
-
   return OpenInternal(AsUTF8ForSQL(path), RETRY_ON_POISON);
 }
 
