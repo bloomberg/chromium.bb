@@ -69,6 +69,10 @@ void UmaRecordWebRtcEventLoggingUpload(WebRtcEventLoggingUploadUma result) {
   base::UmaHistogramEnumeration("WebRtcEventLogging.Upload", result);
 }
 
+void UmaRecordWebRtcEventLoggingNetErrorType(int net_error) {
+  base::UmaHistogramSparse("WebRtcEventLogging.NetError", net_error);
+}
+
 namespace {
 
 constexpr int kDefaultMemLevel = 8;
