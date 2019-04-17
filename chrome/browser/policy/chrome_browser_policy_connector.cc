@@ -158,7 +158,8 @@ ChromeBrowserPolicyConnector::CreatePolicyProviders() {
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
   std::unique_ptr<MachineLevelUserCloudPolicyManager>
       machine_level_user_cloud_policy_manager =
-          MachineLevelUserCloudPolicyController::CreatePolicyManager();
+          MachineLevelUserCloudPolicyController::CreatePolicyManager(
+              platform_provider_);
   if (machine_level_user_cloud_policy_manager) {
     AddMigrators(machine_level_user_cloud_policy_manager.get());
     machine_level_user_cloud_policy_manager_ =
