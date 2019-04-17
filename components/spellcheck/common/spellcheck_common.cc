@@ -122,14 +122,14 @@ base::FilePath GetVersionedFileName(base::StringPiece input_language,
       {"en-GB", "-8-0"},
       {"en-US", "-8-0"},
 
-      // March 2016: Initial check-in of Persian
-      {"fa-IR", "-7-0"},
-
       // Feb 2019: Initial check-in of Welsh.
       {"cy-GB", "-1-0"},
 
       // April 2019: Initial check-in of Armenian.
       {"hy", "-1-0"},
+
+      // April 2019: Update Persian
+      {"fa-IR", "-8-0"},
   };
 
   // Generate the bdict file name using default version string or special
