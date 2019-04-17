@@ -1963,7 +1963,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'cheza',
       'cobblepot',
       'coral',
-      'cyan',
       'daisy',
       'daisy_skate',
       'daisy_spring',
@@ -1975,7 +1974,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'fizz',
       'fizz-accelerator',
       'flapjack',
-      'gale',
       'glados',
       'gonzo',
       'grunt',
@@ -2030,7 +2028,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'veyron_speedy',
       'veyron_tiger',
       'viking',
-      'whirlwind',
       'winky',
       'wizpig',
       'wolf',
@@ -2065,10 +2062,13 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   # notice, preferably with a comment indicating why and a bug.
   _paladin_experimental_boards = _paladin_new_boards | frozenset([
       'auron_paine', # crbug.com/950751
+      'cyan', # crbug.com/953920
       'eve-arcnext', # contact: ihf@ (crbug.com/826755)
       'fizz-moblab', # crbug.com/952619
       'guado', # crbug.com/939135
       'guado_moblab', # crbug.com/952619
+      'gale', # crbug.com/953701
+      'whirlwind', # crbug.com/953701
       'mistral', # contact: roopeshr@
       'lakitu-st', # crbug.com/953855
   ])
