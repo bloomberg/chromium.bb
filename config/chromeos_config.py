@@ -1992,7 +1992,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'lasilla-ground',
       'leon',
       'littlejoe',
-      'moblab-generic-vm',
       'monroe',
       'nami',
       'nocturne',
@@ -2071,6 +2070,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'lakitu', # crbug.com/953855#c7
       'lakitu-st', # crbug.com/953855
       'veyron_minnie', # crbug.com/953619
+      'moblab-generic-vm', # crbug.com/953966
   ])
 
   assert not (_paladin_experimental_boards & _paladin_important_boards), (
