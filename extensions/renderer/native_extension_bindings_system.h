@@ -71,9 +71,6 @@ class NativeExtensionBindingsSystem {
   // Returns the associated IPC message sender.
   IPCMessageSender* GetIPCMessageSender();
 
-  // Returns the associated RendererMessagingService.
-  RendererMessagingService* GetMessagingService();
-
   // Called when an extension's permissions are updated.
   void OnExtensionPermissionsUpdated(const ExtensionId& id);
 
