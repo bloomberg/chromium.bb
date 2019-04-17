@@ -695,7 +695,7 @@ void TestLibraryUnload(bool wait_until_unloaded, ModuleCache* module_cache) {
     // the same stack as |wait_until_unloaded|, if not we should have the full
     // stack. The important thing is that we should not crash.
 
-    if (frames.end() - end_frame == 2) {
+    if (frames.end() - end_frame == 3) {
       // This is the same case as |wait_until_unloaded|.
       return;
     }
