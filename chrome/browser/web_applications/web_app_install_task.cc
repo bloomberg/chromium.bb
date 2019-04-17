@@ -210,8 +210,10 @@ void WebAppInstallTask::OnDialogCompleted(
     InstallableMetrics::TrackInstallEvent(install_source_);
   }
 
+  InstallFinalizer::FinalizeOptions options;
+
   install_finalizer_->FinalizeInstall(
-      web_app_info_copy,
+      web_app_info_copy, options,
       base::BindOnce(&WebAppInstallTask::OnInstallFinalized,
                      weak_ptr_factory_.GetWeakPtr(), std::move(web_app_info)));
 

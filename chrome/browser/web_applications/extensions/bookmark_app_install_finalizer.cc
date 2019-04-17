@@ -85,6 +85,7 @@ BookmarkAppInstallFinalizer::~BookmarkAppInstallFinalizer() = default;
 
 void BookmarkAppInstallFinalizer::FinalizeInstall(
     const WebApplicationInfo& web_app_info,
+    const FinalizeOptions& options,
     InstallFinalizedCallback callback) {
   scoped_refptr<CrxInstaller> crx_installer =
       crx_installer_factory_.Run(profile_);
@@ -93,20 +94,15 @@ void BookmarkAppInstallFinalizer::FinalizeInstall(
       OnExtensionInstalled, web_app_info.app_url, GetLaunchType(web_app_info),
       std::move(callback), crx_installer));
 
-  crx_installer->InstallWebApp(web_app_info);
-}
+  if (options.policy_installed)
+    crx_installer->set_install_source(Manifest::EXTERNAL_POLICY_DOWNLOAD);
 
-void BookmarkAppInstallFinalizer::FinalizePolicyInstall(
-    const WebApplicationInfo& web_app_info,
-    InstallFinalizedCallback callback) {
-  scoped_refptr<CrxInstaller> crx_installer =
-      crx_installer_factory_.Run(profile_);
-
-  crx_installer->set_installer_callback(base::BindOnce(
-      OnExtensionInstalled, web_app_info.app_url, GetLaunchType(web_app_info),
-      std::move(callback), crx_installer));
-
-  crx_installer->set_install_source(Manifest::EXTERNAL_POLICY_DOWNLOAD);
+  if (options.no_network_install) {
+    // Ensure that this app is not synced. A no-network install means we have
+    // all data locally, so assume that there is some mechanism to propagate
+    // the local source of data in place of usual extension sync.
+    crx_installer->set_install_source(Manifest::EXTERNAL_PREF_DOWNLOAD);
+  }
 
   crx_installer->InstallWebApp(web_app_info);
 }

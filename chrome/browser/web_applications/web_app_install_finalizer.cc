@@ -53,6 +53,7 @@ WebAppInstallFinalizer::~WebAppInstallFinalizer() = default;
 
 void WebAppInstallFinalizer::FinalizeInstall(
     const WebApplicationInfo& web_app_info,
+    const FinalizeOptions& options,
     InstallFinalizedCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -78,12 +79,6 @@ void WebAppInstallFinalizer::FinalizeInstall(
       base::BindOnce(&WebAppInstallFinalizer::OnDataWritten,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback),
                      std::move(web_app)));
-}
-
-void WebAppInstallFinalizer::FinalizePolicyInstall(
-    const WebApplicationInfo& web_app_info,
-    InstallFinalizedCallback callback) {
-  NOTIMPLEMENTED();
 }
 
 void WebAppInstallFinalizer::OnDataWritten(InstallFinalizedCallback callback,
