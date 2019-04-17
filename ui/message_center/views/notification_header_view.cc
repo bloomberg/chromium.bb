@@ -17,8 +17,7 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
 #include "ui/message_center/vector_icons.h"
-#include "ui/message_center/views/notification_control_buttons_view.h"
-#include "ui/message_center/views/timestamp_view.h"
+#include "ui/message_center/views/relative_time_formatter.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/animation/ink_drop_stub.h"
 #include "ui/views/border.h"
@@ -145,9 +144,7 @@ gfx::Insets CalculateTopPadding(int font_list_height) {
 
 }  // namespace
 
-NotificationHeaderView::NotificationHeaderView(
-    NotificationControlButtonsView* control_buttons_view,
-    views::ButtonListener* listener)
+NotificationHeaderView::NotificationHeaderView(views::ButtonListener* listener)
     : views::Button(listener) {
   const int kInnerHeaderHeight = kHeaderHeight - kHeaderOuterPadding.height();
 
@@ -233,7 +230,7 @@ NotificationHeaderView::NotificationHeaderView(
   AddChildView(timestamp_divider_);
 
   // Timestamp view
-  timestamp_view_ = new TimestampView();
+  timestamp_view_ = new views::Label();
   timestamp_view_->SetFontList(font_list);
   timestamp_view_->SetLineHeight(font_list_height);
   timestamp_view_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -257,9 +254,6 @@ NotificationHeaderView::NotificationHeaderView(
   spacer->SetPreferredSize(gfx::Size(1, kInnerHeaderHeight));
   AddChildView(spacer);
   layout->SetFlexForView(spacer, kSpacerFlex);
-
-  // Settings and close buttons view
-  AddChildView(control_buttons_view);
 
   SetPreferredSize(gfx::Size(kNotificationWidth, kHeaderHeight));
 }
@@ -326,13 +320,25 @@ void NotificationHeaderView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 }
 
 void NotificationHeaderView::SetTimestamp(base::Time timestamp) {
-  timestamp_view_->SetTimestamp(timestamp);
+  base::string16 relative_time;
+  base::TimeDelta next_update;
+  GetRelativeTimeStringAndNextUpdateTime(timestamp - base::Time::Now(),
+                                         &relative_time, &next_update);
+
+  timestamp_view_->SetText(relative_time);
   has_timestamp_ = true;
   UpdateSummaryTextVisibility();
+
+  // Unretained is safe as the timer cancels the task on destruction.
+  timestamp_update_timer_.Start(
+      FROM_HERE, next_update,
+      base::BindOnce(&NotificationHeaderView::SetTimestamp,
+                     base::Unretained(this), timestamp));
 }
 
 void NotificationHeaderView::ClearTimestamp() {
   has_timestamp_ = false;
+  timestamp_update_timer_.Stop();
   UpdateSummaryTextVisibility();
 }
 
@@ -399,6 +405,10 @@ const base::string16& NotificationHeaderView::app_name_for_testing() const {
 
 const gfx::ImageSkia& NotificationHeaderView::app_icon_for_testing() const {
   return app_icon_view_->GetImage();
+}
+
+const base::string16& NotificationHeaderView::timestamp_for_testing() const {
+  return timestamp_view_->text();
 }
 
 void NotificationHeaderView::UpdateSummaryTextVisibility() {

@@ -114,8 +114,8 @@ MediaNotificationView::MediaNotificationView(
   control_buttons_view_->set_owned_by_client();
 
   // |header_row_| contains app_icon, app_name, control buttons, etc.
-  header_row_ = new message_center::NotificationHeaderView(
-      control_buttons_view_.get(), this);
+  header_row_ = new message_center::NotificationHeaderView(this);
+  header_row_->AddChildView(control_buttons_view_.get());
   header_row_->SetAppName(
       message_center::MessageCenter::Get()->GetSystemNotificationAppName());
   header_row_->ClearAppIcon();
