@@ -716,6 +716,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
                       TestCase("executeDefaultTaskDownloads").InGuestMode(),
                       TestCase("executeDefaultTaskDrive").DisableDriveFs(),
                       TestCase("executeDefaultTaskDrive").EnableDriveFs(),
+                      TestCase("defaultTaskForPdf"),
                       TestCase("defaultTaskForTextPlain"),
                       TestCase("defaultTaskDialogDownloads"),
                       TestCase("defaultTaskDialogDownloads").InGuestMode(),
