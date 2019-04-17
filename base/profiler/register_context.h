@@ -19,6 +19,8 @@
 #include <mach/machine/thread_status.h>
 #endif
 
+namespace base {
+
 // Helper function to account for the fact that platform-specific register state
 // types may be unsigned and of the same size as uintptr_t, but not of the same
 // type -- e.g. unsigned int vs. unsigned long on 32-bit Windows and unsigned
@@ -103,5 +105,7 @@ inline uintptr_t& RegisterContextInstructionPointer(RegisterContext* context) {
 }
 
 #endif  // #if defined(OS_WIN)
+
+}  // namespace base
 
 #endif  // BASE_PROFILER_REGISTER_CONTEXT_H_
