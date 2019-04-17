@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_TEST_DEVICE_STATE_MIXIN_H_
 
 #include <memory>
+#include <string>
 
 #include "base/macros.h"
 #include "base/values.h"
@@ -23,6 +24,7 @@ class DeviceStateMixin : public InProcessBrowserTestMixin {
     OOBE_COMPLETED_CLOUD_ENROLLED,
     OOBE_COMPLETED_ACTIVE_DIRECTORY_ENROLLED,
     OOBE_COMPLETED_CONSUMER_OWNED,
+    OOBE_COMPLETED_DEMO_MODE,
   };
 
   DeviceStateMixin(InProcessBrowserTestMixinHost* host, State initial_state);
@@ -32,10 +34,12 @@ class DeviceStateMixin : public InProcessBrowserTestMixin {
   void SetUpInProcessBrowserTestFixture() override;
 
   void SetState(State state);
+  void set_domain(const std::string& domain) { domain_ = domain; }
 
  private:
   void SetDeviceState();
   State state_;
+  std::string domain_;
   ScopedStubInstallAttributes install_attributes_;
 
   bool is_setup_ = false;
