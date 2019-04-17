@@ -191,12 +191,10 @@ int BubbleFrameView::NonClientHitTest(const gfx::Point& point) {
   if (!round_contents_bounds.Contains(rectf_point))
     return HTTRANSPARENT;
 
-  if (HasTitle() && point.y() < title()->bounds().bottom()) {
+  if (point.y() < title()->bounds().bottom()) {
     auto* dialog_delegate = GetWidget()->widget_delegate()->AsDialogDelegate();
-    // Allow the dialog to be dragged if it is not modal. This can happen if the
-    // dialog has no parent browser window.
-    if (dialog_delegate &&
-        dialog_delegate->GetModalType() == ui::MODAL_TYPE_NONE) {
+    // Allow the dialog to be dragged if it is not a bubble dialog.
+    if (dialog_delegate && !dialog_delegate->AsBubbleDialogDelegate()) {
       return HTCAPTION;
     }
   }
