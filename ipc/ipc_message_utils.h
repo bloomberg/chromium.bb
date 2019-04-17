@@ -602,6 +602,18 @@ struct COMPONENT_EXPORT(IPC) ParamTraits<base::ScopedFD> {
 
 #endif  // defined(OS_POSIX) || defined(OS_FUCHSIA)
 
+#if defined(OS_FUCHSIA)
+template <>
+struct COMPONENT_EXPORT(IPC) ParamTraits<zx::vmo> {
+  typedef zx::vmo param_type;
+  static void Write(base::Pickle* m, const param_type& p);
+  static bool Read(const base::Pickle* m,
+                   base::PickleIterator* iter,
+                   param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
+#endif  // defined(OS_FUCHSIA)
+
 template <>
 struct COMPONENT_EXPORT(IPC) ParamTraits<base::SharedMemoryHandle> {
   typedef base::SharedMemoryHandle param_type;

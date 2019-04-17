@@ -36,6 +36,7 @@
 #endif
 
 #if defined(OS_FUCHSIA)
+#include "ipc/handle_attachment_fuchsia.h"
 #include "ipc/handle_fuchsia.h"
 #endif
 
@@ -623,6 +624,53 @@ void ParamTraits<base::ScopedFD>::Log(const param_type& p, std::string* l) {
   l->append(base::StringPrintf("ScopedFD(%d)", p.get()));
 }
 #endif  // defined(OS_POSIX) || defined(OS_FUCHSIA)
+
+#if defined(OS_FUCHSIA)
+void ParamTraits<zx::vmo>::Write(base::Pickle* m, const param_type& p) {
+  // This serialization must be kept in sync with
+  // nacl_message_scanner.cc:WriteHandle().
+  const bool valid = p.is_valid();
+  WriteParam(m, valid);
+
+  if (!valid)
+    return;
+
+  if (!m->WriteAttachment(new internal::HandleAttachmentFuchsia(
+          const_cast<param_type&>(p).release()))) {
+    NOTREACHED();
+  }
+}
+
+bool ParamTraits<zx::vmo>::Read(const base::Pickle* m,
+                                base::PickleIterator* iter,
+                                param_type* r) {
+  r->reset();
+
+  bool valid;
+  if (!ReadParam(m, iter, &valid))
+    return false;
+
+  if (!valid)
+    return true;
+
+  scoped_refptr<base::Pickle::Attachment> attachment;
+  if (!m->ReadAttachment(iter, &attachment))
+    return false;
+
+  if (static_cast<MessageAttachment*>(attachment.get())->GetType() !=
+      MessageAttachment::Type::FUCHSIA_HANDLE) {
+    return false;
+  }
+
+  *r = zx::vmo(static_cast<internal::HandleAttachmentFuchsia*>(attachment.get())
+                   ->Take());
+  return true;
+}
+
+void ParamTraits<zx::vmo>::Log(const param_type& p, std::string* l) {
+  l->append("ZirconVMO");
+}
+#endif  // defined(OS_FUCHSIA)
 
 #if defined(OS_ANDROID)
 void ParamTraits<base::android::ScopedHardwareBufferHandle>::Write(
