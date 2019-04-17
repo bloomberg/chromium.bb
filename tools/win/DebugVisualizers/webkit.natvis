@@ -111,8 +111,8 @@
     </Expand>
   </Type>
   <Type Name="blink::Length">
-    <DisplayString Condition="is_float_">{(blink::LengthType)type_} {float_value_}</DisplayString>
-    <DisplayString>{(blink::LengthType)type_} {int_value_}</DisplayString>
+    <DisplayString Condition="is_float_">{(blink::Length::Type)type_} {float_value_}</DisplayString>
+    <DisplayString>{(blink::Length::Type)type_} {int_value_}</DisplayString>
   </Type>
   <Type Name="blink::WebRect">
     <AlternativeType Name="blink::WebFloatRect"/>
