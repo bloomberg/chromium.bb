@@ -51,7 +51,7 @@ base::Value GetWindowedItem() {
 InstallOptions GetWindowedInstallOptions() {
   InstallOptions options(GURL(kWindowedUrl), LaunchContainer::kWindow,
                          InstallSource::kExternalPolicy);
-  options.add_to_applications_menu = false;
+  options.add_to_applications_menu = true;
   options.add_to_desktop = false;
   options.add_to_quick_launch_bar = false;
   options.install_placeholder = true;
@@ -71,7 +71,7 @@ base::Value GetTabbedItem() {
 InstallOptions GetTabbedInstallOptions() {
   InstallOptions options(GURL(kTabbedUrl), LaunchContainer::kTab,
                          InstallSource::kExternalPolicy);
-  options.add_to_applications_menu = false;
+  options.add_to_applications_menu = true;
   options.add_to_desktop = false;
   options.add_to_quick_launch_bar = false;
   options.install_placeholder = true;
@@ -89,7 +89,7 @@ base::Value GetNoContainerItem() {
 InstallOptions GetNoContainerInstallOptions() {
   InstallOptions options(GURL(kNoContainerUrl), LaunchContainer::kTab,
                          InstallSource::kExternalPolicy);
-  options.add_to_applications_menu = false;
+  options.add_to_applications_menu = true;
   options.add_to_desktop = false;
   options.add_to_quick_launch_bar = false;
   options.install_placeholder = true;
@@ -107,7 +107,7 @@ base::Value GetCreateDesktopShorcutDefaultItem() {
 InstallOptions GetCreateDesktopShorcutDefaultInstallOptions() {
   InstallOptions options(GURL(kNoContainerUrl), LaunchContainer::kTab,
                          InstallSource::kExternalPolicy);
-  options.add_to_applications_menu = false;
+  options.add_to_applications_menu = true;
   options.add_to_desktop = false;
   options.add_to_quick_launch_bar = false;
   options.install_placeholder = true;
@@ -126,7 +126,7 @@ base::Value GetCreateDesktopShorcutFalseItem() {
 InstallOptions GetCreateDesktopShorcutFalseInstallOptions() {
   InstallOptions options(GURL(kNoContainerUrl), LaunchContainer::kTab,
                          InstallSource::kExternalPolicy);
-  options.add_to_applications_menu = false;
+  options.add_to_applications_menu = true;
   options.add_to_desktop = false;
   options.add_to_quick_launch_bar = false;
   options.install_placeholder = true;

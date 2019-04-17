@@ -58,7 +58,7 @@ void ParseInstallOptionsFromPolicyEntry(const base::Value& entry,
   if (create_desktop_shortcut)
     create_shortcut = create_desktop_shortcut->GetBool();
 
-  install_options->add_to_applications_menu = create_shortcut;
+  install_options->add_to_applications_menu = true;
   install_options->add_to_desktop = create_shortcut;
 
   // It's not yet clear how pinning to shelf will work for policy installed
