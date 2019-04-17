@@ -180,7 +180,7 @@ void NGOffsetMappingBuilder::SetDestinationString(String string) {
   destination_string_ = string;
 }
 
-NGOffsetMapping NGOffsetMappingBuilder::Build() {
+std::unique_ptr<NGOffsetMapping> NGOffsetMappingBuilder::Build() {
   // All mapping units are already built. Scan them to build mapping ranges.
   for (unsigned range_start = 0; range_start < mapping_units_.size();) {
     const LayoutObject& layout_object =
@@ -203,8 +203,8 @@ NGOffsetMapping NGOffsetMappingBuilder::Build() {
     range_start = range_end;
   }
 
-  return NGOffsetMapping(std::move(mapping_units_), std::move(unit_ranges_),
-                         destination_string_);
+  return std::make_unique<NGOffsetMapping>(
+      std::move(mapping_units_), std::move(unit_ranges_), destination_string_);
 }
 
 }  // namespace blink

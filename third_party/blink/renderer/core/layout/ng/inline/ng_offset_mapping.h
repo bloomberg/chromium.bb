@@ -117,7 +117,6 @@ class CORE_EXPORT NGOffsetMapping {
   using RangeMap =
       HashMap<Persistent<const Node>, std::pair<unsigned, unsigned>>;
 
-  NGOffsetMapping(NGOffsetMapping&&);
   NGOffsetMapping(UnitVector&&, RangeMap&&, String);
   ~NGOffsetMapping();
 

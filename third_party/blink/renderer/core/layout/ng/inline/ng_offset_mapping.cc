@@ -235,11 +235,6 @@ LayoutBlockFlow* NGOffsetMapping::GetInlineFormattingContextOf(
   return nullptr;
 }
 
-NGOffsetMapping::NGOffsetMapping(NGOffsetMapping&& other)
-    : NGOffsetMapping(std::move(other.units_),
-                      std::move(other.ranges_),
-                      other.text_) {}
-
 NGOffsetMapping::NGOffsetMapping(UnitVector&& units,
                                  RangeMap&& ranges,
                                  String text)

@@ -5,6 +5,7 @@
 #ifndef NGOffsetMappingBuilder_h
 #define NGOffsetMappingBuilder_h
 
+#include <memory>
 #include "base/auto_reset.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_offset_mapping.h"
@@ -110,7 +111,7 @@ class CORE_EXPORT NGOffsetMappingBuilder {
 
   // Finalize and return the offset mapping.
   // This method can only be called once, as it can invalidate the stored data.
-  NGOffsetMapping Build();
+  std::unique_ptr<NGOffsetMapping> Build();
 
  private:
   const LayoutObject* current_layout_object_ = nullptr;
