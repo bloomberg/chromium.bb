@@ -9591,20 +9591,6 @@ static int64_t motion_mode_rd(
       }
     }
 
-    if (cpi->sf.model_based_motion_mode_rd_breakout && do_tx_search) {
-      int model_rate;
-      int64_t model_dist;
-      model_rd_sb_fn[MODELRD_TYPE_MOTION_MODE_RD](
-          cpi, mbmi->sb_type, x, xd, 0, num_planes - 1, mi_row, mi_col,
-          &model_rate, &model_dist, NULL, NULL, NULL, NULL, NULL);
-      const int64_t est_rd =
-          RDCOST(x->rdmult, rd_stats->rate + model_rate, model_dist);
-      if ((est_rd >> 3) * 6 > ref_best_rd) {
-        mbmi->ref_frame[1] = ref_frame_1;
-        continue;
-      }
-    }
-
     if (!do_tx_search) {
       int64_t curr_sse = -1;
       int est_residue_cost = 0;

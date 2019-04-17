@@ -220,7 +220,6 @@ static void set_good_speed_features_framesize_independent(
   sf->use_dist_wtd_comp_flag = DIST_WTD_COMP_SKIP_MV_SEARCH;
   sf->model_based_prune_tx_search_level = 1;
   sf->model_based_post_interp_filter_breakout = 1;
-  sf->model_based_motion_mode_rd_breakout = 1;
 
   // TODO(debargha): Test, tweak and turn on either 1 or 2
   sf->inter_mode_rd_model_estimation = 1;
@@ -444,7 +443,6 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
   sf->use_dist_wtd_comp_flag = DIST_WTD_COMP_SKIP_MV_SEARCH;
   sf->model_based_prune_tx_search_level = 1;
   sf->model_based_post_interp_filter_breakout = 1;
-  sf->model_based_motion_mode_rd_breakout = 1;
 
   // TODO(debargha): Test, tweak and turn on either 1 or 2
   sf->inter_mode_rd_model_estimation = 0;
@@ -692,7 +690,6 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   sf->tx_size_search_lgr_block = 0;
   sf->model_based_prune_tx_search_level = 0;
   sf->model_based_post_interp_filter_breakout = 0;
-  sf->model_based_motion_mode_rd_breakout = 0;
   sf->reduce_inter_modes = 0;
   sf->selective_ref_gm = 1;
   sf->adaptive_motion_search = 0;
@@ -790,9 +787,6 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   // Set decoder side speed feature to use less dual sgr modes
   sf->dual_sgr_penalty_level = 0;
 
-  // TODO(angiebird, debargha): Re-evaluate the impact of
-  // inter_mode_rd_model_estimation in conjunction with
-  // model_based_motion_mode_rd_breakout
   sf->inter_mode_rd_model_estimation = 0;
   sf->inter_mode_rd_model_estimation_adaptive = 0;
 
