@@ -58,7 +58,7 @@
 #include "media/gpu/h264_decoder.h"
 #include "media/gpu/h264_dpb.h"
 #include "media/gpu/test/video_accelerator_unittest_helpers.h"
-#include "media/gpu/test/video_encode_accelerator_unittest_helpers.h"
+#include "media/gpu/test/video_frame_helpers.h"
 #include "media/video/fake_video_encode_accelerator.h"
 #include "media/video/h264_level_limits.h"
 #include "media/video/h264_parser.h"
@@ -1961,8 +1961,13 @@ scoped_refptr<VideoFrame> VEAClient::CreateFrame(off_t position) {
           base::TimeDelta().FromMilliseconds(
               (next_input_id_ + 1) * base::Time::kMillisecondsPerSecond /
               current_framerate_));
-  if (g_native_input) {
-    video_frame = test::CreateDmabufFrameFromVideoFrame(std::move(video_frame));
+  if (video_frame && g_native_input) {
+#if defined(OS_LINUX)
+    video_frame = test::CloneVideoFrame(
+        video_frame.get(), video_frame->layout(), VideoFrame::STORAGE_DMABUFS);
+#else
+    video_frame = nullptr;
+#endif
   }
 
   EXPECT_NE(nullptr, video_frame.get());

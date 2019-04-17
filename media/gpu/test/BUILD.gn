@@ -100,21 +100,6 @@ source_set("decode_helpers") {
   }
 }
 
-source_set("encode_helpers") {
-  testonly = true
-  sources = [
-    "video_encode_accelerator_unittest_helpers.cc",
-    "video_encode_accelerator_unittest_helpers.h",
-  ]
-  public_deps = [
-    ":helpers",
-    ":render_helpers",
-  ]
-  deps = [
-    "//media/gpu",
-  ]
-}
-
 static_library("video_player_thumbnail_renderer") {
   testonly = true
   sources = [

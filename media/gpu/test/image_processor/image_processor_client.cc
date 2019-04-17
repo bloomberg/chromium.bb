@@ -109,8 +109,8 @@ scoped_refptr<VideoFrame> ImageProcessorClient::CreateInputFrame(
   const auto& input_layout = image_processor_->input_layout();
   if (VideoFrame::IsStorageTypeMappable(
           image_processor_->input_storage_type())) {
-    return CloneVideoFrameWithLayout(
-        CreateVideoFrameFromImage(input_image).get(), input_layout);
+    return CloneVideoFrame(CreateVideoFrameFromImage(input_image).get(),
+                           input_layout, VideoFrame::STORAGE_OWNED_MEMORY);
   } else {
 #if defined(OS_CHROMEOS)
     LOG_ASSERT(image_processor_->input_storage_type() ==

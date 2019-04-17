@@ -6,15 +6,13 @@
 #define MEDIA_GPU_TEST_VIDEO_FRAME_HELPERS_H_
 
 #include "base/memory/scoped_refptr.h"
+#include "media/base/video_frame.h"
 #include "media/base/video_frame_layout.h"
 #include "media/base/video_types.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace media {
-
-class VideoFrame;
-
 namespace test {
 
 class Image;
@@ -50,14 +48,17 @@ bool ConvertVideoFrame(const VideoFrame* src_frame, VideoFrame* dst_frame);
 scoped_refptr<VideoFrame> ConvertVideoFrame(const VideoFrame* src_frame,
                                             VideoPixelFormat dst_pixel_format);
 
-// Copy |src_frame| into a new VideoFrame with |dst_layout|. This doesn't
-// convert pixel format. That is, |dst_layout|'s format must be the same as
-// |src_frame|'s format. This function supports all formats. The created
-// VideoFrame's content is the same as |src_frame|. The created VideoFrame owns
-// the buffer. Returns nullptr on failure.
-scoped_refptr<VideoFrame> CloneVideoFrameWithLayout(
+// Copy |src_frame| into a new VideoFrame.
+// If |dst_storage_type| is STORAGE_DMABUFS, this function creates DMABUF-backed
+// VideoFrame with |dst_layout|. If |dst_storage_type| is STORAGE_OWNED_MEMORY,
+// this function creates memory-backed VideoFrame with |dst_layout|.
+// The created VideoFrame's content is the same as |src_frame|. The created
+// VideoFrame owns the buffer. Returns nullptr on failure.
+scoped_refptr<VideoFrame> CloneVideoFrame(
     const VideoFrame* const src_frame,
-    const VideoFrameLayout& dst_layout);
+    const VideoFrameLayout& dst_layout,
+    VideoFrame::StorageType dst_storage_type =
+        VideoFrame::STORAGE_OWNED_MEMORY);
 
 // Get VideoFrame that contains Load()ed data. The returned VideoFrame doesn't
 // own the data and thus must not be changed.
