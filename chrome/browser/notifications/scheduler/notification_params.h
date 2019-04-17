@@ -23,9 +23,12 @@ struct NotificationParams {
   // The type of notification using the scheduling system.
   SchedulerClientType type;
 
+  // An auto generated unique id of the scheduled notification.
+  std::string guid;
+
   // Data used to show the notification, such as text or title on the
   // notification.
-  NotificationData notification;
+  NotificationData notification_data;
 
   // Scheduling details used to determine when to show the notification.
   ScheduleParams schedule_params;
