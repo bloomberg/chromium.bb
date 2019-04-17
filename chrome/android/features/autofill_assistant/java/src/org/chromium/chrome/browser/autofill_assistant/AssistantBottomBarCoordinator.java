@@ -133,13 +133,13 @@ class AssistantBottomBarCoordinator {
      * Show the onboarding screen and call {@code callback} with {@code true} if the user agreed to
      * proceed, false otherwise.
      */
-    public void showOnboarding(Callback<Boolean> callback) {
+    public void showOnboarding(String experimentIds, Callback<Boolean> callback) {
         mModel.getHeaderModel().set(AssistantHeaderModel.VISIBLE, false);
 
         // Show overlay to prevent user from interacting with the page during onboarding.
         mModel.getOverlayModel().set(AssistantOverlayModel.STATE, AssistantOverlayState.FULL);
 
-        View onboardingView = AssistantOnboardingCoordinator.show(
+        View onboardingView = AssistantOnboardingCoordinator.show(experimentIds,
                 mContent.mBottomBarView.getContext(), mContent.mBottomBarView, accepted -> {
                     mOnboardingScrollView = null;
                     if (!accepted) {

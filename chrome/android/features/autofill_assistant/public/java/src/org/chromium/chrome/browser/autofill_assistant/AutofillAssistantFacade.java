@@ -39,6 +39,12 @@ public class AutofillAssistantFacade {
     private static final String PARAMETER_ENABLED = "ENABLED";
 
     /**
+     * Identifier used by parameters/or special intent that indicates experiments passed from
+     * the caller.
+     */
+    private static final String EXPERIMENT_IDS_IDENTIFIER = "EXPERIMENT_IDS";
+
+    /**
      * Boolean parameter that trusted apps can use to declare that the user has agreed to Terms and
      * Conditions that cover the use of Autofill Assistant in Chrome for that specific invocation.
      */
@@ -48,7 +54,8 @@ public class AutofillAssistantFacade {
     private static final String PENDING_INTENT_NAME = INTENT_SPECIAL_PREFIX + "PENDING_INTENT";
 
     /** Intent extra name for csv list of experiment ids. */
-    private static final String EXPERIMENT_IDS_NAME = INTENT_SPECIAL_PREFIX + "EXPERIMENT_IDS";
+    private static final String EXPERIMENT_IDS_NAME =
+            INTENT_SPECIAL_PREFIX + EXPERIMENT_IDS_IDENTIFIER;
 
     /** Package names of trusted first-party apps, from the pending intent. */
     private static final String[] TRUSTED_CALLER_PACKAGES = {
@@ -82,12 +89,41 @@ public class AutofillAssistantFacade {
 
         if (AutofillAssistantPreferencesUtil.getShowOnboarding()) {
             getTab(activity, tab -> {
+                // TODO(lsuder): Instantiate client only once (it's created again in
+                // {@code startNow}). Also pass parameters and experiments only once.
                 AutofillAssistantClient client =
                         AutofillAssistantClient.fromWebContents(tab.getWebContents());
-                client.showOnboarding(() -> startNow(activity, tab));
+                client.showOnboarding(getExperimentIds(activity.getInitialIntent().getExtras()),
+                        () -> startNow(activity, tab));
             });
             return;
         }
+    }
+
+    /**
+     * In M74 experiment ids might come from parameters. This function merges both exp ids from
+     * special intent and parameters.
+     * @return Comma-separated list of active experiment ids.
+     */
+    private static String getExperimentIds(@Nullable Bundle bundleExtras) {
+        if (bundleExtras == null) {
+            return "";
+        }
+
+        StringBuilder experiments = new StringBuilder();
+        Map<String, String> parameters = extractParameters(bundleExtras);
+        if (parameters.containsKey(EXPERIMENT_IDS_IDENTIFIER)) {
+            experiments.append(parameters.get(EXPERIMENT_IDS_IDENTIFIER));
+        }
+
+        String experimentsFromIntent = IntentUtils.safeGetString(bundleExtras, EXPERIMENT_IDS_NAME);
+        if (experimentsFromIntent != null) {
+            if (experiments.length() > 0 && !experiments.toString().endsWith(",")) {
+                experiments.append(",");
+            }
+            experiments.append(experimentsFromIntent);
+        }
+        return experiments.toString();
     }
 
     private static void startNow(ChromeActivity activity, Tab tab) {
@@ -99,12 +135,8 @@ public class AutofillAssistantFacade {
         AutofillAssistantClient client =
                 AutofillAssistantClient.fromWebContents(tab.getWebContents());
 
-        String experimentIds = null;
-        if (bundleExtras != null) {
-            experimentIds = IntentUtils.safeGetString(bundleExtras, EXPERIMENT_IDS_NAME);
-        }
-        client.start(
-                initialUrl, parameters, experimentIds, activity.getInitialIntent().getExtras());
+        client.start(initialUrl, parameters, getExperimentIds(bundleExtras),
+                activity.getInitialIntent().getExtras());
     }
 
     private static void getTab(ChromeActivity activity, Callback<Tab> callback) {

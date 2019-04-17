@@ -106,9 +106,10 @@ ClientAndroid::~ClientAndroid() {
 void ClientAndroid::ShowOnboarding(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jcaller,
+    const JavaParamRef<jstring>& jexperiment_ids,
     const JavaParamRef<jobject>& on_accept) {
   ShowUI();
-  ui_controller_android_->ShowOnboarding(env, on_accept);
+  ui_controller_android_->ShowOnboarding(env, jexperiment_ids, on_accept);
 }
 
 base::android::ScopedJavaLocalRef<jobject> ClientAndroid::GetJavaObject() {

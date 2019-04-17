@@ -495,9 +495,10 @@ void UiControllerAndroid::OnUserInteractionInsideTouchableArea() {
 
 void UiControllerAndroid::ShowOnboarding(
     JNIEnv* env,
+    const base::android::JavaParamRef<jstring>& jexperiment_ids,
     const base::android::JavaParamRef<jobject>& on_accept) {
-  Java_AutofillAssistantUiController_onShowOnboarding(env, java_object_,
-                                                      on_accept);
+  Java_AutofillAssistantUiController_onShowOnboarding(
+      env, java_object_, jexperiment_ids, on_accept);
 }
 
 void UiControllerAndroid::WillShutdown(Metrics::DropOutReason reason) {

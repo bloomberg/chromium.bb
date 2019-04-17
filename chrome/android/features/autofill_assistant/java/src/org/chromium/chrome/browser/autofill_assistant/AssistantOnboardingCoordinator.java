@@ -18,18 +18,20 @@ import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
 
+import java.util.Arrays;
+
 /**
  * Coordinator responsible for showing the onboarding screen when the user is using the Autofill
  * Assistant for the first time.
  */
 class AssistantOnboardingCoordinator {
-    // TODO(crbug.com/806868): Wire this with A/B experiment.
-    private static final boolean SHOW_SMALL_ONBOARDING = false;
+    private static final String SMALL_ONBOARDING_EXPERIMENT_ID = "4257013";
 
     /**
      * Shows the onboarding screen and returns whether we should proceed.
      */
-    static View show(Context context, ViewGroup root, Callback<Boolean> callback) {
+    static View show(
+            String experimentIds, Context context, ViewGroup root, Callback<Boolean> callback) {
         View initView = LayoutInflater.from(context)
                                 .inflate(R.layout.autofill_assistant_onboarding, root)
                                 .findViewById(R.id.assistant_onboarding);
@@ -59,7 +61,7 @@ class AssistantOnboardingCoordinator {
                 context.getString(R.string.autofill_assistant_first_run_accessibility));
 
         // Hide views that should not be displayed when showing the small onboarding.
-        if (SHOW_SMALL_ONBOARDING) {
+        if (Arrays.asList(experimentIds.split(",")).contains(SMALL_ONBOARDING_EXPERIMENT_ID)) {
             hide(initView, R.id.onboarding_image);
             hide(initView, R.id.onboarding_subtitle);
             hide(initView, R.id.onboarding_separator);

@@ -56,8 +56,8 @@ class AssistantCoordinator {
      * Show the onboarding screen and call {@code onAccept} if the user agreed to proceed, shutdown
      * otherwise.
      */
-    public void showOnboarding(Runnable onAccept) {
-        mBottomBarCoordinator.showOnboarding(accepted -> {
+    public void showOnboarding(String experimentIds, Runnable onAccept) {
+        mBottomBarCoordinator.showOnboarding(experimentIds, accepted -> {
             if (accepted) {
                 onAccept.run();
             } else {
