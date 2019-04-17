@@ -14,6 +14,7 @@ _sym_db = _symbol_database.Default()
 
 from chromite.api.gen.chromite.api import build_api_pb2 as chromite_dot_api_dot_build__api__pb2
 from chromite.api.gen.chromite.api import sysroot_pb2 as chromite_dot_api_dot_sysroot__pb2
+from chromite.api.gen.chromiumos import common_pb2 as chromiumos_dot_common__pb2
 from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
 
 
@@ -22,9 +23,9 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='chromite.api',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\x17\x63hromite/api/test.proto\x12\x0c\x63hromite.api\x1a\x1c\x63hromite/api/build_api.proto\x1a\x1a\x63hromite/api/sysroot.proto\x1a\x1bgoogle/protobuf/empty.proto\">\n\x14\x44\x65\x62ugInfoTestRequest\x12&\n\x07sysroot\x18\x01 \x01(\x0b\x32\x15.chromite.api.Sysroot2h\n\x0bTestService\x12K\n\rDebugInfoTest\x12\".chromite.api.DebugInfoTestRequest\x1a\x16.google.protobuf.Empty\x1a\x0c\xc2\xed\x1a\x08\n\x04test\x10\x01\x62\x06proto3')
+  serialized_pb=_b('\n\x17\x63hromite/api/test.proto\x12\x0c\x63hromite.api\x1a\x1c\x63hromite/api/build_api.proto\x1a\x1a\x63hromite/api/sysroot.proto\x1a\x17\x63hromiumos/common.proto\x1a\x1bgoogle/protobuf/empty.proto\">\n\x14\x44\x65\x62ugInfoTestRequest\x12&\n\x07sysroot\x18\x01 \x01(\x0b\x32\x15.chromite.api.Sysroot\"\x84\x01\n\x1a\x42uildTargetUnitTestRequest\x12-\n\x0c\x62uild_target\x18\x01 \x01(\x0b\x32\x17.chromiumos.BuildTarget\x12\x13\n\x0bresult_path\x18\x02 \x01(\t\x12\"\n\x06\x63hroot\x18\x03 \x01(\x0b\x32\x12.chromiumos.Chroot\"e\n\x1b\x42uildTargetUnitTestResponse\x12\x14\n\x0ctarball_path\x18\x01 \x01(\t\x12\x30\n\x0f\x66\x61iled_packages\x18\x02 \x03(\x0b\x32\x17.chromiumos.PackageInfo2\xdc\x01\n\x0bTestService\x12K\n\rDebugInfoTest\x12\".chromite.api.DebugInfoTestRequest\x1a\x16.google.protobuf.Empty\x12r\n\x13\x42uildTargetUnitTest\x12(.chromite.api.BuildTargetUnitTestRequest\x1a).chromite.api.BuildTargetUnitTestResponse\"\x06\xc2\xed\x1a\x02\x10\x02\x1a\x0c\xc2\xed\x1a\x08\n\x04test\x10\x01\x62\x06proto3')
   ,
-  dependencies=[chromite_dot_api_dot_build__api__pb2.DESCRIPTOR,chromite_dot_api_dot_sysroot__pb2.DESCRIPTOR,google_dot_protobuf_dot_empty__pb2.DESCRIPTOR,])
+  dependencies=[chromite_dot_api_dot_build__api__pb2.DESCRIPTOR,chromite_dot_api_dot_sysroot__pb2.DESCRIPTOR,chromiumos_dot_common__pb2.DESCRIPTOR,google_dot_protobuf_dot_empty__pb2.DESCRIPTOR,])
 
 
 
@@ -55,12 +56,100 @@ _DEBUGINFOTESTREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=128,
-  serialized_end=190,
+  serialized_start=153,
+  serialized_end=215,
+)
+
+
+_BUILDTARGETUNITTESTREQUEST = _descriptor.Descriptor(
+  name='BuildTargetUnitTestRequest',
+  full_name='chromite.api.BuildTargetUnitTestRequest',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='build_target', full_name='chromite.api.BuildTargetUnitTestRequest.build_target', index=0,
+      number=1, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='result_path', full_name='chromite.api.BuildTargetUnitTestRequest.result_path', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='chroot', full_name='chromite.api.BuildTargetUnitTestRequest.chroot', index=2,
+      number=3, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=218,
+  serialized_end=350,
+)
+
+
+_BUILDTARGETUNITTESTRESPONSE = _descriptor.Descriptor(
+  name='BuildTargetUnitTestResponse',
+  full_name='chromite.api.BuildTargetUnitTestResponse',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='tarball_path', full_name='chromite.api.BuildTargetUnitTestResponse.tarball_path', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='failed_packages', full_name='chromite.api.BuildTargetUnitTestResponse.failed_packages', index=1,
+      number=2, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=352,
+  serialized_end=453,
 )
 
 _DEBUGINFOTESTREQUEST.fields_by_name['sysroot'].message_type = chromite_dot_api_dot_sysroot__pb2._SYSROOT
+_BUILDTARGETUNITTESTREQUEST.fields_by_name['build_target'].message_type = chromiumos_dot_common__pb2._BUILDTARGET
+_BUILDTARGETUNITTESTREQUEST.fields_by_name['chroot'].message_type = chromiumos_dot_common__pb2._CHROOT
+_BUILDTARGETUNITTESTRESPONSE.fields_by_name['failed_packages'].message_type = chromiumos_dot_common__pb2._PACKAGEINFO
 DESCRIPTOR.message_types_by_name['DebugInfoTestRequest'] = _DEBUGINFOTESTREQUEST
+DESCRIPTOR.message_types_by_name['BuildTargetUnitTestRequest'] = _BUILDTARGETUNITTESTREQUEST
+DESCRIPTOR.message_types_by_name['BuildTargetUnitTestResponse'] = _BUILDTARGETUNITTESTRESPONSE
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 DebugInfoTestRequest = _reflection.GeneratedProtocolMessageType('DebugInfoTestRequest', (_message.Message,), dict(
@@ -70,6 +159,20 @@ DebugInfoTestRequest = _reflection.GeneratedProtocolMessageType('DebugInfoTestRe
   ))
 _sym_db.RegisterMessage(DebugInfoTestRequest)
 
+BuildTargetUnitTestRequest = _reflection.GeneratedProtocolMessageType('BuildTargetUnitTestRequest', (_message.Message,), dict(
+  DESCRIPTOR = _BUILDTARGETUNITTESTREQUEST,
+  __module__ = 'chromite.api.test_pb2'
+  # @@protoc_insertion_point(class_scope:chromite.api.BuildTargetUnitTestRequest)
+  ))
+_sym_db.RegisterMessage(BuildTargetUnitTestRequest)
+
+BuildTargetUnitTestResponse = _reflection.GeneratedProtocolMessageType('BuildTargetUnitTestResponse', (_message.Message,), dict(
+  DESCRIPTOR = _BUILDTARGETUNITTESTRESPONSE,
+  __module__ = 'chromite.api.test_pb2'
+  # @@protoc_insertion_point(class_scope:chromite.api.BuildTargetUnitTestResponse)
+  ))
+_sym_db.RegisterMessage(BuildTargetUnitTestResponse)
+
 
 
 _TESTSERVICE = _descriptor.ServiceDescriptor(
@@ -78,8 +181,8 @@ _TESTSERVICE = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=_b('\302\355\032\010\n\004test\020\001'),
-  serialized_start=192,
-  serialized_end=296,
+  serialized_start=456,
+  serialized_end=676,
   methods=[
   _descriptor.MethodDescriptor(
     name='DebugInfoTest',
@@ -89,6 +192,15 @@ _TESTSERVICE = _descriptor.ServiceDescriptor(
     input_type=_DEBUGINFOTESTREQUEST,
     output_type=google_dot_protobuf_dot_empty__pb2._EMPTY,
     serialized_options=None,
+  ),
+  _descriptor.MethodDescriptor(
+    name='BuildTargetUnitTest',
+    full_name='chromite.api.TestService.BuildTargetUnitTest',
+    index=1,
+    containing_service=None,
+    input_type=_BUILDTARGETUNITTESTREQUEST,
+    output_type=_BUILDTARGETUNITTESTRESPONSE,
+    serialized_options=_b('\302\355\032\002\020\002'),
   ),
 ])
 _sym_db.RegisterServiceDescriptor(_TESTSERVICE)

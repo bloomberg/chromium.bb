@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='chromiumos',
   syntax='proto3',
   serialized_options=_b('Z4go.chromium.org/chromiumos/infra/proto/go/chromiumos'),
-  serialized_pb=_b('\n\x17\x63hromiumos/common.proto\x12\nchromiumos\"\x1b\n\x0b\x42uildTarget\x12\x0c\n\x04name\x18\x01 \x01(\t\"F\n\x0bPackageInfo\x12\x14\n\x0cpackage_name\x18\x01 \x01(\t\x12\x10\n\x08\x63\x61tegory\x18\x02 \x01(\t\x12\x0f\n\x07version\x18\x03 \x01(\tB6Z4go.chromium.org/chromiumos/infra/proto/go/chromiumosb\x06proto3')
+  serialized_pb=_b('\n\x17\x63hromiumos/common.proto\x12\nchromiumos\"\x1b\n\x0b\x42uildTarget\x12\x0c\n\x04name\x18\x01 \x01(\t\")\n\x06\x43hroot\x12\x0c\n\x04path\x18\x01 \x01(\t\x12\x11\n\tcache_dir\x18\x02 \x01(\t\"F\n\x0bPackageInfo\x12\x14\n\x0cpackage_name\x18\x01 \x01(\t\x12\x10\n\x08\x63\x61tegory\x18\x02 \x01(\t\x12\x0f\n\x07version\x18\x03 \x01(\tB6Z4go.chromium.org/chromiumos/infra/proto/go/chromiumosb\x06proto3')
 )
 
 
@@ -53,6 +53,44 @@ _BUILDTARGET = _descriptor.Descriptor(
   ],
   serialized_start=39,
   serialized_end=66,
+)
+
+
+_CHROOT = _descriptor.Descriptor(
+  name='Chroot',
+  full_name='chromiumos.Chroot',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='path', full_name='chromiumos.Chroot.path', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='cache_dir', full_name='chromiumos.Chroot.cache_dir', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=68,
+  serialized_end=109,
 )
 
 
@@ -96,11 +134,12 @@ _PACKAGEINFO = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=68,
-  serialized_end=138,
+  serialized_start=111,
+  serialized_end=181,
 )
 
 DESCRIPTOR.message_types_by_name['BuildTarget'] = _BUILDTARGET
+DESCRIPTOR.message_types_by_name['Chroot'] = _CHROOT
 DESCRIPTOR.message_types_by_name['PackageInfo'] = _PACKAGEINFO
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
@@ -110,6 +149,13 @@ BuildTarget = _reflection.GeneratedProtocolMessageType('BuildTarget', (_message.
   # @@protoc_insertion_point(class_scope:chromiumos.BuildTarget)
   ))
 _sym_db.RegisterMessage(BuildTarget)
+
+Chroot = _reflection.GeneratedProtocolMessageType('Chroot', (_message.Message,), dict(
+  DESCRIPTOR = _CHROOT,
+  __module__ = 'chromiumos.common_pb2'
+  # @@protoc_insertion_point(class_scope:chromiumos.Chroot)
+  ))
+_sym_db.RegisterMessage(Chroot)
 
 PackageInfo = _reflection.GeneratedProtocolMessageType('PackageInfo', (_message.Message,), dict(
   DESCRIPTOR = _PACKAGEINFO,
