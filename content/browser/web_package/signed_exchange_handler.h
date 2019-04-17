@@ -125,7 +125,8 @@ class CONTENT_EXPORT SignedExchangeHandler {
   void OnCertReceived(
       SignedExchangeLoadResult result,
       std::unique_ptr<SignedExchangeCertificateChain> cert_chain);
-  bool CheckCertExtension(const net::X509Certificate* verified_cert);
+  SignedExchangeLoadResult CheckCertRequirements(
+      const net::X509Certificate* verified_cert);
   bool CheckOCSPStatus(const net::OCSPVerifyResult& ocsp_result);
 
   void OnVerifyCert(int32_t error_code,

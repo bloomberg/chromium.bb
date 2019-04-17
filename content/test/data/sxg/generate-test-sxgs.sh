@@ -5,6 +5,7 @@
 # found in the LICENSE file.
 variants_header=variants-04
 variant_key_header=variant-key-04
+signature_date=2019-07-28T00:00:00Z
 
 set -e
 
@@ -31,6 +32,18 @@ echo -n OCSP >$tmpdir/ocsp; echo -n SCT >$sctdir/dummy.sct
 gen-certurl -pem prime256v1-sha256.public.pem \
   -ocsp $tmpdir/ocsp -sctDir $sctdir > test.example.org.public.pem.cbor
 
+# Generate the certificate chain of "*.example.org", whose validity period is
+# more than 90 days.
+gen-certurl -pem prime256v1-sha256-validity-too-long.public.pem \
+  -ocsp $tmpdir/ocsp -sctDir $sctdir \
+  > test.example.org-validity-too-long.public.pem.cbor
+
+# Generate the certificate chain of "*.example.org", whose validity period is
+# exactly 90 days.
+gen-certurl -pem prime256v1-sha256-valid-for-90-days.public.pem \
+  -ocsp $tmpdir/ocsp -sctDir $sctdir \
+  > test.example.org-valid-for-90-days.public.pem.cbor
+
 # Generate the certificate chain of "*.example.org", without
 # CanSignHttpExchangesDraft extension.
 gen-certurl -pem prime256v1-sha256-noext.public.pem \
@@ -46,7 +59,8 @@ gen-signedexchange \
   -certUrl https://cert.example.org/cert.msg \
   -validityUrl https://test.example.org/resource.validity.msg \
   -privateKey prime256v1.key \
-  -date 2018-03-12T05:53:20Z \
+  -date $signature_date \
+  -expire 168h \
   -o test.example.org_test.sxg \
   -miRecordSize 100
 
@@ -81,7 +95,8 @@ gen-signedexchange \
   -certUrl https://cert.example.org/cert.msg \
   -validityUrl https://test.example.org/resource.validity.msg \
   -privateKey prime256v1.key \
-  -date 2018-03-12T05:53:20Z \
+  -date $signature_date \
+  -expire 168h \
   -o - \
   -miRecordSize 32 |
   xxd -p |
@@ -99,8 +114,41 @@ gen-signedexchange \
   -certUrl https://cert.example.org/cert.msg \
   -validityUrl https://test.example.org/resource.validity.msg \
   -privateKey prime256v1.key \
-  -date 2018-03-12T05:53:20Z \
+  -date $signature_date \
+  -expire 168h \
   -o test.example.org_noext_test.sxg \
+  -miRecordSize 100
+
+# Generate the signed exchange file whose certificate's validity period is more
+# than 90 days.
+gen-signedexchange \
+  -version 1b3 \
+  -uri https://test.example.org/test/ \
+  -status 200 \
+  -content test.html \
+  -certificate prime256v1-sha256-validity-too-long.public.pem \
+  -certUrl https://cert.example.org/cert.msg \
+  -validityUrl https://test.example.org/resource.validity.msg \
+  -privateKey prime256v1.key \
+  -date $signature_date \
+  -expire 168h \
+  -o test.example.org_cert_validity_too_long.sxg \
+  -miRecordSize 100
+
+# Generate the signed exchange file whose certificate's validity period is
+# exactly 90 days.
+gen-signedexchange \
+  -version 1b3 \
+  -uri https://test.example.org/test/ \
+  -status 200 \
+  -content test.html \
+  -certificate prime256v1-sha256-valid-for-90-days.public.pem \
+  -certUrl https://cert.example.org/cert.msg \
+  -validityUrl https://test.example.org/resource.validity.msg \
+  -privateKey prime256v1.key \
+  -date $signature_date \
+  -expire 168h \
+  -o test.example.org_cert_valid_for_90_days.sxg \
   -miRecordSize 100
 
 # Generate the signed exchange file with invalid URL.
@@ -113,7 +161,8 @@ gen-signedexchange \
   -certUrl https://cert.example.org/cert.msg \
   -validityUrl https://test.example.com/resource.validity.msg \
   -privateKey prime256v1.key \
-  -date 2018-03-12T05:53:20Z \
+  -date $signature_date \
+  -expire 168h \
   -o test.example.com_invalid_test.sxg \
   -miRecordSize 100
 
@@ -128,7 +177,8 @@ gen-signedexchange \
   -validityUrl https://test.example.org/resource.validity.msg \
   -privateKey prime256v1.key \
   -responseHeader 'Content-Type: text/plain; charset=iso-8859-1' \
-  -date 2018-03-12T05:53:20Z \
+  -date $signature_date \
+  -expire 168h \
   -o test.example.org_hello.txt.sxg
 
 # Generate the signed exchange whose content is gzip-encoded.
@@ -143,7 +193,8 @@ gen-signedexchange \
   -validityUrl https://test.example.org/resource.validity.msg \
   -privateKey prime256v1.key \
   -responseHeader 'Content-Encoding: gzip' \
-  -date 2018-03-12T05:53:20Z \
+  -date $signature_date \
+  -expire 168h \
   -o test.example.org_test.html.gz.sxg
 
 # Generate the signed exchange with variants / variant-key headers.
@@ -156,7 +207,8 @@ gen-signedexchange \
   -certUrl https://cert.example.org/cert.msg \
   -validityUrl https://test.example.org/resource.validity.msg \
   -privateKey prime256v1.key \
-  -date 2018-03-12T05:53:20Z \
+  -date $signature_date \
+  -expire 168h \
   -responseHeader "${variants_header}: accept-language;en;fr" \
   -responseHeader "${variant_key_header}: fr" \
   -o test.example.org_fr_variant.sxg \

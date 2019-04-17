@@ -46,7 +46,9 @@ namespace content {
 
 namespace {
 
-const uint64_t kSignatureHeaderDate = 1520834000;
+const uint64_t kSignatureHeaderDate = 1564272000;  // 2019-07-28T00:00:00Z
+const uint64_t kCertValidityPeriodEnforcementDate =
+    1564617600;  // 2019-08-01T00:00:00Z
 const int kOutputBufferSize = 4096;
 
 constexpr char kTestSxgInnerURL[] = "https://test.example.org/test/";
@@ -556,6 +558,127 @@ TEST_P(SignedExchangeHandlerTest, CertWithoutExtensionShouldBeRejected) {
 
   ASSERT_TRUE(read_header());
   EXPECT_EQ(SignedExchangeLoadResult::kCertRequirementsNotMet, result());
+  EXPECT_EQ(net::ERR_INVALID_SIGNED_EXCHANGE, error());
+  EXPECT_EQ(kTestSxgInnerURL, inner_url());
+  // Drain the MockSourceStream, otherwise its destructer causes DCHECK failure.
+  ReadStream(source_, nullptr);
+}
+
+TEST_P(SignedExchangeHandlerTest,
+       CertIssuedAfterMay2019AndValidMoreThan90DaysShouldBeRejected) {
+  mock_cert_fetcher_factory_->ExpectFetch(
+      GURL("https://cert.example.org/cert.msg"),
+      GetTestFileContents(
+          "test.example.org-validity-too-long.public.pem.cbor"));
+
+  // Make the MockCertVerifier treat the certificate
+  // "prime256v1-sha256-validity-too-long.public.pem" as valid for
+  // "test.example.org".
+  scoped_refptr<net::X509Certificate> original_cert =
+      LoadCertificate("prime256v1-sha256-validity-too-long.public.pem");
+  net::CertVerifyResult dummy_result;
+  dummy_result.verified_cert = original_cert;
+  dummy_result.cert_status = net::OK;
+  dummy_result.ocsp_result.response_status = net::OCSPVerifyResult::PROVIDED;
+  dummy_result.ocsp_result.revocation_status = net::OCSPRevocationStatus::GOOD;
+  auto mock_cert_verifier = std::make_unique<net::MockCertVerifier>();
+  mock_cert_verifier->AddResultForCertAndHost(original_cert, "test.example.org",
+                                              dummy_result, net::OK);
+  SetCertVerifier(std::move(mock_cert_verifier));
+
+  std::string contents =
+      GetTestFileContents("test.example.org_cert_validity_too_long.sxg");
+  source_->AddReadResult(contents.data(), contents.size(), net::OK, GetParam());
+  source_->AddReadResult(nullptr, 0, net::OK, GetParam());
+
+  CreateSignedExchangeHandler(CreateTestURLRequestContext());
+  WaitForHeader();
+
+  ASSERT_TRUE(read_header());
+  EXPECT_EQ(SignedExchangeLoadResult::kCertValidityPeriodTooLong, result());
+  EXPECT_EQ(net::ERR_INVALID_SIGNED_EXCHANGE, error());
+  EXPECT_EQ(kTestSxgInnerURL, inner_url());
+  // Drain the MockSourceStream, otherwise its destructer causes DCHECK failure.
+  ReadStream(source_, nullptr);
+}
+
+TEST_P(SignedExchangeHandlerTest,
+       CertIssuedAfterMay2019AndValidFor90DaysShouldBeAccepted) {
+  SignedExchangeHandler::SetVerificationTimeForTesting(
+      base::Time::UnixEpoch() +
+      base::TimeDelta::FromSeconds(kCertValidityPeriodEnforcementDate));
+  mock_cert_fetcher_factory_->ExpectFetch(
+      GURL("https://cert.example.org/cert.msg"),
+      GetTestFileContents(
+          "test.example.org-valid-for-90-days.public.pem.cbor"));
+
+  // Make the MockCertVerifier treat the certificate
+  // "prime256v1-sha256-validity-too-long.public.pem" as valid for
+  // "test.example.org".
+  scoped_refptr<net::X509Certificate> original_cert =
+      LoadCertificate("prime256v1-sha256-valid-for-90-days.public.pem");
+  net::CertVerifyResult dummy_result;
+  dummy_result.verified_cert = original_cert;
+  dummy_result.cert_status = net::OK;
+  dummy_result.ocsp_result.response_status = net::OCSPVerifyResult::PROVIDED;
+  dummy_result.ocsp_result.revocation_status = net::OCSPRevocationStatus::GOOD;
+  auto mock_cert_verifier = std::make_unique<net::MockCertVerifier>();
+  mock_cert_verifier->AddResultForCertAndHost(original_cert, "test.example.org",
+                                              dummy_result, net::OK);
+  SetCertVerifier(std::move(mock_cert_verifier));
+
+  std::string contents =
+      GetTestFileContents("test.example.org_cert_valid_for_90_days.sxg");
+  source_->AddReadResult(contents.data(), contents.size(), net::OK, GetParam());
+  source_->AddReadResult(nullptr, 0, net::OK, GetParam());
+
+  CreateSignedExchangeHandler(CreateTestURLRequestContext());
+  WaitForHeader();
+
+  ASSERT_TRUE(read_header());
+  EXPECT_EQ(SignedExchangeLoadResult::kSuccess, result());
+  EXPECT_EQ(net::OK, error());
+  std::string payload;
+  int rv = ReadPayloadStream(&payload);
+  std::string expected_payload = GetTestFileContents("test.html");
+
+  EXPECT_EQ(expected_payload, payload);
+  EXPECT_EQ(static_cast<int>(expected_payload.size()), rv);
+}
+
+TEST_P(SignedExchangeHandlerTest,
+       CertValidMoreThan90DaysShouldBeRejectedAfterAugust2019) {
+  SignedExchangeHandler::SetVerificationTimeForTesting(
+      base::Time::UnixEpoch() +
+      base::TimeDelta::FromSeconds(kCertValidityPeriodEnforcementDate));
+  mock_cert_fetcher_factory_->ExpectFetch(
+      GURL("https://cert.example.org/cert.msg"),
+      GetTestFileContents("test.example.org.public.pem.cbor"));
+
+  // Make the MockCertVerifier treat the certificate
+  // "prime256v1-sha256-validity-too-long.public.pem" as valid for
+  // "test.example.org".
+  scoped_refptr<net::X509Certificate> original_cert =
+      LoadCertificate("prime256v1-sha256.public.pem");
+  net::CertVerifyResult dummy_result;
+  dummy_result.verified_cert = original_cert;
+  dummy_result.cert_status = net::OK;
+  dummy_result.ocsp_result.response_status = net::OCSPVerifyResult::PROVIDED;
+  dummy_result.ocsp_result.revocation_status = net::OCSPRevocationStatus::GOOD;
+  auto mock_cert_verifier = std::make_unique<net::MockCertVerifier>();
+  mock_cert_verifier->AddResultForCertAndHost(original_cert, "test.example.org",
+                                              dummy_result, net::OK);
+  SetCertVerifier(std::move(mock_cert_verifier));
+
+  std::string contents = GetTestFileContents("test.example.org_test.sxg");
+  source_->AddReadResult(contents.data(), contents.size(), net::OK, GetParam());
+  source_->AddReadResult(nullptr, 0, net::OK, GetParam());
+
+  CreateSignedExchangeHandler(CreateTestURLRequestContext());
+  WaitForHeader();
+
+  ASSERT_TRUE(read_header());
+  EXPECT_EQ(SignedExchangeLoadResult::kCertValidityPeriodTooLong, result());
   EXPECT_EQ(net::ERR_INVALID_SIGNED_EXCHANGE, error());
   EXPECT_EQ(kTestSxgInnerURL, inner_url());
   // Drain the MockSourceStream, otherwise its destructer causes DCHECK failure.

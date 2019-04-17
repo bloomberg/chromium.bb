@@ -67,6 +67,7 @@ const char* GetResultTypeString(SignedExchangeLoadResult result) {
     case SignedExchangeLoadResult::kOCSPError:
       return kSXGResultCertVerificationError;
     case SignedExchangeLoadResult::kCertRequirementsNotMet:
+    case SignedExchangeLoadResult::kCertValidityPeriodTooLong:
       return kSXGResultCertVerificationError;
     case SignedExchangeLoadResult::kMerkleIntegrityError:
       return kSXGResultMiError;
