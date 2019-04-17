@@ -1498,9 +1498,9 @@ static void write_modes_b(AV1_COMP *cpi, const TileInfo *const tile,
                           int mi_col) {
   write_mbmi_b(cpi, tile, w, mi_row, mi_col);
 
-  AV1_COMMON *cm = &cpi->common;
+  const AV1_COMMON *cm = &cpi->common;
   MACROBLOCKD *xd = &cpi->td.mb.e_mbd;
-  MB_MODE_INFO *mbmi = xd->mi[0];
+  const MB_MODE_INFO *mbmi = xd->mi[0];
   for (int plane = 0; plane < AOMMIN(2, av1_num_planes(cm)); ++plane) {
     const uint8_t palette_size_plane =
         mbmi->palette_mode_info.palette_size[plane];
@@ -1516,10 +1516,10 @@ static void write_modes_b(AV1_COMP *cpi, const TileInfo *const tile,
     }
   }
 
-  BLOCK_SIZE bsize = mbmi->sb_type;
-  int is_inter_tx = is_inter_block(mbmi) || is_intrabc_block(mbmi);
-  int skip = mbmi->skip;
-  int segment_id = mbmi->segment_id;
+  const BLOCK_SIZE bsize = mbmi->sb_type;
+  const int is_inter_tx = is_inter_block(mbmi);
+  const int skip = mbmi->skip;
+  const int segment_id = mbmi->segment_id;
   if (cm->tx_mode == TX_MODE_SELECT && block_signals_txsize(bsize) &&
       !(is_inter_tx && skip) && !xd->lossless[segment_id]) {
     if (is_inter_tx) {  // This implies skip flag is 0.
@@ -1528,17 +1528,17 @@ static void write_modes_b(AV1_COMP *cpi, const TileInfo *const tile,
       const int txbw = tx_size_wide_unit[max_tx_size];
       const int width = block_size_wide[bsize] >> tx_size_wide_log2[0];
       const int height = block_size_high[bsize] >> tx_size_high_log2[0];
-      int idx, idy;
-      for (idy = 0; idy < height; idy += txbh)
-        for (idx = 0; idx < width; idx += txbw)
+      for (int idy = 0; idy < height; idy += txbh) {
+        for (int idx = 0; idx < width; idx += txbw) {
           write_tx_size_vartx(xd, mbmi, max_tx_size, 0, idy, idx, w);
+        }
+      }
     } else {
       write_selected_tx_size(xd, w);
       set_txfm_ctxs(mbmi->tx_size, xd->n4_w, xd->n4_h, 0, xd);
     }
   } else {
-    set_txfm_ctxs(mbmi->tx_size, xd->n4_w, xd->n4_h,
-                  skip && is_inter_block(mbmi), xd);
+    set_txfm_ctxs(mbmi->tx_size, xd->n4_w, xd->n4_h, skip && is_inter_tx, xd);
   }
 
   write_tokens_b(cpi, tile, w, tok, tok_end, mi_row, mi_col);
