@@ -53,9 +53,10 @@ ScopedVABufferMapping::ScopedVABufferMapping(
 }
 
 ScopedVABufferMapping::~ScopedVABufferMapping() {
-  lock_->AssertAcquired();
-  if (va_buffer_data_)
+  if (va_buffer_data_) {
+    lock_->AssertAcquired();
     Unmap();
+  }
 }
 
 VAStatus ScopedVABufferMapping::Unmap() {
@@ -83,6 +84,7 @@ ScopedVAImage::ScopedVAImage(base::Lock* lock,
     LOG(ERROR) << "vaCreateImage failed: " << vaErrorStr(result);
     return;
   }
+  DCHECK_NE(image_->image_id, VA_INVALID_ID);
 
   result = vaGetImage(va_display_, va_surface_id, 0, 0, size.width(),
                       size.height(), image_->image_id);
@@ -96,11 +98,13 @@ ScopedVAImage::ScopedVAImage(base::Lock* lock,
 }
 
 ScopedVAImage::~ScopedVAImage() {
-  base::AutoLock auto_lock(*lock_);
+  if (image_->image_id != VA_INVALID_ID) {
+    base::AutoLock auto_lock(*lock_);
 
-  // |va_buffer_| has to be deleted before vaDestroyImage().
-  va_buffer_.release();
-  vaDestroyImage(va_display_, image_->image_id);
+    // |va_buffer_| has to be deleted before vaDestroyImage().
+    va_buffer_.release();
+    vaDestroyImage(va_display_, image_->image_id);
+  }
 }
 
 bool FillVP8DataStructuresAndPassToVaapiWrapper(

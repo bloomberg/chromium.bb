@@ -1443,13 +1443,16 @@ std::unique_ptr<ScopedVAImage> VaapiWrapper::CreateVaImage(
     VASurfaceID va_surface_id,
     VAImageFormat* format,
     const gfx::Size& size) {
-  base::AutoLock auto_lock(*va_lock_);
+  std::unique_ptr<ScopedVAImage> scoped_image;
+  {
+    base::AutoLock auto_lock(*va_lock_);
 
-  VAStatus va_res = vaSyncSurface(va_display_, va_surface_id);
-  VA_SUCCESS_OR_RETURN(va_res, "Failed syncing surface", nullptr);
+    VAStatus va_res = vaSyncSurface(va_display_, va_surface_id);
+    VA_SUCCESS_OR_RETURN(va_res, "Failed syncing surface", nullptr);
 
-  auto scoped_image = std::make_unique<ScopedVAImage>(
-      va_lock_, va_display_, va_surface_id, format, size);
+    scoped_image = std::make_unique<ScopedVAImage>(va_lock_, va_display_,
+                                                   va_surface_id, format, size);
+  }
   return scoped_image->IsValid() ? std::move(scoped_image) : nullptr;
 }
 
