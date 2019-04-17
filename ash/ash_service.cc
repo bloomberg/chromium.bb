@@ -172,17 +172,18 @@ void AshService::InitializeDBusClients() {
     chromeos::HammerdClient::Initialize(bus);
     chromeos::PowerManagerClient::Initialize(bus);
     chromeos::SystemClockClient::Initialize(bus);
+    // TODO(ortuno): Eliminate BluezDBusManager code from Ash, crbug.com/830893.
+    bluez::BluezDBusManager::Initialize(bus);
   } else {
     chromeos::HammerdClient::InitializeFake();
     chromeos::PowerManagerClient::InitializeFake();
     chromeos::SystemClockClient::InitializeFake();
+    // TODO(ortuno): Eliminate BluezDBusManager code from Ash, crbug.com/830893.
+    bluez::BluezDBusManager::InitializeFake();
   }
 
   chromeos::PowerPolicyController::Initialize(
       chromeos::PowerManagerClient::Get());
-
-  // TODO(ortuno): Eliminate BluezDBusManager code from Ash, crbug.com/830893.
-  bluez::BluezDBusManager::Initialize();
 
   // TODO(stevenjb): Eliminate NetworkHandler code from Ash, crbug.com/644355.
   CHECK(!chromeos::NetworkHandler::IsInitialized());

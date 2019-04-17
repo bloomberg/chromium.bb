@@ -59,7 +59,7 @@ ViewEventTestPlatformPartChromeOS::ViewEventTestPlatformPartChromeOS(
   // it is initialized by window manager service.
   chromeos::PowerPolicyController::Initialize(
       chromeos::PowerManagerClient::Get());
-  bluez::BluezDBusManager::Initialize();
+  bluez::BluezDBusManager::InitializeFake();
   chromeos::CrasAudioHandler::InitializeForTesting();
   chromeos::NetworkHandler::Initialize();
 

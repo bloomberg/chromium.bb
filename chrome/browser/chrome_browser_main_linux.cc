@@ -97,8 +97,7 @@ void ChromeBrowserMainPartsLinux::PostProfileInit() {
 
 void ChromeBrowserMainPartsLinux::PostMainMessageLoopStart() {
 #if !defined(OS_CHROMEOS)
-  bluez::BluezDBusThreadManager::Initialize();
-  bluez::BluezDBusManager::Initialize();
+  bluez::BluezDBusManager::Initialize(nullptr /* system_bus */);
 #endif
 
   ChromeBrowserMainPartsPosix::PostMainMessageLoopStart();

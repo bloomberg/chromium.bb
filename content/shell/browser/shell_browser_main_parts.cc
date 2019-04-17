@@ -116,7 +116,7 @@ void ShellBrowserMainParts::PreMainMessageLoopStart() {
 void ShellBrowserMainParts::PostMainMessageLoopStart() {
 #if defined(OS_CHROMEOS)
   chromeos::DBusThreadManager::Initialize();
-  bluez::BluezDBusManager::Initialize();
+  bluez::BluezDBusManager::InitializeFake();
 #elif defined(OS_LINUX)
   bluez::DBusBluezManagerWrapperLinux::Initialize();
 #endif
