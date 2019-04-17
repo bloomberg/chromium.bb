@@ -1828,8 +1828,15 @@ void LocalFrameView::PerformPostLayoutTasks() {
   FontFaceSetDocument::DidLayout(*frame_->GetDocument());
   // Fire a fake a mouse move event to update hover state and mouse cursor, and
   // send the right mouse out/over events.
-  frame_->GetEventHandler().MayUpdateHoverWhenContentUnderMouseChanged(
-      MouseEventManager::UpdateHoverReason::kLayoutOrStyleChanged);
+  // TODO(lanwei): we should check whether the mouse is inside the frame before
+  // dirtying the hover state.
+  if (RuntimeEnabledFeatures::
+          UpdateHoverFromLayoutChangeAtBeginFrameEnabled()) {
+    frame_->LocalFrameRoot().GetEventHandler().MarkHoverStateDirty();
+  } else {
+    frame_->GetEventHandler().MayUpdateHoverWhenContentUnderMouseChanged(
+        MouseEventManager::UpdateHoverReason::kLayoutOrStyleChanged);
+  }
 
   UpdateGeometriesIfNeeded();
 

@@ -1482,7 +1482,9 @@ void WebViewImpl::BeginFrame(base::TimeTicks last_frame_time,
   if (!MainFrameImpl())
     return;
 
-  if (RuntimeEnabledFeatures::UpdateHoverFromScrollAtBeginFrameEnabled()) {
+  if (RuntimeEnabledFeatures::UpdateHoverFromScrollAtBeginFrameEnabled() ||
+      RuntimeEnabledFeatures::
+          UpdateHoverFromLayoutChangeAtBeginFrameEnabled()) {
     MainFrameImpl()
         ->GetFrame()
         ->GetEventHandler()

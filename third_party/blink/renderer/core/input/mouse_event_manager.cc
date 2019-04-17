@@ -415,13 +415,17 @@ void MouseEventManager::CancelFakeMouseMoveEvent() {
 }
 
 void MouseEventManager::MarkHoverStateDirty() {
-  DCHECK(RuntimeEnabledFeatures::UpdateHoverFromScrollAtBeginFrameEnabled());
+  DCHECK(
+      RuntimeEnabledFeatures::UpdateHoverFromScrollAtBeginFrameEnabled() ||
+      RuntimeEnabledFeatures::UpdateHoverFromLayoutChangeAtBeginFrameEnabled());
   DCHECK(frame_->IsLocalRoot());
   hover_state_dirty_ = true;
 }
 
 bool MouseEventManager::HoverStateDirty() {
-  DCHECK(RuntimeEnabledFeatures::UpdateHoverFromScrollAtBeginFrameEnabled());
+  DCHECK(
+      RuntimeEnabledFeatures::UpdateHoverFromScrollAtBeginFrameEnabled() ||
+      RuntimeEnabledFeatures::UpdateHoverFromLayoutChangeAtBeginFrameEnabled());
   DCHECK(frame_->IsLocalRoot());
   return hover_state_dirty_;
 }

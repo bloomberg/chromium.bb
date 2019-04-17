@@ -23,23 +23,15 @@ internals.runtimeFlags.updateHoverFromLayoutChangeAtBeginFrameEnabled = true;
 var eventList = [];
 var x = 100;
 var y = 100;
-var addedBlue = false;
 
 function addBlue() {
-  document.body.innerHTML += '<div id="blue"></div>';
-  var blue = document.getElementById("blue");
+  var blue = document.createElement('div');
+  blue.id = "blue";
   var events = ['mouseover', 'mousemove', 'mouseout', 'mouseenter', 'mouseleave'];
   events.forEach(function (event) {
       blue.addEventListener(event, addMouseEvents);
   });
-  addedBlue = true;
-}
-
-function checkMouseOverEvent() {
-  var result = eventList.join();
-  assert_true(result == '');
-  assert_equals(getComputedStyle(document.getElementById("blue")).backgroundColor, "rgb(0, 0, 255)");
-  assert_true(internals.runtimeFlags.updateHoverFromLayoutChangeAtBeginFrameEnabled)
+  document.body.appendChild(blue);
 }
 
 function addMouseEvents(event) {
@@ -49,8 +41,9 @@ function addMouseEvents(event) {
 promise_test (async () => {
   document.addEventListener('click', addBlue);
   await mouseClickOn(x, y);
-  await waitFor(() => { return addedBlue; });
-  await conditionHolds(() => { return addedBlue; });
-  checkMouseOverEvent();
-}, 'Tests that the mouseover event is not fired and the element has no hover effect when the element underneath the mouse cursor is changed.');
+  var result = eventList.join();
+  assert_true(result == 'mouseover,mouseenter');
+  assert_true(document.getElementById("blue").matches(':hover'));
+  assert_true(internals.runtimeFlags.updateHoverFromLayoutChangeAtBeginFrameEnabled);
+}, 'Tests that the mouseover event is fired and the element has hover effect when the element underneath the mouse cursor is changed.');
 </script>
