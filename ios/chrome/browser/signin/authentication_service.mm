@@ -319,6 +319,9 @@ void AuthenticationService::SignIn(ChromeIdentity* identity,
              ->GetChromeIdentityService()
              ->IsValidIdentity(identity));
 
+  SetPromptForSignIn(false);
+  sync_setup_service_->PrepareForFirstSyncSetup();
+
   // The account info needs to be seeded for the primary account id before
   // signing in.
   AccountInfo info;
@@ -335,9 +338,6 @@ void AuthenticationService::SignIn(ChromeIdentity* identity,
   // between the old and the new authenticated accounts.
   if (!old_authenticated_account_id.empty())
     CHECK_EQ(new_authenticated_account_id, old_authenticated_account_id);
-
-  SetPromptForSignIn(false);
-  sync_setup_service_->PrepareForFirstSyncSetup();
 
   // Update the SigninManager with the new logged in identity.
   auto* account_mutator = identity_manager_->GetPrimaryAccountMutator();
