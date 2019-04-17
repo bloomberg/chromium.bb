@@ -8,8 +8,10 @@
 #include <string>
 #include <utility>
 
+#include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/feature_list.h"
 #include "base/message_loop/message_loop.h"
@@ -38,6 +40,15 @@ constexpr EnvironmentParams kForegroundPoolEnvironmentParams{
 constexpr EnvironmentParams kBackgroundPoolEnvironmentParams{
     "Background", base::ThreadPriority::BACKGROUND};
 
+// Indicates whether BEST_EFFORT tasks are disabled by a command line switch.
+bool HasDisableBestEffortTasksSwitch() {
+  // The CommandLine might not be initialized if TaskScheduler is initialized
+  // in a dynamic library which doesn't have access to argc/argv.
+  return CommandLine::InitializedForCurrentProcess() &&
+         CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kDisableBestEffortTasks);
+}
+
 }  // namespace
 
 ThreadPoolImpl::ThreadPoolImpl(StringPiece histogram_label)
@@ -53,6 +64,7 @@ ThreadPoolImpl::ThreadPoolImpl(StringPiece histogram_label,
                         Unretained(this)))),
       single_thread_task_runner_manager_(task_tracker_->GetTrackedRef(),
                                          &delayed_task_manager_),
+      can_run_best_effort_(!HasDisableBestEffortTasksSwitch()),
       tracked_ref_factory_(this) {
   DCHECK(!histogram_label.empty());
 
@@ -89,6 +101,9 @@ ThreadPoolImpl::~ThreadPoolImpl() {
 
 void ThreadPoolImpl::Start(const ThreadPool::InitParams& init_params,
                            SchedulerWorkerObserver* scheduler_worker_observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!started_);
+
   internal::InitializeThreadPrioritiesFeature();
 
   // This is set in Start() and not in the constructor because variation params
@@ -170,6 +185,8 @@ void ThreadPoolImpl::Start(const ThreadPool::InitParams& init_params,
         service_thread_task_runner, scheduler_worker_observer,
         worker_environment);
   }
+
+  started_ = true;
 }
 
 bool ThreadPoolImpl::PostDelayedTaskWithTraits(const Location& from_here,
@@ -232,7 +249,18 @@ int ThreadPoolImpl::GetMaxConcurrentNonBlockedTasksWithTraitsDeprecated(
 }
 
 void ThreadPoolImpl::Shutdown() {
-  task_tracker_->Shutdown();
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  task_tracker_->StartShutdown();
+
+  // Allow all tasks to run. Done after initiating shutdown to ensure that non-
+  // BLOCK_SHUTDOWN tasks don't get a chance to run and that BLOCK_SHUTDOWN
+  // tasks run with a normal thread priority.
+  can_run_ = true;
+  can_run_best_effort_ = true;
+  UpdateCanRunPolicy();
+
+  task_tracker_->CompleteShutdown();
 }
 
 void ThreadPoolImpl::FlushForTesting() {
@@ -261,8 +289,18 @@ void ThreadPoolImpl::JoinForTesting() {
 #endif
 }
 
-void ThreadPoolImpl::SetExecutionFenceEnabled(bool execution_fence_enabled) {
-  task_tracker_->SetExecutionFenceEnabled(execution_fence_enabled);
+void ThreadPoolImpl::SetCanRun(bool can_run) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_NE(can_run_, can_run);
+  can_run_ = can_run;
+  UpdateCanRunPolicy();
+}
+
+void ThreadPoolImpl::SetCanRunBestEffort(bool can_run_best_effort) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_NE(can_run_best_effort_, can_run_best_effort);
+  can_run_best_effort_ = can_run_best_effort;
+  UpdateCanRunPolicy();
 }
 
 bool ThreadPoolImpl::PostTaskWithSequence(Task task,
@@ -362,6 +400,20 @@ SchedulerWorkerPool* ThreadPoolImpl::GetForegroundWorkerPool() {
   }
 #endif
   return &foreground_pool_.value();
+}
+
+void ThreadPoolImpl::UpdateCanRunPolicy() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  const CanRunPolicy can_run_policy =
+      can_run_ ? (can_run_best_effort_ ? CanRunPolicy::kAll
+                                       : CanRunPolicy::kForegroundOnly)
+               : CanRunPolicy::kNone;
+  task_tracker_->SetCanRunPolicy(can_run_policy);
+  GetForegroundWorkerPool()->DidUpdateCanRunPolicy();
+  if (background_pool_)
+    background_pool_->DidUpdateCanRunPolicy();
+  single_thread_task_runner_manager_.DidUpdateCanRunPolicy();
 }
 
 TaskTraits ThreadPoolImpl::SetUserBlockingPriorityIfNeeded(

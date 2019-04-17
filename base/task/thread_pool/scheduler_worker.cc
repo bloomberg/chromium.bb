@@ -337,8 +337,7 @@ void SchedulerWorker::RunWorker() {
       continue;
     }
 
-    sequence =
-        task_tracker_->RunAndPopNextTask(std::move(sequence), delegate_.get());
+    sequence = task_tracker_->RunAndPopNextTask(std::move(sequence));
 
     delegate_->DidRunTask(std::move(sequence));
 

@@ -58,9 +58,8 @@ scoped_refptr<Sequence> CreateSequenceWithTask(
 
 scoped_refptr<TaskRunner> CreateTaskRunnerWithExecutionMode(
     test::ExecutionMode execution_mode,
-    MockSchedulerTaskRunnerDelegate* mock_scheduler_task_runner_delegate) {
-  // Allow tasks posted to the returned TaskRunner to wait on a WaitableEvent.
-  const TaskTraits traits = {WithBaseSyncPrimitives()};
+    MockSchedulerTaskRunnerDelegate* mock_scheduler_task_runner_delegate,
+    const TaskTraits& traits) {
   switch (execution_mode) {
     case test::ExecutionMode::PARALLEL:
       return CreateTaskRunnerWithTraits(traits,
@@ -161,6 +160,11 @@ void MockSchedulerTaskRunnerDelegate::UpdatePriority(
 void MockSchedulerTaskRunnerDelegate::SetWorkerPool(
     SchedulerWorkerPool* worker_pool) {
   worker_pool_ = worker_pool;
+}
+
+void ShutdownTaskTracker(TaskTracker* task_tracker) {
+  task_tracker->StartShutdown();
+  task_tracker->CompleteShutdown();
 }
 
 }  // namespace test

@@ -495,6 +495,75 @@ TEST_P(ThreadPoolImplTest, FlushAsyncForTestingSimple) {
   flush_event.Wait();
 }
 
+// Verifies that tasks only run when allowed by SetCanRun().
+TEST_P(ThreadPoolImplTest, SetCanRun) {
+  StartThreadPool();
+
+  AtomicFlag can_run;
+  WaitableEvent did_run;
+  thread_pool_.SetCanRun(false);
+
+  CreateTaskRunnerWithTraitsAndExecutionMode(&thread_pool_, GetParam().traits,
+                                             GetParam().execution_mode)
+      ->PostTask(FROM_HERE, BindLambdaForTesting([&]() {
+                   EXPECT_TRUE(can_run.IsSet());
+                   did_run.Signal();
+                 }));
+
+  PlatformThread::Sleep(TestTimeouts::tiny_timeout());
+
+  can_run.Set();
+  thread_pool_.SetCanRun(true);
+  did_run.Wait();
+}
+
+// Verifies that a call to SetCanRun(false) before Start() is honored.
+TEST_P(ThreadPoolImplTest, SetCanRunBeforeStart) {
+  thread_pool_.SetCanRun(false);
+  StartThreadPool();
+
+  AtomicFlag can_run;
+  WaitableEvent did_run;
+
+  CreateTaskRunnerWithTraitsAndExecutionMode(&thread_pool_, GetParam().traits,
+                                             GetParam().execution_mode)
+      ->PostTask(FROM_HERE, BindLambdaForTesting([&]() {
+                   EXPECT_TRUE(can_run.IsSet());
+                   did_run.Signal();
+                 }));
+
+  PlatformThread::Sleep(TestTimeouts::tiny_timeout());
+
+  can_run.Set();
+  thread_pool_.SetCanRun(true);
+  did_run.Wait();
+}
+
+// Verifies that BEST_EFFORT tasks only run when allowed by
+// SetCanRunBestEffort().
+TEST_P(ThreadPoolImplTest, SetCanRunBestEffort) {
+  StartThreadPool();
+
+  AtomicFlag can_run;
+  WaitableEvent did_run;
+  thread_pool_.SetCanRunBestEffort(false);
+
+  CreateTaskRunnerWithTraitsAndExecutionMode(&thread_pool_, GetParam().traits,
+                                             GetParam().execution_mode)
+      ->PostTask(
+          FROM_HERE, BindLambdaForTesting([&]() {
+            if (GetParam().traits.priority() == TaskPriority::BEST_EFFORT)
+              EXPECT_TRUE(can_run.IsSet());
+            did_run.Signal();
+          }));
+
+  PlatformThread::Sleep(TestTimeouts::tiny_timeout());
+
+  can_run.Set();
+  thread_pool_.SetCanRunBestEffort(true);
+  did_run.Wait();
+}
+
 INSTANTIATE_TEST_SUITE_P(OneThreadPoolImplTestParams,
                          ThreadPoolImplTest,
                          ::testing::ValuesIn(GetThreadPoolImplTestParams()));
