@@ -194,11 +194,8 @@ declare_args() {
   # in turn is important for goma compile hit rate.
   # Setting this to true may make it harder to debug binaries on Linux, see
   # https://chromium.googlesource.com/chromium/src/+/master/docs/linux_debugging.md#Source-level-debug-with-fdebug_compilation_dir
-  # So only enable this on linux if use_goma.  Elsewhere, there are no
-  # drawbacks to using it, so always enable it there.
   strip_absolute_paths_from_debug_symbols =
-      is_android || is_fuchsia || is_nacl || (is_win && use_lld) ||
-      (use_goma && is_linux)
+      is_android || is_fuchsia || is_nacl || (is_win && use_lld) || is_linux
 }
 
 # If it wasn't manually set, set to an appropriate default.
