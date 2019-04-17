@@ -67,10 +67,6 @@ void SecurityFilterPeer::OnStartLoadingResponseBody(
   NOTREACHED();
 }
 
-void SecurityFilterPeer::OnReceivedData(std::unique_ptr<ReceivedData> data) {
-  NOTREACHED();
-}
-
 void SecurityFilterPeer::OnTransferSizeUpdated(int transfer_size_diff) {
   NOTREACHED();
 }

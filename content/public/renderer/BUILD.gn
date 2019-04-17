@@ -40,8 +40,6 @@ target(link_target_type, "renderer_sources") {
     "context_menu_client.h",
     "document_state.cc",
     "document_state.h",
-    "fixed_received_data.cc",
-    "fixed_received_data.h",
     "media_stream_utils.h",
     "pepper_plugin_instance.h",
     "plugin_instance_throttler.h",

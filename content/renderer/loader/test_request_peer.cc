@@ -57,21 +57,6 @@ void TestRequestPeer::OnStartLoadingResponseBody(
   context_->body_handle = std::move(body);
 }
 
-void TestRequestPeer::OnReceivedData(std::unique_ptr<ReceivedData> data) {
-  if (context_->cancelled)
-    return;
-  EXPECT_TRUE(context_->received_response);
-  EXPECT_FALSE(context_->complete);
-  context_->data.append(data->payload(), data->length());
-
-  if (context_->cancel_on_receive_data) {
-    dispatcher_->Cancel(
-        context_->request_id,
-        blink::scheduler::GetSingleThreadTaskRunnerForTesting());
-    context_->cancelled = true;
-  }
-}
-
 void TestRequestPeer::OnTransferSizeUpdated(int transfer_size_diff) {
   EXPECT_TRUE(context_->received_response);
   EXPECT_FALSE(context_->complete);

@@ -19,23 +19,6 @@
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
 
-namespace {
-
-class StringData final : public content::RequestPeer::ReceivedData {
- public:
-  explicit StringData(const std::string& data) : data_(data) {}
-
-  const char* payload() override { return data_.data(); }
-  int length() override { return data_.size(); }
-
- private:
-  const std::string data_;
-
-  DISALLOW_COPY_AND_ASSIGN(StringData);
-};
-
-}  // namespace
-
 ExtensionLocalizationPeer::DataPipeState::DataPipeState()
     : source_watcher_(FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::MANUAL),
       destination_watcher_(FROM_HERE,
@@ -99,10 +82,6 @@ void ExtensionLocalizationPeer::OnStartLoadingResponseBody(
       base::BindRepeating(&ExtensionLocalizationPeer::OnReadableBody,
                           base::Unretained(this)));
   data_pipe_state_.source_watcher_.ArmOrNotify();
-}
-
-void ExtensionLocalizationPeer::OnReceivedData(std::unique_ptr<ReceivedData>) {
-  NOTREACHED();
 }
 
 void ExtensionLocalizationPeer::OnTransferSizeUpdated(int transfer_size_diff) {

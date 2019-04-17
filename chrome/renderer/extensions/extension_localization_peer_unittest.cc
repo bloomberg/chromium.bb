@@ -14,7 +14,6 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
-#include "content/public/renderer/fixed_received_data.h"
 #include "extensions/common/message_bundle.h"
 #include "ipc/ipc_sender.h"
 #include "ipc/ipc_sync_message.h"
@@ -86,9 +85,6 @@ class MockRequestPeer : public content::RequestPeer {
                             base::Unretained(this)));
   }
   MOCK_METHOD2(OnDownloadedData, void(int len, int encoded_data_length));
-  void OnReceivedData(std::unique_ptr<RequestPeer::ReceivedData>) override {
-    NOTREACHED();
-  }
   MOCK_METHOD1(OnReceivedDataInternal, void(std::string data));
   MOCK_METHOD1(OnTransferSizeUpdated, void(int transfer_size_diff));
   MOCK_METHOD1(OnCompletedRequest,

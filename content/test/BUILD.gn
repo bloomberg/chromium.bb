@@ -1788,7 +1788,6 @@ test("content_unittests") {
     "../renderer/input/main_thread_event_queue_unittest.cc",
     "../renderer/loader/navigation_body_loader_unittest.cc",
     "../renderer/loader/resource_dispatcher_unittest.cc",
-    "../renderer/loader/shared_memory_data_consumer_handle_unittest.cc",
     "../renderer/loader/sync_load_context_unittest.cc",
     "../renderer/loader/test_request_peer.cc",
     "../renderer/loader/test_request_peer.h",
