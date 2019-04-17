@@ -64,7 +64,6 @@ IN_PROC_BROWSER_TEST_F(BackgroundSyncMetricsBrowserTest,
       /* is_reregistered= */ false);
   WaitForUkm();
 
-  EXPECT_EQ(recorder_->entries_count(), 1u);
   {
     auto entries = recorder_->GetEntriesByName(
         ukm::builders::BackgroundSyncRegistered::kEntryName);
@@ -83,7 +82,14 @@ IN_PROC_BROWSER_TEST_F(BackgroundSyncMetricsBrowserTest,
       /* num_attempts= */ 2, /* max_attempts= */ 5);
   WaitForUkm();
 
-  ASSERT_EQ(recorder_->entries_count(), 2u);
+  // Sanity check that no additional BackgroundSyncRegistered events were
+  // logged.
+  {
+    auto entries = recorder_->GetEntriesByName(
+        ukm::builders::BackgroundSyncRegistered::kEntryName);
+    EXPECT_EQ(entries.size(), 1u);
+  }
+
   {
     auto entries = recorder_->GetEntriesByName(
         ukm::builders::BackgroundSyncCompleted::kEntryName);
