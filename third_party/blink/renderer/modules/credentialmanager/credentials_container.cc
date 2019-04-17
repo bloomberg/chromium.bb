@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "build/build_config.h"
 #include "third_party/blink/public/mojom/credentialmanager/credential_manager.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -319,6 +320,20 @@ DOMArrayBuffer* VectorToDOMArrayBuffer(const Vector<uint8_t> buffer) {
                                 buffer.size());
 }
 
+#if defined(OS_ANDROID)
+Vector<Vector<uint32_t>> UvmEntryToArray(
+    const Vector<mojom::blink::UvmEntryPtr>& user_verification_methods) {
+  Vector<Vector<uint32_t>> uvm_array;
+  for (const auto& uvm : user_verification_methods) {
+    Vector<uint32_t> uvmEntry = {uvm->user_verification_method,
+                                 uvm->key_protection_type,
+                                 uvm->matcher_protection_type};
+    uvm_array.push_back(uvmEntry);
+  }
+  return uvm_array;
+}
+#endif
+
 void OnMakePublicKeyCredentialComplete(
     std::unique_ptr<ScopedPromiseResolver> scoped_resolver,
     AuthenticatorStatus status,
@@ -351,6 +366,12 @@ void OnMakePublicKeyCredentialComplete(
     if (credential->echo_hmac_create_secret) {
       extension_outputs->setHmacCreateSecret(credential->hmac_create_secret);
     }
+#if defined(OS_ANDROID)
+    if (credential->echo_user_verification_methods) {
+      extension_outputs->setUvm(
+          UvmEntryToArray(std::move(*credential->user_verification_methods)));
+    }
+#endif
     resolver->Resolve(MakeGarbageCollected<PublicKeyCredential>(
         credential->info->id, raw_id, authenticator_response,
         extension_outputs));
@@ -398,6 +419,12 @@ void OnGetAssertionComplete(
     if (credential->echo_appid_extension) {
       extension_outputs->setAppid(credential->appid_extension);
     }
+#if defined(OS_ANDROID)
+    if (credential->echo_user_verification_methods) {
+      extension_outputs->setUvm(
+          UvmEntryToArray(std::move(*credential->user_verification_methods)));
+    }
+#endif
     resolver->Resolve(MakeGarbageCollected<PublicKeyCredential>(
         credential->info->id, raw_id, authenticator_response,
         extension_outputs));
