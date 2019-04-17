@@ -48,7 +48,7 @@ struct ParamTraits<content::WebCursor> {
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,
                    param_type* r) {
-    return r->Deserialize(iter);
+    return r->Deserialize(m, iter);
   }
   static void Log(const param_type& p, std::string* l) {
     l->append("<WebCursor>");
