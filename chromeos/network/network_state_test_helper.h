@@ -63,6 +63,10 @@ class NetworkStateTestHelper {
       const std::string& connection_state,
       int signal_strength);
 
+  // Returns the path used for the shared and user profiles.
+  const char* ProfilePathShared();
+  const char* ProfilePathUser();
+
   // Returns the hash used for the user profile.
   const char* UserHash();
 

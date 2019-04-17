@@ -22,6 +22,8 @@ void FailErrorCallback(const std::string& error_name,
                        const std::string& error_message) {}
 
 const char kUserHash[] = "user_hash";
+const char kProfilePathShared[] = "shared_profile_path";
+const char kProfilePathUser[] = "user_profile_path";
 
 }  // namespace
 
@@ -37,9 +39,9 @@ NetworkStateTestHelper::NetworkStateTestHelper(
   device_test_ = ShillDeviceClient::Get()->GetTestInterface();
   service_test_ = ShillServiceClient::Get()->GetTestInterface();
 
-  profile_test_->AddProfile("shared_profile_path",
+  profile_test_->AddProfile(kProfilePathShared,
                             std::string() /* shared profile */);
-  profile_test_->AddProfile("user_profile_path", kUserHash);
+  profile_test_->AddProfile(kProfilePathUser, kUserHash);
   base::RunLoop().RunUntilIdle();
 
   network_state_handler_ = NetworkStateHandler::InitializeForTest();
@@ -147,6 +149,14 @@ NetworkStateTestHelper::CreateStandaloneNetworkState(
   network->SetConnectionState(connection_state);
   network->set_signal_strength(signal_strength);
   return network;
+}
+
+const char* NetworkStateTestHelper::ProfilePathShared() {
+  return kProfilePathShared;
+}
+
+const char* NetworkStateTestHelper::ProfilePathUser() {
+  return kProfilePathUser;
 }
 
 const char* NetworkStateTestHelper::UserHash() {
