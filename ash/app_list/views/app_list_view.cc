@@ -192,10 +192,13 @@ class AppListView::StateAnimationMetricsReporter
 
   ~StateAnimationMetricsReporter() override = default;
 
-  void Start(bool is_in_tablet_mode) {
-    DCHECK(!started_);
-    is_in_tablet_mode_ = is_in_tablet_mode;
+  void SetTargetState(ash::mojom::AppListViewState target_state) {
+    target_state_ = target_state;
+  }
+
+  void Start() {
 #if defined(DCHECK)
+    DCHECK(!started_);
     started_ = ui::ScopedAnimationDurationScaleMode::duration_scale_mode() !=
                ui::ScopedAnimationDurationScaleMode::ZERO_DURATION;
 #endif
@@ -203,13 +206,36 @@ class AppListView::StateAnimationMetricsReporter
 
   void Report(int value) override {
     UMA_HISTOGRAM_PERCENTAGE("Apps.StateTransition.AnimationSmoothness", value);
-    if (is_in_tablet_mode_) {
-      UMA_HISTOGRAM_PERCENTAGE(
-          "Apps.StateTransition.AnimationSmoothness.TabletMode", value);
-    } else {
-      UMA_HISTOGRAM_PERCENTAGE(
-          "Apps.StateTransition.AnimationSmoothness.ClamshellMode", value);
+    switch (*target_state_) {
+      case ash::mojom::AppListViewState::kClosed:
+        UMA_HISTOGRAM_PERCENTAGE(
+            "Apps.StateTransition.AnimationSmoothness.Close.ClamshellMode",
+            value);
+        break;
+      case ash::mojom::AppListViewState::kPeeking:
+        UMA_HISTOGRAM_PERCENTAGE(
+            "Apps.StateTransition.AnimationSmoothness.Peeking.ClamshellMode",
+            value);
+        break;
+      case ash::mojom::AppListViewState::kHalf:
+        UMA_HISTOGRAM_PERCENTAGE(
+            "Apps.StateTransition.AnimationSmoothness.Half.ClamshellMode",
+            value);
+        break;
+      case ash::mojom::AppListViewState::kFullscreenAllApps:
+        UMA_HISTOGRAM_PERCENTAGE(
+            "Apps.StateTransition.AnimationSmoothness.FullscreenAllApps."
+            "ClamshellMode",
+            value);
+        break;
+      case ash::mojom::AppListViewState::kFullscreenSearch:
+        UMA_HISTOGRAM_PERCENTAGE(
+            "Apps.StateTransition.AnimationSmoothness.FullscreenSearch."
+            "ClamshellMode",
+            value);
+        break;
     }
+    target_state_.reset();
     view_->OnStateTransitionAnimationCompleted();
 #if defined(DCHECK)
     started_ = false;
@@ -220,7 +246,7 @@ class AppListView::StateAnimationMetricsReporter
 #if defined(DCHECK)
   bool started_ = false;
 #endif
-  bool is_in_tablet_mode_ = false;
+  base::Optional<ash::mojom::AppListViewState> target_state_;
   AppListView* view_;
 
   DISALLOW_COPY_AND_ASSIGN(StateAnimationMetricsReporter);
@@ -1370,6 +1396,7 @@ void AppListView::StartAnimationForState(
   settings.SetTweenType(gfx::Tween::EASE_OUT);
   settings.SetPreemptionStrategy(
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+  state_animation_metrics_reporter_->SetTargetState(target_state);
   settings.SetAnimationMetricsReporter(state_animation_metrics_reporter_.get());
   settings.AddObserver(transition_animation_observer_.get());
 
@@ -1392,6 +1419,8 @@ void AppListView::StartCloseAnimation(base::TimeDelta animation_duration) {
     animation_duration /= 2;
   }
 
+  state_animation_metrics_reporter_->SetTargetState(
+      ash::mojom::AppListViewState::kClosed);
   SetState(ash::mojom::AppListViewState::kClosed);
   app_list_main_view_->contents_view()->FadeOutOnClose(animation_duration);
 }
@@ -1606,7 +1635,7 @@ ash::mojom::AppListViewState AppListView::CalculateStateAfterShelfDrag(
 }
 
 ui::AnimationMetricsReporter* AppListView::GetStateTransitionMetricsReporter() {
-  state_animation_metrics_reporter_->Start(is_tablet_mode_);
+  state_animation_metrics_reporter_->Start();
   return state_animation_metrics_reporter_.get();
 }
 
