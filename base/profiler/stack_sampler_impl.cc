@@ -87,6 +87,7 @@ StackSamplerImpl::~StackSamplerImpl() = default;
 
 void StackSamplerImpl::AddAuxUnwinder(Unwinder* unwinder) {
   aux_unwinder_ = unwinder;
+  aux_unwinder_->AddNonNativeModules(module_cache_);
 }
 
 void StackSamplerImpl::RecordStackFrames(StackBuffer* stack_buffer,
