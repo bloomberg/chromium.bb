@@ -22,7 +22,7 @@ let outputCanvasRatio = outputCanvas.width / outputCanvas.height;
 
 let fakeDeviceInitParams = { supportsImmersive: true };
 
-let requestSessionOptions = [{ }];
+let requestSessionOptions = ['inline'];
 
 let testFunction = (session, t) => new Promise((resolve, reject) => {
   console.log("Test start");

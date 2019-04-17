@@ -18,8 +18,8 @@ let watcherDone = new Event("watcherdone");
 let fakeDeviceInitParams = { supportsImmersive:true };
 
 let requestSessionOptions = [
-  { mode: 'inline' },
-  { mode: 'immersive-vr' },
+  'inline',
+  'immersive-vr',
 ];
 
 let testFunction = function(session, t, fakeDeviceController) {

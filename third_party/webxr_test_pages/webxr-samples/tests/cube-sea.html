@@ -276,7 +276,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         if (navigator.xr) {
           // Set up "magic window" mode.
           if (appSettings.magicWindow) {
-            navigator.xr.requestSession().then(onSessionStarted);
+            navigator.xr.requestSession('inline').then(onSessionStarted);
           }
         } else {
           initFallback();
@@ -306,7 +306,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       }
 
       function onRequestSession() {
-        let xrOptions = { mode: appSettings.arMode ? 'immersive-ar' : 'immersive-vr' };
+        let xrOptions = appSettings.arMode ? 'immersive-ar' : 'immersive-vr';
         navigator.xr.requestSession(xrOptions).then((session) => {
           xrButton.setSession(session);
           onSessionStarted(session);

@@ -15,7 +15,7 @@ let testName = "XRInputSources properly communicate their handedness";
 
 let fakeDeviceInitParams = { supportsImmersive: true };
 
-let requestSessionOptions =  [{ mode: 'immersive-vr' }];
+let requestSessionOptions =  ['immersive-vr'];
 
 let testFunction =
   (session, t, fakeDeviceController) => new Promise((resolve) => {

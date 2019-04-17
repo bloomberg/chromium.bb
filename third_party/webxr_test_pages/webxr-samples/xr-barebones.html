@@ -97,7 +97,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       // session already we'll request one, and if we do we'll end it.
       function onButtonClicked() {
         if (!xrSession) {
-          navigator.xr.requestSession({mode: 'immersive-vr'}).then(onSessionStarted);
+          navigator.xr.requestSession('immersive-vr').then(onSessionStarted);
         } else {
           xrSession.end();
         }

@@ -17,7 +17,7 @@ let testName = "XRFrame.getPose works between eye-level and floor-level spaces";
 
 let fakeDeviceInitParams = { supportsImmersive:true };
 
-let requestSessionOptions = [{ mode: 'immersive-vr' }];
+let requestSessionOptions = ['immersive-vr'];
 
 let testFunction = function(session, t, fakeDeviceController) {
   // Session must have a baseLayer or frame requests will be ignored.

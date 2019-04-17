@@ -216,7 +216,7 @@ void XR::DispatchSupportsSessionMode(PendingSessionQuery* query) {
 }
 
 ScriptPromise XR::requestSession(ScriptState* script_state,
-                                 const XRSessionCreationOptions* options) {
+                                 const String& mode) {
   LocalFrame* frame = GetFrame();
   if (!frame || !frame->GetDocument()) {
     // Reject if the frame is inaccessible.
@@ -226,9 +226,9 @@ ScriptPromise XR::requestSession(ScriptState* script_state,
   }
 
   Document* doc = frame->GetDocument();
-  XRSession::SessionMode mode = stringToSessionMode(options->mode());
-  bool is_immersive = mode == XRSession::kModeImmersiveVR ||
-                      mode == XRSession::kModeImmersiveAR;
+  XRSession::SessionMode session_mode = stringToSessionMode(mode);
+  bool is_immersive = session_mode == XRSession::kModeImmersiveVR ||
+                      session_mode == XRSession::kModeImmersiveAR;
 
   if (is_immersive && !did_log_request_immersive_session_) {
     ukm::builders::XR_WebXR(GetSourceId())
@@ -249,7 +249,7 @@ ScriptPromise XR::requestSession(ScriptState* script_state,
   // If we no longer have a valid service connection reject the request, unless
   // it was for an inline mode.  In which case, we'll end up creating the
   // session in OnRequestSessionReturned.
-  if (!service_ && mode != XRSession::kModeInline) {
+  if (!service_ && session_mode != XRSession::kModeInline) {
     return ScriptPromise::RejectWithDOMException(
         script_state, DOMException::Create(DOMExceptionCode::kNotFoundError,
                                            kNoDevicesMessage));
@@ -264,14 +264,14 @@ ScriptPromise XR::requestSession(ScriptState* script_state,
 
   // All immersive and AR sessions require a user gesture.
   bool has_user_activation = LocalFrame::HasTransientUserActivation(frame);
-  if ((is_immersive || mode == XRSession::kModeInlineAR) &&
+  if ((is_immersive || session_mode == XRSession::kModeInlineAR) &&
       !has_user_activation) {
     return ScriptPromise::RejectWithDOMException(
         script_state, DOMException::Create(DOMExceptionCode::kSecurityError,
                                            kRequestRequiresUserActivation));
   }
 
-  if (mode == XRSession::kModeInlineAR) {
+  if (session_mode == XRSession::kModeInlineAR) {
     doc->AddConsoleMessage(ConsoleMessage::Create(
         mojom::ConsoleMessageSource::kOther,
         mojom::ConsoleMessageLevel::kWarning,
@@ -282,7 +282,7 @@ ScriptPromise XR::requestSession(ScriptState* script_state,
   ScriptPromise promise = resolver->Promise();
 
   PendingSessionQuery* query =
-      MakeGarbageCollected<PendingSessionQuery>(resolver, mode);
+      MakeGarbageCollected<PendingSessionQuery>(resolver, session_mode);
   query->has_user_activation = has_user_activation;
 
   if (!device_) {
