@@ -50,7 +50,7 @@ class AppInstaller {
       return;
     }
 
-    var installerResult = AppInstaller.Result.SUCCESS;
+    let installerResult = AppInstaller.Result.SUCCESS;
     if (error !== null) {
       installerResult = error == AppInstaller.USER_CANCELLED_ERROR_STR_ ?
           AppInstaller.Result.CANCELLED :

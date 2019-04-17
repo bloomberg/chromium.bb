@@ -16,21 +16,21 @@
  * @type {number}
  * @const
  */
-var WEBVIEW_WIDTH = 735;
+const WEBVIEW_WIDTH = 735;
 
 /**
  * The height of the widget (in pixels).
  * @type {number}
  * @const
  */
-var WEBVIEW_HEIGHT = 480;
+const WEBVIEW_HEIGHT = 480;
 
 /**
  * The URL of the widget showing suggested apps.
  * @type {string}
  * @const
  */
-var CWS_WIDGET_URL =
+const CWS_WIDGET_URL =
     'https://clients5.google.com/webstore/wall/cros-widget-container';
 
 /**
@@ -38,7 +38,7 @@ var CWS_WIDGET_URL =
  * @type {string}
  * @const
  */
-var CWS_WIDGET_ORIGIN = 'https://clients5.google.com';
+const CWS_WIDGET_ORIGIN = 'https://clients5.google.com';
 
 /**
  * Creates the widget container element in DOM tree.
@@ -87,7 +87,7 @@ class CWSWidgetContainer {
      * Element showing spinner layout in place of Web Store widget.
      * @type {!Element}
      */
-    var spinnerLayer = document.createElement('div');
+    const spinnerLayer = document.createElement('div');
     spinnerLayer.className = 'cws-widget-spinner-layer';
     parentNode.appendChild(spinnerLayer);
 
@@ -99,7 +99,7 @@ class CWSWidgetContainer {
      * The widget container's button strip.
      * @type {!Element}
      */
-    var buttons = document.createElement('div');
+    const buttons = document.createElement('div');
     buttons.classList.add('cws-widget-buttons');
     parentNode.appendChild(buttons);
 
@@ -117,7 +117,7 @@ class CWSWidgetContainer {
      * Icon for the Webstore button.
      * @type {!Element}
      */
-    var webstoreButtonIcon = this.document_.createElement('span');
+    const webstoreButtonIcon = this.document_.createElement('span');
     webstoreButtonIcon.classList.add('cws-widget-webstore-button-icon');
     this.webstoreButton_.appendChild(webstoreButtonIcon);
 
@@ -125,7 +125,7 @@ class CWSWidgetContainer {
      * The label for the Webstore button.
      * @type {!Element}
      */
-    var webstoreButtonLabel = this.document_.createElement('span');
+    const webstoreButtonLabel = this.document_.createElement('span');
     webstoreButtonLabel.classList.add('cws-widget-webstore-button-label');
     webstoreButtonLabel.textContent = this.delegate_.strings.LINK_TO_WEBSTORE;
     this.webstoreButton_.appendChild(webstoreButtonLabel);
@@ -253,7 +253,7 @@ class CWSWidgetContainer {
    * @private
    */
   createTokenGetter_() {
-    return new Promise(function(resolve, reject) {
+    return new Promise((resolve, reject) => {
       if (window.IN_TEST) {
         // In test, use a dummy string as token. This must be a non-empty
         // string.
@@ -266,14 +266,14 @@ class CWSWidgetContainer {
           /**
              @param {?string} accessToken The requested token. Null on error.
                */
-          function(accessToken) {
+          accessToken => {
             if (!accessToken) {
               reject('Error retrieving Web Store access token.');
               return;
             }
             resolve(accessToken);
           });
-    }.bind(this));
+    });
   }
 
   /**
@@ -289,7 +289,7 @@ class CWSWidgetContainer {
    * @return {Promise} Resolved when the container is ready to be used.
    */
   ready() {
-    return new Promise(function(resolve, reject) {
+    return new Promise((resolve, reject) => {
       if (this.state_ !== CWSWidgetContainer.State.UNINITIALIZED) {
         reject('Invalid state.');
         return;
@@ -305,17 +305,17 @@ class CWSWidgetContainer {
       this.state_ = CWSWidgetContainer.State.GETTING_ACCESS_TOKEN;
 
       this.tokenGetter_.then(
-          function(accessToken) {
+          accessToken => {
             this.state_ = CWSWidgetContainer.State.ACCESS_TOKEN_READY;
             this.accessToken_ = accessToken;
             resolve();
-          }.bind(this),
-          function(error) {
+          },
+          error => {
             this.spinnerLayerController_.setVisible(false);
             this.state_ = CWSWidgetContainer.State.UNINITIALIZED;
             reject('Failed to get Web Store access token: ' + error);
-          }.bind(this));
-    }.bind(this));
+          });
+    });
   }
 
   /**
@@ -328,7 +328,7 @@ class CWSWidgetContainer {
    *     installation is done, or the installation is cancelled.
    */
   start(options, webStoreUrl) {
-    return new Promise(function(resolve, reject) {
+    return new Promise((resolve, reject) => {
       if (this.state_ !== CWSWidgetContainer.State.ACCESS_TOKEN_READY) {
         this.state_ = CWSWidgetContainer.State.INITIALIZE_FAILED_CLOSING;
         reject('Invalid state in |start|.');
@@ -362,7 +362,7 @@ class CWSWidgetContainer {
           this.authorizeRequest_.bind(this),
           /** @type {!RequestFilter}*/ ({urls: [this.widgetOrigin_ + '/*']}),
           ['blocking', 'requestHeaders']);
-      this.webview_.addEventListener('newwindow', function(event) {
+      this.webview_.addEventListener('newwindow', event => {
         event = /** @type {NewWindowEvent} */ (event);
         // Discard the window object and reopen in an external window.
         event.window.discard();
@@ -391,7 +391,7 @@ class CWSWidgetContainer {
           CWSContainerClient.Events.INSTALL_DONE,
           this.onInstallDone_.bind(this));
       this.webviewClient_.load();
-    }.bind(this));
+    });
   }
 
   /**
@@ -469,7 +469,7 @@ class CWSWidgetContainer {
    * @private
    */
   onInstallRequest_(e) {
-    var itemId = e.itemId;
+    const itemId = e.itemId;
     this.installingItemId_ = itemId;
 
     this.appInstaller_ = new AppInstaller(itemId, this.delegate_);
@@ -500,7 +500,7 @@ class CWSWidgetContainer {
    * @private
    */
   onItemInstalled_(result, error) {
-    var success = (result === AppInstaller.Result.SUCCESS);
+    const success = (result === AppInstaller.Result.SUCCESS);
 
     // If install succeeded, the spinner will be removed once
     // |this.webviewClient_| dispatched INSTALL_DONE event.
@@ -597,7 +597,7 @@ class CWSWidgetContainer {
         console.error('Invalid state.');
     }
 
-    var result;
+    let result;
     switch (this.state_) {
       case CWSWidgetContainer.State.INSTALLED_CLOSING:
         result = CWSWidgetContainer.Result.INSTALL_SUCCESSFUL;
@@ -838,7 +838,7 @@ CWSWidgetContainer.SpinnerLayerController = class {
       this.spinnerLayer_.classList.add('cws-widget-hiding-spinner');
     }
 
-    this.clearTransition_ = function() {
+    this.clearTransition_ = () => {
       if (this.clearTransitionTimeout_) {
         clearTimeout(this.clearTransitionTimeout_);
       }
@@ -852,16 +852,16 @@ CWSWidgetContainer.SpinnerLayerController = class {
         this.spinnerLayer_.classList.remove('cws-widget-hiding-spinner');
         this.spinnerLayer_.classList.remove('cws-widget-show-spinner');
       }
-    }.bind(this);
+    };
 
     this.spinnerLayer_.addEventListener('transitionend', this.clearTransition_);
 
     // Ensure the transition state gets cleared, even if transitionend is not
     // fired.
-    this.clearTransitionTimeout_ = setTimeout(function() {
+    this.clearTransitionTimeout_ = setTimeout(() => {
       this.clearTransitionTimeout_ = null;
       this.clearTransition_();
-    }.bind(this), 550 /* ms */);
+    }, 550 /* ms */);
   }
 };
 
