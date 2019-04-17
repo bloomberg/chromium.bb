@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/memory_usage_estimator.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
@@ -239,4 +240,25 @@ size_t AutocompleteProvider::TrimHttpPrefix(base::string16* url) {
     ++prefix_end;
   url->erase(scheme_pos, prefix_end - scheme_pos);
   return (scheme_pos == 0) ? prefix_end : 0;
+}
+
+// static
+bool AutocompleteProvider::InExplicitExperimentalKeywordMode(
+    const AutocompleteInput& input,
+    const base::string16& keyword) {
+  // It is important to this method that we determine if the user entered
+  // keyword mode intentionally, as we use this routine to e.g. filter
+  // all but keyword results. Currently we assume that the user entered
+  // keyword mode intentionally with all entry methods except with a
+  // space. However, if the user has typed a char past the space, we
+  // again assume keyword mode.
+  return OmniboxFieldTrial::IsExperimentalKeywordModeEnabled() &&
+         input.prefer_keyword() &&
+         base::StartsWith(input.text(), keyword,
+                          base::CompareCase::SENSITIVE) &&
+         ((input.keyword_mode_entry_method() !=
+               metrics::OmniboxEventProto::SPACE_AT_END &&
+           input.keyword_mode_entry_method() !=
+               metrics::OmniboxEventProto::SPACE_IN_MIDDLE) ||
+          input.text().size() > keyword.size() + 1);
 }
