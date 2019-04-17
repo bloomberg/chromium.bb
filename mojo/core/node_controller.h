@@ -47,12 +47,12 @@ class MachPortRelay;
 class MOJO_SYSTEM_IMPL_EXPORT NodeController : public ports::NodeDelegate,
                                                public NodeChannel::Delegate {
  public:
-  class SlotObserver : public ports::UserData {
+  class PortObserver : public ports::UserData {
    public:
-    virtual void OnSlotStatusChanged() = 0;
+    virtual void OnPortStatusChanged() = 0;
 
    protected:
-    ~SlotObserver() override {}
+    ~PortObserver() override {}
   };
 
   // |core| owns and out-lives us.
@@ -92,21 +92,17 @@ class MOJO_SYSTEM_IMPL_EXPORT NodeController : public ports::NodeDelegate,
                        const ports::PortRef& port,
                        base::StringPiece connection_name);
 
-  // Sets a slot's observer. If |observer| is null the slot's current observer
+  // Sets a port's observer. If |observer| is null the port's current observer
   // is removed.
-  void SetSlotObserver(const ports::SlotRef& slot,
-                       scoped_refptr<SlotObserver> observer);
+  void SetPortObserver(const ports::PortRef& port,
+                       scoped_refptr<PortObserver> observer);
 
   // Closes a port. Use this in lieu of calling Node::ClosePort() directly, as
   // it ensures the port's observer has also been removed.
   void ClosePort(const ports::PortRef& port);
 
-  // Closes a single slot on a port, removing its observer at the same time. If
-  // this is the last slot on the port, the port is also closed.
-  void ClosePortSlot(const ports::SlotRef& slot);
-
-  // Sends a message on a slot to its peer.
-  int SendUserMessage(const ports::SlotRef& slot,
+  // Sends a message on a port to its peer.
+  int SendUserMessage(const ports::PortRef& port_ref,
                       std::unique_ptr<ports::UserMessageEvent> message);
 
   // Merges a local port |port| into a port reserved by |name| in the node which

@@ -12,7 +12,6 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/optional.h"
 #include "mojo/core/ports/name.h"
 #include "mojo/core/ports/user_message.h"
 
@@ -90,7 +89,6 @@ class COMPONENT_EXPORT(MOJO_CORE_PORTS) Event {
 #pragma pack(push, 1)
   struct PortDescriptor {
     PortDescriptor();
-    PortDescriptor(const PortDescriptor&);
 
     NodeName peer_node_name;
     PortName peer_port_name;
@@ -100,8 +98,7 @@ class COMPONENT_EXPORT(MOJO_CORE_PORTS) Event {
     uint64_t next_sequence_num_to_receive;
     uint64_t last_sequence_num_to_receive;
     bool peer_closed;
-    char padding[3];
-    uint32_t new_slot_id;
+    char padding[7];
   };
 #pragma pack(pop)
   virtual ~Event();
@@ -142,7 +139,7 @@ class COMPONENT_EXPORT(MOJO_CORE_PORTS) UserMessageEvent : public Event {
     ~PortAttachment();
 
     PortName name;
-    base::Optional<SlotId> slot_id;
+    SlotId slot_id = kDefaultSlotId;
   };
 
   explicit UserMessageEvent(size_t num_ports);

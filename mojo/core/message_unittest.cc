@@ -77,7 +77,7 @@ class TestMessageBase {
     if (num_handles)
       message->SerializeHandles(handles.data());
 
-    MojoAppendMessageDataOptions options = {0};
+    MojoAppendMessageDataOptions options;
     options.struct_size = sizeof(options);
     options.flags = MOJO_APPEND_MESSAGE_DATA_FLAG_COMMIT_SIZE;
     void* buffer;
@@ -255,7 +255,7 @@ TEST_F(MessageTest, SerializeDynamicallySizedMessage) {
               MojoAppendMessageData(message, 0, nullptr, 0, nullptr, &buffer,
                                     &buffer_size));
 
-    MojoAppendMessageDataOptions options = {0};
+    MojoAppendMessageDataOptions options;
     options.struct_size = sizeof(options);
     options.flags = MOJO_APPEND_MESSAGE_DATA_FLAG_COMMIT_SIZE;
     EXPECT_EQ(MOJO_RESULT_OK, MojoAppendMessageData(
@@ -397,7 +397,7 @@ TEST_F(MessageTest, GetMessageDataWithHandles) {
   MojoMessageHandle message_handle;
   EXPECT_EQ(MOJO_RESULT_OK, MojoCreateMessage(nullptr, &message_handle));
 
-  MojoAppendMessageDataOptions append_data_options = {0};
+  MojoAppendMessageDataOptions append_data_options;
   append_data_options.struct_size = sizeof(append_data_options);
   append_data_options.flags = MOJO_APPEND_MESSAGE_DATA_FLAG_COMMIT_SIZE;
   const std::string kTestMessage = "hello";
@@ -623,7 +623,7 @@ TEST_F(MessageTest, ExtendMessagePayload) {
             MojoGetMessageData(message, nullptr, &payload, &payload_size,
                                nullptr, nullptr));
 
-  MojoAppendMessageDataOptions options = {0};
+  MojoAppendMessageDataOptions options;
   options.struct_size = sizeof(options);
   options.flags = MOJO_APPEND_MESSAGE_DATA_FLAG_COMMIT_SIZE;
   EXPECT_EQ(MOJO_RESULT_OK, MojoAppendMessageData(message, 0, nullptr, 0,
@@ -659,7 +659,7 @@ TEST_F(MessageTest, ExtendMessageWithHandlesPayload) {
   const std::string kTestMessagePart2 = " in ur computer.";
   const std::string kTestMessageCombined1 =
       kTestMessagePart1 + kTestMessagePart2;
-  MojoAppendMessageDataOptions options = {0};
+  MojoAppendMessageDataOptions options;
   options.struct_size = sizeof(options);
   options.flags = MOJO_APPEND_MESSAGE_DATA_FLAG_COMMIT_SIZE;
   EXPECT_EQ(MOJO_RESULT_OK,
@@ -734,7 +734,7 @@ TEST_F(MessageTest, ExtendMessagePayloadLarge) {
              &test_payload[previous_payload_size], current_chunk_size);
     }
 
-    MojoAppendMessageDataOptions options = {0};
+    MojoAppendMessageDataOptions options;
     options.struct_size = sizeof(options);
     options.flags = MOJO_APPEND_MESSAGE_DATA_FLAG_COMMIT_SIZE;
     EXPECT_EQ(MOJO_RESULT_OK,
@@ -804,7 +804,7 @@ TEST_F(MessageTest, CommitInvalidMessageContents) {
                                                   nullptr, nullptr));
 
   UserMessageImpl::FailHandleSerializationForTesting(true);
-  MojoAppendMessageDataOptions options = {0};
+  MojoAppendMessageDataOptions options;
   options.struct_size = sizeof(options);
   options.flags = MOJO_APPEND_MESSAGE_DATA_FLAG_COMMIT_SIZE;
   EXPECT_EQ(MOJO_RESULT_OK, MojoAppendMessageData(message, 0, nullptr, 0,
@@ -845,7 +845,7 @@ TEST_F(MessageTest, ExtendPayloadWithHandlesAttached) {
   // buffer size. This should typically result in a relocation of the buffer as
   // well -- at least often enough that breakage will be caught by automated
   // tests.
-  MojoAppendMessageDataOptions options = {0};
+  MojoAppendMessageDataOptions options;
   options.struct_size = sizeof(options);
   options.flags = MOJO_APPEND_MESSAGE_DATA_FLAG_COMMIT_SIZE;
   uint32_t payload_size = buffer_size * 64;
@@ -901,7 +901,7 @@ TEST_F(MessageTest, ExtendPayloadWithHandlesAttachedViaExtension) {
   // Add more handles.
   EXPECT_EQ(MOJO_RESULT_OK, MojoAppendMessageData(message, 0, handles + 1, 1,
                                                   nullptr, &buffer, nullptr));
-  MojoAppendMessageDataOptions options = {0};
+  MojoAppendMessageDataOptions options;
   options.struct_size = sizeof(options);
   options.flags = MOJO_APPEND_MESSAGE_DATA_FLAG_COMMIT_SIZE;
   EXPECT_EQ(MOJO_RESULT_OK, MojoAppendMessageData(message, 0, handles + 2, 3,
