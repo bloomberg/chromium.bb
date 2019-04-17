@@ -3076,6 +3076,9 @@ crbug.com/952266 external/wpt/workers/modules/dedicated-worker-options-credentia
 crbug.com/952266 virtual/omt-worker-fetch/external/wpt/workers/modules/dedicated-worker-options-credentials.html [ Timeout ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/css/css-text/overflow-wrap/overflow-wrap-cluster-002.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-text/overflow-wrap/overflow-wrap-cluster-001.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-text/overflow-wrap/overflow-wrap-normal-keep-all-001.html [ Failure ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/media-source/mediasource-config-change-webm-av-framesize.html [ Timeout ]
 crbug.com/626703 [ Mac10.13 ] external/wpt/media-source/mediasource-config-change-webm-av-framesize.html [ Timeout ]
 crbug.com/626703 [ Retina ] external/wpt/media-source/mediasource-config-change-webm-av-framesize.html [ Timeout ]
