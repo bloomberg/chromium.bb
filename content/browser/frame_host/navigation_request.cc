@@ -1953,10 +1953,8 @@ void NavigationRequest::SetExpectedProcess(
 
   ResetExpectedProcess();
 
-  if (expected_process == nullptr) {
-    expected_render_process_host_id_ = ChildProcessHost::kInvalidUniqueID;
+  if (expected_process == nullptr)
     return;
-  }
 
   // Keep track of the speculative RenderProcessHost and tell it to expect a
   // navigation to |site_url_|.
