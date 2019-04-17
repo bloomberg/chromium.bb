@@ -118,7 +118,7 @@ class SwitchAccessOptions {
           document.getElementById(key).value = newValue / 1000;
           break;
         default:
-          if (this.switchAccess_.getCommands().includes(key))
+          if (this.switchAccess_.hasCommand(key))
             document.getElementById(key).value = String.fromCharCode(newValue);
       }
     }

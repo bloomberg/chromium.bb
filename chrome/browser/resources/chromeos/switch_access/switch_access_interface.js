@@ -34,14 +34,21 @@ class SwitchAccessInterface {
 
   /**
    * Return a list of the names of all user commands.
-   * @return {!Array<string>}
+   * @return {!Array<!SAConstants.Command>}
    */
   getCommands() {}
 
   /**
+   * Checks if the given string is a valid Switch Access command.
+   * @param {string} command
+   * @return {boolean}
+   */
+  hasCommand(command) {}
+
+  /**
    * Return the default key code for a command.
    *
-   * @param {string} command
+   * @param {!SAConstants.Command} command
    * @return {number}
    */
   getDefaultKeyCodeFor(command) {}
@@ -59,7 +66,7 @@ class SwitchAccessInterface {
 
   /**
    * Run the function binding for the specified command.
-   * @param {string} command
+   * @param {!SAConstants.Command} command
    */
   runCommand(command) {}
 

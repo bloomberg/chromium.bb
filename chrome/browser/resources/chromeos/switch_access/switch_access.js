@@ -124,16 +124,25 @@ class SwitchAccess {
   /**
    * Return a list of the names of all user commands.
    * @override
-   * @return {!Array<string>}
+   * @return {!Array<!SAConstants.Command>}
    */
   getCommands() {
-    return this.commands_.getCommands();
+    return Object.values(SAConstants.Command);
+  }
+
+  /**
+   * Checks if the given string is a valid Switch Access command.
+   * @param {string} command
+   * @return {boolean}
+   */
+  hasCommand(command) {
+    return Object.values(SAConstants.Command).includes(command);
   }
 
   /**
    * Return the default key code for a command.
    * @override
-   * @param {string} command
+   * @param {!SAConstants.Command} command
    * @return {number}
    */
   getDefaultKeyCodeFor(command) {
@@ -158,7 +167,7 @@ class SwitchAccess {
   /**
    * Run the function binding for the specified command.
    * @override
-   * @param {string} command
+   * @param {!SAConstants.Command} command
    */
   runCommand(command) {
     this.commands_.runCommand(command);
@@ -187,7 +196,7 @@ class SwitchAccess {
           this.autoScanManager_.setScanTime(changes[key]);
           break;
         default:
-          if (this.commands_.getCommands().includes(key))
+          if (this.hasCommand(key))
             this.keyEventHandler_.updateSwitchAccessKeys();
       }
     }
