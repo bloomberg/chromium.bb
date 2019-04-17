@@ -32,8 +32,6 @@ class FakeScrollbar : public Scrollbar {
   bool IsOverlay() const override;
   bool HasThumb() const override;
   int ThumbThickness() const override;
-  gfx::Rect BackButtonRect() const override;
-  gfx::Rect ForwardButtonRect() const override;
   int ThumbLength() const override;
   gfx::Rect TrackRect() const override;
   float ThumbOpacity() const override;
@@ -78,8 +76,6 @@ class FakeScrollbar : public Scrollbar {
   bool has_tickmarks_;
   gfx::Point location_;
   gfx::Rect track_rect_;
-  gfx::Rect back_button_rect_;
-  gfx::Rect forward_button_rect_;
   SkColor fill_color_;
 };
 

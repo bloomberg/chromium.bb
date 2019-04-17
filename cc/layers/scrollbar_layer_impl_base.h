@@ -66,10 +66,6 @@ class CC_EXPORT ScrollbarLayerImplBase : public LayerImpl {
 
   virtual LayerTreeSettings::ScrollbarAnimator GetScrollbarAnimator() const;
 
-  virtual gfx::Rect BackButtonRect() const;
-  virtual gfx::Rect ForwardButtonRect() const;
-  virtual ScrollbarPart IdentifyScrollbarPart(
-      const gfx::PointF position_in_widget) const;
   // Only PaintedOverlayScrollbar(Aura Overlay Scrollbar) need to know
   // tickmarks's state.
   virtual bool HasFindInPageTickmarks() const;

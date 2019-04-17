@@ -13694,10 +13694,9 @@ void LayerTreeHostImplTest::SetupMouseMoveAtTestScrollbarStates(
   scrollbar_1_animation_controller->DidScrollUpdate();
   animation_task_.Reset();
 
-  // Only the MouseMove's location will affect the overlay scrollbar.
-  host_impl_->MouseDown(gfx::PointF(60, 50));
+  host_impl_->MouseDown();
   host_impl_->MouseMoveAt(gfx::Point(60, 50));
-  host_impl_->MouseUp(gfx::PointF(60, 50));
+  host_impl_->MouseUp();
 
   EXPECT_FALSE(animation_task_.is_null());
 
@@ -13706,16 +13705,16 @@ void LayerTreeHostImplTest::SetupMouseMoveAtTestScrollbarStates(
   host_impl_->MouseMoveAt(gfx::Point(40, 150));
   animation_task_.Reset();
 
-  host_impl_->MouseDown(gfx::PointF(40, 150));
-  host_impl_->MouseUp(gfx::PointF(40, 150));
+  host_impl_->MouseDown();
+  host_impl_->MouseUp();
   EXPECT_TRUE(animation_task_.is_null());
 
   // Near scrollbar_1, then mouse down and unregister
   // scrollbar_2_animation_controller, then mouse up should not cause crash.
   host_impl_->MouseMoveAt(gfx::Point(40, 150));
-  host_impl_->MouseDown(gfx::PointF(40, 150));
+  host_impl_->MouseDown();
   host_impl_->UnregisterScrollbarAnimationController(root_scroll->element_id());
-  host_impl_->MouseUp(gfx::PointF(40, 150));
+  host_impl_->MouseUp();
 }
 
 TEST_F(LayerTreeHostImplTest,
