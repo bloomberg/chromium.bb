@@ -71,6 +71,24 @@ xxd -p test.example.org_test.sxg |
   sed 's/a44664/a54664/' |
   xxd -r -p > test.example.org_test_invalid_cbor_header.sxg
 
+# Generate the signed exchange file with bad MICE integrity.
+gen-signedexchange \
+  -version 1b3 \
+  -uri https://test.example.org/test/ \
+  -status 200 \
+  -content badmice_test.html \
+  -certificate prime256v1-sha256.public.pem \
+  -certUrl https://cert.example.org/cert.msg \
+  -validityUrl https://test.example.org/resource.validity.msg \
+  -privateKey prime256v1.key \
+  -date 2018-03-12T05:53:20Z \
+  -o - \
+  -miRecordSize 32 |
+  xxd -p |
+  tr -d '\n' |
+  sed 's/585858/4f4f4f/' |
+  xxd -r -p > test.example.org_test_bad_mice.sxg
+
 # Generate the signed exchange file with noext certificate
 gen-signedexchange \
   -version 1b3 \

@@ -445,6 +445,39 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest,
       PrefetchIsEnabled() ? 2 : 1);
 }
 
+IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest, BadMICE) {
+  InstallMockCertChainInterceptor();
+  InstallUrlInterceptor(GURL("https://test.example.org/test/"),
+                        "content/test/data/sxg/fallback.html");
+  InstallMockCert();
+
+  embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL url =
+      embedded_test_server()->GetURL("/sxg/test.example.org_test_bad_mice.sxg");
+
+  if (PrefetchIsEnabled())
+    TriggerPrefetch(url, false);
+
+  const base::string16 title_good = base::ASCIIToUTF16("Reached End: false");
+  const base::string16 title_bad = base::ASCIIToUTF16("Reached End: true");
+  TitleWatcher title_watcher(shell()->web_contents(), title_good);
+  title_watcher.AlsoWaitForTitle(title_bad);
+  NavigateToURL(shell(), url);
+  EXPECT_EQ(title_good, title_watcher.WaitAndGetTitle());
+
+  histogram_tester_.ExpectTotalCount(kLoadResultHistogram,
+                                     PrefetchIsEnabled() ? 2 : 1);
+  {
+    SCOPED_TRACE(testing::Message()
+                 << "testing SignedExchangeLoadResult::kMerkleIntegrityError");
+    histogram_tester_.ExpectBucketCount(
+        kLoadResultHistogram, SignedExchangeLoadResult::kMerkleIntegrityError,
+        PrefetchIsEnabled() ? 2 : 1);
+  }
+}
+
 IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest, CertNotFound) {
   InstallUrlInterceptor(GURL("https://cert.example.org/cert.msg"),
                         "content/test/data/sxg/404.msg");
