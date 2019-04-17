@@ -118,8 +118,8 @@ public class AutofillAssistantUiTest {
         ((BottomContainer) activity.findViewById(org.chromium.chrome.R.id.bottom_container))
                 .setBottomSheet(bottomSheet);
 
-        return new BottomSheetController(activity, activity.getActivityTabProvider(),
-                activity.getScrim(), bottomSheet,
+        return new BottomSheetController(activity, activity.getLifecycleDispatcher(),
+                activity.getActivityTabProvider(), activity.getScrim(), bottomSheet,
                 activity.getCompositorViewHolder().getLayoutManager().getOverlayPanelManager(),
                 /* suppressSheetForContextualSearch= */ false);
     }

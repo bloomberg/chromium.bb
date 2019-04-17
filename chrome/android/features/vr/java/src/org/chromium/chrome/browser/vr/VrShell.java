@@ -497,8 +497,9 @@ public class VrShell extends GvrLayout
         ImeAdapter imeAdapter = ImeAdapter.fromWebContents(webContents);
         if (imeAdapter == null) return;
 
-        imeAdapter.setInputMethodManagerWrapper(
-                ImeAdapter.createDefaultInputMethodManagerWrapper(mActivity));
+        // Use application context here to avoid leaking the activity context.
+        imeAdapter.setInputMethodManagerWrapper(ImeAdapter.createDefaultInputMethodManagerWrapper(
+                mActivity.getApplicationContext()));
         mInputMethodManagerWrapper = null;
     }
 

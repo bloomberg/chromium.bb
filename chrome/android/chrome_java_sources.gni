@@ -820,6 +820,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/infobar/InfoBarCompactLayout.java",
   "java/src/org/chromium/chrome/browser/infobar/InfoBarContainer.java",
   "java/src/org/chromium/chrome/browser/infobar/InfoBarContainerLayout.java",
+  "java/src/org/chromium/chrome/browser/infobar/InfoBarContainerView.java",
   "java/src/org/chromium/chrome/browser/infobar/InfoBarControlLayout.java",
   "java/src/org/chromium/chrome/browser/infobar/InfoBarLayout.java",
   "java/src/org/chromium/chrome/browser/infobar/InfoBarMessageView.java",

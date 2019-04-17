@@ -81,7 +81,7 @@ public class InfoBarTest {
         private boolean mCompact;
 
         private TestInfoBar(String message) {
-            super(0, null, message);
+            super(0, 0, message, null);
         }
 
         @Override

@@ -292,6 +292,8 @@ public class TabWebContentsObserver extends TabWebContentsUserData {
 
         @Override
         public void didAttachInterstitialPage() {
+            // TODO(huayinz): Observe #didAttachInterstitialPage and #didDetachInterstitialPage
+            // in InfoBarContainer.
             InfoBarContainer.get(mTab).setVisibility(View.INVISIBLE);
             mTab.showRenderedPage();
 

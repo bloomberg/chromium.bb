@@ -271,8 +271,9 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
         getStatusBarColorController().updateStatusBarColor(ColorUtils.isUsingDefaultToolbarColor(
                 getResources(), false, getBaseStatusBarColor()));
 
-        // Properly attach tab's infobar to the view hierarchy, as the main tab might have been
-        // initialized prior to inflation.
+        // Properly attach tab's InfoBarContainer to the view hierarchy if the tab is already
+        // attached to a ChromeActivity, as the main tab might have been initialized prior to
+        // inflation.
         if (mTabProvider.getTab() != null) {
             ViewGroup bottomContainer = (ViewGroup) findViewById(R.id.bottom_container);
             InfoBarContainer.get(mTabProvider.getTab()).setParentView(bottomContainer);

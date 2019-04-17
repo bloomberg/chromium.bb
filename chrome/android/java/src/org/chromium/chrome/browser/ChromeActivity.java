@@ -1499,8 +1499,9 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
         ((BottomContainer) findViewById(R.id.bottom_container)).setBottomSheet(mBottomSheet);
 
-        mBottomSheetController = new BottomSheetController(this, mActivityTabProvider, mScrimView,
-                mBottomSheet, getCompositorViewHolder().getLayoutManager().getOverlayPanelManager(),
+        mBottomSheetController = new BottomSheetController(this, getLifecycleDispatcher(),
+                mActivityTabProvider, mScrimView, mBottomSheet,
+                getCompositorViewHolder().getLayoutManager().getOverlayPanelManager(),
                 suppressSheetForContextualSearch);
     }
 

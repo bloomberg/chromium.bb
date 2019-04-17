@@ -335,7 +335,7 @@ public class ManualFillingIntegrationTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mActivityTestRule.getKeyboardDelegate().hideKeyboard(
                     mActivityTestRule.getActivity().getCurrentFocus());
-            mActivityTestRule.getInfoBarContainer().requestLayout();
+            mActivityTestRule.getInfoBarContainer().getContainerViewForTesting().requestLayout();
         });
 
         mHelper.waitForKeyboardToDisappear();
@@ -380,7 +380,7 @@ public class ManualFillingIntegrationTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mActivityTestRule.getKeyboardDelegate().hideKeyboard(
                     mActivityTestRule.getActivity().getCurrentFocus());
-            mActivityTestRule.getInfoBarContainer().requestLayout();
+            mActivityTestRule.getInfoBarContainer().getContainerViewForTesting().requestLayout();
         });
 
         waitToBeHidden(withChild(withId(R.id.keyboard_accessory_sheet)));

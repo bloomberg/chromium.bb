@@ -40,7 +40,7 @@ public class AppBannerInfoBarAndroid extends ConfirmInfoBar implements View.OnCl
 
     // Banner for native apps.
     private AppBannerInfoBarAndroid(String appTitle, Bitmap iconBitmap, AppData data) {
-        super(0, iconBitmap, appTitle, null, data.installButtonText(), null);
+        super(0, 0, iconBitmap, appTitle, null, data.installButtonText(), null);
         mAppTitle = appTitle;
         mAppData = data;
         mAppUrl = null;
@@ -48,7 +48,7 @@ public class AppBannerInfoBarAndroid extends ConfirmInfoBar implements View.OnCl
 
     // Banner for web apps.
     private AppBannerInfoBarAndroid(String appTitle, Bitmap iconBitmap, String url) {
-        super(0, iconBitmap, appTitle, null, getAddToHomescreenText(), null);
+        super(0, 0, iconBitmap, appTitle, null, getAddToHomescreenText(), null);
         mAppTitle = appTitle;
         mAppData = null;
         mAppUrl = url;

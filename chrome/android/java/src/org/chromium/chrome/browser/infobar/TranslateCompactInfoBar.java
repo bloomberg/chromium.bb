@@ -170,7 +170,7 @@ public class TranslateCompactInfoBar extends InfoBar
     TranslateCompactInfoBar(int initialStep, String sourceLanguageCode, String targetLanguageCode,
             boolean alwaysTranslate, boolean triggeredFromMenu, String[] languages,
             String[] languageCodes, int[] hashCodes, int tabTextColor) {
-        super(R.drawable.infobar_translate_compact, null, null);
+        super(R.drawable.infobar_translate_compact, 0, null, null);
 
         mInitialStep = initialStep;
         mDefaultTextColor = tabTextColor;
@@ -204,7 +204,7 @@ public class TranslateCompactInfoBar extends InfoBar
         if (mDefaultTextColor > 0) {
             mTabLayout.setTabTextColors(
                     ContextCompat.getColor(getContext(), R.color.default_text_color),
-                    ContextCompat.getColor(getContext(), R.color.infobar_accent_blue));
+                    ContextCompat.getColor(getContext(), R.color.tab_layout_selected_tab_color));
         }
         mTabLayout.addTabs(mOptions.sourceLanguageName(), mOptions.targetLanguageName());
 

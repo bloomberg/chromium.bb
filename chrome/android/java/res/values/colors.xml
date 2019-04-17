@@ -45,7 +45,7 @@
     <color name="google_yellow_600">#F9AB00</color>
 
     <!-- Infobar colors -->
-    <color name="infobar_accent_blue">@color/modern_blue_600</color>
+    <color name="infobar_icon_drawable_color">@color/default_icon_color_blue</color>
 
     <!-- Snackbar colors -->
     <color name="snackbar_background_color">#282C32</color>

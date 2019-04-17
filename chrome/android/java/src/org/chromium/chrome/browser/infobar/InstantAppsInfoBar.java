@@ -21,7 +21,7 @@ public class InstantAppsInfoBar extends ConfirmInfoBar {
     private InstantAppsBannerData mData;
 
     protected InstantAppsInfoBar(InstantAppsBannerData data) {
-        super(0, data.getIcon(), data.getAppName(), null, data.getPrimaryActionLabel(), null);
+        super(0, 0, data.getIcon(), data.getAppName(), null, data.getPrimaryActionLabel(), null);
         mData = data;
     }
 
