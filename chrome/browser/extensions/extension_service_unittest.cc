@@ -65,6 +65,7 @@
 #include "chrome/browser/extensions/pending_extension_manager.h"
 #include "chrome/browser/extensions/permissions_test_util.h"
 #include "chrome/browser/extensions/permissions_updater.h"
+#include "chrome/browser/extensions/plugin_manager.h"
 #include "chrome/browser/extensions/test_blacklist.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
@@ -97,7 +98,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_constants.h"
-#include "chrome/browser/extensions/plugin_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/disable_reason.h"
@@ -115,10 +115,13 @@
 #include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/browser/test_management_policy.h"
 #include "extensions/browser/uninstall_reason.h"
+#include "extensions/browser/updater/extension_downloader_test_helper.h"
+#include "extensions/browser/updater/null_extension_cache.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/extension_l10n_util.h"
 #include "extensions/common/extension_resource.h"
+#include "extensions/common/extension_urls.h"
 #include "extensions/common/file_util.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/background_info.h"
@@ -7417,6 +7420,50 @@ TEST_F(ExtensionServiceTest, PluginManagerCrash) {
   // crbug.com/708230: This will cause OnExtensionUnloaded to be called
   // redundantly for a disabled extension.
   service()->BlockAllExtensions();
+}
+
+// Policy-forced extensions should be fetched with FOREGROUND priority,
+// otherwise they may be throttled (web store sends “noupdate” response to
+// reduce load), which is OK for updates, but not for a new install. This is
+// a regression test for problems described in https://crbug.com/904600 and
+// https://crbug.com/917700.
+TEST_F(ExtensionServiceTest, PolicyForegroundFetch) {
+  ExtensionUpdater::ScopedSkipScheduledCheckForTest skip_scheduled_checks;
+  ExtensionServiceInitParams params = CreateDefaultInitParams();
+  params.autoupdate_enabled = true;
+  InitializeExtensionService(params);
+
+  ExtensionDownloaderTestHelper helper;
+  NullExtensionCache extension_cache;
+  service()->updater()->SetExtensionDownloaderForTesting(
+      helper.CreateDownloader());
+  service()->updater()->SetExtensionCacheForTesting(&extension_cache);
+  service()->updater()->Start();
+
+  GURL update_url(extension_urls::kChromeWebstoreUpdateURL);
+  service()->OnExternalExtensionUpdateUrlFound(
+      ExternalInstallInfoUpdateUrl(
+          all_zero /* extension_id */, "" /* install_parameter */, update_url,
+          Manifest::EXTERNAL_POLICY_DOWNLOAD /* download_location */,
+          Extension::NO_FLAGS /* creation_flag */,
+          true /* mark_acknowledged */),
+      true /* is_initial_load */);
+
+  MockExternalProvider provider(nullptr, Manifest::EXTERNAL_POLICY_DOWNLOAD);
+  service()->OnExternalProviderReady(&provider);
+
+  content::RunAllTasksUntilIdle();
+
+  EXPECT_EQ(helper.test_url_loader_factory().NumPending(), 1);
+  network::TestURLLoaderFactory::PendingRequest* pending_request =
+      helper.test_url_loader_factory().GetPendingRequest(0);
+  std::string header;
+  EXPECT_TRUE(pending_request->request.headers.GetHeader(
+      "X-Goog-Update-Interactivity", &header));
+  EXPECT_EQ(header, "fg");
+
+  // Destroy updater's downloader as it uses |helper|.
+  service()->updater()->SetExtensionDownloaderForTesting(nullptr);
 }
 
 }  // namespace extensions

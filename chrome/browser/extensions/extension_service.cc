@@ -92,6 +92,7 @@
 #include "extensions/browser/update_observer.h"
 #include "extensions/browser/updater/extension_cache.h"
 #include "extensions/browser/updater/extension_downloader.h"
+#include "extensions/browser/updater/manifest_fetch_data.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/feature_switch.h"
@@ -1119,6 +1120,12 @@ void ExtensionService::OnAllExternalProvidersReady() {
             : base::BindOnce(
                   [](base::RepeatingClosure callback) { callback.Run(); },
                   external_updates_finished_callback_);
+    // We have to mark policy-forced extensions with foreground fetch priority,
+    // otherwise their installation may be throttled by bandwidth limits.
+    // See https://crbug.com/904600.
+    if (pending_extension_manager_.HasPendingExtensionFromPolicy()) {
+      params.fetch_priority = ManifestFetchData::FOREGROUND;
+    }
     updater()->CheckNow(std::move(params));
   }
 
