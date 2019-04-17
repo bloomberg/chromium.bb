@@ -244,8 +244,16 @@ std::unique_ptr<views::ImageView> CreateInstrumentIconView(
   icon_view->set_can_process_events_within_subtree(false);
   if (img) {
     icon_view->SetImage(*img);
-    // We support max 32x32 for other instrument icons.
-    icon_view->SetImageSize(gfx::Size(32, 32));
+    float width = base::checked_cast<float>(img->width());
+    float height = base::checked_cast<float>(img->height());
+    float ratio = 1;
+    if (width && height)
+      ratio = width / height;
+    // Other instrument icons should be 32 pixels high while preserving the
+    // image ratio.
+    constexpr int kPaymentHandlerIconHeight = 32;
+    icon_view->SetImageSize(gfx::Size(ratio * kPaymentHandlerIconHeight,
+                                      kPaymentHandlerIconHeight));
   } else {
     icon_view->SetImage(ui::ResourceBundle::GetSharedInstance()
                             .GetImageNamed(icon_resource_id)

@@ -114,15 +114,19 @@ class ReadOnlyOriginView : public views::View {
     top_level_columns->AddColumn(views::GridLayout::LEADING,
                                  views::GridLayout::CENTER, 1.0,
                                  views::GridLayout::USE_PREF, 0, 0);
-    // Payment handler icon comes from Web Manifest, which are square.
-    constexpr int kPaymentHandlerIconSize = 32;
-    bool has_icon = icon_image_skia && icon_image_skia->width();
+    // Payment handler icon should be 32 pixels tall.
+    constexpr int kPaymentHandlerIconHeight = 32;
+    bool has_icon = icon_image_skia && icon_image_skia->width() &&
+                    icon_image_skia->height();
+    float adjusted_width = base::checked_cast<float>(icon_image_skia->width());
     if (has_icon) {
+      adjusted_width = adjusted_width * kPaymentHandlerIconHeight /
+                       icon_image_skia->height();
       // A column for the instrument icon.
       top_level_columns->AddColumn(
           views::GridLayout::LEADING, views::GridLayout::FILL,
           views::GridLayout::kFixedSize, views::GridLayout::FIXED,
-          kPaymentHandlerIconSize, kPaymentHandlerIconSize);
+          adjusted_width, kPaymentHandlerIconHeight);
       top_level_columns->AddPaddingColumn(views::GridLayout::kFixedSize, 8);
     }
 
@@ -133,7 +137,7 @@ class ReadOnlyOriginView : public views::View {
           CreateInstrumentIconView(/*icon_id=*/0, icon_image_skia,
                                    /*label=*/page_title);
       instrument_icon_view->SetImageSize(
-          gfx::Size(kPaymentHandlerIconSize, kPaymentHandlerIconSize));
+          gfx::Size(adjusted_width, kPaymentHandlerIconHeight));
       top_level_layout->AddView(instrument_icon_view.release());
     }
   }

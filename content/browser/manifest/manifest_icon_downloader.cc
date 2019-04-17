@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -53,7 +54,8 @@ bool ManifestIconDownloader::Download(WebContents* web_contents,
                                       const GURL& icon_url,
                                       int ideal_icon_size_in_px,
                                       int minimum_icon_size_in_px,
-                                      IconFetchCallback callback) {
+                                      IconFetchCallback callback,
+                                      bool square_only /* = true */) {
   DCHECK(minimum_icon_size_in_px <= ideal_icon_size_in_px);
   if (!web_contents || !icon_url.is_valid())
     return false;
@@ -65,6 +67,7 @@ bool ManifestIconDownloader::Download(WebContents* web_contents,
       false,  // bypass_cache
       base::BindOnce(&ManifestIconDownloader::OnIconFetched,
                      ideal_icon_size_in_px, minimum_icon_size_in_px,
+                     square_only,
                      base::Owned(new DevToolsConsoleHelper(web_contents)),
                      std::move(callback)));
   return true;
@@ -73,6 +76,7 @@ bool ManifestIconDownloader::Download(WebContents* web_contents,
 void ManifestIconDownloader::OnIconFetched(
     int ideal_icon_size_in_px,
     int minimum_icon_size_in_px,
+    bool square_only,
     DevToolsConsoleHelper* console_helper,
     IconFetchCallback callback,
     int id,
@@ -93,7 +97,7 @@ void ManifestIconDownloader::OnIconFetched(
   }
 
   const int closest_index = FindClosestBitmapIndex(
-      ideal_icon_size_in_px, minimum_icon_size_in_px, bitmaps);
+      ideal_icon_size_in_px, minimum_icon_size_in_px, square_only, bitmaps);
 
   if (closest_index == -1) {
     console_helper->AddMessage(
@@ -107,30 +111,38 @@ void ManifestIconDownloader::OnIconFetched(
   }
 
   const SkBitmap& chosen = bitmaps[closest_index];
-
+  float ratio = 1.0;
+  // Preserve width/height ratio if non-square icons allowed.
+  if (!square_only && !chosen.empty()) {
+    ratio = base::checked_cast<float>(chosen.width()) /
+            base::checked_cast<float>(chosen.height());
+  }
+  float ideal_icon_width_in_px = ratio * ideal_icon_size_in_px;
   // Only scale if we need to scale down. For scaling up we will let the system
   // handle that when it is required to display it. This saves space in the
   // webapp storage system as well.
   if (chosen.height() > ideal_icon_size_in_px ||
-      chosen.width() > ideal_icon_size_in_px) {
+      chosen.width() > ideal_icon_width_in_px) {
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&ManifestIconDownloader::ScaleIcon,
-                       ideal_icon_size_in_px, chosen, std::move(callback)));
+                       ideal_icon_width_in_px, ideal_icon_size_in_px, chosen,
+                       std::move(callback)));
     return;
   }
 
   std::move(callback).Run(chosen);
 }
 
-void ManifestIconDownloader::ScaleIcon(int ideal_icon_size_in_px,
+void ManifestIconDownloader::ScaleIcon(int ideal_icon_width_in_px,
+                                       int ideal_icon_height_in_px,
                                        const SkBitmap& bitmap,
                                        IconFetchCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   const SkBitmap& scaled = skia::ImageOperations::Resize(
-      bitmap, skia::ImageOperations::RESIZE_BEST, ideal_icon_size_in_px,
-      ideal_icon_size_in_px);
+      bitmap, skia::ImageOperations::RESIZE_BEST, ideal_icon_width_in_px,
+      ideal_icon_height_in_px);
 
   base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
                            base::BindOnce(std::move(callback), scaled));
@@ -139,6 +151,7 @@ void ManifestIconDownloader::ScaleIcon(int ideal_icon_size_in_px,
 int ManifestIconDownloader::FindClosestBitmapIndex(
     int ideal_icon_size_in_px,
     int minimum_icon_size_in_px,
+    bool square_only,
     const std::vector<SkBitmap>& bitmaps) {
   int best_index = -1;
   int best_delta = std::numeric_limits<int>::min();
@@ -146,10 +159,19 @@ int ManifestIconDownloader::FindClosestBitmapIndex(
       minimum_icon_size_in_px - ideal_icon_size_in_px;
 
   for (size_t i = 0; i < bitmaps.size(); ++i) {
-    if (bitmaps[i].height() != bitmaps[i].width())
+    if (bitmaps[i].empty())
       continue;
 
-    int delta = bitmaps[i].width() - ideal_icon_size_in_px;
+    // Check for valid width/height ratio.
+    float width = base::checked_cast<float>(bitmaps[i].width());
+    float height = base::checked_cast<float>(bitmaps[i].height());
+    float ratio = width / height;
+    if (ratio < 1 || ratio > kMaxWidthToHeightRatio)
+      continue;
+    if (square_only && ratio != 1)
+      continue;
+
+    int delta = bitmaps[i].height() - ideal_icon_size_in_px;
     if (delta == 0)
       return i;
 
@@ -166,8 +188,9 @@ int ManifestIconDownloader::FindClosestBitmapIndex(
   if (best_index != -1)
     return best_index;
 
-  // There was no square icon of a correct size found. Try to find the most
-  // square-like icon which has both dimensions greater than the minimum size.
+  // There was no square/landscape icon of a correct size found. Try to find the
+  // most square-like icon which has both dimensions greater than the minimum
+  // size.
   float best_ratio_difference = std::numeric_limits<float>::infinity();
   for (size_t i = 0; i < bitmaps.size(); ++i) {
     if (bitmaps[i].height() < minimum_icon_size_in_px ||
@@ -177,7 +200,9 @@ int ManifestIconDownloader::FindClosestBitmapIndex(
 
     float height = static_cast<float>(bitmaps[i].height());
     float width = static_cast<float>(bitmaps[i].width());
-    float ratio = height / width;
+    float ratio = width / height;
+    if (!square_only && ratio > kMaxWidthToHeightRatio)
+      continue;
     float ratio_difference = fabs(ratio - 1);
     if (ratio_difference < best_ratio_difference) {
       best_index = i;
