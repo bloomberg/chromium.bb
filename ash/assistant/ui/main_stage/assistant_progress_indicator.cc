@@ -28,16 +28,6 @@ constexpr float kDotSmallSizeDip = 6.f;
 constexpr int kEmbeddedUiPreferredHeightDip = 9;
 constexpr int kSpacingDip = 4;
 
-// Animation.
-constexpr base::TimeDelta kAnimationOffsetDuration =
-    base::TimeDelta::FromMilliseconds(216);
-constexpr base::TimeDelta kAnimationPauseDuration =
-    base::TimeDelta::FromMilliseconds(500);
-constexpr base::TimeDelta kAnimationScaleUpDuration =
-    base::TimeDelta::FromMilliseconds(266);
-constexpr base::TimeDelta kAnimationScaleDownDuration =
-    base::TimeDelta::FromMilliseconds(450);
-
 // Transformation.
 constexpr float kScaleFactor = kDotLargeSizeDip / kDotSmallSizeDip;
 constexpr float kTranslationDip = -(kDotLargeSizeDip - kDotSmallSizeDip) / 2.f;
@@ -133,28 +123,30 @@ void AssistantProgressIndicator::VisibilityChanged(views::View* starting_from,
   transform.Translate(kTranslationDip, kTranslationDip);
   transform.Scale(kScaleFactor, kScaleFactor);
 
+  base::TimeDelta start_offset;
   for (int i = 0; i < child_count(); ++i) {
     views::View* view = child_at(i);
-
-    if (i > 0) {
+    if (!start_offset.is_zero()) {
       // Schedule the animations to start after an offset.
       view->layer()->GetAnimator()->SchedulePauseForProperties(
-          i * kAnimationOffsetDuration,
+          start_offset,
           ui::LayerAnimationElement::AnimatableProperty::TRANSFORM);
     }
+    start_offset += base::TimeDelta::FromMilliseconds(216);
 
     // Schedule transformation animation.
     view->layer()->GetAnimator()->ScheduleAnimation(
         CreateLayerAnimationSequence(
             // Animate scale up.
-            CreateTransformElement(transform, kAnimationScaleUpDuration),
+            CreateTransformElement(transform,
+                                   base::TimeDelta::FromMilliseconds(266)),
             // Animate scale down.
             CreateTransformElement(gfx::Transform(),
-                                   kAnimationScaleDownDuration),
+                                   base::TimeDelta::FromMilliseconds(450)),
             // Pause before next iteration.
             ui::LayerAnimationElement::CreatePauseElement(
                 ui::LayerAnimationElement::AnimatableProperty::TRANSFORM,
-                kAnimationPauseDuration),
+                base::TimeDelta::FromMilliseconds(500)),
             // Animation parameters.
             {.is_cyclic = true}));
   }

@@ -181,22 +181,6 @@ void LoginMenuView::OnHighLightChange(int item_index, bool by_selection) {
   contents_->SchedulePaint();
 }
 
-int LoginMenuView::FindNextItem(bool reverse) {
-  int delta = reverse ? -1 : 1;
-  int current_index = selected_index_ + delta;
-  while (current_index >= 0 && current_index < contents_->child_count()) {
-    MenuItemView* menu_view =
-        static_cast<MenuItemView*>(contents_->child_at(current_index));
-    if (!menu_view->item().is_group)
-      break;
-    current_index += delta;
-  }
-
-  if (current_index < 0 || current_index == contents_->child_count())
-    return selected_index_;
-  return current_index;
-}
-
 LoginButton* LoginMenuView::GetBubbleOpener() const {
   return opener_;
 }
@@ -219,6 +203,19 @@ bool LoginMenuView::OnKeyPressed(const ui::KeyEvent& event) {
 void LoginMenuView::VisibilityChanged(View* starting_from, bool is_visible) {
   if (is_visible)
     contents_->child_at(selected_index_)->RequestFocus();
+}
+
+int LoginMenuView::FindNextItem(bool reverse) {
+  const auto is_item = [](views::View* v) {
+    return !static_cast<MenuItemView*>(v)->item().is_group;
+  };
+  const int delta = reverse ? -1 : 1;
+  int i = selected_index_ + delta;
+  for (; i >= 0 && i < contents_->child_count() &&
+         !is_item(contents_->child_at(i));
+       i += delta)
+    ;
+  return (i < 0 || i == contents_->child_count()) ? selected_index_ : i;
 }
 
 }  // namespace ash

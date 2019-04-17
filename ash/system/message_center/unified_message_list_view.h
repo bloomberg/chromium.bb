@@ -125,6 +125,14 @@ class ASH_EXPORT UnifiedMessageListView
   MessageViewContainer* GetContainer(int index);
   const MessageViewContainer* GetContainer(int index) const;
 
+  // Returns the notification with the provided |id|.
+  const MessageViewContainer* GetNotificationById(const std::string& id) const;
+  MessageViewContainer* GetNotificationById(const std::string& id) {
+    return const_cast<MessageViewContainer*>(
+        static_cast<const UnifiedMessageListView*>(this)->GetNotificationById(
+            id));
+  }
+
   // Returns the first removable notification from the top.
   MessageViewContainer* GetNextRemovableNotification();
 

@@ -30,11 +30,7 @@ void FeaturePodsContainerView::SetExpandedAmount(double expanded_amount) {
 }
 
 int FeaturePodsContainerView::GetExpandedHeight() const {
-  int visible_count = 0;
-  for (int i = 0; i < child_count(); ++i) {
-    if (static_cast<const FeaturePodButton*>(child_at(i))->visible_preferred())
-      ++visible_count;
-  }
+  const int visible_count = GetVisibleCount();
 
   // floor(visible_count / kUnifiedFeaturePodItemsInRow)
   int number_of_lines = (visible_count + kUnifiedFeaturePodItemsInRow - 1) /
@@ -137,6 +133,15 @@ void FeaturePodsContainerView::UpdateChildVisibility() {
   changing_visibility_ = false;
 }
 
+int FeaturePodsContainerView::GetVisibleCount() const {
+  int visible_count = 0;
+  for (int i = 0; i < child_count(); ++i) {
+    if (static_cast<const FeaturePodButton*>(child_at(i))->visible_preferred())
+      ++visible_count;
+  }
+  return visible_count;
+}
+
 gfx::Point FeaturePodsContainerView::GetButtonPosition(
     int visible_index) const {
   int row = visible_index / kUnifiedFeaturePodItemsInRow;
@@ -176,14 +181,8 @@ gfx::Point FeaturePodsContainerView::GetButtonPosition(
 }
 
 void FeaturePodsContainerView::UpdateCollapsedSidePadding() {
-  int visible_count = 0;
-  for (int i = 0; i < child_count(); ++i) {
-    if (static_cast<const FeaturePodButton*>(child_at(i))->visible_preferred())
-      ++visible_count;
-  }
-
-  visible_count =
-      std::min(visible_count, kUnifiedFeaturePodMaxItemsInCollapsed);
+  const int visible_count =
+      std::min(GetVisibleCount(), kUnifiedFeaturePodMaxItemsInCollapsed);
 
   int contents_width =
       visible_count * kUnifiedFeaturePodCollapsedSize.width() +
