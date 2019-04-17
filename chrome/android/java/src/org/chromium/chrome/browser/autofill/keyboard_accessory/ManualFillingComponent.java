@@ -9,6 +9,7 @@ import android.view.ViewStub;
 
 import org.chromium.chrome.browser.autofill.keyboard_accessory.data.KeyboardAccessoryData;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.data.PropertyProvider;
+import org.chromium.chrome.browser.compositor.CompositorViewResizer;
 import org.chromium.components.autofill.AutofillDelegate;
 import org.chromium.components.autofill.AutofillSuggestion;
 import org.chromium.ui.DropdownPopupWindow;
@@ -112,12 +113,12 @@ public interface ManualFillingComponent {
     void onPause();
 
     /**
-     * Returns a size manager that allows to access the combined height of
+     * Returns a {@link CompositorViewResizer} that allows to access the combined height of
      * KeyboardAccessoryCoordinator and AccessorySheetCoordinator, and to be
      * notified when it changes.
-     * @return A {@link KeyboardExtensionSizeManager}.
+     * @return A {@link CompositorViewResizer}.
      */
-    KeyboardExtensionSizeManager getKeyboardExtensionSizeManager();
+    CompositorViewResizer getKeyboardExtensionViewResizer();
 
     /**
      * Returns whether the Keyboard is replaced by an accessory sheet or is about to do so.

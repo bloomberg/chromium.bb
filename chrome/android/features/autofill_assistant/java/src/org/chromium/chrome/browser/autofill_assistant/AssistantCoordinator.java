@@ -39,13 +39,19 @@ class AssistantCoordinator {
         // Instantiate child components.
         mBottomBarCoordinator = new AssistantBottomBarCoordinator(activity, mModel, controller);
         mKeyboardCoordinator = new AssistantKeyboardCoordinator(activity, mModel);
-        mOverlayCoordinator = new AssistantOverlayCoordinator(activity, mModel.getOverlayModel());
+        mOverlayCoordinator = new AssistantOverlayCoordinator(
+                activity, mModel.getOverlayModel(), mBottomBarCoordinator);
 
+        activity.getCompositorViewHolder().addCompositorViewResizer(mBottomBarCoordinator);
         mModel.setVisible(true);
     }
 
     /** Detaches and destroys the view. */
     public void destroy() {
+        if (mActivity.getCompositorViewHolder() != null) {
+            mActivity.getCompositorViewHolder().removeCompositorViewResizer(mBottomBarCoordinator);
+        }
+
         mModel.setVisible(false);
         mOverlayCoordinator.destroy();
         mBottomBarCoordinator.destroy();

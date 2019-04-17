@@ -14,6 +14,7 @@ import android.widget.ScrollView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
+import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantCarouselCoordinator;
@@ -25,6 +26,7 @@ import org.chromium.chrome.browser.autofill_assistant.infobox.AssistantInfoBoxCo
 import org.chromium.chrome.browser.autofill_assistant.overlay.AssistantOverlayModel;
 import org.chromium.chrome.browser.autofill_assistant.overlay.AssistantOverlayState;
 import org.chromium.chrome.browser.autofill_assistant.payment.AssistantPaymentRequestCoordinator;
+import org.chromium.chrome.browser.compositor.CompositorViewResizer;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
@@ -33,7 +35,7 @@ import org.chromium.ui.modelutil.ListModel;
 /**
  * Coordinator responsible for the Autofill Assistant bottom bar.
  */
-class AssistantBottomBarCoordinator {
+class AssistantBottomBarCoordinator implements CompositorViewResizer {
     private final AssistantModel mModel;
     private final BottomSheetController mBottomSheetController;
     private final AssistantBottomSheetContent mContent;
@@ -46,6 +48,11 @@ class AssistantBottomBarCoordinator {
     private final AssistantCarouselCoordinator mSuggestionsCoordinator;
     private final AssistantCarouselCoordinator mActionsCoordinator;
 
+    private final ObserverList<CompositorViewResizer.Observer> mSizeObservers =
+            new ObserverList<>();
+    private final int mPeekHeight;
+    private int mContentHeight;
+
     @Nullable
     private ScrollView mOnboardingScrollView;
 
@@ -54,6 +61,8 @@ class AssistantBottomBarCoordinator {
         mModel = model;
         mBottomSheetController = controller;
         mContent = new AssistantBottomSheetContent(context);
+        mPeekHeight = context.getResources().getDimensionPixelSize(
+                R.dimen.autofill_assistant_peek_height);
 
         // Instantiate child components.
         mHeaderCoordinator = new AssistantHeaderCoordinator(
@@ -106,6 +115,17 @@ class AssistantBottomBarCoordinator {
             public void onSheetClosed(int reason) {
                 mContent.mToolbarView.setBackgroundColor(ApiCompatibilityUtils.getColor(
                         context.getResources(), R.color.modern_primary_color));
+            }
+
+            @Override
+            public void onSheetContentChanged(@Nullable BottomSheet.BottomSheetContent newContent) {
+                // As resizing the web content area is an expensive operation, we only shrink it by
+                // our peek height when our BottomSheetContent is shown. This way, the whole web
+                // content will be visible when the sheet is in the PEEK state.
+                // TODO(crbug.com/806868): Make sure this works and does not interfere with Duet
+                // once we are in ChromeTabbedActivity.
+                mContentHeight = newContent == mContent ? mPeekHeight : 0;
+                notifyAutofillAssistantSizeChanged();
             }
         });
 
@@ -207,6 +227,27 @@ class AssistantBottomBarCoordinator {
         layoutParams.setMarginStart(horizontalMargin);
         layoutParams.setMarginEnd(horizontalMargin);
         view.setLayoutParams(layoutParams);
+    }
+
+    private void notifyAutofillAssistantSizeChanged() {
+        for (Observer observer : mSizeObservers) observer.onHeightChanged(mContentHeight);
+    }
+
+    // Implementation of methods from AutofillAssistantSizeManager.
+
+    @Override
+    public int getHeight() {
+        return mContentHeight;
+    }
+
+    @Override
+    public void addObserver(Observer observer) {
+        mSizeObservers.addObserver(observer);
+    }
+
+    @Override
+    public void removeObserver(Observer observer) {
+        mSizeObservers.removeObserver(observer);
     }
 
     // TODO(crbug.com/806868): Move this class at the top of the file once it is a static class.

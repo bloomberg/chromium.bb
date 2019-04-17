@@ -506,7 +506,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
             ((BottomContainer) findViewById(R.id.bottom_container))
                     .initialize(mFullscreenManager,
-                            mManualFillingComponent.getKeyboardExtensionSizeManager());
+                            mManualFillingComponent.getKeyboardExtensionViewResizer());
 
             // If onStart was called before postLayoutInflation (because inflation was done in a
             // background thread) then make sure to call the relevant methods belatedly.
@@ -1450,8 +1450,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         mManualFillingComponent.initialize(getWindowAndroid(),
                 findViewById(R.id.keyboard_accessory_stub),
                 findViewById(R.id.keyboard_accessory_sheet_stub));
-        getCompositorViewHolder().setKeyboardExtensionView(
-                mManualFillingComponent.getKeyboardExtensionSizeManager());
+        getCompositorViewHolder().addCompositorViewResizer(
+                mManualFillingComponent.getKeyboardExtensionViewResizer());
 
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_ENGAGEMENT_REPORTING_ANDROID)) {
             // The lifetime of this object is managed by the lifecycle dispatcher.

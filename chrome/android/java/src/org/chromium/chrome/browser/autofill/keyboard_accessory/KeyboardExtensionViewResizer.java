@@ -7,17 +7,18 @@ package org.chromium.chrome.browser.autofill.keyboard_accessory;
 import android.support.annotation.Px;
 
 import org.chromium.base.ObserverList;
+import org.chromium.chrome.browser.compositor.CompositorViewResizer;
 
 /**
  * This class is used by {@link ManualFillingMediator} to provide the combined height of
  * KeyboardAccessoryCoordinator and AccessorySheetCoordinator.
  */
-class KeyboardExtensionSizeManagerImpl implements KeyboardExtensionSizeManager {
+class KeyboardExtensionViewResizer implements CompositorViewResizer {
     private int mHeight;
     private final ObserverList<Observer> mObservers = new ObserverList<>();
 
     @Override
-    public @Px int getKeyboardExtensionHeight() {
+    public @Px int getHeight() {
         return mHeight;
     }
 
@@ -34,6 +35,6 @@ class KeyboardExtensionSizeManagerImpl implements KeyboardExtensionSizeManager {
     void setKeyboardExtensionHeight(@Px int newKeyboardExtensionHeight) {
         if (mHeight == newKeyboardExtensionHeight) return;
         mHeight = newKeyboardExtensionHeight;
-        for (Observer observer : mObservers) observer.onKeyboardExtensionHeightChanged(mHeight);
+        for (Observer observer : mObservers) observer.onHeightChanged(mHeight);
     }
 }

@@ -26,6 +26,7 @@ import android.util.TypedValue;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.compositor.CompositorViewResizer;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.FullscreenListener;
 import org.chromium.content_public.browser.GestureListenerManager;
@@ -48,8 +49,8 @@ import java.util.List;
  * <p>While scrolling, it keeps track of the current scrolling offset and avoids drawing on top of
  * the top bar which is can be, during animations, just drawn on top of the compositor.
  */
-class AssistantOverlayDrawable
-        extends Drawable implements FullscreenListener, GestureStateListener {
+class AssistantOverlayDrawable extends Drawable
+        implements FullscreenListener, GestureStateListener, CompositorViewResizer.Observer {
     private static final int FADE_DURATION_MS = 250;
 
     /** Alpha value of the background, used for animations. */
@@ -65,6 +66,12 @@ class AssistantOverlayDrawable
     private static final int BOX_CORNER_DP = 8;
 
     private final ChromeFullscreenManager mFullscreenManager;
+
+    /**
+     * The {@link CompositorViewResizer} associated to the Autofill Assistant BottomSheet content.
+     */
+    private final CompositorViewResizer mViewResizer;
+
     private final Paint mBackground;
     private final Paint mBoxStroke;
     private final Paint mBoxClear;
@@ -129,8 +136,10 @@ class AssistantOverlayDrawable
     private AssistantOverlayDelegate mDelegate;
     private GestureListenerManager mGestureListenerManager;
 
-    AssistantOverlayDrawable(Context context, ChromeFullscreenManager fullscreenManager) {
+    AssistantOverlayDrawable(Context context, ChromeFullscreenManager fullscreenManager,
+            CompositorViewResizer viewResizer) {
         mFullscreenManager = fullscreenManager;
+        mViewResizer = viewResizer;
 
         DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
 
@@ -162,6 +171,7 @@ class AssistantOverlayDrawable
                 TypedValue.COMPLEX_UNIT_DIP, BOX_CORNER_DP, displayMetrics);
 
         mFullscreenManager.addListener(this);
+        mViewResizer.addObserver(this);
     }
 
     void setDelegate(AssistantOverlayDelegate delegate) {
@@ -182,6 +192,7 @@ class AssistantOverlayDrawable
     void destroy() {
         setWebContents(null);
         mFullscreenManager.removeListener(this);
+        mViewResizer.removeObserver(this);
         mDelegate = null;
     }
 
@@ -265,7 +276,7 @@ class AssistantOverlayDrawable
         Rect bounds = getBounds();
         int width = bounds.width();
         int yBottom = bounds.height()
-                - (int) (mFullscreenManager.getBottomControlsHeight()
+                - (int) (mFullscreenManager.getBottomControlsHeight() + mViewResizer.getHeight()
                         - mFullscreenManager.getBottomControlOffset());
 
         // Don't draw over the top or bottom bars.
@@ -326,6 +337,11 @@ class AssistantOverlayDrawable
 
     @Override
     public void onUpdateViewportSize() {
+        invalidateSelf();
+    }
+
+    @Override
+    public void onHeightChanged(int height) {
         invalidateSelf();
     }
 
