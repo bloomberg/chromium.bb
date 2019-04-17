@@ -170,8 +170,9 @@ bool HasBlockingTouchEventHandler(const LayoutObject& object) {
   }
 
   auto* node = object.GetNode();
-  if (!node && object.IsLayoutBlockFlow() &&
-      ToLayoutBlockFlow(object).IsAnonymousBlockContinuation()) {
+  auto* layout_block_flow = DynamicTo<LayoutBlockFlow>(object);
+  if (!node && layout_block_flow &&
+      layout_block_flow->IsAnonymousBlockContinuation()) {
     // An anonymous continuation does not have handlers so we need to check the
     // DOM ancestor for handlers using |NodeForHitTest|.
     node = object.NodeForHitTest();

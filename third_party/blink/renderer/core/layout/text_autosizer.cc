@@ -699,8 +699,8 @@ TextAutosizer::BlockFlags TextAutosizer::ClassifyBlock(
       flags |= POTENTIAL_ROOT;
 
     LayoutMultiColumnFlowThread* flow_thread = nullptr;
-    if (block->IsLayoutBlockFlow())
-      flow_thread = ToLayoutBlockFlow(block)->MultiColumnFlowThread();
+    if (auto* block_flow = DynamicTo<LayoutBlockFlow>(block))
+      flow_thread = block_flow->MultiColumnFlowThread();
     if ((mask & INDEPENDENT) &&
         (IsIndependentDescendant(block) || block->IsTable() ||
          (flow_thread && flow_thread->ColumnCount() > 1)))
@@ -1394,7 +1394,7 @@ TextAutosizer::DeferUpdatePageInfo::DeferUpdatePageInfo(Page* page)
 TextAutosizer::NGLayoutScope::NGLayoutScope(const NGBlockNode& node,
                                             LayoutUnit inline_size)
     : text_autosizer_(node.GetLayoutBox()->GetDocument().GetTextAutosizer()),
-      block_(ToLayoutBlockFlow(node.GetLayoutBox())) {
+      block_(To<LayoutBlockFlow>(node.GetLayoutBox())) {
   if (!text_autosizer_ || !text_autosizer_->ShouldHandleLayout() ||
       block_->IsLayoutNGListMarker()) {
     // Bail if text autosizing isn't enabled, but also if this is a

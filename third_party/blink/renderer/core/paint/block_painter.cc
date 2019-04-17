@@ -292,14 +292,14 @@ void BlockPainter::PaintBlockFlowContents(const PaintInfo& paint_info,
   } else if (ShouldPaintDescendantOutlines(paint_info.phase)) {
     ObjectPainter(layout_block_).PaintInlineChildrenOutlines(paint_info);
   } else {
-    LineBoxListPainter(ToLayoutBlockFlow(layout_block_).LineBoxes())
+    LineBoxListPainter(To<LayoutBlockFlow>(layout_block_).LineBoxes())
         .Paint(layout_block_, paint_info, paint_offset);
   }
 
   // If we don't have any floats to paint, or we're in the wrong paint phase,
   // then we're done for now.
   auto* floating_objects =
-      ToLayoutBlockFlow(layout_block_).GetFloatingObjects();
+      To<LayoutBlockFlow>(layout_block_).GetFloatingObjects();
   const PaintPhase paint_phase = paint_info.phase;
   if (!floating_objects || !(paint_phase == PaintPhase::kFloat ||
                              paint_phase == PaintPhase::kSelection ||

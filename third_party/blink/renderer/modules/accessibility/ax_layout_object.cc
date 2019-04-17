@@ -693,11 +693,11 @@ bool AXLayoutObject::ComputeAccessibilityIsIgnored(
   // Ignore layout objects that are block flows with inline children. These
   // are usually dummy layout objects that pad out the tree, but there are
   // some exceptions below.
-  if (layout_object_->IsLayoutBlockFlow() && layout_object_->ChildrenInline() &&
-      !CanSetFocusAttribute()) {
+  auto* block_flow = DynamicTo<LayoutBlockFlow>(*layout_object_);
+  if (block_flow && block_flow->ChildrenInline() && !CanSetFocusAttribute()) {
     // If the layout object has any plain text in it, that text will be
     // inside a LineBox, so the layout object will have a first LineBox.
-    bool has_any_text = HasLineBox(ToLayoutBlockFlow(*layout_object_));
+    bool has_any_text = HasLineBox(*block_flow);
 
     // Always include interesting-looking objects.
     if (has_any_text || MouseButtonListener())
@@ -1789,12 +1789,12 @@ static inline LayoutInline* StartOfContinuations(LayoutObject* layout_object) {
   // Blocks with a previous continuation always have a next continuation,
   // so we can get the next continuation and do the same trick to get
   // the primary layout object associated with the node.
-  if (layout_object->IsLayoutBlockFlow() &&
-      ToLayoutBlockFlow(layout_object)->InlineElementContinuation()) {
-    LayoutInline* result = ToLayoutInline(ToLayoutBlockFlow(layout_object)
-                                              ->InlineElementContinuation()
-                                              ->GetNode()
-                                              ->GetLayoutObject());
+  auto* layout_block_flow = DynamicTo<LayoutBlockFlow>(layout_object);
+  if (layout_block_flow && layout_block_flow->InlineElementContinuation()) {
+    LayoutInline* result =
+        ToLayoutInline(layout_block_flow->InlineElementContinuation()
+                           ->GetNode()
+                           ->GetLayoutObject());
     DCHECK_NE(result, layout_object);
     return result;
   }
@@ -1825,11 +1825,9 @@ static bool IsContinuation(LayoutObject* layout_object) {
   if (layout_object->IsElementContinuation())
     return true;
 
-  if (layout_object->IsAnonymousBlock() && layout_object->IsLayoutBlockFlow() &&
-      ToLayoutBlockFlow(layout_object)->Continuation())
-    return true;
-
-  return false;
+  auto* block_flow = DynamicTo<LayoutBlockFlow>(layout_object);
+  return block_flow && block_flow->IsAnonymousBlock() &&
+         block_flow->Continuation();
 }
 
 // See LAYOUT TREE WALKING ALGORITHM, above, for details.
@@ -1839,8 +1837,8 @@ LayoutObject* GetContinuation(LayoutObject* layout_object) {
   if (layout_object->IsLayoutInline())
     return ToLayoutInline(layout_object)->Continuation();
 
-  if (layout_object->IsLayoutBlockFlow())
-    return ToLayoutBlockFlow(layout_object)->Continuation();
+  if (auto* block_flow = DynamicTo<LayoutBlockFlow>(layout_object))
+    return block_flow->Continuation();
 
   return nullptr;
 }
@@ -2100,15 +2098,13 @@ Element* AXLayoutObject::AnchorElement() const {
   for (curr_layout_object = layout_object_;
        curr_layout_object && !curr_layout_object->GetNode();
        curr_layout_object = curr_layout_object->Parent()) {
-    if (curr_layout_object->IsAnonymousBlock() &&
-        curr_layout_object->IsLayoutBlockFlow()) {
-      LayoutObject* continuation =
-          ToLayoutBlockFlow(curr_layout_object)->Continuation();
-      if (continuation)
-        return cache.GetOrCreate(continuation)->AnchorElement();
-    }
-  }
+    auto* curr_block_flow = DynamicTo<LayoutBlockFlow>(curr_layout_object);
+    if (!curr_block_flow || !curr_block_flow->IsAnonymousBlock())
+      continue;
 
+    if (LayoutObject* continuation = curr_block_flow->Continuation())
+      return cache.GetOrCreate(continuation)->AnchorElement();
+  }
   // bail if none found
   if (!curr_layout_object)
     return nullptr;

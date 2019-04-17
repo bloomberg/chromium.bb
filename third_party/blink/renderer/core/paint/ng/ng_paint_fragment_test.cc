@@ -57,8 +57,8 @@ TEST_F(NGPaintFragmentTest, InlineFragmentsFor) {
       <div id="container">12345 <span id="box">789 123456789 123<span> 567</div>
     </body>
   )HTML");
-  LayoutBlockFlow* container =
-      ToLayoutBlockFlow(GetLayoutObjectByElementId("container"));
+  auto* container =
+      To<LayoutBlockFlow>(GetLayoutObjectByElementId("container"));
   ASSERT_TRUE(container);
   LayoutObject* text1 = container->FirstChild();
   ASSERT_TRUE(text1 && text1->IsText());
