@@ -19,11 +19,11 @@
     <dimen name="open_last_tab_placeholder_image_margin_bottom">13dp</dimen>
 
     <!-- Open last tab button dimensions. -->
-    <dimen name="open_last_tab_button_horizontal_margin">8dp</dimen>
     <dimen name="open_last_tab_button_padding_horizontal">12dp</dimen>
-    <dimen name="open_last_tab_button_padding_vertical">8dp</dimen>
+    <dimen name="open_last_tab_button_padding_vertical">9dp</dimen>
     <dimen name="open_last_tab_icon_size">16dp</dimen>
-    <dimen name="open_last_tab_primary_text_margin_left">8dp</dimen>
+    <dimen name="open_last_tab_title_text_margin_left">12dp</dimen>
+    <dimen name="open_last_tab_timestamp_text_margin_left">10dp</dimen>
 
     <!-- Most likely carousel dimensions. -->
     <dimen name="most_likely_tile_focus_stroke_width">2dp</dimen>
