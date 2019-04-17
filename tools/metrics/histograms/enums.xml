@@ -58690,6 +58690,26 @@ Full version information for the fingerprint enum values:
   <int value="77" label="stopLoading"/>
 </enum>
 
+<enum name="WebViewClientErrorCode">
+  <int value="-16" label="ERROR_UNSAFE_RESOURCE"/>
+  <int value="-15" label="ERROR_TOO_MANY_REQUESTS"/>
+  <int value="-14" label="ERROR_FILE_NOT_FOUND"/>
+  <int value="-13" label="ERROR_FILE"/>
+  <int value="-12" label="ERROR_BAD_URL"/>
+  <int value="-11" label="ERROR_FAILED_SSL_HANDSHAKE"/>
+  <int value="-10" label="ERROR_UNSUPPORTED_SCHEME"/>
+  <int value="-9" label="ERROR_REDIRECT_LOOP"/>
+  <int value="-8" label="ERROR_TIMEOUT"/>
+  <int value="-7" label="ERROR_IO"/>
+  <int value="-6" label="ERROR_CONNECT"/>
+  <int value="-5" label="ERROR_PROXY_AUTHENTICATION"/>
+  <int value="-4" label="ERROR_AUTHENTICATION"/>
+  <int value="-3" label="ERROR_UNSUPPORTED_AUTH_SCHEME"/>
+  <int value="-2" label="ERROR_HOST_LOOKUP"/>
+  <int value="-1" label="ERROR_UNKNOWN"/>
+  <int value="0" label="ERROR_OK"/>
+</enum>
+
 <enum name="WebViewClientTypeEnum">
   <int value="0" label="Regular WebViewClient"/>
   <int value="1" label="WebViewClientCompat (via AndroidX)"/>
