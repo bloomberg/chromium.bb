@@ -450,4 +450,37 @@ TEST_F(WebAppPolicyManagerTest, TryToInexistentPlaceholderApp) {
   EXPECT_EQ(expected_options_list, install_options_list);
 }
 
+TEST_F(WebAppPolicyManagerTest, SayRefreshTwoTimesQuickly) {
+  policy_manager()->Start();
+  base::RunLoop().RunUntilIdle();
+  // Add an app.
+  {
+    base::Value list(base::Value::Type::LIST);
+    list.GetList().push_back(GetWindowedItem());
+    profile()->GetPrefs()->Set(prefs::kWebAppInstallForceList, std::move(list));
+  }
+  // Before it gets installed, set a policy that uninstalls it.
+  {
+    base::Value list(base::Value::Type::LIST);
+    list.GetList().push_back(GetTabbedItem());
+    profile()->GetPrefs()->Set(prefs::kWebAppInstallForceList, std::move(list));
+  }
+  base::RunLoop().RunUntilIdle();
+
+  // Both apps should have been installed.
+  std::vector<InstallOptions> expected_options_list;
+  expected_options_list.push_back(GetWindowedInstallOptions());
+  expected_options_list.push_back(GetTabbedInstallOptions());
+
+  const auto& install_options_list = pending_app_manager()->install_requests();
+  EXPECT_EQ(expected_options_list, install_options_list);
+  EXPECT_EQ(std::vector<GURL>({GURL(kWindowedUrl)}),
+            pending_app_manager()->uninstall_requests());
+
+  // There should be exactly 1 app remaining.
+  EXPECT_EQ(1u, pending_app_manager()->installed_apps().size());
+  EXPECT_EQ(InstallSource::kExternalPolicy,
+            pending_app_manager()->installed_apps().at(GURL(kTabbedUrl)));
+}
+
 }  // namespace web_app

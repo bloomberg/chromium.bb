@@ -129,6 +129,16 @@ void WebAppPolicyManager::InitChangeRegistrarAndRefreshPolicyInstalledApps() {
 }
 
 void WebAppPolicyManager::RefreshPolicyInstalledApps() {
+  // If this is called again while in progress, we will run it again once the
+  // |SynchronizeInstalledApps| call is finished.
+  if (is_refreshing_) {
+    needs_refresh_ = true;
+    return;
+  }
+
+  is_refreshing_ = true;
+  needs_refresh_ = false;
+
   const base::Value* web_apps =
       pref_service_->GetList(prefs::kWebAppInstallForceList);
   std::vector<InstallOptions> install_options_list;
@@ -150,7 +160,15 @@ void WebAppPolicyManager::RefreshPolicyInstalledApps() {
 
   pending_app_manager_->SynchronizeInstalledApps(
       std::move(install_options_list), InstallSource::kExternalPolicy,
-      base::DoNothing());
+      base::BindOnce(&WebAppPolicyManager::OnAppsSynchronized,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void WebAppPolicyManager::OnAppsSynchronized(
+    PendingAppManager::SynchronizeResult result) {
+  is_refreshing_ = false;
+  if (needs_refresh_)
+    RefreshPolicyInstalledApps();
 }
 
 }  // namespace web_app
