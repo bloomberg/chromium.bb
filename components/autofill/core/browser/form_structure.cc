@@ -342,6 +342,7 @@ bool AllTypesCaptured(const FormStructure& form,
 void EncodePasswordAttributesVote(
     const std::pair<PasswordAttribute, bool>& password_attributes_vote,
     const size_t password_length_vote,
+    const int password_symbol_vote,
     AutofillUploadContents* upload) {
   switch (password_attributes_vote.first) {
     case PasswordAttribute::kHasLowercaseLetter:
@@ -357,6 +358,8 @@ void EncodePasswordAttributesVote(
       break;
     case PasswordAttribute::kHasSpecialSymbol:
       upload->set_password_has_special_symbol(password_attributes_vote.second);
+      if (password_attributes_vote.second)
+        upload->set_password_special_symbol(password_symbol_vote);
       break;
     case PasswordAttribute::kPasswordAttributesCount:
       NOTREACHED();
@@ -503,6 +506,7 @@ FormStructure::FormStructure(const FormData& form)
       all_fields_are_passwords_(!form.fields.empty()),
       form_parsed_timestamp_(base::TimeTicks::Now()),
       passwords_were_revealed_(false),
+      password_symbol_vote_(0),
       developer_engagement_metrics_(0) {
   // Copy the form fields.
   std::map<base::string16, size_t> unique_names;
@@ -610,7 +614,8 @@ bool FormStructure::EncodeUploadRequest(
 
   if (password_attributes_vote_) {
     EncodePasswordAttributesVote(*password_attributes_vote_,
-                                 password_length_vote_, upload);
+                                 password_length_vote_, password_symbol_vote_,
+                                 upload);
   }
 
   if (IsAutofillFieldMetadataEnabled()) {
