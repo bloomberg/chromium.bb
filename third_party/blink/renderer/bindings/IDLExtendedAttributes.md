@@ -114,7 +114,7 @@ This is stored internally via `[PartialInterfaceImplementedAs]` (see below).
 
 ### interface mixins
 
-Extended attributes on members of an interface mixin work as normal. However, only the following 5 extended attributes can be used on the interface mixin itself; otherwise extended attributes should appear on the main (including) interface definition:
+Extended attributes on members of an interface mixin work as normal. However, only the following 4 extended attributes can be used on the interface mixin itself; otherwise extended attributes should appear on the main (including) interface definition:
 
 * `[LegacyTreatAsPartialInterface]` is part of an ongoing change, as interface mixins used to be treated internally as partial interfaces.
 
