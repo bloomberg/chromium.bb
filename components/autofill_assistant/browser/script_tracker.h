@@ -86,17 +86,6 @@ class ScriptTracker : public ScriptExecutor::Listener {
   // script running at a time.
   bool running() const { return executor_ != nullptr; }
 
-  // Terminates any running scripts.
-  //
-  // This function returns false when it needs more time to properly shut down
-  // the script tracker. It usually means that it either has to wait for a
-  // script to find an appropriate moment to suspend execution or wait for a
-  // script checking round to complete.
-  //
-  // A caller is expected to try again later when this function returns false. A
-  // return value of true means that the scrip tracker can safely be destroyed.
-  bool Terminate();
-
  private:
   typedef std::map<Script*, std::unique_ptr<Script>> AvailableScriptMap;
 

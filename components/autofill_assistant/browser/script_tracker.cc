@@ -127,15 +127,6 @@ void ScriptTracker::ClearRunnableScripts() {
   runnable_scripts_.clear();
 }
 
-bool ScriptTracker::Terminate() {
-  if (running()) {
-    executor_->Terminate();
-    return false;
-  }
-  TerminatePendingChecks();
-  return true;
-}
-
 void ScriptTracker::OnScriptRun(
     const std::string& script_path,
     ScriptExecutor::RunScriptCallback original_callback,

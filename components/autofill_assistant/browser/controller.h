@@ -61,19 +61,9 @@ class Controller : public ScriptExecutorDelegate,
   void Start(const GURL& initial_url,
              std::unique_ptr<TriggerContext> trigger_context);
 
-  // Initiates a clean shutdown.
-  //
-  // This function returns false when it needs more time to properly shut down
-  // the script tracker. In that case, the controller is responsible for calling
-  // Client::Shutdown at the right time for the given reason.
-  //
-  // A caller is expected to try again later when this function returns false. A
-  // return value of true means that the scrip tracker can safely be destroyed.
-  //
-  // TODO(crbug.com/806868): Instead of this safety net, the proper fix is to
-  // switch to weak pointers everywhere so that dangling callbacks are not an
-  // issue.
-  bool Terminate(Metrics::DropOutReason reason);
+  // Lets the controller know it's about to be deleted. This is normally called
+  // from the client.
+  void WillShutdown(Metrics::DropOutReason reason);
 
   // Overrides ScriptExecutorDelegate:
   const GURL& GetCurrentURL() override;
@@ -98,14 +88,10 @@ class Controller : public ScriptExecutorDelegate,
   void AddListener(ScriptExecutorDelegate::Listener* listener) override;
   void RemoveListener(ScriptExecutorDelegate::Listener* listener) override;
 
-  // Stops the controller with |reason| and destroys this. The current status
-  // message must contain the error message.
-  void StopAndShutdown(Metrics::DropOutReason reason);
   void EnterState(AutofillAssistantState state) override;
   bool IsCookieExperimentEnabled() const;
   void SetPaymentRequestOptions(
       std::unique_ptr<PaymentRequestOptions> options) override;
-  void CancelPaymentRequest() override;
 
   // Overrides autofill_assistant::UiDelegate:
   AutofillAssistantState GetState() override;
@@ -207,6 +193,9 @@ class Controller : public ScriptExecutorDelegate,
   void SelectChip(std::vector<Chip>* chips, int chip_index);
   void ReportNavigationStateChanged();
 
+  // Clear out visible state and enter the stopped state.
+  void EnterStoppedState();
+
   ElementArea* touchable_element_area();
   ScriptTracker* script_tracker();
 
@@ -280,10 +269,6 @@ class Controller : public ScriptExecutorDelegate,
 
   // Flag indicates whether it is ready to fetch and execute scripts.
   bool started_ = false;
-
-  // A reason passed previously to Terminate(). SAFETY_NET_TERMINATE is a
-  // placeholder.
-  Metrics::DropOutReason terminate_reason_ = Metrics::SAFETY_NET_TERMINATE;
 
   // True once UiController::WillShutdown has been called.
   bool will_shutdown_ = false;

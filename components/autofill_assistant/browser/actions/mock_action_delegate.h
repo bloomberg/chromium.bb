@@ -56,9 +56,7 @@ class MockActionDelegate : public ActionDelegate {
                void(const Selector& selector,
                     base::OnceCallback<void(const ClientStatus&)> callback));
 
-  MOCK_METHOD2(Prompt,
-               void(std::unique_ptr<std::vector<Chip>> chips,
-                    base::OnceCallback<void()> on_terminate));
+  MOCK_METHOD1(Prompt, void(std::unique_ptr<std::vector<Chip>> chips));
   MOCK_METHOD0(CancelPrompt, void());
 
   void FillAddressForm(

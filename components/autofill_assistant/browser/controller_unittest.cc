@@ -379,7 +379,7 @@ TEST_F(ControllerTest, Stop) {
 
   // Simulates Client::Shutdown(SCRIPT_SHUTDOWN)
   EXPECT_CALL(mock_ui_controller_, WillShutdown(Metrics::SCRIPT_SHUTDOWN));
-  EXPECT_TRUE(controller_->Terminate(Metrics::SCRIPT_SHUTDOWN));
+  controller_->WillShutdown(Metrics::SCRIPT_SHUTDOWN);
 }
 
 TEST_F(ControllerTest, Reset) {
