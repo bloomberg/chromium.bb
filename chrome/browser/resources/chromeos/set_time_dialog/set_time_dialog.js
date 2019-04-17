@@ -4,10 +4,10 @@
 
 /**
  * @fileoverview
- * 'set-time' handles a dialog to check and set system time. It can also
+ * 'set-time-dialog' handles a dialog to check and set system time. It can also
  * include a timezone dropdown if timezoneId is provided.
  *
- * 'set-time' uses the system time to populate the controls initially and
+ * 'set-time-dialog' uses the system time to populate the controls initially and
  * update them as the system time or timezone changes, and notifies Chrome
  * when the user changes the time or timezone.
  */
@@ -79,7 +79,7 @@ function getMaxDate() {
 }
 
 Polymer({
-  is: 'set-time',
+  is: 'set-time-dialog',
 
   // Remove listeners on detach.
   behaviors: [WebUIListenerBehavior],
