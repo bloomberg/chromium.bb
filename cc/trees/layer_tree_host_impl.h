@@ -65,7 +65,9 @@ class CompositorFrameMetadata;
 }
 
 namespace cc {
+
 class BrowserControlsOffsetManager;
+class CompositorFrameReportingController;
 class DebugRectHistory;
 class EvictionTilePriorityQueue;
 class FrameRateCounter;
@@ -746,6 +748,11 @@ class CC_EXPORT LayerTreeHostImpl
   // See SyncSurfaceIdAllocator for details.
   uint32_t GenerateChildSurfaceSequenceNumberSync();
 
+  CompositorFrameReportingController* compositor_frame_reporting_controller()
+      const {
+    return compositor_frame_reporting_controller_.get();
+  }
+
  protected:
   LayerTreeHostImpl(
       const LayerTreeSettings& settings,
@@ -772,6 +779,9 @@ class CC_EXPORT LayerTreeHostImpl
   TaskRunnerProvider* const task_runner_provider_;
 
   BeginFrameTracker current_begin_frame_tracker_;
+
+  std::unique_ptr<CompositorFrameReportingController>
+      compositor_frame_reporting_controller_;
 
  private:
   const gfx::ColorSpace& GetRasterColorSpaceAndId(int* id) const;

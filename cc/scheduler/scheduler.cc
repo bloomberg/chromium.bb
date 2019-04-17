@@ -578,6 +578,7 @@ void Scheduler::SendDidNotProduceFrame(const viz::BeginFrameArgs& args) {
   if (last_begin_frame_ack_.source_id == args.source_id &&
       last_begin_frame_ack_.sequence_number == args.sequence_number)
     return;
+  compositor_timing_history_->DidNotProduceFrame();
   last_begin_frame_ack_ = viz::BeginFrameAck(args, false /* has_damage */);
   client_->DidNotProduceFrame(last_begin_frame_ack_);
 }
@@ -601,7 +602,7 @@ void Scheduler::BeginImplFrame(const viz::BeginFrameArgs& args,
                                     args.animate_only);
     devtools_instrumentation::DidBeginFrame(layer_tree_host_id_);
     compositor_timing_history_->WillBeginImplFrame(
-        state_machine_.NewActiveTreeLikely(), args.frame_time, args.type, now);
+        args, state_machine_.NewActiveTreeLikely(), now);
     bool has_damage =
         client_->WillBeginImplFrame(begin_impl_frame_tracker_.Current());
 
