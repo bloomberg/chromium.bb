@@ -67,10 +67,7 @@ WebWindowFeatures GetWindowFeaturesFromString(const String& feature_string) {
   if (feature_string.IsEmpty())
     return window_features;
 
-  window_features.menu_bar_visible = false;
-  window_features.status_bar_visible = false;
-  window_features.tool_bar_visible = false;
-  window_features.scrollbars_visible = false;
+  bool ui_features_were_disabled = false;
 
   unsigned key_begin, key_end;
   unsigned value_begin, value_end;
@@ -143,6 +140,14 @@ WebWindowFeatures GetWindowFeaturesFromString(const String& feature_string) {
     if (key_string.IsEmpty())
       continue;
 
+    if (!ui_features_were_disabled && key_string != "noopener") {
+      ui_features_were_disabled = true;
+      window_features.menu_bar_visible = false;
+      window_features.status_bar_visible = false;
+      window_features.tool_bar_visible = false;
+      window_features.scrollbars_visible = false;
+    }
+
     if (key_string == "left" || key_string == "screenx") {
       window_features.x_set = true;
       window_features.x = value;
@@ -166,7 +171,7 @@ WebWindowFeatures GetWindowFeaturesFromString(const String& feature_string) {
     } else if (key_string == "resizable") {
       window_features.resizable = value;
     } else if (key_string == "noopener") {
-      window_features.noopener = true;
+      window_features.noopener = value;
     } else if (key_string == "background") {
       window_features.background = true;
     } else if (key_string == "persistent") {
