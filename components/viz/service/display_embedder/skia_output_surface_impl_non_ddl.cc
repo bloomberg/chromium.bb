@@ -579,8 +579,7 @@ bool SkiaOutputSurfaceImplNonDDL::GetGrBackendTexture(
 
 void SkiaOutputSurfaceImplNonDDL::BufferPresented(
     const gfx::PresentationFeedback& feedback) {
-  if (need_swapbuffers_ack_)
-    client_->DidReceivePresentationFeedback(feedback);
+  client_->DidReceivePresentationFeedback(feedback);
 }
 
 void SkiaOutputSurfaceImplNonDDL::ContextLost() {
