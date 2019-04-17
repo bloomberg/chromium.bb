@@ -74,10 +74,14 @@ class CORE_EXPORT CaretDisplayItemClient final : public DisplayItemClient {
   friend class CaretDisplayItemClientTest;
   friend class ParameterizedComputeCaretRectTest;
 
+  struct CaretRectAndPainterBlock {
+    LayoutRect caret_rect;  // local to |painter_block|
+    LayoutBlock* painter_block = nullptr;
+  };
   // Creating VisiblePosition causes synchronous layout so we should use the
   // PositionWithAffinity version if possible.
   // A position in HTMLTextFromControlElement is a typical example.
-  static LayoutRect ComputeCaretRect(
+  static CaretRectAndPainterBlock ComputeCaretRectAndPainterBlock(
       const PositionWithAffinity& caret_position);
 
   void InvalidatePaintInCurrentLayoutBlock(const PaintInvalidatorContext&);

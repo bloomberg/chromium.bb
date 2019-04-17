@@ -374,7 +374,8 @@ class ParameterizedComputeCaretRectTest
 
  protected:
   LayoutRect ComputeCaretRect(const PositionWithAffinity& position) const {
-    return CaretDisplayItemClient::ComputeCaretRect(position);
+    return CaretDisplayItemClient::ComputeCaretRectAndPainterBlock(position)
+        .caret_rect;
   }
 };
 
