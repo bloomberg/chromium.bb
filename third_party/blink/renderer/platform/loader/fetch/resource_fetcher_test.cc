@@ -111,6 +111,9 @@ class ResourceFetcherTest : public testing::Test {
                          const FetchInitiatorInfo&) override {
       request_ = request;
     }
+    void DidChangePriority(uint64_t identifier,
+                           ResourceLoadPriority,
+                           int intra_priority_value) override {}
     void DidReceiveResponse(uint64_t identifier,
                             const ResourceRequest& request,
                             const ResourceResponse& response,

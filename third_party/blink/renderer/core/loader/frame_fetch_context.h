@@ -81,9 +81,6 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
       const ResourceRequest&,
       ResourceType,
       FetchParameters::DeferOption) const override;
-  void DispatchDidChangeResourcePriority(uint64_t identifier,
-                                         ResourceLoadPriority,
-                                         int intra_priority_value) override;
   void PrepareRequest(ResourceRequest&,
                       const FetchInitiatorInfo&,
                       WebScopedVirtualTimePauser&,

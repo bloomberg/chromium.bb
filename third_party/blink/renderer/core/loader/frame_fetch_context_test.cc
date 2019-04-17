@@ -1170,14 +1170,6 @@ TEST_F(FrameFetchContextTest, ResourceRequestCachePolicyWhenDetached) {
                 request, ResourceType::kRaw, FetchParameters::kNoDefer));
 }
 
-TEST_F(FrameFetchContextTest, DispatchDidChangePriorityWhenDetached) {
-  dummy_page_holder = nullptr;
-
-  GetFetchContext()->DispatchDidChangeResourcePriority(
-      2, ResourceLoadPriority::kLow, 3);
-  // Should not crash.
-}
-
 TEST_F(FrameFetchContextMockedLocalFrameClientTest,
        PrepareRequestWhenDetached) {
   Checkpoint checkpoint;

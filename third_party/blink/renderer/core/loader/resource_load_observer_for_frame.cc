@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
+#include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/core/loader/frame_or_imported_document.h"
@@ -56,6 +57,19 @@ void ResourceLoadObserverForFrame::WillSendRequest(
     idleness_detector->OnWillSendRequest(document.Fetcher());
   if (auto* interactive_detector = InteractiveDetector::From(document))
     interactive_detector->OnResourceLoadBegin(base::nullopt);
+}
+
+void ResourceLoadObserverForFrame::DidChangePriority(
+    uint64_t identifier,
+    ResourceLoadPriority priority,
+    int intra_priority_value) {
+  DocumentLoader& document_loader =
+      frame_or_imported_document_->GetMasterDocumentLoader();
+  TRACE_EVENT1("devtools.timeline", "ResourceChangePriority", "data",
+               inspector_change_resource_priority_event::Data(
+                   &document_loader, identifier, priority));
+  probe::DidChangeResourcePriority(&frame_or_imported_document_->GetFrame(),
+                                   &document_loader, identifier, priority);
 }
 
 void ResourceLoadObserverForFrame::DidReceiveResponse(

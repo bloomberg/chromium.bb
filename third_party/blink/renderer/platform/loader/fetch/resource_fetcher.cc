@@ -1934,7 +1934,8 @@ void ResourceFetcher::UpdateAllImageResourcePriorities() {
         TRACE_ID_WITH_SCOPE("BlinkResourceID",
                             TRACE_ID_LOCAL(resource->InspectorId())),
         "data", ResourcePrioritySetData(resource_load_priority));
-    Context().DispatchDidChangeResourcePriority(
+    DCHECK(!IsDetached());
+    resource_load_observer_->DidChangePriority(
         resource->InspectorId(), resource_load_priority,
         resource_priority.intra_priority_value);
   }
