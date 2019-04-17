@@ -369,7 +369,7 @@ SequenceManagerImpl::GetFlagToRequestReloadForEmptyQueue(
 void SequenceManagerImpl::ReloadEmptyWorkQueues() const {
   // There are two cases where a queue needs reloading.  First, it might be
   // completely empty and we've just posted a task (this method handles that
-  // case). Secondly if the work queue becomes empty in when calling
+  // case). Secondly if the work queue becomes empty when calling
   // WorkQueue::TakeTaskFromWorkQueue (handled there).
   //
   // Invokes callbacks created by GetFlagToRequestReloadForEmptyQueue above.
