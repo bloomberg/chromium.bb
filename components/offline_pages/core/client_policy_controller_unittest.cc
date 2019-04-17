@@ -110,13 +110,6 @@ void ClientPolicyControllerTest::ExpectRecentTab(std::string name_space,
 void ClientPolicyControllerTest::ExpectRestrictedToTabFromClientId(
     std::string name_space,
     bool expectation) {
-  EXPECT_EQ(
-      expectation,
-      base::ContainsValue(
-          controller()->GetNamespacesRestrictedToTabFromClientId(), name_space))
-      << "Namespace " << name_space
-      << " had incorrect restriction when getting namespaces restricted to"
-         " the tab from the client id field";
   EXPECT_EQ(expectation,
             controller()->IsRestrictedToTabFromClientId(name_space))
       << "Namespace " << name_space
@@ -127,13 +120,6 @@ void ClientPolicyControllerTest::ExpectRestrictedToTabFromClientId(
 void ClientPolicyControllerTest::ExpectDisabledWhenPrefetchDisabled(
     std::string name_space,
     bool expectation) {
-  EXPECT_EQ(expectation,
-            base::ContainsValue(
-                controller()->GetNamespacesDisabledWhenPrefetchDisabled(),
-                name_space))
-      << "Namespace " << name_space
-      << " had incorrect prefetch pref support when getting namespaces"
-         " disabled when prefetch settings are disabled.";
   EXPECT_EQ(expectation,
             controller()->IsDisabledWhenPrefetchDisabled(name_space))
       << "Namespace " << name_space
