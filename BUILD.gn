@@ -240,7 +240,7 @@ static_library("libjpeg") {
   configs += [ ":libjpeg_config" ]
 
   public_configs = [ ":libjpeg_config" ]
-  deps = [
+  public_deps = [
     ":libjpeg_headers",
   ]
 
@@ -249,6 +249,6 @@ static_library("libjpeg") {
   if (is_msan) {
     sources += [ "jsimd_none.c" ]
   } else {
-    deps += [ ":simd" ]
+    public_deps += [ ":simd" ]
   }
 }
