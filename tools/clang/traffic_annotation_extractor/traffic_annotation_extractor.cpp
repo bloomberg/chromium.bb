@@ -32,6 +32,7 @@
 #include "clang/Basic/SourceManager.h"
 #include "clang/Frontend/FrontendActions.h"
 #include "clang/Lex/Lexer.h"
+#include "clang/Tooling/ArgumentsAdjusters.h"
 #include "clang/Tooling/CommonOptionsParser.h"
 #include "clang/Tooling/Refactoring.h"
 #include "clang/Tooling/Tooling.h"
@@ -398,6 +399,7 @@ int main(int argc, const char* argv[]) {
   clang::tooling::CommonOptionsParser options(argc, argv, ToolCategory);
   clang::tooling::ClangTool tool(options.getCompilations(),
                                  options.getSourcePathList());
+  tool.appendArgumentsAdjuster(clang::tooling::getStripPluginsAdjuster());
   Collector collector;
 
   llvm::InitializeNativeTarget();
