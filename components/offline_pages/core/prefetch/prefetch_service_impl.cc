@@ -7,13 +7,10 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/logging.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "components/image_fetcher/core/image_fetcher.h"
 #include "components/offline_pages/core/client_id.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
-#include "components/offline_pages/core/offline_page_feature.h"
 #include "components/offline_pages/core/prefetch/offline_metrics_collector.h"
 #include "components/offline_pages/core/prefetch/prefetch_background_task_handler.h"
 #include "components/offline_pages/core/prefetch/prefetch_dispatcher.h"
@@ -31,6 +28,7 @@ namespace offline_pages {
 PrefetchServiceImpl::PrefetchServiceImpl(
     std::unique_ptr<OfflineMetricsCollector> offline_metrics_collector,
     std::unique_ptr<PrefetchDispatcher> dispatcher,
+    std::unique_ptr<PrefetchGCMHandler> gcm_handler,
     std::unique_ptr<PrefetchNetworkRequestFactory> network_request_factory,
     OfflinePageModel* offline_page_model,
     std::unique_ptr<PrefetchStore> prefetch_store,
@@ -43,6 +41,7 @@ PrefetchServiceImpl::PrefetchServiceImpl(
     image_fetcher::ImageFetcher* image_fetcher)
     : offline_metrics_collector_(std::move(offline_metrics_collector)),
       prefetch_dispatcher_(std::move(dispatcher)),
+      prefetch_gcm_handler_(std::move(gcm_handler)),
       network_request_factory_(std::move(network_request_factory)),
       offline_page_model_(offline_page_model),
       prefetch_store_(std::move(prefetch_store)),
@@ -56,6 +55,7 @@ PrefetchServiceImpl::PrefetchServiceImpl(
       weak_ptr_factory_(this) {
   prefetch_dispatcher_->SetService(this);
   prefetch_downloader_->SetPrefetchService(this);
+  prefetch_gcm_handler_->SetService(this);
   if (suggested_articles_observer_)
     suggested_articles_observer_->SetPrefetchService(this);
 }
@@ -67,18 +67,10 @@ PrefetchServiceImpl::~PrefetchServiceImpl() {
 }
 
 void PrefetchServiceImpl::SetCachedGCMToken(const std::string& gcm_token) {
-  // This method is passed a cached token that was stored in the job scheduler,
-  // to be used until the PrefetchGCMHandler is created. In some cases, the
-  // PrefetchGCMHandler could have been already created and a fresher token
-  // requested before this function is called. Make sure to not override a
-  // fresher token with a stale one.
-  if (gcm_token_.empty())
-    gcm_token_ = gcm_token;
+  gcm_token_ = gcm_token;
 }
 
 const std::string& PrefetchServiceImpl::GetCachedGCMToken() const {
-  DCHECK(!gcm_token_.empty()) << "No cached token is set, you should call "
-                                 "PrefetchService::GetGCMToken instead";
   return gcm_token_;
 }
 
@@ -93,8 +85,7 @@ void PrefetchServiceImpl::OnGCMTokenReceived(
     GCMTokenCallback callback,
     const std::string& gcm_token,
     instance_id::InstanceID::Result result) {
-  // TODO(dimich): Add UMA reporting on instance_id::InstanceID::Result.
-  // Keep the cached token fresh
+  // Keep the token fresh
   gcm_token_ = gcm_token;
   std::move(callback).Run(gcm_token);
 }
@@ -143,25 +134,7 @@ PrefetchDispatcher* PrefetchServiceImpl::GetPrefetchDispatcher() {
 }
 
 PrefetchGCMHandler* PrefetchServiceImpl::GetPrefetchGCMHandler() {
-  DCHECK(prefetch_gcm_handler_);
   return prefetch_gcm_handler_.get();
-}
-
-void PrefetchServiceImpl::SetPrefetchGCMHandler(
-    std::unique_ptr<PrefetchGCMHandler> handler) {
-  DCHECK(!prefetch_gcm_handler_);
-  prefetch_gcm_handler_ = std::move(handler);
-  prefetch_gcm_handler_->SetService(this);
-  if (IsPrefetchingOfflinePagesEnabled()) {
-    // Trigger an update of the cached GCM token. This needs to be post tasked
-    // because otherwise leads to circular dependency between
-    // PrefetchServiceFactory and GCMProfileServiceFactory. See
-    // https://crbug.com/944952
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&PrefetchServiceImpl::GetGCMToken,
-                                  weak_ptr_factory_.GetWeakPtr(),
-                                  base::DoNothing::Once<const std::string&>()));
-  }
 }
 
 PrefetchNetworkRequestFactory*
@@ -208,7 +181,6 @@ image_fetcher::ImageFetcher* PrefetchServiceImpl::GetImageFetcher() {
 }
 
 void PrefetchServiceImpl::Shutdown() {
-  prefetch_gcm_handler_.reset();
   suggested_articles_observer_.reset();
   prefetch_downloader_.reset();
 }
