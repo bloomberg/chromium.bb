@@ -17,7 +17,6 @@ import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
 
 import java.io.IOException;
-import java.util.Set;
 
 /**
  * This class is the Java counterpart to the C++ GCMDriverAndroid class.
@@ -53,6 +52,10 @@ public class GCMDriver {
             throw new IllegalStateException("Already instantiated");
         }
         sInstance = new GCMDriver(nativeGCMDriverAndroid);
+        // TODO(crbug.com/946486): This has been in added in M75 to migrate the
+        // way we store if there are persisted messages. It should be removed in
+        // M77.
+        LazySubscriptionsManager.migrateHasPersistedMessagesPref();
         return sInstance;
     }
 
@@ -69,30 +72,24 @@ public class GCMDriver {
 
     @CalledByNative
     private void replayPersistedMessages(final String appId) {
-        if (LazySubscriptionsManager.hasPersistedMessages()) {
-            long time = SystemClock.elapsedRealtime();
-            Set<String> lazySubscriptionIds = LazySubscriptionsManager.getLazySubscriptionIds();
-            boolean hasRemainingMessages = false;
-            for (String id : lazySubscriptionIds) {
-                if (!id.startsWith(appId)) {
-                    hasRemainingMessages = (LazySubscriptionsManager.readMessages(id).length != 0);
-                    continue;
-                }
-                GCMMessage[] messages = LazySubscriptionsManager.readMessages(id);
-                for (GCMMessage message : messages) {
-                    dispatchMessage(message);
-                }
-                LazySubscriptionsManager.deletePersistedMessagesForSubscriptionId(id);
-            }
-            LazySubscriptionsManager.storeHasPersistedMessages(hasRemainingMessages);
-            long duration = SystemClock.elapsedRealtime() - time;
-            // Call RecordHistogram.recordTimesHistogram() on a background thread to avoid expensive
-            // JNI calls in the critical path.
-            PostTask.postTask(TaskTraits.BEST_EFFORT_MAY_BLOCK, () -> {
-                RecordHistogram.recordTimesHistogram(
-                        "PushMessaging.TimeToReadPersistedMessages", duration);
-            });
+        if (!LazySubscriptionsManager.hasPersistedMessagesForSubscription(appId)) {
+            return;
         }
+
+        long time = SystemClock.elapsedRealtime();
+        GCMMessage[] messages = LazySubscriptionsManager.readMessages(appId);
+        for (GCMMessage message : messages) {
+            dispatchMessage(message);
+        }
+        LazySubscriptionsManager.deletePersistedMessagesForSubscriptionId(appId);
+
+        long duration = SystemClock.elapsedRealtime() - time;
+        // Call RecordHistogram.recordTimesHistogram() on a background thread to avoid
+        // expensive JNI calls in the critical path.
+        PostTask.postTask(TaskTraits.BEST_EFFORT_MAY_BLOCK, () -> {
+            RecordHistogram.recordTimesHistogram(
+                    "PushMessaging.TimeToReadPersistedMessages", duration);
+        });
     }
 
     @CalledByNative
