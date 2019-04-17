@@ -12,7 +12,6 @@
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/macros.h"
 #include "fuchsia/engine/web_engine_export.h"
-#include "fuchsia/fidl/chromium/web/cpp/fidl.h"
 
 namespace content {
 class BrowserContext;
@@ -47,7 +46,6 @@ class WEB_ENGINE_EXPORT ContextImpl : public fuchsia::web::Context {
   // Gets the underlying FrameImpl service object associated with a connected
   // |frame_ptr| client.
   FrameImpl* GetFrameImplForTest(fuchsia::web::FramePtr* frame_ptr);
-  FrameImpl* GetFrameImplForTest(chromium::web::FramePtr* frame_ptr);
 
  private:
   content::BrowserContext* browser_context_;

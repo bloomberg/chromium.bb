@@ -11,7 +11,6 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "chromium/web/cpp/fidl.h"
 #include "fuchsia/engine/web_engine_export.h"
 
 namespace base {

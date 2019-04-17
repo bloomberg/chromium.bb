@@ -10,7 +10,6 @@
 #include "fuchsia/engine/browser/web_engine_browser_context.h"
 #include "fuchsia/engine/browser/web_engine_browser_main_parts.h"
 #include "fuchsia/engine/browser/web_engine_content_browser_client.h"
-#include "fuchsia/engine/legacy_frame_bridge.h"
 #include "fuchsia/engine/web_engine_main_delegate.h"
 #include "net/test/embedded_test_server/default_handlers.h"
 
@@ -58,14 +57,6 @@ fuchsia::web::FramePtr WebEngineBrowserTest::CreateFrame(
   // immediately after this function returns.
   base::RunLoop().RunUntilIdle();
 
-  return frame;
-}
-
-chromium::web::FramePtr WebEngineBrowserTest::CreateLegacyFrame(
-    fuchsia::web::NavigationEventListener* listener) {
-  fuchsia::web::FramePtr fuchsia_frame = CreateFrame(listener);
-  chromium::web::FramePtr frame;
-  new LegacyFrameBridge(frame.NewRequest(), std::move(fuchsia_frame));
   return frame;
 }
 
