@@ -13,11 +13,8 @@
 #include "third_party/inspector_protocol/encoding/encoding.h"
 
 using inspector_protocol_encoding::span;
-using inspector_protocol_encoding::StreamingParserHandler;
-using inspector_protocol_encoding::cbor::NewCBOREncoder;
-using inspector_protocol_encoding::cbor::ParseCBOR;
-using inspector_protocol_encoding::json::NewJSONEncoder;
-using inspector_protocol_encoding::json::ParseJSON;
+using inspector_protocol_encoding::json::ConvertCBORToJSON;
+using inspector_protocol_encoding::json::ConvertJSONToCBOR;
 using inspector_protocol_encoding::json::Platform;
 
 namespace content {
@@ -45,18 +42,13 @@ bool EnableInternalDevToolsBinaryProtocol() {
   return !disabled;
 }
 
-// TODO(johannes): Move this into the cbor library. Don't want to
-// do this just yet to first gain more experience about the most
-// appropriate API, including how to propagate errors.
-std::string ConvertCBORToJSON(const std::string& cbor) {
+// TODO(johannes): Push error handling to client code after devtools_session.cc
+// is simplified.
+std::string ConvertCBORToJSON(inspector_protocol_encoding::span<uint8_t> cbor) {
   ContentShellPlatform platform;
   std::string json_message;
-  inspector_protocol_encoding::Status status;
-  std::unique_ptr<StreamingParserHandler> json_writer =
-      NewJSONEncoder(&platform, &json_message, &status);
-  ParseCBOR(
-      span<uint8_t>(reinterpret_cast<const uint8_t*>(cbor.data()), cbor.size()),
-      json_writer.get());
+  inspector_protocol_encoding::Status status =
+      ConvertCBORToJSON(platform, cbor, &json_message);
   if (!status.ok()) {
     LOG(ERROR) << "ConvertCBORToJSON error "
                << static_cast<uint32_t>(status.error) << " position "
@@ -66,28 +58,17 @@ std::string ConvertCBORToJSON(const std::string& cbor) {
   return json_message;
 }
 
-std::string ConvertJSONToCBOR(const std::string& json) {
+std::string ConvertJSONToCBOR(inspector_protocol_encoding::span<uint8_t> json) {
   ContentShellPlatform platform;
-  std::vector<uint8_t> cbor;
-  inspector_protocol_encoding::Status status;
-  std::unique_ptr<StreamingParserHandler> encoder =
-      NewCBOREncoder(&cbor, &status);
-  ParseJSON(
-      platform,
-      span<uint8_t>(reinterpret_cast<const uint8_t*>(json.data()), json.size()),
-      encoder.get());
+  std::string cbor;
+  inspector_protocol_encoding::Status status =
+      ConvertJSONToCBOR(platform, json, &cbor);
   if (!status.ok()) {
     LOG(ERROR) << "ConvertJSONToCBOR error "
                << static_cast<uint32_t>(status.error) << " position "
                << static_cast<uint32_t>(status.pos);
     return "";
   }
-  return std::string(cbor.begin(), cbor.end());
-}
-
-bool IsCBOR(const std::string& serialized) {
-  return serialized.size() >= 6 &&
-         reinterpret_cast<const uint8_t&>(serialized[0]) == 0xd8 &&
-         reinterpret_cast<const uint8_t&>(serialized[1]) == 0x5a;
+  return cbor;
 }
 }  // namespace content

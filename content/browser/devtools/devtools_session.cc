@@ -15,6 +15,10 @@
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/public/browser/devtools_external_agent_proxy_delegate.h"
 #include "content/public/browser/devtools_manager_delegate.h"
+#include "third_party/inspector_protocol/encoding/encoding.h"
+
+using inspector_protocol_encoding::SpanFrom;
+using inspector_protocol_encoding::cbor::IsCBORMessage;
 
 namespace content {
 
@@ -146,8 +150,9 @@ bool DevToolsSession::DispatchProtocolMessage(const std::string& message) {
   // TODO(dgozman): revisit the proxy delegate.
   if (proxy_delegate_) {
     if (client_->UsesBinaryProtocol()) {
-      DCHECK(IsCBOR(message));
-      proxy_delegate_->SendMessageToBackend(this, ConvertCBORToJSON(message));
+      DCHECK(IsCBORMessage(SpanFrom(message)));
+      proxy_delegate_->SendMessageToBackend(
+          this, ConvertCBORToJSON(SpanFrom(message)));
       return true;
     }
     proxy_delegate_->SendMessageToBackend(this, message);
@@ -163,9 +168,9 @@ bool DevToolsSession::DispatchProtocolMessage(const std::string& message) {
     if (client_->UsesBinaryProtocol()) {
       // If the client uses the binary protocol, then |message| is already
       // CBOR (it comes from the client).
-      DCHECK(IsCBOR(message));
+      DCHECK(IsCBORMessage(SpanFrom(message)));
     } else {
-      converted_cbor_message = ConvertJSONToCBOR(message);
+      converted_cbor_message = ConvertJSONToCBOR(SpanFrom(message));
       message_to_send = &converted_cbor_message;
     }
     value = protocol::DictionaryValue::cast(
@@ -283,10 +288,10 @@ static void SendProtocolResponseOrNotification(
     return;
   }
   std::string cbor = message->serialize(/*binary=*/true);
-  DCHECK(IsCBOR(cbor));
-  client->DispatchProtocolMessage(agent_host, client->UsesBinaryProtocol()
-                                                  ? cbor
-                                                  : ConvertCBORToJSON(cbor));
+  DCHECK(IsCBORMessage(SpanFrom(cbor)));
+  client->DispatchProtocolMessage(
+      agent_host,
+      client->UsesBinaryProtocol() ? cbor : ConvertCBORToJSON(SpanFrom(cbor)));
 }
 
 void DevToolsSession::sendProtocolResponse(
@@ -324,10 +329,10 @@ static void DispatchProtocolResponseOrNotification(
   }
   std::string cbor(reinterpret_cast<const char*>(message->data.data()),
                    message->data.size());
-  DCHECK(IsCBOR(cbor));
-  client->DispatchProtocolMessage(agent_host, client->UsesBinaryProtocol()
-                                                  ? cbor
-                                                  : ConvertCBORToJSON(cbor));
+  DCHECK(IsCBORMessage(SpanFrom(cbor)));
+  client->DispatchProtocolMessage(
+      agent_host,
+      client->UsesBinaryProtocol() ? cbor : ConvertCBORToJSON(SpanFrom(cbor)));
 }
 
 void DevToolsSession::DispatchProtocolResponse(
@@ -358,12 +363,14 @@ void DevToolsSession::DispatchOnClientHost(const std::string& message) {
   // |message| either comes from a web socket, in which case it's JSON.
   // Or it comes from another devtools_session, in which case it may be CBOR
   // already. We auto-detect and convert to what the client wants as needed.
+  inspector_protocol_encoding::span<uint8_t> bytes = SpanFrom(message);
+  bool is_cbor_message = IsCBORMessage(bytes);
   if (client_->UsesBinaryProtocol()) {
     client_->DispatchProtocolMessage(
-        agent_host_, IsCBOR(message) ? message : ConvertJSONToCBOR(message));
+        agent_host_, is_cbor_message ? message : ConvertJSONToCBOR(bytes));
   } else {
     client_->DispatchProtocolMessage(
-        agent_host_, !IsCBOR(message) ? message : ConvertCBORToJSON(message));
+        agent_host_, !is_cbor_message ? message : ConvertCBORToJSON(bytes));
   }
   // |this| may be deleted at this point.
 }

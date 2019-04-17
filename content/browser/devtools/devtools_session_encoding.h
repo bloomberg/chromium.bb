@@ -7,6 +7,8 @@
 
 #include <string>
 
+#include "third_party/inspector_protocol/encoding/encoding.h"
+
 namespace content {
 
 // Whether --enable-internal-devtools-binary-parotocol was passed on the command
@@ -16,14 +18,8 @@ bool EnableInternalDevToolsBinaryProtocol();
 
 // Conversion routines between the inspector protocol binary wire format
 // (based on CBOR RFC 7049) and JSON.
-std::string ConvertCBORToJSON(const std::string& cbor);
-std::string ConvertJSONToCBOR(const std::string& json);
-
-// Whether |serialized| is CBOR produced by the inspector protocol.
-// We always enclose messages with an envelope, that is, the 0xd8 tag
-// followed by the indicator for the byte string, followed by a 32 bit
-// length value (4 bytes).
-bool IsCBOR(const std::string& serialized);
+std::string ConvertCBORToJSON(inspector_protocol_encoding::span<uint8_t> cbor);
+std::string ConvertJSONToCBOR(inspector_protocol_encoding::span<uint8_t> json);
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_DEVTOOLS_DEVTOOLS_SESSION_ENCODING_H_
