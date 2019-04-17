@@ -242,28 +242,21 @@ void NodeController::ConnectIsolated(ConnectionParams connection_params,
                      port, connection_name.as_string()));
 }
 
-void NodeController::SetSlotObserver(const ports::SlotRef& slot,
-                                     scoped_refptr<SlotObserver> observer) {
-  node_->SetUserData(slot, std::move(observer));
+void NodeController::SetPortObserver(const ports::PortRef& port,
+                                     scoped_refptr<PortObserver> observer) {
+  node_->SetUserData(port, std::move(observer));
 }
 
 void NodeController::ClosePort(const ports::PortRef& port) {
-  SetSlotObserver(ports::SlotRef(port, ports::kDefaultSlotId), nullptr);
+  SetPortObserver(port, nullptr);
   int rv = node_->ClosePort(port);
   DCHECK_EQ(rv, ports::OK) << " Failed to close port: " << port.name();
 }
 
-void NodeController::ClosePortSlot(const ports::SlotRef& slot) {
-  SetSlotObserver(slot, nullptr);
-  int rv = node_->ClosePortSlot(slot);
-  DCHECK_EQ(rv, ports::OK) << " Failed to close slot: " << slot.port().name()
-                           << "/" << slot.slot_id();
-}
-
 int NodeController::SendUserMessage(
-    const ports::SlotRef& slot,
+    const ports::PortRef& port,
     std::unique_ptr<ports::UserMessageEvent> message) {
-  return node_->SendUserMessage(slot, std::move(message));
+  return node_->SendUserMessage(port, std::move(message));
 }
 
 void NodeController::MergePortIntoInviter(const std::string& name,
@@ -740,14 +733,14 @@ void NodeController::BroadcastEvent(ports::ScopedEvent event) {
 
 void NodeController::SlotStatusChanged(const ports::SlotRef& slot_ref) {
   scoped_refptr<ports::UserData> user_data;
-  node_->GetUserData(slot_ref, &user_data);
+  node_->GetUserData(slot_ref.port(), &user_data);
 
-  auto* observer = static_cast<SlotObserver*>(user_data.get());
+  PortObserver* observer = static_cast<PortObserver*>(user_data.get());
   if (observer) {
-    observer->OnSlotStatusChanged();
+    observer->OnPortStatusChanged();
   } else {
-    DVLOG(2) << "Ignoring status change for " << slot_ref.port().name() << "/"
-             << slot_ref.slot_id() << " because it doesn't have an observer.";
+    DVLOG(2) << "Ignoring status change for " << slot_ref.port().name()
+             << " because it doesn't have an observer.";
   }
 }
 
