@@ -6826,8 +6826,7 @@ void RenderFrameImpl::OpenURL(std::unique_ptr<blink::WebNavigationInfo> info,
   params.href_translate = info->href_translate.Latin1();
 
   bool current_frame_has_download_sandbox_flag =
-      (frame_->EffectiveSandboxFlags() & blink::WebSandboxFlags::kDownloads) !=
-      blink::WebSandboxFlags::kNone;
+      !frame_->IsAllowedToDownloadWithoutUserActivation();
   bool has_download_sandbox_flag =
       info->initiator_frame_has_download_sandbox_flag ||
       current_frame_has_download_sandbox_flag;
@@ -7152,8 +7151,7 @@ void RenderFrameImpl::BeginNavigationInternal(
           std::move(info->navigation_initiator_handle), 0));
 
   bool current_frame_has_download_sandbox_flag =
-      (frame_->EffectiveSandboxFlags() & blink::WebSandboxFlags::kDownloads) !=
-      blink::WebSandboxFlags::kNone;
+      !frame_->IsAllowedToDownloadWithoutUserActivation();
   bool has_download_sandbox_flag =
       info->initiator_frame_has_download_sandbox_flag ||
       current_frame_has_download_sandbox_flag;

@@ -22905,6 +22905,7 @@ Called by update_net_error_codes.py.-->
   <int value="46" label="UnoptimizedLosslessImages"/>
   <int value="47" label="UnoptimizedLosslessImagesStrict"/>
   <int value="48" label="LoadingFrameDefaultEager"/>
+  <int value="49" label="DownloadsWithoutUserActivation"/>
 </enum>
 
 <enum name="FeedbackSource">

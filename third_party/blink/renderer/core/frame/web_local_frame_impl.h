@@ -276,7 +276,8 @@ class CORE_EXPORT WebLocalFrameImpl final
                          bool had_redirect,
                          const WebSourceLocation&) override;
   void SendOrientationChangeEvent() override;
-  WebSandboxFlags EffectiveSandboxFlags() const override;
+  WebSandboxFlags EffectiveSandboxFlagsForTesting() const override;
+  bool IsAllowedToDownloadWithoutUserActivation() const override;
   void DidCallAddSearchProvider() override;
   void DidCallIsSearchProviderInstalled() override;
   void ReplaceSelection(const WebString&) override;

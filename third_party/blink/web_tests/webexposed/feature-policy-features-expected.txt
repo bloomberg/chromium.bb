@@ -7,6 +7,7 @@ autoplay
 camera
 document-domain
 document-write
+downloads-without-user-activation
 encrypted-media
 font-display-late-swap
 forms

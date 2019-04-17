@@ -61,6 +61,10 @@ class CORE_EXPORT HTMLIFrameElement final
     return FrameOwnerElementType::kIframe;
   }
 
+  WebSandboxFlags sandbox_flags_converted_to_feature_policies() const {
+    return sandbox_flags_converted_to_feature_policies_;
+  }
+
  private:
   void SetCollapsed(bool) override;
 

@@ -203,6 +203,7 @@
 #include "third_party/blink/renderer/core/html/html_frame_element_base.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/html/html_head_element.h"
+#include "third_party/blink/renderer/core/html/html_iframe_element.h"
 #include "third_party/blink/renderer/core/html/html_image_element.h"
 #include "third_party/blink/renderer/core/html/html_link_element.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
@@ -2372,11 +2373,50 @@ void WebLocalFrameImpl::SaveImageAt(const WebPoint& pos_in_viewport) {
   client_->SaveImageFromDataURL(url);
 }
 
-WebSandboxFlags WebLocalFrameImpl::EffectiveSandboxFlags() const {
+WebSandboxFlags WebLocalFrameImpl::EffectiveSandboxFlagsForTesting() const {
   if (!GetFrame())
     return WebSandboxFlags::kNone;
-  return static_cast<WebSandboxFlags>(
-      GetFrame()->Loader().EffectiveSandboxFlags());
+  SandboxFlags flags = GetFrame()->Loader().EffectiveSandboxFlags();
+  if (RuntimeEnabledFeatures::FeaturePolicyForSandboxEnabled()) {
+    // When some of sandbox flags set in the 'sandbox' attribute are implemented
+    // as policies they are removed form the FrameOwner's sandbox flags to avoid
+    // being considered again as part of inherited or CSP sandbox.
+    // Note: if the FrameOwner is remote then the effective flags would miss the
+    // part of sandbox converted to FeaturePolicies. That said, with
+    // FeaturePolicyForSandbox all such flags should be part of the document's
+    // FeaturePolicy. For certain flags such as "downloads", dedicated API
+    // should be used (see IsAllowedToDownloadWithoutUserActivation()).
+    auto* local_owner = GetFrame()->DeprecatedLocalOwner();
+    if (local_owner &&
+        local_owner->OwnerType() == FrameOwnerElementType::kIframe) {
+      flags |= ToHTMLIFrameElement(local_owner)
+                   ->sandbox_flags_converted_to_feature_policies();
+    }
+  }
+  return static_cast<WebSandboxFlags>(flags);
+}
+
+bool WebLocalFrameImpl::IsAllowedToDownloadWithoutUserActivation() const {
+  if (!GetFrame())
+    return true;
+
+  if (RuntimeEnabledFeatures::FeaturePolicyForSandboxEnabled()) {
+    // Downloads could be disabled if the parent frame's FeaturePolicy does not
+    // allow "downloads-without-user-activation".
+    if (GetFrame()->Tree().Parent() &&
+        !GetFrame()->Tree().Parent()->GetSecurityContext()->IsFeatureEnabled(
+            mojom::FeaturePolicyFeature::kDownloadsWithoutUserActivation)) {
+      return false;
+    }
+    return !GetFrame()->Owner() ||
+           GetFrame()
+               ->Owner()
+               ->GetFramePolicy()
+               .allowed_to_download_without_user_activation;
+  } else {
+    return (GetFrame()->Loader().EffectiveSandboxFlags() &
+            WebSandboxFlags::kDownloads) == WebSandboxFlags::kNone;
+  }
 }
 
 void WebLocalFrameImpl::UsageCountChromeLoadTimes(const WebString& metric) {

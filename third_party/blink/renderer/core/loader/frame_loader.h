@@ -169,6 +169,10 @@ class CORE_EXPORT FrameLoader final {
   void ForceSandboxFlags(WebSandboxFlags flags) {
     forced_sandbox_flags_ |= flags;
   }
+  // Includes the collection of forced, inherited, and FrameOwner's sandbox
+  // flags. Note: with FeaturePolicyForSandbox the frame owner's sandbox flags
+  // only includes the flags which are *not* implemented as feature policies
+  // already present in the FrameOwner's ContainerPolicy.
   WebSandboxFlags EffectiveSandboxFlags() const;
 
   void ModifyRequestForCSP(ResourceRequest&,
