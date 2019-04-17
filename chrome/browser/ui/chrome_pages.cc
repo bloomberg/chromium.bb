@@ -66,6 +66,12 @@ namespace {
 
 const char kHashMark[] = "#";
 
+void FocusWebContents(Browser* browser) {
+  auto* const contents = browser->tab_strip_model()->GetActiveWebContents();
+  if (contents)
+    contents->Focus();
+}
+
 void OpenBookmarkManagerForNode(Browser* browser, int64_t node_id) {
   GURL url = GURL(kChromeUIBookmarksURL)
                  .Resolve(base::StringPrintf(
@@ -314,6 +320,11 @@ void ShowSettingsSubPageForProfile(Profile* profile,
 void ShowSettingsSubPageInTabbedBrowser(Browser* browser,
                                         const std::string& sub_page) {
   base::RecordAction(UserMetricsAction("ShowOptions"));
+
+  // Since the user may be triggering navigation from another UI element such as
+  // a menu, ensure the web contents (and therefore the settings page that is
+  // about to be shown) is focused. (See crbug/926492 for motivation.)
+  FocusWebContents(browser);
   GURL gurl = GetSettingsUrl(sub_page);
   NavigateParams params(GetSingletonTabNavigateParams(browser, gurl));
   params.path_behavior = NavigateParams::IGNORE_AND_NAVIGATE;
