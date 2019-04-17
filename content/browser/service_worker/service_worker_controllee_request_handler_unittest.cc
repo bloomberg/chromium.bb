@@ -56,7 +56,6 @@ class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
           handler_(new ServiceWorkerControlleeRequestHandler(
               test->context()->AsWeakPtr(),
               test->provider_host_,
-              base::WeakPtr<storage::BlobStorageContext>(),
               fetch_type,
               network::mojom::FetchCredentialsMode::kOmit,
               network::mojom::FetchRedirectMode::kFollow,

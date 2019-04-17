@@ -16,6 +16,7 @@
 #include "base/time/time.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/interface_provider_filtering.h"
+#include "content/browser/loader/navigation_loader_interceptor.h"
 #include "content/browser/renderer_interface_binders.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_consts.h"
@@ -43,7 +44,6 @@
 #include "net/base/url_util.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_request_body.h"
-#include "storage/browser/blob/blob_storage_context.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_client.mojom.h"
@@ -60,29 +60,20 @@ int NextProviderId() {
   return g_next_provider_id++;
 }
 
-// A request handler derivative used to handle navigation requests when
-// skip_service_worker flag is set. It tracks the document URL and sets the url
-// to the provider host.
-class ServiceWorkerURLTrackingRequestHandler
-    : public ServiceWorkerRequestHandler {
+// A navigation interceptor that observes redirects so the resulting
+// provider host can have the correct URL.
+class NavigationUrlTracker final : public NavigationLoaderInterceptor {
  public:
-  ServiceWorkerURLTrackingRequestHandler(
-      base::WeakPtr<ServiceWorkerContextCore> context,
-      base::WeakPtr<ServiceWorkerProviderHost> provider_host,
-      base::WeakPtr<storage::BlobStorageContext> blob_storage_context,
-      ResourceType resource_type)
-      : ServiceWorkerRequestHandler(context,
-                                    provider_host,
-                                    blob_storage_context,
-                                    resource_type) {}
-  ~ServiceWorkerURLTrackingRequestHandler() override {}
+  explicit NavigationUrlTracker(
+      base::WeakPtr<ServiceWorkerProviderHost> provider_host)
+      : provider_host_(std::move(provider_host)) {}
+  ~NavigationUrlTracker() override {}
 
   void MaybeCreateLoader(
       const network::ResourceRequest& tentative_resource_request,
       ResourceContext*,
       LoaderCallback callback,
-      FallbackCallback fallback_callback) override {
-    // |provider_host_| may have been deleted when the request is resumed.
+      FallbackCallback) override {
     if (!provider_host_)
       return;
     const GURL stripped_url =
@@ -94,7 +85,8 @@ class ServiceWorkerURLTrackingRequestHandler
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerURLTrackingRequestHandler);
+  const base::WeakPtr<ServiceWorkerProviderHost> provider_host_;
+  DISALLOW_COPY_AND_ASSIGN(NavigationUrlTracker);
 };
 
 void GetInterfaceImpl(const std::string& interface_name,
@@ -592,8 +584,8 @@ void ServiceWorkerProviderHost::AddServiceWorkerToUpdate(
   versions_to_update_.emplace(std::move(version));
 }
 
-std::unique_ptr<ServiceWorkerRequestHandler>
-ServiceWorkerProviderHost::CreateRequestHandler(
+std::unique_ptr<NavigationLoaderInterceptor>
+ServiceWorkerProviderHost::CreateLoaderInterceptor(
     network::mojom::FetchRequestMode request_mode,
     network::mojom::FetchCredentialsMode credentials_mode,
     network::mojom::FetchRedirectMode redirect_mode,
@@ -602,27 +594,18 @@ ServiceWorkerProviderHost::CreateRequestHandler(
     ResourceType resource_type,
     blink::mojom::RequestContextType request_context_type,
     network::mojom::RequestContextFrameType frame_type,
-    base::WeakPtr<storage::BlobStorageContext> blob_storage_context,
     scoped_refptr<network::ResourceRequestBody> body,
     bool skip_service_worker) {
-  // We only get here for main resource requests for service worker clients
-  // (navigations, dedicated workers, and shared workers).
-  DCHECK(!IsProviderForServiceWorker());
-  DCHECK(ServiceWorkerUtils::IsMainResourceType(resource_type));
-
   if (skip_service_worker) {
-    // Use a request handler that just observes redirects so the resulting
+    // Use an interceptor that just observes redirects so the resulting
     // provider host can have the correct URL.
-    // TODO(falken): Just pass |skip_service_worker| to
-    // ServiceWorkerControlleeRequestHandler.
-    return std::make_unique<ServiceWorkerURLTrackingRequestHandler>(
-        context_, AsWeakPtr(), blob_storage_context, resource_type);
+    return std::make_unique<NavigationUrlTracker>(AsWeakPtr());
   }
 
   return std::make_unique<ServiceWorkerControlleeRequestHandler>(
-      context_, AsWeakPtr(), blob_storage_context, request_mode,
-      credentials_mode, redirect_mode, integrity, keepalive, resource_type,
-      request_context_type, frame_type, body);
+      context_, AsWeakPtr(), request_mode, credentials_mode, redirect_mode,
+      integrity, keepalive, resource_type, request_context_type, frame_type,
+      std::move(body));
 }
 
 base::WeakPtr<ServiceWorkerObjectHost>

@@ -4,17 +4,20 @@
 
 #include "content/browser/service_worker/service_worker_request_handler.h"
 
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
+#include "content/browser/frame_host/navigation_request_info.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_navigation_handle_core.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
+#include "content/common/navigation_params.mojom.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/common/resource_type.h"
@@ -76,14 +79,24 @@ class ServiceWorkerRequestHandlerTest : public testing::Test {
     std::unique_ptr<ServiceWorkerNavigationHandleCore> navigation_handle_core =
         CreateNavigationHandleCore(helper_->context_wrapper());
     base::WeakPtr<ServiceWorkerProviderHost> service_worker_provider_host;
+    GURL gurl(url);
+    CommonNavigationParams common_params;
+    auto begin_params = mojom::BeginNavigationParams::New();
+    begin_params->request_context_type =
+        blink::mojom::RequestContextType::HYPERLINK;
+    NavigationRequestInfo request_info(
+        common_params, std::move(begin_params), gurl, url::Origin::Create(gurl),
+        true /* is_main_frame */, false /* parent_is_main_frame */,
+        true /* are_ancestors_secure */, -1 /* frame_tree_node_id */,
+        false /* is_for_guests_only */, false /* report_raw_headers */,
+        false /* is_prerendering */, false /* upgrade_if_insecure */,
+        nullptr /* blob_url_loader_factory */,
+        base::UnguessableToken::Create() /* devtools_navigation_token */,
+        base::UnguessableToken::Create() /* devtools_frame_token */);
     std::unique_ptr<NavigationLoaderInterceptor> interceptor =
-        ServiceWorkerRequestHandler::InitializeForNavigation(
+        ServiceWorkerRequestHandler::CreateForNavigation(
             GURL(url), nullptr /* resource_context */,
-            navigation_handle_core.get(), &blob_storage_context_,
-            false /* skip_service_worker */, RESOURCE_TYPE_MAIN_FRAME,
-            blink::mojom::RequestContextType::HYPERLINK,
-            network::mojom::RequestContextFrameType::kTopLevel,
-            true /* is_parent_frame_secure */, nullptr /* body */,
+            navigation_handle_core.get(), request_info,
             base::RepeatingCallback<WebContents*(void)>(),
             &service_worker_provider_host);
     EXPECT_EQ(expected_handler_created, !!interceptor.get());

@@ -42,8 +42,8 @@ WorkerScriptLoader::WorkerScriptLoader(
       weak_factory_(this) {
   if (service_worker_provider_host_) {
     std::unique_ptr<NavigationLoaderInterceptor> service_worker_interceptor =
-        ServiceWorkerRequestHandler::InitializeForWorker(
-            resource_request_, service_worker_provider_host_);
+        ServiceWorkerRequestHandler::CreateForWorker(
+            resource_request_, service_worker_provider_host_.get());
     if (service_worker_interceptor)
       interceptors_.push_back(std::move(service_worker_interceptor));
   }
