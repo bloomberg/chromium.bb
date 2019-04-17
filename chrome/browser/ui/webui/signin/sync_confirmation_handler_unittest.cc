@@ -210,17 +210,17 @@ class SyncConfirmationHandlerTest : public BrowserWithTestWindowTest,
   DISALLOW_COPY_AND_ASSIGN(SyncConfirmationHandlerTest);
 };
 
-class SyncConfirmationHandlerTest_UnifiedConsentEnabled
+class SyncConfirmationHandlerTest_UnifiedConsentDisabled
     : public SyncConfirmationHandlerTest {
  public:
-  SyncConfirmationHandlerTest_UnifiedConsentEnabled()
+  SyncConfirmationHandlerTest_UnifiedConsentDisabled()
       : scoped_unified_consent_(
-            unified_consent::UnifiedConsentFeatureState::kEnabled) {}
+            unified_consent::UnifiedConsentFeatureState::kDisabled) {}
 
  private:
   unified_consent::ScopedUnifiedConsent scoped_unified_consent_;
 
-  DISALLOW_COPY_AND_ASSIGN(SyncConfirmationHandlerTest_UnifiedConsentEnabled);
+  DISALLOW_COPY_AND_ASSIGN(SyncConfirmationHandlerTest_UnifiedConsentDisabled);
 };
 
 const char SyncConfirmationHandlerTest::kConsentText1[] = "consentText1";
@@ -229,7 +229,8 @@ const char SyncConfirmationHandlerTest::kConsentText3[] = "consentText3";
 const char SyncConfirmationHandlerTest::kConsentText4[] = "consentText4";
 const char SyncConfirmationHandlerTest::kConsentText5[] = "consentText5";
 
-TEST_F(SyncConfirmationHandlerTest, TestSetImageIfPrimaryAccountReady) {
+TEST_F(SyncConfirmationHandlerTest_UnifiedConsentDisabled,
+       TestSetImageIfPrimaryAccountReady) {
   identity_test_env()->SimulateSuccessfulFetchOfAccountInfo(
       account_info_.account_id, account_info_.email, account_info_.gaia, "",
       "full_name", "given_name", "locale",
@@ -265,8 +266,7 @@ TEST_F(SyncConfirmationHandlerTest, TestSetImageIfPrimaryAccountReady) {
   EXPECT_EQ(picture_url_with_size.spec(), passed_picture_url);
 }
 
-TEST_F(SyncConfirmationHandlerTest_UnifiedConsentEnabled,
-       TestSetImageIfPrimaryAccountReady) {
+TEST_F(SyncConfirmationHandlerTest, TestSetImageIfPrimaryAccountReady) {
   identity_test_env()->SimulateSuccessfulFetchOfAccountInfo(
       account_info_.account_id, account_info_.email, account_info_.gaia, "",
       "full_name", "given_name", "locale",
@@ -281,7 +281,8 @@ TEST_F(SyncConfirmationHandlerTest_UnifiedConsentEnabled,
             web_ui()->call_data()[1]->function_name());
 }
 
-TEST_F(SyncConfirmationHandlerTest, TestSetImageIfPrimaryAccountReadyLater) {
+TEST_F(SyncConfirmationHandlerTest_UnifiedConsentDisabled,
+       TestSetImageIfPrimaryAccountReadyLater) {
   base::ListValue args;
   args.Set(0, std::make_unique<base::Value>(kDefaultDialogHeight));
   handler()->HandleInitializedWithSize(&args);
@@ -329,8 +330,7 @@ TEST_F(SyncConfirmationHandlerTest, TestSetImageIfPrimaryAccountReadyLater) {
   EXPECT_EQ(picture_url_with_size.spec(), passed_picture_url);
 }
 
-TEST_F(SyncConfirmationHandlerTest_UnifiedConsentEnabled,
-       TestSetImageIfPrimaryAccountReadyLater) {
+TEST_F(SyncConfirmationHandlerTest, TestSetImageIfPrimaryAccountReadyLater) {
   base::ListValue args;
   args.Set(0, std::make_unique<base::Value>(kDefaultDialogHeight));
   handler()->HandleInitializedWithSize(&args);
@@ -347,6 +347,36 @@ TEST_F(SyncConfirmationHandlerTest_UnifiedConsentEnabled,
 
   EXPECT_EQ(3U, web_ui()->call_data().size());
   ExpectAccountImageChanged(*web_ui()->call_data()[2]);
+}
+
+TEST_F(SyncConfirmationHandlerTest_UnifiedConsentDisabled,
+       TestSetImageIgnoredIfSecondaryAccountUpdated) {
+  base::ListValue args;
+  args.Set(0, std::make_unique<base::Value>(kDefaultDialogHeight));
+  handler()->HandleInitializedWithSize(&args);
+  EXPECT_EQ(2U, web_ui()->call_data().size());
+
+  AccountInfo account_info =
+      identity_test_env()->MakeAccountAvailable("bar@example.com");
+  identity_test_env()->SimulateSuccessfulFetchOfAccountInfo(
+      account_info.account_id, account_info.email, account_info.gaia, "",
+      "bar_full_name", "bar_given_name", "bar_locale",
+      "http://picture.example.com/bar_picture.jpg");
+
+  // Updating the account info of a secondary account should not update the
+  // image of the sync confirmation dialog.
+  EXPECT_EQ(2U, web_ui()->call_data().size());
+
+  identity_test_env()->SimulateSuccessfulFetchOfAccountInfo(
+      account_info_.account_id, account_info_.email, account_info_.gaia, "",
+      "full_name", "given_name", "locale",
+      "http://picture.example.com/picture.jpg");
+
+  // Updating the account info of the primary account should update the
+  // image of the sync confirmation dialog.
+  EXPECT_EQ(3U, web_ui()->call_data().size());
+  EXPECT_EQ("sync.confirmation.setUserImageURL",
+            web_ui()->call_data()[2]->function_name());
 }
 
 TEST_F(SyncConfirmationHandlerTest,
@@ -375,8 +405,7 @@ TEST_F(SyncConfirmationHandlerTest,
   // Updating the account info of the primary account should update the
   // image of the sync confirmation dialog.
   EXPECT_EQ(3U, web_ui()->call_data().size());
-  EXPECT_EQ("sync.confirmation.setUserImageURL",
-            web_ui()->call_data()[2]->function_name());
+  ExpectAccountImageChanged(*web_ui()->call_data()[2]);
 }
 
 TEST_F(SyncConfirmationHandlerTest, TestHandleUndo) {
