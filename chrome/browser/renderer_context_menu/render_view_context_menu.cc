@@ -882,7 +882,7 @@ void RenderViewContextMenu::InitMenu() {
   // Accessibility label items are appended to all menus when a screen reader
   // is enabled. It can be difficult to open a specific context menu with a
   // screen reader, so this is a UX approved solution.
-  AppendAccessibilityLabelsItems();
+  bool added_accessibility_labels_items = AppendAccessibilityLabelsItems();
 
   if (content_type_->SupportsGroup(
           ContextMenuContentType::ITEM_GROUP_DEVELOPER)) {
@@ -904,6 +904,15 @@ void RenderViewContextMenu::InitMenu() {
   if (index >= 0 &&
       menu_model_.GetTypeAt(index) == ui::MenuModel::TYPE_SEPARATOR) {
     menu_model_.RemoveItemAt(index);
+  }
+
+  // If there is only one item and it is the Accessibility labels item, remove
+  // it. We only show this item when it is not the only item.
+  // Note that the separator added in AppendAccessibilityLabelsItems will not
+  // actually be added if this is the first item in the list, so we don't need
+  // to check for or remove the initial separator.
+  if (added_accessibility_labels_items && menu_model_.GetItemCount() == 1) {
+    menu_model_.RemoveItemAt(0);
   }
 }
 
@@ -1589,7 +1598,7 @@ void RenderViewContextMenu::AppendSpellingSuggestionItems() {
   spelling_suggestions_menu_observer_->InitMenu(params_);
 }
 
-void RenderViewContextMenu::AppendAccessibilityLabelsItems() {
+bool RenderViewContextMenu::AppendAccessibilityLabelsItems() {
   menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
   if (!accessibility_labels_menu_observer_) {
     accessibility_labels_menu_observer_ =
@@ -1597,6 +1606,7 @@ void RenderViewContextMenu::AppendAccessibilityLabelsItems() {
   }
   observers_.AddObserver(accessibility_labels_menu_observer_.get());
   accessibility_labels_menu_observer_->InitMenu(params_);
+  return accessibility_labels_menu_observer_->ShouldShowLabelsItem();
 }
 
 void RenderViewContextMenu::AppendProtocolHandlerSubMenu() {
