@@ -1,9 +1,4 @@
-﻿<!DOCTYPE html>
-<meta charset="utf-8">
-<script src="../../../resources/testharness.js"></script>
-<script src="../../../resources/testharnessreport.js"></script>
-<script src="resources/test-helpers.js"></script>
-<script>
+// META: script=resources/test-helpers.js
 promise_test(async t => cleanupSandboxedFileSystem(),
     'Cleanup to setup test environment');
 
@@ -99,4 +94,3 @@ promise_test(async t => {
     assert_equals(await getFileContents(handle), 'streams!!!');
     assert_equals(await getFileSize(handle), 10);
 }, 'Using a WritableStream writer to write');
-</script>

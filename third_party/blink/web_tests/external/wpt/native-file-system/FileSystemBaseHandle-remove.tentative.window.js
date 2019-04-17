@@ -1,9 +1,4 @@
-<!DOCTYPE html>
-<meta charset="utf-8">
-<script src="../../../resources/testharness.js"></script>
-<script src="../../../resources/testharnessreport.js"></script>
-<script src="resources/test-helpers.js"></script>
-<script>
+// META: script=resources/test-helpers.js
 promise_test(async t => cleanupSandboxedFileSystem(),
     'Cleanup to setup test environment');
 
@@ -44,4 +39,3 @@ promise_test(async t => {
     assert_array_equals(await getSortedDirectoryEntries(root), ['dir-to-remove/']);
     assert_array_equals(await getSortedDirectoryEntries(dir), ['file-in-dir']);
 }, 'remove() on a non-empty directory should fail');
-</script>
