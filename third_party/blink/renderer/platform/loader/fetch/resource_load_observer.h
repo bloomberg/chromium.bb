@@ -31,6 +31,9 @@ struct FetchInitiatorInfo;
 //    from network - For example, this class may have a function which is called
 //    when ResourceFetcher::RequestResource is called. On the other hand, this
 //    class will not have "operation"s, such as PrepareRequest.
+//
+// All functions except for the destructor and the trace method must be pure
+// virtual, and must not be called when the associated fetcher is detached.
 class PLATFORM_EXPORT ResourceLoadObserver
     : public GarbageCollectedFinalized<ResourceLoadObserver> {
  public:
