@@ -2024,7 +2024,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'veyron_jaq',
       'veyron_jerry',
       'veyron_mighty',
-      'veyron_minnie',
       'veyron_rialto',
       'veyron_speedy',
       'veyron_tiger',
@@ -2071,6 +2070,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'mistral', # contact: roopeshr@
       'lakitu', # crbug.com/953855#c7
       'lakitu-st', # crbug.com/953855
+      'veyron_minnie', # crbug.com/953619
   ])
 
   assert not (_paladin_experimental_boards & _paladin_important_boards), (
