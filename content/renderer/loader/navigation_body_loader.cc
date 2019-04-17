@@ -140,6 +140,7 @@ void NavigationBodyLoader::OnTransferSizeUpdated(int32_t transfer_size_diff) {
 void NavigationBodyLoader::OnStartLoadingResponseBody(
     mojo::ScopedDataPipeConsumerHandle handle) {
   DCHECK(!has_received_body_handle_);
+  DCHECK(!has_received_completion_);
   has_received_body_handle_ = true;
   has_seen_end_of_data_ = false;
   handle_ = std::move(handle);
