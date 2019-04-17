@@ -231,12 +231,4 @@ Polymer({
       }, 0);
     });
   },
-
-  /**
-   * @return {boolean}
-   * @private
-   */
-  showManagedHeader_: function() {
-    return !this.inSearchMode_ && !this.showingSubpage_;
-  },
 });
