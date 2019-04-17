@@ -236,6 +236,9 @@ class ScopedTaskEnvironment {
   // Returns the TimeDomain driving this ScopedTaskEnvironment.
   sequence_manager::TimeDomain* GetTimeDomain() const;
 
+  // For testing the MockTimeDomain.
+  void SetAllowTimeToAutoAdvanceUntilForTesting(TimeTicks advance_until);
+
   sequence_manager::SequenceManager* sequence_manager() const;
 
   void DeferredInitFromSubclass(
