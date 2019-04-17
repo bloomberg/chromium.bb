@@ -879,7 +879,7 @@ void PeopleHandler::CloseSyncSetup() {
 #if !defined(OS_CHROMEOS)
           // Sign out the user on desktop Chrome if they click cancel during
           // initial setup.
-          if (sync_service->IsFirstSetupInProgress()) {
+          if (!sync_service->GetUserSettings()->IsFirstSetupComplete()) {
             IdentityManagerFactory::GetForProfile(profile_)
                 ->GetPrimaryAccountMutator()
                 ->ClearPrimaryAccount(
@@ -960,7 +960,8 @@ void PeopleHandler::BeforeUnloadDialogCancelled() {
   // The before unload dialog is only shown during the first sync setup.
   DCHECK(IdentityManagerFactory::GetForProfile(profile_)->HasPrimaryAccount());
   syncer::SyncService* service = GetSyncService();
-  DCHECK(service && service->IsFirstSetupInProgress());
+  DCHECK(service && service->IsSetupInProgress() &&
+         !service->GetUserSettings()->IsFirstSetupComplete());
 
   base::RecordAction(
       base::UserMetricsAction("Signin_Signin_CancelAbortAdvancedSyncSettings"));
@@ -1005,10 +1006,12 @@ std::unique_ptr<base::DictionaryValue> PeopleHandler::GetSyncStatusDictionary()
   sync_status->SetBoolean(
       "signinAllowed", profile_->GetPrefs()->GetBoolean(prefs::kSigninAllowed));
   sync_status->SetBoolean("syncSystemEnabled", (service != nullptr));
-  sync_status->SetBoolean("setupInProgress",
-                          service && !disallowed_by_policy &&
-                              service->IsFirstSetupInProgress() &&
-                              identity_manager->HasPrimaryAccount());
+  // TODO(crbug.com/953641): Rename "setupInProgress" to "firstSetupInProgress".
+  sync_status->SetBoolean(
+      "setupInProgress",
+      service && !disallowed_by_policy && service->IsSetupInProgress() &&
+          !service->GetUserSettings()->IsFirstSetupComplete() &&
+          identity_manager->HasPrimaryAccount());
 
   base::string16 status_label;
   base::string16 link_label;
