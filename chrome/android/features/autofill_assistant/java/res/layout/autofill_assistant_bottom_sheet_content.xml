@@ -49,6 +49,6 @@
         android:layout_height="2dp"
         android:layout_marginStart="@dimen/autofill_assistant_bottombar_horizontal_spacing"
         android:layout_marginEnd="@dimen/autofill_assistant_bottombar_horizontal_spacing"
-        app:colorBackground="@color/modern_grey_100"
-        app:colorProgress="@color/modern_blue_600"/>
+        app:colorBackground="@color/modern_secondary_color"
+        app:colorProgress="@color/default_text_color_blue"/>
 </org.chromium.chrome.browser.autofill_assistant.SizeListenableLinearLayout>

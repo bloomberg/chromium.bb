@@ -9,6 +9,7 @@
     android:layout_height="wrap_content"
     android:minHeight="40dp"
     style="@style/AssistiveChip"
+    app:chipColor="@color/default_text_color_inverse"
     app:cornerRadius="40dp"
     app:iconWidth="24dp"
     app:iconHeight="24dp"/>
