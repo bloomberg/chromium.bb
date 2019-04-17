@@ -51,7 +51,7 @@ constexpr int kWhiteBarCornerRadius = 1;
 constexpr SkColor kDividerBackgroundColor = SK_ColorBLACK;
 constexpr SkColor kWhiteBarBackgroundColor = SK_ColorWHITE;
 constexpr int kDividerBoundsChangeDurationMs = 250;
-constexpr int kWhiteBarBoundsChangeDurationMs = 150;
+constexpr int kWhiteBarBoundsChangeDurationMs = 250;
 
 // The distance to the divider edge in which a touch gesture will be considered
 // as a valid event on the divider.
