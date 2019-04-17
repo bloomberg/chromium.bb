@@ -631,7 +631,8 @@ void AppsGridView::EndDrag(bool cancel) {
     return;
 
   // Coming here a drag and drop was in progress.
-  bool landed_in_drag_and_drop_host = forward_events_to_drag_and_drop_host_;
+  const bool landed_in_drag_and_drop_host =
+      forward_events_to_drag_and_drop_host_;
 
   // This is the folder view to drop an item into. Cache the |drag_view_|'s item
   // and its bounds for later use in folder dropping animation.
@@ -705,7 +706,7 @@ void AppsGridView::EndDrag(bool cancel) {
   SetAsFolderDroppingTarget(drop_target_, false);
   ClearDragState();
   UpdatePaging();
-  {
+  if (GetWidget()) {
     // Normally Layout() cancels any animations. At this point there may be a
     // pending Layout(), force it now so that one isn't triggered part way
     // through the animation. Further, ignore this layout so that the position
