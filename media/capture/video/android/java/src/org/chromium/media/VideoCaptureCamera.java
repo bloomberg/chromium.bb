@@ -663,7 +663,7 @@ public class VideoCaptureCamera
 
     @Override
     public void setPhotoOptions(double zoom, int focusMode, double focusDistance, int exposureMode,
-            double width, double height, float[] pointsOfInterest2D,
+            double width, double height, double[] pointsOfInterest2D,
             boolean hasExposureCompensation, double exposureCompensation, double exposureTime,
             int whiteBalanceMode, double iso, boolean hasRedEyeReduction, boolean redEyeReduction,
             int fillLightMode, boolean hasTorch, boolean torch, double colorTemperature) {
@@ -721,8 +721,8 @@ public class VideoCaptureCamera
             assert pointsOfInterest2D[1] <= 1.0 && pointsOfInterest2D[1] >= 0.0;
             // Calculate a Rect of 1/8 the canvas, which is fixed to Rect(-1000, -1000, 1000, 1000),
             // see https://developer.android.com/reference/android/hardware/Camera.Area.html
-            final int centerX = Math.round(pointsOfInterest2D[0] * 2000) - 1000;
-            final int centerY = Math.round(pointsOfInterest2D[1] * 2000) - 1000;
+            final int centerX = (int) (Math.round(pointsOfInterest2D[0] * 2000) - 1000);
+            final int centerY = (int) (Math.round(pointsOfInterest2D[1] * 2000) - 1000);
             final int regionWidth = 2000 / 8;
             final int regionHeight = 2000 / 8;
             final int weight = 1000;

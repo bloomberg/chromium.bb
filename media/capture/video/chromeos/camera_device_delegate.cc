@@ -820,11 +820,11 @@ bool CameraDeviceDelegate::SetPointsOfInterest(
   // the closest allowed value.
   // ref: https://www.w3.org/TR/image-capture/#points-of-interest
 
-  float x = base::ClampToRange(points_of_interest[0]->x, 0.0f, 1.0f);
-  float y = base::ClampToRange(points_of_interest[0]->y, 0.0f, 1.0f);
+  double x = base::ClampToRange(points_of_interest[0]->x, 0.0, 1.0);
+  double y = base::ClampToRange(points_of_interest[0]->y, 0.0, 1.0);
 
   // Handle rotation, still in normalized square space.
-  std::tie(x, y) = [&]() -> std::pair<float, float> {
+  std::tie(x, y) = [&]() -> std::pair<double, double> {
     switch (device_context_->GetCameraFrameOrientation()) {
       case 0:
         return {x, y};
