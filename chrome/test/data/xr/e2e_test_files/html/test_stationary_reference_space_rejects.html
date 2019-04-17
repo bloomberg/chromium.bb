@@ -11,7 +11,7 @@ Tests that a request for a stationary reference space is rejected.
     <script src="../resources/webxr_e2e.js"></script>
     <script>
       let session_ = null;
-      navigator.xr.requestSession()
+      navigator.xr.requestSession('inline')
       .then((xrSession) => {
         session_ = xrSession;
         return xrSession.requestReferenceSpace({ type: 'stationary', subtype: 'floor-level'});

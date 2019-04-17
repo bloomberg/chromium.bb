@@ -127,11 +127,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       }
 
       function onRequestSession() {
-        navigator.xr.requestSession({ mode: 'immersive-ar' }).then((session) => {
+        navigator.xr.requestSession('immersive-ar').then((session) => {
               xrButton.setSession(session);
               onSessionStarted(session);
         }).catch(() => {
-            navigator.xr.requestSession({ mode: 'legacy-inline-ar' })
+            navigator.xr.requestSession('legacy-inline-ar')
               .then((session) => {
                 xrButton.setSession(session);
                 onSessionStarted(session);

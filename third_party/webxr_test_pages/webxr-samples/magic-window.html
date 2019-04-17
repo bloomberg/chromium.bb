@@ -96,12 +96,12 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         if (navigator.xr) {
           // Pick an arbitrary device for the magic window content and start
           // up a non-immersive session if possible.
-          navigator.xr.requestSession().then(onSessionStarted);
+          navigator.xr.requestSession('inline').then(onSessionStarted);
         }
       }
 
       function onRequestSession() {
-        navigator.xr.requestSession({ mode: 'immersive-vr' }).then((session) => {
+        navigator.xr.requestSession('immersive-vr').then((session) => {
           xrButton.setSession(session);
           onSessionStarted(session);
         });

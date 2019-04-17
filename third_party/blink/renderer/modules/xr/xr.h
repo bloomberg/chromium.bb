@@ -13,7 +13,6 @@
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/page/focus_changed_observer.h"
 #include "third_party/blink/renderer/modules/xr/xr_session.h"
-#include "third_party/blink/renderer/modules/xr/xr_session_creation_options.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -40,7 +39,7 @@ class XR final : public EventTargetWithInlineData,
   DEFINE_ATTRIBUTE_EVENT_LISTENER(devicechange, kDevicechange)
 
   ScriptPromise supportsSessionMode(ScriptState*, const String&);
-  ScriptPromise requestSession(ScriptState*, const XRSessionCreationOptions*);
+  ScriptPromise requestSession(ScriptState*, const String&);
 
   XRFrameProvider* frameProvider();
 
