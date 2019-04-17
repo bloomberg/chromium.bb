@@ -125,6 +125,22 @@ TYPED_TEST(SpanTest, FiveItems) {
   EXPECT_EQ(34, two_items[1]);
 }
 
+TEST(SpanFromTest, FromConstCharAndLiteral) {
+  // Testing this is useful because strlen(nullptr) is undefined.
+  EXPECT_EQ(nullptr, SpanFrom(nullptr).data());
+  EXPECT_EQ(0, SpanFrom(nullptr).size());
+
+  const char* kEmpty = "";
+  EXPECT_EQ(kEmpty, reinterpret_cast<const char*>(SpanFrom(kEmpty).data()));
+  EXPECT_EQ(0, SpanFrom(kEmpty).size());
+
+  const char* kFoo = "foo";
+  EXPECT_EQ(kFoo, reinterpret_cast<const char*>(SpanFrom(kFoo).data()));
+  EXPECT_EQ(3, SpanFrom(kFoo).size());
+
+  EXPECT_EQ(3, SpanFrom("foo").size());
+}
+
 namespace cbor {
 
 // =============================================================================
@@ -525,7 +541,7 @@ TEST(EncodeDecodeBinaryTest, RoundtripsHelloWorld) {
   std::vector<uint8_t> decoded;
   CBORTokenizer tokenizer(SpanFrom(encoded));
   EXPECT_EQ(CBORTokenTag::BINARY, tokenizer.TokenTag());
-  EXPECT_EQ(0, int(tokenizer.Status().error));
+  EXPECT_EQ(0, static_cast<int>(tokenizer.Status().error));
   decoded = std::vector<uint8_t>(tokenizer.GetBinary().begin(),
                                  tokenizer.GetBinary().end());
   EXPECT_THAT(decoded, ElementsAreArray(binary));
@@ -1356,11 +1372,11 @@ class MockPlatform : public Platform {
   bool StrToD(const char* str, double* result) const override { return false; }
 
   // A map with pre-registered responses for DToSTr.
-  std::map<double, std::string> dtostr_responses;
+  std::map<double, std::string> dtostr_responses_;
 
   std::unique_ptr<char[]> DToStr(double value) const override {
-    auto it = dtostr_responses.find(value);
-    CHECK(it != dtostr_responses.end());
+    auto it = dtostr_responses_.find(value);
+    CHECK(it != dtostr_responses_.end());
     const std::string& str = it->second;
     std::unique_ptr<char[]> response(new char[str.size() + 1]);
     memcpy(response.get(), str.c_str(), str.size() + 1);
@@ -1372,8 +1388,8 @@ TEST(JsonStdStringWriterTest, DoubleToString) {
   // This "broken" platform responds without the leading 0 before the
   // decimal dot, so it'd be invalid JSON.
   MockPlatform platform;
-  platform.dtostr_responses[.1] = ".1";
-  platform.dtostr_responses[-.7] = "-.7";
+  platform.dtostr_responses_[.1] = ".1";
+  platform.dtostr_responses_[-.7] = "-.7";
 
   std::string out;
   Status status;

@@ -383,45 +383,45 @@ void EncodeDouble(double value, std::string* out) {
 // =============================================================================
 
 template <typename C>
-void EncodeStartTmpl(C* out, std::size_t& byte_size_pos) {
-  assert(byte_size_pos == 0);
+void EncodeStartTmpl(C* out, std::size_t* byte_size_pos) {
+  assert(*byte_size_pos == 0);
   out->push_back(kInitialByteForEnvelope);
   out->push_back(kInitialByteFor32BitLengthByteString);
-  byte_size_pos = out->size();
+  *byte_size_pos = out->size();
   out->resize(out->size() + sizeof(uint32_t));
 }
 
 void EnvelopeEncoder::EncodeStart(std::vector<uint8_t>* out) {
-  EncodeStartTmpl<std::vector<uint8_t>>(out, byte_size_pos_);
+  EncodeStartTmpl<std::vector<uint8_t>>(out, &byte_size_pos_);
 }
 
 void EnvelopeEncoder::EncodeStart(std::string* out) {
-  EncodeStartTmpl<std::string>(out, byte_size_pos_);
+  EncodeStartTmpl<std::string>(out, &byte_size_pos_);
 }
 
 template <typename C>
-bool EncodeStopTmpl(C* out, std::size_t& byte_size_pos) {
-  assert(byte_size_pos != 0);
+bool EncodeStopTmpl(C* out, std::size_t* byte_size_pos) {
+  assert(*byte_size_pos != 0);
   // The byte size is the size of the payload, that is, all the
   // bytes that were written past the byte size position itself.
-  uint64_t byte_size = out->size() - (byte_size_pos + sizeof(uint32_t));
+  uint64_t byte_size = out->size() - (*byte_size_pos + sizeof(uint32_t));
   // We store exactly 4 bytes, so at most INT32MAX, with most significant
   // byte first.
   if (byte_size > std::numeric_limits<uint32_t>::max())
     return false;
   for (int shift_bytes = sizeof(uint32_t) - 1; shift_bytes >= 0;
        --shift_bytes) {
-    (*out)[byte_size_pos++] = 0xff & (byte_size >> (shift_bytes * 8));
+    (*out)[(*byte_size_pos)++] = 0xff & (byte_size >> (shift_bytes * 8));
   }
   return true;
 }
 
 bool EnvelopeEncoder::EncodeStop(std::vector<uint8_t>* out) {
-  return EncodeStopTmpl(out, byte_size_pos_);
+  return EncodeStopTmpl(out, &byte_size_pos_);
 }
 
 bool EnvelopeEncoder::EncodeStop(std::string* out) {
-  return EncodeStopTmpl(out, byte_size_pos_);
+  return EncodeStopTmpl(out, &byte_size_pos_);
 }
 
 // =============================================================================
@@ -437,57 +437,94 @@ class CBOREncoder : public StreamingParserHandler {
   }
 
   void HandleMapBegin() override {
+    if (!status_->ok())
+      return;
     envelopes_.emplace_back();
     envelopes_.back().EncodeStart(out_);
     out_->push_back(kInitialByteIndefiniteLengthMap);
   }
 
   void HandleMapEnd() override {
+    if (!status_->ok())
+      return;
     out_->push_back(kStopByte);
     assert(!envelopes_.empty());
-    envelopes_.back().EncodeStop(out_);
+    if (!envelopes_.back().EncodeStop(out_)) {
+      HandleError(
+          Status(Error::CBOR_ENVELOPE_SIZE_LIMIT_EXCEEDED, out_->size()));
+      return;
+    }
     envelopes_.pop_back();
   }
 
   void HandleArrayBegin() override {
+    if (!status_->ok())
+      return;
     envelopes_.emplace_back();
     envelopes_.back().EncodeStart(out_);
     out_->push_back(kInitialByteIndefiniteLengthArray);
   }
 
   void HandleArrayEnd() override {
+    if (!status_->ok())
+      return;
     out_->push_back(kStopByte);
     assert(!envelopes_.empty());
-    envelopes_.back().EncodeStop(out_);
+    if (!envelopes_.back().EncodeStop(out_)) {
+      HandleError(
+          Status(Error::CBOR_ENVELOPE_SIZE_LIMIT_EXCEEDED, out_->size()));
+      return;
+    }
     envelopes_.pop_back();
   }
 
   void HandleString8(span<uint8_t> chars) override {
+    if (!status_->ok())
+      return;
     EncodeString8(chars, out_);
   }
 
   void HandleString16(span<uint16_t> chars) override {
+    if (!status_->ok())
+      return;
     EncodeFromUTF16(chars, out_);
   }
 
-  void HandleBinary(span<uint8_t> bytes) override { EncodeBinary(bytes, out_); }
+  void HandleBinary(span<uint8_t> bytes) override {
+    if (!status_->ok())
+      return;
+    EncodeBinary(bytes, out_);
+  }
 
-  void HandleDouble(double value) override { EncodeDouble(value, out_); }
+  void HandleDouble(double value) override {
+    if (!status_->ok())
+      return;
+    EncodeDouble(value, out_);
+  }
 
-  void HandleInt32(int32_t value) override { EncodeInt32(value, out_); }
+  void HandleInt32(int32_t value) override {
+    if (!status_->ok())
+      return;
+    EncodeInt32(value, out_);
+  }
 
   void HandleBool(bool value) override {
+    if (!status_->ok())
+      return;
     // See RFC 7049 Section 2.3, Table 2.
     out_->push_back(value ? kEncodedTrue : kEncodedFalse);
   }
 
   void HandleNull() override {
+    if (!status_->ok())
+      return;
     // See RFC 7049 Section 2.3, Table 2.
     out_->push_back(kEncodedNull);
   }
 
   void HandleError(Status error) override {
-    assert(!error.ok());
+    if (!status_->ok())
+      return;
     *status_ = error;
     out_->clear();
   }
