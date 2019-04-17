@@ -69,11 +69,19 @@ void CALLBACK PlatformNativeWorkerPoolWin::RunNextSequence(
   auto* worker_pool = static_cast<PlatformNativeWorkerPoolWin*>(
       scheduler_worker_pool_windows_impl);
 
-  if (worker_pool->worker_environment_ == WorkerEnvironment::COM_MTA &&
-      !ScopedCOMInitializerForCurrentThread().Get()) {
-    ScopedCOMInitializerForCurrentThread().Set(
-        std::make_unique<win::ScopedCOMInitializer>(
-            win::ScopedCOMInitializer::kMTA));
+  if (worker_pool->worker_environment_ == WorkerEnvironment::COM_MTA) {
+    if (!ScopedCOMInitializerForCurrentThread().Get()) {
+      ScopedCOMInitializerForCurrentThread().Set(
+          std::make_unique<win::ScopedCOMInitializer>(
+              win::ScopedCOMInitializer::kMTA));
+    }
+  } else if (worker_pool->worker_environment_ == WorkerEnvironment::NONE) {
+    // Upon destruction, a PTP_POOL object might not destroy the threads it
+    // created, and another PTP_POOL object created in the same process might
+    // reuse the old threads. Consequently, it is possible to be on a COM
+    // initialized thread even if |worker_environment_| is NONE. In this case,
+    // COM is uninitialized by explicitly resetting the ScopedCOMInitializer.
+    ScopedCOMInitializerForCurrentThread().Set(nullptr);
   }
 
   worker_pool->RunNextSequenceImpl();
