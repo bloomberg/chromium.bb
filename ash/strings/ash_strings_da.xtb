@@ -12,6 +12,7 @@
 <translation id="1104621072296271835">Dine enheder fungerer endnu bedre sammen</translation>
 <translation id="112308213915226829">Skjul hylde automatisk</translation>
 <translation id="1153356358378277386">Parrede enheder</translation>
+<translation id="1178581264944972037">Pause</translation>
 <translation id="1195412055398077112">overscan</translation>
 <translation id="119944043368869598">Ryd alle</translation>
 <translation id="123828989343052515">Nyt skrivebord</translation>
@@ -235,7 +236,7 @@
 <translation id="4544944664594876241">Genvejen til at låse skærmen er ændret. Brug <ph name="NEW_SHORTCUT" /> i stedet for <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4561267230861221837">3G</translation>
 <translation id="4570957409596482333">Knap for Tekstoplæsning</translation>
-<translation id="4585337515783392668">Stop med at caste på en ukendt modtager</translation>
+<translation id="4585337515783392668">Stop cast på en ukendt modtager</translation>
 <translation id="4628757576491864469">Enheder</translation>
 <translation id="4659419629803378708">ChromeVox er aktiveret</translation>
 <translation id="4696813013609194136">Lås enheden op med forældrekode</translation>
@@ -365,6 +366,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6723839937902243910">Strøm</translation>
 <translation id="6751826523481687655">Sporing af effektivitet er slået til</translation>
 <translation id="6785414152754474415">Batteriet er <ph name="PERCENTAGE" /> % opladet og oplades nu.</translation>
+<translation id="6790428901817661496">Afspil</translation>
 <translation id="6803622936009808957">Skærmene kunne ikke spejles, da der ikke fandtes en understøttet opløsning. I stedet anvendes Udvidet skrivebord.</translation>
 <translation id="6820676911989879663">Hold en pause</translation>
 <translation id="683971173229319003">Søg+L</translation>
@@ -445,7 +447,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="8030169304546394654">Afbrudt</translation>
 <translation id="8054466585765276473">Beregner batteritid.</translation>
 <translation id="8061464966246066292">Høj kontrast</translation>
-<translation id="8098591350844501178">Stop cast skærmen til <ph name="RECEIVER_NAME" /></translation>
+<translation id="8098591350844501178">Stop skærmcast til <ph name="RECEIVER_NAME" /></translation>
 <translation id="8113423164597455979">Aktiveret, alle apps</translation>
 <translation id="8132793192354020517">Forbundet til <ph name="NAME" /></translation>
 <translation id="813913629614996137">Initialiserer...</translation>

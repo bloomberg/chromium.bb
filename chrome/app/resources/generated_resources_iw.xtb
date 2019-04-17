@@ -102,6 +102,7 @@
 <translation id="1145532888383813076">אפשר לחפש במכשיר, באפליקציות ובאינטרנט.</translation>
 <translation id="114721135501989771">‏תכונות חכמות של Google</translation>
 <translation id="1149401351239820326">חודש פקיעת התוקף</translation>
+<translation id="1150565364351027703">משקפי שמש</translation>
 <translation id="1151917987301063366">לאפשר תמיד ל-<ph name="HOST" /> לגשת אל חיישנים</translation>
 <translation id="1153356358378277386">מכשירים מותאמים</translation>
 <translation id="1156488781945104845">שעה נוכחית</translation>
@@ -658,6 +659,7 @@
 <translation id="2045117674524495717">כלי העזרה למקשי קיצור</translation>
 <translation id="2045969484888636535">‏המשך לחסום קובצי Cookie</translation>
 <translation id="204622017488417136">‏המכשיר שלך יוחזר לגרסה הקודמת המותקנת של Chrome. כל חשבונות המשתמשים והנתונים המקומיים יוסרו. לא ניתן לבטל פעולה זו.</translation>
+<translation id="2046702855113914483">ראמן</translation>
 <translation id="2048182445208425546">גישה לתנועת הרשת שלך</translation>
 <translation id="2048653237708779538">הפעולה לא זמינה</translation>
 <translation id="2050339315714019657">לאורך</translation>
@@ -925,6 +927,7 @@
 <translation id="2462752602710430187">המדפסת <ph name="PRINTER_NAME" /> נוספה</translation>
 <translation id="2464089476039395325">‏שרת proxy של HTTP</translation>
 <translation id="2468205691404969808">‏שימוש בקובצי cookie כדי לשמור את ההעדפות שלך, גם אם לא נכנסת אל הדפים האלה</translation>
+<translation id="2468402215065996499">טמגוצ'י</translation>
 <translation id="2469375675106140201">התאמה אישית של בדיקת האיות</translation>
 <translation id="247051149076336810">כתובת אתר של התקן רשת לשיתוף קבצים</translation>
 <translation id="2470702053775288986">תוספים שלא נתמכים הושבתו</translation>
@@ -1129,6 +1132,7 @@
 <translation id="2770465223704140727">הסר מהרשימה</translation>
 <translation id="2770690685823456775">אפשר לייצא את הסיסמאות לתיקייה אחרת</translation>
 <translation id="2771268254788431918">חבילת גלישה הופעלה</translation>
+<translation id="2771816809568414714">גבינה</translation>
 <translation id="2772936498786524345">מתגנב</translation>
 <translation id="2773288106548584039">תמיכה בדפדפן מדור קודם</translation>
 <translation id="2773802008104670137">קובץ מהסוג הזה עלול לגרום נזק למחשב שלך.</translation>
@@ -1652,6 +1656,7 @@
 <translation id="3616113530831147358">אודיו</translation>
 <translation id="3616741288025931835">&amp;נקה נתוני גלישה...</translation>
 <translation id="3617891479562106823">רקעים אינם זמינים. צריך לנסות שוב מאוחר יותר.</translation>
+<translation id="3619115746895587757">קפוצ'ינו</translation>
 <translation id="3623574769078102674">משתמש בפיקוח זה ינוהל על ידי <ph name="MANAGER_EMAIL" />.</translation>
 <translation id="3624567683873126087">‏ביטול נעילת המכשיר וכניסה אל חשבון Google</translation>
 <translation id="3625258641415618104">צילומי מסך מושבתים</translation>
@@ -2130,6 +2135,7 @@
 <translation id="4359717112757026264">נוף עירוני</translation>
 <translation id="4361142739114356624">המפתח הפרטי לאישור לקוח זה חסר או אינו חוקי</translation>
 <translation id="4363771538994847871">לא נמצא יעד להעברה. רוצה עזרה?</translation>
+<translation id="4364327530094270451">מלון</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> משתף חלון.</translation>
 <translation id="4364830672918311045">הצגת הודעות</translation>
 <translation id="4365673000813822030">אופס, הסינכרון הפסיק לפעול.</translation>
@@ -2319,6 +2325,7 @@
 <translation id="4690091457710545971">‏&lt;קושחת ה-Wi-Fi של Intel יצרה ארבעה קבצים: csr.lst‏, fh_regs.lst‏, radio_reg.lst‏, monitor.lst.sysmon. שלושת הקבצים הראשונים הם קובצי Dump בינאריים של הרישום, והמערכת של Intel מטפלת בהם מתוך הנחה שהם לא מכילים מידע שמאפשר זיהוי אישי או זיהוי של המכשיר. הקובץ האחרון הוא מעקב ביצוע מהקושחה של Intel. נמחק ממנו מידע שמאפשר זיהוי אישי או זיהוי של המכשיר, אבל הוא גדול מדי מכדי להציג אותו כאן. הקבצים האלה נוצרו בתגובה לבעיות שאירעו לאחרונה בחיבור ה-Wi-Fi של המכשיר שלך, והם ישותפו עם Intel בניסיון לפתור את הבעיות האלה.&gt;</translation>
 <translation id="469230890969474295">‏תיקיית OEM</translation>
 <translation id="4692623383562244444">מנועי חיפוש</translation>
+<translation id="4693155481716051732">סושי</translation>
 <translation id="4694024090038830733">מנהל המערכת קובע את תצורת המדפסת.</translation>
 <translation id="4694604912444486114">קוף</translation>
 <translation id="4697551882387947560">כאשר הפעלת הגלישה מסתיימת</translation>
@@ -2373,6 +2380,7 @@
 <translation id="4776917500594043016">סיסמה עבור <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4777825441726637019">‏חנות Play</translation>
 <translation id="4779083564647765204">מרחק מתצוגה</translation>
+<translation id="4779136857077979611">אוניגירי</translation>
 <translation id="477945296921629067">{NUM_POPUPS,plural, =1{חלון קופץ נחסם}two{# חלונות קופצים נחסמו}many{# חלונות קופצים נחסמו}other{# חלונות קופצים נחסמו}}</translation>
 <translation id="4780321648949301421">שמירת הדף בשם...</translation>
 <translation id="4785719467058219317">בחרת להשתמש במפתח אבטחה שלא רשום עבור האתר הזה</translation>
@@ -2385,6 +2393,7 @@
 <translation id="4801448226354548035">הסתר חשבונות</translation>
 <translation id="4801512016965057443">אפשר נדידת נתונים לנייד </translation>
 <translation id="4804818685124855865">נתק</translation>
+<translation id="4804827417948292437">אבוקדו</translation>
 <translation id="4807098396393229769">שם על הכרטיס</translation>
 <translation id="4808667324955055115">חלונות קופצים חסומים</translation>
 <translation id="480990236307250886">פתח את דף הבית</translation>
@@ -2479,6 +2488,7 @@
 <translation id="4941246025622441835">השתמש במכשיר זה בעת הרשמת המכשיר לניהול ארגוני:</translation>
 <translation id="4941627891654116707">גודל גופן</translation>
 <translation id="494286511941020793">‏עזרה של תצורת שרת Proxy</translation>
+<translation id="4943368462779413526">פוטבול</translation>
 <translation id="4943691134276646401">"<ph name="CHROME_EXTENSION_NAME" />" רוצה להתחבר אל יציאה טורית</translation>
 <translation id="495170559598752135">פעולות</translation>
 <translation id="4953689047182316270">להגיב לאירועי נגישות</translation>
@@ -2548,6 +2558,7 @@
 <translation id="5067399438976153555">תמיד פועל</translation>
 <translation id="5067867186035333991">שאל אם <ph name="HOST" /> רוצה לגשת למיקרופון שלך</translation>
 <translation id="5068918910148307423">אל תתיר לאתרים שנסגרו לאחרונה לסיים שליחה וקבלה של נתונים</translation>
+<translation id="5068919226082848014">פיצה</translation>
 <translation id="5072052264945641674">התאם את גודל הסמן</translation>
 <translation id="5072836811783999860">הצג סימניות מנוהלות</translation>
 <translation id="5074318175948309511">ייתכן שיהיה צורך לטעון מחדש דף זה על מנת שההגדרות החדשות ייכנסו לתוקף.</translation>
@@ -2582,6 +2593,7 @@
 <translation id="5117930984404104619">מעקב אחר ההתנהגות של תוספים אחרים, כולל כתובות אתרים שמבקרים בהם</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">הדיסק הקשיח מלא. שמור במיקום אחר או פנה מקום בדיסק הקשיח.</translation>
+<translation id="5123433949759960244">כדורסל</translation>
 <translation id="5125751979347152379">כתובת אתר לא חוקית.</translation>
 <translation id="5127805178023152808">סנכרון כבוי</translation>
 <translation id="5127881134400491887">ניהול חיבורי רשת</translation>
@@ -3265,6 +3277,7 @@
 <translation id="6166185671393271715">‏ייבוא סיסמאות אל Chrome</translation>
 <translation id="6169040057125497443">יש לבדוק את המיקרופון.</translation>
 <translation id="6169666352732958425">לא ניתן להעביר את שולחן העבודה.</translation>
+<translation id="6170470584681422115">כריך</translation>
 <translation id="6171948306033499786">השהה הדפסה</translation>
 <translation id="6173623053897475761">יש להקליד שוב את הקוד</translation>
 <translation id="6175314957787328458">Microsoft Domain GUID</translation>
@@ -3695,6 +3708,7 @@
 <translation id="6870888490422746447">בחר אפליקציה לשיתוף:</translation>
 <translation id="6871644448911473373">‏מגיב OCSP: <ph name="LOCATION" /></translation>
 <translation id="6872781471649843364">השרת דחה את הסיסמה שהזנת.</translation>
+<translation id="6876155724392614295">אופניים</translation>
 <translation id="6878422606530379992">השימוש בחיישנים מותר</translation>
 <translation id="6880587130513028875">תמונות נחסמו בדף זה</translation>
 <translation id="6883319974225028188">אופס! המערכת לא הצליחה לשמור את תצורת המכשיר.</translation>
@@ -4259,6 +4273,7 @@
 <translation id="7772127298218883077">מידע על <ph name="PRODUCT_NAME" /></translation>
 <translation id="7772773261844472235">‏בדיקת הסטטוס של ה-Chromebook</translation>
 <translation id="7773726648746946405">אחסון הפעלה</translation>
+<translation id="7774365994322694683">ציפור</translation>
 <translation id="7776701556330691704">לא נמצאו קולות</translation>
 <translation id="7781335840981796660">תתבצע הסרה של כל חשבונות המשתמש והנתונים השמורים במכשיר.</translation>
 <translation id="7782102568078991263">‏אין יותר הצעות מ-Google</translation>
@@ -4665,6 +4680,7 @@
 <translation id="8386903983509584791">הסריקה הושלמה</translation>
 <translation id="8389492867173948260">מתן הרשאה לתוסף הזה לקרוא ולשנות את כל הנתונים שלך באתרים שאליהם נכנסת:</translation>
 <translation id="8390449457866780408">השרת אינו זמין.</translation>
+<translation id="8391218455464584335">וייניל</translation>
 <translation id="8391712576156218334">התמונה לא זמינה. צריך לנסות שוב מאוחר יותר.</translation>
 <translation id="8392234662362215700">‏כדי להחליף את פריסת המקלדת, הקש על Control‏-Shift-מקש הרווח.</translation>
 <translation id="8392451568018454956">תפריט אפשרויות עבור <ph name="USER_EMAIL_ADDRESS" /></translation>

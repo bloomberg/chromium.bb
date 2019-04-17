@@ -102,6 +102,7 @@
 <translation id="1145532888383813076">Търсете в устройството си, приложенията и мрежата.</translation>
 <translation id="114721135501989771">Chrome с интелекта на Google</translation>
 <translation id="1149401351239820326">Месец на валидност</translation>
+<translation id="1150565364351027703">Слънчеви очила</translation>
 <translation id="1151917987301063366">Достъпът на <ph name="HOST" /> до сензорите винаги да е разрешен</translation>
 <translation id="1153356358378277386">Сдвоени устройства</translation>
 <translation id="1156488781945104845">Текущ час</translation>
@@ -658,6 +659,7 @@
 <translation id="2045117674524495717">Помощ за клавишните комбинации</translation>
 <translation id="2045969484888636535">Блокирането на „бисквитките“ да продължи</translation>
 <translation id="204622017488417136">Устройството ви ще се върне към предишната инсталирана версия на Chrome. Всички профили на потребители и локални данни ще бъдат премахнати. Това действие не може да се отмени.</translation>
+<translation id="2046702855113914483">Супа „Рамен“</translation>
 <translation id="2048182445208425546">Достъп до трафика ви в мрежата</translation>
 <translation id="2048653237708779538">Действието не може да се извърши</translation>
 <translation id="2050339315714019657">Вертикално</translation>
@@ -925,6 +927,7 @@
 <translation id="2462752602710430187">Добавихте <ph name="PRINTER_NAME" /></translation>
 <translation id="2464089476039395325">HTTP прокси сървър</translation>
 <translation id="2468205691404969808">Използва „бисквитки“ за запомняне на предпочитанията ви дори ако не посещавате тези страници</translation>
+<translation id="2468402215065996499">Тамагочи</translation>
 <translation id="2469375675106140201">Персонализиране на проверката на правописа</translation>
 <translation id="247051149076336810">URL адрес на споделено хранилище</translation>
 <translation id="2470702053775288986">Неподдържаните разширения са деактивирани</translation>
@@ -1129,6 +1132,7 @@
 <translation id="2770465223704140727">Премахване от списъка</translation>
 <translation id="2770690685823456775">Експортирайте паролите си в друга папка.</translation>
 <translation id="2771268254788431918">Мобилните данни са активирани</translation>
+<translation id="2771816809568414714">Сирене</translation>
 <translation id="2772936498786524345">Нинджа</translation>
 <translation id="2773288106548584039">Поддръжка на наследени браузъри</translation>
 <translation id="2773802008104670137">Този тип файл може да навреди на компютъра ви.</translation>
@@ -1652,6 +1656,7 @@
 <translation id="3616113530831147358">Аудио</translation>
 <translation id="3616741288025931835">&amp;Изчистване на данните за сърфирането...</translation>
 <translation id="3617891479562106823">Фоновете не са налице. Опитайте отново по-късно.</translation>
+<translation id="3619115746895587757">Капучино</translation>
 <translation id="3623574769078102674">Този контролиран потребител ще се управлява от <ph name="MANAGER_EMAIL" />.</translation>
 <translation id="3624567683873126087">Отключване на устройството и влизане в профила в Google</translation>
 <translation id="3625258641415618104">Екранните снимки са деактивирани</translation>
@@ -2132,6 +2137,7 @@
 <translation id="4359717112757026264">Градски пейзажи</translation>
 <translation id="4361142739114356624">Частният ключ за този клиентски сертификат липсва или е невалиден</translation>
 <translation id="4363771538994847871">Няма намерени местоназначения за Cast. Нуждаете ли се от помощ?</translation>
+<translation id="4364327530094270451">Пъпеш</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> споделя прозорец.</translation>
 <translation id="4364830672918311045">Показване на известия</translation>
 <translation id="4365673000813822030">Ами сега! Синхронизирането спря да работи.</translation>
@@ -2321,6 +2327,7 @@
 <translation id="4690091457710545971">&lt;Фърмуерът на Intel за Wi-Fi генерира четири файла: csr.lst, fh_regs.lst, radio_reg.lst и monitor.lst.sysmon. Първите три са двоични файлове с копия на данни от системния регистър и според Intel не съдържат лични данни или информация, идентифицираща устройството. Последният е файл за трасиране на изпълнението от фърмуера на Intel. Личните данни и идентифициращата устройството информация са премахнати от него, но той е твърде голям, за да бъде показан тук. Тези файлове са генерирани поради скорошните проблеми с Wi-Fi на устройството ви и ще бъдат споделени с Intel с цел по-лесното им отстраняване.&gt;</translation>
 <translation id="469230890969474295">OEM папка</translation>
 <translation id="4692623383562244444">Търсещи машини</translation>
+<translation id="4693155481716051732">Суши</translation>
 <translation id="4694024090038830733">Конфигурирането на принтери се управлява от администратора.</translation>
 <translation id="4694604912444486114">Маймуна</translation>
 <translation id="4697551882387947560">При приключване на сесията на сърфиране</translation>
@@ -2375,6 +2382,7 @@
 <translation id="4776917500594043016">Парола за <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4777825441726637019">Google Play Магазин</translation>
 <translation id="4779083564647765204">Промяна на мащаба</translation>
+<translation id="4779136857077979611">Онигири</translation>
 <translation id="477945296921629067">{NUM_POPUPS,plural, =1{Блокиран е изскачащ прозорец}other{Блокирани са # изскач. прозореца}}</translation>
 <translation id="4780321648949301421">Запазване на страницата като...</translation>
 <translation id="4785719467058219317">Използвате ключ за сигурност, който не е регистриран в този уебсайт</translation>
@@ -2387,6 +2395,7 @@
 <translation id="4801448226354548035">Скриване на профилите</translation>
 <translation id="4801512016965057443">Разрешаване на роуминг за данни</translation>
 <translation id="4804818685124855865">Изключване</translation>
+<translation id="4804827417948292437">Авокадо</translation>
 <translation id="4807098396393229769">Име върху картата</translation>
 <translation id="4808667324955055115">Изскачащите прозорци са блокирани:</translation>
 <translation id="480990236307250886">Отваряне на началната страница</translation>
@@ -2481,6 +2490,7 @@
 <translation id="4941246025622441835">Използване на заявката за устройството при записването му за корпоративно управление:</translation>
 <translation id="4941627891654116707">Размер на шрифта</translation>
 <translation id="494286511941020793">Помощ за конфигурация на прокси сървър</translation>
+<translation id="4943368462779413526">Футболна топка</translation>
 <translation id="4943691134276646401">„<ph name="CHROME_EXTENSION_NAME" />“ иска да се свърже със сериен порт</translation>
 <translation id="495170559598752135">Действия</translation>
 <translation id="4953689047182316270">Реагиране на събития за достъпност</translation>
@@ -2550,6 +2560,7 @@
 <translation id="5067399438976153555">Винаги включено</translation>
 <translation id="5067867186035333991">Да се получава запитване, ако <ph name="HOST" /> иска достъп до микрофона ви</translation>
 <translation id="5068918910148307423">Забраняване на наскоро затворените сайтове да завършват изпращането и получаването на данни</translation>
+<translation id="5068919226082848014">Пица</translation>
 <translation id="5072052264945641674">Коригиране на размера на курсора</translation>
 <translation id="5072836811783999860">Показване на управляваните отметки</translation>
 <translation id="5074318175948309511">Може да се наложи тази страница да бъде презаредена, преди да влязат в сила новите настройки.</translation>
@@ -2584,6 +2595,7 @@
 <translation id="5117930984404104619">Наблюдение на поведението на други разширения, включително посетените URL адреси</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">Твърдият ви диск е пълен.  Моля, запазете на друго място или освободете още пространство на диска.</translation>
+<translation id="5123433949759960244">Баскетболна топка</translation>
 <translation id="5125751979347152379">Невалиден URL адрес.</translation>
 <translation id="5127805178023152808">Синхронизирането е изключено</translation>
 <translation id="5127881134400491887">Управление на мрежовите връзки</translation>
@@ -3268,6 +3280,7 @@
 <translation id="6166185671393271715">Импортиране на пароли в Chrome</translation>
 <translation id="6169040057125497443">Моля, проверете микрофона си.</translation>
 <translation id="6169666352732958425">Предаването на работния плот не е възможно.</translation>
+<translation id="6170470584681422115">Сандвич</translation>
 <translation id="6171948306033499786">Поставяне на отпечатването на пауза</translation>
 <translation id="6173623053897475761">Въведете отново ПИН кода си</translation>
 <translation id="6175314957787328458">GUID на домейн от Microsoft</translation>
@@ -3698,6 +3711,7 @@
 <translation id="6870888490422746447">Изберете приложение, с което да споделите:</translation>
 <translation id="6871644448911473373">OCSP респондер: <ph name="LOCATION" /></translation>
 <translation id="6872781471649843364">Въведената от вас парола бе отхвърлена от сървъра.</translation>
+<translation id="6876155724392614295">Колело</translation>
 <translation id="6878422606530379992">Достъпът до сензорите е разрешен</translation>
 <translation id="6880587130513028875">Изображенията са блокирани на тази страница.</translation>
 <translation id="6883319974225028188">Ами сега! Системата не успя да запази конфигурацията на устройството.</translation>
@@ -4264,6 +4278,7 @@
 <translation id="7772127298218883077">Всичко за <ph name="PRODUCT_NAME" /></translation>
 <translation id="7772773261844472235">Проверка на състоянието на вашия Chromebook</translation>
 <translation id="7773726648746946405">Хранилище за сесията</translation>
+<translation id="7774365994322694683">Птица</translation>
 <translation id="7776701556330691704">Няма намерени гласове</translation>
 <translation id="7781335840981796660">Всички профили на потребители и локални данни ще бъдат премахнати.</translation>
 <translation id="7782102568078991263">Няма повече предложения от Google</translation>
@@ -4669,6 +4684,7 @@
 <translation id="8386903983509584791">Сканирането завърши</translation>
 <translation id="8389492867173948260">Разрешаване на това разширение да чете и променя всичките ви данни в посещаваните от вас уебсайтове:</translation>
 <translation id="8390449457866780408">Няма достъп до сървъра.</translation>
+<translation id="8391218455464584335">Грамофонна плоча</translation>
 <translation id="8391712576156218334">Изображението не е налице. Опитайте отново по-късно.</translation>
 <translation id="8392234662362215700">Натиснете „Control-Shift-интервал“ за превключване на клавиатурната подредба.</translation>
 <translation id="8392451568018454956">Меню с опции за <ph name="USER_EMAIL_ADDRESS" /></translation>

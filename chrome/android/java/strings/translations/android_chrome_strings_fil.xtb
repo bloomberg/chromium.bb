@@ -119,6 +119,7 @@
 <translation id="1891331835972267886">Bubukas ang <ph name="APP_NAME" /> sa Chrome. Sa pamamagitan ng pagpapatuloy, sumasang-ayon ka sa <ph name="BEGIN_LINK1" />Mga Tuntunin ng Serbisyo<ph name="END_LINK1" /> at <ph name="BEGIN_LINK2" />Notification ng Privacy<ph name="END_LINK2" /> ng Chrome.</translation>
 <translation id="1919345977826869612">Mga Ad</translation>
 <translation id="1919950603503897840">Pumili ng mga contact</translation>
+<translation id="1922076542920281912">Para payagan ang Chrome na i-access ang iyong lokasyon, i-on din ang lokasyon sa <ph name="BEGIN_LINK" />Mga Setting ng Android<ph name="END_LINK" />.</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="19288952978244135">Muling buksan ang Chrome.</translation>
 <translation id="1933845786846280168">Napiling Tab</translation>
@@ -144,6 +145,7 @@
 <translation id="2018707881002649255">Ibabahagi sa website na <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> ang mga contact na pipiliin mo sa ibaba.</translation>
 <translation id="2021896219286479412">Control ng full screen sa site</translation>
 <translation id="2038563949887743358">I-on ang Hilingin ang site sa desktop</translation>
+<translation id="2041019821020695769">Para payagan ang Chrome na magpadala sa iyo ng mga notification, i-on din ang mga notification sa <ph name="BEGIN_LINK" />Mga Setting ng Android<ph name="END_LINK" />.</translation>
 <translation id="204321170514947529">May data rin ang <ph name="APP_NAME" /> sa Chrome</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB na iba pang mga app</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
@@ -359,6 +361,7 @@
 <translation id="3712575778697986964">I-reset ang Data Saver?</translation>
 <translation id="3714981814255182093">Buksan ang Bar sa Paghahanap</translation>
 <translation id="3716182511346448902">Masyadong malaki ang ginagamit na memory ng page na ito kaya na-pause ito ng Chrome.</translation>
+<translation id="3730075448226062617">Para payagang i-access ng Chrome ang iyong mikropono, i-on din ang mikropono sa <ph name="BEGIN_LINK" />Mga Setting ng Android<ph name="END_LINK" />.</translation>
 <translation id="3739899004075612870">Naka-bookmark sa <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> MB na iba pang mga app</translation>
 <translation id="3744111561329211289">Pag-sync sa background</translation>
@@ -672,6 +675,7 @@ Para baguhin ang setting na ito, <ph name="BEGIN_LINK" />i-reset ang pag-sync<ph
 <translation id="5937580074298050696"><ph name="AMOUNT" /> ang natipid</translation>
 <translation id="5939518447894949180">I-reset</translation>
 <translation id="5942872142862698679">Ginagamit ang Google para sa paghahanap</translation>
+<translation id="5944669582486359588">Sa Lite mode, mas mabilis na nilo-load ng Chrome ang mga page at gumagamit ng hanggang 60 porsyentong mas kaunting data. Ino-optimize ng Cloud technology ng Google ang mga page na binibisita mo.</translation>
 <translation id="5952764234151283551">Ipinapadala sa Google ang URL ng page na sinusubukan mong puntahan</translation>
 <translation id="5956665950594638604">Buksan ang Help Center ng Chrome sa bagong tab</translation>
 <translation id="5958275228015807058">Hanapin ang iyong mga file at page sa Mga Download</translation>
@@ -702,6 +706,7 @@ Para baguhin ang setting na ito, <ph name="BEGIN_LINK" />i-reset ang pag-sync<ph
 <translation id="618993374665929060">Nakabukas sa buong screen ang higit pang tulad nito</translation>
 <translation id="6192333916571137726">File ng download</translation>
 <translation id="6192792657125177640">Mga Pagbubukod</translation>
+<translation id="6194112207524046168">Para payagang i-access ng Chrome ang iyong camera, i-on din ang camera sa <ph name="BEGIN_LINK" />Mga Setting ng Android<ph name="END_LINK" />.</translation>
 <translation id="6196640612572343990">I-block ang mga third-party na cookie</translation>
 <translation id="6206551242102657620">Secure ang koneksyon. Impormasyon ng site</translation>
 <translation id="6210748933810148297">Hindi si <ph name="EMAIL" />?</translation>

@@ -12,6 +12,7 @@
 <translation id="1104621072296271835">연결된 기기가 더욱 원활하게 작동합니다</translation>
 <translation id="112308213915226829">실행기 자동 숨김</translation>
 <translation id="1153356358378277386">페어링된 기기</translation>
+<translation id="1178581264944972037">일시중지</translation>
 <translation id="1195412055398077112">오버스캔</translation>
 <translation id="119944043368869598">모두 삭제</translation>
 <translation id="123828989343052515">새 데스크</translation>
@@ -364,6 +365,7 @@
 <translation id="6723839937902243910">전원</translation>
 <translation id="6751826523481687655">성능 추적이 사용 설정되어 있습니다.</translation>
 <translation id="6785414152754474415">배터리가 <ph name="PERCENTAGE" />% 충전되었으며 충전 중입니다.</translation>
+<translation id="6790428901817661496">재생</translation>
 <translation id="6803622936009808957">지원되는 해상도가 없으므로 디스플레이를 그대로 반영할 수 없습니다. 대신 확장 데스크톱을 시작했습니다.</translation>
 <translation id="6820676911989879663">잠시 쉬어 가세요.</translation>
 <translation id="683971173229319003">Search+L</translation>

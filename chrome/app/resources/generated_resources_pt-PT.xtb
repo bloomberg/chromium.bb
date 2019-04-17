@@ -102,6 +102,7 @@
 <translation id="1145532888383813076">Pesquise no dispositivo, nas aplicações e na Web.</translation>
 <translation id="114721135501989771">Inteligên. Google no Chrome</translation>
 <translation id="1149401351239820326">Mês de expiração</translation>
+<translation id="1150565364351027703">Óculos de sol</translation>
 <translation id="1151917987301063366">Permitir sempre que <ph name="HOST" /> aceda aos sensores</translation>
 <translation id="1153356358378277386">Dispositivos sincronizados</translation>
 <translation id="1156488781945104845">Hora atual</translation>
@@ -661,6 +662,7 @@
 <translation id="2045117674524495717">Ajuda dos atalhos de teclado</translation>
 <translation id="2045969484888636535">Continuar a bloquear cookies</translation>
 <translation id="204622017488417136">O dispositivo regressa à versão do Chrome instalada anteriormente. Todos os dados locais e as contas de utilizador são removidos. Não é possível anular esta ação.</translation>
+<translation id="2046702855113914483">Ramen</translation>
 <translation id="2048182445208425546">Aceder ao tráfego da sua rede</translation>
 <translation id="2048653237708779538">Ação não disponível</translation>
 <translation id="2050339315714019657">Vertical</translation>
@@ -927,6 +929,7 @@
 <translation id="2462752602710430187"><ph name="PRINTER_NAME" /> adicionada</translation>
 <translation id="2464089476039395325">Proxy de HTTP</translation>
 <translation id="2468205691404969808">Utiliza cookies para memorizar as suas preferências, mesmo que não visite essas páginas.</translation>
+<translation id="2468402215065996499">Tamagotchi</translation>
 <translation id="2469375675106140201">Personalizar o corretor ortográfico</translation>
 <translation id="247051149076336810">URL de partilha de ficheiros</translation>
 <translation id="2470702053775288986">Extensões não suportadas desativadas</translation>
@@ -1131,6 +1134,7 @@
 <translation id="2770465223704140727">Remover da lista</translation>
 <translation id="2770690685823456775">Exportar as palavras-passe para outra pasta</translation>
 <translation id="2771268254788431918">Dados móveis ativados</translation>
+<translation id="2771816809568414714">Queijo</translation>
 <translation id="2772936498786524345">Sorrateiro</translation>
 <translation id="2773288106548584039">Compatibilidade com o navegador antigo</translation>
 <translation id="2773802008104670137">Este tipo de ficheiro pode danificar o seu computador.</translation>
@@ -1655,6 +1659,7 @@ Pretende pará-lo?</translation>
 <translation id="3616113530831147358">Áudio</translation>
 <translation id="3616741288025931835">&amp;Limpar Dados de Navegação...</translation>
 <translation id="3617891479562106823">Os fundos não estão disponíveis. Tente novamente mais tarde.</translation>
+<translation id="3619115746895587757">Cappuccino</translation>
 <translation id="3623574769078102674">Este utilizador supervisionado será gerido por <ph name="MANAGER_EMAIL" />.</translation>
 <translation id="3624567683873126087">Desbloquear o dispositivo e iniciar sessão na Conta Google</translation>
 <translation id="3625258641415618104">Capturas de ecrã desativadas</translation>
@@ -2133,6 +2138,7 @@ Pretende pará-lo?</translation>
 <translation id="4359717112757026264">Paisagens urbanas</translation>
 <translation id="4361142739114356624">A chave privada para este certificado de cliente está em falta ou é inválida</translation>
 <translation id="4363771538994847871">Não foi encontrado nenhum destino do Cast. Precisa de ajuda?</translation>
+<translation id="4364327530094270451">Melão</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> está a partilhar uma janela.</translation>
 <translation id="4364830672918311045">Apresentar notificações</translation>
 <translation id="4365673000813822030">Ups, a Sincronização deixou de funcionar.</translation>
@@ -2322,6 +2328,7 @@ Pretende pará-lo?</translation>
 <translation id="4690091457710545971">&lt;Quatro ficheiros gerados pelo firmware de Wi-Fi da Intel: csr.lst, fh_regs.lst, radio_reg.lst, monitor.lst.sysmon. Os três primeiros são ficheiros binários que contêm cópias do registo e são confirmados pela Intel como não contendo informações identificativas do dispositivo ou pessoais. O último ficheiro é um rastreio de execução do firmware da Intel; foram dele removidas quaisquer informações identificativas do dispositivo ou pessoais, mas é demasiado grande para apresentar aqui. Estes ficheiros foram gerados como resposta aos recentes problemas de Wi-Fi do seu dispositivo e serão partilhados com a Intel para ajudar a resolver estes problemas.&gt;</translation>
 <translation id="469230890969474295">Pasta OEM</translation>
 <translation id="4692623383562244444">Motores de pesquisa</translation>
+<translation id="4693155481716051732">Sushi</translation>
 <translation id="4694024090038830733">A configuração da impressora é gerida pelo administrador.</translation>
 <translation id="4694604912444486114">Macaco</translation>
 <translation id="4697551882387947560">Quando a sessão de navegação termina</translation>
@@ -2376,6 +2383,7 @@ Pretende pará-lo?</translation>
 <translation id="4776917500594043016">Palavra-passe para <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4777825441726637019">Play Store</translation>
 <translation id="4779083564647765204">Zoom</translation>
+<translation id="4779136857077979611">Onigiri</translation>
 <translation id="477945296921629067">{NUM_POPUPS,plural, =1{Pop-up bloqueado}other{# pop-ups bloqueados}}</translation>
 <translation id="4780321648949301421">Guardar página como...</translation>
 <translation id="4785719467058219317">Está a utilizar uma chave de segurança que não está registada neste Website.</translation>
@@ -2388,6 +2396,7 @@ Pretende pará-lo?</translation>
 <translation id="4801448226354548035">Ocultar contas</translation>
 <translation id="4801512016965057443">Permitir roaming de dados móveis</translation>
 <translation id="4804818685124855865">Desligar</translation>
+<translation id="4804827417948292437">Abacate</translation>
 <translation id="4807098396393229769">Nome no cartão</translation>
 <translation id="4808667324955055115">Pop-ups bloqueados:</translation>
 <translation id="480990236307250886">Abrir a página de início</translation>
@@ -2482,6 +2491,7 @@ Pretende pará-lo?</translation>
 <translation id="4941246025622441835">Utilizar a requisição deste dispositivo ao inscrever o dispositivo para gestão empresarial:</translation>
 <translation id="4941627891654116707">Tamanho do tipo de letra</translation>
 <translation id="494286511941020793">Ajuda de configuração de proxy</translation>
+<translation id="4943368462779413526">Bola de futebol</translation>
 <translation id="4943691134276646401">"<ph name="CHROME_EXTENSION_NAME" />" pretende estabelecer ligação a uma porta de série</translation>
 <translation id="495170559598752135">Ações</translation>
 <translation id="4953689047182316270">Responder a eventos de acessibilidade</translation>
@@ -2551,6 +2561,7 @@ Pretende pará-lo?</translation>
 <translation id="5067399438976153555">Sempre ativado</translation>
 <translation id="5067867186035333991">Perguntar se <ph name="HOST" /> pretende aceder ao seu microfone</translation>
 <translation id="5068918910148307423">Não permitir que os sites fechados recentemente concluam o envio e a receção de dados</translation>
+<translation id="5068919226082848014">Piza</translation>
 <translation id="5072052264945641674">Ajustar tamanho do cursor</translation>
 <translation id="5072836811783999860">Mostrar marcadores geridos</translation>
 <translation id="5074318175948309511">Poderá ser necessário voltar a atualizar esta página antes de aplicar as novas definições.</translation>
@@ -2585,6 +2596,7 @@ Pretende pará-lo?</translation>
 <translation id="5117930984404104619">Monitorizar o comportamento de outras extensões, incluindo URLs visitados</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">O seu disco rígido está cheio. Guarde noutra localização ou liberte espaço no disco rígido.</translation>
+<translation id="5123433949759960244">Bola de basquetebol</translation>
 <translation id="5125751979347152379">URL inválido.</translation>
 <translation id="5127805178023152808">A sincronização está desativada</translation>
 <translation id="5127881134400491887">Gerir ligações de rede</translation>
@@ -3269,6 +3281,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6166185671393271715">Importar palavras-passe para o Chrome</translation>
 <translation id="6169040057125497443">Verifique o microfone.</translation>
 <translation id="6169666352732958425">Não é possível transmitir o ambiente de trabalho.</translation>
+<translation id="6170470584681422115">Sanduíche</translation>
 <translation id="6171948306033499786">Interromper impressão</translation>
 <translation id="6173623053897475761">Introduza o PIN novamente</translation>
 <translation id="6175314957787328458">GUID de Domínio do Windows</translation>
@@ -3699,6 +3712,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6870888490422746447">Escolha uma aplicação a partilhar em:</translation>
 <translation id="6871644448911473373">Serviço de resposta de OCSP: <ph name="LOCATION" /></translation>
 <translation id="6872781471649843364">A palavra-passe introduzida foi rejeitada pelo servidor.</translation>
+<translation id="6876155724392614295">Bicicleta</translation>
 <translation id="6878422606530379992">Sensores permitidos</translation>
 <translation id="6880587130513028875">As imagens foram bloqueadas nesta página.</translation>
 <translation id="6883319974225028188">Ups! O sistema não conseguiu guardar a configuração do dispositivo.</translation>
@@ -4265,6 +4279,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7772127298218883077">Acerca do <ph name="PRODUCT_NAME" /></translation>
 <translation id="7772773261844472235">Verificar o estado do seu Chromebook</translation>
 <translation id="7773726648746946405">Armazenamento da sessão</translation>
+<translation id="7774365994322694683">Pássaro</translation>
 <translation id="7776701556330691704">Não foram encontradas vozes.</translation>
 <translation id="7781335840981796660">Serão removidas todas as contas de utilizador e dados locais.</translation>
 <translation id="7782102568078991263">Não há mais sugestões do Google</translation>
@@ -4669,6 +4684,7 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8386903983509584791">Análise concluída</translation>
 <translation id="8389492867173948260">Permitir que esta extensão leia e altere todos os dados nos Websites que visita:</translation>
 <translation id="8390449457866780408">O servidor não se encontra disponível.</translation>
+<translation id="8391218455464584335">Vinil</translation>
 <translation id="8391712576156218334">A imagem não está disponível. Tente novamente mais tarde.</translation>
 <translation id="8392234662362215700">Prima Control-Shift-Espaço para mudar o esquema de teclado.</translation>
 <translation id="8392451568018454956">Menu de opções para <ph name="USER_EMAIL_ADDRESS" /></translation>

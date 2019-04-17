@@ -102,6 +102,7 @@
 <translation id="1145532888383813076">Søk på enheten din, appene dine og på nettet.</translation>
 <translation id="114721135501989771">Få Googles smarte funksjoner i Chrome</translation>
 <translation id="1149401351239820326">Utløpsmåned</translation>
+<translation id="1150565364351027703">Solbriller</translation>
 <translation id="1151917987301063366">Tillat alltid <ph name="HOST" /> å bruke sensorene</translation>
 <translation id="1153356358378277386">Tilkoblede enheter</translation>
 <translation id="1156488781945104845">Klokkeslettet nå</translation>
@@ -658,6 +659,7 @@
 <translation id="2045117674524495717">Hurtigtasthjelp</translation>
 <translation id="2045969484888636535">Fortsett blokkering av informasjonskapsler</translation>
 <translation id="204622017488417136">Enheten blir tilbakestilt til den tidligere installerte versjonen av Chrome. Alle brukerkontoer og lokale data fjernes. Dette kan ikke gjøres om.</translation>
+<translation id="2046702855113914483">Nudler</translation>
 <translation id="2048182445208425546">Få tilgang til nettverkstrafikken din</translation>
 <translation id="2048653237708779538">Handlingen er ikke tilgjengelig</translation>
 <translation id="2050339315714019657">Stående</translation>
@@ -925,6 +927,7 @@
 <translation id="2462752602710430187"><ph name="PRINTER_NAME" /> er lagt til</translation>
 <translation id="2464089476039395325">HTTP-proxy-tjener</translation>
 <translation id="2468205691404969808">Bruker informasjonskapsler til å huske preferansene dine, selv om du ikke går til de sidene</translation>
+<translation id="2468402215065996499">Tamagotchi</translation>
 <translation id="2469375675106140201">Tilpass stavekontrollen</translation>
 <translation id="247051149076336810">Nettadresse for fildeling</translation>
 <translation id="2470702053775288986">Ustøttede utvidelser slått av</translation>
@@ -1128,6 +1131,7 @@
 <translation id="2770465223704140727">Fjern fra listen</translation>
 <translation id="2770690685823456775">Eksportér passordene dine til en annen mappe</translation>
 <translation id="2771268254788431918">Mobildata er aktivert</translation>
+<translation id="2771816809568414714">Ost</translation>
 <translation id="2772936498786524345">Skyggen</translation>
 <translation id="2773288106548584039">Støtte for eldre nettlesere</translation>
 <translation id="2773802008104670137">Denne filtypen kan skade datamaskinen din.</translation>
@@ -1650,6 +1654,7 @@
 <translation id="3616113530831147358">Lyd</translation>
 <translation id="3616741288025931835">&amp;Fjern nettlesingsdata</translation>
 <translation id="3617891479562106823">Bakgrunner er utilgjengelig. Prøv på nytt senere.</translation>
+<translation id="3619115746895587757">Cappuccino</translation>
 <translation id="3623574769078102674">Denne administrerte brukeren blir administrert av <ph name="MANAGER_EMAIL" />.</translation>
 <translation id="3624567683873126087">Lås opp enheten og logg på Google-kontoen din</translation>
 <translation id="3625258641415618104">Skjermdumper er deaktivert</translation>
@@ -2126,6 +2131,7 @@
 <translation id="4359717112757026264">Bybilde</translation>
 <translation id="4361142739114356624">Privatnøkkelen for dette klientsertifikatet mangler eller er ugyldig</translation>
 <translation id="4363771538994847871">Fant ingen Cast-destinasjoner. Trenger du hjelp?</translation>
+<translation id="4364327530094270451">Melon</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> deler et vindu.</translation>
 <translation id="4364830672918311045">Vis varsler</translation>
 <translation id="4365673000813822030">Beklager, synkroniseringen har sluttet å fungere.</translation>
@@ -2315,6 +2321,7 @@
 <translation id="4690091457710545971">&lt;Fire filer genereres av Intel Wi-Fi-fastvaren: csr.lst, fh_regs.lst, radio_reg.lst, monitor.lst.sysmon. De tre første er binærfiler som inneholder registerdumper og kontrolleres av Intel for å sikre at de ikke inneholder personlig eller enhetsidentifiserende informasjon. Den siste filen er et kjøringsspor fra Intel-fastvaren. All personlig eller enhetsidentifiserende informasjon er fjernet fra filen, men den er for stor til å vises her. Disse filene ble generert som svar på nylige Wi-Fi-problemer med enheten din og deles med Intel for å bidra med feilsøking av disse problemene.&gt;</translation>
 <translation id="469230890969474295">OEM-mappe</translation>
 <translation id="4692623383562244444">Søkemotorer</translation>
+<translation id="4693155481716051732">Sushi</translation>
 <translation id="4694024090038830733">Administratoren håndterer konfigureringen av skrivere.</translation>
 <translation id="4694604912444486114">Ape</translation>
 <translation id="4697551882387947560">Når nettleserøkten avsluttes</translation>
@@ -2369,6 +2376,7 @@
 <translation id="4776917500594043016">Passord for <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4777825441726637019">Play Butikk</translation>
 <translation id="4779083564647765204">Zoom</translation>
+<translation id="4779136857077979611">Onigiri</translation>
 <translation id="477945296921629067">{NUM_POPUPS,plural, =1{Et forgrunnsvindu er blokkert}other{# forgrunnsvinduer er blokkert}}</translation>
 <translation id="4780321648949301421">L&amp;agre side som</translation>
 <translation id="4785719467058219317">Du bruker en sikkerhetsnøkkel som ikke er registrert på dette nettstedet</translation>
@@ -2381,6 +2389,7 @@
 <translation id="4801448226354548035">Skjul kontoer</translation>
 <translation id="4801512016965057443">Tillat mobildatabruk på andre nettverk</translation>
 <translation id="4804818685124855865">Koble fra</translation>
+<translation id="4804827417948292437">Avokado</translation>
 <translation id="4807098396393229769">Navn som er oppført på kortet</translation>
 <translation id="4808667324955055115">Blokkerte forgrunnsvinduer:</translation>
 <translation id="480990236307250886">Åpne startsiden</translation>
@@ -2475,6 +2484,7 @@
 <translation id="4941246025622441835">Bruk denne enhetsrekvisisjonen når du registrerer enheten for bedriftsadministrering.</translation>
 <translation id="4941627891654116707">Skriftstørrelse</translation>
 <translation id="494286511941020793">Hjelp for konfigurering av mellomtjenere</translation>
+<translation id="4943368462779413526">Fotball</translation>
 <translation id="4943691134276646401">«<ph name="CHROME_EXTENSION_NAME" />» vil koble til en seriell port</translation>
 <translation id="495170559598752135">Handlinger</translation>
 <translation id="4953689047182316270">Svar på tilgjengelighetshendelser</translation>
@@ -2544,6 +2554,7 @@
 <translation id="5067399438976153555">Alltid på</translation>
 <translation id="5067867186035333991">Spør om <ph name="HOST" /> vil bruke mikrofonen din</translation>
 <translation id="5068918910148307423">Ikke tillat at nylig lukkede nettsteder fullfører sending og mottak av data</translation>
+<translation id="5068919226082848014">Pizza</translation>
 <translation id="5072052264945641674">Juster markørstørrelsen</translation>
 <translation id="5072836811783999860">Vis administrerte bokmerker</translation>
 <translation id="5074318175948309511">Du må kanskje laste inn denne siden på nytt for at innstillingene skal bli gjeldende.</translation>
@@ -2578,6 +2589,7 @@
 <translation id="5117930984404104619">overvåke atferden til andre utvidelser, inkludert besøkte nettadresser</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">Harddisken din er full. Lagre på et annet sted, eller frigjør plass på harddisken.</translation>
+<translation id="5123433949759960244">Basketball</translation>
 <translation id="5125751979347152379">Ugyldig nettadresse.</translation>
 <translation id="5127805178023152808">Synkronisering er slått av</translation>
 <translation id="5127881134400491887">administrere nettverkstilkoblinger</translation>
@@ -3261,6 +3273,7 @@
 <translation id="6166185671393271715">Importér passord i Chrome</translation>
 <translation id="6169040057125497443">Sjekk mikrofonen din.</translation>
 <translation id="6169666352732958425">Kan ikke caste skrivebordet.</translation>
+<translation id="6170470584681422115">Smørbrød</translation>
 <translation id="6171948306033499786">Sett utskriftsjobben på pause</translation>
 <translation id="6173623053897475761">Skriv inn PIN-koden din igjen</translation>
 <translation id="6175314957787328458">Microsoft domeneguide</translation>
@@ -3691,6 +3704,7 @@
 <translation id="6870888490422746447">Velg en app du vil dele med:</translation>
 <translation id="6871644448911473373">OCSP-svarer: <ph name="LOCATION" /></translation>
 <translation id="6872781471649843364">Passordet du skrev inn, ble avvist av tjeneren.</translation>
+<translation id="6876155724392614295">Sykkel</translation>
 <translation id="6878422606530379992">Sensorer er tillatt</translation>
 <translation id="6880587130513028875">Bilder er blokkert på siden.</translation>
 <translation id="6883319974225028188">Beklager. Systemet kunne ikke lagre enhetskonfigurasjonen.</translation>
@@ -4255,6 +4269,7 @@
 <translation id="7772127298218883077">Om <ph name="PRODUCT_NAME" /></translation>
 <translation id="7772773261844472235">Sjekk statusen for Chromebooken</translation>
 <translation id="7773726648746946405">Øktlagring</translation>
+<translation id="7774365994322694683">Fugl</translation>
 <translation id="7776701556330691704">Fant ingen stemmer</translation>
 <translation id="7781335840981796660">Alle brukerkontoer og lokale data fjernes.</translation>
 <translation id="7782102568078991263">Google har ikke flere forslag</translation>
@@ -4660,6 +4675,7 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="8386903983509584791">Skanningen er fullført</translation>
 <translation id="8389492867173948260">La denne utvidelsen lese og endre alle dataene dine på nettsteder du besøker:</translation>
 <translation id="8390449457866780408">Tjeneren er ikke tilgjengelig.</translation>
+<translation id="8391218455464584335">Vinylplate</translation>
 <translation id="8391712576156218334">Bildet er ikke tilgjengelig. Prøv på nytt senere.</translation>
 <translation id="8392234662362215700">Trykk på Ctrl + Shift + mellomrom for å bytte tastaturoppsett.</translation>
 <translation id="8392451568018454956">Alternativmenyen for <ph name="USER_EMAIL_ADDRESS" /></translation>

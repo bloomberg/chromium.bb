@@ -102,6 +102,7 @@
 <translation id="1145532888383813076">Przeszukaj urządzenie, aplikacje i internet.</translation>
 <translation id="114721135501989771">Inteligentne rozwiązania Google w Chrome</translation>
 <translation id="1149401351239820326">Miesiąc utraty ważności</translation>
+<translation id="1150565364351027703">Okulary przeciwsłoneczne</translation>
 <translation id="1151917987301063366">Zawsze zezwalaj witrynie <ph name="HOST" /> na dostęp do czujników</translation>
 <translation id="1153356358378277386">Sparowane urządzenia</translation>
 <translation id="1156488781945104845">Bieżąca godzina</translation>
@@ -661,6 +662,7 @@
 <translation id="2045117674524495717">Informacje o skrótach klawiszowych</translation>
 <translation id="2045969484888636535">Nadal blokuj pliki cookie</translation>
 <translation id="204622017488417136">Na Twoim urządzeniu zostanie przywrócona poprzednia wersja Chrome. Wszystkie zapisane lokalnie konta użytkowników i dane zostaną usunięte. Tej czynności nie można cofnąć.</translation>
+<translation id="2046702855113914483">Ramen</translation>
 <translation id="2048182445208425546">Dostęp do ruchu sieciowego</translation>
 <translation id="2048653237708779538">Czynność niedostępna</translation>
 <translation id="2050339315714019657">Pionowo</translation>
@@ -928,6 +930,7 @@
 <translation id="2462752602710430187">Dodano: <ph name="PRINTER_NAME" /></translation>
 <translation id="2464089476039395325">Serwer proxy HTTP</translation>
 <translation id="2468205691404969808">Zapisuje Twoje ustawienia w plikach cookie, nawet jeśli nie odwiedzasz tych stron</translation>
+<translation id="2468402215065996499">Tamagotchi</translation>
 <translation id="2469375675106140201">Dostosuj sprawdzanie pisowni</translation>
 <translation id="247051149076336810">URL udziału plików</translation>
 <translation id="2470702053775288986">Wyłączono nieobsługiwane rozszerzenia</translation>
@@ -1132,6 +1135,7 @@
 <translation id="2770465223704140727">Usuń z listy</translation>
 <translation id="2770690685823456775">Eksportuj hasła do innego folderu</translation>
 <translation id="2771268254788431918">Aktywowano mobilną transmisję danych</translation>
+<translation id="2771816809568414714">Ser</translation>
 <translation id="2772936498786524345">Dyskretny</translation>
 <translation id="2773288106548584039">Obsługa starszych przeglądarek</translation>
 <translation id="2773802008104670137">Plik tego typu może uszkodzić komputer.</translation>
@@ -1655,6 +1659,7 @@
 <translation id="3616113530831147358">Dźwięk</translation>
 <translation id="3616741288025931835">&amp;Wyczyść dane przeglądania...</translation>
 <translation id="3617891479562106823">Tła są niedostępne. Spróbuj ponownie później.</translation>
+<translation id="3619115746895587757">Cappuccino</translation>
 <translation id="3623574769078102674">Tym użytkownikiem nadzorowanym będzie zarządzać <ph name="MANAGER_EMAIL" />.</translation>
 <translation id="3624567683873126087">Odblokuj urządzenie i zaloguj się na konto Google</translation>
 <translation id="3625258641415618104">Zrzuty ekranu wyłączone</translation>
@@ -2133,6 +2138,7 @@
 <translation id="4359717112757026264">Pejzaż miejski</translation>
 <translation id="4361142739114356624">Klucz prywatny tego certyfikatu klienta jest nieprawidłowy lub nie istnieje</translation>
 <translation id="4363771538994847871">Nie wykryto żadnego urządzenia Cast. Potrzebujesz pomocy?</translation>
+<translation id="4364327530094270451">Melon</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> udostępnia okno.</translation>
 <translation id="4364830672918311045">Wyświetlanie powiadomień</translation>
 <translation id="4365673000813822030">Ups, synchronizacja przestała działać.</translation>
@@ -2322,6 +2328,7 @@
 <translation id="4690091457710545971">&lt;Cztery pliki wygenerowane przez oprogramowanie układowe Wi-Fi firmy Intel: csr.lst, fh_regs.lst, radio_reg.lst, monitor.lst.sysmon. Pierwsze trzy to pliki binarne zawierające zrzuty rejestru. Intel twierdzi, że nie zawierają żadnych danych umożliwiających identyfikację osoby lub urządzenia. Ostatni plik zawiera ślad wykonywania oprogramowania układowego firmy Intel. Wszelkie dane umożliwiające identyfikację osoby lub urządzenia zostały z niego usunięte, ale jest zbyt duży, by go tu wyświetlić. Te pliki zostały wygenerowane w reakcji na niedawne problemy z Wi-Fi na Twoim urządzeniu i zostaną przekazane firmie Intel, by pomóc w rozwiązaniu tych problemów.&gt;</translation>
 <translation id="469230890969474295">Folder OEM</translation>
 <translation id="4692623383562244444">Wyszukiwarki</translation>
+<translation id="4693155481716051732">Sushi</translation>
 <translation id="4694024090038830733">Konfiguracją drukarek zajmuje się administrator.</translation>
 <translation id="4694604912444486114">Małpa</translation>
 <translation id="4697551882387947560">Po zakończeniu sesji przeglądania</translation>
@@ -2376,6 +2383,7 @@
 <translation id="4776917500594043016">Hasło dla <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4777825441726637019">Sklep Play</translation>
 <translation id="4779083564647765204">Powiększ</translation>
+<translation id="4779136857077979611">Onigiri</translation>
 <translation id="477945296921629067">{NUM_POPUPS,plural, =1{Zablokowano wyskakujące okienko}few{Zablokowano # wyskakujące okienka}many{Zablokowano # wyskakujących okienek}other{Zablokowano # wyskakującego okienka}}</translation>
 <translation id="4780321648949301421">Zapisz stronę jako...</translation>
 <translation id="4785719467058219317">Używasz klucza bezpieczeństwa, który nie jest zarejestrowany w tej witrynie</translation>
@@ -2388,6 +2396,7 @@
 <translation id="4801448226354548035">Ukryj konta</translation>
 <translation id="4801512016965057443">Zezwól na przesył danych w roamingu</translation>
 <translation id="4804818685124855865">Rozłącz</translation>
+<translation id="4804827417948292437">Awokado</translation>
 <translation id="4807098396393229769">Imię i nazwisko na karcie</translation>
 <translation id="4808667324955055115">Zablokowane wyskakujące okienka:</translation>
 <translation id="480990236307250886">Otwórz stronę główną</translation>
@@ -2482,6 +2491,7 @@
 <translation id="4941246025622441835">Użyj tej informacji o przeznaczeniu urządzenia, gdy urządzenie będzie rejestrowane na potrzeby zarządzania w firmie:</translation>
 <translation id="4941627891654116707">Rozmiar czcionki</translation>
 <translation id="494286511941020793">Konfiguracja serwera proxy – pomoc</translation>
+<translation id="4943368462779413526">Piłka futbolowa</translation>
 <translation id="4943691134276646401">„<ph name="CHROME_EXTENSION_NAME" />” chce się połączyć z portem szeregowym</translation>
 <translation id="495170559598752135">Czynności</translation>
 <translation id="4953689047182316270">Odpowiadanie na zdarzenia dotyczące ułatwień dostępu</translation>
@@ -2551,6 +2561,7 @@
 <translation id="5067399438976153555">Zawsze włączony</translation>
 <translation id="5067867186035333991">Pytaj, gdy witryna <ph name="HOST" /> chce mieć dostęp do mikrofonu</translation>
 <translation id="5068918910148307423">Nie zezwalaj niedawno zamkniętym stronom na dokończenie wysyłania i odbierania danych</translation>
+<translation id="5068919226082848014">Pizza</translation>
 <translation id="5072052264945641674">Dostosuj rozmiar kursora</translation>
 <translation id="5072836811783999860">Pokaż zakładki zarządzane</translation>
 <translation id="5074318175948309511">Aby nowe ustawienia zaczęły działać, być może trzeba odświeżyć tę stronę.</translation>
@@ -2585,6 +2596,7 @@
 <translation id="5117930984404104619">Monitorowanie działania innych rozszerzeń, w tym otwieranych adresów URL</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">Dysk twardy jest pełny. Zapisz w innej lokalizacji lub zwolnij miejsce na dysku.</translation>
+<translation id="5123433949759960244">Piłka do koszykówki</translation>
 <translation id="5125751979347152379">Nieprawidłowy adres URL.</translation>
 <translation id="5127805178023152808">Synchronizacja jest wyłączona</translation>
 <translation id="5127881134400491887">Zarządzanie połączeniami sieciowymi</translation>
@@ -3268,6 +3280,7 @@
 <translation id="6166185671393271715">Importowanie haseł do Chrome</translation>
 <translation id="6169040057125497443">Sprawdź mikrofon.</translation>
 <translation id="6169666352732958425">Nie można przesłać pulpitu.</translation>
+<translation id="6170470584681422115">Kanapka</translation>
 <translation id="6171948306033499786">Wstrzymaj drukowanie</translation>
 <translation id="6173623053897475761">Wpisz ponownie kod PIN</translation>
 <translation id="6175314957787328458">Identyfikator GUID domeny firmy Microsoft</translation>
@@ -3698,6 +3711,7 @@
 <translation id="6870888490422746447">Wybierz aplikację docelową udostępniania:</translation>
 <translation id="6871644448911473373">Obiekt odpowiadający protokołu OCSP: <ph name="LOCATION" /></translation>
 <translation id="6872781471649843364">Podane hasło zostało odrzucone przez serwer.</translation>
+<translation id="6876155724392614295">Rower</translation>
 <translation id="6878422606530379992">Zezwolono na dostęp do czujników</translation>
 <translation id="6880587130513028875">Pokazywanie grafik na tej stronie zostało zablokowane.</translation>
 <translation id="6883319974225028188">Ups, systemowi nie udało się zapisać konfiguracji urządzenia.</translation>
@@ -4264,6 +4278,7 @@
 <translation id="7772127298218883077"><ph name="PRODUCT_NAME" /> – informacje</translation>
 <translation id="7772773261844472235">Sprawdź stan Chromebooka</translation>
 <translation id="7773726648746946405">Przechowywanie sesji</translation>
+<translation id="7774365994322694683">Ptak</translation>
 <translation id="7776701556330691704">Nie znaleziono głosów</translation>
 <translation id="7781335840981796660">Wszystkie konta użytkowników i dane lokalne zostaną usunięte.</translation>
 <translation id="7782102568078991263">Nie pokazuj sugestii od Google</translation>
@@ -4670,6 +4685,7 @@ Osoby z wolnym połączeniem mogą nie zobaczyć treści, które przesyłasz.</
 <translation id="8386903983509584791">Skanowanie ukończone</translation>
 <translation id="8389492867173948260">Zezwól temu rozszerzeniu na odczytywanie i zmienianie wszystkich Twoich danych na stronach, które otwierasz:</translation>
 <translation id="8390449457866780408">Serwer jest niedostępny.</translation>
+<translation id="8391218455464584335">Płyta winylowa</translation>
 <translation id="8391712576156218334">Obraz jest niedostępny. Spróbuj ponownie później.</translation>
 <translation id="8392234662362215700">Naciśnij Control+Shift+spacja, by przełączyć układ klawiatury.</translation>
 <translation id="8392451568018454956">Menu opcji dla <ph name="USER_EMAIL_ADDRESS" /></translation>

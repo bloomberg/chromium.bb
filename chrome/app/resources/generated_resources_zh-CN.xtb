@@ -102,6 +102,7 @@
 <translation id="1145532888383813076">搜索您的设备、应用和网站。</translation>
 <translation id="114721135501989771">在 Chrome 中畅享 Google 的智能技术</translation>
 <translation id="1149401351239820326">过期月份</translation>
+<translation id="1150565364351027703">太阳镜</translation>
 <translation id="1151917987301063366">始终允许 <ph name="HOST" /> 使用传感器</translation>
 <translation id="1153356358378277386">已配对的设备</translation>
 <translation id="1156488781945104845">当前时间</translation>
@@ -658,6 +659,7 @@
 <translation id="2045117674524495717">键盘快捷键助手</translation>
 <translation id="2045969484888636535">继续拦截 Cookie</translation>
 <translation id="204622017488417136">您的设备将还原到之前安装的 Chrome 版本。所有用户帐号和本地数据都将移除。此操作无法撤消。</translation>
+<translation id="2046702855113914483">拉面</translation>
 <translation id="2048182445208425546">获取您的网络流量数据</translation>
 <translation id="2048653237708779538">无法执行操作</translation>
 <translation id="2050339315714019657">纵向</translation>
@@ -924,6 +926,7 @@
 <translation id="2462752602710430187">已添加<ph name="PRINTER_NAME" /></translation>
 <translation id="2464089476039395325">HTTP 代理</translation>
 <translation id="2468205691404969808">使用 Cookie 记住您的偏好设置（即使您不访问这些网页）</translation>
+<translation id="2468402215065996499">拓麻歌子</translation>
 <translation id="2469375675106140201">自定义拼写检查</translation>
 <translation id="247051149076336810">文件共享网址</translation>
 <translation id="2470702053775288986">已停用不支持的扩展程序</translation>
@@ -1127,6 +1130,7 @@
 <translation id="2770465223704140727">从列表中移除</translation>
 <translation id="2770690685823456775">将您的密码导出到其他文件夹</translation>
 <translation id="2771268254788431918">已启用移动数据网络</translation>
+<translation id="2771816809568414714">奶酪</translation>
 <translation id="2772936498786524345">忍者</translation>
 <translation id="2773288106548584039">旧版浏览器支持</translation>
 <translation id="2773802008104670137">这种类型的文件可能会损害您的计算机。</translation>
@@ -1648,6 +1652,7 @@
 <translation id="3616113530831147358">音频</translation>
 <translation id="3616741288025931835">清除浏览数据(&amp;C)...</translation>
 <translation id="3617891479562106823">背景不可用。请稍后重试。</translation>
+<translation id="3619115746895587757">卡布奇诺</translation>
 <translation id="3623574769078102674">此受监管用户将由 <ph name="MANAGER_EMAIL" /> 管理。</translation>
 <translation id="3624567683873126087">解锁设备并登录 Google 帐号</translation>
 <translation id="3625258641415618104">已停用屏幕截图</translation>
@@ -2125,6 +2130,7 @@
 <translation id="4359717112757026264">城市景观</translation>
 <translation id="4361142739114356624">缺少此客户端证书的私钥，或私钥无效</translation>
 <translation id="4363771538994847871">找不到投射目标。需要帮助吗？</translation>
+<translation id="4364327530094270451">甜瓜</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> 正在共享窗口。</translation>
 <translation id="4364830672918311045">显示通知</translation>
 <translation id="4365673000813822030">糟糕，同步已停止。</translation>
@@ -2314,6 +2320,7 @@
 <translation id="4690091457710545971">&lt;Intel Wi-Fi 固件生成了四个文件：csr.lst、fh_regs.lst、radio_reg.lst 和 monitor.lst.sysmon。前三个文件是包含注册表转储的二进制文件，且 Intel 表示其中并未包含任何个人信息或设备标识信息。最后一个文件是 Intel 固件的执行跟踪记录，其中的个人信息和设备标识信息已全部清除，但由于文件过大而无法显示在这里。因为您的设备最近发生过 Wi-Fi 问题，所以系统生成了这些文件，且会将文件提供给 Intel 以协助排查相关问题。&gt;</translation>
 <translation id="469230890969474295">OEM文件夹</translation>
 <translation id="4692623383562244444">搜索引擎</translation>
+<translation id="4693155481716051732">寿司</translation>
 <translation id="4694024090038830733">打印机配置由管理员处理。</translation>
 <translation id="4694604912444486114">猴子</translation>
 <translation id="4697551882387947560">浏览会话结束时</translation>
@@ -2368,6 +2375,7 @@
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> 的密码</translation>
 <translation id="4777825441726637019">Play 商店</translation>
 <translation id="4779083564647765204">缩放</translation>
+<translation id="4779136857077979611">饭团</translation>
 <translation id="477945296921629067">{NUM_POPUPS,plural, =1{已拦截弹出式窗口}other{已拦截 # 个弹出式窗口}}</translation>
 <translation id="4780321648949301421">页面存储为...</translation>
 <translation id="4785719467058219317">您使用的安全密钥尚未在此网站注册</translation>
@@ -2380,6 +2388,7 @@
 <translation id="4801448226354548035">隐藏帐号</translation>
 <translation id="4801512016965057443">允许移动数据漫游</translation>
 <translation id="4804818685124855865">断开连接</translation>
+<translation id="4804827417948292437">牛油果</translation>
 <translation id="4807098396393229769">持卡人姓名</translation>
 <translation id="4808667324955055115">已拦截弹出式窗口：</translation>
 <translation id="480990236307250886">打开主页</translation>
@@ -2474,6 +2483,7 @@
 <translation id="4941246025622441835">将设备登记到企业管理目录下时使用此设备前提条件：</translation>
 <translation id="4941627891654116707">字号</translation>
 <translation id="494286511941020793">代理配置帮助</translation>
+<translation id="4943368462779413526">美式足球</translation>
 <translation id="4943691134276646401">“<ph name="CHROME_EXTENSION_NAME" />”想连接到串行端口</translation>
 <translation id="495170559598752135">操作</translation>
 <translation id="4953689047182316270">对无障碍事件做出响应</translation>
@@ -2543,6 +2553,7 @@
 <translation id="5067399438976153555">始终启用</translation>
 <translation id="5067867186035333991">当 <ph name="HOST" /> 想要使用麦克风时询问我</translation>
 <translation id="5068918910148307423">禁止最近关闭的网站完成数据收发操作</translation>
+<translation id="5068919226082848014">披萨</translation>
 <translation id="5072052264945641674">调整光标大小</translation>
 <translation id="5072836811783999860">显示托管书签</translation>
 <translation id="5074318175948309511">您可能需要重新加载此页面，才能使新设置生效。</translation>
@@ -2577,6 +2588,7 @@
 <translation id="5117930984404104619">监控其他扩展程序的行为（包括访问过的网址）</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">您的硬盘已满。请保存到其他位置或在硬盘上腾出更多空间。</translation>
+<translation id="5123433949759960244">篮球</translation>
 <translation id="5125751979347152379">网址无效。</translation>
 <translation id="5127805178023152808">同步功能已关闭</translation>
 <translation id="5127881134400491887">管理网络连接</translation>
@@ -3230,7 +3242,7 @@
 <translation id="6122095009389448667">继续禁止此网站查看剪贴板</translation>
 <translation id="6122875415561139701">禁止在“<ph name="DEVICE_NAME" />”上执行写入操作。</translation>
 <translation id="6124650939968185064">需先安装此扩展程序，下列扩展程序才能正常使用：</translation>
-<translation id="6124698108608891449">该网站需要更多权限。</translation>
+<translation id="6124698108608891449">此网站需要更多权限。</translation>
 <translation id="6125479973208104919">抱歉，您需要再次向此 <ph name="DEVICE_TYPE" /> 添加您的帐号。</translation>
 <translation id="6129691635767514872">系统已从 Chrome 和同步的设备中移除了您所选的数据。不过，您的 Google 帐号在 <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> 上可能还有其他形式的浏览记录（例如，在其他 Google 服务中的搜索记录和活动记录）。</translation>
 <translation id="6129938384427316298">Netscape 证书评论</translation>
@@ -3260,6 +3272,7 @@
 <translation id="6166185671393271715">将密码导入到 Chrome 中</translation>
 <translation id="6169040057125497443">请检查您的麦克风。</translation>
 <translation id="6169666352732958425">无法投射桌面。</translation>
+<translation id="6170470584681422115">三明治</translation>
 <translation id="6171948306033499786">暂停打印</translation>
 <translation id="6173623053897475761">再次输入您的 PIN 码</translation>
 <translation id="6175314957787328458">Microsoft 域 GUID</translation>
@@ -3409,7 +3422,7 @@
 <translation id="641081527798843608">主题匹配</translation>
 <translation id="6412931879992742813">打开新的无痕式窗口</translation>
 <translation id="6415900369006735853">通过手机连接到互联网</translation>
-<translation id="6416743254476733475">请在您的计算机上允许或禁止更多权限。</translation>
+<translation id="6416743254476733475">允许或禁止在您的计算机上使用 VR 头戴式设备。</translation>
 <translation id="6417265370957905582">Google 助理</translation>
 <translation id="6418160186546245112">正在还原到之前安装的 <ph name="IDS_SHORT_PRODUCT_NAME" /> 版本</translation>
 <translation id="6418481728190846787">永久删除对所有应用的访问权限</translation>
@@ -3690,6 +3703,7 @@
 <translation id="6870888490422746447">选择要分享给哪个应用：</translation>
 <translation id="6871644448911473373">OCSP 响应程序：<ph name="LOCATION" /></translation>
 <translation id="6872781471649843364">您输入的密码被服务器拒绝了。</translation>
+<translation id="6876155724392614295">自行车</translation>
 <translation id="6878422606530379992">已获准使用传感器</translation>
 <translation id="6880587130513028875">已拦截此网页上的图片。</translation>
 <translation id="6883319974225028188">糟糕！系统未能保存设备配置。</translation>
@@ -4254,6 +4268,7 @@
 <translation id="7772127298218883077">关于<ph name="PRODUCT_NAME" /></translation>
 <translation id="7772773261844472235">检查 Chromebook 的状态</translation>
 <translation id="7773726648746946405">会话存储</translation>
+<translation id="7774365994322694683">鸟</translation>
 <translation id="7776701556330691704">未找到任何语音</translation>
 <translation id="7781335840981796660">所有用户帐号和本地数据都将会移除。</translation>
 <translation id="7782102568078991263">Google 无法提供其他任何建议</translation>
@@ -4658,6 +4673,7 @@
 <translation id="8386903983509584791">已完成扫描</translation>
 <translation id="8389492867173948260">允许此扩展程序读取和更改您在所访问的网站上留存的所有数据：</translation>
 <translation id="8390449457866780408">服务器无法使用。</translation>
+<translation id="8391218455464584335">黑胶唱片</translation>
 <translation id="8391712576156218334">图片不可用。请稍后重试。</translation>
 <translation id="8392234662362215700">按 Ctrl+Shift+空格键可切换键盘布局。</translation>
 <translation id="8392451568018454956"><ph name="USER_EMAIL_ADDRESS" /> 的“选项”菜单</translation>

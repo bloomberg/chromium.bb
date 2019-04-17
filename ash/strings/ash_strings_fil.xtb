@@ -12,6 +12,7 @@
 <translation id="1104621072296271835">Gagana nang mas maayos ang iyong mga device kung magkakasama</translation>
 <translation id="112308213915226829">Awtomatikong itago ang shelf</translation>
 <translation id="1153356358378277386">Mga nakapares na device</translation>
+<translation id="1178581264944972037">I-pause</translation>
 <translation id="1195412055398077112">overscan</translation>
 <translation id="119944043368869598">I-clear lahat</translation>
 <translation id="123828989343052515">New Desk</translation>
@@ -29,6 +30,7 @@
 <translation id="1301069673413256657">GSM</translation>
 <translation id="1302880136325416935">Ipakita ang mga setting ng Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1316069254387866896">Palaging ipakita ang shelf</translation>
+<translation id="1341651618736211726">Overflow</translation>
 <translation id="1346748346194534595">Kanan</translation>
 <translation id="1351937230027495976">I-collapse ang menu</translation>
 <translation id="1383876407941801731">Hanapin</translation>
@@ -363,6 +365,7 @@
 <translation id="6723839937902243910">Power</translation>
 <translation id="6751826523481687655">Naka-on ang pag-trace ng performance</translation>
 <translation id="6785414152754474415">Ang baterya ay <ph name="PERCENTAGE" />% na puno at nagcha-charge.</translation>
+<translation id="6790428901817661496">I-play</translation>
 <translation id="6803622936009808957">Hindi ma-mirror ang mga display dahil walang mga sinusuportahang resolusyon na nakita. Pumasok na lang sa pinalawak na desktop.</translation>
 <translation id="6820676911989879663">Magpahinga!</translation>
 <translation id="683971173229319003">Search+L</translation>

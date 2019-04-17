@@ -102,6 +102,7 @@
 <translation id="1145532888383813076">Busca en el dispositivo, las aplicaciones y la Web.</translation>
 <translation id="114721135501989771">Obtén funciones inteligentes en Chrome</translation>
 <translation id="1149401351239820326">Mes de caducidad</translation>
+<translation id="1150565364351027703">Gafas de sol</translation>
 <translation id="1151917987301063366">Permitir siempre que <ph name="HOST" /> acceda a los sensores</translation>
 <translation id="1153356358378277386">Dispositivos vinculados</translation>
 <translation id="1156488781945104845">Hora actual</translation>
@@ -661,6 +662,7 @@
 <translation id="2045117674524495717">Asistente de combinaciones de teclas</translation>
 <translation id="2045969484888636535">Continuar bloqueando las cookies</translation>
 <translation id="204622017488417136">Se restaurará la versión de Chrome instalada previamente en el dispositivo y se eliminarán todas las cuentas de usuario y todos los datos locales. Esta acción no se puede deshacer.</translation>
+<translation id="2046702855113914483">Fideos</translation>
 <translation id="2048182445208425546">Acceder a tu tráfico de red</translation>
 <translation id="2048653237708779538">Acción no disponible</translation>
 <translation id="2050339315714019657">Vertical</translation>
@@ -928,6 +930,7 @@
 <translation id="2462752602710430187">Se ha añadido la impresora <ph name="PRINTER_NAME" /></translation>
 <translation id="2464089476039395325">Proxy HTTP</translation>
 <translation id="2468205691404969808">Usa cookies para recordar tus preferencias aunque no visites esas páginas</translation>
+<translation id="2468402215065996499">Tamagotchi</translation>
 <translation id="2469375675106140201">Personalizar la revisión ortográfica</translation>
 <translation id="247051149076336810">URL del sistema de archivos compartidos</translation>
 <translation id="2470702053775288986">Extensiones no admitidas inhabilitadas</translation>
@@ -1132,6 +1135,7 @@ y su configuración no se sincronizan en otros dispositivos con la función de s
 <translation id="2770465223704140727">Eliminar de la lista</translation>
 <translation id="2770690685823456775">Exporta tus contraseñas a otra carpeta</translation>
 <translation id="2771268254788431918">Datos móviles activados</translation>
+<translation id="2771816809568414714">Queso</translation>
 <translation id="2772936498786524345">Ninja</translation>
 <translation id="2773288106548584039">Compatibilidad con navegadores antiguos</translation>
 <translation id="2773802008104670137">Este tipo de archivo puede dañar tu ordenador.</translation>
@@ -1653,6 +1657,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="3616113530831147358">Audio</translation>
 <translation id="3616741288025931835">&amp;Borrar datos de navegación...</translation>
 <translation id="3617891479562106823">Los fondos no están disponibles. Inténtalo de nuevo más tarde.</translation>
+<translation id="3619115746895587757">Capuchino</translation>
 <translation id="3623574769078102674">Este usuario supervisado será administrado por <ph name="MANAGER_EMAIL" />.</translation>
 <translation id="3624567683873126087">Desbloquear el dispositivo e iniciar sesión en la cuenta de Google</translation>
 <translation id="3625258641415618104">Capturas de pantalla inhabilitadas</translation>
@@ -2130,6 +2135,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="4359717112757026264">Paisaje urbano</translation>
 <translation id="4361142739114356624">Falta la clave privada de este certificado de cliente o no es válida</translation>
 <translation id="4363771538994847871">No se han encontrado destinos para enviar contenido. ¿Necesitas ayuda?</translation>
+<translation id="4364327530094270451">Melón</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> está compartiendo una ventana.</translation>
 <translation id="4364830672918311045">Mostrar notificaciones</translation>
 <translation id="4365673000813822030">¡Ups! La sincronización ha dejado de funcionar.</translation>
@@ -2319,6 +2325,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="4690091457710545971">&lt;El firmware del Wi‑Fi de Intel ha generado cuatro archivos: csr.lst, fh_regs.lst, radio_reg.lst y monitor.lst.sysmon. Los tres primeros son archivos binarios que contienen volcados de registro, e Intel afirma que no contienen información personal o que identifique el dispositivo. El último archivo es un seguimiento de ejecución del firmware de Intel del cual se ha eliminado toda la información personal o que identifique el dispositivo, pero es demasiado grande para mostrarse aquí. Estos archivos se han generado como respuesta a los problemas recientes de tu dispositivo con la conexión Wi‑Fi y se compartirán con Intel para que ayude a solucionarlos.&gt;</translation>
 <translation id="469230890969474295">Carpeta OEM</translation>
 <translation id="4692623383562244444">Buscadores</translation>
+<translation id="4693155481716051732">Sushi</translation>
 <translation id="4694024090038830733">El administrador se encarga de configurar la impresora.</translation>
 <translation id="4694604912444486114">Mono</translation>
 <translation id="4697551882387947560">Al finalizar la sesión de navegación</translation>
@@ -2373,6 +2380,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="4776917500594043016">Contraseña de <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4777825441726637019">Play Store</translation>
 <translation id="4779083564647765204">Zoom</translation>
+<translation id="4779136857077979611">Onigiri</translation>
 <translation id="477945296921629067">{NUM_POPUPS,plural, =1{Ventana emergente bloqueada}other{# ventanas emergentes bloqueadas}}</translation>
 <translation id="4780321648949301421">Guardar página como...</translation>
 <translation id="4785719467058219317">Estás usando una llave de seguridad que no se ha registrado en este sitio web</translation>
@@ -2385,6 +2393,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="4801448226354548035">Ocultar cuentas</translation>
 <translation id="4801512016965057443">Permitir la itinerancia de datos móviles</translation>
 <translation id="4804818685124855865">Desvincular</translation>
+<translation id="4804827417948292437">Aguacate</translation>
 <translation id="4807098396393229769">Titular de la tarjeta</translation>
 <translation id="4808667324955055115">Pop-ups bloqueados</translation>
 <translation id="480990236307250886">Abrir página de inicio</translation>
@@ -2479,6 +2488,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="4941246025622441835">Utiliza esta solicitud de dispositivo al registrar el dispositivo para la administración empresarial:</translation>
 <translation id="4941627891654116707">Tamaño de la fuente</translation>
 <translation id="494286511941020793">Ayuda para la configuración de proxy</translation>
+<translation id="4943368462779413526">Balón de fútbol</translation>
 <translation id="4943691134276646401">"<ph name="CHROME_EXTENSION_NAME" />" solicita conectarse a un puerto serie</translation>
 <translation id="495170559598752135">Acciones</translation>
 <translation id="4953689047182316270">Responder a eventos de accesibilidad</translation>
@@ -2548,6 +2558,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="5067399438976153555">Siempre activado</translation>
 <translation id="5067867186035333991">Preguntar si <ph name="HOST" /> quiere acceder al micrófono</translation>
 <translation id="5068918910148307423">No permitir que los sitios web cerrados recientemente terminen de enviar y recibir datos</translation>
+<translation id="5068919226082848014">Pizza</translation>
 <translation id="5072052264945641674">Ajustar el tamaño del cursor</translation>
 <translation id="5072836811783999860">Mostrar marcadores administrados</translation>
 <translation id="5074318175948309511">Es posible que debas actualizar la página para que se aplique la nueva configuración.</translation>
@@ -2582,6 +2593,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="5117930984404104619">Controlar el comportamiento de otras extensiones, incluidas las URL visitadas</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">Tu disco duro está lleno. Guarda el archivo en otra ubicación o libera espacio en el disco duro.</translation>
+<translation id="5123433949759960244">Balón de baloncesto</translation>
 <translation id="5125751979347152379">La URL no es válida.</translation>
 <translation id="5127805178023152808">La sincronización está desactivada</translation>
 <translation id="5127881134400491887">Administrar conexiones de red</translation>
@@ -3265,6 +3277,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6166185671393271715">Importar contraseñas a Chrome</translation>
 <translation id="6169040057125497443">Comprueba el micrófono.</translation>
 <translation id="6169666352732958425">No se ha podido enviar el escritorio.</translation>
+<translation id="6170470584681422115">Bocadillo</translation>
 <translation id="6171948306033499786">Poner en pausa la impresión</translation>
 <translation id="6173623053897475761">Vuelve a escribir tu PIN</translation>
 <translation id="6175314957787328458">GUID de dominio de Microsoft</translation>
@@ -3695,6 +3708,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6870888490422746447">Elige una aplicación con la que compartir el contenido:</translation>
 <translation id="6871644448911473373">Respuesta de OCSP: <ph name="LOCATION" /></translation>
 <translation id="6872781471649843364">El servidor ha rechazado la contraseña que has introducido.</translation>
+<translation id="6876155724392614295">Bici</translation>
 <translation id="6878422606530379992">Sensores permitidos</translation>
 <translation id="6880587130513028875">Se han bloqueado las imágenes en esta página.</translation>
 <translation id="6883319974225028188">¡Vaya! El sistema no ha podido guardar la configuración del dispositivo.</translation>
@@ -4261,6 +4275,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7772127298218883077">Información de <ph name="PRODUCT_NAME" /></translation>
 <translation id="7772773261844472235">Comprueba el estado de tu Chromebook</translation>
 <translation id="7773726648746946405">Almacenamiento de sesión</translation>
+<translation id="7774365994322694683">Pájaro</translation>
 <translation id="7776701556330691704">No se ha encontrado ninguna voz</translation>
 <translation id="7781335840981796660">Se eliminarán todas las cuentas de usuario y todos los datos locales.</translation>
 <translation id="7782102568078991263">No hay más sugerencias de Google.</translation>
@@ -4666,6 +4681,7 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8386903983509584791">Búsqueda completada</translation>
 <translation id="8389492867173948260">Permitir que esta extensión lea y cambie todos los datos de los sitios web que visites:</translation>
 <translation id="8390449457866780408">Servidor no disponible</translation>
+<translation id="8391218455464584335">Vinilo</translation>
 <translation id="8391712576156218334">La imagen no está disponible. Inténtalo de nuevo más tarde.</translation>
 <translation id="8392234662362215700">Pulsa Control+Mayús+Espacio para cambiar de diseño de teclado.</translation>
 <translation id="8392451568018454956">Menú de opciones de <ph name="USER_EMAIL_ADDRESS" /></translation>

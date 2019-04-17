@@ -102,6 +102,7 @@
 <translation id="1145532888383813076">तुमच्या डिव्हाइस, अॅप्स आणि वेबवर शोधा.</translation>
 <translation id="114721135501989771">Chrome मध्ये Google स्मार्ट मिळवा</translation>
 <translation id="1149401351239820326">कालबाह्य होण्याचा महिना:</translation>
+<translation id="1150565364351027703">सनग्लासेस</translation>
 <translation id="1151917987301063366"><ph name="HOST" /> ला नेहमी सेन्सर अॅक्सेस करू द्या</translation>
 <translation id="1153356358378277386">जोडलेली डिव्हाइस</translation>
 <translation id="1156488781945104845">वर्तमान वेळ</translation>
@@ -660,6 +661,7 @@
 <translation id="2045117674524495717">कीबोर्ड शॉर्टकट मदतकर्ता</translation>
 <translation id="2045969484888636535">कुकी अवरोधित करणे सुरू ठेवा</translation>
 <translation id="204622017488417136">तुमचे डिव्हाइस Chrome च्या मागील इंस्टॉल केलेल्या आवृत्तीवर परत जाईल. सर्व वापरकर्ता खाती आणि स्थानिक डेटा काढला जाईल. हे पूर्ववत केले जाऊ शकत नाही.</translation>
+<translation id="2046702855113914483">रामेन</translation>
 <translation id="2048182445208425546">आपल्या नेटवर्क रहदारीवर प्रवेश करा</translation>
 <translation id="2048653237708779538">कृती उपलब्ध नाही</translation>
 <translation id="2050339315714019657">पोर्ट्रेट</translation>
@@ -927,6 +929,7 @@
 <translation id="2462752602710430187"><ph name="PRINTER_NAME" /> जोडले</translation>
 <translation id="2464089476039395325">HTTP प्रॉक्सी</translation>
 <translation id="2468205691404969808">जरी तुम्ही त्या पेजना भेट देत नसलात तरी, तुमची प्राधान्ये लक्षात ठेवण्यासाठी कुकीजचा वापर करते</translation>
+<translation id="2468402215065996499">तामागोची</translation>
 <translation id="2469375675106140201">स्पेल चेक कस्टमाइझ करा</translation>
 <translation id="247051149076336810">फाइल शेअर URL</translation>
 <translation id="2470702053775288986">असमर्थित विस्तार अक्षम</translation>
@@ -1131,6 +1134,7 @@
 <translation id="2770465223704140727">सूचीमधून काढून टाका</translation>
 <translation id="2770690685823456775">तुमचे पासवर्ड दुसर्‍या फोल्डरमध्ये एक्सपोर्ट करा</translation>
 <translation id="2771268254788431918">मोबाइल डेटा अॅक्टिव्ह केला</translation>
+<translation id="2771816809568414714">चीज</translation>
 <translation id="2772936498786524345">Sneaky</translation>
 <translation id="2773288106548584039">लेगसी ब्राउझर सपोर्ट</translation>
 <translation id="2773802008104670137">या प्रकारची फाईल आपल्या संगणकास हानी पोहोचवू शकते.</translation>
@@ -1655,6 +1659,7 @@
 <translation id="3616113530831147358">ऑडिओ</translation>
 <translation id="3616741288025931835">ब्राउझिंग डेटा &amp;साफ करा...</translation>
 <translation id="3617891479562106823">बॅकग्राउंड अनुपलब्ध आहेत. नंतर पुन्हा प्रयत्न करा.</translation>
+<translation id="3619115746895587757">कॅपिचिनो</translation>
 <translation id="3623574769078102674">हा पर्यवेक्षी वापरकर्ता <ph name="MANAGER_EMAIL" /> द्वारे व्यवस्थापित केला जाईल.</translation>
 <translation id="3624567683873126087">डिव्हाइस अनलॉक करा आणि Google खात्यामध्ये साइन इन करा</translation>
 <translation id="3625258641415618104">स्क्रीनशॉट अक्षम केले</translation>
@@ -2132,6 +2137,7 @@
 <translation id="4359717112757026264">शहराचे दृश्य</translation>
 <translation id="4361142739114356624">या क्लायंट प्रमाणपत्रासाठी खाजगी, की अनुपलब्ध किंवा अवैध आहे</translation>
 <translation id="4363771538994847871">कोणतीही कास्ट गंतव्यस्थाने सापडली नाहीत. मदत हवी आहे?</translation>
+<translation id="4364327530094270451">खरबूज</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> विंडो शेअर करीत आहे.</translation>
 <translation id="4364830672918311045">सूचना डिस्प्ले करा</translation>
 <translation id="4365673000813822030">अरेरे, समक्रमणाने काम करणे थांबवले आहे.</translation>
@@ -2321,6 +2327,7 @@
 <translation id="4690091457710545971">&lt;Intel वाय-फाय फर्मवेयरद्वारे चार फायली निर्माण करण्यात आल्या: csr.lst, fh_regs.lst, radio_reg.lst, monitor.lst.sysmon.  पहिल्या तीन बायनरी फायली अशा आहेत ज्यामध्ये रजिस्टर डंप आहेत आणि त्यामध्ये कोणतीही वैयक्तिक किंवा डिव्हाइसची ओळख स्पष्ट करणारी माहिती नसेल याची Intel द्वारे खात्री करण्यात आली आहे. शेवटची फाइल म्हणजे Intel फर्मवेयरने काढलेला माग आहे; त्यामधून कोणतीही वैयक्तिक किंवा डिव्हाइसची ओळख स्पष्ट करणारी माहिती काढून टाकण्यात आली आहे, पण ही फाइल इथे दर्शवण्यासाठी खूप मोठी आहे. तुमच्या डिव्हाइसवर नुकत्याच उद्भवलेल्या वाय-फाय समस्यांच्या प्रतिसादातून या फायली तयार करण्यात आल्या आहेत आणि या समस्यांवर मार्ग काढण्यासाठी त्या Intel सह शेअर केल्या जातील.&gt;</translation>
 <translation id="469230890969474295">OEM फोल्डर</translation>
 <translation id="4692623383562244444">शोध इंजिने</translation>
+<translation id="4693155481716051732">सुशी</translation>
 <translation id="4694024090038830733">प्रिंटर कॉन्फिगरेशन अॅडमिनिस्ट्रेटरद्वारे हाताळले जाते.</translation>
 <translation id="4694604912444486114">माकड</translation>
 <translation id="4697551882387947560">ब्राउझिंग सत्र समाप्त होते तेव्हा</translation>
@@ -2375,6 +2382,7 @@
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> साठी पासवर्ड</translation>
 <translation id="4777825441726637019">Play स्टोअर</translation>
 <translation id="4779083564647765204">झूम</translation>
+<translation id="4779136857077979611">ओनिगिरी</translation>
 <translation id="477945296921629067">{NUM_POPUPS,plural, =1{पॉप-अप ब्लॉक केला}one{# पॉप-अप ब्लॉक केला}other{# पॉप-अप ब्लॉक केले}}</translation>
 <translation id="4780321648949301421">पेज या फॉरमॅटमध्ये सेव्ह करा...</translation>
 <translation id="4785719467058219317">तुम्ही या वेबसाइटवर नोंदणीकृत नसलेली सिक्युरिटी की वापरत आहात</translation>
@@ -2387,6 +2395,7 @@
 <translation id="4801448226354548035">खाती लपवा</translation>
 <translation id="4801512016965057443">मोबाइल डेटा रोमिंगची अनुमती द्या</translation>
 <translation id="4804818685124855865">‍डिस्कनेक्ट</translation>
+<translation id="4804827417948292437">अॅव्होकॅडो</translation>
 <translation id="4807098396393229769">कार्डवरील नाव</translation>
 <translation id="4808667324955055115">पॉप-अप ब्लॉक केले</translation>
 <translation id="480990236307250886">मुख्यपृष्ठ उघडा</translation>
@@ -2481,6 +2490,7 @@
 <translation id="4941246025622441835">एंटरप्राइज व्यवस्थापनासाठी डिव्हाइसची नोंदणी करताना ही डिव्हाइस मागणी वापरा:</translation>
 <translation id="4941627891654116707">फॉन्ट आकार</translation>
 <translation id="494286511941020793">प्रॉक्सी कॉन्फिगरेशन मदत</translation>
+<translation id="4943368462779413526">फूटबॉल</translation>
 <translation id="4943691134276646401">"<ph name="CHROME_EXTENSION_NAME" />" ना सिरीअल पोर्टशी कनेक्ट करायचे आहे</translation>
 <translation id="495170559598752135">क्रिया</translation>
 <translation id="4953689047182316270">प्रवेशयोग्यता कार्यक्रमांना प्रतिसाद द्या</translation>
@@ -2550,6 +2560,7 @@
 <translation id="5067399438976153555">नेहमी चालू</translation>
 <translation id="5067867186035333991"><ph name="HOST" /> आपल्या मायक्रोफोनवर प्रवेश करू इच्छित असल्यास विचारा</translation>
 <translation id="5068918910148307423">अलीकडील बंद केलेल्या साइटना डेटा पाठविणे आणि प्राप्त करणे समाप्त करण्यासाठी अनुमती देऊ नका</translation>
+<translation id="5068919226082848014">पिझ्झा</translation>
 <translation id="5072052264945641674">कर्सर आकार समायोजित करा</translation>
 <translation id="5072836811783999860">व्यवस्थापित बुकमार्क दर्शवा</translation>
 <translation id="5074318175948309511">नवीन सेटिंग्ज प्रभावी होण्यापूर्वी या पृष्ठास रीलोड करण्याची आवश्यकता असू शकते.</translation>
@@ -2584,6 +2595,7 @@
 <translation id="5117930984404104619">भेट दिलेल्या URL सह, अन्य विस्तारांच्या वर्तनाचे परीक्षण करा</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">तुमची हार्ड डिस्क पूर्ण भरली आहे. कृपया दुसर्‍या स्‍थानावर सेव्ह करा किंवा हार्ड डिस्कवर अधिक जागा तयार करा.</translation>
+<translation id="5123433949759960244">बास्केटबॉल</translation>
 <translation id="5125751979347152379">चुकीची URL.</translation>
 <translation id="5127805178023152808">संकालन बंद आहे</translation>
 <translation id="5127881134400491887">नेटवर्क कनेक्शन व्यवस्थापित करा</translation>
@@ -3268,6 +3280,7 @@
 <translation id="6166185671393271715">Chrome मध्ये पासवर्ड इंपोर्ट करा</translation>
 <translation id="6169040057125497443">कृपया तुमचा मायक्रोफोन तपासा.</translation>
 <translation id="6169666352732958425">डेस्कटॉप कास्ट करण्यात अक्षम.</translation>
+<translation id="6170470584681422115">सँडविच</translation>
 <translation id="6171948306033499786">मुद्रणास विराम द्या</translation>
 <translation id="6173623053897475761">तुमचा पिन पुन्हा टाइप करा</translation>
 <translation id="6175314957787328458">Microsoft Domain GUID</translation>
@@ -3698,6 +3711,7 @@
 <translation id="6870888490422746447">यासह शेअर करण्‍यासाठी एक ॲप निवडा:</translation>
 <translation id="6871644448911473373">OCSP प्रतिसादकर्ता: <ph name="LOCATION" /></translation>
 <translation id="6872781471649843364">तुम्ही टाकलेला पासवर्ड सर्व्हरने नाकारला होता.</translation>
+<translation id="6876155724392614295">सायकल</translation>
 <translation id="6878422606530379992">सेन्सरना अनुमती आहे</translation>
 <translation id="6880587130513028875">या पृष्ठावरील इमेज अवरोधित केलेल्या होत्या.</translation>
 <translation id="6883319974225028188">अरेरे! डिव्हाइस कॉन्फिगरेशन सेव्ह करण्यात सिस्टम अयशस्वी झाले.</translation>
@@ -4264,6 +4278,7 @@
 <translation id="7772127298218883077"><ph name="PRODUCT_NAME" /> बद्दल</translation>
 <translation id="7772773261844472235">तुमच्या Chromebook ची स्थिती तपासा</translation>
 <translation id="7773726648746946405">सत्र संचयन</translation>
+<translation id="7774365994322694683">पक्षी</translation>
 <translation id="7776701556330691704">कोणतेही व्हॉइस सापडले नाहीत</translation>
 <translation id="7781335840981796660">सर्व वापरकर्ता खाती आणि स्थानिक डेटा काढला जाईल.</translation>
 <translation id="7782102568078991263">Google कडून कोणत्याही आणखी सूचना नाहीत</translation>
@@ -4667,6 +4682,7 @@
 <translation id="8386903983509584791">स्कॅन पूर्ण झाले</translation>
 <translation id="8389492867173948260">तुम्ही भेट देता त्या वेबसाइटवरील तुमचा सर्व डेटा वाचण्यासाठी आणि बदलण्यासाठी या एक्स्टेंशनला अनुमती द्या:</translation>
 <translation id="8390449457866780408">सर्व्हर अनुपलब्ध.</translation>
+<translation id="8391218455464584335">व्हिनेल</translation>
 <translation id="8391712576156218334">इमेज अनुपलब्ध आहे. नंतर पुन्हा प्रयत्न करा.</translation>
 <translation id="8392234662362215700">कीबोर्ड लेआउट वरून स्विच करण्यासाठी Control-Shift-Space दाबा.</translation>
 <translation id="8392451568018454956"><ph name="USER_EMAIL_ADDRESS" /> साठी पर्याय मेनू</translation>

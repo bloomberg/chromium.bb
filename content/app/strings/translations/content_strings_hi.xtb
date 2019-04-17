@@ -41,12 +41,12 @@
 <translation id="2277199496770840904">ट्रैक <ph name="NUMBER" /></translation>
 <translation id="2291999235780842123">चेकबॉक्स</translation>
 <translation id="2311842470354187719">नया पेज</translation>
-<translation id="2335594187091864976">दिनांक और समय पिकर</translation>
+<translation id="2335594187091864976">तारीख और समय पिकर</translation>
 <translation id="245932805758469625">बचे हुए वीडियो का कुल समय सेकंड में</translation>
 <translation id="248395913932153421">दिन</translation>
 <translation id="2507943997699731163">कृपया इस फ़ील्ड को भरें.</translation>
 <translation id="2508569020611168319">टैब सूची</translation>
-<translation id="2561842179657104141">अधिक मीडिया नियंत्रण दिखाएं</translation>
+<translation id="2561842179657104141">ज़्यादा मीडिया नियंत्रण दिखाएं</translation>
 <translation id="2572483411312390101">चलाएं</translation>
 <translation id="2613802280814924224">कृपया कोई मान्य मान डालें. निकटतम मान्य मान <ph name="VALID_VALUE" /> है.</translation>
 <translation id="2653659639078652383">सबमिट करें</translation>
@@ -77,7 +77,7 @@
 <translation id="3732799496749320381">mm</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> जीबी</translation>
 <translation id="3808586225841795776">शब्द</translation>
-<translation id="3822383571486410024">कृपया इस लेख को <ph name="MIN_CHARACTERS" /> वर्णों या अधिक तक बढ़ाएं (वर्तमान में आप <ph name="CURRENT_LENGTH" /> वर्णों का उपयोग कर रहे हैं).</translation>
+<translation id="3822383571486410024">कृपया इस लेख को <ph name="MIN_CHARACTERS" /> वर्णों या ज़्यादा तक बढ़ाएं (वर्तमान में आप <ph name="CURRENT_LENGTH" /> वर्णों का उपयोग कर रहे हैं).</translation>
 <translation id="383465348367842624">'<ph name="ATSIGN" />' के बाद आने वाले भाग में '<ph name="INVALIDCHARACTER" />' प्रतीक शामिल नहीं होना चाहिए.</translation>
 <translation id="3846214748874656680">पूर्णस्क्रीन से बाहर निकलें</translation>
 <translation id="3920932319529768807">निष्कर्ष</translation>
@@ -124,16 +124,16 @@
 <translation id="5334352251556557839">मीडिया नहीं चला पा रहे हैं.</translation>
 <translation id="5406322316791861025">आकृति</translation>
 <translation id="5453733299334684579">ट्री आइटम</translation>
-<translation id="5466621249238537318">कृपया एक या अधिक फ़ाइल को चुनें.</translation>
+<translation id="5466621249238537318">कृपया एक या ज़्यादा फ़ाइल को चुनें.</translation>
 <translation id="5468998798572797635">पूर्ण स्क्रीन से बाहर निकलें</translation>
-<translation id="5516424706154626233">दिनांक पिकर</translation>
+<translation id="5516424706154626233">तारीख पिकर</translation>
 <translation id="5537725057119320332">कास्‍ट करें</translation>
 <translation id="5546461542133609677">अनम्यूट करें</translation>
 <translation id="561939826962581046">समय</translation>
 <translation id="5630795885300617244">10 सेकंड आगे या पीछे जाने के लिए बाएं या दाएं पर दो बार टैप करें</translation>
 <translation id="5631759159893697722">संक्षेप</translation>
 <translation id="5643186887447432888">बटन</translation>
-<translation id="5677946354068040947">अधिक विकल्प</translation>
+<translation id="5677946354068040947">ज़्यादा विकल्प</translation>
 <translation id="576709008726043716">परिचय</translation>
 <translation id="57838592816432529">म्यूट करें</translation>
 <translation id="5860033963881614850">बंद</translation>
