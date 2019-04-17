@@ -144,7 +144,7 @@ mr.mirror.Settings = class {
      *
      * @export {number}
      */
-    this.maxLatencyMillis = 800;
+    this.maxLatencyMillis = 400;
 
     /**
      * Minimum end-to-end latency (in milliseconds). This allows cast streaming
