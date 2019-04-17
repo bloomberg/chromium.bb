@@ -720,15 +720,6 @@ const FeatureEntry::Choice kMemlogStackModeChoices[] = {
      heap_profiling::kMemlogStackModeMixed},
 };
 
-const FeatureEntry::Choice kMemlogInProcessChoices[] = {
-    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
-    {flag_descriptions::kMemlogInProcessDisabled,
-     heap_profiling::kMemlogInProcess,
-     heap_profiling::kMemlogInProcessDisabled},
-    {flag_descriptions::kMemlogInProcessEnabled,
-     heap_profiling::kMemlogInProcess, heap_profiling::kMemlogInProcessEnabled},
-};
-
 const FeatureEntry::Choice kMemlogSamplingRateChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
     {flag_descriptions::kMemlogSamplingRate10KB,
@@ -2596,10 +2587,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"memlog", flag_descriptions::kMemlogName,
      flag_descriptions::kMemlogDescription, kOsAll,
      MULTI_VALUE_TYPE(kMemlogModeChoices)},
-
-    {"memlog-in-process", flag_descriptions::kMemlogInProcessName,
-     flag_descriptions::kMemlogInProcessDescription, kOsAll,
-     MULTI_VALUE_TYPE(kMemlogInProcessChoices)},
 
     {"memlog-sampling-rate", flag_descriptions::kMemlogSamplingRateName,
      flag_descriptions::kMemlogSamplingRateDescription, kOsAll,

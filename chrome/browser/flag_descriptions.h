@@ -485,11 +485,6 @@ extern const char kMemlogModeGpu[];
 extern const char kMemlogModeManual[];
 extern const char kMemlogModeRendererSampling[];
 
-extern const char kMemlogInProcessName[];
-extern const char kMemlogInProcessDescription[];
-extern const char kMemlogInProcessDisabled[];
-extern const char kMemlogInProcessEnabled[];
-
 extern const char kMemlogSamplingRateName[];
 extern const char kMemlogSamplingRateDescription[];
 extern const char kMemlogSamplingRate10KB[];

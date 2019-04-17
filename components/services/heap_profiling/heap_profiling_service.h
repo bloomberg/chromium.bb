@@ -46,7 +46,6 @@ class HeapProfilingService
   // ProfilingService implementation.
   void AddProfilingClient(base::ProcessId pid,
                           mojom::ProfilingClientPtr client,
-                          mojo::ScopedHandle pipe_receiver,
                           mojom::ProcessType process_type,
                           mojom::ProfilingParamsPtr params) override;
   void GetProfiledPids(GetProfiledPidsCallback callback) override;

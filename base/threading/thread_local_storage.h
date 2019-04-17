@@ -18,10 +18,6 @@
 #include <pthread.h>
 #endif
 
-namespace heap_profiling {
-class ScopedAllowAlloc;
-}  // namespace heap_profiling
-
 namespace ui {
 class TLSDestructionCheckerForX11;
 }
@@ -165,7 +161,6 @@ class BASE_EXPORT ThreadLocalStorage {
   friend class base::internal::ThreadLocalStorageTestInternal;
   friend class base::trace_event::MallocDumpProvider;
   friend class debug::GlobalActivityTracker;
-  friend class heap_profiling::ScopedAllowAlloc;
   friend class ui::TLSDestructionCheckerForX11;
   static bool HasBeenDestroyed();
 

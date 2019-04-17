@@ -10,11 +10,8 @@ static_library("cpp") {
     "controller.h",
     "sampling_profiler_wrapper.cc",
     "sampling_profiler_wrapper.h",
-    "sender_pipe.h",
-    "sender_pipe_win.cc",
     "settings.cc",
     "settings.h",
-    "stream.h",
     "switches.cc",
     "switches.h",
   ]
@@ -30,16 +27,11 @@ static_library("cpp") {
     "//services/service_manager/public/cpp",
     "//services/service_manager/sandbox",
   ]
-
-  if (is_posix) {
-    sources += [ "sender_pipe_posix.cc" ]
-  }
 }
 
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "sender_pipe_unittest.cc",
     "switches_unittest.cc",
   ]
   deps = [

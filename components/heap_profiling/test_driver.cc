@@ -711,8 +711,8 @@ bool TestDriver::CheckOrStartProfilingOnUIThreadWithAsyncSignalling() {
                                ? (options_.sample_everything ? 2 : kSampleRate)
                                : 1;
   Supervisor::GetInstance()->Start(connection, options_.mode,
-                                   options_.stack_mode, options_.stream_samples,
-                                   sampling_rate, std::move(start_callback));
+                                   options_.stack_mode, sampling_rate,
+                                   std::move(start_callback));
 
   return true;
 }
@@ -764,8 +764,8 @@ bool TestDriver::CheckOrStartProfilingOnUIThreadWithNestedRunLoops() {
                                ? (options_.sample_everything ? 2 : kSampleRate)
                                : 1;
   Supervisor::GetInstance()->Start(connection, options_.mode,
-                                   options_.stack_mode, options_.stream_samples,
-                                   sampling_rate, std::move(start_callback));
+                                   options_.stack_mode, sampling_rate,
+                                   std::move(start_callback));
 
   run_loop->Run();
 

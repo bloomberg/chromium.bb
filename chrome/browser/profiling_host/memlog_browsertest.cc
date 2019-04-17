@@ -34,7 +34,6 @@ namespace heap_profiling {
 struct TestParam {
   Mode mode;
   mojom::StackMode stack_mode;
-  bool stream_samples;
   bool start_profiling_with_command_line_flag;
   bool should_sample;
   bool sample_everything;
@@ -44,11 +43,6 @@ class MemlogBrowserTest : public InProcessBrowserTest,
                           public testing::WithParamInterface<TestParam> {
   void SetUpDefaultCommandLine(base::CommandLine* command_line) override {
     InProcessBrowserTest::SetUpDefaultCommandLine(command_line);
-
-    if (GetParam().stream_samples) {
-      command_line->AppendSwitchASCII(heap_profiling::kMemlogInProcess,
-                                      heap_profiling::kMemlogInProcessDisabled);
-    }
 
     if (!GetParam().start_profiling_with_command_line_flag)
       return;
@@ -99,7 +93,6 @@ class MemlogBrowserTest : public InProcessBrowserTest,
 IN_PROC_BROWSER_TEST_P(MemlogBrowserTest, MAYBE_EndToEnd) {
   LOG(INFO) << "Memlog mode: " << static_cast<int>(GetParam().mode);
   LOG(INFO) << "Memlog stack mode: " << static_cast<int>(GetParam().stack_mode);
-  LOG(INFO) << "Stream samples: " << GetParam().stream_samples;
   LOG(INFO) << "Started via command line flag: "
             << GetParam().start_profiling_with_command_line_flag;
   LOG(INFO) << "Should sample: " << GetParam().should_sample;
@@ -108,7 +101,6 @@ IN_PROC_BROWSER_TEST_P(MemlogBrowserTest, MAYBE_EndToEnd) {
   TestDriver::Options options;
   options.mode = GetParam().mode;
   options.stack_mode = GetParam().stack_mode;
-  options.stream_samples = GetParam().stream_samples;
   options.profiling_already_started =
       GetParam().start_profiling_with_command_line_flag;
   options.should_sample = GetParam().should_sample;
@@ -132,10 +124,12 @@ std::vector<TestParam> GetParams() {
   stack_modes.push_back(mojom::StackMode::NATIVE_WITHOUT_THREAD_NAMES);
   stack_modes.push_back(mojom::StackMode::PSEUDO);
 
-  for (bool stream_samples : (bool[]){true, false}) {
+  // TODO(https://crbug.com/923459): The outer loop is left in place to keep
+  // the parameterized tests order. Remove it in a follow-up patch.
+  for (int i = 0; i < 2; ++i) {
     for (const auto& mode : dynamic_start_modes) {
       for (const auto& stack_mode : stack_modes) {
-        params.push_back({mode, stack_mode, stream_samples,
+        params.push_back({mode, stack_mode,
                           false /* start_profiling_with_command_line_flag */,
                           true /* should_sample */,
                           false /* sample_everything*/});
@@ -155,7 +149,7 @@ std::vector<TestParam> GetParams() {
     command_line_start_modes.push_back(Mode::kAllRenderers);
     for (const auto& mode : command_line_start_modes) {
       for (const auto& stack_mode : stack_modes) {
-        params.push_back({mode, stack_mode, stream_samples,
+        params.push_back({mode, stack_mode,
                           true /* start_profiling_with_command_line_flag */,
                           true /* should_sample */,
                           false /* sample_everything*/});
