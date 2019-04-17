@@ -934,7 +934,8 @@ class TestPayloadGeneration(BasePaygenBuildLibTestWithBuilds):
         [mock.call(paygen_payload_lib.CreateAndUploadPayload,
                    [(self.mp_full_payload, True, True),
                     (self.mp_delta_payload, True, True),
-                    (self.test_delta_payload, False, True)])])
+                    (self.test_delta_payload, False, True)],
+                   processes=2)])
 
   def testCleanupBuild(self):
     """Test PaygenBuild._CleanupBuild."""

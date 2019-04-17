@@ -835,8 +835,12 @@ class PaygenBuild(object):
                       True)
                      for payload in payloads]
 
+    # delta_generator can eat gigs of RAM so we need to constrain the total
+    # number of such processes running at the same time. Also note that some
+    # other instances of this could be running at the same time so this
+    # number could have an additional multiplier applied to it.
     parallel.RunTasksInProcessPool(paygen_payload_lib.CreateAndUploadPayload,
-                                   payloads_args)
+                                   payloads_args, processes=2)
 
   def _FindFullTestPayloads(self, channel, version):
     """Returns a list of full test payloads for a given version.
