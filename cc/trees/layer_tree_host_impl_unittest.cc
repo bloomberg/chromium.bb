@@ -885,6 +885,30 @@ class TestInputHandlerClient : public InputHandlerClient {
   float max_page_scale_factor_;
 };
 
+TEST_F(LayerTreeHostImplTest, LocalAndExternalPinchState) {
+  // PinchGestureBegin/End update pinch_gesture_active() properly.
+  EXPECT_FALSE(host_impl_->pinch_gesture_active());
+  host_impl_->PinchGestureBegin();
+  EXPECT_TRUE(host_impl_->pinch_gesture_active());
+  host_impl_->PinchGestureEnd(gfx::Point(), false /* snap_to_min */);
+  EXPECT_FALSE(host_impl_->pinch_gesture_active());
+
+  // set_external_pinch_gesture_active updates pinch_gesture_active() properly.
+  host_impl_->set_external_pinch_gesture_active(true);
+  EXPECT_TRUE(host_impl_->pinch_gesture_active());
+  host_impl_->set_external_pinch_gesture_active(false);
+  EXPECT_FALSE(host_impl_->pinch_gesture_active());
+
+  // Clearing external_pinch_gesture_active doesn't affect
+  // pinch_gesture_active() if it was set by PinchGestureBegin().
+  host_impl_->PinchGestureBegin();
+  EXPECT_TRUE(host_impl_->pinch_gesture_active());
+  host_impl_->set_external_pinch_gesture_active(false);
+  EXPECT_TRUE(host_impl_->pinch_gesture_active());
+  host_impl_->PinchGestureEnd(gfx::Point(), false /* snap_to_min */);
+  EXPECT_FALSE(host_impl_->pinch_gesture_active());
+}
+
 TEST_F(LayerTreeHostImplTest, NotifyIfCanDrawChanged) {
   // Note: It is not possible to disable the renderer once it has been set,
   // so we do not need to test that disabling the renderer notifies us
