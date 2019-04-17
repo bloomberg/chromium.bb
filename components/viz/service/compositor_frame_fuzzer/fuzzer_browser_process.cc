@@ -107,6 +107,14 @@ FuzzerBrowserProcess::BuildRootCompositorFrameSinkParams() {
   params->display_private =
       MakeRequestAssociatedWithDedicatedPipe(&display_private_);
   params->display_client = display_client_.BindInterfacePtr().PassInterface();
+
+  // Since the RootCompositorFrameSink doesn't get replaced on each fuzzer
+  // iteration, ensure that only one frame is pending at a time and that begin
+  // frames are decoupled from frame rate (otherwise bugs can occur when the
+  // frame rate is slower than the length of the fuzzer iterations).
+  // TODO(kylechar): Stop sending begin frames back to clients.
+  params->disable_frame_rate_limit = true;
+
   return params;
 }
 
