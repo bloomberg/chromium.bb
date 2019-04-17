@@ -429,12 +429,15 @@ void TrackEventThreadLocalEventSink::AddTraceEvent(
   }
 
   if (interned_source_location) {
-    auto* source_location_entry = interned_data->add_source_locations();
-    source_location_entry->set_iid(interned_source_location->id);
-    source_location_entry->set_file_name(trace_event->arg_value(0).as_string);
-    if (trace_event->arg_size() > 1) {
-      source_location_entry->set_function_name(
-          trace_event->arg_value(1).as_string);
+    if (!interned_source_location->was_emitted) {
+      auto* source_location_entry = interned_data->add_source_locations();
+      source_location_entry->set_iid(interned_source_location->id);
+      source_location_entry->set_file_name(trace_event->arg_value(0).as_string);
+      if (trace_event->arg_size() > 1) {
+        source_location_entry->set_function_name(
+            trace_event->arg_value(1).as_string);
+      }
+      interned_source_location->was_emitted = true;
     }
   } else if (!privacy_filtering_enabled_) {
     for (size_t i = 0; i < trace_event->arg_size() && trace_event->arg_name(i);

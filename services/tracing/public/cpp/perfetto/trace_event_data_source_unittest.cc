@@ -749,8 +749,12 @@ TEST_F(TraceEventDataSourceTest, TaskExecutionEvent) {
       TRACE_EVENT_PHASE_INSTANT, "toplevel", "ThreadControllerImpl::RunTask",
       TRACE_EVENT_SCOPE_THREAD | TRACE_EVENT_FLAG_TYPED_PROTO_ARGS, "src_file",
       "my_file", "src_func", "my_func");
+  INTERNAL_TRACE_EVENT_ADD(
+      TRACE_EVENT_PHASE_INSTANT, "toplevel", "ThreadControllerImpl::RunTask",
+      TRACE_EVENT_SCOPE_THREAD | TRACE_EVENT_FLAG_TYPED_PROTO_ARGS, "src_file",
+      "my_file", "src_func", "my_func");
 
-  EXPECT_EQ(producer_client()->GetFinalizedPacketCount(), 2u);
+  EXPECT_EQ(producer_client()->GetFinalizedPacketCount(), 3u);
   auto* e_packet = producer_client()->GetFinalizedPacket(1);
   ExpectTraceEvent(e_packet, /*category_iid=*/1u, /*name_iid=*/1u,
                    TRACE_EVENT_PHASE_INSTANT, TRACE_EVENT_SCOPE_THREAD);
@@ -763,6 +767,14 @@ TEST_F(TraceEventDataSourceTest, TaskExecutionEvent) {
   EXPECT_EQ(locations.size(), 1);
   EXPECT_EQ(locations[0].file_name(), "my_file");
   EXPECT_EQ(locations[0].function_name(), "my_func");
+
+  // Second event should refer to the same interning entries.
+  auto* e_packet2 = producer_client()->GetFinalizedPacket(2);
+  ExpectTraceEvent(e_packet2, /*category_iid=*/1u, /*name_iid=*/1u,
+                   TRACE_EVENT_PHASE_INSTANT, TRACE_EVENT_SCOPE_THREAD);
+
+  EXPECT_EQ(e_packet2->track_event().task_execution().posted_from_iid(), 1u);
+  EXPECT_EQ(e_packet2->interned_data().source_locations().size(), 0);
 }
 
 TEST_F(TraceEventDataSourceTest, TaskExecutionEventWithoutFunction) {
