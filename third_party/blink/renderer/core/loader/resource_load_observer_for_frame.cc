@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
+#include "third_party/blink/renderer/core/loader/alternate_signed_exchange_resource_info.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/core/loader/frame_or_imported_document.h"
@@ -111,6 +112,21 @@ void ResourceLoadObserverForFrame::DidReceiveResponse(
   MixedContentChecker::CheckMixedPrivatePublic(&frame,
                                                response.RemoteIPAddress());
 
+  std::unique_ptr<AlternateSignedExchangeResourceInfo> alternate_resource_info;
+  if (RuntimeEnabledFeatures::SignedExchangeSubresourcePrefetchEnabled() &&
+      response.IsSignedExchangeInnerResponse() &&
+      resource->GetType() == ResourceType::kLinkPrefetch &&
+      resource->LastResourceResponse()) {
+    // If this is a prefetch for a SXG, see if the outer response (which must be
+    // the last response in the redirect chain) had provided alternate links for
+    // the prefetch.
+    alternate_resource_info =
+        AlternateSignedExchangeResourceInfo::CreateIfValid(
+            resource->LastResourceResponse()->HttpHeaderField(
+                http_names::kLink),
+            response.HttpHeaderField(http_names::kLink));
+  }
+
   PreloadHelper::CanLoadResources resource_loading_policy =
       response_source == ResponseSource::kFromMemoryCache
           ? PreloadHelper::kDoNotLoadResources
@@ -118,7 +134,9 @@ void ResourceLoadObserverForFrame::DidReceiveResponse(
   PreloadHelper::LoadLinksFromHeader(
       response.HttpHeaderField(http_names::kLink), response.CurrentRequestUrl(),
       frame, &frame_or_imported_document_->GetDocument(),
-      resource_loading_policy, PreloadHelper::kLoadAll, nullptr);
+      resource_loading_policy, PreloadHelper::kLoadAll,
+      nullptr /* viewport_description_wrapper */,
+      std::move(alternate_resource_info));
 
   if (response.HasMajorCertificateErrors()) {
     MixedContentChecker::HandleCertificateError(&frame, response,

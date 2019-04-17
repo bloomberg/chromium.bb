@@ -58,6 +58,7 @@
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/core/inspector/main_thread_debugger.h"
+#include "third_party/blink/renderer/core/loader/alternate_signed_exchange_resource_info.h"
 #include "third_party/blink/renderer/core/loader/appcache/application_cache_host.h"
 #include "third_party/blink/renderer/core/loader/frame_fetch_context.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
@@ -352,7 +353,8 @@ void DocumentLoader::DispatchLinkHeaderPreloads(
   PreloadHelper::LoadLinksFromHeader(
       GetResponse().HttpHeaderField(http_names::kLink),
       GetResponse().CurrentRequestUrl(), *frame_, frame_->GetDocument(),
-      PreloadHelper::kOnlyLoadResources, media_policy, viewport);
+      PreloadHelper::kOnlyLoadResources, media_policy, viewport,
+      nullptr /* alternate_resource_info */);
 }
 
 void DocumentLoader::DidChangePerformanceTiming() {
@@ -1158,7 +1160,9 @@ void DocumentLoader::StartLoadingInternal() {
   PreloadHelper::LoadLinksFromHeader(
       response_.HttpHeaderField(http_names::kLink),
       response_.CurrentRequestUrl(), *GetFrame(), nullptr,
-      PreloadHelper::kDoNotLoadResources, PreloadHelper::kLoadAll, nullptr);
+      PreloadHelper::kDoNotLoadResources, PreloadHelper::kLoadAll,
+      nullptr /* viewport_description_wrapper */,
+      nullptr /* alternate_resource_info */);
   if (!frame_->IsMainFrame() && response_.HasMajorCertificateErrors()) {
     MixedContentChecker::HandleCertificateError(
         GetFrame(), response_, mojom::RequestContextType::HYPERLINK);

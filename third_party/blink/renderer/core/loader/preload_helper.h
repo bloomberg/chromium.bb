@@ -10,6 +10,7 @@
 
 namespace blink {
 
+class AlternateSignedExchangeResourceInfo;
 class Document;
 class LocalFrame;
 class SingleModuleClient;
@@ -34,13 +35,15 @@ class PreloadHelper final {
   // can be preloaded at commit time.
   enum MediaPreloadPolicy { kLoadAll, kOnlyLoadNonMedia, kOnlyLoadMedia };
 
-  static void LoadLinksFromHeader(const String& header_value,
-                                  const KURL& base_url,
-                                  LocalFrame&,
-                                  Document*,  // can be nullptr
-                                  CanLoadResources,
-                                  MediaPreloadPolicy,
-                                  ViewportDescriptionWrapper*);
+  static void LoadLinksFromHeader(
+      const String& header_value,
+      const KURL& base_url,
+      LocalFrame&,
+      Document*,  // can be nullptr
+      CanLoadResources,
+      MediaPreloadPolicy,
+      ViewportDescriptionWrapper*,
+      std::unique_ptr<AlternateSignedExchangeResourceInfo>);
   static Resource* StartPreload(ResourceType,
                                 FetchParameters&,
                                 ResourceFetcher*);

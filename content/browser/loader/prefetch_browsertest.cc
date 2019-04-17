@@ -52,9 +52,7 @@ struct ScopedSignedExchangeHandlerFactory {
   }
 };
 
-class PrefetchBrowserTest
-    : public ContentBrowserTest,
-      public testing::WithParamInterface<PrefetchBrowserTestParam> {
+class PrefetchBrowserTestBase : public ContentBrowserTest {
  public:
   struct ResponseEntry {
     ResponseEntry() = default;
@@ -68,29 +66,8 @@ class PrefetchBrowserTest
     std::string content_type;
     std::vector<std::pair<std::string, std::string>> headers;
   };
-
-  PrefetchBrowserTest() {
-    cross_origin_server_ = std::make_unique<net::EmbeddedTestServer>(
-        net::EmbeddedTestServer::TYPE_HTTPS);
-  }
-  ~PrefetchBrowserTest() = default;
-
-  void SetUp() override {
-    std::vector<base::Feature> enable_features;
-    std::vector<base::Feature> disabled_features;
-    if (GetParam().signed_exchange_enabled) {
-      enable_features.push_back(features::kSignedHTTPExchange);
-    } else {
-      disabled_features.push_back(features::kSignedHTTPExchange);
-    }
-    if (GetParam().network_service_enabled) {
-      enable_features.push_back(network::features::kNetworkService);
-    } else {
-      disabled_features.push_back(network::features::kNetworkService);
-    }
-    feature_list_.InitWithFeatures(enable_features, disabled_features);
-    ContentBrowserTest::SetUp();
-  }
+  PrefetchBrowserTestBase() = default;
+  ~PrefetchBrowserTestBase() override = default;
 
   void SetUpOnMainThread() override {
     ContentBrowserTest::SetUpOnMainThread();
@@ -102,10 +79,12 @@ class PrefetchBrowserTest
         BindOnce(
             &PrefetchURLLoaderService::RegisterPrefetchLoaderCallbackForTest,
             base::RetainedRef(partition->GetPrefetchURLLoaderService()),
-            base::BindRepeating(&PrefetchBrowserTest::OnPrefetchURLLoaderCalled,
-                                base::Unretained(this))));
+            base::BindRepeating(
+                &PrefetchBrowserTestBase::OnPrefetchURLLoaderCalled,
+                base::Unretained(this))));
   }
 
+ protected:
   void RegisterResponse(const std::string& url, const ResponseEntry& entry) {
     response_map_[url] = entry;
   }
@@ -145,14 +124,14 @@ class PrefetchBrowserTest
                               int* count,
                               base::RunLoop* waiter) {
     test_server->RegisterRequestMonitor(base::BindRepeating(
-        &PrefetchBrowserTest::WatchURLAndRunClosure, base::Unretained(this),
+        &PrefetchBrowserTestBase::WatchURLAndRunClosure, base::Unretained(this),
         path, count,
         waiter ? waiter->QuitClosure() : base::RepeatingClosure()));
   }
 
   void RegisterRequestHandler(net::EmbeddedTestServer* test_server) {
     test_server->RegisterRequestHandler(base::BindRepeating(
-        &PrefetchBrowserTest::ServeResponses, base::Unretained(this)));
+        &PrefetchBrowserTestBase::ServeResponses, base::Unretained(this)));
   }
 
   void NavigateToURLAndWaitTitle(const GURL& url, const std::string& title) {
@@ -180,11 +159,45 @@ class PrefetchBrowserTest
   }
 
   int prefetch_url_loader_called_ = 0;
+
+ private:
+  std::map<std::string, ResponseEntry> response_map_;
+
+  DISALLOW_COPY_AND_ASSIGN(PrefetchBrowserTestBase);
+};
+
+class PrefetchBrowserTest
+    : public PrefetchBrowserTestBase,
+      public testing::WithParamInterface<PrefetchBrowserTestParam> {
+ public:
+  PrefetchBrowserTest() {
+    cross_origin_server_ = std::make_unique<net::EmbeddedTestServer>(
+        net::EmbeddedTestServer::TYPE_HTTPS);
+  }
+  ~PrefetchBrowserTest() = default;
+
+  void SetUp() override {
+    std::vector<base::Feature> enable_features;
+    std::vector<base::Feature> disabled_features;
+    if (GetParam().signed_exchange_enabled) {
+      enable_features.push_back(features::kSignedHTTPExchange);
+    } else {
+      disabled_features.push_back(features::kSignedHTTPExchange);
+    }
+    if (GetParam().network_service_enabled) {
+      enable_features.push_back(network::features::kNetworkService);
+    } else {
+      disabled_features.push_back(network::features::kNetworkService);
+    }
+    feature_list_.InitWithFeatures(enable_features, disabled_features);
+    PrefetchBrowserTestBase::SetUp();
+  }
+
+ protected:
   std::unique_ptr<net::EmbeddedTestServer> cross_origin_server_;
 
  private:
   base::test::ScopedFeatureList feature_list_;
-  std::map<std::string, ResponseEntry> response_map_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefetchBrowserTest);
 };
@@ -497,11 +510,11 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, WebPackageWithPreload) {
       embedded_test_server()->GetURL(preload_path_in_sxg);
   const GURL target_sxg_url = embedded_test_server()->GetURL(target_sxg_path);
 
-  MockSignedExchangeHandlerFactory factory(
-      SignedExchangeLoadResult::kSuccess, net::OK,
+  MockSignedExchangeHandlerFactory factory({MockSignedExchangeHandlerParams(
+      target_sxg_url, SignedExchangeLoadResult::kSuccess, net::OK,
       GURL(embedded_test_server()->GetURL(target_path)), "text/html",
       {base::StringPrintf("Link: <%s>;rel=\"preload\";as=\"script\"",
-                          preload_url_in_sxg.spec().c_str())});
+                          preload_url_in_sxg.spec().c_str())})});
   ScopedSignedExchangeHandlerFactory scoped_factory(&factory);
 
   // Loading a page that prefetches the target URL would increment both
@@ -569,11 +582,11 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, CrossOriginWebPackageWithPreload) {
   ASSERT_TRUE(embedded_test_server()->Start());
   EXPECT_EQ(0, prefetch_url_loader_called_);
 
-  MockSignedExchangeHandlerFactory factory(
-      SignedExchangeLoadResult::kSuccess, net::OK,
+  MockSignedExchangeHandlerFactory factory({MockSignedExchangeHandlerParams(
+      target_sxg_url, SignedExchangeLoadResult::kSuccess, net::OK,
       GURL(cross_origin_server_->GetURL(target_path)), "text/html",
       {base::StringPrintf("Link: <%s>;rel=\"preload\";as=\"script\"",
-                          preload_url_in_sxg.spec().c_str())});
+                          preload_url_in_sxg.spec().c_str())})});
   ScopedSignedExchangeHandlerFactory scoped_factory(&factory);
 
   // Loading a page that prefetches the target URL would increment both
@@ -610,4 +623,107 @@ INSTANTIATE_TEST_SUITE_P(PrefetchBrowserTest,
                                          PrefetchBrowserTestParam(true, false),
                                          PrefetchBrowserTestParam(true, true)));
 
+class SignedExchangeSubresourcePrefetchBrowserTest
+    : public PrefetchBrowserTestBase,
+      public testing::WithParamInterface<PrefetchBrowserTestParam> {
+ public:
+  SignedExchangeSubresourcePrefetchBrowserTest() = default;
+  ~SignedExchangeSubresourcePrefetchBrowserTest() = default;
+
+  void SetUp() override {
+    std::vector<base::Feature> enable_features;
+    std::vector<base::Feature> disabled_features;
+    enable_features.push_back(features::kSignedHTTPExchange);
+    enable_features.push_back(features::kSignedExchangeSubresourcePrefetch);
+    if (GetParam().network_service_enabled) {
+      enable_features.push_back(network::features::kNetworkService);
+    } else {
+      disabled_features.push_back(network::features::kNetworkService);
+    }
+    feature_list_.InitWithFeatures(enable_features, disabled_features);
+    PrefetchBrowserTestBase::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(SignedExchangeSubresourcePrefetchBrowserTest);
+};
+
+IN_PROC_BROWSER_TEST_P(SignedExchangeSubresourcePrefetchBrowserTest,
+                       PrefetchAlternativeSubresourceSXG) {
+  int script_sxg_fetch_count = 0;
+  const char* prefetch_path = "/prefetch.html";
+  const char* target_sxg_path = "/target.sxg";
+  const char* target_path = "/target.html";
+  const char* script_path_in_sxg = "/script.js";
+  const char* script_sxg_path = "/script_js.sxg";
+
+  base::RunLoop script_sxg_prefetch_waiter;
+  RegisterRequestMonitor(embedded_test_server(), script_sxg_path,
+                         &script_sxg_fetch_count, &script_sxg_prefetch_waiter);
+  RegisterRequestHandler(embedded_test_server());
+  ASSERT_TRUE(embedded_test_server()->Start());
+  EXPECT_EQ(0, prefetch_url_loader_called_);
+
+  const GURL target_sxg_url = embedded_test_server()->GetURL(target_sxg_path);
+  const GURL target_url = embedded_test_server()->GetURL(target_path);
+  const GURL script_sxg_url = embedded_test_server()->GetURL(script_sxg_path);
+  const GURL script_url = embedded_test_server()->GetURL(script_path_in_sxg);
+
+  const std::string outer_link_header = base::StringPrintf(
+      "<%s>;"
+      "rel=\"alternate\";"
+      "type=\"application/signed-exchange;v=b3\";"
+      "anchor=\"%s\"",
+      script_sxg_url.spec().c_str(), script_url.spec().c_str());
+  const std::string inner_link_headers = base::StringPrintf(
+      "Link: <%s>;"
+      "rel=\"allowed-alt-sxg\";header-integrity=\"%s\","
+      "<%s>;rel=\"preload\";as=\"script\"",
+      script_url.spec().c_str(),
+      // This is just a dummy data as of now.
+      // TODO(crbug.com/935267): When we will implement the header integrity
+      // checking logic, add tests for it.
+      "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+      script_url.spec().c_str());
+
+  RegisterResponse(
+      prefetch_path,
+      ResponseEntry(base::StringPrintf(
+          "<body><link rel='prefetch' href='%s'></body>", target_sxg_path)));
+  RegisterResponse(
+      target_sxg_path,
+      // We mock the SignedExchangeHandler, so just return a HTML content
+      // as "application/signed-exchange;v=b3".
+      ResponseEntry("<head><title>Prefetch Target (SXG)</title><script "
+                    "src=\"./preload.js\"></script></head>",
+                    "application/signed-exchange;v=b3",
+                    {{"x-content-type-options", "nosniff"},
+                     {"link", outer_link_header}}));
+  RegisterResponse(script_sxg_path,
+                   // We mock the SignedExchangeHandler, so just return a JS
+                   // content as "application/signed-exchange;v=b3".
+                   ResponseEntry("document.title=\"done\";",
+                                 "application/signed-exchange;v=b3",
+                                 {{"x-content-type-options", "nosniff"}}));
+
+  MockSignedExchangeHandlerFactory factory(
+      {MockSignedExchangeHandlerParams(
+           target_sxg_url, SignedExchangeLoadResult::kSuccess, net::OK,
+           target_url, "text/html", {inner_link_headers}),
+       MockSignedExchangeHandlerParams(
+           script_sxg_url, SignedExchangeLoadResult::kSuccess, net::OK,
+           script_url, "text/javascript", {})});
+  ScopedSignedExchangeHandlerFactory scoped_factory(&factory);
+
+  NavigateToURL(shell(), embedded_test_server()->GetURL(prefetch_path));
+  script_sxg_prefetch_waiter.Run();
+  EXPECT_EQ(1, script_sxg_fetch_count);
+}
+
+INSTANTIATE_TEST_SUITE_P(SignedExchangeSubresourcePrefetchBrowserTest,
+                         SignedExchangeSubresourcePrefetchBrowserTest,
+                         testing::Values(PrefetchBrowserTestParam(true, false),
+                                         PrefetchBrowserTestParam(true, true)));
 }  // namespace content
