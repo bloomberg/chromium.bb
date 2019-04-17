@@ -12,7 +12,9 @@ namespace chromeos {
 
 PpdResolutionState::PpdResolutionState()
     : is_inflight_(true), is_ppd_resolution_successful_(false) {}
-
+PpdResolutionState::PpdResolutionState(PpdResolutionState&& other) = default;
+PpdResolutionState& PpdResolutionState::operator=(PpdResolutionState&& rhs) =
+    default;
 PpdResolutionState::~PpdResolutionState() = default;
 
 void PpdResolutionState::MarkResolutionSuccessful(
