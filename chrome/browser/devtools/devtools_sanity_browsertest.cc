@@ -1656,6 +1656,14 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
   CloseDevToolsWindow();
 }
 
+// Tests that whitelisted unhandled shortcuts are forwarded from inspected page
+// into devtools frontend
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, testKeyEventUnhandled) {
+  OpenDevToolsWindow("about:blank", true);
+  RunTestFunction(window_, "testKeyEventUnhandled");
+  CloseDevToolsWindow();
+}
+
 // Tests that settings are stored in profile correctly.
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestSettings) {
   OpenDevToolsWindow("about:blank", true);
