@@ -1304,14 +1304,6 @@
           'all',
         ],
       },
-      'Android VR Tests': {
-        'test_suites': {
-          'gtest_tests': 'android_fyi_vr_gtests',
-          'instrumentation_tests': 'android_fyi_vr_instrumentation_tests',
-        },
-        'os_type': 'android',
-        'skip_output_links': True,
-      },
       'Chromium Mac 10.13': {
         'test_suites': {
           'gtest_tests': 'chromium_mac_fyi_gtests',
