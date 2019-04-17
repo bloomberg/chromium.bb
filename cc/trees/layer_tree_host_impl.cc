@@ -335,7 +335,6 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       skipped_frame_tracker_(&frame_metrics_),
       is_animating_for_snap_(false),
       paint_image_generator_client_id_(PaintImage::GetNextGeneratorClientId()),
-      scrollbar_controller_(std::make_unique<ScrollbarController>(this)),
       scroll_gesture_did_end_(false) {
   DCHECK(mutator_host_);
   mutator_host_->SetMutatorHostClient(this);
@@ -4738,8 +4737,7 @@ void LayerTreeHostImpl::ScrollEnd(ScrollState* scroll_state, bool should_snap) {
   client_->SetNeedsCommitOnImplThread();
 }
 
-InputHandlerPointerResult LayerTreeHostImpl::MouseDown(
-    const gfx::PointF& viewport_point) {
+void LayerTreeHostImpl::MouseDown() {
   ScrollbarAnimationController* animation_controller =
       ScrollbarAnimationControllerForElementId(
           scroll_element_id_mouse_currently_over_);
@@ -4748,16 +4746,9 @@ InputHandlerPointerResult LayerTreeHostImpl::MouseDown(
     scroll_element_id_mouse_currently_captured_ =
         scroll_element_id_mouse_currently_over_;
   }
-
-  InputHandlerPointerResult result;
-  if (settings().compositor_threaded_scrollbar_scrolling)
-    result = scrollbar_controller_->HandleMouseDown(viewport_point);
-
-  return result;
 }
 
-InputHandlerPointerResult LayerTreeHostImpl::MouseUp(
-    const gfx::PointF& viewport_point) {
+void LayerTreeHostImpl::MouseUp() {
   if (scroll_element_id_mouse_currently_captured_) {
     ScrollbarAnimationController* animation_controller =
         ScrollbarAnimationControllerForElementId(
@@ -4768,12 +4759,6 @@ InputHandlerPointerResult LayerTreeHostImpl::MouseUp(
     if (animation_controller)
       animation_controller->DidMouseUp();
   }
-
-  InputHandlerPointerResult result;
-  if (settings().compositor_threaded_scrollbar_scrolling)
-    result = scrollbar_controller_->HandleMouseUp(viewport_point);
-
-  return result;
 }
 
 void LayerTreeHostImpl::MouseMoveAt(const gfx::Point& viewport_point) {
