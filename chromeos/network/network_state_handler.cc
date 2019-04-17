@@ -217,6 +217,10 @@ void NetworkStateHandler::RemoveObserver(NetworkStateHandlerObserver* observer,
                          observer));
 }
 
+bool NetworkStateHandler::HasObserver(NetworkStateHandlerObserver* observer) {
+  return observers_.HasObserver(observer);
+}
+
 NetworkStateHandler::TechnologyState NetworkStateHandler::GetTechnologyState(
     const NetworkTypePattern& type) const {
   std::string technology = GetTechnologyForType(type);

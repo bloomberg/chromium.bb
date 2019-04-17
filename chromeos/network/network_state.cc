@@ -445,6 +445,10 @@ bool NetworkState::IsActive() const {
          activation_state() == shill::kActivationStateActivating;
 }
 
+bool NetworkState::IsOnline() const {
+  return connection_state() == shill::kStateOnline;
+}
+
 bool NetworkState::IsInProfile() const {
   // kTypeEthernetEap is always saved. We need this check because it does
   // not show up in the visible list, but its properties may not be available

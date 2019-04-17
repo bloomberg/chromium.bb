@@ -94,6 +94,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkStateHandler
                    const base::Location& from_here);
   void RemoveObserver(NetworkStateHandlerObserver* observer,
                       const base::Location& from_here);
+  bool HasObserver(NetworkStateHandlerObserver* observer);
 
   // Returns the state for technology |type|. Only
   // NetworkTypePattern::Primitive, ::Mobile, ::Ethernet, and ::Tether are
