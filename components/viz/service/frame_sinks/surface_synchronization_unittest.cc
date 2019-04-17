@@ -1580,39 +1580,34 @@ TEST_F(SurfaceSynchronizationTest, MultiLevelLateArrivingDependency) {
 }
 
 // This test verifies that CompositorFrames submitted to a surface referenced
-// by a parent CompositorFrame as a fallback will be rejected and ACK'ed
-// immediately.
+// by a parent CompositorFrame as a fallback will be ACK'ed immediately.
 TEST_F(SurfaceSynchronizationTest, FallbackSurfacesClosed) {
   const SurfaceId parent_id1 = MakeSurfaceId(kParentFrameSink, 1);
   // This is the fallback child surface that the parent holds a reference to.
   const SurfaceId child_id1 = MakeSurfaceId(kChildFrameSink1, 1);
   // This is the primary child surface that the parent wants to block on.
   const SurfaceId child_id2 = MakeSurfaceId(kChildFrameSink1, 2);
+  const SurfaceId arbitrary_id = MakeSurfaceId(kChildFrameSink2, 3);
 
-  // child_support1 submits a CompositorFrame without any dependencies.
-  // DidReceiveCompositorFrameAck should call on immediate activation.
-  // However, resources will not be returned because this frame is a candidate
-  // for display.
-  TransferableResource resource;
-  resource.id = 1337;
-  resource.format = ALPHA_8;
-  resource.filter = 1234;
-  resource.size = gfx::Size(1234, 5678);
-  std::vector<ReturnedResource> returned_resources =
-      TransferableResource::ReturnResources({resource});
+  SendNextBeginFrame();
 
-  EXPECT_CALL(support_client_, DidReceiveCompositorFrameAck(
-                                   Eq(std::vector<ReturnedResource>())));
+  // child_support1 submits a CompositorFrame with unresolved dependencies.
+  // DidReceiveCompositorFrameAck should not be called because the frame hasn't
+  // activated yet.
+  EXPECT_CALL(support_client_, DidReceiveCompositorFrameAck(_)).Times(0);
   child_support1().SubmitCompositorFrame(
       child_id1.local_surface_id(),
-      MakeCompositorFrame(empty_surface_ids(), empty_surface_ranges(),
-                          {resource}, MakeDefaultDeadline()));
-  EXPECT_FALSE(child_surface1()->has_deadline());
+      MakeCompositorFrame({arbitrary_id},
+                          {SurfaceRange(base::nullopt, arbitrary_id)}, {},
+                          MakeDefaultDeadline()));
+  EXPECT_TRUE(child_surface1()->has_deadline());
+  EXPECT_TRUE(child_surface1()->HasPendingFrame());
+  EXPECT_FALSE(child_surface1()->HasActiveFrame());
   testing::Mock::VerifyAndClearExpectations(&support_client_);
 
-  // The parent is blocked on |child_id2| and references |child_id1|. The
-  // surface corresponding to |child_id1| will not accept new CompositorFrames
-  // while the parent CompositorFrame is blocked.
+  // The parent is blocked on |child_id2| and references |child_id1|.
+  // |child_id1| should immediately activate and the ack must be sent.
+  EXPECT_CALL(support_client_, DidReceiveCompositorFrameAck(_));
   parent_support().SubmitCompositorFrame(
       parent_id1.local_surface_id(),
       MakeCompositorFrame({child_id2}, {SurfaceRange(child_id1, child_id2)},
@@ -1621,43 +1616,22 @@ TEST_F(SurfaceSynchronizationTest, FallbackSurfacesClosed) {
   EXPECT_TRUE(parent_surface()->has_deadline());
   EXPECT_TRUE(parent_surface()->HasPendingFrame());
   EXPECT_FALSE(parent_surface()->HasActiveFrame());
-
-  // Resources will be returned immediately because |child_id1|'s surface is
-  // closed.
-  TransferableResource resource2;
-  resource2.id = 1246;
-  resource2.format = ALPHA_8;
-  resource2.filter = 1357;
-  resource2.size = gfx::Size(8765, 4321);
-  std::vector<ReturnedResource> returned_resources2 =
-      TransferableResource::ReturnResources({resource2});
-  EXPECT_CALL(support_client_,
-              DidReceiveCompositorFrameAck(Eq(returned_resources2)));
-  child_support1().SubmitCompositorFrame(
-      child_id1.local_surface_id(),
-      MakeCompositorFrame(empty_surface_ids(), empty_surface_ranges(),
-                          {resource2}, MakeDefaultDeadline()));
+  EXPECT_FALSE(child_surface1()->HasPendingFrame());
+  EXPECT_TRUE(child_surface1()->HasActiveFrame());
   testing::Mock::VerifyAndClearExpectations(&support_client_);
 
-  // Advance BeginFrames to trigger a deadline. This activates the
-  // CompositorFrame submitted to the parent.
-  for (int i = 0; i < 3; ++i) {
-    SendNextBeginFrame();
-    EXPECT_TRUE(parent_surface()->has_deadline());
-  }
+  // Any further CompositorFrames sent to |child_id1| will also activate
+  // immediately so that the child can submit another frame and catch up with
+  // the parent.
   SendNextBeginFrame();
-  EXPECT_FALSE(parent_surface()->has_deadline());
-  EXPECT_FALSE(parent_surface()->HasPendingFrame());
-  EXPECT_TRUE(parent_surface()->HasActiveFrame());
-
-  // Resources will be returned immediately because |child_id1|'s surface is
-  // closed forever.
-  EXPECT_CALL(support_client_,
-              DidReceiveCompositorFrameAck(Eq(returned_resources2)));
+  EXPECT_CALL(support_client_, DidReceiveCompositorFrameAck(_));
   child_support1().SubmitCompositorFrame(
       child_id1.local_surface_id(),
-      MakeCompositorFrame(empty_surface_ids(), empty_surface_ranges(),
-                          {resource2}, MakeDefaultDeadline()));
+      MakeCompositorFrame({arbitrary_id},
+                          {SurfaceRange(base::nullopt, arbitrary_id)}, {},
+                          MakeDefaultDeadline()));
+  EXPECT_FALSE(child_surface1()->HasPendingFrame());
+  EXPECT_TRUE(child_surface1()->HasActiveFrame());
   testing::Mock::VerifyAndClearExpectations(&support_client_);
 }
 
