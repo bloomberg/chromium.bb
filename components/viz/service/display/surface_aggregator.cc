@@ -414,7 +414,6 @@ void SurfaceAggregator::EmitSurfaceContent(
   }
 
   referenced_surfaces_.insert(surface_id);
-  bool has_surface_damage = !IsSurfaceFrameIndexSameAsPrevious(surface);
   // TODO(vmpstr): provider check is a hack for unittests that don't set up a
   // resource provider.
   std::unordered_map<ResourceId, ResourceId> empty_map;
@@ -469,9 +468,8 @@ void SurfaceAggregator::EmitSurfaceContent(
     CopyQuadsToPass(source.quad_list, source.shared_quad_state_list,
                     surface->GetActiveFrame().device_scale_factor(),
                     child_to_parent_map, gfx::Transform(), ClipData(),
-                    copy_pass.get(), surface_id, has_surface_damage,
-                    RoundedCornerInfo(), occluding_damage_rect,
-                    occluding_damage_rect_valid);
+                    copy_pass.get(), surface_id, RoundedCornerInfo(),
+                    occluding_damage_rect, occluding_damage_rect_valid);
 
     // If the render pass has copy requests, or should be cached, or has
     // moving-pixel filters, or in a moving-pixel surface, we should damage the
@@ -523,9 +521,8 @@ void SurfaceAggregator::EmitSurfaceContent(
     CopyQuadsToPass(quads, last_pass.shared_quad_state_list,
                     surface->GetActiveFrame().device_scale_factor(),
                     child_to_parent_map, surface_transform, quads_clip,
-                    dest_pass, surface_id, has_surface_damage,
-                    rounded_corner_info, occluding_damage_rect,
-                    occluding_damage_rect_valid);
+                    dest_pass, surface_id, rounded_corner_info,
+                    occluding_damage_rect, occluding_damage_rect_valid);
   } else {
     auto* shared_quad_state = CopyAndScaleSharedQuadState(
         source_sqs, scaled_quad_to_target_transform, target_transform,
@@ -535,8 +532,8 @@ void SurfaceAggregator::EmitSurfaceContent(
         gfx::ScaleToEnclosingRect(source_sqs->visible_quad_layer_rect,
                                   layer_to_content_scale_x,
                                   layer_to_content_scale_y),
-        clip_rect, dest_pass, has_surface_damage, rounded_corner_info,
-        occluding_damage_rect, occluding_damage_rect_valid);
+        clip_rect, dest_pass, rounded_corner_info, occluding_damage_rect,
+        occluding_damage_rect_valid);
 
     gfx::Rect scaled_rect(gfx::ScaleToEnclosingRect(
         source_rect, layer_to_content_scale_x, layer_to_content_scale_y));
@@ -568,11 +565,11 @@ void SurfaceAggregator::EmitDefaultBackgroundColorQuad(
   // surface specified so create a SolidColorDrawQuad with the default
   // background color.
   SkColor background_color = surface_quad->default_background_color;
-  auto* shared_quad_state = CopySharedQuadState(
-      surface_quad->shared_quad_state, target_transform, clip_rect, dest_pass,
-      /*has_surface_damage*/ true, rounded_corner_info,
-      /*occluding_damage_rect*/ gfx::Rect(),
-      /*occluding_damage_rect_valid*/ false);
+  auto* shared_quad_state =
+      CopySharedQuadState(surface_quad->shared_quad_state, target_transform,
+                          clip_rect, dest_pass, rounded_corner_info,
+                          /*occluding_damage_rect*/ gfx::Rect(),
+                          /*occluding_damage_rect_valid*/ false);
 
   auto* solid_color_quad =
       dest_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
@@ -614,7 +611,7 @@ void SurfaceAggregator::EmitGutterQuadsIfNecessary(
         primary_shared_quad_state,
         primary_shared_quad_state->quad_to_target_transform, target_transform,
         right_gutter_rect, right_gutter_rect, clip_rect, dest_pass,
-        /*has_surface_damage*/ true, rounded_corner_info,
+        rounded_corner_info,
         /*occluding_damage_rect*/ gfx::Rect(),
         /*occluding_damage_rect_valid*/ false);
 
@@ -633,7 +630,7 @@ void SurfaceAggregator::EmitGutterQuadsIfNecessary(
         primary_shared_quad_state,
         primary_shared_quad_state->quad_to_target_transform, target_transform,
         bottom_gutter_rect, bottom_gutter_rect, clip_rect, dest_pass,
-        /*has_surface_damage*/ true, rounded_corner_info,
+        rounded_corner_info,
         /*occluding_damage_rect*/ gfx::Rect(),
         /*occluding_damage_rect_valid*/ false);
 
@@ -690,15 +687,14 @@ SharedQuadState* SurfaceAggregator::CopySharedQuadState(
     const gfx::Transform& target_transform,
     const ClipData& clip_rect,
     RenderPass* dest_render_pass,
-    bool has_surface_damage,
     const RoundedCornerInfo& rounded_corner_info,
     const gfx::Rect& occluding_damage_rect,
     bool occluding_damage_rect_valid) {
   return CopyAndScaleSharedQuadState(
       source_sqs, source_sqs->quad_to_target_transform, target_transform,
       source_sqs->quad_layer_rect, source_sqs->visible_quad_layer_rect,
-      clip_rect, dest_render_pass, has_surface_damage, rounded_corner_info,
-      occluding_damage_rect, occluding_damage_rect_valid);
+      clip_rect, dest_render_pass, rounded_corner_info, occluding_damage_rect,
+      occluding_damage_rect_valid);
 }
 
 SharedQuadState* SurfaceAggregator::CopyAndScaleSharedQuadState(
@@ -709,7 +705,6 @@ SharedQuadState* SurfaceAggregator::CopyAndScaleSharedQuadState(
     const gfx::Rect& visible_quad_layer_rect,
     const ClipData& clip_rect,
     RenderPass* dest_render_pass,
-    bool has_surface_damage,
     const RoundedCornerInfo& rounded_corner_info,
     const gfx::Rect& occluding_damage_rect,
     bool occluding_damage_rect_valid) {
@@ -733,7 +728,6 @@ SharedQuadState* SurfaceAggregator::CopyAndScaleSharedQuadState(
       *rounded_corner_info.bounds, new_clip_rect.rect, new_clip_rect.is_clipped,
       source_sqs->are_contents_opaque, source_sqs->opacity,
       source_sqs->blend_mode, source_sqs->sorting_context_id);
-  shared_quad_state->has_surface_damage = has_surface_damage;
   shared_quad_state->is_fast_rounded_corner =
       rounded_corner_info.is_fast_rounded_corner;
   if (occluding_damage_rect_valid) {
@@ -752,7 +746,6 @@ void SurfaceAggregator::CopyQuadsToPass(
     const ClipData& clip_rect,
     RenderPass* dest_pass,
     const SurfaceId& surface_id,
-    bool has_surface_damage,
     const RoundedCornerInfo& parent_rounded_corner_info,
     const gfx::Rect& occluding_damage_rect,
     bool occluding_damage_rect_valid) {
@@ -817,7 +810,7 @@ void SurfaceAggregator::CopyQuadsToPass(
         }
         const SharedQuadState* dest_shared_quad_state = CopySharedQuadState(
             quad->shared_quad_state, target_transform, clip_rect, dest_pass,
-            has_surface_damage, new_rounded_corner_info, occluding_damage_rect,
+            new_rounded_corner_info, occluding_damage_rect,
             occluding_damage_rect_valid);
 
         last_copied_source_shared_quad_state = quad->shared_quad_state;
@@ -893,9 +886,6 @@ void SurfaceAggregator::CopyPasses(const CompositorFrame& frame,
   if (!valid_surfaces_.count(surface->surface_id()))
     return;
 
-  // No changes in the target surface if it's the same as the previous frame
-  // This information will be used later in overlay processing.
-  bool has_surface_damage = !IsSurfaceFrameIndexSameAsPrevious(surface);
   // TODO(vmpstr): provider check is a hack for unittests that don't set up a
   // resource provider.
   std::unordered_map<ResourceId, ResourceId> empty_map;
@@ -931,9 +921,8 @@ void SurfaceAggregator::CopyPasses(const CompositorFrame& frame,
     CopyQuadsToPass(source.quad_list, source.shared_quad_state_list,
                     frame.device_scale_factor(), child_to_parent_map,
                     gfx::Transform(), ClipData(), copy_pass.get(),
-                    surface->surface_id(), has_surface_damage,
-                    RoundedCornerInfo(), occluding_damage_rect,
-                    occluding_damage_rect_valid);
+                    surface->surface_id(), RoundedCornerInfo(),
+                    occluding_damage_rect, occluding_damage_rect_valid);
 
     // If the render pass has copy requests, or should be cached, or has
     // moving-pixel filters, or in a moving-pixel surface, we should damage the
