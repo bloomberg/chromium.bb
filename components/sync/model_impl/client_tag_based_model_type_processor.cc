@@ -606,7 +606,7 @@ void ClientTagBasedModelTypeProcessor::OnCommitCompleted(
       continue;
     }
 
-    entity->ReceiveCommitResponse(data, commit_only_);
+    entity->ReceiveCommitResponse(data, commit_only_, type_);
 
     if (commit_only_) {
       if (!entity->IsUnsynced()) {
