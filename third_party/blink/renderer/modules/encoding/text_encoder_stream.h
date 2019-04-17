@@ -18,7 +18,7 @@ class ScriptState;
 class WritableStream;
 class Visitor;
 
-// Implements the TextDecoderStream interface as specified at
+// Implements the TextEncoderStream interface as specified at
 // https://encoding.spec.whatwg.org/#interface-textencoderstream.
 // Converts a stream of text data in the form of string chunks to a stream of
 // binary data in the form of UInt8Array chunks. After construction
