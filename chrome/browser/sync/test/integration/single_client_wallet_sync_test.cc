@@ -9,21 +9,25 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/sync/test/integration/bookmarks_helper.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/secondary_account_helper.h"
 #include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
+#include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/sync/test/integration/wallet_helper.h"
 #include "chrome/browser/web_data_service_factory.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_metadata.h"
+#include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/payments/payments_customer_data.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
 #include "components/autofill/core/browser/test_autofill_clock.h"
+#include "components/autofill/core/browser/webdata/autofill_sync_bridge_util.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/autofill/core/common/autofill_switches.h"
@@ -38,10 +42,12 @@
 #include "testing/gmock/include/gmock/gmock.h"
 
 using autofill::AutofillMetadata;
+using autofill::AutofillMetrics;
 using autofill::AutofillProfile;
 using autofill::CreditCard;
 using autofill::data_util::TruncateUTF8;
 using base::ASCIIToUTF16;
+using testing::Contains;
 using wallet_helper::CreateDefaultSyncPaymentsCustomerData;
 using wallet_helper::CreateDefaultSyncWalletAddress;
 using wallet_helper::CreateDefaultSyncWalletCard;
@@ -66,6 +72,10 @@ namespace {
 
 ACTION_P(QuitMessageLoop, loop) {
   loop->Quit();
+}
+
+MATCHER(AddressHasConverted, "") {
+  return arg.specifics().wallet_metadata().address_has_converted();
 }
 
 const char kLocalGuidA[] = "EDC609ED-7EEE-4F27-B00C-423242A9C44A";
@@ -1323,6 +1333,88 @@ IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTestWithDefaultFeatures,
   ASSERT_EQ(1uL, cards.size());
   EXPECT_EQ(kDefaultCardID, cards[0]->server_id());
   EXPECT_EQ(kDefaultBillingAddressID, cards[0]->billing_address_id());
+}
+
+IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTestWithDefaultFeatures,
+                       ConvertServerAddress) {
+  GetFakeServer()->SetWalletData(
+      {CreateSyncWalletAddress(/*name=*/"address-1", /*company=*/"Company-1"),
+       CreateDefaultSyncPaymentsCustomerData()});
+  ASSERT_TRUE(SetupSync());
+
+  // Wait to make sure the address got converted locally.
+  AutofillWalletConversionChecker(0).Wait();
+
+  // Make sure the wallet_metadata is committed to the server, make an
+  // independent later commit and wait for it to happen.
+  ASSERT_TRUE(
+      bookmarks_helper::AddURL(0, "What are you syncing about?",
+                               GURL("https://google.com/synced-bookmark-1")));
+  ASSERT_TRUE(ServerCountMatchStatusChecker(syncer::BOOKMARKS, 1).Wait());
+
+  // Make sure the data is present on the client.
+  autofill::PersonalDataManager* pdm = GetPersonalDataManager(0);
+  ASSERT_EQ(1uL, pdm->GetServerProfiles().size());
+  ASSERT_EQ(kDefaultCustomerID, pdm->GetPaymentsCustomerData()->customer_id);
+
+  // Check also the data related to conversion to local profiles.
+  ASSERT_EQ(1uL, pdm->GetProfiles().size());
+  std::map<std::string, AutofillMetadata> addresses_metadata =
+      GetServerAddressesMetadata(0);
+  EXPECT_EQ(1U, addresses_metadata.size());
+  EXPECT_TRUE(addresses_metadata.begin()->second.has_converted);
+
+  // Check the data is correctly on the server.
+  EXPECT_THAT(fake_server_->GetSyncEntitiesByModelType(
+                  syncer::AUTOFILL_WALLET_METADATA),
+              Contains(AddressHasConverted()));
+
+  histogram_tester_.ExpectBucketCount(
+      "Autofill.WalletAddressConversionType",
+      /*bucket=*/AutofillMetrics::CONVERTED_ADDRESS_ADDED,
+      /*count=*/1);
+}
+
+IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTestWithDefaultFeatures,
+                       DoNotConvertServerAddressAgain) {
+  sync_pb::SyncEntity address_entity =
+      CreateSyncWalletAddress(/*name=*/"address-1", /*company=*/"Company-1");
+  GetFakeServer()->SetWalletData(
+      {address_entity, CreateDefaultSyncPaymentsCustomerData()});
+
+  // Inject a wallet metadata entity that indicates the address has already been
+  // converted.
+  sync_pb::EntitySpecifics specifics;
+  sync_pb::WalletMetadataSpecifics* wallet_metadata_specifics =
+      specifics.mutable_wallet_metadata();
+  wallet_metadata_specifics->set_type(
+      sync_pb::WalletMetadataSpecifics::ADDRESS);
+  wallet_metadata_specifics->set_use_count(3);
+  wallet_metadata_specifics->set_use_date(10);
+  wallet_metadata_specifics->set_address_has_converted(true);
+  // The id gets generated on the client based on the data. Simulate the process
+  // to get the same id. On top of it, we need to base64encode it.
+  AutofillProfile address = autofill::ProfileFromSpecifics(
+      address_entity.specifics().autofill_wallet().address());
+  wallet_metadata_specifics->set_id(
+      autofill::GetBase64EncodedId(address.server_id()));
+
+  GetFakeServer()->InjectEntity(
+      syncer::PersistentUniqueClientEntity::CreateFromSpecificsForTesting(
+          "non_unique_name",
+          /*client_tag_hash=*/"address-" + wallet_metadata_specifics->id(),
+          specifics,
+          /*creation_time=*/0,
+          /*last_modified_time=*/0));
+
+  ASSERT_TRUE(SetupSync());
+
+  // Wait to make sure we receive the (already converted) metadata entity.
+  AutofillWalletConversionChecker(0).Wait();
+
+  // No conversion happens now.
+  histogram_tester_.ExpectTotalCount("Autofill.WalletAddressConversionType",
+                                     /*count=*/0);
 }
 
 class SingleClientWalletSecondaryAccountSyncTest
