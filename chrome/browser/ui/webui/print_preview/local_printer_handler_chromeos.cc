@@ -83,12 +83,15 @@ void FetchCapabilities(std::unique_ptr<chromeos::Printer> printer,
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   PrinterBasicInfo basic_info = ToBasicInfo(*printer);
+  bool has_secure_protocol = !printer->HasNetworkProtocol() ||
+                             printer->GetProtocol() == chromeos::Printer::kIpps;
 
   // USER_VISIBLE because the result is displayed in the print preview dialog.
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::BindOnce(&GetSettingsOnBlockingPool, printer->id(), basic_info,
-                     PrinterSemanticCapsAndDefaults::Papers(), nullptr),
+                     PrinterSemanticCapsAndDefaults::Papers(),
+                     has_secure_protocol, nullptr),
       base::BindOnce(&CapabilitiesFetched, std::move(policies), std::move(cb)));
 }
 

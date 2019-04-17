@@ -58,6 +58,7 @@ void PopulateAllPaperDisplayNames(PrinterSemanticCapsAndDefaults* info) {
 base::Value GetPrinterCapabilitiesOnBlockingPoolThread(
     const std::string& device_name,
     const PrinterSemanticCapsAndDefaults::Papers& additional_papers,
+    bool has_secure_protocol,
     scoped_refptr<PrintBackend> print_backend) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
@@ -86,6 +87,11 @@ base::Value GetPrinterCapabilitiesOnBlockingPoolThread(
 #endif
   info.papers.insert(info.papers.end(), additional_papers.begin(),
                      additional_papers.end());
+#if defined(CHROMEOS)
+  if (!has_secure_protocol)
+    info.pin_supported = false;
+#endif  // defined(CHROMEOS)
+
   return cloud_print::PrinterSemanticCapsAndDefaultsToCdd(info);
 }
 
@@ -136,6 +142,7 @@ base::Value GetSettingsOnBlockingPool(
     const std::string& device_name,
     const PrinterBasicInfo& basic_info,
     const PrinterSemanticCapsAndDefaults::Papers& additional_papers,
+    bool has_secure_protocol,
     scoped_refptr<PrintBackend> print_backend) {
   SCOPED_UMA_HISTOGRAM_TIMER("Printing.PrinterCapabilities");
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
@@ -159,8 +166,9 @@ base::Value GetSettingsOnBlockingPool(
   base::Value printer_info_capabilities(base::Value::Type::DICTIONARY);
   printer_info_capabilities.SetKey(kPrinter, std::move(printer_info));
   printer_info_capabilities.SetKey(
-      kSettingCapabilities, GetPrinterCapabilitiesOnBlockingPoolThread(
-                                device_name, additional_papers, print_backend));
+      kSettingCapabilities,
+      GetPrinterCapabilitiesOnBlockingPoolThread(
+          device_name, additional_papers, has_secure_protocol, print_backend));
   return printer_info_capabilities;
 }
 
