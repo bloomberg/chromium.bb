@@ -113,7 +113,7 @@ public class InMemoryCachedImageFetcherTest {
 
         // Verify metrics are reported.
         verify(mBridge).reportEvent(
-                eq(UMA_CLIENT_NAME), eq(CachedImageFetcherEvent.JAVA_IN_MEMORY_CACHE_HIT));
+                eq(UMA_CLIENT_NAME), eq(ImageFetcherEvent.JAVA_IN_MEMORY_CACHE_HIT));
     }
 
     @Test

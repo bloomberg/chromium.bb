@@ -24,6 +24,7 @@ static_library("core") {
     "request_metadata.h",
   ]
   deps = [
+    ":metrics",
     "cache",
   ]
   public_deps = [
@@ -35,6 +36,16 @@ static_library("core") {
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//url",
+  ]
+}
+
+static_library("metrics") {
+  sources = [
+    "image_fetcher_metrics_reporter.cc",
+    "image_fetcher_metrics_reporter.h",
+  ]
+  public_deps = [
+    "//base",
   ]
 }
 
@@ -63,10 +74,12 @@ source_set("unit_tests") {
     "cached_image_fetcher_unittest.cc",
     "image_data_fetcher_unittest.cc",
     "image_fetcher_impl_unittest.cc",
+    "image_fetcher_metrics_reporter_unittest.cc",
     "request_metadata_unittest.cc",
   ]
   deps = [
     ":core",
+    ":metrics",
     ":test_support",
     "cache",
     "cache:cache_unit_tests",
@@ -82,9 +95,9 @@ source_set("unit_tests") {
 }
 
 if (is_android) {
-  java_cpp_enum("cached_image_fetcher_java_enums_srcjar") {
+  java_cpp_enum("java_enums_srcjar") {
     sources = [
-      "cache/cached_image_fetcher_metrics_reporter.h",
+      "image_fetcher_metrics_reporter.h",
       "image_fetcher_service.h",
     ]
   }

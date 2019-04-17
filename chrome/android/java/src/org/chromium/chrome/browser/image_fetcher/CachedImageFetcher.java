@@ -64,7 +64,7 @@ public class CachedImageFetcher extends ImageFetcher {
             BaseGifImage cachedGif, long startTimeMillis) {
         if (cachedGif != null) {
             callback.onResult(cachedGif);
-            reportEvent(clientName, CachedImageFetcherEvent.JAVA_DISK_CACHE_HIT);
+            reportEvent(clientName, ImageFetcherEvent.JAVA_DISK_CACHE_HIT);
             mImageFetcherBridge.reportCacheHitTime(clientName, startTimeMillis);
         } else {
             mImageFetcherBridge.fetchGif(url, clientName, (BaseGifImage gifFromNative) -> {
@@ -97,7 +97,7 @@ public class CachedImageFetcher extends ImageFetcher {
             Callback<Bitmap> callback, Bitmap cachedBitmap, long startTimeMillis) {
         if (cachedBitmap != null) {
             callback.onResult(cachedBitmap);
-            reportEvent(clientName, CachedImageFetcherEvent.JAVA_DISK_CACHE_HIT);
+            reportEvent(clientName, ImageFetcherEvent.JAVA_DISK_CACHE_HIT);
             mImageFetcherBridge.reportCacheHitTime(clientName, startTimeMillis);
         } else {
             mImageFetcherBridge.fetchImage(

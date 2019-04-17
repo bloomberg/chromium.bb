@@ -6395,19 +6395,6 @@ Unknown properties are collapsed to zero. -->
   <int value="31" label="Chooser Permissions Bubble"/>
 </enum>
 
-<enum name="CachedImageFetcherEvent">
-  <int value="0" label="Request for an image"/>
-  <int value="1" label="Cache hit"/>
-  <int value="2" label="Cache miss"/>
-  <int value="3" label="Cache decoding error"/>
-  <int value="4" label="Network transcoding error"/>
-  <int value="5" label="Failure to fetch the image from the network"/>
-  <int value="6" label="Cache startup eviction began"/>
-  <int value="7" label="Cache startup eviction finished"/>
-  <int value="8" label="Java in-memory cache hit"/>
-  <int value="9" label="Java disk cache hit"/>
-</enum>
-
 <enum name="CacheResult">
   <int value="0" label="MEMORY_CACHE_HIT"/>
   <int value="1" label="DISK_CACHE_HIT"/>
@@ -28697,6 +28684,19 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="1" label="Succeeded using photo stream"/>
   <int value="2" label="Failed using video stream"/>
   <int value="3" label="Failed using photo stream"/>
+</enum>
+
+<enum name="ImageFetcherEvent">
+  <int value="0" label="Request for an image"/>
+  <int value="1" label="Cache hit"/>
+  <int value="2" label="Cache miss"/>
+  <int value="3" label="Cache decoding error"/>
+  <int value="4" label="Network transcoding error"/>
+  <int value="5" label="Failure to fetch the image from the network"/>
+  <int value="6" label="Cache startup eviction began"/>
+  <int value="7" label="Cache startup eviction finished"/>
+  <int value="8" label="Java in-memory cache hit"/>
+  <int value="9" label="Java disk cache hit"/>
 </enum>
 
 <enum name="IMECommitType">

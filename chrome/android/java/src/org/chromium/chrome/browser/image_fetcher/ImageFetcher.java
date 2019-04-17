@@ -57,8 +57,7 @@ public abstract class ImageFetcher {
      * @param clientName Name of the cached image fetcher client to report UMA metrics for.
      * @param eventId The event to be reported
      */
-    // TODO(crbug.com/947210): Rename this enum to ImageFetcherEvent.
-    public void reportEvent(String clientName, @CachedImageFetcherEvent int eventId) {
+    public void reportEvent(String clientName, @ImageFetcherEvent int eventId) {
         ImageFetcherBridge.getInstance().reportEvent(clientName, eventId);
     }
 

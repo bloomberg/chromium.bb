@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_IMAGE_FETCHER_CORE_CACHE_CACHED_IMAGE_FETCHER_METRICS_REPORTER_H_
-#define COMPONENTS_IMAGE_FETCHER_CORE_CACHE_CACHED_IMAGE_FETCHER_METRICS_REPORTER_H_
+#ifndef COMPONENTS_IMAGE_FETCHER_CORE_IMAGE_FETCHER_METRICS_REPORTER_H_
+#define COMPONENTS_IMAGE_FETCHER_CORE_IMAGE_FETCHER_METRICS_REPORTER_H_
 
 #include <string>
 
@@ -12,11 +12,11 @@
 namespace image_fetcher {
 
 // Enum for the result of the fetch, reported through UMA. Present in enums.xml
-// as CachedImageFetcherEvent. New values should be added at the end and things
+// as ImageFetcherEvent. New values should be added at the end and things
 // should not be renumbered.
 // GENERATED_JAVA_ENUM_PACKAGE: (
 // org.chromium.chrome.browser.image_fetcher)
-enum class CachedImageFetcherEvent {
+enum class ImageFetcherEvent {
   kImageRequest = 0,
   kCacheHit = 1,
   kCacheMiss = 2,
@@ -30,14 +30,14 @@ enum class CachedImageFetcherEvent {
   kMaxValue = kJavaDiskCacheHit,
 };
 
-class CachedImageFetcherMetricsReporter {
+class ImageFetcherMetricsReporter {
  public:
   // For use in metrics that aren't client-specific.
   static const char kCachedImageFetcherInternalUmaClientName[];
 
   // Report cache events, used by CachedImageFetcher and composing classes.
   static void ReportEvent(const std::string& client_name,
-                          CachedImageFetcherEvent event);
+                          ImageFetcherEvent event);
 
   // Report the time it takes to load an image from the cache in native code.
   static void ReportImageLoadFromCacheTime(const std::string& client_name,
@@ -67,4 +67,4 @@ class CachedImageFetcherMetricsReporter {
 
 }  // namespace image_fetcher
 
-#endif  // COMPONENTS_IMAGE_FETCHER_CORE_CACHE_CACHED_IMAGE_FETCHER_METRICS_REPORTER_H_
+#endif  // COMPONENTS_IMAGE_FETCHER_CORE_IMAGE_FETCHER_METRICS_REPORTER_H_

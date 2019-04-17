@@ -16,9 +16,9 @@
 #include "chrome/browser/image_fetcher/image_fetcher_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
-#include "components/image_fetcher/core/cache/cached_image_fetcher_metrics_reporter.h"
 #include "components/image_fetcher/core/cache/image_cache.h"
 #include "components/image_fetcher/core/image_fetcher.h"
+#include "components/image_fetcher/core/image_fetcher_metrics_reporter.h"
 #include "components/image_fetcher/core/image_fetcher_service.h"
 #include "jni/ImageFetcherBridge_jni.h"
 #include "ui/gfx/android/java_bitmap.h"
@@ -156,9 +156,8 @@ void ImageFetcherBridge::ReportEvent(
     const jint j_event_id) {
   std::string client_name =
       base::android::ConvertJavaStringToUTF8(j_client_name);
-  CachedImageFetcherEvent event =
-      static_cast<CachedImageFetcherEvent>(j_event_id);
-  CachedImageFetcherMetricsReporter::ReportEvent(client_name, event);
+  ImageFetcherEvent event = static_cast<ImageFetcherEvent>(j_event_id);
+  ImageFetcherMetricsReporter::ReportEvent(client_name, event);
 }
 
 void ImageFetcherBridge::ReportCacheHitTime(
@@ -169,8 +168,8 @@ void ImageFetcherBridge::ReportCacheHitTime(
   std::string client_name =
       base::android::ConvertJavaStringToUTF8(j_client_name);
   base::Time start_time = base::Time::FromJavaTime(start_time_millis);
-  CachedImageFetcherMetricsReporter::ReportImageLoadFromCacheTimeJava(
-      client_name, start_time);
+  ImageFetcherMetricsReporter::ReportImageLoadFromCacheTimeJava(client_name,
+                                                                start_time);
 }
 
 void ImageFetcherBridge::ReportTotalFetchTimeFromNative(
@@ -181,8 +180,8 @@ void ImageFetcherBridge::ReportTotalFetchTimeFromNative(
   std::string client_name =
       base::android::ConvertJavaStringToUTF8(j_client_name);
   base::Time start_time = base::Time::FromJavaTime(start_time_millis);
-  CachedImageFetcherMetricsReporter::ReportTotalFetchFromNativeTimeJava(
-      client_name, start_time);
+  ImageFetcherMetricsReporter::ReportTotalFetchFromNativeTimeJava(client_name,
+                                                                  start_time);
 }
 
 void ImageFetcherBridge::OnImageDataFetched(

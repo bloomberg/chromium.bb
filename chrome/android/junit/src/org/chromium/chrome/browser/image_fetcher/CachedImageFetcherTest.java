@@ -81,7 +81,7 @@ public class CachedImageFetcherTest {
 
         // Verify metrics have been reported.
         verify(mImageFetcherBridge)
-                .reportEvent(eq(UMA_CLIENT_NAME), eq(CachedImageFetcherEvent.JAVA_DISK_CACHE_HIT));
+                .reportEvent(eq(UMA_CLIENT_NAME), eq(ImageFetcherEvent.JAVA_DISK_CACHE_HIT));
         verify(mImageFetcherBridge).reportCacheHitTime(eq(UMA_CLIENT_NAME), eq(START_TIME));
     }
 
@@ -119,7 +119,7 @@ public class CachedImageFetcherTest {
 
         // Verify metrics have been reported.
         verify(mImageFetcherBridge)
-                .reportEvent(eq(UMA_CLIENT_NAME), eq(CachedImageFetcherEvent.JAVA_DISK_CACHE_HIT));
+                .reportEvent(eq(UMA_CLIENT_NAME), eq(ImageFetcherEvent.JAVA_DISK_CACHE_HIT));
         verify(mImageFetcherBridge).reportCacheHitTime(eq(UMA_CLIENT_NAME), anyLong());
     }
 
