@@ -214,7 +214,6 @@
 
     'chromium.fyi': {
       'Afl Upload Linux ASan': 'afl_asan_release_bot',
-      'Android Builder (dbg)': 'android_debug_static_bot_vrdata',
 
       'Android Builder (dbg) Goma Canary': 'android_debug_static_bot_vrdata',
       'Android Builder (dbg) Goma Latest Client': 'android_debug_static_bot_vrdata',
