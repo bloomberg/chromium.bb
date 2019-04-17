@@ -592,15 +592,19 @@ class CC_EXPORT LayerTreeHostImpl
     return accumulated_root_overscroll_;
   }
 
-  bool pinch_gesture_active() const { return pinch_gesture_active_; }
+  bool pinch_gesture_active() const {
+    return pinch_gesture_active_ || external_pinch_gesture_active_;
+  }
   // Used to set the pinch gesture active state when the pinch gesture is
   // handled on another layer tree. In a page with OOPIFs, only the main
   // frame's layer tree directly handles pinch events. But layer trees for
   // sub-frames need to know when pinch gestures are active so they can
   // throttle the re-rastering. This function allows setting this flag on
   // OOPIF layer trees using information sent (initially) from the main-frame.
-  void set_pinch_gesture_active(bool external_pinch_gesture_active) {
-    pinch_gesture_active_ = external_pinch_gesture_active;
+  void set_external_pinch_gesture_active(bool external_pinch_gesture_active) {
+    external_pinch_gesture_active_ = external_pinch_gesture_active;
+    // Only one of the flags should ever be true at any given time.
+    DCHECK(!pinch_gesture_active_ || !external_pinch_gesture_active_);
   }
 
   void SetTreePriority(TreePriority priority);
@@ -1035,6 +1039,7 @@ class CC_EXPORT LayerTreeHostImpl
   // is set from the main thread during the commit process, using information
   // sent from the root layer tree via IPC messaging.
   bool pinch_gesture_active_ = false;
+  bool external_pinch_gesture_active_ = false;
   bool pinch_gesture_end_should_clear_scrolling_node_ = false;
 
   std::unique_ptr<BrowserControlsOffsetManager>
