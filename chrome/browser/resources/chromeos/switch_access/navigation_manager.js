@@ -61,13 +61,6 @@ class NavigationManager {
     this.scopeStack_ = [];
 
     /**
-     * Keeps track of when we're visiting the current scope as an actionable
-     * node.
-     * @private {boolean}
-     */
-    this.visitingScopeAsActionable_ = false;
-
-    /**
      * Keeps track of if we are currently in a system menu.
      * @private {boolean}
      */
@@ -116,12 +109,19 @@ class NavigationManager {
 
   /**
    * Find the previous interesting node and update |this.node_|. If there is no
-   * previous node, |this.node_| will be set to the youngest descendant in the
-   * SwitchAccess scope tree to loop again.
+   * previous node, |this.node_| will be set to the back button.
    */
   moveBackward() {
     if (this.menuManager_.moveBackward())
       return;
+
+    if (this.node_ === this.backButtonManager_.buttonNode()) {
+      if (SwitchAccessPredicate.isActionable(this.scope_))
+        this.setCurrentNode_(this.scope_);
+      else
+        this.setCurrentNode_(this.youngestDescendant_(this.scope_));
+      return;
+    }
 
     this.startAtValidNode_();
 
@@ -129,23 +129,11 @@ class NavigationManager {
         this.node_, constants.Dir.BACKWARD,
         SwitchAccessPredicate.restrictions(this.scope_));
 
-    // Special case: Scope is actionable
-    if (this.node_ === this.scope_ && this.visitingScopeAsActionable_) {
-      this.visitingScopeAsActionable_ = false;
-      this.setCurrentNode_(this.node_);
-      return;
-    }
-
     let node = treeWalker.next().node;
 
-    // Special case: Scope is actionable
-    if (node === this.scope_ && SwitchAccessPredicate.isActionable(node)) {
-      this.showScopeAsActionable_();
-      return;
-    }
+    if (node === this.scope_)
+      node = this.backButtonManager_.buttonNode();
 
-    // If treeWalker returns undefined, that means we're at the end of the tree
-    // and we should start over.
     if (!node)
       node = this.youngestDescendant_(this.scope_);
 
@@ -169,24 +157,35 @@ class NavigationManager {
 
     this.startAtValidNode_();
 
+    const backButtonNode = this.backButtonManager_.buttonNode();
+    if (this.node_ === this.scope_ && backButtonNode) {
+      this.setCurrentNode_(backButtonNode);
+      return;
+    }
+
+    // Replace the back button with the scope to find the following node.
+    if (this.node_ === backButtonNode)
+      this.node_ = this.scope_;
+
     let treeWalker = new AutomationTreeWalker(
         this.node_, constants.Dir.FORWARD,
         SwitchAccessPredicate.restrictions(this.scope_));
 
-    // Special case: Scope is actionable.
-    if (this.node_ === this.scope_ &&
-        SwitchAccessPredicate.isActionable(this.node_) &&
-        !this.visitingScopeAsActionable_) {
-      this.showScopeAsActionable_();
-      return;
-    }
-    this.visitingScopeAsActionable_ = false;
 
     let node = treeWalker.next().node;
     // If treeWalker returns undefined, that means we're at the end of the tree
     // and we should start over.
-    if (!node)
-      node = this.scope_;
+    if (!node) {
+      if (SwitchAccessPredicate.isActionable(this.scope_)) {
+        node = this.scope_;
+      } else if (backButtonNode) {
+        node = backButtonNode;
+      } else {
+        this.node_ = this.scope_;
+        this.moveForward();
+        return;
+      }
+    }
 
     // We can't interact with the desktop node, so skip it.
     if (node === this.desktop_) {
@@ -247,11 +246,8 @@ class NavigationManager {
     }
 
     if (this.node_ === this.scope_) {
-      // If we're visiting the scope as actionable, perform the default action.
-      if (this.visitingScopeAsActionable_) {
-        this.node_.doDefault();
-        return;
-      }
+      this.node_.doDefault();
+      return;
     }
 
     if (SwitchAccessPredicate.isGroup(this.node_, this.scope_)) {
@@ -332,7 +328,7 @@ class NavigationManager {
    * @return {!MenuManager}
    */
   connectMenuPanel(menuPanel) {
-    this.backButtonManager_.setMenuPanel(menuPanel);
+    this.backButtonManager_.init(menuPanel, this.desktop_);
     return this.menuManager_.connectMenuPanel(menuPanel);
   }
 
@@ -487,18 +483,15 @@ class NavigationManager {
       return;
     this.scopeStack_.push(this.scope_);
     this.scope_ = node;
-    this.node_ = node;
+
+    // The first node will come immediately after the back button, so we set
+    // |this.node_| to the back button and call |moveForward|.
+    const backButtonNode = this.backButtonManager_.buttonNode();
+    if (backButtonNode)
+      this.node_ = backButtonNode;
+    else
+      this.node_ = this.scope_;
     this.moveForward();
-  }
-
-  /**
-   * Show the current scope as an actionable item.
-   */
-  showScopeAsActionable_() {
-    this.node_ = this.scope_;
-    this.visitingScopeAsActionable_ = true;
-
-    this.updateFocusRings_(this.node_.location);
   }
 
   /**
@@ -535,8 +528,8 @@ class NavigationManager {
    * @private
    */
   updateFocusRings_(opt_focusRect) {
-    if (!opt_focusRect && this.node_ === this.scope_) {
-      this.backButtonManager_.show(this.node_);
+    if (this.node_ === this.backButtonManager_.buttonNode()) {
+      this.backButtonManager_.show(this.scope_);
 
       this.primaryFocusRing_.rects = [];
       this.scopeFocusRing_.rects = [this.scope_.location];
