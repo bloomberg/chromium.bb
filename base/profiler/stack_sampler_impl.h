@@ -35,14 +35,24 @@ class BASE_EXPORT StackSamplerImpl : public StackSampler {
   void RecordStackFrames(StackBuffer* stack_buffer,
                          ProfileBuilder* profile_builder) override;
 
+  // Exposes the internal function for unit testing.
+  static std::vector<Frame> WalkStackForTesting(ModuleCache* module_cache,
+                                                RegisterContext* thread_context,
+                                                uintptr_t stack_top,
+                                                Unwinder* native_unwinder,
+                                                Unwinder* aux_unwinder);
+
  private:
   bool CopyStack(StackBuffer* stack_buffer,
                  uintptr_t* stack_top,
                  ProfileBuilder* profile_builder,
                  RegisterContext* thread_context);
 
-  std::vector<Frame> WalkStack(RegisterContext* thread_context,
-                               uintptr_t stack_top);
+  static std::vector<Frame> WalkStack(ModuleCache* module_cache,
+                                      RegisterContext* thread_context,
+                                      uintptr_t stack_top,
+                                      Unwinder* native_unwinder,
+                                      Unwinder* aux_unwinder);
 
   const std::unique_ptr<ThreadDelegate> thread_delegate_;
   const std::unique_ptr<Unwinder> native_unwinder_;

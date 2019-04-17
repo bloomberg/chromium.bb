@@ -10,7 +10,7 @@
 namespace base {
 
 bool NativeUnwinderWin::CanUnwindFrom(const Frame* current_frame) const {
-  return current_frame->module;
+  return current_frame->module && current_frame->module->IsNative();
 }
 
 // Attempts to unwind the frame represented by the context values. If
@@ -28,22 +28,24 @@ UnwindResult NativeUnwinderWin::TryUnwind(RegisterContext* thread_context,
   for (;;) {
     if (!stack->back().module) {
       // There's no loaded module corresponding to the current frame. This can
-      // be due to executing code that is not in a module (e.g. V8 generated
-      // code or runtime-generated code associated with third-party injected
-      // DLLs). It can also be due to the the module having been unloaded since
-      // we recorded the stack.  In the latter case the function unwind
-      // information was part of the unloaded module, so it's not possible to
-      // unwind further.
+      // be due to executing code not in a module (e.g. runtime-generated code
+      // associated with third-party injected DLLs) or the module having been
+      // unloaded since we recorded the stack. In the latter case the function
+      // unwind information was part of the unloaded module, so it's not
+      // possible to unwind further.
       //
-      // If a module was found, it's still theoretically possible for the
+      // NB: if a module was found it's still theoretically possible for the
       // detected module module to be different than the one that was loaded
-      // when the stack was copied (i.e. if the module was unloaded and a
-      // different module loaded in overlapping memory). This likely would cause
-      // a crash, but has not been observed in practice.
-      //
-      // We return UNRECOGNIZED_FRAME on the optimistic assumption that this may
-      // be a frame the AuxUnwinder knows how to handle (e.g. a frame in V8
-      // generated code).
+      // when the stack was copied, if the module was unloaded and a different
+      // module loaded in overlapping memory. This likely would cause a crash
+      // but has not been observed in practice.
+      return UnwindResult::ABORTED;
+    }
+
+    if (!stack->back().module->IsNative()) {
+      // This is a non-native module associated with the auxiliary unwinder
+      // (e.g. corresponding to a frame in V8 generated code). Report as
+      // UNRECOGNIZED_FRAME to allow that unwinder to unwind the frame.
       return UnwindResult::UNRECOGNIZED_FRAME;
     }
 

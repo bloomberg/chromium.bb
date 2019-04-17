@@ -103,7 +103,20 @@ void StackSamplerImpl::RecordStackFrames(StackBuffer* stack_buffer,
   if (test_delegate_)
     test_delegate_->OnPreStackWalk();
 
-  profile_builder->OnSampleCompleted(WalkStack(&thread_context, stack_top));
+  profile_builder->OnSampleCompleted(
+      WalkStack(module_cache_, &thread_context, stack_top,
+                native_unwinder_.get(), aux_unwinder_));
+}
+// static
+
+std::vector<Frame> StackSamplerImpl::WalkStackForTesting(
+    ModuleCache* module_cache,
+    RegisterContext* thread_context,
+    uintptr_t stack_top,
+    Unwinder* native_unwinder,
+    Unwinder* aux_unwinder) {
+  return WalkStack(module_cache, thread_context, stack_top, native_unwinder,
+                   aux_unwinder);
 }
 
 // Suspends the thread, copies its stack, top address of the stack copy, and
@@ -160,10 +173,12 @@ bool StackSamplerImpl::CopyStack(StackBuffer* stack_buffer,
   return true;
 }
 
-// Walks the stack represented by |thread_context|, recording and returning the
-// frames.
-std::vector<Frame> StackSamplerImpl::WalkStack(RegisterContext* thread_context,
-                                               uintptr_t stack_top) {
+// static
+std::vector<Frame> StackSamplerImpl::WalkStack(ModuleCache* module_cache,
+                                               RegisterContext* thread_context,
+                                               uintptr_t stack_top,
+                                               Unwinder* native_unwinder,
+                                               Unwinder* aux_unwinder) {
   std::vector<Frame> stack;
   // Reserve enough memory for most stacks, to avoid repeated
   // allocations. Approximately 99.9% of recorded stacks are 128 frames or
@@ -172,10 +187,32 @@ std::vector<Frame> StackSamplerImpl::WalkStack(RegisterContext* thread_context,
 
   // Record the first frame from the context values.
   stack.emplace_back(RegisterContextInstructionPointer(thread_context),
-                     module_cache_->GetModuleForAddress(
+                     module_cache->GetModuleForAddress(
                          RegisterContextInstructionPointer(thread_context)));
 
-  native_unwinder_->TryUnwind(thread_context, stack_top, module_cache_, &stack);
+  size_t prior_stack_size;
+  UnwindResult result;
+  do {
+    // Choose an authoritative unwinder for the current module. Use the aux
+    // unwinder if it thinks it can unwind from the current frame, otherwise use
+    // the native unwinder.
+    Unwinder* unwinder =
+        aux_unwinder && aux_unwinder->CanUnwindFrom(&stack.back())
+            ? aux_unwinder
+            : native_unwinder;
+
+    prior_stack_size = stack.size();
+    result =
+        unwinder->TryUnwind(thread_context, stack_top, module_cache, &stack);
+
+    // The native unwinder should be the only one that returns COMPLETED
+    // since the stack starts in native code.
+    DCHECK(result != UnwindResult::COMPLETED || unwinder == native_unwinder);
+  } while (result != UnwindResult::ABORTED &&
+           result != UnwindResult::COMPLETED &&
+           // Give up if the authoritative unwinder for the module was unable to
+           // unwind.
+           stack.size() > prior_stack_size);
 
   return stack;
 }

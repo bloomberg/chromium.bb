@@ -131,7 +131,7 @@ NativeUnwinderMac::NativeUnwinderMac(ModuleCache* module_cache)
 }
 
 bool NativeUnwinderMac::CanUnwindFrom(const Frame* current_frame) const {
-  return current_frame->module;
+  return current_frame->module && current_frame->module->IsNative();
 }
 
 UnwindResult NativeUnwinderMac::TryUnwind(x86_thread_state64_t* thread_context,
@@ -222,10 +222,13 @@ Optional<UnwindResult> NativeUnwinderMac::CheckPreconditions(
     // libunwind adds the expected stack size, it will look for the return
     // address in the wrong place. This check ensures we don't continue trying
     // to unwind using the resulting bad IP value.
-    //
-    // We return UNRECOGNIZED_FRAME on the optimistic assumption that this may
-    // be a frame the AuxUnwinder knows how to handle (e.g. a frame in V8
-    // generated code).
+    return UnwindResult::ABORTED;
+  }
+
+  if (!current_frame->module->IsNative()) {
+    // This is a non-native module associated with the auxiliary unwinder
+    // (e.g. corresponding to a frame in V8 generated code). Report as
+    // UNRECOGNIZED_FRAME to allow that unwinder to unwind the frame.
     return UnwindResult::UNRECOGNIZED_FRAME;
   }
 
