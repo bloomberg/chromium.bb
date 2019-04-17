@@ -278,18 +278,6 @@ class SyncService : public KeyedService {
   bool IsSyncFeatureActive() const;
 
   //////////////////////////////////////////////////////////////////////////////
-  // INITIAL SETUP / CONSENT
-  //////////////////////////////////////////////////////////////////////////////
-
-  // Returns true if initial sync setup is in progress (does not return true
-  // if the user is customizing sync after already completing setup once). This
-  // is equivalent to
-  // IsSetupInProgress() && !GetUserSettings()->IsFirstSetupComplete().
-  // Note: This refers to Sync-the-feature. Sync-the-transport may be active
-  // independent of first-setup state.
-  bool IsFirstSetupInProgress() const;
-
-  //////////////////////////////////////////////////////////////////////////////
   // SETUP-IN-PROGRESS HANDLING
   //////////////////////////////////////////////////////////////////////////////
 

@@ -65,10 +65,6 @@ bool SyncService::IsSyncFeatureActive() const {
   return false;
 }
 
-bool SyncService::IsFirstSetupInProgress() const {
-  return !GetUserSettings()->IsFirstSetupComplete() && IsSetupInProgress();
-}
-
 bool SyncService::HasUnrecoverableError() const {
   return HasDisableReason(DISABLE_REASON_UNRECOVERABLE_ERROR);
 }

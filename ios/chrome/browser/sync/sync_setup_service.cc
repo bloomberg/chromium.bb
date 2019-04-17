@@ -192,12 +192,12 @@ bool SyncSetupService::IsFirstSetupComplete() const {
 
 void SyncSetupService::PreUnityCommitChanges() {
   DCHECK(!unified_consent::IsUnifiedConsentFeatureEnabled());
-  if (sync_service_->IsFirstSetupInProgress()) {
-    // Turn on the sync setup completed flag only if the user did not turn sync
-    // off.
-    if (sync_service_->CanSyncFeatureStart()) {
-      sync_service_->GetUserSettings()->SetFirstSetupComplete();
-    }
+  // If this was the first Sync setup and the user did not turn Sync off, then
+  // turn on the first-setup-complete flag now.
+  if (sync_service_->IsSetupInProgress() &&
+      !sync_service_->GetUserSettings()->IsFirstSetupComplete() &&
+      sync_service_->CanSyncFeatureStart()) {
+    sync_service_->GetUserSettings()->SetFirstSetupComplete();
   }
 
   sync_blocker_.reset();
