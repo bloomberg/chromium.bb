@@ -26,6 +26,10 @@
 
 namespace chrome {
 
+// "Learn more" URL for accessibility image labels, linked from the permissions
+// dialog shown when a user enables the feature.
+extern const char kAccessibilityLabelsLearnMoreURL[];
+
 // "Learn more" URL for when profile settings are automatically reset.
 extern const char kAutomaticSettingsResetLearnMoreURL[];
 
