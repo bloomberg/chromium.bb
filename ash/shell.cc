@@ -990,7 +990,9 @@ void Shell::Init(
   if (!::features::IsMultiProcessMash()) {
     // DBus clients only needed in Ash. For MultiProcessMash these are
     // initialized in AshService::InitializeDBusClients.
-    dbus::Bus* bus = chromeos::DBusThreadManager::Get()->GetSystemBus();
+    dbus::Bus* bus = chromeos::DBusThreadManager::IsInitialized()
+                         ? chromeos::DBusThreadManager::Get()->GetSystemBus()
+                         : nullptr;
     if (bus) {
       // Required by DetachableBaseHandler.
       chromeos::HammerdClient::Initialize(bus);

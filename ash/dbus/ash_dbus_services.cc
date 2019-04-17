@@ -16,13 +16,11 @@
 namespace ash {
 
 AshDBusServices::AshDBusServices() {
-  // DBusThreadManager is initialized in Chrome or in AshService::InitForMash().
-  CHECK(chromeos::DBusThreadManager::IsInitialized());
-
   dbus::Bus* system_bus =
-      chromeos::DBusThreadManager::Get()->IsUsingFakes()
-          ? nullptr
-          : chromeos::DBusThreadManager::Get()->GetSystemBus();
+      chromeos::DBusThreadManager::IsInitialized() &&
+              !chromeos::DBusThreadManager::Get()->IsUsingFakes()
+          ? chromeos::DBusThreadManager::Get()->GetSystemBus()
+          : nullptr;
   display_service_ = chromeos::CrosDBusService::Create(
       system_bus, chromeos::kDisplayServiceName,
       dbus::ObjectPath(chromeos::kDisplayServicePath),

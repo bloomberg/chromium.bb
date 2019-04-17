@@ -33,7 +33,6 @@
 #include "base/time/time.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/biod/biod_client.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/power/power_policy_controller.h"
 #include "components/exo/file_helper.h"
@@ -73,7 +72,6 @@ ShellBrowserMainParts::~ShellBrowserMainParts() = default;
 void ShellBrowserMainParts::PreMainMessageLoopStart() {}
 
 void ShellBrowserMainParts::PostMainMessageLoopStart() {
-  chromeos::DBusThreadManager::Initialize(chromeos::DBusThreadManager::kShared);
   chromeos::PowerManagerClient::InitializeFake();
   chromeos::BiodClient::InitializeFake();
 
