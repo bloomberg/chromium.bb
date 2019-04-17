@@ -5247,11 +5247,30 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
       return;
     }
 
-    if (error.code == web::kWebKitErrorUrlBlockedByContentFilter &&
-        web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
-      // If URL is blocked due to Restriction, do not take any further action as
-      // WKWebView will show a built-in error.
-      return;
+    if (error.code == web::kWebKitErrorUrlBlockedByContentFilter) {
+      DCHECK(provisionalLoad);
+      if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+        // If URL is blocked due to Restriction, do not take any further action
+        // as WKWebView will show a built-in error.
+      } else if (web::features::StorePendingItemInContext()) {
+        ui::PageTransition transition = navigationContext->GetPageTransition();
+        if (transition & ui::PAGE_TRANSITION_RELOAD &&
+            !(transition & ui::PAGE_TRANSITION_FORWARD_BACK)) {
+          // There is no pending item for reload (see crbug.com/676129). So
+          // the is nothing to do.
+          DCHECK(!self.navigationManagerImpl->GetPendingItem());
+        } else {
+          // A new or back-forward navigation, which requires navigation item
+          // commit.
+          DCHECK(self.navigationManagerImpl->GetPendingItem());
+          DCHECK(transition & ui::PAGE_TRANSITION_FORWARD_BACK ||
+                 PageTransitionIsNewNavigation(transition));
+          self.navigationManagerImpl->CommitPendingItem(
+              navigationContext->ReleaseItem());
+        }
+        // WKWebView will show the error page, so no further action is required.
+        return;
+      }
     }
 
     if (error.code == web::kWebKitErrorFrameLoadInterruptedByPolicyChange) {
