@@ -92,7 +92,7 @@ void DedicatedWorkerGlobalScope::FetchAndRunClassicScript(
       *this, CreateOutsideSettingsFetcher(outside_settings_object), script_url,
       destination, network::mojom::FetchRequestMode::kSameOrigin,
       network::mojom::FetchCredentialsMode::kSameOrigin,
-      GetSecurityContext().AddressSpace(),
+      outside_settings_object.GetAddressSpace(),
       WTF::Bind(&DedicatedWorkerGlobalScope::DidReceiveResponseForClassicScript,
                 WrapWeakPersistent(this),
                 WrapPersistent(classic_script_loader)),
