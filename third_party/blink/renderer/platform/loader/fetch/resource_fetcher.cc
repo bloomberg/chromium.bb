@@ -253,11 +253,14 @@ ResourceFetcherInit::ResourceFetcherInit(
     FetchContext* context,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     ResourceFetcher::LoaderFactory* loader_factory)
-    : ResourceFetcherInit(properties,
-                          context,
-                          std::move(task_runner),
-                          loader_factory,
-                          *MakeGarbageCollected<NullConsoleLogger>()) {}
+    : properties(properties),
+      context(context),
+      task_runner(std::move(task_runner)),
+      loader_factory(loader_factory) {
+  DCHECK(context);
+  DCHECK(this->task_runner);
+  DCHECK(loader_factory || properties.IsDetached());
+}
 
 ResourceLoadPriority ResourceFetcher::ComputeLoadPriority(
     ResourceType type,
@@ -483,8 +486,9 @@ ResourceFetcher::ResourceFetcher(const ResourceFetcherInit& init)
           *MakeGarbageCollected<DetachableProperties>(*init.properties)),
       context_(init.context),
       task_runner_(init.task_runner),
-      console_logger_(
-          MakeGarbageCollected<DetachableConsoleLogger>(*init.console_logger)),
+      console_logger_(MakeGarbageCollected<DetachableConsoleLogger>(
+          init.console_logger ? *init.console_logger
+                              : *MakeGarbageCollected<NullConsoleLogger>())),
       loader_factory_(init.loader_factory),
       scheduler_(MakeGarbageCollected<ResourceLoadScheduler>(
           init.initial_throttling_policy,

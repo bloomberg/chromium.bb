@@ -152,8 +152,7 @@ class ResourceFetcherTest : public testing::Test {
                                  FetchContext* context) {
     return MakeGarbageCollected<ResourceFetcher>(
         ResourceFetcherInit(properties, context, CreateTaskRunner(),
-                            MakeGarbageCollected<TestLoaderFactory>(),
-                            *MakeGarbageCollected<NullConsoleLogger>()));
+                            MakeGarbageCollected<TestLoaderFactory>()));
   }
   ResourceFetcher* CreateFetcher(const ResourceFetcherProperties& properties) {
     return CreateFetcher(properties, MakeGarbageCollected<MockFetchContext>());

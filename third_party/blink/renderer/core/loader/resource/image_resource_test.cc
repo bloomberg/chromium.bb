@@ -1872,7 +1872,8 @@ TEST(ImageResourceTest, PeriodicFlushTest) {
   auto* context = MakeGarbageCollected<MockFetchContext>();
   auto* properties = MakeGarbageCollected<TestResourceFetcherProperties>();
   auto* fetcher = MakeGarbageCollected<ResourceFetcher>(
-      ResourceFetcherInit(*properties, context, task_runner));
+      ResourceFetcherInit(*properties, context, task_runner,
+                          MakeGarbageCollected<TestLoaderFactory>()));
   auto frame_scheduler = std::make_unique<scheduler::FakeFrameScheduler>();
   auto* scheduler = MakeGarbageCollected<ResourceLoadScheduler>(
       ResourceLoadScheduler::ThrottlingPolicy::kNormal, *properties,
