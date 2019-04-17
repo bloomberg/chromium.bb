@@ -256,8 +256,9 @@ void PaymentAppInfoFetcher::SelfDeleteFetcher::FetchPaymentAppManifestCallback(
     return;
   }
 
-  icon_url_ = blink::ManifestIconSelector::FindBestMatchingIcon(
+  icon_url_ = blink::ManifestIconSelector::FindBestMatchingLandscapeIcon(
       manifest.icons, kPaymentAppIdealIconSize, kPaymentAppMinimumIconSize,
+      ManifestIconDownloader::kMaxWidthToHeightRatio,
       blink::Manifest::ImageResource::Purpose::ANY);
   if (!icon_url_.is_valid()) {
     WarnIfPossible(
@@ -284,7 +285,8 @@ void PaymentAppInfoFetcher::SelfDeleteFetcher::FetchPaymentAppManifestCallback(
       web_contents_helper_->web_contents(), icon_url_, kPaymentAppIdealIconSize,
       kPaymentAppMinimumIconSize,
       base::BindOnce(&PaymentAppInfoFetcher::SelfDeleteFetcher::OnIconFetched,
-                     base::Unretained(this)));
+                     base::Unretained(this)),
+      false /* square_only */);
   // |can_download| is false only if web contents are  null or the icon URL is
   // not valid. Both of these conditions are manually checked above, so
   // |can_download| should never be false. The manual checks above are necessary

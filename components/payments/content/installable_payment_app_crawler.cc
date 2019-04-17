@@ -373,14 +373,14 @@ void InstallablePaymentAppCrawler::DownloadAndDecodeWebAppIcon(
   }
 
   // TODO(crbug.com/782270): Choose appropriate icon size dynamically on
-  // different platforms. Here we choose a large ideal icon size to be big
-  // enough for all platforms. Note that we only scale down for this icon size
-  // but not scale up.
-  const int kPaymentAppIdealIconSize = 0xFFFF;
+  // different platforms.
+  const int kPaymentAppIdealIconSize = 32;
   const int kPaymentAppMinimumIconSize = 0;
-  GURL best_icon_url = blink::ManifestIconSelector::FindBestMatchingIcon(
-      manifest_icons, kPaymentAppIdealIconSize, kPaymentAppMinimumIconSize,
-      blink::Manifest::ImageResource::Purpose::ANY);
+  GURL best_icon_url =
+      blink::ManifestIconSelector::FindBestMatchingLandscapeIcon(
+          manifest_icons, kPaymentAppIdealIconSize, kPaymentAppMinimumIconSize,
+          content::ManifestIconDownloader::kMaxWidthToHeightRatio,
+          blink::Manifest::ImageResource::Purpose::ANY);
   if (!best_icon_url.is_valid()) {
     log_.Error("No suitable icon found in web app manifest \"" +
                web_app_manifest_url.spec() +
@@ -406,7 +406,8 @@ void InstallablePaymentAppCrawler::DownloadAndDecodeWebAppIcon(
       base::BindOnce(
           &InstallablePaymentAppCrawler::OnPaymentWebAppIconDownloadAndDecoded,
           weak_ptr_factory_.GetWeakPtr(), method_manifest_url,
-          web_app_manifest_url));
+          web_app_manifest_url),
+      false /* square_only */);
   DCHECK(can_download_icon);
 }
 
