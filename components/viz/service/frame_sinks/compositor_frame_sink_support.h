@@ -231,6 +231,8 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   void EvictLastActiveSurface();
   bool ShouldSendBeginFrame(base::TimeTicks timestamp);
 
+  bool IsEvicted(const LocalSurfaceId& local_surface_id) const;
+
   mojom::CompositorFrameSinkClient* const client_;
 
   FrameSinkManagerImpl* const frame_sink_manager_;
@@ -311,7 +313,7 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   uint32_t trace_sequence_ = 0;
 
   PresentationFeedbackMap presentation_feedbacks_;
-  uint32_t last_evicted_parent_sequence_number_ = 0;
+  LocalSurfaceId last_evicted_local_surface_id_;
 
   base::TimeTicks last_frame_time_;
 
