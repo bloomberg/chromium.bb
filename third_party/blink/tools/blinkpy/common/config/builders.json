@@ -51,6 +51,14 @@
         "port_name": "win-win7",
         "specifiers": ["Win7", "Debug"]
     },
+    "Win10 Tests x64": {
+        "port_name": "win-win10",
+        "specifiers": ["Win10", "Release"]
+    },
+    "Win10 Tests x64 (dbg)": {
+        "port_name": "win-win10",
+        "specifiers": ["Win10", "Debug"]
+    },
     "linux-blink-rel": {
         "port_name": "linux-trusty",
         "specifiers": ["Trusty", "Release"],

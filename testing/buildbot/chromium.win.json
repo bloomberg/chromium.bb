@@ -2142,6 +2142,32 @@
             }
           ]
         }
+      },
+      {
+        "args": [
+          "--num-retries=3",
+          "--target",
+          "Release_x64"
+        ],
+        "isolate_name": "blink_web_tests_exparchive",
+        "merge": {
+          "args": [
+            "--verbose"
+          ],
+          "script": "//third_party/blink/tools/merge_web_test_results.py"
+        },
+        "name": "webkit_layout_tests",
+        "results_handler": "layout tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-10-15063"
+            }
+          ],
+          "shards": 12
+        }
       }
     ]
   },
