@@ -248,6 +248,8 @@ source_set("test_support") {
     "accessibility_util.mm",
     "chrome_actions.h",
     "chrome_actions.mm",
+    "chrome_actions_app_interface.h",
+    "chrome_actions_app_interface.mm",
     "chrome_earl_grey.h",
     "chrome_earl_grey.mm",
     "chrome_earl_grey_ui.h",
@@ -337,6 +339,8 @@ source_set("eg_app_support+eg2") {
   ]
   testonly = true
   sources = [
+    "chrome_actions_app_interface.h",
+    "chrome_actions_app_interface.mm",
     "chrome_error_util.h",
     "chrome_error_util.mm",
     "chrome_matchers_app_interface.h",
@@ -369,6 +373,7 @@ source_set("eg_app_support+eg2") {
     "//ios/testing/earl_grey:eg_app_support+eg2",
     "//ios/third_party/earl_grey2:app_framework+link",
     "//ios/web:eg_app_support+eg2",
+    "//ios/web/public/test:element_selector",
     "//ui/base",
     "//ui/base:test_support",
   ]
@@ -383,6 +388,9 @@ source_set("eg_test_support+eg2") {
   testonly = true
 
   sources = [
+    "chrome_actions.h",
+    "chrome_actions.mm",
+    "chrome_actions_app_interface.h",
     "chrome_error_util.h",
     "chrome_error_util.mm",
     "chrome_matchers.h",
@@ -394,6 +402,7 @@ source_set("eg_test_support+eg2") {
     "//base",
     "//ios/testing/earl_grey:eg_test_support+eg2",
     "//ios/third_party/earl_grey2:test_lib",
+    "//ios/web/public/test:element_selector",
     "//url",
   ]
 }
