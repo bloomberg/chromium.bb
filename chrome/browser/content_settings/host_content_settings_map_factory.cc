@@ -31,6 +31,7 @@
 #endif
 
 #if defined(OS_ANDROID)
+#include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/installable/installed_webapp_provider.h"
 #include "chrome/browser/notifications/notification_channels_provider_android.h"
 #endif  // OS_ANDROID
@@ -123,10 +124,13 @@ scoped_refptr<RefcountedKeyedService>
         HostContentSettingsMap::NOTIFICATION_ANDROID_PROVIDER,
         std::move(channels_provider));
 
-    auto webapp_provider = std::make_unique<InstalledWebappProvider>();
-    settings_map->RegisterProvider(
-        HostContentSettingsMap::INSTALLED_WEBAPP_PROVIDER,
-        std::move(webapp_provider));
+    if (base::FeatureList::IsEnabled(chrome::android::
+          kTrustedWebActivityNotificationDelegationEnrolment)) {
+      auto webapp_provider = std::make_unique<InstalledWebappProvider>();
+      settings_map->RegisterProvider(
+          HostContentSettingsMap::INSTALLED_WEBAPP_PROVIDER,
+          std::move(webapp_provider));
+    }
   }
 #endif  // defined (OS_ANDROID)
   return settings_map;
