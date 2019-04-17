@@ -52,7 +52,7 @@ void RunChainedTask(scoped_refptr<base::sequence_manager::TaskQueue> task_queue,
 
 class WorkerThreadSchedulerForTest : public WorkerThreadScheduler {
  public:
-  // |manager|and |proxy| must remain valid for the entire lifetime of this
+  // |manager| and |proxy| must remain valid for the entire lifetime of this
   // object.
   WorkerThreadSchedulerForTest(WebThreadType thread_type,
                                base::sequence_manager::SequenceManager* manager,

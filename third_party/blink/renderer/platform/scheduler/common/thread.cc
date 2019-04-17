@@ -95,7 +95,7 @@ std::unique_ptr<Thread> Thread::CreateWebAudioThread() {
   // WebAudio uses a thread with |DISPLAY| priority to avoid glitch when the
   // system is under the high pressure. Note that the main browser thread also
   // runs with same priority. (see: crbug.com/734539)
-  params.thread_options.priority = base::ThreadPriority::DISPLAY;
+  params.thread_priority = base::ThreadPriority::DISPLAY;
   return CreateThread(params);
 }
 
@@ -104,7 +104,7 @@ void Thread::CreateAndSetCompositorThread() {
 
   ThreadCreationParams params(WebThreadType::kCompositorThread);
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS) || defined(USE_OZONE)
-  params.thread_options.priority = base::ThreadPriority::DISPLAY;
+  params.thread_priority = base::ThreadPriority::DISPLAY;
 #endif
   auto compositor_thread =
       std::make_unique<scheduler::CompositorThread>(params);
