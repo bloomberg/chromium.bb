@@ -12,6 +12,7 @@ syntax = "proto2";
 option optimize_for = LITE_RUNTIME;
 
 package cryptohome;
+option go_package = "cryptohome_proto";
 
 message KeyAuthorizationSecretUsage {
   optional bool encrypt = 1;

@@ -10,6 +10,7 @@ group("all") {
     ":system_api-biod-protos",
     ":system_api-bootlockbox-protos",
     ":system_api-chaps-protos",
+    ":system_api-cryptohome-goprotos",
     ":system_api-cryptohome-protos",
     ":system_api-dlcservice-protos",
     ":system_api-kerberos-protos",
@@ -88,6 +89,15 @@ proto_library("system_api-cryptohome-protos") {
     "${proto_in_dir}/signed_secret.proto",
   ]
   standalone = true
+}
+
+goproto_library("system_api-cryptohome-goprotos") {
+  proto_in_dir = "dbus/cryptohome"
+  proto_out_dir = "go/src/chromiumos/system_api/cryptohome_proto"
+  sources = [
+    "${proto_in_dir}/key.proto",
+    "${proto_in_dir}/rpc.proto",
+  ]
 }
 
 proto_library("system_api-authpolicy-protos") {
