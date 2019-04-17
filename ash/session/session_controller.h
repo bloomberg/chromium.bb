@@ -135,11 +135,9 @@ class ASH_EXPORT SessionController : public mojom::SessionController {
   // device (i.e. first time login on the device).
   bool IsUserFirstLogin() const;
 
-  // Returns true if the current user is managed, and false otherwise.
-  // For public sessions, kiosk app and arc kiosk app accounts returns true.
-  // NOTE: Returns false if there is no profile (example: login screen in
-  // ChromeOS).
-  bool IsUserManaged() const;
+  // Returns true if should display managed icon for current session,
+  // and false otherwise.
+  bool ShouldDisplayManagedUI() const;
 
   // Locks the screen. The locking happens asynchronously.
   void LockScreen();

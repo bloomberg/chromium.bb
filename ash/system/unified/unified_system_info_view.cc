@@ -324,7 +324,7 @@ void EnterpriseManagedView::Update() {
   EnterpriseDomainModel* model =
       Shell::Get()->system_tray_model()->enterprise_domain();
   SessionController* session_controller = Shell::Get()->session_controller();
-  SetVisible(session_controller->IsUserManaged() ||
+  SetVisible(session_controller->ShouldDisplayManagedUI() ||
              model->active_directory_managed() ||
              !model->enterprise_display_domain().empty());
 

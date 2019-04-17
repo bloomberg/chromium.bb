@@ -235,11 +235,11 @@ bool SessionController::IsUserFirstLogin() const {
   return GetUserSession(0)->user_info->is_new_profile;
 }
 
-bool SessionController::IsUserManaged() const {
+bool SessionController::ShouldDisplayManagedUI() const {
   if (!IsActiveUserSessionStarted())
     return false;
 
-  return GetUserSession(0)->user_info->is_managed;
+  return GetUserSession(0)->user_info->should_display_managed_ui;
 }
 
 void SessionController::LockScreen() {
