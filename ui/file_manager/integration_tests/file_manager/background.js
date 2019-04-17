@@ -441,7 +441,6 @@ async function createShortcut(appId, directoryName) {
   chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
       'fakeMouseRightClick', appId, ['.table-row[selected]']));
 
-
   await remoteCall.waitForElement(appId, '#file-context-menu:not([hidden])');
   await remoteCall.waitForElement(
       appId,
