@@ -35,16 +35,23 @@ class LauncherAnimationsTest : public UIPerformanceTest {
 
   // UIPerformanceTest:
   std::vector<std::string> GetUMAHistogramNames() const override {
+    DCHECK(!suffix_.empty());
     return {
-        "Apps.StateTransition.AnimationSmoothness.ClamshellMode",
+        std::string("Apps.StateTransition.AnimationSmoothness.") + suffix_,
     };
   }
 
+ protected:
+  void set_suffix(const std::string& suffix) { suffix_ = suffix; }
+
  private:
+  std::string suffix_;
+
   DISALLOW_COPY_AND_ASSIGN(LauncherAnimationsTest);
 };
 
 IN_PROC_BROWSER_TEST_F(LauncherAnimationsTest, Fullscreen) {
+  set_suffix("FullscreenAllApps.ClamshellMode");
   // Browser window is used to identify display, so we can use
   // use the 1st browser window regardless of number of windows created.
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
@@ -76,6 +83,7 @@ IN_PROC_BROWSER_TEST_F(LauncherAnimationsTest, Fullscreen) {
 }
 
 IN_PROC_BROWSER_TEST_F(LauncherAnimationsTest, Peeking) {
+  set_suffix("Peeking.ClamshellMode");
   // Browser window is used to identify display, so we can use
   // use the 1st browser window regardless of number of windows created.
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
