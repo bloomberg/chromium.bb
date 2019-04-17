@@ -26,7 +26,6 @@
 namespace app_list {
 
 namespace {
-constexpr size_t kMaxNumSearchResultTiles = 6;
 constexpr size_t kInstalledApps = 4;
 constexpr size_t kPlayStoreApps = 2;
 constexpr size_t kRecommendedApps = 1;
@@ -139,8 +138,7 @@ class SearchResultTileItemListViewTest
   }
 
   size_t GetOpenResultCount(int ranking) {
-    size_t result = view_delegate_.open_search_result_counts()[ranking];
-    return result;
+    return view_delegate_.open_search_result_counts()[ranking];
   }
 
   void ResetOpenResultCount() {
@@ -176,6 +174,7 @@ TEST_P(SearchResultTileItemListViewTest, Basic) {
   if (IsReinstallAppRecommendationEnabled()) {
     expected_results += kRecommendedApps;
   }
+  constexpr size_t kMaxNumSearchResultTiles = 6;
   expected_results = std::min(kMaxNumSearchResultTiles, expected_results);
 
   ASSERT_EQ(expected_results, results);
@@ -184,15 +183,12 @@ TEST_P(SearchResultTileItemListViewTest, Basic) {
       IsPlayStoreAppSearchEnabled() || IsReinstallAppRecommendationEnabled();
   // When the Play Store app search feature or app reinstallation feature is
   // enabled, for each result, we added a separator for result type grouping.
-  const size_t expected_child_count = separators_enabled
-                                          ? kMaxNumSearchResultTiles * 2
-                                          : kMaxNumSearchResultTiles;
-  EXPECT_EQ(expected_child_count, view()->children().size());
+  const size_t child_step = separators_enabled ? 2 : 1;
+  const size_t expected_num_children = kMaxNumSearchResultTiles * child_step;
+  EXPECT_EQ(expected_num_children, view()->children().size());
 
   /// Test accessibility descriptions of tile views.
-  const size_t first_child = separators_enabled ? 1 : 0;
-  const size_t child_step = separators_enabled ? 2 : 1;
-
+  const size_t first_child = child_step - 1;
   for (size_t i = 0; i < kInstalledApps; ++i) {
     ui::AXNodeData node_data;
     view()->children()[first_child + i * child_step]->GetAccessibleNodeData(
@@ -206,30 +202,28 @@ TEST_P(SearchResultTileItemListViewTest, Basic) {
       expected_results -
       (IsReinstallAppRecommendationEnabled() ? kRecommendedApps : 0) -
       kInstalledApps;
-  for (size_t i = kInstalledApps; i < (kInstalledApps + expected_install_apps);
-       ++i) {
+  for (size_t i = 0; i < expected_install_apps; ++i) {
     ui::AXNodeData node_data;
-    view()->children()[first_child + i * child_step]->GetAccessibleNodeData(
-        &node_data);
+    view()
+        ->children()[first_child + (i + kInstalledApps) * child_step]
+        ->GetAccessibleNodeData(&node_data);
     EXPECT_EQ(ax::mojom::Role::kButton, node_data.role);
-    EXPECT_EQ("PlayStoreApp " + base::NumberToString(i - kInstalledApps) +
-                  ", Star rating " +
-                  base::NumberToString(i + 1 - kInstalledApps) + ".0, Price " +
-                  base::NumberToString(i - kInstalledApps),
+    EXPECT_EQ("PlayStoreApp " + base::NumberToString(i) + ", Star rating " +
+                  base::NumberToString(i + 1) + ".0, Price " +
+                  base::NumberToString(i),
               node_data.GetStringAttribute(ax::mojom::StringAttribute::kName));
   }
 
   // Recommendations.
   const size_t start_index = kInstalledApps + expected_install_apps;
-  for (size_t i = kInstalledApps + expected_install_apps; i < expected_results;
-       ++i) {
+  for (size_t i = 0; i < expected_results - start_index; ++i) {
     ui::AXNodeData node_data;
-    view()->children()[first_child + i * child_step]->GetAccessibleNodeData(
-        &node_data);
+    view()
+        ->children()[first_child + (i + start_index) * child_step]
+        ->GetAccessibleNodeData(&node_data);
     EXPECT_EQ(ax::mojom::Role::kButton, node_data.role);
-    EXPECT_EQ("RecommendedApp " + base::NumberToString(i - start_index) +
-                  ", Star rating " + base::NumberToString(i + 1 - start_index) +
-                  ".0, App recommendation",
+    EXPECT_EQ("RecommendedApp " + base::NumberToString(i) + ", Star rating " +
+                  base::NumberToString(i + 1) + ".0, App recommendation",
               node_data.GetStringAttribute(ax::mojom::StringAttribute::kName));
   }
 

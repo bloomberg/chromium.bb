@@ -98,7 +98,7 @@ gfx::Size BubbleView::CalculatePreferredSize() const {
   // To avoid text and icon bubbles have different heights in a row.
   constexpr int kMinimumHeight = 32;
   preferred_size.SetToMax(gfx::Size(kMinimumHeight, kMinimumHeight));
-  // Make the width to be at lease as large as the height.
+  // Make the width to be at least as large as the height.
   preferred_size.set_width(
       std::max(preferred_size.width(), preferred_size.height()));
   return preferred_size;

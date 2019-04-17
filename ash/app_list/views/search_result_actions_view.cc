@@ -12,6 +12,7 @@
 #include "ash/app_list/views/search_result_actions_view_delegate.h"
 #include "ash/app_list/views/search_result_view.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
+#include "base/numerics/ranges.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
@@ -243,8 +244,7 @@ void SearchResultActionsView::SetActions(const SearchResult::Actions& actions) {
 }
 
 void SearchResultActionsView::SetSelectedAction(int action_index) {
-  // Clamp |action_index| in [-1, child_count()].
-  action_index = std::min(int{children().size()}, std::max(-1, action_index));
+  action_index = base::ClampToRange(action_index, -1, int{children().size()});
 
   if (selected_action_ == action_index)
     return;

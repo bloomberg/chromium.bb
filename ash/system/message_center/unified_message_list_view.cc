@@ -245,15 +245,10 @@ void UnifiedMessageListView::Layout() {
 
 gfx::Rect UnifiedMessageListView::GetNotificationBounds(
     const std::string& notification_id) const {
-  if (!notification_id.empty()) {
-    for (int i = 0; i < child_count(); i++) {
-      if (GetContainer(i)->GetNotificationId() == notification_id)
-        return GetContainer(i)->bounds();
-    }
-  }
-
-  // Fallback to the last notification.
-  return GetLastNotificationBounds();
+  const MessageViewContainer* child = nullptr;
+  if (!notification_id.empty())
+    child = GetNotificationById(notification_id);
+  return child ? child->bounds() : GetLastNotificationBounds();
 }
 
 gfx::Rect UnifiedMessageListView::GetLastNotificationBounds() const {
@@ -301,13 +296,9 @@ void UnifiedMessageListView::OnNotificationRemoved(const std::string& id,
   InterruptClearAll();
   ResetBounds();
 
-  for (int i = 0; i < child_count(); ++i) {
-    auto* view = GetContainer(i);
-    if (view->GetNotificationId() == id) {
-      view->set_is_removed();
-      break;
-    }
-  }
+  auto* child = GetNotificationById(id);
+  if (child)
+    child->set_is_removed();
 
   UpdateBounds();
 
@@ -322,13 +313,9 @@ void UnifiedMessageListView::OnNotificationUpdated(const std::string& id) {
 
   InterruptClearAll();
 
-  for (int i = 0; i < child_count(); ++i) {
-    auto* view = GetContainer(i);
-    if (view->GetNotificationId() == id) {
-      view->UpdateWithNotification(*notification);
-      break;
-    }
-  }
+  auto* child = GetNotificationById(id);
+  if (child)
+    child->UpdateWithNotification(*notification);
 
   ResetBounds();
 }
@@ -399,6 +386,16 @@ UnifiedMessageListView::GetContainer(int index) {
 const UnifiedMessageListView::MessageViewContainer*
 UnifiedMessageListView::GetContainer(int index) const {
   return static_cast<const MessageViewContainer*>(child_at(index));
+}
+
+const UnifiedMessageListView::MessageViewContainer*
+UnifiedMessageListView::GetNotificationById(const std::string& id) const {
+  for (int i = 0; i < child_count(); ++i) {
+    auto* view = GetContainer(i);
+    if (view->GetNotificationId() == id)
+      return view;
+  }
+  return nullptr;
 }
 
 UnifiedMessageListView::MessageViewContainer*

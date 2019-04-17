@@ -76,28 +76,32 @@ class CandidateViewTest : public views::ViewsTestBase,
     return static_cast<CandidateView*>(container_->child_at(index));
   }
 
-  int GetHighlightedIndex(int* highlighted_count) const {
-    *highlighted_count = 0;
-    int last_highlighted = -1;
+  size_t GetHighlightedCount() const {
+    size_t highlighted_count = 0;
     for (int i = 0; i < container_->child_count(); ++i) {
-      if (container_->child_at(i)->background() != NULL) {
-        (*highlighted_count)++;
-        last_highlighted = i;
-      }
+      if (!!container_->child_at(i)->background())
+        ++highlighted_count;
     }
-    return last_highlighted;
+    return highlighted_count;
+  }
+
+  int GetHighlightedIndex() const {
+    for (int i = 0; i < container_->child_count(); ++i) {
+      if (!!container_->child_at(i)->background())
+        return i;
+    }
+    return -1;
   }
 
   int GetLastPressedIndexAndReset() {
     for (int i = 0; i < container_->child_count(); ++i) {
       if (last_pressed_ == container_->child_at(i)) {
-        last_pressed_ = NULL;
+        last_pressed_ = nullptr;
         return i;
       }
     }
 
-    DCHECK(last_pressed_ == NULL);
-    last_pressed_ = NULL;
+    DCHECK(!last_pressed_);
     return -1;
   }
 
@@ -119,27 +123,26 @@ class CandidateViewTest : public views::ViewsTestBase,
 TEST_F(CandidateViewTest, MouseHovers) {
   GetCandidateAt(0)->SetHighlighted(true);
 
-  int highlighted_count = 0;
-  EXPECT_EQ(0, GetHighlightedIndex(&highlighted_count));
-  EXPECT_EQ(1, highlighted_count);
+  EXPECT_EQ(1u, GetHighlightedCount());
+  EXPECT_EQ(0, GetHighlightedIndex());
 
   // Mouse hover shouldn't change the background.
   event_generator()->MoveMouseTo(
       GetCandidateAt(0)->GetBoundsInScreen().CenterPoint());
-  EXPECT_EQ(0, GetHighlightedIndex(&highlighted_count));
-  EXPECT_EQ(1, highlighted_count);
+  EXPECT_EQ(1u, GetHighlightedCount());
+  EXPECT_EQ(0, GetHighlightedIndex());
 
   // Mouse hover shouldn't change the background.
   event_generator()->MoveMouseTo(
       GetCandidateAt(1)->GetBoundsInScreen().CenterPoint());
-  EXPECT_EQ(0, GetHighlightedIndex(&highlighted_count));
-  EXPECT_EQ(1, highlighted_count);
+  EXPECT_EQ(1u, GetHighlightedCount());
+  EXPECT_EQ(0, GetHighlightedIndex());
 
   // Mouse hover shouldn't change the background.
   event_generator()->MoveMouseTo(
       GetCandidateAt(2)->GetBoundsInScreen().CenterPoint());
-  EXPECT_EQ(0, GetHighlightedIndex(&highlighted_count));
-  EXPECT_EQ(1, highlighted_count);
+  EXPECT_EQ(1u, GetHighlightedCount());
+  EXPECT_EQ(0, GetHighlightedIndex());
 }
 
 TEST_F(CandidateViewTest, MouseClick) {
@@ -152,31 +155,30 @@ TEST_F(CandidateViewTest, MouseClick) {
 TEST_F(CandidateViewTest, ClickAndMove) {
   GetCandidateAt(0)->SetHighlighted(true);
 
-  int highlighted_count = 0;
-  EXPECT_EQ(0, GetHighlightedIndex(&highlighted_count));
-  EXPECT_EQ(1, highlighted_count);
+  EXPECT_EQ(1u, GetHighlightedCount());
+  EXPECT_EQ(0, GetHighlightedIndex());
 
   event_generator()->MoveMouseTo(
       GetCandidateAt(2)->GetBoundsInScreen().CenterPoint());
   event_generator()->PressLeftButton();
-  EXPECT_EQ(2, GetHighlightedIndex(&highlighted_count));
-  EXPECT_EQ(1, highlighted_count);
+  EXPECT_EQ(1u, GetHighlightedCount());
+  EXPECT_EQ(2, GetHighlightedIndex());
 
   // Highlight follows the drag.
   event_generator()->MoveMouseTo(
       GetCandidateAt(1)->GetBoundsInScreen().CenterPoint());
-  EXPECT_EQ(1, GetHighlightedIndex(&highlighted_count));
-  EXPECT_EQ(1, highlighted_count);
+  EXPECT_EQ(1u, GetHighlightedCount());
+  EXPECT_EQ(1, GetHighlightedIndex());
 
   event_generator()->MoveMouseTo(
       GetCandidateAt(0)->GetBoundsInScreen().CenterPoint());
-  EXPECT_EQ(0, GetHighlightedIndex(&highlighted_count));
-  EXPECT_EQ(1, highlighted_count);
+  EXPECT_EQ(1u, GetHighlightedCount());
+  EXPECT_EQ(0, GetHighlightedIndex());
 
   event_generator()->MoveMouseTo(
       GetCandidateAt(1)->GetBoundsInScreen().CenterPoint());
-  EXPECT_EQ(1, GetHighlightedIndex(&highlighted_count));
-  EXPECT_EQ(1, highlighted_count);
+  EXPECT_EQ(1u, GetHighlightedCount());
+  EXPECT_EQ(1, GetHighlightedIndex());
 
   event_generator()->ReleaseLeftButton();
   EXPECT_EQ(1, GetLastPressedIndexAndReset());
