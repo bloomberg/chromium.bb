@@ -1031,7 +1031,8 @@ void SVGElement::SynchronizeAnimatedSVGAttribute(
 }
 
 scoped_refptr<ComputedStyle> SVGElement::CustomStyleForLayoutObject() {
-  if (!CorrespondingElement())
+  // TODO(http://crbug.com/953263): Eliminate isConnected check.
+  if (!CorrespondingElement() || !CorrespondingElement()->isConnected())
     return GetDocument().EnsureStyleResolver().StyleForElement(this);
 
   const ComputedStyle* style = nullptr;
