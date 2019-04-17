@@ -164,15 +164,6 @@ void Font::DrawText(cc::PaintCanvas* canvas,
                     const NGTextFragmentPaintInfo& text_info,
                     const FloatPoint& point,
                     float device_scale_factor,
-                    const cc::PaintFlags& flags) const {
-  DrawText(canvas, text_info, point, device_scale_factor,
-           cc::NodeHolder::EmptyNodeHolder(), flags);
-}
-
-void Font::DrawText(cc::PaintCanvas* canvas,
-                    const NGTextFragmentPaintInfo& text_info,
-                    const FloatPoint& point,
-                    float device_scale_factor,
                     const cc::NodeHolder& node_holder,
                     const cc::PaintFlags& flags) const {
   // Don't draw anything while we are using custom fonts that are in the process

@@ -267,13 +267,10 @@ class PLATFORM_EXPORT GraphicsContext {
                 const FloatPoint&,
                 const cc::NodeHolder&);
 
+  // TODO(layout-dev): This method is only used by SVGInlineTextBoxPainter, see
+  // if we can change that to use the four parameter version above.
   void DrawText(const Font&,
                 const TextRunPaintInfo&,
-                const FloatPoint&,
-                const PaintFlags&,
-                const cc::NodeHolder&);
-  void DrawText(const Font&,
-                const NGTextFragmentPaintInfo&,
                 const FloatPoint&,
                 const PaintFlags&,
                 const cc::NodeHolder&);
@@ -407,13 +404,6 @@ class PLATFORM_EXPORT GraphicsContext {
     RealizePaintSave();
     return paint_state_;
   }
-
-  template <typename TextPaintInfo>
-  void DrawTextInternal(const Font&,
-                        const TextPaintInfo&,
-                        const FloatPoint&,
-                        const PaintFlags&,
-                        const cc::NodeHolder&);
 
   template <typename TextPaintInfo>
   void DrawTextInternal(const Font&,
