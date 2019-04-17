@@ -183,10 +183,22 @@ TabManager::TabManager(PageSignalReceiver* page_signal_receiver,
 #endif
   browser_tab_strip_tracker_.Init();
   session_restore_observer_.reset(new TabManagerSessionRestoreObserver(this));
-  if (performance_manager::PerformanceManager::GetInstance()) {
-    resource_coordinator_signal_observer_.reset(
-        new ResourceCoordinatorSignalObserver(page_signal_receiver));
+
+  // Create the graph observer. This is the source of page almost idle data and
+  // EQT measurements.
+  if (auto* perf_man = performance_manager::PerformanceManager::GetInstance()) {
+    // The performance manager is torn down on its own sequence so its safe to
+    // pass it unretained. The observer itself learns of the tab manager tear
+    // down via the weak ptr it is given.
+    perf_man->task_runner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            &performance_manager::PerformanceManager::RegisterObserver,
+            base::Unretained(perf_man),
+            std::make_unique<ResourceCoordinatorSignalObserver>(
+                weak_ptr_factory_.GetWeakPtr())));
   }
+
   stats_collector_.reset(new TabManagerStatsCollector());
   proactive_freeze_discard_params_ =
       GetStaticProactiveTabFreezeAndDiscardParams();
@@ -200,7 +212,6 @@ TabManager::TabManager(PageSignalReceiver* page_signal_receiver,
 
 TabManager::~TabManager() {
   tab_load_tracker_->RemoveObserver(this);
-  resource_coordinator_signal_observer_.reset();
 
   if (metrics::DesktopSessionDurationTracker::IsInitialized())
     metrics::DesktopSessionDurationTracker::Get()->RemoveObserver(this);

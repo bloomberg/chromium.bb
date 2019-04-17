@@ -480,11 +480,6 @@ class TabManager : public LifecycleUnitObserver,
   // in parallel.
   size_t loading_slots_;
 
-  // |resource_coordinator_signal_observer_| is owned by TabManager and is used
-  // to receive various signals from ResourceCoordinator.
-  std::unique_ptr<ResourceCoordinatorSignalObserver>
-      resource_coordinator_signal_observer_;
-
   // Records UMAs for tab and system-related events and properties during
   // session restore.
   std::unique_ptr<TabManagerStatsCollector> stats_collector_;

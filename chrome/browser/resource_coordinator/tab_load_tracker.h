@@ -151,9 +151,8 @@ class TabLoadTracker {
   void RenderProcessGone(content::WebContents* web_contents,
                          base::TerminationStatus status);
 
-  // This is an analog of a PageSignalObserver function. This class is not
-  // actually a PageSignalObserver, but these notifications are forwarded to it
-  // from the TabManager.
+  // Notifications to this are driven by the
+  // TabManager::ResourceCoordinatorSignalObserver.
   void OnPageAlmostIdle(content::WebContents* web_contents);
 
   // Returns true if |web_contents| is a UI tab and false otherwise. This is
