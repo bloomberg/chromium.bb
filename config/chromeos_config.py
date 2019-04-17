@@ -1977,7 +1977,9 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'glados',
       'gonzo',
       'grunt',
+      'guado',
       'guado-accelerator',
+      'guado_moblab',
       'hana',
       'hatch',
       'kalista',
@@ -2064,8 +2066,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'cyan', # crbug.com/953920
       'eve-arcnext', # contact: ihf@ (crbug.com/826755)
       'fizz-moblab', # crbug.com/952619
-      'guado', # crbug.com/939135
-      'guado_moblab', # crbug.com/952619
       'gale', # crbug.com/953701
       'whirlwind', # crbug.com/953701
       'mistral', # contact: roopeshr@

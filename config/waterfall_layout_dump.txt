@@ -465,6 +465,7 @@
     gonzo-postsubmit
     grunt-postsubmit
     guado-accelerator-postsubmit
+    guado-postsubmit
     guado_moblab-postsubmit
     hana-postsubmit
     hatch-postsubmit
@@ -2755,6 +2756,7 @@
     gonzo-postsubmit-tryjob
     grunt-postsubmit-tryjob
     guado-accelerator-postsubmit-tryjob
+    guado-postsubmit-tryjob
     guado_moblab-postsubmit-tryjob
     hana-postsubmit-tryjob
     hatch-postsubmit-tryjob
