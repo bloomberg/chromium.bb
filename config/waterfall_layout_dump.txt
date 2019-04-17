@@ -479,7 +479,6 @@
     kukui-postsubmit
     lakitu-gpu-postsubmit
     lakitu-postsubmit
-    lakitu-st-postsubmit
     lars-postsubmit
     lasilla-ground-postsubmit
     leon-postsubmit
@@ -2770,7 +2769,6 @@
     kukui-postsubmit-tryjob
     lakitu-gpu-postsubmit-tryjob
     lakitu-postsubmit-tryjob
-    lakitu-st-postsubmit-tryjob
     lars-postsubmit-tryjob
     lasilla-ground-postsubmit-tryjob
     leon-postsubmit-tryjob

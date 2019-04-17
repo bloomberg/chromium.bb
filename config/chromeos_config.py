@@ -1990,7 +1990,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'kukui',
       'lakitu',
       'lakitu-gpu',
-      'lakitu-st',
       'lasilla-ground',
       'leon',
       'littlejoe',
@@ -2071,6 +2070,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'guado', # crbug.com/939135
       'guado_moblab', # crbug.com/952619
       'mistral', # contact: roopeshr@
+      'lakitu-st', # crbug.com/953855
   ])
 
   assert not (_paladin_experimental_boards & _paladin_important_boards), (
