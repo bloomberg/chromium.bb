@@ -260,6 +260,7 @@ haw.res
 he.res
 hi.res
 hr.res
+hr_BA.res
 hu.res
 hy.res
 id.res
