@@ -48,6 +48,7 @@
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/buffer_format_util.h"
+#include "ui/gfx/buffer_usage_util.h"
 #include "ui/gl/gpu_switching_manager.h"
 
 #if defined(OS_WIN)
@@ -329,29 +330,6 @@ std::unique_ptr<base::DictionaryValue> GpuInfoAsDictionaryValue() {
   return info;
 }
 
-const char* BufferUsageToString(gfx::BufferUsage usage) {
-  switch (usage) {
-    case gfx::BufferUsage::GPU_READ:
-      return "GPU_READ";
-    case gfx::BufferUsage::SCANOUT:
-      return "SCANOUT";
-    case gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE:
-      return "SCANOUT_CAMERA_READ_WRITE";
-    case gfx::BufferUsage::CAMERA_AND_CPU_READ_WRITE:
-      return "CAMERA_AND_CPU_READ_WRITE";
-    case gfx::BufferUsage::SCANOUT_CPU_READ_WRITE:
-      return "SCANOUT_CPU_READ_WRITE";
-    case gfx::BufferUsage::SCANOUT_VDA_WRITE:
-      return "SCANOUT_VDA_WRITE";
-    case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE:
-      return "GPU_READ_CPU_READ_WRITE";
-    case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT:
-      return "GPU_READ_CPU_READ_WRITE_PERSISTENT";
-  }
-  NOTREACHED();
-  return nullptr;
-}
-
 std::unique_ptr<base::ListValue> CompositorInfo() {
   auto compositor_info = std::make_unique<base::ListValue>();
 
@@ -383,7 +361,7 @@ std::unique_ptr<base::ListValue> GpuMemoryBufferInfo() {
         native_usage_support = base::StringPrintf(
             "%s%s %s", native_usage_support.c_str(),
             native_usage_support.empty() ? "" : ",",
-            BufferUsageToString(static_cast<gfx::BufferUsage>(usage)));
+            gfx::BufferUsageToString(static_cast<gfx::BufferUsage>(usage)));
       }
     }
     if (native_usage_support.empty())
