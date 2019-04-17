@@ -9,13 +9,13 @@ GEN_INCLUDE(
     [ROOT_PATH + 'chrome/test/data/webui/polymer_browser_test_base.js']);
 
 /**
- * SetTimeBrowserTest tests the "Set Time" web UI dialog.
+ * SetTimeDialogBrowserTest tests the "Set Time" web UI dialog.
  * @constructor
  * @extends {PolymerTest}
  */
-function SetTimeBrowserTest() {}
+function SetTimeDialogBrowserTest() {}
 
-SetTimeBrowserTest.prototype = {
+SetTimeDialogBrowserTest.prototype = {
   __proto__: PolymerTest.prototype,
 
   browsePreload: 'chrome://set-time/',
@@ -25,8 +25,8 @@ SetTimeBrowserTest.prototype = {
   ]),
 };
 
-TEST_F('SetTimeBrowserTest', 'All', function() {
-  suite('SetTime', function() {
+TEST_F('SetTimeDialogBrowserTest', 'All', function() {
+  suite('SetTimeDialog', function() {
     let setTimeElement = null;
     let testBrowserProxy = null;
 
@@ -77,7 +77,7 @@ TEST_F('SetTimeBrowserTest', 'All', function() {
       testBrowserProxy = new TestSetTimeBrowserProxy();
       settime.SetTimeBrowserProxyImpl.instance_ = testBrowserProxy;
       PolymerTest.clearBody();
-      setTimeElement = document.createElement('set-time');
+      setTimeElement = document.createElement('set-time-dialog');
       document.body.appendChild(setTimeElement);
       Polymer.dom.flush();
     });
