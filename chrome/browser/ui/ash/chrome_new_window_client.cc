@@ -34,8 +34,10 @@
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
+#include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/webui/chrome_web_contents_handler.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/common/webui_url_constants.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "components/sessions/core/tab_restore_service_observer.h"
@@ -466,18 +468,25 @@ void ChromeNewWindowClient::OpenArcCustomTab(
 content::WebContents* ChromeNewWindowClient::OpenUrlImpl(
     const GURL& url,
     bool from_user_interaction) {
-  // If the url is for system settings, show the settings in a window instead of
-  // a browser tab.
-  if (url.GetContent() == "settings" &&
-      (url.SchemeIs(url::kAboutScheme) ||
+  Profile* profile = ProfileManager::GetActiveUserProfile();
+  if ((url.SchemeIs(url::kAboutScheme) ||
        url.SchemeIs(content::kChromeUIScheme))) {
-    chrome::ShowSettingsSubPageForProfile(
-        ProfileManager::GetActiveUserProfile(), /*sub_page=*/std::string());
-    return nullptr;
+    // Show browser settings (e.g. chrome://settings). This may open in a window
+    // or a tab depending on feature SplitSettings.
+    if (url.host() == chrome::kChromeUISettingsHost) {
+      chrome::ShowSettingsSubPageForProfile(profile,
+                                            /*sub_page=*/std::string());
+      return nullptr;
+    }
+    // OS settings are shown in a window.
+    if (url.host() == chrome::kChromeUIOSSettingsHost) {
+      chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(profile);
+      return nullptr;
+    }
   }
 
   NavigateParams navigate_params(
-      ProfileManager::GetActiveUserProfile(), url,
+      profile, url,
       ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK |
                                 ui::PAGE_TRANSITION_FROM_API));
 

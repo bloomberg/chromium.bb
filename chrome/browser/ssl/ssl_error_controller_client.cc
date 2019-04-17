@@ -32,7 +32,8 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/settings_window_manager_chromeos.h"
+#include "chrome/common/webui_url_constants.h"
 #endif
 
 #if defined(OS_WIN)
@@ -232,8 +233,8 @@ void SSLErrorControllerClient::LaunchDateAndTimeSettings() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
 #if defined(OS_CHROMEOS)
-  chrome::ShowSettingsSubPageForProfile(ProfileManager::GetActiveUserProfile(),
-                                        chrome::kDateTimeSubPage);
+  chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
+      ProfileManager::GetActiveUserProfile(), chrome::kDateTimeSubPage);
 #else
   base::PostTaskWithTraits(FROM_HERE,
                            {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
