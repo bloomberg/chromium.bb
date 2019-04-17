@@ -3817,6 +3817,10 @@ def ApplyCustomOverrides(site_config):
           'sign_types': ['recovery', 'factory'],
       },
 
+      'kukui-release': {
+          'sign_types': ['recovery', 'factory'],
+      },
+
       # --- end from here ---
 
       # Enable the new tcmalloc version on certain boards.
