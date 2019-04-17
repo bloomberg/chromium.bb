@@ -56,6 +56,13 @@ namespace tracing {
 //                   e.g., by DevTools. In that case, the trace log will not be
 //                   saved to this file.
 //
+// result_directory: A directory to save traces to. The saved traces will be
+//                   named chrometrace.log, prefixed with the Unix timestamp of
+//                   Chrome's startup time. This is meant for cases where Chrome
+//                   is started multiple times from one command line, such as
+//                   during tests. This option is ignored if result_file is also
+//                   specified.
+//
 // The trace config file can be specified by the --trace-config-file flag on
 // most platforms except on Android, e.g., --trace-config-file=path/to/file/.
 // This flag should not be used with --trace-startup; otherwise,

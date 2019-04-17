@@ -54,6 +54,7 @@ const char kDefaultStartupCategories[] =
 const char kTraceConfigParam[] = "trace_config";
 const char kStartupDurationParam[] = "startup_duration";
 const char kResultFileParam[] = "result_file";
+const char kResultDirectoryParam[] = "result_directory";
 
 }  // namespace
 
@@ -281,9 +282,16 @@ bool TraceStartupConfig::ParseTraceConfigFileContent(
   if (startup_duration_ < 0)
     startup_duration_ = 0;
 
-  base::FilePath::StringType result_file_str;
-  if (dict->GetString(kResultFileParam, &result_file_str))
-    result_file_ = base::FilePath(result_file_str);
+  base::FilePath::StringType result_file_or_dir_str;
+  if (dict->GetString(kResultFileParam, &result_file_or_dir_str))
+    result_file_ = base::FilePath(result_file_or_dir_str);
+  else if (dict->GetString(kResultDirectoryParam, &result_file_or_dir_str)) {
+    result_file_ = base::FilePath(result_file_or_dir_str);
+    // Java time to get an int instead of a double.
+    result_file_ = result_file_.AppendASCII(
+        base::NumberToString(base::Time::Now().ToJavaTime()) +
+        "_chrometrace.log");
+  }
 
   return true;
 }

@@ -17,6 +17,7 @@ the XR tests miss any changes made to the base file.
 """
 
 import argparse
+import json
 import logging
 import os
 import subprocess
@@ -33,6 +34,22 @@ ACL_STRINGS = [
   'S-1-15-3-1024-2302894289-466761758-1166120688-1039016420-2430351297-4240214049-4028510897-3317428798:(OI)(CI)(RX)',
   'S-1-15-3-1024-3424233489-972189580-2057154623-747635277-1604371224-316187997-3786583170-1043257646:(OI)(CI)(RX)',
 ]
+
+
+DEFAULT_TRACING_CATEGORIES = [
+  'blink',
+  'cc',
+  'cpu_profiler',
+  'gpu',
+  'xr',
+]
+
+
+def GetTestExecutable():
+  test_executable = 'xr_browser_tests_binary'
+  if sys.platform == 'win32':
+    test_executable += '.exe'
+  return test_executable
 
 
 def ResetACLs(path):
@@ -83,19 +100,60 @@ def SetupWindowsACLs():
         sys.exit(e.returncode)
 
 
-def main():
-  parser = argparse.ArgumentParser()
-  _, rest_args = parser.parse_known_args()
+def SetupTracingIfNecessary(args):
+  if not args.tracing_output_directory:
+    return []
 
-  test_executable = 'xr_browser_tests_binary'
+  tracing_categories = args.tracing_categories or DEFAULT_TRACING_CATEGORIES
+  with open(os.path.join(args.tracing_output_directory, 'traceconfig.json'),
+      'w') as trace_config:
+    json.dump({
+      'trace_config': {
+        'record_mode': 'record-until-full',
+        'included_categories': tracing_categories,
+      },
+      'startup_duraton': 0,
+      'result_directory': args.tracing_output_directory,
+    }, trace_config)
+    return ['--trace-config-file=%s' % trace_config.name]
+
+
+def CreateArgumentParser():
+  parser = argparse.ArgumentParser(
+      description='This is a wrapper script around %s. To view help for that, '
+                  'run `%s --help`.' % (
+                      GetTestExecutable(), GetTestExecutable()))
+
+  group = parser.add_argument_group(
+      title='Tracing',
+      description='Arguments related to running the tests with tracing enabled')
+  group.add_argument('--tracing-output-directory', type=os.path.abspath,
+                     help='The directory to store trace logs in. Setting this '
+                          'enables tracing in the test.')
+  group.add_argument('--tracing-category', action='append', default=[],
+                     dest='tracing_categories',
+                     help='Add a tracing category to capture. Can be passed '
+                          'multiple times, once for each category. If '
+                          'unspecified, defaults to %s'
+                          % DEFAULT_TRACING_CATEGORIES)
+
+  return parser
+
+
+def main():
+  parser = CreateArgumentParser()
+  args, rest_args = parser.parse_known_args()
+
   if sys.platform == 'win32':
     SetupWindowsACLs()
-    test_executable += '.exe'
+
+  tracing_args = SetupTracingIfNecessary(args)
 
   test_executable = os.path.abspath(
-      os.path.join(os.path.dirname(__file__), test_executable))
+      os.path.join(os.path.dirname(__file__), GetTestExecutable()))
   subprocess.call(
-      [test_executable, '--run-through-xr-wrapper-script'] + rest_args)
+      [test_executable, '--run-through-xr-wrapper-script'] +
+      tracing_args + rest_args)
 
 if __name__ == '__main__':
   main()
