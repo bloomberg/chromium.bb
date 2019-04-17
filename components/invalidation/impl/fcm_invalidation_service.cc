@@ -159,19 +159,7 @@ void FCMInvalidationService::OnActiveAccountLogin() {
   if (IsStarted()) {
     return;
   }
-  bool is_ready_to_start = IsReadyToStart();
-#if defined(OS_ANDROID)
-  // IsReadyToStart checks if account is available (active account logged in
-  // and token is available). As currently observed, FCMInvalidationService
-  // isn't always notified on Android when token is avaliable.
-  if (base::FeatureList::IsEnabled(
-          invalidation::switches::
-              kFCMInvalidationsStartOnceActiveAccountAvailable)) {
-    is_ready_to_start = true;
-  }
-#endif
-
-  if (is_ready_to_start) {
+  if (IsReadyToStart()) {
     StartInvalidator();
   } else {
     ReportInvalidatorState(syncer::NOT_STARTED_NO_REFRESH_TOKEN);
@@ -214,7 +202,22 @@ std::string FCMInvalidationService::GetOwnerName() const {
 }
 
 bool FCMInvalidationService::IsReadyToStart() {
-  if (!identity_provider_->IsActiveAccountWithRefreshToken()) {
+  bool valid_account_info_available =
+      identity_provider_->IsActiveAccountWithRefreshToken();
+
+#if defined(OS_ANDROID)
+  // IsReadyToStart checks if account is available (active account logged in
+  // and token is available). As currently observed, FCMInvalidationService
+  // isn't always notified on Android when token is available.
+  if (base::FeatureList::IsEnabled(
+          invalidation::switches::
+              kFCMInvalidationsStartOnceActiveAccountAvailable)) {
+    valid_account_info_available =
+        !identity_provider_->GetActiveAccountId().empty();
+  }
+#endif
+
+  if (!valid_account_info_available) {
     DVLOG(2) << "Not starting FCMInvalidationService: "
              << "active account is not available";
     return false;
