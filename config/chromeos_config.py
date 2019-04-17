@@ -2000,6 +2000,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'amd64-generic',
       'arm-generic',
       'arm64-generic',
+      'auron_paine',
       'auron_yuna',
       'beaglebone',
       'betty',
@@ -2117,7 +2118,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   # Paladin configs that exist and should stay as experimental until further
   # notice, preferably with a comment indicating why and a bug.
   _paladin_experimental_boards = _paladin_new_boards | frozenset([
-      'auron_paine', # crbug.com/950751
       'lakitu', # crbug.com/953855
       'lakitu-st', # crbug.com/953855
       'mistral', # contact: roopeshr@
