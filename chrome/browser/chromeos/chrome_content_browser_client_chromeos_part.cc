@@ -38,7 +38,7 @@ bool ShouldExcludePage(content::WebContents* contents) {
 
   const GURL& url = entry->GetURL();
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
-  if (profile && search::IsNTPURL(url, profile))
+  if (profile && search::IsNTPOrRelatedURL(url, profile))
     return true;
 
   return url.SchemeIs(content::kChromeUIScheme);

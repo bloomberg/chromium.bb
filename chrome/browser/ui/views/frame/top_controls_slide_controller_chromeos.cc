@@ -75,7 +75,7 @@ content::BrowserControlsState GetBrowserControlsStateConstraints(
   }
 
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
-  if (profile && search::IsNTPURL(url, profile))
+  if (profile && search::IsNTPOrRelatedURL(url, profile))
     return content::BROWSER_CONTROLS_STATE_SHOWN;
 
   auto* helper = SecurityStateTabHelper::FromWebContents(contents);

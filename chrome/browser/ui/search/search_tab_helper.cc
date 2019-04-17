@@ -173,7 +173,7 @@ void SearchTabHelper::DidStartNavigation(
     return;
   }
 
-  if (search::IsNTPURL(navigation_handle->GetURL(), profile())) {
+  if (search::IsNTPOrRelatedURL(navigation_handle->GetURL(), profile())) {
     // Set the title on any pending entry corresponding to the NTP. This
     // prevents any flickering of the tab title.
     content::NavigationEntry* entry =
