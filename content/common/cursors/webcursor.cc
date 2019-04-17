@@ -14,7 +14,7 @@
 
 using blink::WebCursorInfo;
 
-constexpr int kMaxImageSize = 1024;
+constexpr int kMaxSize = 1024;
 
 namespace content {
 
@@ -32,11 +32,11 @@ WebCursor::~WebCursor() {
 }
 
 WebCursor::WebCursor(const CursorInfo& info) : info_(info) {
-  CHECK(IsReasonableScale(info.image_scale_factor)) << info.image_scale_factor;
-  CHECK_LE(info.custom_image.width(), kMaxImageSize);
-  CHECK_LE(info.custom_image.height(), kMaxImageSize);
-  CHECK_LE(info.custom_image.width() / info.image_scale_factor, kMaxImageSize);
-  CHECK_LE(info.custom_image.height() / info.image_scale_factor, kMaxImageSize);
+  DCHECK(IsReasonableScale(info.image_scale_factor)) << info.image_scale_factor;
+  DCHECK_LE(info.custom_image.width(), kMaxSize);
+  DCHECK_LE(info.custom_image.height(), kMaxSize);
+  DCHECK_LE(info.custom_image.width() / info.image_scale_factor, kMaxSize);
+  DCHECK_LE(info.custom_image.height() / info.image_scale_factor, kMaxSize);
   ClampHotspot();
 }
 
@@ -61,9 +61,9 @@ bool WebCursor::Deserialize(const base::Pickle* m, base::PickleIterator* iter) {
     if (!IPC::ParamTraits<SkBitmap>::Read(m, iter, &bitmap))
       return false;
 
-    if (bitmap.width() > kMaxImageSize || bitmap.height() > kMaxImageSize ||
-        bitmap.width() / scale > kMaxImageSize ||
-        bitmap.height() / scale > kMaxImageSize) {
+    if (bitmap.width() > kMaxSize || bitmap.height() > kMaxSize ||
+        bitmap.width() / scale > kMaxSize ||
+        bitmap.height() / scale > kMaxSize) {
       return false;
     }
   }
