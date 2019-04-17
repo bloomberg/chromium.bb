@@ -123,7 +123,8 @@ class NET_EXPORT HostResolverManager
       const HostPortPair& host,
       const NetLogWithSource& net_log,
       const base::Optional<ResolveHostParameters>& optional_parameters,
-      URLRequestContext* request_context);
+      URLRequestContext* request_context,
+      HostCache* host_cache);
   std::unique_ptr<MdnsListener> CreateMdnsListener(const HostPortPair& host,
                                                    DnsQueryType query_type);
   void SetDnsClientEnabled(bool enabled);

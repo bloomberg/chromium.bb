@@ -499,12 +499,14 @@ class HostResolverManager::RequestImpl
               const HostPortPair& request_host,
               const base::Optional<ResolveHostParameters>& optional_parameters,
               URLRequestContext* request_context,
+              HostCache* host_cache,
               base::WeakPtr<HostResolverManager> resolver)
       : source_net_log_(source_net_log),
         request_host_(request_host),
         parameters_(optional_parameters ? optional_parameters.value()
                                         : ResolveHostParameters()),
         request_context_(request_context),
+        host_cache_(host_cache),
         host_resolver_flags_(
             HostResolver::ParametersToHostResolverFlags(parameters_)),
         priority_(parameters_.initial_priority),
@@ -636,6 +638,8 @@ class HostResolverManager::RequestImpl
 
   URLRequestContext* request_context() const { return request_context_; }
 
+  HostCache* host_cache() const { return host_cache_; }
+
   HostResolverFlags host_resolver_flags() const { return host_resolver_flags_; }
 
   RequestPriority priority() const { return priority_; }
@@ -659,6 +663,7 @@ class HostResolverManager::RequestImpl
   const HostPortPair request_host_;
   const ResolveHostParameters parameters_;
   URLRequestContext* const request_context_;
+  HostCache* const host_cache_;
   const HostResolverFlags host_resolver_flags_;
 
   RequestPriority priority_;
@@ -2317,10 +2322,11 @@ HostResolverManager::CreateRequest(
     const HostPortPair& host,
     const NetLogWithSource& net_log,
     const base::Optional<ResolveHostParameters>& optional_parameters,
-    URLRequestContext* request_context) {
+    URLRequestContext* request_context,
+    HostCache* host_cache) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return std::make_unique<RequestImpl>(net_log, host, optional_parameters,
-                                       request_context,
+                                       request_context, host_cache,
                                        weak_ptr_factory_.GetWeakPtr());
 }
 
