@@ -193,6 +193,12 @@ public class LocationBarLayout extends FrameLayout
     }
 
     @Override
+    public void destroy() {
+        mAutocompleteCoordinator.destroy();
+        mAutocompleteCoordinator = null;
+    }
+
+    @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
 
