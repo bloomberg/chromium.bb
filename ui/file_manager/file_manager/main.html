@@ -200,7 +200,8 @@
     </commands>
 
     <cr-menu id="file-context-menu" class="chrome-menu files-menu"
-             menu-item-selector="cr-menu-item,hr" showShortcuts>
+             menu-item-selector="cr-menu-item,hr" showShortcuts
+             aria-label="$i18n{CONTEXT_MENU_LABEL}">
       <cr-menu-item id="default-task-menu-item" command="#default-task"
                 visibleif="full-page" class="hide-on-toolbar" hidden></cr-menu-item>
       <cr-menu-item command="#open-with"
@@ -230,7 +231,8 @@
     </cr-menu>
 
     <cr-menu id="roots-context-menu" class="chrome-menu files-menu"
-             menu-item-selector="cr-menu-item">
+             menu-item-selector="cr-menu-item"
+             aria-label="$i18n{CONTEXT_MENU_LABEL}">
       <cr-menu-item command="#configure"></cr-menu-item>
       <cr-menu-item command="#unmount"></cr-menu-item>
       <cr-menu-item command="#format"></cr-menu-item>
@@ -243,7 +245,8 @@
     </cr-menu>
 
     <cr-menu id="directory-tree-context-menu" class="chrome-menu files-menu"
-             menu-item-selector="cr-menu-item,hr">
+             menu-item-selector="cr-menu-item,hr"
+             aria-label="$i18n{CONTEXT_MENU_LABEL}">
       <cr-menu-item command="#cut" visibleif="full-page"></cr-menu-item>
       <cr-menu-item command="#copy" visibleif="full-page"></cr-menu-item>
       <cr-menu-item command="#paste-into-folder" visibleif="full-page"></cr-menu-item>
@@ -342,7 +345,8 @@
     </cr-menu>
 
     <cr-menu id="text-context-menu" class="chrome-menu files-menu" showShortcuts
-             menu-item-selector="cr-menu-item">
+             menu-item-selector="cr-menu-item"
+             aria-label="$i18n{CONTEXT_MENU_LABEL}">
       <cr-menu-item command="#cut"></cr-menu-item>
       <cr-menu-item command="#copy"></cr-menu-item>
       <cr-menu-item command="#paste"></cr-menu-item>
