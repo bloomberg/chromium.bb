@@ -69,6 +69,7 @@ const char kFileHandlerVerb[] = "verb";
 const char kGlobal[] = "global";
 const char kHideBookmarkButton[] = "hide_bookmark_button";
 const char kHomepageURL[] = "homepage_url";
+const char kHostPermissions[] = "host_permissions";
 const char kIcons[] = "icons";
 const char kId[] = "id";
 const char kImeOptionsPage[] = "options_page";
@@ -439,6 +440,9 @@ const char kInvalidHomepageOverrideURL[] =
     "Invalid value for overriding homepage url: '[*]'.";
 const char kInvalidHomepageURL[] =
     "Invalid value for homepage url: '[*]'.";
+const char kInvalidHostPermission[] =
+    "Invalid value for 'host_permissions[*]'.";
+const char kInvalidHostPermissions[] = "Invalid value for 'host_permissions'.";
 const char kInvalidIconKey[] = "Invalid key in icons: \"*\".";
 const char kInvalidIconPath[] =
     "Invalid value for 'icons[\"*\"]'.";

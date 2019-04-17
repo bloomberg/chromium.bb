@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
 #include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "content/public/common/url_constants.h"
@@ -79,6 +80,35 @@ bool CanSpecifyHostPermission(const Extension* extension,
   }
 
   // Otherwise, the valid schemes were handled by URLPattern.
+  return true;
+}
+
+// Parses hosts from the |keys::kHostPermissions| key in the extension's
+// manifest into |hosts|.
+bool ParseHostsFromJSON(Extension* extension,
+                        std::vector<std::string>* hosts,
+                        base::string16* error) {
+  if (!extension->manifest()->HasKey(keys::kHostPermissions))
+    return true;
+
+  const base::Value* permissions = nullptr;
+  if (!extension->manifest()->GetList(keys::kHostPermissions, &permissions)) {
+    *error = base::UTF8ToUTF16(errors::kInvalidHostPermissions);
+    return false;
+  }
+
+  // Add all permissions parsed from the manifest to |hosts|.
+  const base::Value::ListStorage& list_storage = permissions->GetList();
+  for (size_t i = 0; i < list_storage.size(); ++i) {
+    if (list_storage[i].is_string()) {
+      hosts->push_back(list_storage[i].GetString());
+    } else {
+      *error = ErrorUtils::FormatErrorMessageUTF16(
+          errors::kInvalidHostPermission, base::NumberToString(i));
+      return false;
+    }
+  }
+
   return true;
 }
 
@@ -241,8 +271,20 @@ bool ParseHelper(Extension* extension,
     api_permissions->erase(*iter);
   }
 
-  ParseHostPermissions(extension, key, host_data, *api_permissions,
-                       host_permissions);
+  if (extension->manifest_version() < 3) {
+    ParseHostPermissions(extension, key, host_data, *api_permissions,
+                         host_permissions);
+  } else {
+    // Iterate through unhandled permissions (in |host_data|) and add an install
+    // warning for each.
+    for (const auto& permission_str : host_data) {
+      extension->AddInstallWarning(InstallWarning(
+          ErrorUtils::FormatErrorMessage(
+              manifest_errors::kPermissionUnknownOrMalformed, permission_str),
+          key, permission_str));
+    }
+  }
+
   return true;
 }
 
@@ -330,6 +372,17 @@ bool PermissionsParser::Parse(Extension* extension, base::string16* error) {
                    &initial_required_permissions_->host_permissions,
                    error)) {
     return false;
+  }
+
+  if (extension->manifest_version() >= 3) {
+    std::vector<std::string> manifest_hosts;
+    if (!ParseHostsFromJSON(extension, &manifest_hosts, error))
+      return false;
+
+    // TODO(kelvinjiang): Remove the dependency for |api_permissions| here.
+    ParseHostPermissions(extension, keys::kHostPermissions, manifest_hosts,
+                         initial_required_permissions_->api_permissions,
+                         &initial_required_permissions_->host_permissions);
   }
 
   initial_optional_permissions_.reset(new InitialPermissions);
