@@ -1079,14 +1079,11 @@ TYPED_TEST(RendererPixelTest, PremultipliedTextureWithBackground) {
       cc::FuzzyPixelOffByOneComparator(true)));
 }
 
-// TODO(backer): Blending is not correct for SkiaRenderer
-// (https://crbug.com/953284)
-TYPED_TEST(GLCapableRendererPixelTest, DISABLED_SolidColorBlend) {
+TYPED_TEST(GLCapableRendererPixelTest, SolidColorBlend) {
   gfx::Rect rect(this->device_viewport_size_);
 
   int id = 1;
   std::unique_ptr<RenderPass> pass = CreateTestRootRenderPass(id, rect);
-  pass->has_transparent_background = false;
 
   SharedQuadState* shared_state = CreateTestSharedQuadState(
       gfx::Transform(), rect, pass.get(), gfx::RRectF());
@@ -1111,7 +1108,7 @@ TYPED_TEST(GLCapableRendererPixelTest, DISABLED_SolidColorBlend) {
 
   EXPECT_TRUE(this->RunPixelTest(
       &pass_list, base::FilePath(FILE_PATH_LITERAL("dark_grey.png")),
-      cc::FuzzyPixelOffByOneComparator(/*discard_alpha=*/true)));
+      cc::FuzzyPixelOffByOneComparator(true)));
 }
 
 // TODO(crbug.com/924369): SkiaRenderer should not ignore the color matrix on
@@ -3187,7 +3184,6 @@ TYPED_TEST(GLCapableRendererPixelTest, SolidColorDrawQuadForceAntiAliasingOff) {
   gfx::Transform transform_to_root;
   std::unique_ptr<RenderPass> pass =
       CreateTestRenderPass(id, rect, transform_to_root);
-  pass->has_transparent_background = false;
 
   gfx::Transform hole_quad_to_target_transform;
   hole_quad_to_target_transform.Translate(50, 50);
@@ -3212,7 +3208,7 @@ TYPED_TEST(GLCapableRendererPixelTest, SolidColorDrawQuadForceAntiAliasingOff) {
   EXPECT_TRUE(this->RunPixelTest(
       &pass_list,
       base::FilePath(FILE_PATH_LITERAL("force_anti_aliasing_off.png")),
-      cc::ExactPixelComparator(/*discard_alpha=*/true)));
+      cc::ExactPixelComparator(false)));
 }
 
 // This test tests that forcing anti-aliasing off works as expected for
@@ -3270,7 +3266,7 @@ TYPED_TEST(GLCapableRendererPixelTest, RenderPassDrawQuadForceAntiAliasingOff) {
   EXPECT_TRUE(this->RunPixelTest(
       &pass_list,
       base::FilePath(FILE_PATH_LITERAL("force_anti_aliasing_off.png")),
-      cc::ExactPixelComparator(/*discard_alpha=*/true)));
+      cc::ExactPixelComparator(false)));
 }
 
 // This test tests that forcing anti-aliasing off works as expected for
@@ -3306,7 +3302,6 @@ TYPED_TEST(GLCapableRendererPixelTest, TileDrawQuadForceAntiAliasingOff) {
   gfx::Transform transform_to_root;
   std::unique_ptr<RenderPass> pass =
       CreateTestRenderPass(id, rect, transform_to_root);
-  pass->has_transparent_background = false;
 
   bool swizzle_contents = true;
   bool contents_premultiplied = true;
@@ -3339,7 +3334,7 @@ TYPED_TEST(GLCapableRendererPixelTest, TileDrawQuadForceAntiAliasingOff) {
   EXPECT_TRUE(this->RunPixelTest(
       &pass_list,
       base::FilePath(FILE_PATH_LITERAL("force_anti_aliasing_off.png")),
-      cc::ExactPixelComparator(/*discard_alpha=*/true)));
+      cc::ExactPixelComparator(false)));
 }
 
 // This test tests that forcing anti-aliasing off works as expected while
@@ -3352,7 +3347,6 @@ TYPED_TEST(GLCapableRendererPixelTest, BlendingWithoutAntiAliasing) {
   gfx::Transform transform_to_root;
   std::unique_ptr<RenderPass> pass =
       CreateTestRenderPass(id, rect, transform_to_root);
-  pass->has_transparent_background = false;
 
   CreateTestAxisAlignedQuads(rect, 0x800000FF, 0x8000FF00, true, true,
                              pass.get());
@@ -3363,7 +3357,7 @@ TYPED_TEST(GLCapableRendererPixelTest, BlendingWithoutAntiAliasing) {
   EXPECT_TRUE(this->RunPixelTest(
       &pass_list,
       base::FilePath(FILE_PATH_LITERAL("translucent_quads_no_aa.png")),
-      cc::ExactPixelComparator(/*discard_alpha=*/true)));
+      cc::ExactPixelComparator(false)));
 }
 
 // Trilinear filtering is only supported in the gl renderer.
