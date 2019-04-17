@@ -36,15 +36,9 @@ class PiexStreamReader : public piex::StreamInterface {
 class PiexReader {
  public:
   static void ReadImage(const char* data, size_t size, int callback) {
-    assert(callback);
+    assert(data && callback);
 
     auto result = emscripten::val::object();
-    if (!data || !size) {
-      result.set("error", emscripten::val("failed to fetch image source"));
-      CallbackResult(callback, result);
-      return;
-    }
-
     PiexStreamReader reader(data, size);
     piex::PreviewImageData image;
 
@@ -89,7 +83,7 @@ class PiexReader {
   }
 
   static emscripten::val GetPreview(const piex::PreviewImageData& image) {
-    auto undefined = emscripten::val::undefined();
+    const auto undefined = emscripten::val::undefined();
 
     const auto format = static_cast<uint32_t>(image.preview.format);
     if (format != piex::Image::Format::kJpegCompressed)
@@ -110,7 +104,7 @@ class PiexReader {
   }
 
   static emscripten::val GetThumbnail(const piex::PreviewImageData& image) {
-    auto undefined = emscripten::val::undefined();
+    const auto undefined = emscripten::val::undefined();
 
     const auto format = static_cast<uint32_t>(image.thumbnail.format);
     if (!image.thumbnail.offset || !image.thumbnail.length)
