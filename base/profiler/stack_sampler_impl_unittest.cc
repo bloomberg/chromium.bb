@@ -134,18 +134,19 @@ class TestUnwinder : public Unwinder {
 
 class TestModule : public ModuleCache::Module {
  public:
-  TestModule(uintptr_t base_address, size_t size)
-      : base_address_(base_address), size_(size) {}
+  TestModule(uintptr_t base_address, size_t size, bool is_native = true)
+      : base_address_(base_address), size_(size), is_native_(is_native) {}
 
   uintptr_t GetBaseAddress() const override { return base_address_; }
   std::string GetId() const override { return ""; }
   FilePath GetDebugBasename() const override { return FilePath(); }
   size_t GetSize() const override { return size_; }
-  bool IsNative() const override { return true; }
+  bool IsNative() const override { return is_native_; }
 
  private:
   const uintptr_t base_address_;
   const size_t size_;
+  const bool is_native_;
 };
 
 // Injects a fake module covering the initial instruction pointer value, to
@@ -157,6 +158,70 @@ void InjectModuleForContextInstructionPointer(
   module_cache->InjectModuleForTesting(
       std::make_unique<TestModule>(stack[0], sizeof(uintptr_t)));
 }
+
+// Returns a plausible instruction pointer value for use in tests that don't
+// care about the instruction pointer value in the context, and hence don't need
+// InjectModuleForContextInstructionPointer().
+uintptr_t GetTestInstructionPointer() {
+  return reinterpret_cast<uintptr_t>(&GetTestInstructionPointer);
+}
+
+// An unwinder fake that replays the provided outputs.
+class FakeTestUnwinder : public Unwinder {
+ public:
+  struct Result {
+    Result(bool can_unwind)
+        : can_unwind(can_unwind), result(UnwindResult::UNRECOGNIZED_FRAME) {}
+
+    Result(UnwindResult result, std::vector<uintptr_t> instruction_pointers)
+        : can_unwind(true),
+          result(result),
+          instruction_pointers(instruction_pointers) {}
+
+    bool can_unwind;
+    UnwindResult result;
+    std::vector<uintptr_t> instruction_pointers;
+  };
+
+  // Construct the unwinder with the outputs. The relevant unwinder functions
+  // are expected to be invoked at least as many times as the number of values
+  // specified in the arrays (except for CanUnwindFrom() which will always
+  // return true if provided an empty array.
+  explicit FakeTestUnwinder(std::vector<Result> results)
+      : results_(std::move(results)) {}
+
+  FakeTestUnwinder(const FakeTestUnwinder&) = delete;
+  FakeTestUnwinder& operator=(const FakeTestUnwinder&) = delete;
+
+  bool CanUnwindFrom(const Frame* current_frame) const override {
+    bool can_unwind = results_[current_unwind_].can_unwind;
+    // NB: If CanUnwindFrom() returns false then TryUnwind() will not be
+    // invoked, so current_unwind_ is guarantee to be incremented only once for
+    // each result.
+    if (!can_unwind)
+      ++current_unwind_;
+    return can_unwind;
+  }
+
+  UnwindResult TryUnwind(RegisterContext* thread_context,
+                         uintptr_t stack_top,
+                         ModuleCache* module_cache,
+                         std::vector<Frame>* stack) const override {
+    CHECK_LT(current_unwind_, results_.size());
+    const Result& current_result = results_[current_unwind_];
+    ++current_unwind_;
+    CHECK(current_result.can_unwind);
+    for (const auto instruction_pointer : current_result.instruction_pointers)
+      stack->emplace_back(
+          instruction_pointer,
+          module_cache->GetModuleForAddress(instruction_pointer));
+    return current_result.result;
+  }
+
+ private:
+  mutable size_t current_unwind_ = 0;
+  std::vector<Result> results_;
+};
 
 }  // namespace
 
@@ -248,6 +313,122 @@ TEST(StackSamplerImplTest, RewriteRegisters) {
 
   EXPECT_EQ(stack_copy_bottom + sizeof(uintptr_t),
             RegisterContextFramePointer(&thread_context));
+}
+
+TEST(StackSamplerImplTest, WalkStack_Completed) {
+  ModuleCache module_cache;
+  RegisterContext thread_context;
+  RegisterContextInstructionPointer(&thread_context) =
+      GetTestInstructionPointer();
+  module_cache.InjectModuleForTesting(std::make_unique<TestModule>(1u, 1u));
+  FakeTestUnwinder native_unwinder({{UnwindResult::COMPLETED, {1u}}});
+
+  std::vector<Frame> stack = StackSamplerImpl::WalkStackForTesting(
+      &module_cache, &thread_context, 0u, &native_unwinder, nullptr);
+
+  ASSERT_EQ(2u, stack.size());
+  EXPECT_EQ(1u, stack[1].instruction_pointer);
+}
+
+TEST(StackSamplerImplTest, WalkStack_Aborted) {
+  ModuleCache module_cache;
+  RegisterContext thread_context;
+  RegisterContextInstructionPointer(&thread_context) =
+      GetTestInstructionPointer();
+  module_cache.InjectModuleForTesting(std::make_unique<TestModule>(1u, 1u));
+  FakeTestUnwinder native_unwinder({{UnwindResult::ABORTED, {1u}}});
+
+  std::vector<Frame> stack = StackSamplerImpl::WalkStackForTesting(
+      &module_cache, &thread_context, 0u, &native_unwinder, nullptr);
+
+  ASSERT_EQ(2u, stack.size());
+  EXPECT_EQ(1u, stack[1].instruction_pointer);
+}
+
+TEST(StackSamplerImplTest, WalkStack_NotUnwound) {
+  ModuleCache module_cache;
+  RegisterContext thread_context;
+  RegisterContextInstructionPointer(&thread_context) =
+      GetTestInstructionPointer();
+  FakeTestUnwinder native_unwinder({{UnwindResult::UNRECOGNIZED_FRAME, {}}});
+
+  std::vector<Frame> stack = StackSamplerImpl::WalkStackForTesting(
+      &module_cache, &thread_context, 0u, &native_unwinder, nullptr);
+
+  ASSERT_EQ(1u, stack.size());
+}
+
+TEST(StackSamplerImplTest, WalkStack_AuxUnwind) {
+  ModuleCache module_cache;
+  RegisterContext thread_context;
+  RegisterContextInstructionPointer(&thread_context) =
+      GetTestInstructionPointer();
+
+  // Treat the context instruction pointer as being in the aux unwinder's
+  // non-native module.
+  module_cache.AddNonNativeModule(
+      std::make_unique<TestModule>(GetTestInstructionPointer(), 1u, false));
+
+  FakeTestUnwinder aux_unwinder({{UnwindResult::ABORTED, {1u}}});
+
+  std::vector<Frame> stack = StackSamplerImpl::WalkStackForTesting(
+      &module_cache, &thread_context, 0u, nullptr, &aux_unwinder);
+
+  ASSERT_EQ(2u, stack.size());
+  EXPECT_EQ(GetTestInstructionPointer(), stack[0].instruction_pointer);
+  EXPECT_EQ(1u, stack[1].instruction_pointer);
+}
+
+TEST(StackSamplerImplTest, WalkStack_AuxThenNative) {
+  ModuleCache module_cache;
+  RegisterContext thread_context;
+  RegisterContextInstructionPointer(&thread_context) = 0u;
+
+  // Treat the context instruction pointer as being in the aux unwinder's
+  // non-native module.
+  module_cache.AddNonNativeModule(std::make_unique<TestModule>(0u, 1u, false));
+  // Inject a fake native module for the second frame.
+  module_cache.InjectModuleForTesting(std::make_unique<TestModule>(1u, 1u));
+
+  FakeTestUnwinder aux_unwinder(
+      {{{UnwindResult::UNRECOGNIZED_FRAME, {1u}}, {false}}});
+  FakeTestUnwinder native_unwinder({{UnwindResult::COMPLETED, {2u}}});
+
+  std::vector<Frame> stack = StackSamplerImpl::WalkStackForTesting(
+      &module_cache, &thread_context, 0u, &native_unwinder, &aux_unwinder);
+
+  ASSERT_EQ(3u, stack.size());
+  EXPECT_EQ(0u, stack[0].instruction_pointer);
+  EXPECT_EQ(1u, stack[1].instruction_pointer);
+  EXPECT_EQ(2u, stack[2].instruction_pointer);
+}
+
+TEST(StackSamplerImplTest, WalkStack_NativeThenAux) {
+  ModuleCache module_cache;
+  RegisterContext thread_context;
+  RegisterContextInstructionPointer(&thread_context) = 0u;
+
+  // Inject fake native modules for the instruction pointer from the context and
+  // the third frame.
+  module_cache.InjectModuleForTesting(std::make_unique<TestModule>(0u, 1u));
+  module_cache.InjectModuleForTesting(std::make_unique<TestModule>(2u, 1u));
+  // Treat the second frame's pointer as being in the aux unwinder's non-native
+  // module.
+  module_cache.AddNonNativeModule(std::make_unique<TestModule>(1u, 1u, false));
+
+  FakeTestUnwinder aux_unwinder(
+      {{false}, {UnwindResult::UNRECOGNIZED_FRAME, {2u}}, {false}});
+  FakeTestUnwinder native_unwinder({{UnwindResult::UNRECOGNIZED_FRAME, {1u}},
+                                    {UnwindResult::COMPLETED, {3u}}});
+
+  std::vector<Frame> stack = StackSamplerImpl::WalkStackForTesting(
+      &module_cache, &thread_context, 0u, &native_unwinder, &aux_unwinder);
+
+  ASSERT_EQ(4u, stack.size());
+  EXPECT_EQ(0u, stack[0].instruction_pointer);
+  EXPECT_EQ(1u, stack[1].instruction_pointer);
+  EXPECT_EQ(2u, stack[2].instruction_pointer);
+  EXPECT_EQ(3u, stack[3].instruction_pointer);
 }
 
 }  // namespace base
