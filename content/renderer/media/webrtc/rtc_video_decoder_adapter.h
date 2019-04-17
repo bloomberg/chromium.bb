@@ -70,7 +70,6 @@ class CONTENT_EXPORT RTCVideoDecoderAdapter : public webrtc::VideoDecoder {
   // Called on the DecodingThread.
   int32_t Decode(const webrtc::EncodedImage& input_image,
                  bool missing_frames,
-                 const webrtc::CodecSpecificInfo* codec_specific_info,
                  int64_t render_time_ms) override;
   // Called on the worker thread and on the DecodingThread.
   int32_t Release() override;
@@ -118,6 +117,7 @@ class CONTENT_EXPORT RTCVideoDecoderAdapter : public webrtc::VideoDecoder {
   bool key_frame_required_ = true;
   // Shared members.
   base::Lock lock_;
+  webrtc::VideoCodecType video_codec_type_ = webrtc::kVideoCodecGeneric;
   int32_t consecutive_error_count_ = 0;
   bool has_error_ = false;
   webrtc::DecodedImageCallback* decode_complete_callback_ = nullptr;

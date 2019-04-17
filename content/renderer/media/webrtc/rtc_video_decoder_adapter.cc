@@ -218,8 +218,9 @@ int32_t RTCVideoDecoderAdapter::InitDecode(
     int32_t number_of_cores) {
   DVLOG(1) << __func__;
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoding_sequence_checker_);
-  DCHECK_EQ(webrtc::PayloadStringToCodecType(format_.name),
-            codec_settings->codecType);
+
+  video_codec_type_ = codec_settings->codecType;
+  DCHECK_EQ(webrtc::PayloadStringToCodecType(format_.name), video_codec_type_);
 
   base::AutoLock auto_lock(lock_);
   UMA_HISTOGRAM_BOOLEAN("Media.RTCVideoDecoderInitDecodeSuccess", !has_error_);
@@ -229,17 +230,14 @@ int32_t RTCVideoDecoderAdapter::InitDecode(
 int32_t RTCVideoDecoderAdapter::Decode(
     const webrtc::EncodedImage& input_image,
     bool missing_frames,
-    const webrtc::CodecSpecificInfo* codec_specific_info,
     int64_t render_time_ms) {
   DVLOG(2) << __func__;
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoding_sequence_checker_);
 
   // Hardware VP9 decoders don't handle more than one spatial layer. Fall back
   // to software decoding. See https://crbug.com/webrtc/9304.
-  if (codec_specific_info &&
-      codec_specific_info->codecType == webrtc::kVideoCodecVP9 &&
-      codec_specific_info->codecSpecific.VP9.ss_data_available &&
-      codec_specific_info->codecSpecific.VP9.num_spatial_layers > 1) {
+  if (video_codec_type_ == webrtc::kVideoCodecVP9 &&
+      input_image.SpatialIndex().value_or(0) > 0) {
     return WEBRTC_VIDEO_CODEC_FALLBACK_SOFTWARE;
   }
 
