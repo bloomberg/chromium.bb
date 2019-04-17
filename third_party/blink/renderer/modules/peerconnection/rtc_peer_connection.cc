@@ -1924,28 +1924,43 @@ bool RTCPeerConnection::IsRemoteStream(MediaStream* stream) const {
   return false;
 }
 
-ScriptPromise RTCPeerConnection::getStats(
-    ScriptState* script_state,
-    blink::ScriptValue callback_or_selector) {
-  auto argument = callback_or_selector.V8Value();
+ScriptPromise RTCPeerConnection::getStats(ScriptState* script_state) {
+  return getStats(
+      script_state,
+      ScriptValue(script_state, v8::Undefined(script_state->GetIsolate())),
+      ScriptValue(script_state, v8::Undefined(script_state->GetIsolate())));
+}
+
+ScriptPromise RTCPeerConnection::getStats(ScriptState* script_state,
+                                          ScriptValue callback_or_selector) {
+  return getStats(
+      script_state, std::move(callback_or_selector),
+      ScriptValue(script_state, v8::Undefined(script_state->GetIsolate())));
+}
+
+ScriptPromise RTCPeerConnection::getStats(ScriptState* script_state,
+                                          ScriptValue callback_or_selector,
+                                          ScriptValue legacy_selector) {
+  auto* isolate = script_state->GetIsolate();
+  auto first_argument = callback_or_selector.V8Value();
   // Custom binding for legacy "getStats(RTCStatsCallback callback)".
-  if (argument->IsFunction()) {
+  if (first_argument->IsFunction()) {
     V8RTCStatsCallback* success_callback =
-        V8RTCStatsCallback::Create(argument.As<v8::Function>());
-    return LegacyCallbackBasedGetStats(script_state, success_callback, nullptr);
+        V8RTCStatsCallback::Create(first_argument.As<v8::Function>());
+    MediaStreamTrack* selector_or_null =
+        V8MediaStreamTrack::ToImplWithTypeCheck(isolate,
+                                                legacy_selector.V8Value());
+    return LegacyCallbackBasedGetStats(script_state, success_callback,
+                                       selector_or_null);
   }
-  // Custom binding for spec-compliant "getStats()" and "getStats(undefined)".
-  if (argument->IsUndefined())
-    return PromiseBasedGetStats(script_state, nullptr);
-  auto* isolate = callback_or_selector.GetIsolate();
-  // Custom binding for spec-compliant "getStats(MediaStreamTrack? selector)".
-  // null is a valid selector value, but value of wrong type isn't. |selector|
-  // set to no value means type error.
-  if (argument->IsNull())
+  // Custom binding for spec-compliant
+  // "getStats(optional MediaStreamTrack? selector)". null is a valid selector
+  // value, but a value of the wrong type isn't.
+  if (first_argument->IsNullOrUndefined())
     return PromiseBasedGetStats(script_state, nullptr);
 
   MediaStreamTrack* track =
-      V8MediaStreamTrack::ToImplWithTypeCheck(isolate, argument);
+      V8MediaStreamTrack::ToImplWithTypeCheck(isolate, first_argument);
   if (track)
     return PromiseBasedGetStats(script_state, track);
 
@@ -1955,17 +1970,6 @@ ScriptPromise RTCPeerConnection::getStats(
       "The argument provided as parameter 1 is neither a callback (function) "
       "or selector (MediaStreamTrack or null).");
   return ScriptPromise::Reject(script_state, exception_state);
-}
-
-ScriptPromise RTCPeerConnection::getStats(ScriptState* script_state,
-                                          V8RTCStatsCallback* success_callback,
-                                          MediaStreamTrack* selector) {
-  return LegacyCallbackBasedGetStats(script_state, success_callback, selector);
-}
-
-ScriptPromise RTCPeerConnection::getStats(ScriptState* script_state,
-                                          MediaStreamTrack* selector) {
-  return PromiseBasedGetStats(script_state, selector);
 }
 
 ScriptPromise RTCPeerConnection::LegacyCallbackBasedGetStats(
