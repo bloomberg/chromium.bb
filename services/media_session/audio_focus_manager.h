@@ -67,6 +67,7 @@ class AudioFocusManager : public mojom::AudioFocusManager,
   void CreateMediaControllerForSession(
       mojom::MediaControllerRequest request,
       const base::UnguessableToken& request_id) override;
+  void SuspendAllSessions() override;
 
   // Bind to a mojom::AudioFocusManagerRequest.
   void BindToInterface(mojom::AudioFocusManagerRequest request);

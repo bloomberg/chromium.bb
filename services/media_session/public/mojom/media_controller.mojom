@@ -19,6 +19,9 @@ interface MediaControllerManager {
   // automatically route commands to the correct session if the active session
   // changes. If there is no active session then commands will be no-ops.
   CreateActiveMediaController(MediaController& request);
+
+  // Suspends all media sessions.
+  SuspendAllSessions();
 };
 
 // Controls a MediaSession. If the media session is not controllable then the
