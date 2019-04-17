@@ -32,10 +32,18 @@ ReplacementWebAppInfo::ReplacementWebAppInfo() {}
 ReplacementWebAppInfo::~ReplacementWebAppInfo() {}
 
 // static
-bool ReplacementWebAppInfo::IsReplacementWebApp(const Extension* extension,
-                                                const GURL& web_app_url) {
+bool ReplacementWebAppInfo::HasReplacementWebApp(const Extension* extension) {
   const ReplacementWebAppInfo* info = GetReplacementWebAppInfo(extension);
-  return info && info->replacement_web_app == web_app_url;
+  return info;
+}
+
+// static
+GURL ReplacementWebAppInfo::GetReplacementWebApp(const Extension* extension) {
+  const ReplacementWebAppInfo* info = GetReplacementWebAppInfo(extension);
+  if (info)
+    return info->replacement_web_app;
+
+  return GURL();
 }
 
 ReplacementWebAppHandler::ReplacementWebAppHandler() {}

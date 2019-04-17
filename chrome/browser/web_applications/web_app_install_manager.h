@@ -65,7 +65,6 @@ class WebAppInstallManager final : public InstallManager {
   Tasks tasks_;
 
   InstallFinalizer* install_finalizer_;
-  Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(WebAppInstallManager);
 };

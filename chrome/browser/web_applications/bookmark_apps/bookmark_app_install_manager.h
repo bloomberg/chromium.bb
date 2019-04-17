@@ -81,8 +81,6 @@ class BookmarkAppInstallManager final : public web_app::InstallManager {
       DataRetrieverFactory data_retriever_factory);
 
  private:
-  Profile* profile_;
-
   BookmarkAppHelperFactory bookmark_app_helper_factory_;
   DataRetrieverFactory data_retriever_factory_;
 

@@ -66,10 +66,9 @@ TEST_F(ReplacementWebAppManifestTest, InvalidType) {
 TEST_F(ReplacementWebAppManifestTest, VerifyParse) {
   scoped_refptr<Extension> good =
       LoadAndExpectSuccess(CreateManifest(R"("https://www.google.com")"));
-  EXPECT_TRUE(ReplacementWebAppInfo::IsReplacementWebApp(
-      good.get(), GURL("https://www.google.com")));
-  EXPECT_FALSE(ReplacementWebAppInfo::IsReplacementWebApp(
-      good.get(), GURL("https://www.youtube.com")));
+  EXPECT_TRUE(ReplacementWebAppInfo::HasReplacementWebApp(good.get()));
+  EXPECT_EQ(ReplacementWebAppInfo::GetReplacementWebApp(good.get()),
+            GURL("https://www.google.com"));
 }
 
 }  // namespace extensions

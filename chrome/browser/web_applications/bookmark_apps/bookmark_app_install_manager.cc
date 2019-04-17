@@ -253,7 +253,7 @@ void OnGetWebApplicationInfo(const BookmarkAppInstallManager* install_manager,
 }  // namespace
 
 BookmarkAppInstallManager::BookmarkAppInstallManager(Profile* profile)
-    : profile_(profile) {
+    : InstallManager(profile) {
   bookmark_app_helper_factory_ = base::BindRepeating(
       [](Profile* profile, const WebApplicationInfo& web_app_info,
          content::WebContents* web_contents,
@@ -330,7 +330,7 @@ void BookmarkAppInstallManager::InstallWebAppFromInfo(
     WebappInstallSource install_source,
     OnceInstallCallback callback) {
   auto bookmark_app_helper = std::make_unique<BookmarkAppHelper>(
-      profile_, *web_application_info, /*web_contents=*/nullptr,
+      profile(), *web_application_info, /*web_contents=*/nullptr,
       install_source);
 
   if (no_network_install) {
@@ -377,7 +377,7 @@ void BookmarkAppInstallManager::InstallOrUpdateWebAppFromSync(
     OnceInstallCallback callback) {
   // |callback| is ignored here: the legacy system doesn't report completion.
   ExtensionService* extension_service =
-      ExtensionSystem::Get(profile_)->extension_service();
+      ExtensionSystem::Get(profile())->extension_service();
   DCHECK(extension_service);
 
   const Extension* extension = extension_service->GetInstalledExtension(app_id);
@@ -408,7 +408,7 @@ void BookmarkAppInstallManager::InstallWebAppForTesting(
     OnceInstallCallback callback) {
   // |callback| is ignored here: the legacy system doesn't report completion.
   ExtensionService* extension_service =
-      ExtensionSystem::Get(profile_)->extension_service();
+      ExtensionSystem::Get(profile())->extension_service();
   DCHECK(extension_service);
 
   CreateOrUpdateBookmarkApp(extension_service, web_application_info.get(),

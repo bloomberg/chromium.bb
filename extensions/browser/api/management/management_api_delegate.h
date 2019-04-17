@@ -49,6 +49,9 @@ class ManagementAPIDelegate {
  public:
   virtual ~ManagementAPIDelegate() {}
 
+  enum class InstallWebAppResult { kSuccess, kInvalidWebApp, kUnknownError };
+  typedef base::OnceCallback<void(InstallWebAppResult)> InstallWebAppCallback;
+
   // Launches the app |extension|.
   virtual void LaunchAppFunctionDelegate(
       const Extension* extension,
@@ -117,6 +120,16 @@ class ManagementAPIDelegate {
       content::BrowserContext* context,
       const std::string& title,
       const GURL& launch_url) const = 0;
+
+  // Returns true if there is already a web app installed for |web_app_url|.
+  virtual bool IsWebAppInstalled(content::BrowserContext* context,
+                                 const GURL& web_app_url) const = 0;
+
+  // Installs a web app for |web_app_url|.
+  virtual void InstallReplacementWebApp(
+      content::BrowserContext* context,
+      const GURL& web_app_url,
+      InstallWebAppCallback callback) const = 0;
 
   // Forwards the call to ExtensionIconSource::GetIconURL in chrome.
   virtual GURL GetIconURL(const Extension* extension,

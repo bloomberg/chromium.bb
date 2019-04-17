@@ -215,6 +215,23 @@ class ManagementGenerateAppForLinkFunction : public UIThreadExtensionFunction {
   std::unique_ptr<AppForLinkDelegate> app_for_link_delegate_;
 };
 
+class ManagementInstallReplacementWebAppFunction
+    : public UIThreadExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("management.installReplacementWebApp",
+                             MANAGEMENT_INSTALLREPLACEMENTWEBAPP)
+
+  ManagementInstallReplacementWebAppFunction();
+
+ protected:
+  ~ManagementInstallReplacementWebAppFunction() override;
+
+  ResponseAction Run() override;
+
+ private:
+  void FinishCreateWebApp(ManagementAPIDelegate::InstallWebAppResult result);
+};
+
 class ManagementEventRouter : public ExtensionRegistryObserver {
  public:
   explicit ManagementEventRouter(content::BrowserContext* context);

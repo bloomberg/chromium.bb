@@ -19,9 +19,11 @@ struct ReplacementWebAppInfo : public Extension::ManifestData {
   ReplacementWebAppInfo();
   ~ReplacementWebAppInfo() override;
 
-  // Returns true if the specified URL is the replacement web app.
-  static bool IsReplacementWebApp(const Extension* extension,
-                                  const GURL& web_app_url);
+  // Returns true if the specified URL has a replacement web app.
+  static bool HasReplacementWebApp(const Extension* extension);
+
+  // Returns the replacement web app for |extension|.
+  static GURL GetReplacementWebApp(const Extension* extension);
 
   GURL replacement_web_app;
 };
