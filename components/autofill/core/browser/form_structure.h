@@ -11,6 +11,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
@@ -301,11 +302,26 @@ class FormStructure {
   }
 #endif
 
+  void set_password_symbol_vote(int noisified_symbol) {
+    DCHECK(password_attributes_vote_.has_value())
+        << "password_symbol_vote_| doesn't make sense if "
+           "|password_attributes_vote_| has no value.";
+    password_symbol_vote_ = noisified_symbol;
+  }
+
+#if defined(UNIT_TEST)
+  int get_password_symbol_vote_for_testing() {
+    DCHECK(password_attributes_vote_.has_value())
+        << "|password_symbol_vote_| doesn't make sense if "
+           "|password_attributes_vote_| has no value";
+    return password_symbol_vote_;
+  }
+#endif
+
   SubmissionSource submission_source() const { return submission_source_; }
   void set_submission_source(SubmissionSource submission_source) {
     submission_source_ = submission_source;
   }
-
   bool operator==(const FormData& form) const;
   bool operator!=(const FormData& form) const;
 
@@ -575,6 +591,12 @@ class FormStructure {
   // The vote about password attributes (e.g. whether the password has a numeric
   // character).
   base::Optional<std::pair<PasswordAttribute, bool>> password_attributes_vote_;
+
+  // If |password_attribute_vote_| contains (kHasSpecialSymbol, true), this
+  // field contains nosified information about a special symbol in a
+  // user-created password stored as ASCII code. The default value of 0
+  // indicates that no symbol was set.
+  int password_symbol_vote_;
 
   // Noisified password length for crowdsourcing. If |password_attributes_vote_|
   // has no value, |password_length_vote_| should be ignored.

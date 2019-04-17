@@ -5,9 +5,11 @@
 #include "components/password_manager/core/browser/votes_uploader.h"
 
 #include <string>
+#include <utility>
 
 #include "base/optional.h"
 #include "base/rand_util.h"
+#include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
@@ -189,7 +191,9 @@ TEST_F(VotesUploaderTest, GeneratePasswordAttributesVote) {
     int reported_actual_length = 0;
     int reported_wrong_length = 0;
 
-    for (int i = 0; i < 1000; ++i) {
+    int kNumberOfRuns = 1000;
+
+    for (int i = 0; i < kNumberOfRuns; ++i) {
       votes_uploader.GeneratePasswordAttributesVote(password_value,
                                                     &form_structure);
       base::Optional<std::pair<autofill::PasswordAttribute, bool>> vote =
@@ -229,6 +233,47 @@ TEST_F(VotesUploaderTest, GeneratePasswordAttributesVote) {
     EXPECT_LT(0, reported_wrong_length);
     EXPECT_LT(reported_actual_length, reported_wrong_length);
   }
+}
+
+TEST_F(VotesUploaderTest, GeneratePasswordSpecialSymbolVote) {
+  VotesUploader votes_uploader(&client_, true);
+
+  const base::string16 password_value = ASCIIToUTF16("password-withsymbols!");
+  const int kNumberOfRuns = 2000;
+  const int kSpecialSymbolsAttribute = 3;
+
+  autofill::FormData form;
+
+  int correct_symbol_reported = 0;
+  int wrong_symbol_reported = 0;
+  int number_of_symbol_votes = 0;
+
+  for (int i = 0; i < kNumberOfRuns; ++i) {
+    autofill::FormStructure form_structure(form);
+
+    votes_uploader.GeneratePasswordAttributesVote(password_value,
+                                                  &form_structure);
+    base::Optional<std::pair<autofill::PasswordAttribute, bool>> vote =
+        form_structure.get_password_attributes_vote_for_testing();
+
+    // Continue if the vote is not about special symbols or implies that no
+    // special symbols are used.
+    if (static_cast<int>(vote->first) != kSpecialSymbolsAttribute ||
+        !vote->second) {
+      EXPECT_EQ(form_structure.get_password_symbol_vote_for_testing(), 0);
+      continue;
+    }
+
+    number_of_symbol_votes += 1;
+
+    int symbol = form_structure.get_password_symbol_vote_for_testing();
+    if (symbol == '-' || symbol == '!')
+      correct_symbol_reported += 1;
+    else
+      wrong_symbol_reported += 1;
+  }
+  EXPECT_LT(0.4 * number_of_symbol_votes, correct_symbol_reported);
+  EXPECT_LT(0.15 * number_of_symbol_votes, wrong_symbol_reported);
 }
 
 TEST_F(VotesUploaderTest, GeneratePasswordAttributesVote_OneCharacterPassword) {

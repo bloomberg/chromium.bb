@@ -5,8 +5,10 @@
 #include "components/password_manager/core/browser/votes_uploader.h"
 
 #include <ctype.h>
-#include <map>
 
+#include <algorithm>
+
+#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "components/autofill/core/browser/autofill_download_manager.h"
@@ -31,7 +33,11 @@ using autofill::ValueElementPair;
 using Logger = autofill::SavePasswordProgressLogger;
 
 namespace password_manager {
+
 namespace {
+
+// Contains all special symbols considered for password-generation.
+constexpr char kSpecialSymbols[] = "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~";
 
 // Sets autofill types of password and new password fields in |field_types|.
 // |password_type| (the autofill type of new password field) should be equal to
@@ -124,9 +130,28 @@ bool IsLowercaseLetter(int c) {
 bool IsUppercaseLetter(int c) {
   return 'A' <= c && c <= 'Z';
 }
+
+// Checks if a supplied character |c| is a special symbol.
+// Special symbols are defined by the string |kSpecialSymbols|.
 bool IsSpecialSymbol(int c) {
-  return ('!' <= c && c <= '/') || (':' <= c && c <= '@') ||
-         ('[' <= c && c <= '`') || ('{' <= c && c <= '~');
+  return std::find(std::begin(kSpecialSymbols), std::end(kSpecialSymbols), c) !=
+         std::end(kSpecialSymbols);
+}
+
+// Returns a uniformly distributed random symbol from the set of random symbols
+// defined by the string |kSpecialSymbols|.
+int GetRandomSpecialSymbol() {
+  return kSpecialSymbols[base::RandGenerator(base::size(kSpecialSymbols))];
+}
+
+// Returns a random special symbol used in |password|.
+// It is expected that |password| contains at least one special symbol.
+int GetRandomSpecialSymbolFromPassword(const base::string16& password) {
+  std::vector<int> symbols;
+  std::copy_if(password.begin(), password.end(), std::back_inserter(symbols),
+               &IsSpecialSymbol);
+  DCHECK(!symbols.empty()) << "Password must contain at least one symbol.";
+  return symbols[base::RandGenerator(symbols.size())];
 }
 
 }  // namespace
@@ -284,7 +309,7 @@ bool VotesUploader::UploadPasswordVote(
     }
     if (autofill_type == autofill::PASSWORD) {
       // The password attributes should be uploaded only on the first save.
-      DCHECK(form_to_upload.times_used == 0);
+      DCHECK_EQ(form_to_upload.times_used, 0);
       GeneratePasswordAttributesVote(form_to_upload.password_value,
                                      &form_structure);
     }
@@ -402,8 +427,9 @@ void VotesUploader::AddGeneratedVote(FormStructure* form_structure) {
               : AutofillUploadContents::Field::
                     AUTOMATICALLY_TRIGGERED_GENERATION_ON_SIGN_UP_FORM;
     }
-  } else
+  } else {
     type = AutofillUploadContents::Field::IGNORED_GENERATION_POPUP;
+  }
 
   for (size_t i = 0; i < form_structure->field_count(); ++i) {
     AutofillField* field = form_structure->field(i);
@@ -512,21 +538,30 @@ void VotesUploader::GeneratePasswordAttributesVote(
     predicate = &IsSpecialSymbol;
     character_class_attribute = autofill::PasswordAttribute::kHasSpecialSymbol;
   }
-  bool actual_value_for_character_class =
-      std::any_of(password_value.begin(), password_value.end(), predicate);
 
   // Apply the randomized response technique to noisify the actual value
   // (https://en.wikipedia.org/wiki/Randomized_response).
+  bool respond_randomly = base::RandGenerator(2);
   bool randomized_value_for_character_class =
-      base::RandGenerator(2) ? actual_value_for_character_class
-                             : base::RandGenerator(2);
+      respond_randomly ? base::RandGenerator(2)
+                       : std::any_of(password_value.begin(),
+                                     password_value.end(), predicate);
   form_structure->set_password_attributes_vote(std::make_pair(
       character_class_attribute, randomized_value_for_character_class));
+
+  if (character_class_attribute ==
+          autofill::PasswordAttribute::kHasSpecialSymbol &&
+      randomized_value_for_character_class) {
+    form_structure->set_password_symbol_vote(
+        respond_randomly ? GetRandomSpecialSymbol()
+                         : GetRandomSpecialSymbolFromPassword(password_value));
+  }
 
   size_t actual_length = password_value.size();
   size_t randomized_length = actual_length <= 1 || base::RandGenerator(5) == 0
                                  ? actual_length
                                  : base::RandGenerator(actual_length - 1) + 1;
+
   form_structure->set_password_length_vote(randomized_length);
 }
 
