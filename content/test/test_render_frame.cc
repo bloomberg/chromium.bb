@@ -154,6 +154,8 @@ class MockFrameHost : public mojom::FrameHost {
 
   void VisibilityChanged(blink::mojom::FrameVisibility visibility) override {}
 
+  void UpdateActiveSchedulerTrackedFeatures(uint64_t features_mask) override {}
+
 #if defined(OS_ANDROID)
   void UpdateUserGestureCarryoverInfo() override {}
 #endif

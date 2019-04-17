@@ -14,6 +14,7 @@
 
 namespace content {
 class NavigationEntryImpl;
+class RenderFrameHostImpl;
 
 // Helper class for recording metrics around history navigations.
 // Associated with a main frame document and shared between all
@@ -25,7 +26,7 @@ class NavigationEntryImpl;
 class BackForwardCacheMetrics
     : public base::RefCounted<BackForwardCacheMetrics> {
  public:
-  // Create a potential new metrics object for the navigation.
+  // Creates a potential new metrics object for the navigation.
   // Note that this object will not be used if the entry we are navigating to
   // already has the BackForwardCacheMetrics object (which happens for history
   // navigations).
@@ -39,8 +40,8 @@ class BackForwardCacheMetrics
       bool is_main_frame_navigation,
       int64_t document_sequence_number);
 
-  // Notify that the main frame has started a navigation to an entry associated
-  // with |this|.
+  // Notifies that the main frame has started a navigation to an entry
+  // associated with |this|.
   //
   // This is the point in time that a back-forward cache hit could be shown to
   // the user.
@@ -50,17 +51,22 @@ class BackForwardCacheMetrics
   // be missing, but they should not matter for bfcache.
   void MainFrameDidStartNavigationToDocument();
 
-  // Notify that an associated entry has committed a navigation.
+  // Notifies that an associated entry has committed a navigation.
   void DidCommitNavigation(int64_t navigation_id,
                            int64_t navigation_entry_id,
                            bool is_main_frame_navigation);
 
-  // Record when another navigation commits away from the most recent entry
+  // Records when another navigation commits away from the most recent entry
   // associated with |this|.  This is the point in time that the previous
   // document could enter the back-forward cache.
   void MainFrameDidNavigateAwayFromDocument();
 
-  // Inject a clock for mocking time.
+  // Snapshots the state of the features active on the page before closing it.
+  // It should be called at the same time when the document might have been
+  // placed in the back-forward cache.
+  void RecordFeatureUsage(RenderFrameHostImpl* main_frame);
+
+  // Injects a clock for mocking time.
   // Should be called only from the UI thread.
   CONTENT_EXPORT static void OverrideTimeForTesting(base::TickClock* clock);
 
@@ -80,6 +86,8 @@ class BackForwardCacheMetrics
   int64_t last_committed_main_frame_navigation_id_ = -1;
 
   int64_t last_committed_navigation_entry_id_ = -1;
+
+  int64_t main_frame_features_ = 0;
 
   base::Optional<base::TimeTicks> started_navigation_timestamp_;
   base::Optional<base::TimeTicks> navigated_away_from_main_document_timestamp_;

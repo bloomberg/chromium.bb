@@ -638,19 +638,39 @@ void FrameSchedulerImpl::ResetForNavigation() {
 void FrameSchedulerImpl::OnStartedUsingFeature(
     SchedulingPolicy::Feature feature,
     const SchedulingPolicy& policy) {
+  uint64_t old_mask = GetActiveFeaturesOptingOutFromBackForwardCacheMask();
+
   if (policy.disable_aggressive_throttling)
     OnAddedAggressiveThrottlingOptOut();
   if (policy.disable_back_forward_cache)
     OnAddedBackForwardCacheOptOut(feature);
+
+  uint64_t new_mask = GetActiveFeaturesOptingOutFromBackForwardCacheMask();
+
+  if (old_mask != new_mask && delegate_ &&
+      GetFrameType() == FrameType::kMainFrame) {
+    // TODO(altimin): Support subframes as well.
+    delegate_->UpdateActiveSchedulerTrackedFeatures(new_mask);
+  }
 }
 
 void FrameSchedulerImpl::OnStoppedUsingFeature(
     SchedulingPolicy::Feature feature,
     const SchedulingPolicy& policy) {
+  uint64_t old_mask = GetActiveFeaturesOptingOutFromBackForwardCacheMask();
+
   if (policy.disable_aggressive_throttling)
     OnRemovedAggressiveThrottlingOptOut();
   if (policy.disable_back_forward_cache)
     OnRemovedBackForwardCacheOptOut(feature);
+
+  uint64_t new_mask = GetActiveFeaturesOptingOutFromBackForwardCacheMask();
+
+  if (old_mask != new_mask && delegate_ &&
+      GetFrameType() == FrameType::kMainFrame) {
+    // TODO(altimin): Support subframes as well.
+    delegate_->UpdateActiveSchedulerTrackedFeatures(new_mask);
+  }
 }
 
 base::WeakPtr<FrameScheduler> FrameSchedulerImpl::GetWeakPtr() {
@@ -1044,6 +1064,14 @@ FrameSchedulerImpl::GetActiveFeaturesOptingOutFromBackForwardCache() {
   for (const auto& it : back_forward_cache_opt_out_counts_)
     result.insert(it.first);
   return result;
+}
+
+uint64_t
+FrameSchedulerImpl::GetActiveFeaturesOptingOutFromBackForwardCacheMask() const {
+  uint64_t mask = 0;
+  for (const auto& it : back_forward_cache_opt_out_counts_)
+    mask |= (1 << static_cast<int>(it.first));
+  return mask;
 }
 
 // static

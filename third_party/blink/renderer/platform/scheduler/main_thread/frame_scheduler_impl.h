@@ -249,6 +249,10 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
   // Reset the state which should not persist across navigations.
   void ResetForNavigation();
 
+  // Same as GetActiveFeaturesOptingOutFromBackForwardCache, but returns
+  // a mask instead of a set.
+  uint64_t GetActiveFeaturesOptingOutFromBackForwardCacheMask() const;
+
   // Create QueueTraits for the default (non-finch) task queues.
   static MainThreadTaskQueue::QueueTraits ThrottleableTaskQueueTraits();
   static MainThreadTaskQueue::QueueTraits DeferrableTaskQueueTraits();

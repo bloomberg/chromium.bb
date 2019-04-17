@@ -912,6 +912,14 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Manual RTTI to ensure safe downcasts in tests.
   virtual bool IsTestRenderFrameHost() const;
 
+  // Scheduler-relevant features this frame is using, for use in metrics.
+  // See comments at |scheduler_tracked_features_|.
+  // NOTE: It now always returns 0 for subframes.
+  // TODO(altimin): Support subframes here as well.
+  uint64_t scheduler_tracked_features() const {
+    return scheduler_tracked_features_;
+  }
+
  protected:
   friend class RenderFrameHostFactory;
 
@@ -1196,6 +1204,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void FrameSizeChanged(const gfx::Size& frame_size) override;
   void FullscreenStateChanged(bool is_fullscreen) override;
   void DocumentOnLoadCompleted() override;
+  void UpdateActiveSchedulerTrackedFeatures(uint64_t features_mask) override;
 #if defined(OS_ANDROID)
   void UpdateUserGestureCarryoverInfo() override;
 #endif
@@ -2043,6 +2052,12 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Used to intercept DidCommit* calls in tests.
   CommitCallbackInterceptor* commit_callback_interceptor_;
+
+  // Mask of the active features tracked by the scheduler used by this frame.
+  // This is used only for metrics.
+  // See blink::SchedulingPolicy::Feature for the meaning.
+  // This value should be cleared on document commit.
+  uint64_t scheduler_tracked_features_ = 0;
 
   // NOTE: This must be the last member.
   base::WeakPtrFactory<RenderFrameHostImpl> weak_ptr_factory_;

@@ -106,6 +106,7 @@ void BackForwardCacheMetrics::DidCommitNavigation(
                                ukm::SourceIdType::NAVIGATION_ID));
     builder.SetNavigatedToTheMostRecentEntryForDocument(
         navigation_entry_id == last_committed_navigation_entry_id_);
+    builder.SetMainFrameFeatures(main_frame_features_);
     // DidStart notification might be missing for some same-document
     // navigations. It's good that we don't care about the time in the cache
     // in that case.
@@ -131,6 +132,12 @@ void BackForwardCacheMetrics::MainFrameDidNavigateAwayFromDocument() {
   // to another main frame document and the current document loses its "last
   // committed" status.
   navigated_away_from_main_document_timestamp_ = Now();
+}
+
+void BackForwardCacheMetrics::RecordFeatureUsage(
+    RenderFrameHostImpl* main_frame) {
+  DCHECK(!main_frame->GetParent());
+  main_frame_features_ = main_frame->scheduler_tracked_features();
 }
 
 }  // namespace content

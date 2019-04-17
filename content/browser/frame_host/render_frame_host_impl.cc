@@ -2116,6 +2116,14 @@ void RenderFrameHostImpl::DocumentOnLoadCompleted() {
   delegate_->DocumentOnLoadCompleted(this);
 }
 
+void RenderFrameHostImpl::UpdateActiveSchedulerTrackedFeatures(
+    uint64_t features_mask) {
+  // TODO(altimin): Support subframes too. For now renderer shouldn't send
+  // this message for subframes at all.
+  DCHECK(!GetParent());
+  scheduler_tracked_features_ = features_mask;
+}
+
 void RenderFrameHostImpl::OnDidFailProvisionalLoadWithError(
     const FrameHostMsg_DidFailProvisionalLoadWithError_Params& params) {
   TRACE_EVENT2("navigation",
@@ -6315,6 +6323,9 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
   // navigation and just put them in the general map of NavigationRequests.
   if (is_same_document_navigation && invalid_request)
     same_document_navigation_request_ = std::move(invalid_request);
+
+  if (!is_same_document_navigation)
+    scheduler_tracked_features_ = 0;
 
   return true;
 }
