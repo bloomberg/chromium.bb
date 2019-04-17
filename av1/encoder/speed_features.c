@@ -255,7 +255,6 @@ static void set_good_speed_features_framesize_independent(
     sf->skip_repeat_interpolation_filter_search = 1;
     sf->tx_type_search.skip_tx_search = 1;
     sf->tx_type_search.ml_tx_split_thresh = 40;
-    sf->model_based_prune_tx_search_level = 0;
     sf->adaptive_txb_search_level = 2;
     sf->use_intra_txb_hash = 1;
     sf->optimize_b_precheck = 1;
@@ -313,6 +312,7 @@ static void set_good_speed_features_framesize_independent(
     sf->cb_pred_filter_search = 0;
     sf->adaptive_interp_filter_search = 1;
     sf->perform_coeff_opt = boosted ? 0 : 2;
+    sf->model_based_prune_tx_search_level = 0;
   }
 
   if (speed >= 3) {
@@ -479,7 +479,6 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->skip_repeat_interpolation_filter_search = 1;
     sf->tx_type_search.skip_tx_search = 1;
     sf->tx_type_search.ml_tx_split_thresh = 40;
-    sf->model_based_prune_tx_search_level = 0;
     sf->adaptive_txb_search_level = 2;
     sf->use_intra_txb_hash = 1;
     sf->optimize_b_precheck = 1;
@@ -529,6 +528,7 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->prune_comp_type_by_comp_avg = 2;
     sf->cb_pred_filter_search = 0;
     sf->adaptive_interp_filter_search = 1;
+    sf->model_based_prune_tx_search_level = 0;
   }
 
   if (speed >= 3) {
