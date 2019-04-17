@@ -3866,11 +3866,9 @@ void ChromeContentBrowserClient::RegisterIOThreadServiceHandlers(
       "download_manager", base::BindRepeating(&StartDownloadManager));
 #endif
 
-  if (heap_profiling::IsInProcessModeEnabled()) {
-    connection->AddServiceRequestHandler(
-        heap_profiling::mojom::kServiceName,
-        heap_profiling::HeapProfilingService::GetServiceFactory());
-  }
+  connection->AddServiceRequestHandler(
+      heap_profiling::mojom::kServiceName,
+      heap_profiling::HeapProfilingService::GetServiceFactory());
 }
 
 void ChromeContentBrowserClient::RegisterOutOfProcessServices(
@@ -3914,11 +3912,6 @@ void ChromeContentBrowserClient::RegisterOutOfProcessServices(
       base::BindRepeating(&l10n_util::GetStringUTF16,
                           IDS_UTILITY_PROCESS_PRINTING_SERVICE_NAME);
 #endif
-
-  if (!heap_profiling::IsInProcessModeEnabled()) {
-    (*services)[heap_profiling::mojom::kServiceName] = base::BindRepeating(
-        &l10n_util::GetStringUTF16, IDS_UTILITY_PROCESS_PROFILING_SERVICE_NAME);
-  }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS) || defined(OS_ANDROID)
   (*services)[chrome::mojom::kMediaGalleryUtilServiceName] =

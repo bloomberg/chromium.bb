@@ -77,13 +77,11 @@ void HeapProfilingService::OnHeapProfilerRequest(
 void HeapProfilingService::AddProfilingClient(
     base::ProcessId pid,
     mojom::ProfilingClientPtr client,
-    mojo::ScopedHandle pipe_receiver,
     mojom::ProcessType process_type,
     mojom::ProfilingParamsPtr params) {
   if (params->sampling_rate == 0)
     params->sampling_rate = 1;
-  connection_manager_.OnNewConnection(pid, std::move(client),
-                                      std::move(pipe_receiver), process_type,
+  connection_manager_.OnNewConnection(pid, std::move(client), process_type,
                                       std::move(params));
 }
 
@@ -94,26 +92,25 @@ void HeapProfilingService::GetProfiledPids(GetProfiledPidsCallback callback) {
 void HeapProfilingService::DumpProcessesForTracing(
     bool strip_path_from_mapped_files,
     DumpProcessesForTracingCallback callback) {
-  if (!helper_) {
-    service_binding_.GetConnector()->BindInterface(
-        resource_coordinator::mojom::kServiceName, &helper_);
-  }
-
   std::vector<base::ProcessId> pids =
       connection_manager_.GetConnectionPidsThatNeedVmRegions();
   if (pids.empty()) {
     connection_manager_.DumpProcessesForTracing(
         strip_path_from_mapped_files, std::move(callback), VmRegions());
-  } else {
-    // Need a memory map to make sense of the dump. The dump will be triggered
-    // in the memory map global dump callback.
-    helper_->GetVmRegionsForHeapProfiler(
-        pids,
-        base::BindOnce(&HeapProfilingService::
-                           OnGetVmRegionsCompleteForDumpProcessesForTracing,
-                       weak_factory_.GetWeakPtr(), strip_path_from_mapped_files,
-                       std::move(callback)));
+    return;
   }
+
+  // Need a memory map to make sense of the dump. The dump will be triggered
+  // in the memory map global dump callback.
+  if (!helper_) {
+    service_binding_.GetConnector()->BindInterface(
+        resource_coordinator::mojom::kServiceName, &helper_);
+  }
+  helper_->GetVmRegionsForHeapProfiler(
+      pids, base::BindOnce(&HeapProfilingService::
+                               OnGetVmRegionsCompleteForDumpProcessesForTracing,
+                           weak_factory_.GetWeakPtr(),
+                           strip_path_from_mapped_files, std::move(callback)));
 }
 
 void HeapProfilingService::OnGetVmRegionsCompleteForDumpProcessesForTracing(

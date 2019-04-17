@@ -18,10 +18,6 @@ extern const char kMemlogModeRendererSampling[];
 extern const char kMemlogModeUtilityAndBrowser[];
 extern const char kMemlogModeUtilitySampling[];
 
-extern const char kMemlogInProcess[];
-extern const char kMemlogInProcessEnabled[];
-extern const char kMemlogInProcessDisabled[];
-
 extern const char kMemlogSamplingRate[];
 extern const char kMemlogSamplingRate10KB[];
 extern const char kMemlogSamplingRate50KB[];

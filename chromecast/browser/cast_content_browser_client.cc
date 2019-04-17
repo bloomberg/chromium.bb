@@ -1055,25 +1055,12 @@ std::string CastContentBrowserClient::GetUserAgent() const {
   return chromecast::shell::GetUserAgent();
 }
 
-void CastContentBrowserClient::RegisterOutOfProcessServices(
-    OutOfProcessServiceMap* services) {
-#if !defined(OS_FUCHSIA)
-  if (!heap_profiling::IsInProcessModeEnabled()) {
-    services->emplace(
-        heap_profiling::mojom::kServiceName,
-        base::BindRepeating(&base::ASCIIToUTF16, "Profiling Service"));
-  }
-#endif  // !defined(OS_FUCHSIA)
-}
-
 void CastContentBrowserClient::RegisterIOThreadServiceHandlers(
     content::ServiceManagerConnection* connection) {
 #if !defined(OS_FUCHSIA)
-  if (heap_profiling::IsInProcessModeEnabled()) {
-    connection->AddServiceRequestHandler(
-        heap_profiling::mojom::kServiceName,
-        heap_profiling::HeapProfilingService::GetServiceFactory());
-  }
+  connection->AddServiceRequestHandler(
+      heap_profiling::mojom::kServiceName,
+      heap_profiling::HeapProfilingService::GetServiceFactory());
 #endif  // !defined(OS_FUCHSIA)
 }
 

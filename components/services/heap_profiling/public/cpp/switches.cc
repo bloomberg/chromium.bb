@@ -6,10 +6,6 @@
 
 namespace heap_profiling {
 
-const char kMemlogInProcess[] = "memlog-in-process";
-const char kMemlogInProcessEnabled[] = "on";
-const char kMemlogInProcessDisabled[] = "off";
-
 const char kMemlogMode[] = "memlog";
 const char kMemlogModeAll[] = "all";
 const char kMemlogModeAllRenderers[] = "all-renderers";

@@ -49,7 +49,6 @@
 #include "components/gwp_asan/buildflags/buildflags.h"
 #include "components/nacl/common/buildflags.h"
 #include "components/services/heap_profiling/public/cpp/sampling_profiler_wrapper.h"
-#include "components/services/heap_profiling/public/cpp/stream.h"
 #include "components/tracing/common/tracing_sampler_profiler.h"
 #include "components/version_info/version_info.h"
 #include "content/public/common/content_client.h"

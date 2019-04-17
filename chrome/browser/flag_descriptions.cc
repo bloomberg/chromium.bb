@@ -824,13 +824,6 @@ const char kMemlogModeRendererSampling[] = "Single renderer";
 const char kMemlogModeBrowser[] = "Browser only";
 const char kMemlogModeGpu[] = "GPU only";
 
-const char kMemlogInProcessName[] = "Heap profiling service process type.";
-const char kMemlogInProcessDescription[] =
-    "Controls if the heap profiling service runs within the browser process "
-    "(default) or in a dedicated utility process.";
-const char kMemlogInProcessEnabled[] = "In browser process";
-const char kMemlogInProcessDisabled[] = "As separate process";
-
 const char kMemlogSamplingRateName[] =
     "Heap profiling sampling interval (in bytes).";
 const char kMemlogSamplingRateDescription[] =

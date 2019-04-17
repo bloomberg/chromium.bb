@@ -145,11 +145,6 @@ uint32_t GetSamplingRateForStartup() {
       kDefaultSamplingRate);
 }
 
-bool IsInProcessModeEnabled() {
-  return base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-             kMemlogInProcess) != kMemlogInProcessDisabled;
-}
-
 bool IsBackgroundHeapProfilingEnabled() {
   return base::FeatureList::IsEnabled(kOOPHeapProfilingFeature);
 }

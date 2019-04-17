@@ -59,7 +59,6 @@ mojom::StackMode ConvertStringToStackMode(const std::string& input);
 // recorded every N bytes of allocated objects.
 uint32_t GetSamplingRateForStartup();
 
-bool IsInProcessModeEnabled();
 bool IsBackgroundHeapProfilingEnabled();
 
 // Exposed for testing.

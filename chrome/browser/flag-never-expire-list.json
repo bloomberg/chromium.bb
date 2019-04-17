@@ -48,8 +48,6 @@
   "list-all-display-modes",
   "load-media-router-component-extension",
   "memlog",
-  "memlog-keep-small-allocations",
-  "memlog-in-process",
   "memlog-sampling-rate",
   "memlog-stack-mode",
   "overlay-strategies",

@@ -5,30 +5,23 @@
 #ifndef COMPONENTS_SERVICES_HEAP_PROFILING_CONNECTION_MANAGER_H_
 #define COMPONENTS_SERVICES_HEAP_PROFILING_CONNECTION_MANAGER_H_
 
+#include <map>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/process/process_handle.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
 #include "base/timer/timer.h"
-#include "base/values.h"
 #include "build/build_config.h"
 #include "components/services/heap_profiling/allocation_event.h"
-#include "components/services/heap_profiling/allocation_tracker.h"
 #include "components/services/heap_profiling/backtrace_storage.h"
 #include "components/services/heap_profiling/public/mojom/heap_profiling_service.mojom.h"
 #include "services/resource_coordinator/public/mojom/memory_instrumentation/memory_instrumentation.mojom.h"
-
-namespace base {
-
-class SequencedTaskRunner;
-
-}  // namespace base
 
 namespace heap_profiling {
 
@@ -44,6 +37,9 @@ using VmRegions =
 // This object is constructed on the UI thread, but the rest of the usage
 // (including deletion) is on the IO thread.
 class ConnectionManager {
+  using AddressToStringMap = std::unordered_map<uint64_t, std::string>;
+  using CompleteCallback = base::OnceClosure;
+  using ContextMap = std::map<std::string, int>;
   using DumpProcessesForTracingCallback = memory_instrumentation::mojom::
       HeapProfiler::DumpProcessesForTracingCallback;
 
@@ -76,7 +72,6 @@ class ConnectionManager {
 
   void OnNewConnection(base::ProcessId pid,
                        mojom::ProfilingClientPtr client,
-                       mojo::ScopedHandle receiver_pipe_end,
                        mojom::ProcessType process_type,
                        mojom::ProfilingParamsPtr params);
 
@@ -103,8 +98,8 @@ class ConnectionManager {
       uint32_t sampling_rate,
       bool success,
       AllocationCountMap counts,
-      AllocationTracker::ContextMap context,
-      AllocationTracker::AddressToStringMap mapped_strings);
+      ContextMap context,
+      AddressToStringMap mapped_strings);
 
   // Notification that a connection is complete. Unlike OnNewConnection which
   // is signaled by the pipe server, this is signaled by the allocation tracker
@@ -115,17 +110,7 @@ class ConnectionManager {
   // Reports the ProcessTypes of the processes being profiled.
   void ReportMetrics();
 
-  // These thunks post the request back to the given thread.
-  static void OnConnectionCompleteThunk(
-      scoped_refptr<base::SequencedTaskRunner> main_loop,
-      base::WeakPtr<ConnectionManager> connection_manager,
-      base::ProcessId process_id);
-
   BacktraceStorage backtrace_storage_;
-
-  // Next ID to use for a barrier request. This is incremented for each use
-  // to ensure barrier IDs are unique.
-  uint32_t next_barrier_id_ = 1;
 
   // The next ID to use when exporting a heap dump.
   size_t next_id_ = 1;
@@ -144,7 +129,7 @@ class ConnectionManager {
   base::Thread blocking_thread_;
 
   // Must be last.
-  base::WeakPtrFactory<ConnectionManager> weak_factory_;
+  base::WeakPtrFactory<ConnectionManager> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ConnectionManager);
 };

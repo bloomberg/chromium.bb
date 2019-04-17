@@ -33,7 +33,7 @@ class LockFreeAddressHashSet;
 //
 class BASE_EXPORT PoissonAllocationSampler {
  public:
-  enum AllocatorType : uint32_t { kMalloc, kPartitionAlloc, kBlinkGC, kMax };
+  enum AllocatorType : uint32_t { kMalloc, kPartitionAlloc, kBlinkGC };
 
   // When the sampler is just enabled it needs to see up to that amount
   // of allocation sizes before it starts recording samples.
