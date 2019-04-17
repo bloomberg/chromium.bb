@@ -221,6 +221,15 @@ class SyncService : public KeyedService {
   // false, but Sync-the-transport might still run.
   virtual bool IsAuthenticatedAccountPrimary() const = 0;
 
+  // Returns whether the SyncService has completed at least one Sync cycle since
+  // starting up (i.e. since browser startup or signin). This can be useful
+  // in combination with GetAuthError(), if you need to know if the user's
+  // refresh token is really valid: Before a Sync cycle has been completed,
+  // Sync hasn't tried using the refresh token, so doesn't know if it's valid.
+  // TODO(crbug.com/831579): If Chrome would persist auth errors, this would not
+  // be necessary.
+  bool HasCompletedSyncCycle() const;
+
   // The last authentication error that was encountered by the SyncService. This
   // error can be either from Chrome's identity system (e.g. while trying to get
   // an access token), or from the Sync server. It gets cleared when the error
