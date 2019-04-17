@@ -60,6 +60,14 @@ BASE_EXPORT ScopedJavaLocalRef<jfloatArray> ToJavaFloatArray(
     JNIEnv* env,
     const std::vector<float>& floats);
 
+// Returns a new Java double array converted from the given C++ double array.
+BASE_EXPORT ScopedJavaLocalRef<jdoubleArray>
+ToJavaDoubleArray(JNIEnv* env, const double* doubles, size_t len);
+
+BASE_EXPORT ScopedJavaLocalRef<jdoubleArray> ToJavaDoubleArray(
+    JNIEnv* env,
+    const std::vector<double>& doubles);
+
 // Returns a array of Java byte array converted from |v|.
 BASE_EXPORT ScopedJavaLocalRef<jobjectArray> ToJavaArrayOfByteArray(
     JNIEnv* env, const std::vector<std::string>& v);

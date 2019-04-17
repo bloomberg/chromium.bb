@@ -686,7 +686,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
         public final int exposureMode;
         public final double width;
         public final double height;
-        public final float[] pointsOfInterest2D;
+        public final double[] pointsOfInterest2D;
         public final boolean hasExposureCompensation;
         public final double exposureCompensation;
         public final double exposureTime;
@@ -700,7 +700,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
         public final double colorTemperature;
 
         public PhotoOptions(double zoom, int focusMode, double currentFocusDistance,
-                int exposureMode, double width, double height, float[] pointsOfInterest2D,
+                int exposureMode, double width, double height, double[] pointsOfInterest2D,
                 boolean hasExposureCompensation, double exposureCompensation, double exposureTime,
                 int whiteBalanceMode, double iso, boolean hasRedEyeReduction,
                 boolean redEyeReduction, int fillLightMode, boolean hasTorch, boolean torch,
@@ -790,8 +790,10 @@ public class VideoCaptureCamera2 extends VideoCapture {
                 // Calculate a Rect of 1/8 the |visibleRect| dimensions, and center it w.r.t.
                 // |canvas|.
                 final Rect visibleRect = (mCropRect.isEmpty()) ? canvas : mCropRect;
-                int centerX = Math.round(mOptions.pointsOfInterest2D[0] * visibleRect.width());
-                int centerY = Math.round(mOptions.pointsOfInterest2D[1] * visibleRect.height());
+                int centerX =
+                        (int) Math.round(mOptions.pointsOfInterest2D[0] * visibleRect.width());
+                int centerY =
+                        (int) Math.round(mOptions.pointsOfInterest2D[1] * visibleRect.height());
                 if (visibleRect.equals(mCropRect)) {
                     centerX += (canvas.width() - visibleRect.width()) / 2;
                     centerY += (canvas.height() - visibleRect.height()) / 2;
@@ -1541,7 +1543,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
 
     @Override
     public void setPhotoOptions(double zoom, int focusMode, double currentFocusDistance,
-            int exposureMode, double width, double height, float[] pointsOfInterest2D,
+            int exposureMode, double width, double height, double[] pointsOfInterest2D,
             boolean hasExposureCompensation, double exposureCompensation, double exposureTime,
             int whiteBalanceMode, double iso, boolean hasRedEyeReduction, boolean redEyeReduction,
             int fillLightMode, boolean hasTorch, boolean torch, double colorTemperature) {
