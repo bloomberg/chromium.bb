@@ -148,7 +148,8 @@ public class AutofillAssistantUiTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> bottomSheetContent.setLayoutTransition(null));
 
         // Show onboarding.
-        ThreadUtils.runOnUiThreadBlocking(() -> assistantCoordinator.showOnboarding(mRunnableMock));
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> assistantCoordinator.showOnboarding(/* experimentIds= */ "", mRunnableMock));
         View onboardingView = bottomSheetContent.findViewById(R.id.assistant_onboarding);
         Assert.assertNotNull(onboardingView);
         View initOkButton = onboardingView.findViewById(R.id.button_init_ok);

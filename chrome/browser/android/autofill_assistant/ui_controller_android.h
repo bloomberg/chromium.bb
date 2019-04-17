@@ -52,8 +52,10 @@ class UiControllerAndroid : public UiController {
               UiDelegate* ui_delegate);
 
   // Called by ClientAndroid.
-  void ShowOnboarding(JNIEnv* env,
-                      const base::android::JavaParamRef<jobject>& on_accept);
+  void ShowOnboarding(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jstring>& jexperiment_ids,
+      const base::android::JavaParamRef<jobject>& on_accept);
 
   // Overrides UiController:
   void OnStateChanged(AutofillAssistantState new_state) override;

@@ -39,9 +39,11 @@ class ClientAndroid : public Client,
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
 
   // Called from the Java side:
-  void ShowOnboarding(JNIEnv* env,
-                      const base::android::JavaParamRef<jobject>& jcaller,
-                      const base::android::JavaParamRef<jobject>& on_accept);
+  void ShowOnboarding(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jcaller,
+      const base::android::JavaParamRef<jstring>& jexperiment_ids,
+      const base::android::JavaParamRef<jobject>& on_accept);
 
   void Start(JNIEnv* env,
              const base::android::JavaParamRef<jobject>& jcaller,

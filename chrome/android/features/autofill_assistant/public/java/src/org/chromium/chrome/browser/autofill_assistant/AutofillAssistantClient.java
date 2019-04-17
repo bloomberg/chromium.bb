@@ -69,9 +69,9 @@ class AutofillAssistantClient {
     /**
      * Show the onboarding screen and run {@code onAccept} if user agreed to proceed.
      */
-    public void showOnboarding(Runnable onAccept) {
+    public void showOnboarding(String experimentIds, Runnable onAccept) {
         checkNativeClientIsAliveOrThrow();
-        nativeShowOnboarding(mNativeClientAndroid, onAccept);
+        nativeShowOnboarding(mNativeClientAndroid, experimentIds, onAccept);
     }
 
     private void checkNativeClientIsAliveOrThrow() {
@@ -83,10 +83,10 @@ class AutofillAssistantClient {
     /**
      * Launches Autofill Assistant on the current web contents, expecting autostart.
      */
-    public void start(String initialUrl, Map<String, String> parameters,
-            @Nullable String experimentIds, Bundle intentExtras) {
+    public void start(String initialUrl, Map<String, String> parameters, String experimentIds,
+            Bundle intentExtras) {
         checkNativeClientIsAliveOrThrow();
-        nativeStart(mNativeClientAndroid, initialUrl, experimentIds == null ? "" : experimentIds,
+        nativeStart(mNativeClientAndroid, initialUrl, experimentIds,
                 parameters.keySet().toArray(new String[parameters.size()]),
                 parameters.values().toArray(new String[parameters.size()]));
         chooseAccountAsync(parameters.get(PARAMETER_USER_EMAIL), intentExtras);
@@ -250,7 +250,8 @@ class AutofillAssistantClient {
     }
 
     private static native AutofillAssistantClient nativeFromWebContents(WebContents webContents);
-    private native void nativeShowOnboarding(long nativeClientAndroid, Object onAccept);
+    private native void nativeShowOnboarding(
+            long nativeClientAndroid, String experimentIds, Object onAccept);
     private native void nativeStart(long nativeClientAndroid, String initialUrl,
             String experimentIds, String[] parameterNames, String[] parameterValues);
     private native void nativeOnAccessToken(

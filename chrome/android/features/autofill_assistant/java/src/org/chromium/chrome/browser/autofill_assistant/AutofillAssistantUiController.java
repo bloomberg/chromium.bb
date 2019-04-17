@@ -197,8 +197,8 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
     }
 
     @CalledByNative
-    private void onShowOnboarding(Runnable onAccept) {
-        mCoordinator.showOnboarding(onAccept);
+    private void onShowOnboarding(String experimentIds, Runnable onAccept) {
+        mCoordinator.showOnboarding(experimentIds, onAccept);
     }
 
     @CalledByNative
