@@ -175,7 +175,6 @@
 #include "crypto/scoped_nss_types.h"
 #include "dbus/object_path.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
-#include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/network_change_notifier_posix.h"
 #include "net/cert/nss_cert_database.h"
@@ -286,8 +285,6 @@ namespace internal {
 class DBusServices {
  public:
   explicit DBusServices(const content::MainFunctionParams& parameters) {
-    bluez::BluezDBusManager::Initialize();
-
     if (!::features::IsMultiProcessMash()) {
       // In Mash, power policy is sent to powerd by ash.
       PowerPolicyController::Initialize(PowerManagerClient::Get());
@@ -410,7 +407,6 @@ class DBusServices {
     if (!::features::IsMultiProcessMash())
       PowerPolicyController::Shutdown();
     device::BluetoothAdapterFactory::Shutdown();
-    bluez::BluezDBusManager::Shutdown();
   }
 
  private:

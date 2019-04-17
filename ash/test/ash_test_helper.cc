@@ -166,7 +166,7 @@ void AshTestHelper::SetUp(bool start_session, bool provide_local_state) {
   }
 
   if (!bluez::BluezDBusManager::IsInitialized()) {
-    bluez::BluezDBusManager::Initialize();
+    bluez::BluezDBusManager::InitializeFake();
     bluez_dbus_manager_initialized_ = true;
   }
 

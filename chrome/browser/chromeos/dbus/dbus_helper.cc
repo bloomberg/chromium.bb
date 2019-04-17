@@ -25,6 +25,7 @@
 #include "chromeos/dbus/system_clock/system_clock_client.h"
 #include "chromeos/dbus/upstart/upstart_client.h"
 #include "chromeos/tpm/install_attributes.h"
+#include "device/bluetooth/dbus/bluez_dbus_manager.h"
 
 namespace {
 
@@ -58,6 +59,7 @@ void InitializeDBus() {
     ArcCameraClient::Initialize(bus);
     AuthPolicyClient::Initialize(bus);
     BiodClient::Initialize(bus);  // For device::Fingerprint.
+    bluez::BluezDBusManager::Initialize(bus);
     CrasAudioClient::Initialize(bus);
     CryptohomeClient::Initialize(bus);
     CupsProxyClient::Initialize(bus);
@@ -73,6 +75,7 @@ void InitializeDBus() {
     ArcCameraClient::InitializeFake();
     AuthPolicyClient::InitializeFake();
     BiodClient::InitializeFake();  // For device::Fingerprint.
+    bluez::BluezDBusManager::InitializeFake();
     CrasAudioClient::InitializeFake();
     CryptohomeClient::InitializeFake();
     CupsProxyClient::InitializeFake();
@@ -105,6 +108,7 @@ void ShutdownDBus() {
   CupsProxyClient::Shutdown();
   CryptohomeClient::Shutdown();
   CrasAudioClient::Shutdown();
+  bluez::BluezDBusManager::Shutdown();
   BiodClient::Shutdown();
   AuthPolicyClient::Shutdown();
   ArcCameraClient::Shutdown();

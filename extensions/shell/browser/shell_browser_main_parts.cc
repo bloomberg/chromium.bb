@@ -127,16 +127,16 @@ void ShellBrowserMainParts::PostMainMessageLoopStart() {
   chromeos::DBusThreadManager::Initialize();
   dbus::Bus* bus = chromeos::DBusThreadManager::Get()->GetSystemBus();
   if (bus) {
+    bluez::BluezDBusManager::Initialize(bus);
     chromeos::CrasAudioClient::Initialize(bus);
     chromeos::PowerManagerClient::Initialize(bus);
   } else {
+    bluez::BluezDBusManager::InitializeFake();
     chromeos::CrasAudioClient::InitializeFake();
     chromeos::PowerManagerClient::InitializeFake();
   }
 
   chromeos::disks::DiskMountManager::Initialize();
-
-  bluez::BluezDBusManager::Initialize();
 
   chromeos::NetworkHandler::Initialize();
   network_controller_.reset(new ShellNetworkController(
@@ -153,8 +153,7 @@ void ShellBrowserMainParts::PostMainMessageLoopStart() {
   // TODO(michaelpg): Verify this works for target environments.
   ui::InitializeInputMethodForTesting();
 
-  bluez::BluezDBusThreadManager::Initialize();
-  bluez::BluezDBusManager::Initialize();
+  bluez::BluezDBusManager::Initialize(nullptr /* system_bus */);
 #else
   ui::InitializeInputMethodForTesting();
 #endif
