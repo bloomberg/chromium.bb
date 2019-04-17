@@ -14,7 +14,6 @@
 #include "net/cert/internal/cert_errors.h"
 #include "net/cert/internal/parse_name.h"
 #include "net/cert/internal/parsed_certificate.h"
-#include "net/cert/internal/verify_signed_data.h"
 #include "net/cert/test_keychain_search_list_mac.h"
 #include "net/cert/x509_util.h"
 #include "net/cert/x509_util_mac.h"
@@ -142,21 +141,11 @@ TrustStatus IsTrustSettingsTrustedForPolicy(CFArrayRef trust_settings,
   return TrustStatus::UNSPECIFIED;
 }
 
-bool IsSelfSigned(const scoped_refptr<ParsedCertificate>& cert) {
-  if (cert->normalized_subject() != cert->normalized_issuer())
-    return false;
-  return VerifySignedData(cert->signature_algorithm(),
-                          cert->tbs_certificate_tlv(), cert->signature_value(),
-                          cert->tbs().spki_tlv);
-}
-
 // Returns true if the certificate |cert_handle| is trusted for the policy
 // |policy_oid|.
-TrustStatus IsSecCertificateTrustedForPolicy(
-    const scoped_refptr<ParsedCertificate>& cert,
-    SecCertificateRef cert_handle,
-    const CFStringRef policy_oid) {
-  const bool is_self_signed = IsSelfSigned(cert);
+TrustStatus IsSecCertificateTrustedForPolicy(SecCertificateRef cert_handle,
+                                             const CFStringRef policy_oid) {
+  const bool is_self_signed = x509_util::IsSelfSigned(cert_handle);
   // Evaluate trust domains in user, admin, system order. Admin settings can
   // override system ones, and user settings can override both admin and system.
   for (const auto& trust_domain :
@@ -253,7 +242,7 @@ void TrustStoreMac::GetTrust(const scoped_refptr<ParsedCertificate>& cert,
   }
 
   TrustStatus trust_status =
-      IsSecCertificateTrustedForPolicy(cert, cert_handle, policy_oid_);
+      IsSecCertificateTrustedForPolicy(cert_handle, policy_oid_);
   switch (trust_status) {
     case TrustStatus::TRUSTED:
       *trust = CertificateTrust::ForTrustAnchor();
