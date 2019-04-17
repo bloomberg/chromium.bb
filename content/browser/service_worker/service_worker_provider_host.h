@@ -45,15 +45,11 @@ namespace service_worker_object_host_unittest {
 class ServiceWorkerObjectHostTest;
 }
 
-namespace storage {
-class BlobStorageContext;
-}
-
 namespace content {
 
+class NavigationLoaderInterceptor;
 class ServiceWorkerContextCore;
 class ServiceWorkerRegistrationObjectHost;
-class ServiceWorkerRequestHandler;
 class ServiceWorkerVersion;
 class WebContents;
 
@@ -299,9 +295,9 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
     return allow_set_controller_registration_;
   }
 
-  // Returns a handler for a request. May return nullptr if the request doesn't
-  // require special handling.
-  std::unique_ptr<ServiceWorkerRequestHandler> CreateRequestHandler(
+  // Returns an interceptor for a main resource request. May return nullptr if
+  // the request doesn't require interception.
+  std::unique_ptr<NavigationLoaderInterceptor> CreateLoaderInterceptor(
       network::mojom::FetchRequestMode request_mode,
       network::mojom::FetchCredentialsMode credentials_mode,
       network::mojom::FetchRedirectMode redirect_mode,
@@ -310,7 +306,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
       ResourceType resource_type,
       blink::mojom::RequestContextType request_context_type,
       network::mojom::RequestContextFrameType frame_type,
-      base::WeakPtr<storage::BlobStorageContext> blob_storage_context,
       scoped_refptr<network::ResourceRequestBody> body,
       bool skip_service_worker);
 

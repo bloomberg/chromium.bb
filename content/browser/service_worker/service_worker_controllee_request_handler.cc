@@ -91,7 +91,6 @@ class ServiceWorkerControlleeRequestHandler::
 ServiceWorkerControlleeRequestHandler::ServiceWorkerControlleeRequestHandler(
     base::WeakPtr<ServiceWorkerContextCore> context,
     base::WeakPtr<ServiceWorkerProviderHost> provider_host,
-    base::WeakPtr<storage::BlobStorageContext> blob_storage_context,
     network::mojom::FetchRequestMode request_mode,
     network::mojom::FetchCredentialsMode credentials_mode,
     network::mojom::FetchRedirectMode redirect_mode,
@@ -101,10 +100,8 @@ ServiceWorkerControlleeRequestHandler::ServiceWorkerControlleeRequestHandler(
     blink::mojom::RequestContextType request_context_type,
     network::mojom::RequestContextFrameType frame_type,
     scoped_refptr<network::ResourceRequestBody> body)
-    : ServiceWorkerRequestHandler(std::move(context),
-                                  std::move(provider_host),
-                                  std::move(blob_storage_context),
-                                  resource_type),
+    : context_(std::move(context)),
+      provider_host_(std::move(provider_host)),
       resource_type_(resource_type),
       request_mode_(request_mode),
       credentials_mode_(credentials_mode),
