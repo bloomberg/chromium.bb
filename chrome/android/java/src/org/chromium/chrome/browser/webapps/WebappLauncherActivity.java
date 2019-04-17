@@ -109,6 +109,11 @@ public class WebappLauncherActivity extends Activity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Close the notification tray.
+        ContextUtils.getApplicationContext().sendBroadcast(
+                new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS));
+
         long createTimestamp = SystemClock.elapsedRealtime();
         Intent intent = getIntent();
 
