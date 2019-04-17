@@ -160,20 +160,17 @@ void AuthenticationService::OnApplicationEnterForeground() {
     return;
   }
 
-  // A change might have happened while in background, and SSOAuth didn't send
-  // the corresponding notifications yet. Reload the credentials to catch up
-  // with potentials changes.
-  ReloadCredentialsFromIdentities(true /* should_prompt */);
+  // As the SSO library does not send notification when the app is in the
+  // background, reload the credentials and check whether any accounts have
+  // changed (both are done by calling ComputeHaveAccountsChanged). After
+  // that, save the current list of accounts.
+  ComputeHaveAccountsChanged();
+  StoreAccountsInPrefs();
 
   // Set |is_in_foreground_| only after handling forgotten identity.
   // This ensures that any changes made to the SSOAuth identities before this
   // are correctly seen as made while in background.
   is_in_foreground_ = true;
-
-  // Accounts might have changed while the AuthenticationService was in
-  // background. Check whether they changed, then store the current accounts.
-  ComputeHaveAccountsChanged();
-  StoreAccountsInPrefs();
 
   if (IsAuthenticated()) {
     bool sync_enabled = sync_setup_service_->IsSyncEnabled();
