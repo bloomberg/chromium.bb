@@ -60,9 +60,11 @@ constexpr int kShadowElevation = 16;
 // swipe to close.
 constexpr int kSwipeToCloseCloseTranslationDp = 96;
 
-// Before dragging an overview window, the window will be scaled up
-// |kPreDragScale| to indicate its selection.
-constexpr float kDragWindowScale = 0.04f;
+// When an item is being dragged, the bounds are outset horizontally by this
+// fraction of the width, and vertically by this fraction of the height. The
+// outset in each dimension is on both sides, for a total of twice this much
+// change in the size of the item along that dimension.
+constexpr float kDragWindowScale = 0.05f;
 
 }  // namespace
 
