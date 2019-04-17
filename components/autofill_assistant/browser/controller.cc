@@ -62,6 +62,7 @@ Controller::Controller(content::WebContents* web_contents,
     : content::WebContentsObserver(web_contents),
       client_(client),
       tick_clock_(tick_clock),
+      navigating_to_new_document_(web_contents->IsWaitingForResponse()),
       weak_ptr_factory_(this) {}
 
 Controller::~Controller() = default;
@@ -225,6 +226,26 @@ void Controller::SetChips(std::unique_ptr<std::vector<Chip>> chips) {
   GetUiController()->OnActionsChanged(GetActions());
 }
 
+bool Controller::IsNavigatingToNewDocument() {
+  return navigating_to_new_document_;
+}
+
+bool Controller::HasNavigationError() {
+  return navigation_error_;
+}
+
+void Controller::AddListener(ScriptExecutorDelegate::Listener* listener) {
+  auto found = std::find(listeners_.begin(), listeners_.end(), listener);
+  if (found == listeners_.end())
+    listeners_.emplace_back(listener);
+}
+
+void Controller::RemoveListener(ScriptExecutorDelegate::Listener* listener) {
+  auto found = std::find(listeners_.begin(), listeners_.end(), listener);
+  if (found != listeners_.end())
+    listeners_.erase(found);
+}
+
 void Controller::SelectSuggestion(int index) {
   SelectChip(suggestions_.get(), index);
 }
@@ -247,6 +268,13 @@ void Controller::SelectChip(std::vector<Chip>* chips, int chip_index) {
   auto callback = std::move((*chips)[chip_index].callback);
   SetChips(nullptr);
   std::move(callback).Run();
+}
+
+void Controller::ReportNavigationStateChanged() {
+  // Listeners are called in the same order they were added.
+  for (auto* listener : listeners_) {
+    listener->OnNavigationStateChanged();
+  }
 }
 
 void Controller::StopAndShutdown(Metrics::DropOutReason reason) {
@@ -816,6 +844,15 @@ void Controller::DidFinishLoad(content::RenderFrameHost* render_frame_host,
 
 void Controller::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->IsInMainFrame() ||
+      navigation_handle->IsSameDocument())
+    return;
+
+  if (!navigating_to_new_document_) {
+    navigating_to_new_document_ = true;
+    ReportNavigationStateChanged();
+  }
+
   // The following types of navigations are allowed for the main frame, when
   // in PROMPT state:
   //  - first-time URL load
@@ -832,14 +869,33 @@ void Controller::DidStartNavigation(
   // Everything else, such as going back to a previous page, or refreshing the
   // page is considered an end condition.
   if (state_ == AutofillAssistantState::PROMPT &&
-      navigation_handle->IsInMainFrame() &&
       web_contents()->GetLastCommittedURL().is_valid() &&
       !navigation_handle->WasServerRedirect() &&
-      !navigation_handle->IsSameDocument() &&
       !navigation_handle->IsRendererInitiated()) {
     OnFatalError(l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_GIVE_UP),
                  Metrics::NAVIGATION);
   }
+}
+
+void Controller::DidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->IsInMainFrame() ||
+      navigation_handle->IsSameDocument() ||
+      !navigation_handle->HasCommitted() || !IsNavigatingToNewDocument()) {
+    return;
+  }
+
+  bool is_successful =
+      !navigation_handle->IsErrorPage() &&
+      navigation_handle->GetNetErrorCode() == net::OK &&
+      navigation_handle->GetResponseHeaders() &&
+      (navigation_handle->GetResponseHeaders()->response_code() / 100) == 2;
+  navigation_error_ = !is_successful;
+  navigating_to_new_document_ = false;
+  ReportNavigationStateChanged();
+
+  if (is_successful)
+    GetOrCheckScripts();
 }
 
 void Controller::DocumentAvailableInMainFrame() {

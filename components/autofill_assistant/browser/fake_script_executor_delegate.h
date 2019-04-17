@@ -7,6 +7,7 @@
 
 #include <map>
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -44,6 +45,10 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
   void SetPaymentRequestOptions(
       std::unique_ptr<PaymentRequestOptions> options) override;
   void CancelPaymentRequest() override;
+  bool HasNavigationError() override;
+  bool IsNavigatingToNewDocument() override;
+  void AddListener(Listener* listener) override;
+  void RemoveListener(Listener* listener) override;
 
   void SetCurrentURL(const GURL& url) { current_url_ = url; }
 
@@ -71,6 +76,17 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
 
   PaymentRequestOptions* GetOptions() { return payment_request_options_.get(); }
 
+  void UpdateNavigationState(bool navigating, bool error) {
+    navigating_to_new_document_ = navigating;
+    navigation_error_ = error;
+
+    for (auto* listener : listeners_) {
+      listener->OnNavigationStateChanged();
+    }
+  }
+
+  bool HasListeners() { return !listeners_.empty(); }
+
  private:
   GURL current_url_;
   Service* service_ = nullptr;
@@ -84,6 +100,9 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
   std::unique_ptr<InfoBox> info_box_;
   std::unique_ptr<std::vector<Chip>> chips_;
   std::unique_ptr<PaymentRequestOptions> payment_request_options_;
+  bool navigating_to_new_document_ = false;
+  bool navigation_error_ = false;
+  std::set<ScriptExecutorDelegate::Listener*> listeners_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeScriptExecutorDelegate);
 };

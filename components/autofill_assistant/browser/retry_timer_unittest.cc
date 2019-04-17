@@ -6,6 +6,7 @@
 
 #include <map>
 #include <set>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -187,6 +188,30 @@ TEST_F(RetryTimerTest, RestartOverridesFirstCallWithPendingTask) {
   EXPECT_CALL(done_callback2, Run(false));
   FastForwardOneSecond();
   EXPECT_EQ(3, try_count_);
+}
+
+TEST_F(RetryTimerTest, Running) {
+  RetryTimer retry_timer(base::TimeDelta::FromSeconds(1));
+  EXPECT_FALSE(retry_timer.running());
+
+  retry_timer.Start(base::TimeDelta::FromSeconds(10), SucceedsOnceCallback(1),
+                    done_callback_.Get());
+  EXPECT_TRUE(retry_timer.running());
+
+  EXPECT_CALL(done_callback_, Run(true));
+  FastForwardOneSecond();
+  EXPECT_FALSE(retry_timer.running());
+}
+
+TEST_F(RetryTimerTest, NotRunningAfterCancel) {
+  RetryTimer retry_timer(base::TimeDelta::FromSeconds(1));
+  EXPECT_FALSE(retry_timer.running());
+
+  retry_timer.Start(base::TimeDelta::FromSeconds(10), SucceedsOnceCallback(1),
+                    done_callback_.Get());
+  EXPECT_TRUE(retry_timer.running());
+  retry_timer.Cancel();
+  EXPECT_FALSE(retry_timer.running());
 }
 
 }  // namespace

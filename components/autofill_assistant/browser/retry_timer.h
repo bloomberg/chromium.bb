@@ -23,7 +23,7 @@ namespace autofill_assistant {
 class RetryTimer {
  public:
   // A RetryTimer with the given retry period
-  RetryTimer(base::TimeDelta period);
+  explicit RetryTimer(base::TimeDelta period);
   ~RetryTimer();
 
   // Tries to run |task| once immediately and then periodically until it
@@ -47,6 +47,9 @@ class RetryTimer {
   //
   // Does nothing if to tasks are in progress.
   void Cancel();
+
+  // Returns true if the timer was started but did not report any results yet.
+  bool running() { return on_done_ ? true : false; }
 
  private:
   void Reset();

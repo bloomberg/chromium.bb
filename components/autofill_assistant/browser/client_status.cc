@@ -15,21 +15,23 @@ ClientStatus::~ClientStatus() = default;
 
 void ClientStatus::FillProto(ProcessedActionProto* proto) const {
   proto->set_status(status_);
-  if (has_unexpected_error_info_)
-    proto->mutable_unexpected_error_info()->MergeFrom(unexpected_error_info_);
+  if (has_details_)
+    proto->mutable_status_details()->MergeFrom(details_);
 }
 
 std::ostream& operator<<(std::ostream& out, const ClientStatus& status) {
   out << status.status_;
 #ifndef NDEBUG
-  if (status.has_unexpected_error_info_) {
-    out << status.unexpected_error_info_.source_file() << ":"
-        << status.unexpected_error_info_.source_line_number();
-    if (!status.unexpected_error_info_.js_exception_classname().empty()) {
-      out << " JS error "
-          << status.unexpected_error_info_.js_exception_classname() << " at "
-          << status.unexpected_error_info_.js_exception_line_number() << ":"
-          << status.unexpected_error_info_.js_exception_column_number();
+  if (status.details_.original_status() != UNKNOWN_ACTION_STATUS) {
+    out << " was: " << status.details_.original_status();
+  }
+  if (status.details_.has_unexpected_error_info()) {
+    auto& error_info = status.details_.unexpected_error_info();
+    out << error_info.source_file() << ":" << error_info.source_line_number();
+    if (!error_info.js_exception_classname().empty()) {
+      out << " JS error " << error_info.js_exception_classname() << " at "
+          << error_info.js_exception_line_number() << ":"
+          << error_info.js_exception_column_number();
     }
   }
 #endif
@@ -114,6 +116,10 @@ std::ostream& operator<<(std::ostream& out,
 
     case ProcessedActionStatusProto::TOO_MANY_ELEMENTS:
       out << "TOO_MANY_ELEMENTS";
+      break;
+
+    case ProcessedActionStatusProto::NAVIGATION_ERROR:
+      out << "NAVIGATION_ERROR";
       break;
 
       // Intentionally no default case to make compilation fail if a new value

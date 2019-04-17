@@ -16,8 +16,10 @@
 #include "components/autofill_assistant/browser/mock_web_controller.h"
 #include "components/autofill_assistant/browser/service.h"
 #include "components/autofill_assistant/browser/trigger_context.h"
+#include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -33,6 +35,7 @@ using ::testing::Field;
 using ::testing::Gt;
 using ::testing::InSequence;
 using ::testing::Invoke;
+using ::testing::IsEmpty;
 using ::testing::NiceMock;
 using ::testing::Not;
 using ::testing::Pair;
@@ -72,18 +75,17 @@ class FakeClient : public Client {
 
 }  // namespace
 
-class ControllerTest : public testing::Test {
+class ControllerTest : public content::RenderViewHostTestHarness {
  public:
   ControllerTest()
-      : thread_bundle_(
+      : RenderViewHostTestHarness(
             base::test::ScopedTaskEnvironment::MainThreadType::UI_MOCK_TIME),
-        web_contents_(
-            content::WebContentsTester::CreateTestWebContents(&browser_context_,
-                                                              nullptr)),
         fake_client_(&mock_ui_controller_) {}
   ~ControllerTest() override {}
 
   void SetUp() override {
+    RenderViewHostTestHarness::SetUp();
+
     scoped_feature_list_.InitAndEnableFeature(
         features::kAutofillAssistantChromeEntry);
     auto web_controller = std::make_unique<NiceMock<MockWebController>>();
@@ -92,7 +94,7 @@ class ControllerTest : public testing::Test {
     mock_service_ = service.get();
 
     controller_ = std::make_unique<Controller>(
-        web_contents_.get(), &fake_client_, thread_bundle_.GetMockTickClock());
+        web_contents(), &fake_client_, thread_bundle()->GetMockTickClock());
     controller_->SetWebControllerAndServiceForTest(std::move(web_controller),
                                                    std::move(service));
 
@@ -149,15 +151,13 @@ class ControllerTest : public testing::Test {
   }
 
   void SetLastCommittedUrl(const GURL& url) {
-    content::WebContentsTester::For(web_contents_.get())
-        ->SetLastCommittedURL(url);
+    content::WebContentsTester::For(web_contents())->SetLastCommittedURL(url);
   }
 
-  // Updates the current url of the controller and forces a refresh, without
-  // bothering with actually rendering any page content.
   void SimulateNavigateToUrl(const GURL& url) {
-    SetLastCommittedUrl(url);
-    controller_->DidFinishLoad(nullptr, url);
+    content::NavigationSimulator::NavigateAndCommitFromDocument(
+        url, web_contents()->GetMainFrame());
+    content::WebContentsTester::For(web_contents())->TestSetIsLoading(false);
   }
 
   void SimulateWebContentsFocused() {
@@ -186,10 +186,7 @@ class ControllerTest : public testing::Test {
 
   // |thread_bundle_| must be the first field, to make sure that everything runs
   // in the same task environment.
-  content::TestBrowserThreadBundle thread_bundle_;
   base::test::ScopedFeatureList scoped_feature_list_;
-  content::TestBrowserContext browser_context_;
-  std::unique_ptr<content::WebContents> web_contents_;
   base::TimeTicks now_;
   std::vector<AutofillAssistantState> states_;
   MockService* mock_service_;
@@ -199,6 +196,43 @@ class ControllerTest : public testing::Test {
 
   std::unique_ptr<Controller> controller_;
 };
+
+struct NavigationState {
+  bool navigating = false;
+  bool has_errors = false;
+
+  bool operator==(const NavigationState& other) const {
+    return navigating == other.navigating && has_errors == other.has_errors;
+  }
+};
+
+std::ostream& operator<<(std::ostream& out, const NavigationState& state) {
+  out << "{navigating=" << state.navigating << ","
+      << "has_errors=" << state.has_errors << "}";
+  return out;
+}
+
+// A Listener that keeps track of the reported state of the delegate captured
+// from OnNavigationStateChanged.
+class NavigationStateChangeListener : public ScriptExecutorDelegate::Listener {
+ public:
+  explicit NavigationStateChangeListener(ScriptExecutorDelegate* delegate)
+      : delegate_(delegate) {}
+  ~NavigationStateChangeListener() = default;
+  void OnNavigationStateChanged() override;
+
+  std::vector<NavigationState> events;
+
+ private:
+  ScriptExecutorDelegate* const delegate_;
+};
+
+void NavigationStateChangeListener::OnNavigationStateChanged() {
+  NavigationState state;
+  state.navigating = delegate_->IsNavigatingToNewDocument();
+  state.has_errors = delegate_->HasNavigationError();
+  events.emplace_back(state);
+}
 
 TEST_F(ControllerTest, FetchAndRunScripts) {
   SupportsScriptResponseProto script_response;
@@ -386,7 +420,6 @@ TEST_F(ControllerTest, Reset) {
 }
 
 TEST_F(ControllerTest, RefreshScriptWhenDomainChanges) {
-
   EXPECT_CALL(*mock_service_,
               OnGetScriptsForUrl(Eq(GURL("http://a.example.com/path1")), _, _))
       .WillOnce(RunOnceCallback<2>(true, ""));
@@ -494,7 +527,7 @@ TEST_F(ControllerTest, AutostartIsNotPassedToTheUi) {
   EXPECT_CALL(mock_ui_controller_, OnSuggestionsChanged(SizeIs(Gt(0u))))
       .Times(0);
 
-  SimulateNavigateToUrl(GURL("http://a.example.com/path"));
+  Start("http://a.example.com/path");
   EXPECT_THAT(controller_->GetSuggestions(), SizeIs(0));
 }
 
@@ -625,13 +658,13 @@ TEST_F(ControllerTest, KeepCheckingForElement) {
   EXPECT_EQ(AutofillAssistantState::STARTING, controller_->GetState());
 
   for (int i = 0; i < 3; i++) {
-    thread_bundle_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+    thread_bundle()->FastForwardBy(base::TimeDelta::FromSeconds(1));
     EXPECT_EQ(AutofillAssistantState::STARTING, controller_->GetState());
   }
 
   EXPECT_CALL(*mock_web_controller_, OnElementCheck(_, _))
       .WillRepeatedly(RunOnceCallback<1>(true));
-  thread_bundle_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  thread_bundle()->FastForwardBy(base::TimeDelta::FromSeconds(1));
 
   EXPECT_EQ(AutofillAssistantState::AUTOSTART_FALLBACK_PROMPT,
             controller_->GetState());
@@ -664,7 +697,7 @@ TEST_F(ControllerTest, ScriptTimeoutError) {
   Start("http://a.example.com/path");
   for (int i = 0; i < 30; i++) {
     EXPECT_EQ(AutofillAssistantState::STARTING, controller_->GetState());
-    thread_bundle_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+    thread_bundle()->FastForwardBy(base::TimeDelta::FromSeconds(1));
   }
   EXPECT_EQ(AutofillAssistantState::STOPPED, controller_->GetState());
   EXPECT_EQ("I give up", controller_->GetStatusMessage());
@@ -698,13 +731,124 @@ TEST_F(ControllerTest, ScriptTimeoutWarning) {
   // Warning after 4s, script succeeds and the client continues to wait.
   for (int i = 0; i < 4; i++) {
     EXPECT_EQ(AutofillAssistantState::STARTING, controller_->GetState());
-    thread_bundle_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+    thread_bundle()->FastForwardBy(base::TimeDelta::FromSeconds(1));
   }
   EXPECT_EQ(AutofillAssistantState::STARTING, controller_->GetState());
   EXPECT_EQ("This is slow", controller_->GetStatusMessage());
   for (int i = 0; i < 10; i++) {
     EXPECT_EQ(AutofillAssistantState::STARTING, controller_->GetState());
-    thread_bundle_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+    thread_bundle()->FastForwardBy(base::TimeDelta::FromSeconds(1));
   }
 }
+
+TEST_F(ControllerTest, SuccessfulNavigation) {
+  EXPECT_FALSE(controller_->IsNavigatingToNewDocument());
+  EXPECT_FALSE(controller_->HasNavigationError());
+
+  NavigationStateChangeListener listener(controller_.get());
+  controller_->AddListener(&listener);
+  content::NavigationSimulator::NavigateAndCommitFromDocument(
+      GURL("http://initialurl.com"), web_contents()->GetMainFrame());
+  controller_->RemoveListener(&listener);
+
+  EXPECT_FALSE(controller_->IsNavigatingToNewDocument());
+  EXPECT_FALSE(controller_->HasNavigationError());
+
+  EXPECT_THAT(listener.events, ElementsAre(NavigationState{true, false},
+                                           NavigationState{false, false}));
+}
+
+TEST_F(ControllerTest, FailedNavigation) {
+  EXPECT_FALSE(controller_->IsNavigatingToNewDocument());
+  EXPECT_FALSE(controller_->HasNavigationError());
+
+  NavigationStateChangeListener listener(controller_.get());
+  controller_->AddListener(&listener);
+  content::NavigationSimulator::NavigateAndFailFromDocument(
+      GURL("http://initialurl.com"), net::ERR_CONNECTION_TIMED_OUT,
+      web_contents()->GetMainFrame());
+  controller_->RemoveListener(&listener);
+
+  EXPECT_FALSE(controller_->IsNavigatingToNewDocument());
+  EXPECT_TRUE(controller_->HasNavigationError());
+
+  EXPECT_THAT(listener.events, ElementsAre(NavigationState{true, false},
+                                           NavigationState{false, true}));
+}
+
+TEST_F(ControllerTest, NavigationWithRedirects) {
+  EXPECT_FALSE(controller_->IsNavigatingToNewDocument());
+  EXPECT_FALSE(controller_->HasNavigationError());
+
+  NavigationStateChangeListener listener(controller_.get());
+  controller_->AddListener(&listener);
+
+  std::unique_ptr<content::NavigationSimulator> simulator =
+      content::NavigationSimulator::CreateRendererInitiated(
+          GURL("http://original.example.com/"), web_contents()->GetMainFrame());
+  simulator->SetTransition(ui::PAGE_TRANSITION_LINK);
+  simulator->Start();
+  EXPECT_TRUE(controller_->IsNavigatingToNewDocument());
+  EXPECT_FALSE(controller_->HasNavigationError());
+
+  simulator->Redirect(GURL("http://redirect.example.com/"));
+  EXPECT_TRUE(controller_->IsNavigatingToNewDocument());
+  EXPECT_FALSE(controller_->HasNavigationError());
+
+  simulator->Commit();
+  EXPECT_FALSE(controller_->IsNavigatingToNewDocument());
+  EXPECT_FALSE(controller_->HasNavigationError());
+
+  controller_->RemoveListener(&listener);
+
+  // Redirection should not be reported as a state change.
+  EXPECT_THAT(listener.events, ElementsAre(NavigationState{true, false},
+                                           NavigationState{false, false}));
+}
+
+TEST_F(ControllerTest, EventuallySuccessfulNavigation) {
+  EXPECT_FALSE(controller_->IsNavigatingToNewDocument());
+  EXPECT_FALSE(controller_->HasNavigationError());
+
+  NavigationStateChangeListener listener(controller_.get());
+  controller_->AddListener(&listener);
+  content::NavigationSimulator::NavigateAndFailFromDocument(
+      GURL("http://initialurl.com"), net::ERR_CONNECTION_TIMED_OUT,
+      web_contents()->GetMainFrame());
+  content::NavigationSimulator::NavigateAndCommitFromDocument(
+      GURL("http://initialurl.com"), web_contents()->GetMainFrame());
+  controller_->RemoveListener(&listener);
+
+  EXPECT_FALSE(controller_->IsNavigatingToNewDocument());
+  EXPECT_FALSE(controller_->HasNavigationError());
+
+  EXPECT_THAT(listener.events,
+              ElementsAre(
+                  // 1st navigation starts
+                  NavigationState{true, false},
+                  // 1st navigation fails
+                  NavigationState{false, true},
+                  // 2nd navigation starts, while in error state
+                  NavigationState{true, true},
+                  // 2nd navigation succeeds
+                  NavigationState{false, false}));
+}
+
+TEST_F(ControllerTest, RemoveListener) {
+  NavigationStateChangeListener listener(controller_.get());
+  controller_->AddListener(&listener);
+  content::NavigationSimulator::NavigateAndCommitFromDocument(
+      GURL("http://initialurl.com"), web_contents()->GetMainFrame());
+  listener.events.clear();
+  controller_->RemoveListener(&listener);
+
+  content::NavigationSimulator::NavigateAndFailFromDocument(
+      GURL("http://initialurl.com"), net::ERR_CONNECTION_TIMED_OUT,
+      web_contents()->GetMainFrame());
+  content::NavigationSimulator::NavigateAndCommitFromDocument(
+      GURL("http://initialurl.com"), web_contents()->GetMainFrame());
+
+  EXPECT_THAT(listener.events, IsEmpty());
+}
+
 }  // namespace autofill_assistant
