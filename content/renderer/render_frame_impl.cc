@@ -340,8 +340,33 @@ int64_t ExtractPostId(const WebHistoryItem& item) {
   return item.HttpBody().Identifier();
 }
 
+// Calculates transition type based on navigation parameters. Used
+// during navigation, before WebDocumentLoader is available.
+ui::PageTransition GetTransitionType(ui::PageTransition default_transition,
+                                     bool replaces_current_item,
+                                     bool is_main_frame,
+                                     WebNavigationType navigation_type) {
+  if (replaces_current_item && !is_main_frame) {
+    // Subframe navigations that don't add session history items must be
+    // marked with AUTO_SUBFRAME. See also DidFailProvisionalLoad for how we
+    // handle loading of error pages.
+    return ui::PAGE_TRANSITION_AUTO_SUBFRAME;
+  }
+  bool is_form_submit =
+      navigation_type == blink::kWebNavigationTypeFormSubmitted ||
+      navigation_type == blink::kWebNavigationTypeFormResubmitted;
+  if (ui::PageTransitionCoreTypeIs(default_transition,
+                                   ui::PAGE_TRANSITION_LINK) &&
+      is_form_submit) {
+    return ui::PAGE_TRANSITION_FORM_SUBMIT;
+  }
+  return default_transition;
+}
+
+// Calculates transition type for the specific document loaded using
+// WebDocumentLoader. Used while loading subresources.
 ui::PageTransition GetTransitionType(blink::WebDocumentLoader* document_loader,
-                                     blink::WebLocalFrame* frame,
+                                     bool is_main_frame,
                                      bool loading) {
   NavigationState* navigation_state =
       NavigationState::FromDocumentLoader(document_loader);
@@ -352,21 +377,9 @@ ui::PageTransition GetTransitionType(blink::WebDocumentLoader* document_loader,
   if (navigation_state->WasWithinSameDocument())
     return default_transition;
   if (loading || document_loader->GetResponse().IsNull()) {
-    if (document_loader->ReplacesCurrentHistoryItem() && frame->Parent()) {
-      // Subframe navigations that don't add session history items must be
-      // marked with AUTO_SUBFRAME. See also didFailProvisionalLoad for how we
-      // handle loading of error pages.
-      return ui::PAGE_TRANSITION_AUTO_SUBFRAME;
-    }
-    bool is_form_submit = document_loader->GetNavigationType() ==
-                              blink::kWebNavigationTypeFormSubmitted ||
-                          document_loader->GetNavigationType() ==
-                              blink::kWebNavigationTypeFormResubmitted;
-    if (ui::PageTransitionCoreTypeIs(default_transition,
-                                     ui::PAGE_TRANSITION_LINK) &&
-        is_form_submit) {
-      return ui::PAGE_TRANSITION_FORM_SUBMIT;
-    }
+    return GetTransitionType(
+        default_transition, document_loader->ReplacesCurrentHistoryItem(),
+        is_main_frame, document_loader->GetNavigationType());
   }
   return default_transition;
 }
@@ -4758,8 +4771,8 @@ void RenderFrameImpl::DidCommitProvisionalLoad(
         blink::mojom::CommitResult::Ok);
   }
 
-  ui::PageTransition transition = GetTransitionType(frame_->GetDocumentLoader(),
-                                                    frame_, true /* loading */);
+  ui::PageTransition transition = GetTransitionType(
+      frame_->GetDocumentLoader(), IsMainFrame(), true /* loading */);
 
   DidCommitNavigationInternal(
       item, commit_type, false /* was_within_same_document */, transition,
@@ -5026,8 +5039,8 @@ void RenderFrameImpl::DidFinishSameDocumentNavigation(
     data->set_navigation_state(NavigationState::CreateContentInitiated());
   data->navigation_state()->set_was_within_same_document(true);
 
-  ui::PageTransition transition = GetTransitionType(frame_->GetDocumentLoader(),
-                                                    frame_, true /* loading */);
+  ui::PageTransition transition = GetTransitionType(
+      frame_->GetDocumentLoader(), IsMainFrame(), true /* loading */);
   DidCommitNavigationInternal(item, commit_type,
                               // was_within_same_document
                               true, transition,
@@ -5235,30 +5248,25 @@ void RenderFrameImpl::FrameRectsChanged(const blink::WebRect& frame_rect) {
 }
 
 void RenderFrameImpl::WillSendRequest(blink::WebURLRequest& request) {
-  WillSendRequestInternal(request, WebURLRequestToResourceType(request));
+  WebDocumentLoader* document_loader = frame_->GetDocumentLoader();
+  WillSendRequestInternal(
+      request, WebURLRequestToResourceType(request),
+      DocumentState::FromDocumentLoader(document_loader),
+      GetTransitionType(document_loader, IsMainFrame(), false /* loading */));
 }
 
-void RenderFrameImpl::WillSendRequestInternal(blink::WebURLRequest& request,
-                                              ResourceType resource_type) {
+void RenderFrameImpl::WillSendRequestInternal(
+    blink::WebURLRequest& request,
+    ResourceType resource_type,
+    DocumentState* document_state,
+    ui::PageTransition transition_type) {
   if (render_view_->renderer_preferences_.enable_do_not_track)
     request.SetHttpHeaderField(blink::WebString::FromUTF8(kDoNotTrackHeader),
                                "1");
 
-  WebDocumentLoader* provisional_document_loader =
-      frame_->GetProvisionalDocumentLoader();
-  WebDocumentLoader* document_loader = provisional_document_loader
-                                           ? provisional_document_loader
-                                           : frame_->GetDocumentLoader();
   InternalDocumentStateData* internal_data =
-      InternalDocumentStateData::FromDocumentLoader(document_loader);
+      InternalDocumentStateData::FromDocumentState(document_state);
   NavigationState* navigation_state = internal_data->navigation_state();
-  ui::PageTransition transition_type =
-      GetTransitionType(document_loader, frame_, false /* loading */);
-  if (provisional_document_loader &&
-      provisional_document_loader->IsClientRedirect()) {
-    transition_type = ui::PageTransitionFromInt(
-        transition_type | ui::PAGE_TRANSITION_CLIENT_REDIRECT);
-  }
 
   ApplyFilePathAlias(&request);
   GURL new_url;
@@ -6509,7 +6517,7 @@ void RenderFrameImpl::BeginNavigation(
 
     // Everything else (does not require networking, not an empty document)
     // will be committed asynchronously in the renderer.
-    if (!CreatePlaceholderDocumentLoader(*info))
+    if (!frame_->CreatePlaceholderDocumentLoader(*info, BuildDocumentState()))
       return;
     sync_navigation_callback_.Reset(
         base::BindOnce(&RenderFrameImpl::CommitSyncNavigation,
@@ -7045,15 +7053,14 @@ std::unique_ptr<base::DictionaryValue> GetDevToolsInitiator(
 }
 }  // namespace
 
-bool RenderFrameImpl::CreatePlaceholderDocumentLoader(
-    const blink::WebNavigationInfo& info) {
-  return frame_->CreatePlaceholderDocumentLoader(info, BuildDocumentState());
-}
-
 void RenderFrameImpl::BeginNavigationInternal(
     std::unique_ptr<blink::WebNavigationInfo> info) {
-  if (!CreatePlaceholderDocumentLoader(*info))
+  std::unique_ptr<DocumentState> document_state_owned = BuildDocumentState();
+  DocumentState* document_state = document_state_owned.get();
+  if (!frame_->CreatePlaceholderDocumentLoader(
+          *info, std::move(document_state_owned))) {
     return;
+  }
 
   browser_side_navigation_pending_ = true;
   browser_side_navigation_pending_url_ = info->url_request.Url();
@@ -7067,6 +7074,15 @@ void RenderFrameImpl::BeginNavigationInternal(
   else
     request.SetSiteForCookies(frame_document.SiteForCookies());
 
+  ui::PageTransition transition_type = GetTransitionType(
+      ui::PAGE_TRANSITION_LINK,
+      info->frame_load_type == WebFrameLoadType::kReplaceCurrentItem,
+      IsMainFrame(), info->navigation_type);
+  if (info->is_client_redirect) {
+    transition_type = ui::PageTransitionFromInt(
+        transition_type | ui::PAGE_TRANSITION_CLIENT_REDIRECT);
+  }
+
   // Note: At this stage, the goal is to apply all the modifications the
   // renderer wants to make to the request, and then send it to the browser, so
   // that the actual network request can be started. Ideally, all such
@@ -7077,18 +7093,13 @@ void RenderFrameImpl::BeginNavigationInternal(
   // TODO(clamy): Apply devtools override.
   // TODO(clamy): Make sure that navigation requests are not modified somewhere
   // else in blink.
-  WillSendRequestInternal(request, frame_->Parent() ? RESOURCE_TYPE_SUB_FRAME
-                                                    : RESOURCE_TYPE_MAIN_FRAME);
+  WillSendRequestInternal(
+      request,
+      frame_->Parent() ? RESOURCE_TYPE_SUB_FRAME : RESOURCE_TYPE_MAIN_FRAME,
+      document_state, transition_type);
 
-  // Update the transition type of the request for client side redirects.
   if (!info->url_request.GetExtraData())
     info->url_request.SetExtraData(std::make_unique<RequestExtraData>());
-  if (info->is_client_redirect) {
-    RequestExtraData* extra_data =
-        static_cast<RequestExtraData*>(info->url_request.GetExtraData());
-    extra_data->set_transition_type(ui::PageTransitionFromInt(
-        extra_data->transition_type() | ui::PAGE_TRANSITION_CLIENT_REDIRECT));
-  }
 
   // TODO(clamy): Same-document navigations should not be sent back to the
   // browser.
