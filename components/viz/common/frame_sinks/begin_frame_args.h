@@ -86,6 +86,12 @@ struct VIZ_COMMON_EXPORT BeginFrameArgs {
     return base::TimeDelta::FromMicroseconds(16666);
   }
 
+  // This is the preferred interval to use when the producer can animate at the
+  // max interval supported by the Display.
+  static constexpr base::TimeDelta MinInterval() {
+    return base::TimeDelta::Min();
+  }
+
   // This is a hard-coded deadline adjustment used by the display compositor.
   // Using 1/3 of the vsync as the default adjustment gives the display
   // compositor the last 1/3 of a frame to produce output, the client impl

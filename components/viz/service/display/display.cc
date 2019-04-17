@@ -188,6 +188,9 @@ void Display::Initialize(DisplayClient* client,
   if (output_surface_->software_device())
     output_surface_->software_device()->BindToClient(this);
 
+  frame_rate_decider_ =
+      std::make_unique<FrameRateDecider>(surface_manager_, this);
+
   InitializeRenderer(enable_shared_images);
 
   // This depends on assumptions that Display::Initialize will happen on the
@@ -395,10 +398,15 @@ bool Display::DrawAndSwap() {
       resource_provider_.get());
   base::ElapsedTimer aggregate_timer;
   const base::TimeTicks now_time = aggregate_timer.Begin();
-  CompositorFrame frame = aggregator_->Aggregate(
-      current_surface_id_,
-      scheduler_ ? scheduler_->current_frame_display_time() : now_time,
-      ++swapped_trace_id_);
+  CompositorFrame frame;
+  {
+    FrameRateDecider::ScopedAggregate scoped_aggregate(
+        frame_rate_decider_.get());
+    frame = aggregator_->Aggregate(
+        current_surface_id_,
+        scheduler_ ? scheduler_->current_frame_display_time() : now_time,
+        ++swapped_trace_id_);
+  }
   UMA_HISTOGRAM_COUNTS_1M("Compositing.SurfaceAggregator.AggregateUs",
                           aggregate_timer.Elapsed().InMicroseconds());
 
@@ -879,6 +887,23 @@ void Display::RunDrawCallbacks() {
         surface->SendAckToClient();
     }
   }
+}
+
+void Display::SetPreferredFrameInterval(base::TimeDelta interval) {
+  // TODO(khushalsagar): Plumb this to the |client_| and hook it up to the
+  // platform API for toggling the preferred setting.
+}
+
+base::TimeDelta Display::GetPreferredFrameIntervalForFrameSinkId(
+    const FrameSinkId& id) {
+  // TODO(khushalsagar): Hook up with the preferred setting received from the
+  // media code.
+  return base::TimeDelta::Max();
+}
+
+void Display::SetSupportedFrameIntervals(
+    std::vector<base::TimeDelta> intervals) {
+  frame_rate_decider_->SetSupportedFrameIntervals(std::move(intervals));
 }
 
 }  // namespace viz

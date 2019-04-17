@@ -5,13 +5,25 @@
 #ifndef COMPONENTS_VIZ_SERVICE_SURFACES_SURFACE_CLIENT_H_
 #define COMPONENTS_VIZ_SERVICE_SURFACES_SURFACE_CLIENT_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
 #include "components/viz/service/viz_service_export.h"
 
+namespace base {
+class TimeTicks;
+}  // namespace base
+
+namespace gfx {
+class Rect;
+}  // namespace gfx
+
 namespace viz {
 struct ReturnedResource;
+class CompositorFrame;
+class CopyOutputRequest;
+class LocalSurfaceId;
 class Surface;
 struct TransferableResource;
 
