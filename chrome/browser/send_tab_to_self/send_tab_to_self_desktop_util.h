@@ -15,6 +15,7 @@ class WebContents;
 }
 
 namespace gfx {
+class Image;
 class ImageSkia;
 }
 
@@ -40,6 +41,9 @@ void CreateNewEntry(content::WebContents* tab, const GURL& link_url = GURL());
 
 // Get the icon for send tab to self menu item.
 gfx::ImageSkia* GetImageSkia();
+
+// Get the image for send tab to self notification.
+const gfx::Image GetImageForNotification();
 
 // Record whether the user click to send a tab or link when send tab to self
 // entry point is shown in the context menu.
