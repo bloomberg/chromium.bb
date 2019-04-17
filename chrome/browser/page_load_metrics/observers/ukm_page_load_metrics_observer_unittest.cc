@@ -1020,6 +1020,29 @@ TEST_F(UkmPageLoadMetricsObserverTest, LayoutStabilitySubframeAggregation) {
   EXPECT_THAT(histogram_tester().GetAllSamples(
                   "PageLoad.Experimental.LayoutStability.JankScore"),
               testing::ElementsAre(base::Bucket(25, 1)));
+
+  // Main-frame jank includes only the jank in the main frame.
+  EXPECT_THAT(histogram_tester().GetAllSamples(
+                  "PageLoad.Experimental.LayoutStability.JankScore.MainFrame"),
+              testing::ElementsAre(base::Bucket(10, 1)));
+
+  const auto& ukm_recorder = test_ukm_recorder();
+  std::map<ukm::SourceId, ukm::mojom::UkmEntryPtr> merged_entries =
+      ukm_recorder.GetMergedEntriesByName(PageLoad::kEntryName);
+  EXPECT_EQ(1ul, merged_entries.size());
+
+  for (const auto& kv : merged_entries) {
+    const ukm::mojom::UkmEntry* ukm_entry = kv.second.get();
+    ukm_recorder.ExpectEntrySourceHasUrl(ukm_entry, GURL(kTestUrl1));
+
+    // Check total jank in UKM.
+    ukm_recorder.ExpectEntryMetric(
+        ukm_entry, PageLoad::kLayoutStability_JankScoreName, 250);
+
+    // Check main-frame-only jank in UKM.
+    ukm_recorder.ExpectEntryMetric(
+        ukm_entry, PageLoad::kLayoutStability_JankScore_MainFrameName, 100);
+  }
 }
 
 class TestOfflinePreviewsUkmPageLoadMetricsObserver

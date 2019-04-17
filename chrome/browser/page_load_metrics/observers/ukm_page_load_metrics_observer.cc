@@ -80,6 +80,16 @@ base::Optional<HttpProtocolScheme> ConvertConnectionInfoToHttpProtocolScheme(
   }
 }
 
+int64_t LayoutJankUkmValue(float jank_score) {
+  // Report (jank_score * 100) as an int in the range [0, 1000].
+  return static_cast<int>(roundf(std::min(jank_score, 10.0f) * 100.0f));
+}
+
+int32_t LayoutJankUmaValue(float jank_score) {
+  // Report (jank_score * 10) as an int in the range [0, 100].
+  return static_cast<int>(roundf(std::min(jank_score, 10.0f) * 10.0f));
+}
+
 }  // namespace
 
 // static
@@ -520,19 +530,20 @@ void UkmPageLoadMetricsObserver::ReportMainResourceTimingMetrics(
 
 void UkmPageLoadMetricsObserver::ReportLayoutStability(
     const page_load_metrics::PageLoadExtraInfo& info) {
-  // Report (jank_score * 100) as an int in the range [0, 1000].
-  float jank_score = info.page_render_data.layout_jank_score;
-  int64_t ukm_value =
-      static_cast<int>(roundf(std::min(jank_score, 10.0f) * 100.0f));
+  ukm::builders::PageLoad(info.source_id)
+      .SetLayoutStability_JankScore(
+          LayoutJankUkmValue(info.page_render_data.layout_jank_score))
+      .SetLayoutStability_JankScore_MainFrame(
+          LayoutJankUkmValue(info.main_frame_render_data.layout_jank_score))
+      .Record(ukm::UkmRecorder::Get());
 
-  ukm::builders::PageLoad builder(info.source_id);
-  builder.SetLayoutStability_JankScore(ukm_value);
-  builder.Record(ukm::UkmRecorder::Get());
+  UMA_HISTOGRAM_COUNTS_100(
+      "PageLoad.Experimental.LayoutStability.JankScore",
+      LayoutJankUmaValue(info.page_render_data.layout_jank_score));
 
-  int32_t uma_value =
-      static_cast<int>(roundf(std::min(jank_score, 10.0f) * 10.0f));
-  UMA_HISTOGRAM_COUNTS_100("PageLoad.Experimental.LayoutStability.JankScore",
-                           uma_value);
+  UMA_HISTOGRAM_COUNTS_100(
+      "PageLoad.Experimental.LayoutStability.JankScore.MainFrame",
+      LayoutJankUmaValue(info.main_frame_render_data.layout_jank_score));
 }
 
 base::Optional<int64_t>

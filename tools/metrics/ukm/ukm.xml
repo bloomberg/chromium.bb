@@ -147,7 +147,8 @@ be describing additional metrics about the same event.
   <metric name="SubFrame.LayoutStability.JankScore">
     <summary>
       Measures the amount of layout jank (bit.ly/lsm-explainer) that has
-      occurred during the session, in the AMP subframe.
+      occurred during the session, in the AMP subframe. This metric's integral
+      value is 100x the fractional jank score described in the explainer.
     </summary>
   </metric>
   <metric name="SubFrame.MainFrameToSubFrameNavigationDelta">
@@ -4699,7 +4700,16 @@ be describing additional metrics about the same event.
   <metric name="LayoutStability.JankScore">
     <summary>
       Measures the amount of layout jank (bit.ly/lsm-explainer) that has
-      occurred during the session.
+      occurred on the page (including all subframes) during the session. This
+      metric's integral value is 100x the fractional jank score described in the
+      explainer.
+    </summary>
+  </metric>
+  <metric name="LayoutStability.JankScore.MainFrame">
+    <summary>
+      Measures the amount of layout jank (bit.ly/lsm-explainer) that has
+      occurred in the main frame during the session. This metric's integral
+      value is 100x the fractional jank score described in the explainer.
     </summary>
   </metric>
   <metric name="MainDocumentSequenceNumber">
