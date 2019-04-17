@@ -191,17 +191,12 @@ class ScopedTaskEnvironment::MockTimeDomain
     // We don't need to call ReclaimMemory here because
     // DelayTillNextTask will have dealt with cancelled delayed tasks for us.
     Optional<TimeTicks> run_time = NextScheduledRunTime();
-    // If an immediate task came in racily from another thread, resume work
-    // without advancing time. This can happen regardless of whether the main
-    // thread has more delayed tasks scheduled before |allow_advance_until_|. If
-    // there are such tasks, auto-advancing time all the way would be incorrect.
-    // In both cases, resuming is fine.
-    if (run_time == now_ticks_)
-      return true;
-
-    if (!run_time) {
-      // We've run out of tasks. ScopedTaskEnvironment::FastForwardBy requires
-      // the remaining virtual time to be consumed upon reaching idle.
+    if (!run_time || run_time == now_ticks_) {
+      // We've run out of tasks (or an immediate task came in racily from
+      // another thread after reaching idle, ignore it, it will be processed in
+      // the next run as-if it arrived slightly later).
+      // ScopedTaskEnvironment::FastForwardBy requires the remaining virtual
+      // time to be consumed upon reaching idle.
       if (now_ticks_ < allow_advance_until_ && !allow_advance_until_.is_max())
         SetTime(allow_advance_until_);
       return false;
@@ -442,11 +437,6 @@ ScopedTaskEnvironment::~ScopedTaskEnvironment() {
 sequence_manager::TimeDomain* ScopedTaskEnvironment::GetTimeDomain() const {
   return mock_time_domain_ ? mock_time_domain_.get()
                            : sequence_manager_->GetRealTimeDomain();
-}
-
-void ScopedTaskEnvironment::SetAllowTimeToAutoAdvanceUntilForTesting(
-    TimeTicks advance_until) {
-  mock_time_domain_->SetAllowTimeToAutoAdvanceUntil(advance_until);
 }
 
 sequence_manager::SequenceManager* ScopedTaskEnvironment::sequence_manager()
