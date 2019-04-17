@@ -217,7 +217,7 @@ void RenderWidgetHostNSViewBridgeLocal::OnDisplayMetricsChanged(
 }
 
 void RenderWidgetHostNSViewBridgeLocal::DisplayCursor(const WebCursor& cursor) {
-  WebCursor non_const_cursor = cursor;
+  WebCursor non_const_cursor(cursor);
   [cocoa_view_ updateCursor:non_const_cursor.GetNativeCursor()];
 }
 

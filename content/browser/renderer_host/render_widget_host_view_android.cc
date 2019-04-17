@@ -530,10 +530,8 @@ int RenderWidgetHostViewAndroid::GetMouseWheelMinimumGranularity() const {
 }
 
 void RenderWidgetHostViewAndroid::UpdateCursor(const WebCursor& cursor) {
-  CursorInfo cursor_info;
-  cursor.GetCursorInfo(&cursor_info);
-  view_.OnCursorChanged(cursor_info.type, cursor_info.custom_image,
-                        cursor_info.hotspot);
+  const CursorInfo& info = cursor.info();
+  view_.OnCursorChanged(info.type, info.custom_image, info.hotspot);
 }
 
 void RenderWidgetHostViewAndroid::SetIsLoading(bool is_loading) {

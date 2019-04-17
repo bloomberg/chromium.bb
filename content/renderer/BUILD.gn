@@ -71,8 +71,6 @@ target(link_target_type, "renderer") {
     "context_menu_params_builder.h",
     "crash_helpers.cc",
     "crash_helpers.h",
-    "cursor_utils.cc",
-    "cursor_utils.h",
     "dom_automation_controller.cc",
     "dom_automation_controller.h",
     "dom_storage/dom_storage_cached_area.cc",

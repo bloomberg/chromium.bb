@@ -504,11 +504,10 @@ void RenderWidgetInputHandler::DidOverscrollFromBlink(
 }
 
 bool RenderWidgetInputHandler::DidChangeCursor(const WebCursor& cursor) {
-  if (!current_cursor_ || !current_cursor_->IsEqual(cursor)) {
-    current_cursor_ = cursor;
-    return true;
-  }
-  return false;
+  if (current_cursor_.has_value() && current_cursor_.value() == cursor)
+    return false;
+  current_cursor_ = cursor;
+  return true;
 }
 
 bool RenderWidgetInputHandler::ProcessTouchAction(
