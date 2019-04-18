@@ -3273,8 +3273,11 @@ if (enable_java_templates) {
 
       # Specify native libraries and placeholders.
       if (defined(invoker.native_switches)) {
+        _native_switches = invoker.native_switches
+
         assert(invoker.loadable_modules_if_32_bit != [])
-        assert(invoker.loadable_modules_if_64_bit != [])
+        assert(!_native_switches.is_64_bit_browser ||
+               invoker.loadable_modules_if_64_bit != [])
 
         # Decision logic: Assign decision variables:
         #   loadable_modules_to_use: Either |loadable_modules_if_64_bit| or
@@ -3283,7 +3286,6 @@ if (enable_java_templates) {
         #     assigned as primary ABI or secondary ABI.
         #   native_need_placeholder: Whether a placeholder is needed for the
         #     complementary ABI to the library.
-        _native_switches = invoker.native_switches
         if (_native_switches.is_64_bit_browser) {
           _loadable_modules_to_use = invoker.loadable_modules_if_64_bit
           _native_is_primary =
@@ -3291,6 +3293,9 @@ if (enable_java_templates) {
           _native_need_placeholder =
               build_apk_secondary_abi && _native_switches.include_32_bit_webview
         } else {
+          if (defined(invoker.loadable_modules_if_64_bit)) {
+            not_needed(invoker, [ "loadable_modules_if_64_bit" ])
+          }
           _loadable_modules_to_use = invoker.loadable_modules_if_32_bit
           _native_is_primary =
               !build_apk_secondary_abi || !android_64bit_target_cpu

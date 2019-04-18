@@ -1098,8 +1098,12 @@ template("libchrome_apk_or_bundle_tmpl") {
 
     # Include appropriate factories for native feature modules if necessary.
     if (enable_vr) {
-      if (modularize_vr_native && invoker.is_bundle) {
-        public_deps += [ "//chrome/browser/android/vr:ui_module_factory" ]
+      if (defined(invoker.is_bundle) && invoker.is_bundle) {
+        if (modularize_vr_native) {
+          public_deps += [ "//chrome/browser/android/vr:ui_module_factory" ]
+        } else {
+          deps += [ "//chrome/browser/android/vr:ui_module_dummy_factory" ]
+        }
       } else {
         deps += [ "//chrome/browser/android/vr:ui_default_factory" ]
       }
@@ -1410,8 +1414,12 @@ template("libmonochrome_apk_or_bundle_tmpl") {
 
     # Include appropriate factories for native feature modules if necessary.
     if (enable_vr) {
-      if (modularize_vr_native && invoker.is_bundle) {
-        public_deps += [ "//chrome/browser/android/vr:ui_module_factory" ]
+      if (defined(invoker.is_bundle) && invoker.is_bundle) {
+        if (modularize_vr_native) {
+          public_deps += [ "//chrome/browser/android/vr:ui_module_factory" ]
+        } else {
+          deps += [ "//chrome/browser/android/vr:ui_module_dummy_factory" ]
+        }
       } else {
         deps += [ "//chrome/browser/android/vr:ui_default_factory" ]
       }
@@ -2014,6 +2022,10 @@ if (enable_vr) {
     version_code = chrome_modern_version_code
     version_name = chrome_version_name
     uncompress_shared_libraries = chromium_linker_supported
+    native_switches = {
+      is_64_bit_browser = android_64bit_target_cpu
+      include_32_bit_webview = false
+    }
   }
 }
 
@@ -2105,7 +2117,7 @@ template("monochrome_or_trichrome_public_bundle_tmpl") {
     }
   }
 
-  if (enable_arcore) {
+  if (enable_arcore || enable_vr) {
     _native_switches = {
       is_64_bit_browser =
           defined(invoker.is_64_bit_browser) && invoker.is_64_bit_browser
@@ -2130,6 +2142,7 @@ template("monochrome_or_trichrome_public_bundle_tmpl") {
       manifest_package = manifest_package
       module_name = "Vr" + _bundle_name
       base_module_target = ":$_base_module_target_name"
+      native_switches = _native_switches
       uncompress_shared_libraries = true
       version_code = _version_code
       version_name = _version_name
