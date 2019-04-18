@@ -6334,5 +6334,8 @@ crbug.com/953591 [ Win ] transforms/matrix-02.html [ Pass Failure ]
 crbug.com/938884 [ Win7 ] http/tests/devtools/elements/styles-3/styles-add-blank-property.js [ Timeout Pass ]
 crbug.com/938884 [ Win7 ] virtual/nobinary-for-devtools/http/tests/devtools/elements/styles-3/styles-add-blank-property.js [ Timeout Pass ]
 
-# Sheruff 2019-04-18
-crbug.com/953994 http/tests/security/svg-image-with-cached-remote-image.html [ Crash Pass ]
+# Sheriff 2019-04-18
+crbug.com/954297 [ Linux Win ] http/tests/devtools/oopif/oopif-presentation-console-messages.js [ Pass Crash Timeout ]
+crbug.com/954297 [ Linux Win ] virtual/nobinary-for-devtools/http/tests/devtools/oopif/oopif-presentation-console-messages.js [ Pass Crash Timeout ]
+crbug.com/953994 [ Linux Win ] http/tests/security/svg-image-with-cached-remote-image.html [ Pass Crash ]
+crbug.com/953994 [ Linux Win ] virtual/outofblink-cors/http/tests/security/svg-image-with-cached-remote-image.html [ Pass Crash ]
