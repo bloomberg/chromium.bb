@@ -57,6 +57,9 @@ class NigoriModelTypeProcessor : public ModelTypeProcessor,
   // Returns true if the handshake with sync thread is complete.
   bool IsConnected() const;
 
+  // Nudges worker if there are any local changes to be committed.
+  void NudgeForCommitIfNeeded() const;
+
   // The bridge owns this processor instance so the pointer should never become
   // invalid.
   NigoriSyncBridge* bridge_;
