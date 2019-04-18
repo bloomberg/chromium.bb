@@ -11,10 +11,7 @@
 namespace blink {
 
 class MediaControlsTouchlessPlayButtonElement
-    : public HTMLDivElement,
-      public MediaControlsTouchlessElement {
-  USING_GARBAGE_COLLECTED_MIXIN(MediaControlsTouchlessPlayButtonElement);
-
+    : public MediaControlsTouchlessElement {
  public:
   MediaControlsTouchlessPlayButtonElement(MediaControlsTouchlessImpl&);
 

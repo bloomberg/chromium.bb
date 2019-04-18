@@ -11,10 +11,7 @@
 namespace blink {
 
 class MediaControlsTouchlessTimeDisplayElement
-    : public HTMLDivElement,
-      public MediaControlsTouchlessElement {
-  USING_GARBAGE_COLLECTED_MIXIN(MediaControlsTouchlessTimeDisplayElement);
-
+    : public MediaControlsTouchlessElement {
  public:
   explicit MediaControlsTouchlessTimeDisplayElement(
       MediaControlsTouchlessImpl&);

@@ -14,8 +14,7 @@ namespace blink {
 MediaControlsTouchlessTimeDisplayElement::
     MediaControlsTouchlessTimeDisplayElement(
         MediaControlsTouchlessImpl& media_controls)
-    : HTMLDivElement(media_controls.GetDocument()),
-      MediaControlsTouchlessElement(media_controls),
+    : MediaControlsTouchlessElement(media_controls),
       current_time_(0.0),
       duration_(0.0) {
   SetShadowPseudoId(
@@ -34,7 +33,6 @@ void MediaControlsTouchlessTimeDisplayElement::OnDurationChange() {
 }
 
 void MediaControlsTouchlessTimeDisplayElement::Trace(blink::Visitor* visitor) {
-  HTMLDivElement::Trace(visitor);
   MediaControlsTouchlessElement::Trace(visitor);
 }
 

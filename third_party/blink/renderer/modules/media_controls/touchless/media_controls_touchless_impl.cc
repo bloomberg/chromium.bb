@@ -22,9 +22,8 @@
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_elements_helper.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_orientation_lock_delegate.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_text_track_manager.h"
+#include "third_party/blink/renderer/modules/media_controls/touchless/elements/media_controls_touchless_bottom_container_element.h"
 #include "third_party/blink/renderer/modules/media_controls/touchless/elements/media_controls_touchless_overlay_element.h"
-#include "third_party/blink/renderer/modules/media_controls/touchless/elements/media_controls_touchless_time_display_element.h"
-#include "third_party/blink/renderer/modules/media_controls/touchless/elements/media_controls_touchless_timeline_element.h"
 #include "third_party/blink/renderer/modules/media_controls/touchless/media_controls_touchless_media_event_listener.h"
 #include "third_party/blink/renderer/modules/media_controls/touchless/media_controls_touchless_resource_loader.h"
 #include "third_party/blink/renderer/platform/keyboard_codes.h"
@@ -43,12 +42,6 @@ constexpr int kNumberOfSecondsToJumpForTouchless = 10;
 // Amount of volume to change when press up/down arrow.
 constexpr double kVolumeToChangeForTouchless = 0.05;
 
-// Amount of time that media controls are visible.
-constexpr WTF::TimeDelta kTimeToHideMediaControls =
-    TimeDelta::FromMilliseconds(3000);
-
-const char kTransparentCSSClass[] = "transparent";
-
 }  // namespace
 
 enum class MediaControlsTouchlessImpl::ArrowDirection {
@@ -62,16 +55,14 @@ MediaControlsTouchlessImpl::MediaControlsTouchlessImpl(
     HTMLMediaElement& media_element)
     : HTMLDivElement(media_element.GetDocument()),
       MediaControls(media_element),
+      overlay_(nullptr),
+      bottom_container_(nullptr),
       media_event_listener_(
           MakeGarbageCollected<MediaControlsTouchlessMediaEventListener>(
               media_element)),
       text_track_manager_(
           MakeGarbageCollected<MediaControlsTextTrackManager>(media_element)),
-      orientation_lock_delegate_(nullptr),
-      hide_media_controls_timer_(
-          media_element.GetDocument().GetTaskRunner(TaskType::kInternalMedia),
-          this,
-          &MediaControlsTouchlessImpl::HideMediaControlsTimerFired) {
+      orientation_lock_delegate_(nullptr) {
   SetShadowPseudoId(AtomicString("-internal-media-controls-touchless"));
   media_event_listener_->AddObserver(this);
 }
@@ -81,23 +72,19 @@ MediaControlsTouchlessImpl* MediaControlsTouchlessImpl::Create(
     ShadowRoot& shadow_root) {
   MediaControlsTouchlessImpl* controls =
       MakeGarbageCollected<MediaControlsTouchlessImpl>(media_element);
-  MediaControlsTouchlessOverlayElement* overlay_element =
+  controls->overlay_ =
       MakeGarbageCollected<MediaControlsTouchlessOverlayElement>(*controls);
+  controls->bottom_container_ =
+      MakeGarbageCollected<MediaControlsTouchlessBottomContainerElement>(
+          *controls);
 
-  MediaControlsTouchlessTimeDisplayElement* time_display_element =
-      MakeGarbageCollected<MediaControlsTouchlessTimeDisplayElement>(*controls);
-  MediaControlsTouchlessTimelineElement* timeline_element =
-      MakeGarbageCollected<MediaControlsTouchlessTimelineElement>(*controls);
-
-  controls->ParserAppendChild(overlay_element);
-
-  Element* bottom_container = MediaControlElementsHelper::CreateDiv(
-      "-internal-media-controls-touchless-bottom-container", controls);
-  bottom_container->ParserAppendChild(time_display_element);
-  bottom_container->ParserAppendChild(timeline_element);
+  controls->ParserAppendChild(controls->overlay_);
+  controls->ParserAppendChild(controls->bottom_container_);
 
   // Controls start hidden.
-  controls->MakeTransparent();
+  controls->overlay_->MakeTransparent();
+  if (!media_element.paused())
+    controls->bottom_container_->MakeTransparent();
 
   if (RuntimeEnabledFeatures::VideoFullscreenOrientationLockEnabled() &&
       media_element.IsHTMLVideoElement()) {
@@ -135,20 +122,6 @@ void MediaControlsTouchlessImpl::RemovedFrom(ContainerNode& insertion_point) {
     orientation_lock_delegate_->Detach();
 }
 
-void MediaControlsTouchlessImpl::MakeOpaque() {
-  // show controls
-  classList().Remove(kTransparentCSSClass);
-
-  if (hide_media_controls_timer_.IsActive())
-    StopHideMediaControlsTimer();
-  StartHideMediaControlsTimer();
-}
-
-void MediaControlsTouchlessImpl::MakeTransparent() {
-  // hide controls
-  classList().Add(kTransparentCSSClass);
-}
-
 void MediaControlsTouchlessImpl::MaybeShow() {
   RemoveInlineStyleProperty(CSSPropertyID::kDisplay);
 }
@@ -162,28 +135,26 @@ MediaControlsTouchlessImpl::MediaEventListener() const {
   return *media_event_listener_;
 }
 
-void MediaControlsTouchlessImpl::HideMediaControlsTimerFired(TimerBase*) {
-  MakeTransparent();
-}
-
-void MediaControlsTouchlessImpl::StartHideMediaControlsTimer() {
-  hide_media_controls_timer_.StartOneShot(kTimeToHideMediaControls, FROM_HERE);
-}
-
-void MediaControlsTouchlessImpl::StopHideMediaControlsTimer() {
-  hide_media_controls_timer_.Stop();
-}
-
 void MediaControlsTouchlessImpl::OnFocusIn() {
-  if (MediaElement().ShouldShowControls())
-    MakeOpaque();
+  if (MediaElement().ShouldShowControls()) {
+    overlay_->MakeOpaque(true);
+    bottom_container_->MakeOpaque(!MediaElement().paused());
+  }
+}
+
+void MediaControlsTouchlessImpl::OnPlay() {
+  bottom_container_->MakeOpaque(true);
+}
+
+void MediaControlsTouchlessImpl::OnPause() {
+  bottom_container_->MakeOpaque(false);
 }
 
 void MediaControlsTouchlessImpl::OnKeyDown(KeyboardEvent* event) {
   bool handled = true;
   switch (event->keyCode()) {
     case VKEY_RETURN:
-      MakeOpaque();
+      overlay_->MakeOpaque(true);
       MediaElement().TogglePlayState();
       break;
     case VKEY_LEFT:
@@ -364,10 +335,14 @@ void MediaControlsTouchlessImpl::HandleBottomButtonPress() {
 }
 
 void MediaControlsTouchlessImpl::HandleLeftButtonPress() {
+  if (!MediaElement().paused())
+    bottom_container_->MakeOpaque(true);
   MaybeJump(kNumberOfSecondsToJumpForTouchless * -1);
 }
 
 void MediaControlsTouchlessImpl::HandleRightButtonPress() {
+  if (!MediaElement().paused())
+    bottom_container_->MakeOpaque(true);
   MaybeJump(kNumberOfSecondsToJumpForTouchless);
 }
 
@@ -384,6 +359,8 @@ void MediaControlsTouchlessImpl::MaybeJump(int seconds) {
 }
 
 void MediaControlsTouchlessImpl::Trace(blink::Visitor* visitor) {
+  visitor->Trace(bottom_container_);
+  visitor->Trace(overlay_);
   visitor->Trace(media_event_listener_);
   visitor->Trace(text_track_manager_);
   visitor->Trace(orientation_lock_delegate_);
