@@ -223,7 +223,10 @@ jumbo_component("aura") {
   }
 
   if (is_win) {
-    libs = [ "wtsapi32.lib" ]
+    libs = [
+      "wtsapi32.lib",
+      "dwmapi.lib",
+    ]
   }
 
   if (use_ozone) {
@@ -413,6 +416,7 @@ test("aura_unittests") {
 
   if (is_win) {
     sources += [ "native_window_occlusion_tracker_unittest.cc" ]
+    libs = [ "dwmapi.lib" ]
   }
 
   deps = [

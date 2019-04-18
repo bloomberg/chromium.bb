@@ -16,6 +16,8 @@
 #include "base/win/windows_version.h"
 #include "ui/aura/window_tree_host.h"
 
+#include "dwmapi.h"
+
 namespace aura {
 
 namespace {
@@ -158,6 +160,17 @@ bool NativeWindowOcclusionTrackerWin::IsWindowVisibleAndFullyOpaque(
   base::win::ScopedRegion region(CreateRectRgn(0, 0, 0, 0));
   if (GetWindowRgn(hwnd, region.get()) == COMPLEXREGION)
     return false;
+
+  // Windows 10 has cloaked windows, windows with WS_VISIBLE attribute but
+  // not displayed. explorer.exe, in particular has one that's the
+  // size of the desktop. It's usually behind Chrome windows in the z-order,
+  // but using a remote desktop can move it up in the z-order. So, ignore them.
+  DWORD reason;
+  if (SUCCEEDED(DwmGetWindowAttribute(hwnd, DWMWA_CLOAKED, &reason,
+                                      sizeof(reason))) &&
+      reason != 0) {
+    return false;
+  }
 
   RECT win_rect;
   // Filter out windows that take up zero area. The call to GetWindowRect is one
