@@ -80,7 +80,7 @@ class MediaClientTest : public BrowserWithTestWindowTest {
   void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
 
-    alt_window_.reset(CreateBrowserWindow());
+    alt_window_ = CreateBrowserWindow();
     alt_browser_.reset(CreateBrowser(alt_profile(), Browser::TYPE_TABBED, false,
                                      alt_window_.get()));
 

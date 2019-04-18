@@ -640,8 +640,8 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
     BrowserWithTestWindowTest::TearDown();
   }
 
-  BrowserWindow* CreateBrowserWindow() override {
-    return CreateTestBrowserWindowAura();
+  std::unique_ptr<BrowserWindow> CreateBrowserWindow() override {
+    return std::unique_ptr<TestBrowserWindow>(CreateTestBrowserWindowAura());
   }
 
   std::unique_ptr<Browser> CreateBrowserWithTestWindowForProfile(

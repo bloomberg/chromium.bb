@@ -17,7 +17,7 @@ class MediaRouterWebUITest : public BrowserWithTestWindowTest {
  protected:
   // BrowserWithTestWindowTest:
   TestingProfile::TestingFactories GetTestingFactories() override;
-  BrowserWindow* CreateBrowserWindow() override;
+  std::unique_ptr<BrowserWindow> CreateBrowserWindow() override;
 
  private:
   // When this is set to true, MockMediaRouterUIService is instantiated.

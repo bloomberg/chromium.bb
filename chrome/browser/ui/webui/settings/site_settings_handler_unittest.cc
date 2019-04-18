@@ -1177,7 +1177,7 @@ class SiteSettingsHandlerInfobarTest : public BrowserWithTestWindowTest {
     handler()->AllowJavascript();
     web_ui()->ClearTrackedCalls();
 
-    window2_ = base::WrapUnique(CreateBrowserWindow());
+    window2_ = CreateBrowserWindow();
     browser2_ = base::WrapUnique(
         CreateBrowser(profile(), browser()->type(), false, window2_.get()));
 

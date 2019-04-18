@@ -137,8 +137,8 @@ class DiceSigninUiUtilTest : public BrowserWithTestWindowTest {
   }
 
   // BrowserWithTestWindowTest:
-  BrowserWindow* CreateBrowserWindow() override {
-    return new SigninUiUtilTestBrowserWindow();
+  std::unique_ptr<BrowserWindow> CreateBrowserWindow() override {
+    return std::make_unique<SigninUiUtilTestBrowserWindow>();
   }
 
   // Returns the identity manager.

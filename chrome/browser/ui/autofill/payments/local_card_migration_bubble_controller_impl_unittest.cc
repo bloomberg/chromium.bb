@@ -93,8 +93,8 @@ class LocalCardMigrationBubbleControllerImplTest
     TestLocalCardMigrationBubbleControllerImpl::CreateForTesting(web_contents);
   }
 
-  BrowserWindow* CreateBrowserWindow() override {
-    return new LocalCardMigrationBubbleTestBrowserWindow();
+  std::unique_ptr<BrowserWindow> CreateBrowserWindow() override {
+    return std::make_unique<LocalCardMigrationBubbleTestBrowserWindow>();
   }
 
  protected:

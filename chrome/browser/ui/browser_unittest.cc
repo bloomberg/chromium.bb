@@ -286,8 +286,8 @@ class BrowserBookmarkBarTest : public BrowserWithTestWindowTest {
         ->set_browser(browser());
   }
 
-  BrowserWindow* CreateBrowserWindow() override {
-    return new BookmarkBarStateTestBrowserWindow();
+  std::unique_ptr<BrowserWindow> CreateBrowserWindow() override {
+    return std::make_unique<BookmarkBarStateTestBrowserWindow>();
   }
 
  private:

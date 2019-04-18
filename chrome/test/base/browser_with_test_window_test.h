@@ -5,6 +5,8 @@
 #ifndef CHROME_TEST_BASE_BROWSER_WITH_TEST_WINDOW_TEST_H_
 #define CHROME_TEST_BASE_BROWSER_WITH_TEST_WINDOW_TEST_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "build/build_config.h"
@@ -167,9 +169,9 @@ class BrowserWithTestWindowTest : public testing::Test {
   // method is overridden.
   virtual TestingProfile::TestingFactories GetTestingFactories();
 
-  // Creates the BrowserWindow used by this test. The caller owns the return
-  // value. Can return NULL to use the default window created by Browser.
-  virtual BrowserWindow* CreateBrowserWindow();
+  // Creates the BrowserWindow used by this test. Can return NULL to use the
+  // default window created by Browser.
+  virtual std::unique_ptr<BrowserWindow> CreateBrowserWindow();
 
   // Creates the browser given |profile|, |browser_type|, |hosted_app|, and
   // |browser_window|. The caller owns the return value.

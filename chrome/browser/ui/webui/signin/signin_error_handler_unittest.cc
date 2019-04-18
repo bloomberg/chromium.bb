@@ -102,8 +102,8 @@ class SigninErrorHandlerTest : public BrowserWithTestWindowTest {
   content::TestWebUI* web_ui() { return web_ui_.get(); }
 
   // BrowserWithTestWindowTest
-  BrowserWindow* CreateBrowserWindow() override {
-    return new DialogTestBrowserWindow;
+  std::unique_ptr<BrowserWindow> CreateBrowserWindow() override {
+    return std::make_unique<DialogTestBrowserWindow>();
   }
 
  private:
