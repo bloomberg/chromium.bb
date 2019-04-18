@@ -58,6 +58,7 @@
   "tint-gl-composited-content",
   "translate-android-manual-trigger",
   "ui-disable-partial-swap",
+  "ui-slow-animations",
   "update-menu-item-custom-summary",
   "use-angle"
 ]
