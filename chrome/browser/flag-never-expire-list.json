@@ -60,5 +60,6 @@
   "ui-disable-partial-swap",
   "ui-slow-animations",
   "update-menu-item-custom-summary",
-  "use-angle"
+  "use-angle",
+  "use-sync-sandbox"
 ]

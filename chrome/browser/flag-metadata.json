@@ -3029,7 +3029,9 @@
   {
     "name": "use-sync-sandbox",
     "owners": [ "//components/sync/OWNERS" ],
-    "expiry_milestone": 76
+    // This flag is required for testing with the related
+    // wallet-service-use-sandbox on Android.
+    "expiry_milestone": -1
   },
   {
     "name": "use-winrt-midi-api",
