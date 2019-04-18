@@ -234,6 +234,7 @@ void VideoDecoderClient::DecodeNextFragmentTask() {
 
   scoped_refptr<DecoderBuffer> bitstream_buffer = DecoderBuffer::CopyFrom(
       reinterpret_cast<const uint8_t*>(fragment_bytes.data()), fragment_size);
+  bitstream_buffer->set_timestamp(base::TimeTicks::Now().since_origin());
   VideoDecoder::DecodeCB decode_cb = BindToCurrentLoop(
       base::BindRepeating(&VideoDecoderClient::DecodeDoneTask, weak_this_));
 

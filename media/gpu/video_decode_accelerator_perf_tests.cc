@@ -59,8 +59,10 @@ struct PerformanceMetrics {
   size_t frame_decoded_count_ = 0;
   // The overall number of frames decoded per second.
   double frames_per_second_ = 0.0;
-  // The average time it took to decode a frame.
-  double avg_frame_decode_time_ms_ = 0.0;
+  // The average time between subsequent frame deliveries.
+  double avg_frame_delivery_time_ms_ = 0.0;
+  // The median time between decode start and frame delivery.
+  double median_frame_decode_time_ms_ = 0.0;
 };
 
 // The performance evaluator can be plugged into the video player to collect
@@ -85,11 +87,14 @@ class PerformanceEvaluator : public VideoFrameProcessor {
   // Start/end time of the measurement period.
   base::TimeTicks start_time_;
   base::TimeTicks end_time_;
-  // Time at which the previous frame was decoded.
-  base::TimeTicks prev_frame_decoded_time_;
 
-  // List of all frame decode times.
+  // Time at which the previous frame was delivered.
+  base::TimeTicks prev_frame_delivery_time_;
+  // List of times between subsequent frame deliveries.
+  std::vector<double> frame_delivery_times_;
+  // List of times between decode start and frame delivery.
   std::vector<double> frame_decode_times_;
+
   // Collection of various performance metrics.
   PerformanceMetrics perf_metrics_;
 };
@@ -98,15 +103,20 @@ void PerformanceEvaluator::ProcessVideoFrame(
     scoped_refptr<const VideoFrame> video_frame,
     size_t frame_index) {
   base::TimeTicks now = base::TimeTicks::Now();
-  frame_decode_times_.push_back(
-      (now - prev_frame_decoded_time_).InMillisecondsF());
-  prev_frame_decoded_time_ = now;
+
+  base::TimeDelta delivery_time = (now - prev_frame_delivery_time_);
+  frame_delivery_times_.push_back(delivery_time.InMillisecondsF());
+  prev_frame_delivery_time_ = now;
+
+  base::TimeDelta decode_time = now.since_origin() - video_frame->timestamp();
+  frame_decode_times_.push_back(decode_time.InMillisecondsF());
+
   perf_metrics_.frame_decoded_count_++;
 }
 
 void PerformanceEvaluator::StartMeasuring() {
   start_time_ = base::TimeTicks::Now();
-  prev_frame_decoded_time_ = start_time_;
+  prev_frame_delivery_time_ = start_time_;
 }
 
 void PerformanceEvaluator::StopMeasuring() {
@@ -114,26 +124,39 @@ void PerformanceEvaluator::StopMeasuring() {
   perf_metrics_.total_duration_ = end_time_ - start_time_;
   perf_metrics_.frames_per_second_ = perf_metrics_.frame_decoded_count_ /
                                      perf_metrics_.total_duration_.InSecondsF();
-  perf_metrics_.avg_frame_decode_time_ms_ =
+
+  perf_metrics_.avg_frame_delivery_time_ms_ =
       perf_metrics_.total_duration_.InMillisecondsF() /
       perf_metrics_.frame_decoded_count_;
+
+  std::sort(frame_decode_times_.begin(), frame_decode_times_.end());
+  size_t median_index = frame_decode_times_.size() / 2;
+  perf_metrics_.median_frame_decode_time_ms_ =
+      (frame_decode_times_.size() % 2 != 0)
+          ? frame_decode_times_[median_index]
+          : (frame_decode_times_[median_index - 1] +
+             frame_decode_times_[median_index]) /
+                2.0;
 
   VLOG(0) << "Number of frames decoded: " << perf_metrics_.frame_decoded_count_;
   VLOG(0) << "Total duration:           "
           << perf_metrics_.total_duration_.InMillisecondsF() << "ms";
   VLOG(0) << "FPS:                      " << perf_metrics_.frames_per_second_;
-  VLOG(0) << "Avg. frame decode time:   "
-          << perf_metrics_.avg_frame_decode_time_ms_ << "ms";
+  VLOG(0) << "Avg. frame delivery time:   "
+          << perf_metrics_.avg_frame_delivery_time_ms_ << "ms";
+  VLOG(0) << "Median frame decode time:   "
+          << perf_metrics_.median_frame_decode_time_ms_ << "ms";
 }
 
 void PerformanceEvaluator::WriteMetricsToFile() const {
   std::string str = base::StringPrintf(
       "Number of frames decoded: %zu\nTotal duration: %fms\nFPS: %f\nAvg. "
-      "frame decode time: %fms\n",
+      "frame delivery time: %fms\nMedian frame decode time: %fms\n",
       perf_metrics_.frame_decoded_count_,
       perf_metrics_.total_duration_.InMillisecondsF(),
       perf_metrics_.frames_per_second_,
-      perf_metrics_.avg_frame_decode_time_ms_);
+      perf_metrics_.avg_frame_delivery_time_ms_,
+      perf_metrics_.median_frame_decode_time_ms_);
 
   // Write performance metrics to file.
   base::FilePath output_folder_path = base::FilePath(kDefaultOutputFolder);
@@ -154,7 +177,7 @@ void PerformanceEvaluator::WriteMetricsToFile() const {
   base::File decode_times_output_file(
       base::FilePath(decode_times_file_path),
       base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
-  for (double frame_decoded_time : frame_decode_times_) {
+  for (double frame_decoded_time : frame_delivery_times_) {
     std::string decode_time_str =
         base::StringPrintf("%f\n", frame_decoded_time);
     decode_times_output_file.WriteAtCurrentPos(decode_time_str.data(),
