@@ -92,11 +92,17 @@ void SetupSearchIllustrationView(views::View* illustration_view,
 
 class ShortcutsListScrollView : public views::ScrollView {
  public:
-  ShortcutsListScrollView() = default;
+  ShortcutsListScrollView() {
+    GetViewAccessibility().OverrideRole(ax::mojom::Role::kScrollView);
+  }
+
   ~ShortcutsListScrollView() override = default;
 
   // views::View:
-  void OnFocus() override { SetHasFocusIndicator(true); }
+  void OnFocus() override {
+    SetHasFocusIndicator(true);
+    NotifyAccessibilityEvent(ax::mojom::Event::kFocus, true);
+  }
 
   void OnBlur() override { SetHasFocusIndicator(false); }
 
