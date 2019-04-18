@@ -45,7 +45,6 @@ class PageSignalGeneratorImpl
   void OnLifecycleStateChanged(PageNodeImpl* page_node) override;
   void OnExpectedTaskQueueingDurationSample(
       ProcessNodeImpl* process_node) override;
-  void OnRendererIsBloated(ProcessNodeImpl* process_node) override;
   void OnProcessCPUUsageReady(SystemNodeImpl* system_node) override;
 
   void BindToInterface(

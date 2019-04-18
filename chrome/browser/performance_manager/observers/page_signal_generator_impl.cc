@@ -18,24 +18,6 @@
 
 namespace performance_manager {
 
-namespace {
-
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
-enum class BloatedRendererHandlingInResourceCoordinator {
-  kForwardedToBrowser = 0,
-  kIgnoredDueToMultiplePages = 1,
-  kMaxValue = kIgnoredDueToMultiplePages
-};
-
-void RecordBloatedRendererHandling(
-    BloatedRendererHandlingInResourceCoordinator handling) {
-  UMA_HISTOGRAM_ENUMERATION("BloatedRenderer.HandlingInResourceCoordinator",
-                            handling);
-}
-
-}  // anonymous namespace
-
 PageSignalGeneratorImpl::PageSignalGeneratorImpl() = default;
 
 PageSignalGeneratorImpl::~PageSignalGeneratorImpl() {
@@ -128,22 +110,6 @@ void PageSignalGeneratorImpl::OnExpectedTaskQueueingDurationSample(
                        &resource_coordinator::mojom::PageSignalReceiver::
                            SetExpectedTaskQueueingDuration,
                        sample);
-  }
-}
-
-void PageSignalGeneratorImpl::OnRendererIsBloated(
-    ProcessNodeImpl* process_node) {
-  // Currently bloated renderer handling supports only a single page.
-  auto* page_node = process_node->GetPageNodeIfExclusive();
-  if (page_node) {
-    DispatchPageSignal(page_node,
-                       &resource_coordinator::mojom::PageSignalReceiver::
-                           NotifyRendererIsBloated);
-    RecordBloatedRendererHandling(
-        BloatedRendererHandlingInResourceCoordinator::kForwardedToBrowser);
-  } else {
-    RecordBloatedRendererHandling(BloatedRendererHandlingInResourceCoordinator::
-                                      kIgnoredDueToMultiplePages);
   }
 }
 

@@ -67,9 +67,6 @@ class MockPageSignalReceiverImpl
   MOCK_METHOD1(NotifyNonPersistentNotificationCreated,
                void(const resource_coordinator::PageNavigationIdentity&
                         page_navigation_id));
-  MOCK_METHOD1(NotifyRendererIsBloated,
-               void(const resource_coordinator::PageNavigationIdentity&
-                        page_navigation_id));
   MOCK_METHOD4(OnLoadTimePerformanceEstimate,
                void(const resource_coordinator::PageNavigationIdentity&
                         page_navigation_id,
@@ -204,40 +201,6 @@ TEST_F(PageSignalGeneratorImplTest, NonPersistentNotificationCreatedEvent) {
   page_signal_generator()->OnNonPersistentNotificationCreated(frame_node);
   run_loop.Run();
 
-  ::testing::Mock::VerifyAndClear(&mock_receiver);
-}
-
-TEST_F(PageSignalGeneratorImplTest, NotifyRendererIsBloatedSinglePage) {
-  MockSinglePageInSingleProcessGraph mock_graph(graph());
-  auto* process = mock_graph.process.get();
-  auto* psg = page_signal_generator();
-
-  // Create a mock receiver and register it against the psg.
-  resource_coordinator::mojom::PageSignalReceiverPtr mock_receiver_ptr;
-  MockPageSignalReceiver mock_receiver(mojo::MakeRequest(&mock_receiver_ptr));
-  psg->AddReceiver(std::move(mock_receiver_ptr));
-
-  base::RunLoop run_loop;
-  EXPECT_CALL(mock_receiver, NotifyRendererIsBloated(_));
-  process->OnRendererIsBloated();
-  run_loop.RunUntilIdle();
-  ::testing::Mock::VerifyAndClear(&mock_receiver);
-}
-
-TEST_F(PageSignalGeneratorImplTest, NotifyRendererIsBloatedMultiplePages) {
-  MockMultiplePagesInSingleProcessGraph mock_graph(graph());
-  auto* process = mock_graph.process.get();
-  auto* psg = page_signal_generator();
-
-  // Create a mock receiver and register it against the psg.
-  resource_coordinator::mojom::PageSignalReceiverPtr mock_receiver_ptr;
-  MockPageSignalReceiver mock_receiver(mojo::MakeRequest(&mock_receiver_ptr));
-  psg->AddReceiver(std::move(mock_receiver_ptr));
-
-  base::RunLoop run_loop;
-  EXPECT_CALL(mock_receiver, NotifyRendererIsBloated(_)).Times(0);
-  process->OnRendererIsBloated();
-  run_loop.RunUntilIdle();
   ::testing::Mock::VerifyAndClear(&mock_receiver);
 }
 
