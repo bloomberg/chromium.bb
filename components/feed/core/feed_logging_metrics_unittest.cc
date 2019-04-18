@@ -201,4 +201,18 @@ TEST_F(FeedLoggingMetricsTest, ShouldReportOnPietFrameRenderingEvent) {
                           base::Bucket(/*min=*/7, /*count=*/1)));
 }
 
+TEST_F(FeedLoggingMetricsTest, ShouldLogOnTaskFinished) {
+  base::HistogramTester histogram_tester;
+  feed_logging_metrics()->OnTaskFinished(/*KExecuteUploadActionRequest=*/10, 8,
+                                         8);
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples(
+          "ContentSuggestions.Feed.Task.ExecuteUploadActionRequest.DelayTime"),
+      ElementsAre(base::Bucket(/*min=*/8, /*count=*/1)));
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples(
+          "ContentSuggestions.Feed.Task.ExecuteUploadActionRequest.TaskTime"),
+      ElementsAre(base::Bucket(/*min=*/8, /*count=*/1)));
+}
+
 }  // namespace feed

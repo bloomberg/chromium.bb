@@ -101,6 +101,8 @@ class FeedLoggingMetrics {
 
   void OnZeroStateRefreshCompleted(int new_content_count, int new_token_count);
 
+  void OnTaskFinished(int task_type, int delay_time_ms, int task_time_ms);
+
   void ReportScrolledAfterOpen();
 
  private:
