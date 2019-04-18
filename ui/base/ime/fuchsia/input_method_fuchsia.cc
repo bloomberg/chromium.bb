@@ -89,6 +89,13 @@ void InputMethodFuchsia::OnBlur() {
 void InputMethodFuchsia::DidUpdateState(
     fuchsia::ui::input::TextInputState state,
     std::unique_ptr<fuchsia::ui::input::InputEvent> input_event) {
+  // The FIDL protocol for DidUpdateState allows it to be null, and so we may
+  // receive state updates that have no associated key. Since we're only
+  // interested in extracting out input events from this stream for now, we can
+  // just ignore state updates with no input event.
+  if (!input_event)
+    return;
+
   if (input_event->is_keyboard())
     event_converter_.ProcessEvent(*input_event);
   else
