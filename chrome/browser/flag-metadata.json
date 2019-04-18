@@ -1408,7 +1408,7 @@
   },
   {
     "name": "enable-offer-store-unmasked-wallet-cards",
-    "owners": [ "jsaul" ],
+    "owners": [ "jsaul@google.com" ],
     "expiry_milestone": 76
   },
   {
