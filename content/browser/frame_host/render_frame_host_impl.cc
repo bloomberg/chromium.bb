@@ -2118,9 +2118,6 @@ void RenderFrameHostImpl::DocumentOnLoadCompleted() {
 
 void RenderFrameHostImpl::UpdateActiveSchedulerTrackedFeatures(
     uint64_t features_mask) {
-  // TODO(altimin): Support subframes too. For now renderer shouldn't send
-  // this message for subframes at all.
-  DCHECK(!GetParent());
   scheduler_tracked_features_ = features_mask;
 }
 
@@ -4814,6 +4811,35 @@ void RenderFrameHostImpl::CommitNavigation(
     mojom::NavigationClient* navigation_client = nullptr;
     if (IsPerNavigationMojoInterfaceEnabled() && navigation_request)
       navigation_client = navigation_request->GetCommitNavigationClient();
+
+    // Record the metrics about the state of the old main frame at the moment
+    // when we navigate away from it as it matters for whether the page
+    // is eligible for being put into back-forward cache.
+    //
+    // Ideally we would do this when we are just about to swap out the old
+    // render frame and swap in the new one, but we can't do this for
+    // same-process navigations yet as we are reusing the RenderFrameHost and
+    // as the local frame navigates it overrides the values that we are
+    // interested in. The cross-process navigation case is handled in
+    // RenderFrameHostManager::SwapOutOldFrame.
+    //
+    // Here we are recording the metrics for same-process navigations at the
+    // point just before the navigation commits.
+    // TODO(altimin, crbug.com/933147): Remove this logic after we are done with
+    // implementing back-forward cache.
+    if (!GetParent() && frame_tree_node()->current_frame_host() == this) {
+      if (NavigationEntryImpl* last_committed_entry =
+              NavigationEntryImpl::FromNavigationEntry(
+                  frame_tree_node()
+                      ->navigator()
+                      ->GetController()
+                      ->GetLastCommittedEntry())) {
+        if (last_committed_entry->back_forward_cache_metrics()) {
+          last_committed_entry->back_forward_cache_metrics()
+              ->RecordFeatureUsage(this);
+        }
+      }
+    }
 
     SendCommitNavigation(
         navigation_client, navigation_request, head, common_params,

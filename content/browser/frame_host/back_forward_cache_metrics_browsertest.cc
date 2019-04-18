@@ -262,6 +262,53 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheMetricsBrowserTest, CloneAndGoBack) {
                                    UkmEntry{id6, {{last_navigation_id, id4}}}));
 }
 
+namespace {
+
+struct FeatureUsage {
+  ukm::SourceId source_id;
+  uint64_t main_frame_features;
+  uint64_t same_origin_subframes_features;
+  uint64_t cross_origin_subframes_features;
+};
+
+bool operator==(const FeatureUsage& lhs, const FeatureUsage& rhs) {
+  return lhs.source_id == rhs.source_id &&
+         lhs.main_frame_features == rhs.main_frame_features &&
+         lhs.same_origin_subframes_features ==
+             rhs.same_origin_subframes_features &&
+         lhs.cross_origin_subframes_features ==
+             rhs.cross_origin_subframes_features;
+}
+
+std::ostream& operator<<(std::ostream& os, const FeatureUsage& usage) {
+  os << "source_id=" << usage.source_id
+     << " main_frame_features=" << usage.main_frame_features
+     << " same_origin_features=" << usage.same_origin_subframes_features
+     << " cross_origin_features=" << usage.cross_origin_subframes_features;
+  return os;
+}
+
+std::vector<FeatureUsage> GetFeatureUsageMetrics(
+    ukm::TestAutoSetUkmRecorder* recorder) {
+  std::vector<FeatureUsage> result;
+  for (const auto& entry :
+       GetEntries(recorder, "HistoryNavigation",
+                  {"MainFrameFeatures", "SameOriginSubframesFeatures",
+                   "CrossOriginSubframesFeatures"})) {
+    FeatureUsage feature_usage;
+    feature_usage.source_id = entry.first;
+    feature_usage.main_frame_features = entry.second.at("MainFrameFeatures");
+    feature_usage.same_origin_subframes_features =
+        entry.second.at("SameOriginSubframesFeatures");
+    feature_usage.cross_origin_subframes_features =
+        entry.second.at("CrossOriginSubframesFeatures");
+    result.push_back(feature_usage);
+  }
+  return result;
+}
+
+}  // namespace
+
 IN_PROC_BROWSER_TEST_F(BackForwardCacheMetricsBrowserTest, Features_MainFrame) {
   ukm::TestAutoSetUkmRecorder recorder;
 
@@ -285,9 +332,131 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheMetricsBrowserTest, Features_MainFrame) {
   // ukm::SourceId id2 = ToSourceId(navigation_ids_[1]);
   ukm::SourceId id3 = ToSourceId(navigation_ids_[2]);
 
-  EXPECT_THAT(GetEntries(&recorder, "HistoryNavigation", {"MainFrameFeatures"}),
-              testing::ElementsAre(UkmEntry{
-                  id3, {{"MainFrameFeatures", 1 << kPageShowFeature}}}));
+  EXPECT_THAT(
+      GetFeatureUsageMetrics(&recorder),
+      testing::ElementsAre(FeatureUsage{id3, 1 << kPageShowFeature, 0, 0}));
+}
+
+IN_PROC_BROWSER_TEST_F(BackForwardCacheMetricsBrowserTest,
+                       Features_MainFrame_CrossOriginNavigation) {
+  ukm::TestAutoSetUkmRecorder recorder;
+
+  const GURL url1(embedded_test_server()->GetURL(
+      "/back_forward_cache/page_with_pageshow.html"));
+  const GURL url2(
+      embedded_test_server()->GetURL("/cross-site/bar.com/title1.html"));
+
+  EXPECT_TRUE(NavigateToURL(shell(), url1));
+  NavigateToURL(shell(), url2);
+
+  {
+    TestNavigationObserver navigation_observer(shell()->web_contents());
+    shell()->GoBackOrForward(-1);
+    navigation_observer.WaitForNavigationFinished();
+  }
+
+  constexpr int kPageShowFeature = 6;
+
+  ASSERT_EQ(navigation_ids_.size(), static_cast<size_t>(3));
+  // ukm::SourceId id1 = ToSourceId(navigation_ids_[0]);
+  // ukm::SourceId id2 = ToSourceId(navigation_ids_[1]);
+  ukm::SourceId id3 = ToSourceId(navigation_ids_[2]);
+
+  EXPECT_THAT(
+      GetFeatureUsageMetrics(&recorder),
+      testing::ElementsAre(FeatureUsage{id3, 1 << kPageShowFeature, 0, 0}));
+}
+
+IN_PROC_BROWSER_TEST_F(BackForwardCacheMetricsBrowserTest,
+                       Features_SameOriginSubframes) {
+  ukm::TestAutoSetUkmRecorder recorder;
+
+  const GURL url1(embedded_test_server()->GetURL(
+      "/back_forward_cache/page_with_same_origin_subframe_with_pageshow.html"));
+  const GURL url2(embedded_test_server()->GetURL("/title1.html"));
+
+  EXPECT_TRUE(NavigateToURL(shell(), url1));
+  EXPECT_TRUE(NavigateToURL(shell(), url2));
+
+  {
+    TestNavigationObserver navigation_observer(shell()->web_contents(), 2);
+    shell()->GoBackOrForward(-1);
+    navigation_observer.WaitForNavigationFinished();
+  }
+
+  constexpr int kPageShowFeature = 6;
+
+  ASSERT_EQ(navigation_ids_.size(), static_cast<size_t>(5));
+  // ukm::SourceId id1 = ToSourceId(navigation_ids_[0]);
+  // ukm::SourceId id2 = ToSourceId(navigation_ids_[1]);
+  // ukm::SourceId id3 = ToSourceId(navigation_ids_[2]);
+  ukm::SourceId id4 = ToSourceId(navigation_ids_[3]);
+
+  EXPECT_THAT(
+      GetFeatureUsageMetrics(&recorder),
+      testing::ElementsAre(FeatureUsage{id4, 0, 1 << kPageShowFeature, 0}));
+}
+
+IN_PROC_BROWSER_TEST_F(BackForwardCacheMetricsBrowserTest,
+                       Features_SameOriginSubframes_CrossOriginNavigation) {
+  ukm::TestAutoSetUkmRecorder recorder;
+
+  const GURL url1(embedded_test_server()->GetURL(
+      "/back_forward_cache/page_with_same_origin_subframe_with_pageshow.html"));
+  const GURL url2(
+      embedded_test_server()->GetURL("/cross-site/bar.com/title1.html"));
+
+  EXPECT_TRUE(NavigateToURL(shell(), url1));
+  NavigateToURL(shell(), url2);
+
+  {
+    TestNavigationObserver navigation_observer(shell()->web_contents(), 2);
+    shell()->GoBackOrForward(-1);
+    navigation_observer.WaitForNavigationFinished();
+  }
+
+  constexpr int kPageShowFeature = 6;
+
+  ASSERT_EQ(navigation_ids_.size(), static_cast<size_t>(5));
+  // ukm::SourceId id1 = ToSourceId(navigation_ids_[0]);
+  // ukm::SourceId id2 = ToSourceId(navigation_ids_[1]);
+  // ukm::SourceId id3 = ToSourceId(navigation_ids_[2]);
+  ukm::SourceId id4 = ToSourceId(navigation_ids_[3]);
+
+  EXPECT_THAT(
+      GetFeatureUsageMetrics(&recorder),
+      testing::ElementsAre(FeatureUsage{id4, 0, 1 << kPageShowFeature, 0}));
+}
+
+IN_PROC_BROWSER_TEST_F(BackForwardCacheMetricsBrowserTest,
+                       Features_CrossOriginSubframes) {
+  ukm::TestAutoSetUkmRecorder recorder;
+
+  const GURL url1(embedded_test_server()->GetURL(
+      "/back_forward_cache/"
+      "page_with_cross_origin_subframe_with_pageshow.html"));
+  const GURL url2(embedded_test_server()->GetURL("/title1.html"));
+
+  EXPECT_TRUE(NavigateToURL(shell(), url1));
+  EXPECT_TRUE(NavigateToURL(shell(), url2));
+
+  {
+    TestNavigationObserver navigation_observer(shell()->web_contents(), 2);
+    shell()->GoBackOrForward(-1);
+    navigation_observer.WaitForNavigationFinished();
+  }
+
+  constexpr int kPageShowFeature = 6;
+
+  ASSERT_EQ(navigation_ids_.size(), static_cast<size_t>(5));
+  // ukm::SourceId id1 = ToSourceId(navigation_ids_[0]);
+  // ukm::SourceId id2 = ToSourceId(navigation_ids_[1]);
+  // ukm::SourceId id3 = ToSourceId(navigation_ids_[2]);
+  ukm::SourceId id4 = ToSourceId(navigation_ids_[3]);
+
+  EXPECT_THAT(
+      GetFeatureUsageMetrics(&recorder),
+      testing::ElementsAre(FeatureUsage{id4, 0, 0, 1 << kPageShowFeature}));
 }
 
 }  // namespace content

@@ -12,6 +12,10 @@
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 
+namespace url {
+class Origin;
+}
+
 namespace content {
 class NavigationEntryImpl;
 class RenderFrameHostImpl;
@@ -77,6 +81,11 @@ class BackForwardCacheMetrics
 
   ~BackForwardCacheMetrics();
 
+  // Recursively collects the feature usage information from the subtree
+  // of a given frame.
+  void CollectFeatureUsageFromSubtree(RenderFrameHostImpl* rfh,
+                                      const url::Origin& main_frame_origin);
+
   // Main frame document sequence number that identifies all NavigationEntries
   // this metrics object is associated with.
   const int64_t document_sequence_number_;
@@ -87,7 +96,15 @@ class BackForwardCacheMetrics
 
   int64_t last_committed_navigation_entry_id_ = -1;
 
-  int64_t main_frame_features_ = 0;
+  uint64_t main_frame_features_ = 0;
+  // We record metrics for same-origin frames and cross-origin frames
+  // differently as we might want to apply different policies for them,
+  // especially for the things around web platform compatibility (e.g. ignore
+  // unload handlers in cross-origin iframes but not in same-origin). The
+  // details are still subject to metrics, however. NOTE: This is not related to
+  // which process these frames are hosted in.
+  uint64_t same_origin_frames_features_ = 0;
+  uint64_t cross_origin_frames_features_ = 0;
 
   base::Optional<base::TimeTicks> started_navigation_timestamp_;
   base::Optional<base::TimeTicks> navigated_away_from_main_document_timestamp_;

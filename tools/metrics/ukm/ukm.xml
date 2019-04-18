@@ -2639,6 +2639,13 @@ be describing additional metrics about the same event.
     Metrics recorded each time we commit a history navigation, which are needed
     to estimate benefits of back-forward cache.
   </summary>
+  <metric name="CrossOriginSubframesFeatures">
+    <summary>
+      Bitmask of features used by the cross origin subframes of the previous
+      page load. See blink::SchedulingPolicy::Feature for the meaning for the
+      individual features.
+    </summary>
+  </metric>
   <metric name="LastCommittedSourceIdForTheSameDocument">
     <summary>
       For history navigations and reloads, the source id of the previous
@@ -2664,6 +2671,13 @@ be describing additional metrics about the same event.
       http://foo#bar.
 
       It's expected to be rare, but might be problematic for back-forward cache.
+    </summary>
+  </metric>
+  <metric name="SameOriginSubframesFeatures">
+    <summary>
+      Bitmask of features used by the same origin subframes of the previous page
+      load. See blink::SchedulingPolicy::Feature for the meaning for the
+      individual features.
     </summary>
   </metric>
   <metric name="TimeSinceNavigatedAwayFromDocument">

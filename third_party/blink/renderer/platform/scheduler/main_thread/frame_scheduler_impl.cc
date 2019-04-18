@@ -647,8 +647,7 @@ void FrameSchedulerImpl::OnStartedUsingFeature(
 
   uint64_t new_mask = GetActiveFeaturesOptingOutFromBackForwardCacheMask();
 
-  if (old_mask != new_mask && delegate_ &&
-      GetFrameType() == FrameType::kMainFrame) {
+  if (old_mask != new_mask && delegate_) {
     // TODO(altimin): Support subframes as well.
     delegate_->UpdateActiveSchedulerTrackedFeatures(new_mask);
   }
@@ -666,8 +665,7 @@ void FrameSchedulerImpl::OnStoppedUsingFeature(
 
   uint64_t new_mask = GetActiveFeaturesOptingOutFromBackForwardCacheMask();
 
-  if (old_mask != new_mask && delegate_ &&
-      GetFrameType() == FrameType::kMainFrame) {
+  if (old_mask != new_mask && delegate_) {
     // TODO(altimin): Support subframes as well.
     delegate_->UpdateActiveSchedulerTrackedFeatures(new_mask);
   }
