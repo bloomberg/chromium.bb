@@ -3726,6 +3726,9 @@ error::Error GLES2DecoderPassthroughImpl::DoResizeCHROMIUM(GLuint width,
       case GL_COLOR_SPACE_SCRGB_LINEAR_CHROMIUM:
         surface_color_space = gl::GLSurface::ColorSpace::SCRGB_LINEAR;
         break;
+      case GL_COLOR_SPACE_HDR10_CHROMIUM:
+        surface_color_space = gl::GLSurface::ColorSpace::HDR10;
+        break;
       case GL_COLOR_SPACE_SRGB_CHROMIUM:
         surface_color_space = gl::GLSurface::ColorSpace::SRGB;
         break;

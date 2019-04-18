@@ -15,6 +15,7 @@
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/gpu/gl/GrGLTypes.h"
+#include "ui/gl/color_space_utils.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_surface.h"
@@ -75,11 +76,8 @@ void SkiaOutputDeviceGL::Reshape(const gfx::Size& size,
                                  float device_scale_factor,
                                  const gfx::ColorSpace& color_space,
                                  bool has_alpha) {
-  // Conversion to GLSurface's color space follows the same logic as in
-  // gl::GetGLColorSpace().
   gl::GLSurface::ColorSpace surface_color_space =
-      color_space.IsHDR() ? gl::GLSurface::ColorSpace::SCRGB_LINEAR
-                          : gl::GLSurface::ColorSpace::UNSPECIFIED;
+      gl::ColorSpaceUtils::GetGLSurfaceColorSpace(color_space);
   if (!gl_surface_->Resize(size, device_scale_factor, surface_color_space,
                            has_alpha)) {
     LOG(FATAL) << "Failed to resize.";

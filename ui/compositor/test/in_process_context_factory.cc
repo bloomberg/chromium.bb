@@ -37,8 +37,8 @@
 #include "ui/display/display_switches.h"
 #include "ui/gfx/presentation_feedback.h"
 #include "ui/gfx/switches.h"
+#include "ui/gl/color_space_utils.h"
 #include "ui/gl/gl_implementation.h"
-#include "ui/gl/gl_utils.h"
 #include "ui/gl/test/gl_surface_test_support.h"
 
 #if defined(OS_MACOSX)
@@ -93,7 +93,7 @@ class DirectOutputSurface : public viz::OutputSurface {
                bool use_stencil) override {
     context_provider()->ContextGL()->ResizeCHROMIUM(
         size.width(), size.height(), device_scale_factor,
-        gl::GetGLColorSpace(color_space), has_alpha);
+        gl::ColorSpaceUtils::GetGLColorSpace(color_space), has_alpha);
   }
   void SwapBuffers(viz::OutputSurfaceFrame frame) override {
     DCHECK(context_provider_.get());

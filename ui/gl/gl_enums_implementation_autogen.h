@@ -2694,10 +2694,14 @@ static const GLEnums::EnumToString enum_to_string_table[] = {
     },
     {
         0x8AF5,
-        "GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM",
+        "GL_COLOR_SPACE_HDR10_CHROMIUM",
     },
     {
         0x8AF6,
+        "GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM",
+    },
+    {
+        0x8AF7,
         "GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM",
     },
     {
