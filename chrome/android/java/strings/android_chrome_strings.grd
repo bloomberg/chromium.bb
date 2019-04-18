@@ -2034,6 +2034,14 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
         Downloading Chrome Update…
       </message>
 
+      <!-- Update Notification-->
+      <message name="IDS_UPDATE_NOTIFICATION_TITLE" desc="Title of update notification to remind user to update Chrome.">
+        Update Chrome
+      </message>
+      <message name="IDS_UPDATE_NOTIFICATION_TEXT_BODY" desc="Text showing in the update notification body, kindly telling user to update to the latest version of Chrome.">
+        You are on an outdated version of Chrome. Open Chrome to update for a safer browsing experience.
+      </message>
+
       <!-- TranslateInfoBar -->
       <message name="IDS_TRANSLATE_INFOBAR_ERROR">
         Oops. This page could not be translated.
