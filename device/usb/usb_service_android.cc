@@ -37,6 +37,7 @@ UsbServiceAndroid::UsbServiceAndroid() : UsbService(), weak_factory_(this) {
 }
 
 UsbServiceAndroid::~UsbServiceAndroid() {
+  NotifyWillDestroyUsbService();
   JNIEnv* env = AttachCurrentThread();
   Java_ChromeUsbService_close(env, j_object_);
 }

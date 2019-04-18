@@ -304,7 +304,9 @@ UsbServiceWin::UsbServiceWin()
                                 base::Unretained(helper_.get())));
 }
 
-UsbServiceWin::~UsbServiceWin() = default;
+UsbServiceWin::~UsbServiceWin() {
+  NotifyWillDestroyUsbService();
+}
 
 void UsbServiceWin::GetDevices(const GetDevicesCallback& callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
