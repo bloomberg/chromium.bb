@@ -3292,7 +3292,6 @@ bool RenderProcessHostImpl::OnMessageReceived(const IPC::Message& msg) {
                           OnRegisterAecDumpConsumer)
       IPC_MESSAGE_HANDLER(AecDumpMsg_UnregisterAecDumpConsumer,
                           OnUnregisterAecDumpConsumer)
-      IPC_MESSAGE_HANDLER(AudioProcessingMsg_Aec3Enabled, OnAec3Enabled)
     // Adding single handlers for your service here is fine, but once your
     // service needs more than one handler, please extract them into a new
     // message filter and add that filter to CreateMessageFilters().
@@ -3572,24 +3571,6 @@ void RenderProcessHostImpl::DisableAudioDebugRecordings() {
       FROM_HERE, base::DoNothing(),
       base::BindOnce(&RenderProcessHostImpl::SendDisableAecDumpToRenderer,
                      weak_factory_.GetWeakPtr()));
-}
-
-void RenderProcessHostImpl::SetEchoCanceller3(
-    bool enable,
-    base::OnceCallback<void(bool, const std::string&)> callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(!callback.is_null());
-
-  if (!aec3_set_callback_.is_null()) {
-    MediaStreamManager::SendMessageToNativeLog("RPHI: Failed to set AEC3");
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                             base::BindOnce(std::move(callback), false,
-                                            "Operation already in progress"));
-    return;
-  }
-
-  aec3_set_callback_ = std::move(callback);
-  Send(new AudioProcessingMsg_EnableAec3(enable));
 }
 
 RenderProcessHostImpl::WebRtcStopRtpDumpCallback
@@ -4678,15 +4659,6 @@ base::SequencedTaskRunner& RenderProcessHostImpl::GetAecDumpFileTaskRunner() {
              base::TaskPriority::USER_BLOCKING});
   }
   return *audio_debug_recordings_file_task_runner_;
-}
-
-void RenderProcessHostImpl::OnAec3Enabled() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  // The callback should be set unless the message from the renderer is
-  // spurious.
-  if (!aec3_set_callback_.is_null())
-    std::move(aec3_set_callback_).Run(true, std::string());
 }
 
 // static

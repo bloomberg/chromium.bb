@@ -69,11 +69,6 @@ void AecDumpMessageFilter::RemoveDelegate(
                      id));
 }
 
-base::Optional<bool> AecDumpMessageFilter::GetOverrideAec3() const {
-  DCHECK(main_task_runner_->BelongsToCurrentThread());
-  return override_aec3_;
-}
-
 void AecDumpMessageFilter::Send(IPC::Message* message) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   if (sender_)
@@ -96,7 +91,6 @@ bool AecDumpMessageFilter::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(AecDumpMessageFilter, message)
     IPC_MESSAGE_HANDLER(AecDumpMsg_EnableAecDump, OnEnableAecDump)
     IPC_MESSAGE_HANDLER(AecDumpMsg_DisableAecDump, OnDisableAecDump)
-    IPC_MESSAGE_HANDLER(AudioProcessingMsg_EnableAec3, OnEnableAec3)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -138,13 +132,6 @@ void AecDumpMessageFilter::OnDisableAecDump() {
       FROM_HERE, base::BindOnce(&AecDumpMessageFilter::DoDisableAecDump, this));
 }
 
-void AecDumpMessageFilter::OnEnableAec3(bool enable) {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
-  main_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&AecDumpMessageFilter::DoEnableAec3, this, enable));
-}
-
 void AecDumpMessageFilter::DoEnableAecDump(
     int id,
     IPC::PlatformFileForTransit file_handle) {
@@ -183,14 +170,6 @@ int AecDumpMessageFilter::GetIdForDelegate(
       return it->first;
   }
   return kInvalidDelegateId;
-}
-
-void AecDumpMessageFilter::DoEnableAec3(bool enable) {
-  DCHECK(main_task_runner_->BelongsToCurrentThread());
-  override_aec3_ = enable;
-  io_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&AecDumpMessageFilter::Send, this,
-                                new AudioProcessingMsg_Aec3Enabled()));
 }
 
 }  // namespace content
