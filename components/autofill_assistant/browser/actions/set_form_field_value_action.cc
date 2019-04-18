@@ -69,7 +69,6 @@ void SetFormFieldValueAction::OnSetFieldValue(ActionDelegate* delegate,
 
   const auto& key_field = proto_.set_form_value().value(next);
   bool simulate_key_presses = proto_.set_form_value().simulate_key_presses();
-  int delay_in_millisecond = proto_.set_form_value().delay_in_millisecond();
   switch (key_field.keypress_case()) {
     case SetFormFieldValueProto_KeyPress::kText:
       if (simulate_key_presses || key_field.text().empty()) {
@@ -78,7 +77,6 @@ void SetFormFieldValueAction::OnSetFieldValue(ActionDelegate* delegate,
         // to next value after |SetFieldValue| is done.
         delegate->SetFieldValue(
             selector, key_field.text(), simulate_key_presses,
-            delay_in_millisecond,
             base::BindOnce(&SetFormFieldValueAction::OnSetFieldValue,
                            weak_ptr_factory_.GetWeakPtr(), delegate,
                            std::move(callback), selector,
@@ -87,7 +85,6 @@ void SetFormFieldValueAction::OnSetFieldValue(ActionDelegate* delegate,
         // Trigger a check for keyboard fallback when |SetFieldValue| is done.
         delegate->SetFieldValue(
             selector, key_field.text(), simulate_key_presses,
-            delay_in_millisecond,
             base::BindOnce(
                 &SetFormFieldValueAction::OnSetFieldValueAndCheckFallback,
                 weak_ptr_factory_.GetWeakPtr(), delegate, std::move(callback),
@@ -101,7 +98,7 @@ void SetFormFieldValueAction::OnSetFieldValue(ActionDelegate* delegate,
       // You should use the `keyboard_input' field instead.
       if (key_field.keycode() < 128) {  // US-ASCII
         delegate->SendKeyboardInput(
-            selector, {key_field.keycode()}, delay_in_millisecond,
+            selector, {key_field.keycode()},
             base::BindOnce(&SetFormFieldValueAction::OnSetFieldValue,
                            weak_ptr_factory_.GetWeakPtr(), delegate,
                            std::move(callback), selector,
@@ -118,7 +115,6 @@ void SetFormFieldValueAction::OnSetFieldValue(ActionDelegate* delegate,
     case SetFormFieldValueProto_KeyPress::kKeyboardInput:
       delegate->SendKeyboardInput(
           selector, UTF8ToUnicode(key_field.keyboard_input()),
-          delay_in_millisecond,
           base::BindOnce(&SetFormFieldValueAction::OnSetFieldValue,
                          weak_ptr_factory_.GetWeakPtr(), delegate,
                          std::move(callback), selector,
@@ -175,7 +171,6 @@ void SetFormFieldValueAction::OnGetFieldValue(ActionDelegate* delegate,
     // afterwards.
     delegate->SetFieldValue(
         selector, key_field.text(), /*simulate_key_presses = */ true,
-        proto_.set_form_value().delay_in_millisecond(),
         base::BindOnce(&SetFormFieldValueAction::OnSetFieldValue,
                        weak_ptr_factory_.GetWeakPtr(), delegate,
                        std::move(callback), selector,

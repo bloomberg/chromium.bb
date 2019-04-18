@@ -1450,7 +1450,6 @@ void WebController::SetFieldValue(
     const Selector& selector,
     const std::string& value,
     bool simulate_key_presses,
-    int key_press_delay_in_millisecond,
     base::OnceCallback<void(const ClientStatus&)> callback) {
   DVLOG(3) << __func__ << " " << selector << ", value=" << value
            << ", simulate_key_presses=" << simulate_key_presses;
@@ -1462,8 +1461,7 @@ void WebController::SetFieldValue(
         selector, "",
         base::BindOnce(&WebController::OnClearFieldForSendKeyboardInput,
                        weak_ptr_factory_.GetWeakPtr(), selector,
-                       UTF8ToUnicode(value), key_press_delay_in_millisecond,
-                       std::move(callback)));
+                       UTF8ToUnicode(value), std::move(callback)));
     return;
   }
   InternalSetFieldValue(selector, value, std::move(callback));
@@ -1483,49 +1481,32 @@ void WebController::InternalSetFieldValue(
 void WebController::OnClearFieldForSendKeyboardInput(
     const Selector& selector,
     const std::vector<UChar32>& codepoints,
-    int key_press_delay_in_millisecond,
     base::OnceCallback<void(const ClientStatus&)> callback,
     const ClientStatus& clear_status) {
   if (!clear_status.ok()) {
     std::move(callback).Run(clear_status);
     return;
   }
-  SendKeyboardInput(selector, codepoints, key_press_delay_in_millisecond,
-                    std::move(callback));
+  SendKeyboardInput(selector, codepoints, std::move(callback));
 }
 
 void WebController::OnClickElementForSendKeyboardInput(
     const std::vector<UChar32>& codepoints,
-    int delay_in_millisecond,
     base::OnceCallback<void(const ClientStatus&)> callback,
     const ClientStatus& click_status) {
   if (!click_status.ok()) {
     std::move(callback).Run(click_status);
     return;
   }
-  DispatchKeyboardTextDownEvent(codepoints, 0, /*delay=*/false,
-                                delay_in_millisecond, std::move(callback));
+  DispatchKeyboardTextDownEvent(codepoints, 0, std::move(callback));
 }
 
 void WebController::DispatchKeyboardTextDownEvent(
     const std::vector<UChar32>& codepoints,
     size_t index,
-    bool delay,
-    int delay_in_millisecond,
     base::OnceCallback<void(const ClientStatus&)> callback) {
   if (index >= codepoints.size()) {
     std::move(callback).Run(OkClientStatus());
-    return;
-  }
-
-  if (delay && delay_in_millisecond > 0) {
-    base::PostDelayedTaskWithTraits(
-        FROM_HERE, {content::BrowserThread::UI},
-        base::BindOnce(&WebController::DispatchKeyboardTextDownEvent,
-                       weak_ptr_factory_.GetWeakPtr(), codepoints, index,
-                       /*delay=*/false, delay_in_millisecond,
-                       std::move(callback)),
-        base::TimeDelta::FromMilliseconds(delay_in_millisecond));
     return;
   }
 
@@ -1535,13 +1516,12 @@ void WebController::DispatchKeyboardTextDownEvent(
           codepoints[index]),
       base::BindOnce(&WebController::DispatchKeyboardTextUpEvent,
                      weak_ptr_factory_.GetWeakPtr(), codepoints, index,
-                     delay_in_millisecond, std::move(callback)));
+                     std::move(callback)));
 }
 
 void WebController::DispatchKeyboardTextUpEvent(
     const std::vector<UChar32>& codepoints,
     size_t index,
-    int delay_in_millisecond,
     base::OnceCallback<void(const ClientStatus&)> callback) {
   DCHECK_LT(index, codepoints.size());
   devtools_client_->GetInput()->DispatchKeyEvent(
@@ -1550,7 +1530,6 @@ void WebController::DispatchKeyboardTextUpEvent(
           codepoints[index]),
       base::BindOnce(&WebController::DispatchKeyboardTextDownEvent,
                      weak_ptr_factory_.GetWeakPtr(), codepoints, index + 1,
-                     /*delay=*/true, delay_in_millisecond,
                      std::move(callback)));
 }
 
@@ -1672,7 +1651,6 @@ void WebController::OnSetAttribute(
 void WebController::SendKeyboardInput(
     const Selector& selector,
     const std::vector<UChar32>& codepoints,
-    const int delay_in_millisecond,
     base::OnceCallback<void(const ClientStatus&)> callback) {
   if (VLOG_IS_ON(3)) {
     std::string input_str;
@@ -1683,18 +1661,16 @@ void WebController::SendKeyboardInput(
   }
 
   DCHECK(!selector.empty());
-  FindElement(
-      selector,
-      /* strict_mode= */ true,
-      base::BindOnce(&WebController::OnFindElementForSendKeyboardInput,
-                     weak_ptr_factory_.GetWeakPtr(), selector, codepoints,
-                     delay_in_millisecond, std::move(callback)));
+  FindElement(selector,
+              /* strict_mode= */ true,
+              base::BindOnce(&WebController::OnFindElementForSendKeyboardInput,
+                             weak_ptr_factory_.GetWeakPtr(), selector,
+                             codepoints, std::move(callback)));
 }
 
 void WebController::OnFindElementForSendKeyboardInput(
     const Selector& selector,
     const std::vector<UChar32>& codepoints,
-    const int delay_in_millisecond,
     base::OnceCallback<void(const ClientStatus&)> callback,
     const ClientStatus& status,
     std::unique_ptr<FindElementResult> element_result) {
@@ -1705,7 +1681,7 @@ void WebController::OnFindElementForSendKeyboardInput(
   ClickElement(selector, base::BindOnce(
                              &WebController::OnClickElementForSendKeyboardInput,
                              weak_ptr_factory_.GetWeakPtr(), codepoints,
-                             delay_in_millisecond, std::move(callback)));
+                             std::move(callback)));
 }
 
 void WebController::GetOuterHtml(

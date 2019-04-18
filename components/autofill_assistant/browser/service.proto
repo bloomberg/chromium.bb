@@ -691,9 +691,6 @@ message UseAddressProto {
     // Whether we should simulate actual key presses when filling |element| with
     // its corresponding value.
     optional bool simulate_key_presses = 3;
-
-    // Delay between two key presses when simlulating.
-    optional int32 delay_in_millisecond = 4 [default = 20];
   }
 
   // An optional name to allow to handle multiple addresses selection (for
@@ -1030,9 +1027,6 @@ message SetFormFieldValueProto {
 
   // Whether to send key press events when setting values to HTML fields.
   optional bool simulate_key_presses = 5;
-
-  // Delay between two key presses when simlulating.
-  optional int32 delay_in_millisecond = 6 [default = 20];
 }
 
 // Set an element attribute to a specific value.
