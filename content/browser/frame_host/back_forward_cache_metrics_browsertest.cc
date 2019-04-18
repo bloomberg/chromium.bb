@@ -463,4 +463,20 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheMetricsBrowserTest,
       testing::ElementsAre(FeatureUsage{id4, 0, 0, 1 << kPageShowFeature}));
 }
 
+IN_PROC_BROWSER_TEST_F(BackForwardCacheMetricsBrowserTest, DedicatedWorker) {
+  ukm::TestAutoSetUkmRecorder recorder;
+
+  const GURL url(embedded_test_server()->GetURL(
+      "/back_forward_cache/page_with_dedicated_worker.html"));
+
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  EXPECT_EQ(
+      static_cast<WebContentsImpl*>(shell()->web_contents())
+          ->GetMainFrame()
+          ->scheduler_tracked_features(),
+      1ull << static_cast<size_t>(blink::scheduler::WebSchedulerTrackedFeature::
+                                      kDedicatedWorkerOrWorklet));
+}
+
 }  // namespace content
