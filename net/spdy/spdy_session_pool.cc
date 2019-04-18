@@ -54,9 +54,13 @@ SpdySessionPool::SpdySessionRequest::Delegate::~Delegate() = default;
 
 SpdySessionPool::SpdySessionRequest::SpdySessionRequest(
     const SpdySessionKey& key,
+    bool is_websocket,
     Delegate* delegate,
     SpdySessionPool* spdy_session_pool)
-    : key_(key), delegate_(delegate), spdy_session_pool_(spdy_session_pool) {}
+    : key_(key),
+      is_websocket_(is_websocket),
+      delegate_(delegate),
+      spdy_session_pool_(spdy_session_pool) {}
 
 SpdySessionPool::SpdySessionRequest::~SpdySessionRequest() {
   if (spdy_session_pool_)
@@ -330,7 +334,7 @@ base::WeakPtr<SpdySession> SpdySessionPool::RequestSession(
   RequestSet* request_set = &spdy_session_request_map_[key];
   *is_first_request_for_session = request_set->empty();
   *spdy_session_request =
-      std::make_unique<SpdySessionRequest>(key, delegate, this);
+      std::make_unique<SpdySessionRequest>(key, is_websocket, delegate, this);
   request_set->insert(spdy_session_request->get());
 
   if (on_request_destroyed_callback && !*is_first_request_for_session) {
@@ -642,11 +646,21 @@ void SpdySessionPool::UpdatePendingRequests(const SpdySessionKey& key) {
       if (iter == spdy_session_request_map_.end())
         break;
       RequestSet* request_set = &iter->second;
-      RequestSet::iterator request = request_set->begin();
+      // Find a request that can use the socket, if any.
+      RequestSet::iterator request;
+      for (request = request_set->begin(); request != request_set->end();
+           ++request) {
+        // If the request is for use with websockets, and the session doesn't
+        // support websockets, skip over the request.
+        if ((*request)->is_websocket() && !new_session->support_websocket())
+          continue;
+        break;
+      }
+      if (request == request_set->end())
+        break;
+
       SpdySessionRequest::Delegate* delegate = (*request)->delegate();
-
       RemoveRequestInternal(iter, request);
-
       delegate->OnSpdySessionAvailable(new_session);
     }
   }
