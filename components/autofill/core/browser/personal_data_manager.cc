@@ -1184,7 +1184,7 @@ std::vector<Suggestion> PersonalDataManager::GetProfileSuggestions(
   formatter = base::FeatureList::IsEnabled(
                   autofill::features::kAutofillUseImprovedLabelDisambiguation)
                   ? LabelFormatter::Create(app_locale_, type.GetStorableType(),
-                                           field_types)
+                                           field_types, unique_matched_profiles)
                   : nullptr;
 #endif
 

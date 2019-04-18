@@ -126,18 +126,6 @@ base::string16 ConstructLabelLine(const std::vector<base::string16>& parts) {
                                      IDS_AUTOFILL_SUGGESTION_LABEL_SEPARATOR));
 }
 
-base::string16 ConstructLabelLines(const base::string16& top_line,
-                                   const base::string16& bottom_line) {
-  if (top_line.empty()) {
-    return bottom_line;
-  }
-  if (bottom_line.empty()) {
-    return top_line;
-  }
-  return base::JoinString({top_line, bottom_line},
-                          base::ASCIIToUTF16(kMultilineLabelDelimiter));
-}
-
 AutofillProfile MakeTrimmedProfile(const AutofillProfile& profile,
                                    const std::string& app_locale,
                                    const std::vector<ServerFieldType>& types) {

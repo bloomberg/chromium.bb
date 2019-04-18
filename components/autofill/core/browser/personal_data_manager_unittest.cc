@@ -2545,8 +2545,7 @@ TEST_F(PersonalDataManagerTest,
 }
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
-TEST_F(PersonalDataManagerTest,
-       GetProfileSuggestionsWithImprovedLabelDisambiguationForContactForm) {
+TEST_F(PersonalDataManagerTest, GetProfileSuggestions_ForContactForm) {
   AutofillProfile profile(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetProfileInfo(&profile, "Hoa", "", "Pham", "hoa.pham@comcast.net", "",
                        "401 Merrimack St", "", "Lowell", "MA", "01852", "US",
@@ -2554,9 +2553,8 @@ TEST_F(PersonalDataManagerTest,
   AddProfileToPersonalDataManager(profile);
 
   base::test::ScopedFeatureList scoped_features;
-  scoped_features.InitWithFeatures(
-      /*enabled_features=*/{features::kAutofillUseImprovedLabelDisambiguation},
-      /*disabled_features=*/{});
+  scoped_features.InitAndEnableFeature(
+      features::kAutofillUseImprovedLabelDisambiguation);
 
   EXPECT_THAT(
       personal_data_->GetProfileSuggestions(
@@ -2577,8 +2575,7 @@ TEST_F(PersonalDataManagerTest,
 #endif  // #if !defined(OS_ANDROID) && !defined(OS_IOS)
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
-TEST_F(PersonalDataManagerTest,
-       GetProfileSuggestionsWithImprovedLabelDisambiguationForAddressForm) {
+TEST_F(PersonalDataManagerTest, GetProfileSuggestions_ForAddressForm) {
   AutofillProfile profile(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetProfileInfo(&profile, "Hoa", "", "Pham", "hoa.pham@comcast.net", "",
                        "401 Merrimack St", "", "Lowell", "MA", "01852", "US",
@@ -2586,9 +2583,8 @@ TEST_F(PersonalDataManagerTest,
   AddProfileToPersonalDataManager(profile);
 
   base::test::ScopedFeatureList scoped_features;
-  scoped_features.InitWithFeatures(
-      /*enabled_features=*/{features::kAutofillUseImprovedLabelDisambiguation},
-      /*disabled_features=*/{});
+  scoped_features.InitAndEnableFeature(
+      features::kAutofillUseImprovedLabelDisambiguation);
 
   EXPECT_THAT(personal_data_->GetProfileSuggestions(
                   AutofillType(NAME_FULL), base::string16(), false,
@@ -2607,9 +2603,7 @@ TEST_F(PersonalDataManagerTest,
 #endif  // #if !defined(OS_ANDROID) && !defined(OS_IOS)
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
-TEST_F(
-    PersonalDataManagerTest,
-    GetProfileSuggestionsWithImprovedLabelDisambiguationForAddressPhoneForm) {
+TEST_F(PersonalDataManagerTest, GetProfileSuggestions_ForAddressPhoneForm) {
   AutofillProfile profile(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetProfileInfo(&profile, "Hoa", "", "Pham", "hoa.pham@comcast.net", "",
                        "401 Merrimack St", "", "Lowell", "MA", "01852", "US",
@@ -2617,9 +2611,8 @@ TEST_F(
   AddProfileToPersonalDataManager(profile);
 
   base::test::ScopedFeatureList scoped_features;
-  scoped_features.InitWithFeatures(
-      /*enabled_features=*/{features::kAutofillUseImprovedLabelDisambiguation},
-      /*disabled_features=*/{});
+  scoped_features.InitAndEnableFeature(
+      features::kAutofillUseImprovedLabelDisambiguation);
 
   EXPECT_THAT(
       personal_data_->GetProfileSuggestions(
@@ -2640,9 +2633,7 @@ TEST_F(
 #endif  // #if !defined(OS_ANDROID) && !defined(OS_IOS)
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
-TEST_F(
-    PersonalDataManagerTest,
-    GetProfileSuggestionsWithImprovedLabelDisambiguationForAddressEmailForm) {
+TEST_F(PersonalDataManagerTest, GetProfileSuggestions_ForAddressEmailForm) {
   AutofillProfile profile(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetProfileInfo(&profile, "Hoa", "", "Pham", "hoa.pham@comcast.net", "",
                        "401 Merrimack St", "", "Lowell", "MA", "01852", "US",
@@ -2650,9 +2641,8 @@ TEST_F(
   AddProfileToPersonalDataManager(profile);
 
   base::test::ScopedFeatureList scoped_features;
-  scoped_features.InitWithFeatures(
-      /*enabled_features=*/{features::kAutofillUseImprovedLabelDisambiguation},
-      /*disabled_features=*/{});
+  scoped_features.InitAndEnableFeature(
+      features::kAutofillUseImprovedLabelDisambiguation);
 
   EXPECT_THAT(
       personal_data_->GetProfileSuggestions(
@@ -2669,6 +2659,98 @@ TEST_F(
               ConstructLabelLine({base::ASCIIToUTF16("401 Merrimack St"),
                                   base::ASCIIToUTF16("hoa.pham@comcast.net")})),
           testing::Field(&Suggestion::icon, "accountBoxIcon"))));
+}
+#endif  // #if !defined(OS_ANDROID) && !defined(OS_IOS)
+
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+TEST_F(PersonalDataManagerTest, GetProfileSuggestions_FormWithOneProfile) {
+  AutofillProfile profile(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetProfileInfo(&profile, "Hoa", "", "Pham", "hoa.pham@comcast.net", "",
+                       "401 Merrimack St", "", "Lowell", "MA", "01852", "US",
+                       "19786744120");
+  AddProfileToPersonalDataManager(profile);
+
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitAndEnableFeature(
+      features::kAutofillUseImprovedLabelDisambiguation);
+
+  EXPECT_THAT(
+      personal_data_->GetProfileSuggestions(
+          AutofillType(NAME_FULL), base::string16(), false,
+          std::vector<ServerFieldType>{NAME_FULL, ADDRESS_HOME_STREET_ADDRESS,
+                                       EMAIL_ADDRESS, PHONE_HOME_WHOLE_NUMBER}),
+      ElementsAre(AllOf(
+          testing::Field(
+              &Suggestion::label,
+              ConstructLabelLine({base::ASCIIToUTF16("401 Merrimack St")})),
+          testing::Field(
+              &Suggestion::additional_label,
+              ConstructLabelLine({base::ASCIIToUTF16("401 Merrimack St")})),
+          testing::Field(&Suggestion::icon, "accountBoxIcon"))));
+}
+#endif  // #if !defined(OS_ANDROID) && !defined(OS_IOS)
+
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+TEST_F(PersonalDataManagerTest,
+       GetProfileSuggestions_ForAddressContactFormWithProfiles) {
+  AutofillProfile profile1(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetProfileInfo(&profile1, "Hoa", "", "Pham", "hoa.pham@comcast.net", "",
+                       "401 Merrimack St", "", "Lowell", "MA", "01852", "US",
+                       "19786744120");
+
+  AutofillProfile profile2(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetProfileInfo(&profile2, "Hoa", "", "Pham", "hp@aol.com", "",
+                       "216 Broadway St", "", "Lowell", "MA", "01854", "US",
+                       "19784523366");
+
+  // The profiles' use dates and counts are set make this test deterministic.
+  // The suggestion created with data from profile1 should be ranked higher
+  // than profile2's associated suggestion. This ensures that profile1's
+  // suggestion is the first element in the collection returned by
+  // GetProfileSuggestions.
+  profile1.set_use_date(AutofillClock::Now());
+  profile1.set_use_count(10);
+  profile2.set_use_date(AutofillClock::Now() - base::TimeDelta::FromDays(10));
+  profile2.set_use_count(1);
+
+  EXPECT_TRUE(profile1.HasGreaterFrecencyThan(&profile2, base::Time::Now()));
+
+  AddProfileToPersonalDataManager(profile1);
+  AddProfileToPersonalDataManager(profile2);
+
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitAndEnableFeature(
+      features::kAutofillUseImprovedLabelDisambiguation);
+
+  EXPECT_THAT(
+      personal_data_->GetProfileSuggestions(
+          AutofillType(NAME_FULL), base::string16(), false,
+          std::vector<ServerFieldType>{NAME_FULL, ADDRESS_HOME_STREET_ADDRESS,
+                                       EMAIL_ADDRESS, PHONE_HOME_WHOLE_NUMBER}),
+      ElementsAre(
+          AllOf(
+              testing::Field(&Suggestion::label,
+                             ConstructLabelLine(
+                                 {base::ASCIIToUTF16("401 Merrimack St"),
+                                  base::ASCIIToUTF16("(978) 674-4120"),
+                                  base::ASCIIToUTF16("hoa.pham@comcast.net")})),
+              testing::Field(&Suggestion::additional_label,
+                             ConstructLabelLine(
+                                 {base::ASCIIToUTF16("401 Merrimack St"),
+                                  base::ASCIIToUTF16("(978) 674-4120"),
+                                  base::ASCIIToUTF16("hoa.pham@comcast.net")})),
+              testing::Field(&Suggestion::icon, "accountBoxIcon")),
+          AllOf(testing::Field(
+                    &Suggestion::label,
+                    ConstructLabelLine({base::ASCIIToUTF16("216 Broadway St"),
+                                        base::ASCIIToUTF16("(978) 452-3366"),
+                                        base::ASCIIToUTF16("hp@aol.com")})),
+                testing::Field(
+                    &Suggestion::additional_label,
+                    ConstructLabelLine({base::ASCIIToUTF16("216 Broadway St"),
+                                        base::ASCIIToUTF16("(978) 452-3366"),
+                                        base::ASCIIToUTF16("hp@aol.com")})),
+                testing::Field(&Suggestion::icon, "accountBoxIcon"))));
 }
 #endif  // #if !defined(OS_ANDROID) && !defined(OS_IOS)
 

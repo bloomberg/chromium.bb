@@ -16,14 +16,12 @@
 #include "ui/base/l10n/l10n_util.h"
 
 namespace autofill {
-
 namespace {
+
 using label_formatter_groups::kAddress;
 using label_formatter_groups::kEmail;
 using label_formatter_groups::kName;
 using label_formatter_groups::kPhone;
-
-}  // namespace
 
 TEST(LabelFormatterUtilsTest, DetermineGroupsForHomeNameAndAddress) {
   const std::vector<ServerFieldType> field_types{
@@ -242,4 +240,5 @@ TEST(LabelFormatterUtilsTest,
   EXPECT_FALSE(HaveSamePhoneNumbers({&profile2, &profile1}, "de"));
 }
 
+}  // namespace
 }  // namespace autofill
