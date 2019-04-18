@@ -54,6 +54,8 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/network/mime/mime_type_from_url.h"
 #include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
+#include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/public/scheduling_policy.h"
 
 namespace blink {
 
@@ -122,6 +124,11 @@ HTMLPlugInElement::HTMLPlugInElement(
       should_prefer_plug_ins_for_images_(prefer_plug_ins_for_images_option ==
                                          kShouldPreferPlugInsForImages) {
   SetHasCustomStyleCallbacks();
+  if (doc.GetScheduler()) {
+    doc.GetScheduler()->RegisterStickyFeature(
+        SchedulingPolicy::Feature::kContainsPlugins,
+        {SchedulingPolicy::DisableBackForwardCache()});
+  }
 }
 
 HTMLPlugInElement::~HTMLPlugInElement() {

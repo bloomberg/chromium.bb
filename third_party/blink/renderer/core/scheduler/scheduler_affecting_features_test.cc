@@ -2,11 +2,14 @@
 // Use of this source code if governed by a BSD-style license that can be
 // found in LICENSE file.
 
+#include "base/run_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/public/web/web_script_source.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
+#include "third_party/blink/renderer/core/testing/fake_web_plugin.h"
+#include "third_party/blink/renderer/core/testing/scoped_fake_plugin_registry.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
 #include "third_party/blink/renderer/platform/scheduler/public/page_scheduler.h"
@@ -224,6 +227,29 @@ TEST_F(SchedulingAffectingFeaturesTest, EventListener_Resume) {
   EXPECT_THAT(PageScheduler()->GetActiveFeaturesOptingOutFromBackForwardCache(),
               testing::UnorderedElementsAre(
                   SchedulingPolicy::Feature::kResumeEventListener));
+}
+
+TEST_F(SchedulingAffectingFeaturesTest, Plugins) {
+  class PluginCreatingWebFrameClient
+      : public frame_test_helpers::TestWebFrameClient {
+   public:
+    // WebLocalFrameClient overrides:
+    WebPlugin* CreatePlugin(const WebPluginParams& params) override {
+      return new FakeWebPlugin(params);
+    }
+  };
+
+  ScopedFakePluginRegistry fake_plugins;
+  SimRequest main_resource("https://example.com/", "text/html");
+  LoadURL("https://example.com/");
+  main_resource.Complete(
+      "<object type='application/x-webkit-test-plugin'></object>");
+
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_THAT(PageScheduler()->GetActiveFeaturesOptingOutFromBackForwardCache(),
+              testing::UnorderedElementsAre(
+                  SchedulingPolicy::Feature::kContainsPlugins));
 }
 
 }  // namespace blink
