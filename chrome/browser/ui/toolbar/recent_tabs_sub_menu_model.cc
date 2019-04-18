@@ -30,7 +30,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/app_menu_model.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/favicon_base/favicon_request_metrics.h"
 #include "components/favicon_base/favicon_types.h"
 #include "components/feature_engagement/buildflags.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -576,9 +575,6 @@ void RecentTabsSubMenuModel::AddTabFavicon(int command_id, const GURL& url) {
     scoped_refptr<base::RefCountedMemory> favicon_png;
     if (open_tabs &&
         open_tabs->GetSyncedFaviconForPageURL(url.spec(), &favicon_png)) {
-      favicon::RecordFaviconRequestMetric(
-          favicon::FaviconRequestOrigin::RECENTLY_CLOSED_TABS,
-          favicon::FaviconAvailability::kSync);
       gfx::Image image = gfx::Image::CreateFrom1xPNGBytes(favicon_png);
       SetIcon(index_in_menu, image);
       return;
@@ -607,16 +603,8 @@ void RecentTabsSubMenuModel::AddTabFavicon(int command_id, const GURL& url) {
 void RecentTabsSubMenuModel::OnFaviconDataAvailable(
     int command_id,
     const favicon_base::FaviconImageResult& image_result) {
-  if (image_result.image.IsEmpty()) {
-    favicon::RecordFaviconRequestMetric(
-        favicon::FaviconRequestOrigin::RECENTLY_CLOSED_TABS,
-        favicon::FaviconAvailability::kNotAvailable);
+  if (image_result.image.IsEmpty())
     return;
-  }
-
-  favicon::RecordFaviconRequestMetric(
-      favicon::FaviconRequestOrigin::RECENTLY_CLOSED_TABS,
-      favicon::FaviconAvailability::kLocal);
   int index_in_menu = GetIndexOfCommandId(command_id);
   DCHECK_GT(index_in_menu, -1);
   SetIcon(index_in_menu, image_result.image);
