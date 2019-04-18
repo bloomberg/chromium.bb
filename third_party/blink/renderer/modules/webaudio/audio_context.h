@@ -80,6 +80,8 @@ class MODULES_EXPORT AudioContext : public BaseAudioContext {
 
   void HandleAudibility(AudioBus* destination_bus);
 
+  double RenderCapacity() final;
+
  protected:
   void Uninitialize() final;
 

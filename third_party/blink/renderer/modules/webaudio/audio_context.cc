@@ -671,4 +671,10 @@ void AudioContext::OnAudioContextManagerServiceConnectionError() {
   audio_context_manager_ = nullptr;
 }
 
+double AudioContext::RenderCapacity() {
+  DCHECK(IsMainThread());
+  GraphAutoLocker locker(this);
+  return callback_metric_.render_duration / callback_metric_.callback_interval;
+}
+
 }  // namespace blink

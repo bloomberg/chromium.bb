@@ -94,6 +94,9 @@
                             "setRequestInterception", "continueInterceptedRequest", "getResponseBodyForInterception",
                             "takeResponseBodyForInterceptionAsStream"],
                 "async": ["getResponseBody", "getRequestPostData"]
+            },
+            {
+                "domain": "WebAudio"
             }
         ]
     },

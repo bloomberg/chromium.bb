@@ -173,6 +173,8 @@ inspector_protocol_generate("protocol_sources") {
     "inspector/protocol/Runtime.h",
     "inspector/protocol/Security.cpp",
     "inspector/protocol/Security.h",
+    "inspector/protocol/WebAudio.cpp",
+    "inspector/protocol/WebAudio.h",
   ]
 
   deps = [
