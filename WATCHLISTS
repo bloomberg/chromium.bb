@@ -188,15 +188,14 @@
                   'chrome/browser/android/autofill_assistant/|'\
                   'components/autofill_assistant/',
     },
-    'autofill_credit_cards': {
+    'autofill_payments': {
       'filepath': 'chrome/browser/ui/autofill/chrome_autofill_client*|'\
-                  'chrome/browser/ui/autofill/save_card_*|'\
-                  'chrome/browser/ui/views/autofill/card_unmask_*|'\
-                  'chrome/browser/ui/views/autofill/save_card_*|'\
-                  'components/autofill/core/browser/autofill_save_card_infobar_*|'\
-                  'components/autofill/core/browser/credit_card_save_manager*|'\
-                  'components/autofill/core/browser/form_data_importer*|'\
-                  'components/autofill/core/browser/ui/',
+                  'chrome/browser/ui/autofill/payments/|'\
+                  'chrome/browser/ui/views/autofill/payments/|'\
+                  'components/autofill/core/browser/payments/|'\
+                  'components/autofill/core/browser/ui/payments/|'\
+                  'components/autofill/core/common/autofill_payments_features*|'\
+                  'components/autofill_payments_strings*',
     },
     'background_fetch': {
       'filepath': 'background_fetch|'\
@@ -1906,13 +1905,12 @@
                         'piman+watch@chromium.org'],
     'autoclick': ['katie+watch@chromium.org'],
     'autofill': ['anthonyvd+autofillwatch@chromium.org',
-                 'dlkumar+autofillwatch@google.com',
                  'ftirelo+autofillwatch@chromium.org',
                  'mathp+autofillwatch@chromium.org',
                  'rogerm+autofillwatch@chromium.org',
                  'tmartino+autofillwatch@chromium.org'],
     'autofill_assistant': ['autofill_assistant+watch@google.com'],
-    'autofill_credit_cards': ['jsaul+autofillwatch@google.com'],
+    'autofill_payments': ['jsaul+autofillwatch@google.com'],
     'background_fetch': ['peter@chromium.org',
                          'rayankans+watch@chromium.org',
                          'nator@chromium.org'],
