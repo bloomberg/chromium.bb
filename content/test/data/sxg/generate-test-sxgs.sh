@@ -104,6 +104,13 @@ gen-signedexchange \
   sed 's/585858/4f4f4f/' |
   xxd -r -p > test.example.org_test_bad_mice.sxg
 
+# Generate the signed exchange file with bad MICE integrity (small).
+# s/Loc/OOO/
+xxd -p test.example.org_test.sxg |
+  tr -d '\n' |
+  sed 's/4c6f63/4f4f4f/' |
+  xxd -r -p > test.example.org_test_bad_mice_small.sxg
+
 # Generate the signed exchange file with noext certificate
 gen-signedexchange \
   -version 1b3 \
