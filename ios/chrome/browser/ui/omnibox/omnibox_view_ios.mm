@@ -815,8 +815,12 @@ void OmniboxViewIOS::EmphasizeURLComponents() {
 #pragma mark - OmniboxPopupViewSuggestionsDelegate
 
 void OmniboxViewIOS::OnTopmostSuggestionImageChanged(
-    AutocompleteMatchType::Type type) {
-  [left_image_consumer_ setLeftImageForAutocompleteType:type];
+    AutocompleteMatchType::Type match_type,
+    base::Optional<SuggestionAnswer::AnswerType> answer_type,
+    GURL favicon_url) {
+  [left_image_consumer_ setLeftImageForAutocompleteType:match_type
+                                             answerType:answer_type
+                                             faviconURL:favicon_url];
 }
 
 void OmniboxViewIOS::OnResultsChanged(const AutocompleteResult& result) {

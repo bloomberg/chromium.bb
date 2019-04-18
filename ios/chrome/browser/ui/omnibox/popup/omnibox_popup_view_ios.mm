@@ -51,7 +51,16 @@ OmniboxPopupViewIOS::~OmniboxPopupViewIOS() {
 void OmniboxPopupViewIOS::UpdateEditViewIcon() {
   const AutocompleteResult& result = model_->result();
   const AutocompleteMatch& match = result.match_at(model_->selected_line());
-  delegate_->OnTopmostSuggestionImageChanged(match.type);
+
+  base::Optional<SuggestionAnswer::AnswerType> optAnswerType = base::nullopt;
+  if (match.answer && match.answer->type() > 0 &&
+      match.answer->type() <
+          SuggestionAnswer::AnswerType::ANSWER_TYPE_TOTAL_COUNT) {
+    optAnswerType =
+        static_cast<SuggestionAnswer::AnswerType>(match.answer->type());
+  }
+  delegate_->OnTopmostSuggestionImageChanged(match.type, optAnswerType,
+                                             match.destination_url);
 }
 
 void OmniboxPopupViewIOS::UpdatePopupAppearance() {

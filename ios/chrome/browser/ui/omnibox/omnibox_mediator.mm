@@ -70,9 +70,13 @@
 
 #pragma mark - OmniboxLeftImageConsumer
 
-- (void)setLeftImageForAutocompleteType:(AutocompleteMatchType::Type)type {
+- (void)setLeftImageForAutocompleteType:(AutocompleteMatchType::Type)matchType
+                             answerType:
+                                 (base::Optional<SuggestionAnswer::AnswerType>)
+                                     answerType
+                             faviconURL:(GURL)faviconURL {
   UIImage* image = GetOmniboxSuggestionIconForAutocompleteMatchType(
-      type, /* is_starred */ false);
+      matchType, /* is_starred */ false);
   [self.consumer updateAutocompleteIcon:image];
 }
 
