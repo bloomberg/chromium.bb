@@ -289,7 +289,7 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
 
   // Returns a bitwise OR of bindings types that have been enabled for this
   // RenderFrame. See BindingsPolicy for details.
-  virtual int GetEnabledBindings() const = 0;
+  virtual int GetEnabledBindings() = 0;
 
 #if defined(OS_ANDROID)
   // Returns an InterfaceProvider for Java-implemented interfaces that are
@@ -356,7 +356,7 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // The effective flags include those which have been set by a
   // Content-Security-Policy header, in addition to those which are set by the
   // embedding frame.
-  virtual bool IsSandboxed(blink::WebSandboxFlags flags) const = 0;
+  virtual bool IsSandboxed(blink::WebSandboxFlags flags) = 0;
 
   // Calls |FlushForTesting()| on Network Service and FrameNavigationControl
   // related interfaces to make sure all in-flight mojo messages have been

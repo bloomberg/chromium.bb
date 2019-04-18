@@ -79,7 +79,7 @@ void TtsUtteranceImpl::SetText(const std::string& text) {
   text_ = text;
 }
 
-const std::string& TtsUtteranceImpl::GetText() const {
+const std::string& TtsUtteranceImpl::GetText() {
   return text_;
 }
 
@@ -87,7 +87,7 @@ void TtsUtteranceImpl::SetOptions(const base::Value* options) {
   options_.reset(options->DeepCopy());
 }
 
-const base::Value* TtsUtteranceImpl::GetOptions() const {
+const base::Value* TtsUtteranceImpl::GetOptions() {
   return options_.get();
 }
 
@@ -110,7 +110,7 @@ void TtsUtteranceImpl::SetVoiceName(const std::string& voice_name) {
   voice_name_ = voice_name;
 }
 
-const std::string& TtsUtteranceImpl::GetVoiceName() const {
+const std::string& TtsUtteranceImpl::GetVoiceName() {
   return voice_name_;
 }
 
@@ -118,7 +118,7 @@ void TtsUtteranceImpl::SetLang(const std::string& lang) {
   lang_ = lang;
 }
 
-const std::string& TtsUtteranceImpl::GetLang() const {
+const std::string& TtsUtteranceImpl::GetLang() {
   return lang_;
 }
 
@@ -139,7 +139,7 @@ void TtsUtteranceImpl::SetCanEnqueue(bool can_enqueue) {
   can_enqueue_ = can_enqueue;
 }
 
-bool TtsUtteranceImpl::GetCanEnqueue() const {
+bool TtsUtteranceImpl::GetCanEnqueue() {
   return can_enqueue_;
 }
 
@@ -148,7 +148,7 @@ void TtsUtteranceImpl::SetRequiredEventTypes(
   required_event_types_ = types;
 }
 
-const std::set<TtsEventType>& TtsUtteranceImpl::GetRequiredEventTypes() const {
+const std::set<TtsEventType>& TtsUtteranceImpl::GetRequiredEventTypes() {
   return required_event_types_;
 }
 
@@ -156,7 +156,7 @@ void TtsUtteranceImpl::SetDesiredEventTypes(
     const std::set<TtsEventType>& types) {
   desired_event_types_ = types;
 }
-const std::set<TtsEventType>& TtsUtteranceImpl::GetDesiredEventTypes() const {
+const std::set<TtsEventType>& TtsUtteranceImpl::GetDesiredEventTypes() {
   return desired_event_types_;
 }
 
@@ -164,7 +164,7 @@ void TtsUtteranceImpl::SetEngineId(const std::string& engine_id) {
   engine_id_ = engine_id;
 }
 
-const std::string& TtsUtteranceImpl::GetEngineId() const {
+const std::string& TtsUtteranceImpl::GetEngineId() {
   return engine_id_;
 }
 
@@ -173,19 +173,19 @@ void TtsUtteranceImpl::SetEventDelegate(
   event_delegate_ = event_delegate;
 }
 
-UtteranceEventDelegate* TtsUtteranceImpl::GetEventDelegate() const {
+UtteranceEventDelegate* TtsUtteranceImpl::GetEventDelegate() {
   return event_delegate_;
 }
 
-BrowserContext* TtsUtteranceImpl::GetBrowserContext() const {
+BrowserContext* TtsUtteranceImpl::GetBrowserContext() {
   return browser_context_;
 }
 
-int TtsUtteranceImpl::GetId() const {
+int TtsUtteranceImpl::GetId() {
   return id_;
 }
 
-bool TtsUtteranceImpl::IsFinished() const {
+bool TtsUtteranceImpl::IsFinished() {
   return finished_;
 }
 

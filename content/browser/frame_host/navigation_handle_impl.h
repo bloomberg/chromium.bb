@@ -64,7 +64,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   ~NavigationHandleImpl() override;
 
   // NavigationHandle implementation:
-  int64_t GetNavigationId() const override;
+  int64_t GetNavigationId() override;
   const GURL& GetURL() override;
   SiteInstanceImpl* GetStartingSiteInstance() override;
   bool IsInMainFrame() override;
@@ -104,7 +104,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   void RegisterThrottleForTesting(
       std::unique_ptr<NavigationThrottle> navigation_throttle) override;
   bool IsDeferredForTesting() override;
-  bool WasStartedFromContextMenu() const override;
+  bool WasStartedFromContextMenu() override;
   const GURL& GetSearchableFormURL() override;
   const std::string& GetSearchableFormEncoding() override;
   ReloadType GetReloadType() override;

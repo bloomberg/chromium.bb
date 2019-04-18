@@ -100,7 +100,7 @@ void SpeechMonitor::GetVoices(std::vector<content::VoiceData>* out_voices) {
 }
 
 void SpeechMonitor::WillSpeakUtteranceWithVoice(
-    const content::TtsUtterance* utterance,
+    content::TtsUtterance* utterance,
     const content::VoiceData& voice_data) {
   // Blacklist some phrases.
   // Filter out empty utterances which can be used to trigger a start event from

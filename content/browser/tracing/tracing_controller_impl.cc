@@ -211,7 +211,7 @@ void TracingControllerImpl::DisconnectFromService() {
 
 // Can be called on any thread.
 std::unique_ptr<base::DictionaryValue>
-TracingControllerImpl::GenerateMetadataDict() const {
+TracingControllerImpl::GenerateMetadataDict() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   auto metadata_dict = std::make_unique<base::DictionaryValue>();
 
@@ -537,7 +537,7 @@ bool TracingControllerImpl::GetTraceBufferUsage(
   return true;
 }
 
-bool TracingControllerImpl::IsTracing() const {
+bool TracingControllerImpl::IsTracing() {
   return trace_config_ != nullptr;
 }
 

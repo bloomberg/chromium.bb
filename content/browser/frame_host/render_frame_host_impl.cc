@@ -1192,7 +1192,7 @@ void RenderFrameHostImpl::MarkInitiatorsAsRequiringSeparateURLLoaderFactory(
   }
 }
 
-bool RenderFrameHostImpl::IsSandboxed(blink::WebSandboxFlags flags) const {
+bool RenderFrameHostImpl::IsSandboxed(blink::WebSandboxFlags flags) {
   return static_cast<int>(active_sandbox_flags_) & static_cast<int>(flags);
 }
 
@@ -2837,7 +2837,7 @@ void RenderFrameHostImpl::AllowBindings(int bindings_flags) {
   }
 }
 
-int RenderFrameHostImpl::GetEnabledBindings() const {
+int RenderFrameHostImpl::GetEnabledBindings() {
   return enabled_bindings_;
 }
 

@@ -230,7 +230,7 @@ void DomDistillerViewerSourceBrowserTest::ViewSingleDistilledPage(
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(contents_after_nav != NULL);
   EXPECT_EQ(url, contents_after_nav->GetLastCommittedURL());
-  const content::RenderFrameHost* render_frame_host =
+  content::RenderFrameHost* render_frame_host =
       contents_after_nav->GetMainFrame();
   EXPECT_EQ(0, render_frame_host->GetEnabledBindings());
   EXPECT_EQ(expected_mime_type, contents_after_nav->GetContentsMimeType());

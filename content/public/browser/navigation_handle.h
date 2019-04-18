@@ -52,7 +52,7 @@ class CONTENT_EXPORT NavigationHandle {
   // some may change during navigation (e.g. due to server redirects).
 
   // Get a unique ID for this navigation.
-  virtual int64_t GetNavigationId() const = 0;
+  virtual int64_t GetNavigationId() = 0;
 
   // The URL the frame is navigating to. This may change during the navigation
   // when encountering a server redirect.
@@ -113,7 +113,7 @@ class CONTENT_EXPORT NavigationHandle {
   virtual base::TimeTicks NavigationInputStart() = 0;
 
   // Whether or not the navigation was started within a context menu.
-  virtual bool WasStartedFromContextMenu() const = 0;
+  virtual bool WasStartedFromContextMenu() = 0;
 
   // Returns the URL and encoding of an INPUT field that corresponds to a
   // searchable form request.
