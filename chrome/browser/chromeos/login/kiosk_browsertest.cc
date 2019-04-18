@@ -61,6 +61,7 @@
 #include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "chromeos/settings/cros_settings_provider.h"
+#include "components/crx_file/crx_verifier.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "content/public/browser/notification_observer.h"
@@ -74,6 +75,7 @@
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/sandboxed_unpacker.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/switches.h"
 #include "extensions/components/native_app_window/native_app_window_views.h"
@@ -460,7 +462,10 @@ class AppDataLoadWaiter : public KioskAppManagerObserver {
 
 class KioskTest : public OobeBaseTest {
  public:
-  KioskTest() : settings_helper_(false), fake_cws_(new FakeCWS) {
+  KioskTest()
+      : settings_helper_(false),
+        fake_cws_(new FakeCWS),
+        verifier_format_override_(crx_file::VerifierFormat::CRX3) {
     set_exit_when_last_browser_closes(false);
 
     // This test does not operate any real App, so App data does not exist.
@@ -840,6 +845,8 @@ class KioskTest : public OobeBaseTest {
   std::string test_crx_file_;
   std::unique_ptr<FakeCWS> fake_cws_;
   std::unique_ptr<MockUserManager> mock_user_manager_;
+  extensions::SandboxedUnpacker::ScopedVerifierFormatOverrideForTest
+      verifier_format_override_;
 
   DISALLOW_COPY_AND_ASSIGN(KioskTest);
 };

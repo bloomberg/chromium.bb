@@ -97,6 +97,7 @@
 #include "chromeos/login/auth/mock_auth_status_consumer.h"
 #include "chromeos/login/auth/user_context.h"
 #include "chromeos/network/policy_certificate_provider.h"
+#include "components/crx_file/crx_verifier.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
@@ -130,6 +131,7 @@
 #include "extensions/browser/install/crx_install_error.h"
 #include "extensions/browser/management_policy.h"
 #include "extensions/browser/notification_types.h"
+#include "extensions/browser/sandboxed_unpacker.h"
 #include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
@@ -449,7 +451,8 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
       : public_session_input_method_id_(
             base::StringPrintf(kPublicSessionInputMethodIDTemplate,
                                chromeos::extension_ime_util::kXkbExtensionId)),
-        contents_(NULL) {
+        contents_(NULL),
+        verifier_format_override_(crx_file::VerifierFormat::CRX3) {
     set_exit_when_last_browser_closes(false);
   }
 
@@ -792,6 +795,8 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
   base::ScopedTempDir cache_dir_;
 
  private:
+  extensions::SandboxedUnpacker::ScopedVerifierFormatOverrideForTest
+      verifier_format_override_;
   DISALLOW_COPY_AND_ASSIGN(DeviceLocalAccountTest);
 };
 
