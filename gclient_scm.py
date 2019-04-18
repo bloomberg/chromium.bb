@@ -597,8 +597,7 @@ class GitWrapper(SCMWrapper):
     # but whose branch(s) are the same as official repos.
     if (current_url.rstrip(b'/') != url.rstrip('/') and url != 'git://foo' and
         subprocess2.capture(
-            ['git', 'config',
-             'remote.%s.gclient-auto-fix-url' % self.remote],
+            ['git', 'config', 'remote.%s.gclient-auto-fix-url' % self.remote],
             cwd=self.checkout_path).strip() != 'False'):
       self.Print('_____ switching %s to a new upstream' % self.relpath)
       if not (options.force or options.reset):

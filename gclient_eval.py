@@ -19,6 +19,14 @@ else:
   from io import StringIO
 
 
+# TODO(crbug.com/953884): Remove this when python3 migration is done.
+try:
+  basestring
+except NameError:
+  # pylint: disable=redefined-builtin
+  basestring = str
+
+
 class _NodeDict(collections.MutableMapping):
   """Dict-like type that also stores information on AST nodes and tokens."""
   def __init__(self, data, tokens=None):
@@ -78,35 +86,30 @@ def _NodeDictSchema(dict_schema):
 
 # See https://github.com/keleshev/schema for docs how to configure schema.
 _GCLIENT_DEPS_SCHEMA = _NodeDictSchema({
-    schema.Optional(str):
+    schema.Optional(basestring):
         schema.Or(
             None,
-            str,
+            basestring,
             _NodeDictSchema({
                 # Repo and revision to check out under the path
                 # (same as if no dict was used).
-                'url':
-                    schema.Or(None, str),
+                'url': schema.Or(None, basestring),
 
                 # Optional condition string. The dep will only be processed
                 # if the condition evaluates to True.
-                schema.Optional('condition'):
-                    str,
-                schema.Optional('dep_type', default='git'):
-                    str,
+                schema.Optional('condition'): basestring,
+                schema.Optional('dep_type', default='git'): basestring,
             }),
             # CIPD package.
             _NodeDictSchema({
                 'packages': [
                     _NodeDictSchema({
-                        'package': str,
-                        'version': str,
+                        'package': basestring,
+                        'version': basestring,
                     })
                 ],
-                schema.Optional('condition'):
-                    str,
-                schema.Optional('dep_type', default='cipd'):
-                    str,
+                schema.Optional('condition'): basestring,
+                schema.Optional('dep_type', default='cipd'): basestring,
             }),
         ),
 })
@@ -114,26 +117,22 @@ _GCLIENT_DEPS_SCHEMA = _NodeDictSchema({
 _GCLIENT_HOOKS_SCHEMA = [
     _NodeDictSchema({
         # Hook action: list of command-line arguments to invoke.
-        'action': [str],
+        'action': [basestring],
 
         # Name of the hook. Doesn't affect operation.
-        schema.Optional('name'):
-            str,
+        schema.Optional('name'): basestring,
 
         # Hook pattern (regex). Originally intended to limit some hooks to run
         # only when files matching the pattern have changed. In practice, with
         # git, gclient runs all the hooks regardless of this field.
-        schema.Optional('pattern'):
-            str,
+        schema.Optional('pattern'): basestring,
 
         # Working directory where to execute the hook.
-        schema.Optional('cwd'):
-            str,
+        schema.Optional('cwd'): basestring,
 
         # Optional condition string. The hook will only be run
         # if the condition evaluates to True.
-        schema.Optional('condition'):
-            str,
+        schema.Optional('condition'): basestring,
     })
 ]
 
@@ -142,7 +141,7 @@ _GCLIENT_SCHEMA = schema.Schema(
         # List of host names from which dependencies are allowed (whitelist).
         # NOTE: when not present, all hosts are allowed.
         # NOTE: scoped to current DEPS file, not recursive.
-        schema.Optional('allowed_hosts'): [schema.Optional(str)],
+        schema.Optional('allowed_hosts'): [schema.Optional(basestring)],
 
         # Mapping from paths to repo and revision to check out under that path.
         # Applying this mapping to the on-disk checkout is the main purpose
@@ -152,95 +151,87 @@ _GCLIENT_SCHEMA = schema.Schema(
         #
         #   Var(): allows variable substitution (either from 'vars' dict below,
         #          or command-line override)
-        schema.Optional('deps'):
-            _GCLIENT_DEPS_SCHEMA,
+        schema.Optional('deps'): _GCLIENT_DEPS_SCHEMA,
 
         # Similar to 'deps' (see above) - also keyed by OS (e.g. 'linux').
         # Also see 'target_os'.
-        schema.Optional('deps_os'):
-            _NodeDictSchema({
-                schema.Optional(str): _GCLIENT_DEPS_SCHEMA,
-            }),
+        schema.Optional('deps_os'): _NodeDictSchema({
+            schema.Optional(basestring): _GCLIENT_DEPS_SCHEMA,
+        }),
 
         # Dependency to get gclient_gn_args* settings from. This allows these
         # values to be set in a recursedeps file, rather than requiring that
         # they exist in the top-level solution.
-        schema.Optional('gclient_gn_args_from'):
-            str,
+        schema.Optional('gclient_gn_args_from'): basestring,
 
         # Path to GN args file to write selected variables.
-        schema.Optional('gclient_gn_args_file'):
-            str,
+        schema.Optional('gclient_gn_args_file'): basestring,
 
         # Subset of variables to write to the GN args file (see above).
-        schema.Optional('gclient_gn_args'): [schema.Optional(str)],
+        schema.Optional('gclient_gn_args'): [schema.Optional(basestring)],
 
         # Hooks executed after gclient sync (unless suppressed), or explicitly
         # on gclient hooks. See _GCLIENT_HOOKS_SCHEMA for details.
         # Also see 'pre_deps_hooks'.
-        schema.Optional('hooks'):
-            _GCLIENT_HOOKS_SCHEMA,
+        schema.Optional('hooks'): _GCLIENT_HOOKS_SCHEMA,
 
         # Similar to 'hooks', also keyed by OS.
-        schema.Optional('hooks_os'):
-            _NodeDictSchema({
-                schema.Optional(str): _GCLIENT_HOOKS_SCHEMA
-            }),
+        schema.Optional('hooks_os'): _NodeDictSchema({
+            schema.Optional(basestring): _GCLIENT_HOOKS_SCHEMA
+        }),
 
         # Rules which #includes are allowed in the directory.
         # Also see 'skip_child_includes' and 'specific_include_rules'.
-        schema.Optional('include_rules'): [schema.Optional(str)],
+        schema.Optional('include_rules'): [schema.Optional(basestring)],
 
         # Hooks executed before processing DEPS. See 'hooks' for more details.
-        schema.Optional('pre_deps_hooks'):
-            _GCLIENT_HOOKS_SCHEMA,
+        schema.Optional('pre_deps_hooks'): _GCLIENT_HOOKS_SCHEMA,
 
         # Recursion limit for nested DEPS.
-        schema.Optional('recursion'):
-            int,
+        schema.Optional('recursion'): int,
 
         # Whitelists deps for which recursion should be enabled.
         schema.Optional('recursedeps'): [
-            schema.Optional(schema.Or(str, (str, str), [str, str])),
+            schema.Optional(schema.Or(
+                basestring,
+                (basestring, basestring),
+                [basestring, basestring]
+            )),
         ],
 
         # Blacklists directories for checking 'include_rules'.
-        schema.Optional('skip_child_includes'): [schema.Optional(str)],
+        schema.Optional('skip_child_includes'): [schema.Optional(basestring)],
 
         # Mapping from paths to include rules specific for that path.
         # See 'include_rules' for more details.
-        schema.Optional('specific_include_rules'):
-            _NodeDictSchema({
-                schema.Optional(str): [str]
-            }),
+        schema.Optional('specific_include_rules'): _NodeDictSchema({
+            schema.Optional(basestring): [basestring]
+        }),
 
         # List of additional OS names to consider when selecting dependencies
         # from deps_os.
-        schema.Optional('target_os'): [schema.Optional(str)],
+        schema.Optional('target_os'): [schema.Optional(basestring)],
 
         # For recursed-upon sub-dependencies, check out their own dependencies
         # relative to the parent's path, rather than relative to the .gclient
         # file.
-        schema.Optional('use_relative_paths'):
-            bool,
+        schema.Optional('use_relative_paths'): bool,
 
         # For recursed-upon sub-dependencies, run their hooks relative to the
         # parent's path instead of relative to the .gclient file.
-        schema.Optional('use_relative_hooks'):
-            bool,
+        schema.Optional('use_relative_hooks'): bool,
 
         # Variables that can be referenced using Var() - see 'deps'.
-        schema.Optional('vars'):
-            _NodeDictSchema({
-                schema.Optional(str): schema.Or(str, bool),
-            }),
+        schema.Optional('vars'): _NodeDictSchema({
+            schema.Optional(basestring): schema.Or(basestring, bool),
+        }),
     }))
 
 
 def _gclient_eval(node_or_string, filename='<unknown>', vars_dict=None):
   """Safely evaluates a single expression. Returns the result."""
   _allowed_names = {'None': None, 'True': True, 'False': False}
-  if isinstance(node_or_string, str):
+  if isinstance(node_or_string, basestring):
     node_or_string = ast.parse(node_or_string, filename=filename, mode='eval')
   if isinstance(node_or_string, ast.Expression):
     node_or_string = node_or_string.body
@@ -284,7 +275,7 @@ def _gclient_eval(node_or_string, filename='<unknown>', vars_dict=None):
             'Var takes exactly one argument (file %r, line %s)' % (
                 filename, getattr(node, 'lineno', '<unknown>')))
       arg = _convert(node.args[0])
-      if not isinstance(arg, str):
+      if not isinstance(arg, basestring):
         raise ValueError(
             'Var\'s argument must be a variable name (file %r, line %s)' % (
                 filename, getattr(node, 'lineno', '<unknown>')))
@@ -410,7 +401,7 @@ def ExecLegacy(content, filename='<unknown>', vars_override=None,
     return local_scope
 
   def _DeepFormat(node):
-    if isinstance(node, str):
+    if isinstance(node, basestring):
       return node.format(**vars_dict)
     elif isinstance(node, dict):
       return {k.format(**vars_dict): _DeepFormat(v) for k, v in node.items()}
@@ -562,7 +553,7 @@ def EvaluateCondition(condition, variables, referenced_variables=None):
 
         # Allow using "native" types, without wrapping everything in strings.
         # Note that schema constraints still apply to variables.
-        if not isinstance(value, str):
+        if not isinstance(value, basestring):
           return value
 
         # Recursively evaluate the variable reference.

@@ -28,6 +28,14 @@ import threading
 if sys.version_info.major == 2:
   codecs.lookup('string-escape')
 
+# TODO(crbug.com/953884): Remove this when python3 migration is done.
+try:
+  basestring
+except NameError:
+  # pylint: disable=redefined-builtin
+  basestring = str
+
+
 # Constants forwarded from subprocess.
 PIPE = subprocess.PIPE
 STDOUT = subprocess.STDOUT
@@ -214,8 +222,7 @@ class Popen(subprocess.Popen):
       # the list.
       kwargs['shell'] = bool(sys.platform=='win32')
 
-    if isinstance(args, str) or (sys.version_info.major == 2 and
-                                 isinstance(args, unicode)):
+    if isinstance(args, basestring):
       tmp_str = args
     elif isinstance(args, (list, tuple)):
       tmp_str = ' '.join(args)
@@ -458,8 +465,7 @@ def communicate(args, timeout=None, nag_timer=None, nag_max=None, **kwargs):
   """
   stdin = kwargs.pop('stdin', None)
   if stdin is not None:
-    if isinstance(stdin, str) or (sys.version_info.major == 2 and
-                                  isinstance(stdin, unicode)):
+    if isinstance(stdin, basestring):
       # When stdin is passed as an argument, use it as the actual input data and
       # set the Popen() parameter accordingly.
       kwargs['stdin'] = PIPE

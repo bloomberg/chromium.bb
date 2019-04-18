@@ -117,6 +117,14 @@ import subprocess2
 import setup_color
 
 
+# TODO(crbug.com/953884): Remove this when python3 migration is done.
+try:
+  basestring
+except NameError:
+  # pylint: disable=redefined-builtin
+  basestring = str
+
+
 # Singleton object to represent an unset cache_dir (as opposed to a disabled
 # one, e.g. if a spec explicitly says `cache_dir = None`.)
 UNSET_CACHE_DIR = object()
@@ -132,7 +140,7 @@ def ToGNString(value, allow_dicts = True):
   allow_dicts indicates if this function will allow converting dictionaries
   to GN scopes. This is only possible at the top level, you can't nest a
   GN scope in a list, so this should be set to False for recursive calls."""
-  if isinstance(value, str):
+  if isinstance(value, basestring):
     if value.find('\n') >= 0:
       raise GNException("Trying to print a string with a newline in it.")
     return '"' + \
@@ -290,7 +298,7 @@ class DependencySettings(object):
     self._custom_hooks = custom_hooks or []
 
     # Post process the url to remove trailing slashes.
-    if isinstance(self.url, str):
+    if isinstance(self.url, basestring):
       # urls are sometime incorrectly written as proto://host/path/@rev. Replace
       # it to proto://host/path@rev.
       self.set_url(self.url.replace('/@', '@'))
@@ -432,7 +440,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
 
     self._OverrideUrl()
     # This is inherited from WorkItem.  We want the URL to be a resource.
-    if self.url and isinstance(self.url, str):
+    if self.url and isinstance(self.url, basestring):
       # The url is usually given to gclient either as https://blah@123
       # or just https://blah.  The @123 portion is irrelevant.
       self.resources.append(self.url.split('@')[0])
@@ -452,7 +460,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
                    self.url, parsed_url)
       self.set_url(parsed_url)
 
-    elif isinstance(self.url, str):
+    elif isinstance(self.url, basestring):
       parsed_url = urlparse.urlparse(self.url)
       if (not parsed_url[0] and
           not re.match(r'^\w+\@[\w\.-]+\:[\w\/]+', parsed_url[2])):
@@ -741,7 +749,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
 
     if 'recursedeps' in local_scope:
       for ent in local_scope['recursedeps']:
-        if isinstance(ent, str):
+        if isinstance(ent, basestring):
           self.recursedeps[ent] = self.deps_file
         else:  # (depname, depsfilename)
           self.recursedeps[ent[0]] = ent[1]
@@ -1008,7 +1016,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     variables = self.get_vars()
     for arg in self._gn_args:
       value = variables[arg]
-      if isinstance(value, str):
+      if isinstance(value, basestring):
         value = gclient_eval.EvaluateCondition(value, variables)
       lines.append('%s = %s' % (arg, ToGNString(value)))
     with open(os.path.join(self.root.root_dir, self._gn_args_file), 'w') as f:
@@ -1386,21 +1394,6 @@ it or fix the checkout.
       exec(content, config_dict)
     except SyntaxError as e:
       gclient_utils.SyntaxErrorToError('.gclient', e)
-
-    # Supporting Unicode URLs in both Python 2 and 3 is annoying. Try to
-    # convert to ASCII in case the URL doesn't actually have any Unicode
-    # characters, otherwise raise an error.
-    # This isn't an issue on Python 3 because everything's Unicode anyway.
-    if sys.version_info.major == 2:
-      try:
-        url = config_dict['solutions'][0]['url']
-        if isinstance(url, unicode):
-          config_dict['solutions'][0]['url'] = url.encode('ascii')
-      except UnicodeEncodeError:
-        raise gclient_utils.Error(
-            "Invalid .gclient file. The url mustn't be unicode.")
-      except KeyError:
-        pass
 
     # Append any target OS that is not already being enforced to the tuple.
     target_os = config_dict.get('target_os', [])
