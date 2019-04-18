@@ -1306,12 +1306,12 @@ void DocumentLoader::DidCommitNavigation(
   if (response_.CacheControlContainsNoCache()) {
     GetFrame()->GetFrameScheduler()->RegisterStickyFeature(
         SchedulingPolicy::Feature::kMainResourceHasCacheControlNoCache,
-        {SchedulingPolicy::DisableBackForwardCache()});
+        {SchedulingPolicy::RecordMetricsForBackForwardCache()});
   }
   if (response_.CacheControlContainsNoStore()) {
     GetFrame()->GetFrameScheduler()->RegisterStickyFeature(
         SchedulingPolicy::Feature::kMainResourceHasCacheControlNoStore,
-        {SchedulingPolicy::DisableBackForwardCache()});
+        {SchedulingPolicy::RecordMetricsForBackForwardCache()});
   }
 
   // When a new navigation commits in the frame, subresource loading should be

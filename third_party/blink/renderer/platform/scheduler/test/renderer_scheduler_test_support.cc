@@ -91,7 +91,7 @@ class SimpleFrameScheduler : public FrameScheduler {
   void OnStoppedUsingFeature(SchedulingPolicy::Feature feature,
                              const SchedulingPolicy& policy) override {}
   WTF::HashSet<SchedulingPolicy::Feature>
-  GetActiveFeaturesOptingOutFromBackForwardCache() override {
+  GetActiveFeaturesTrackedForBackForwardCacheMetrics() override {
     return WTF::HashSet<SchedulingPolicy::Feature>();
   }
   base::WeakPtr<FrameScheduler> GetWeakPtr() override { return nullptr; }

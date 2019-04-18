@@ -1028,12 +1028,12 @@ void ResourceLoader::DidReceiveResponseInternal(
     if (response.CacheControlContainsNoCache()) {
       frame_scheduler->RegisterStickyFeature(
           SchedulingPolicy::Feature::kSubresourceHasCacheControlNoCache,
-          {SchedulingPolicy::DisableBackForwardCache()});
+          {SchedulingPolicy::RecordMetricsForBackForwardCache()});
     }
     if (response.CacheControlContainsNoStore()) {
       frame_scheduler->RegisterStickyFeature(
           SchedulingPolicy::Feature::kSubresourceHasCacheControlNoStore,
-          {SchedulingPolicy::DisableBackForwardCache()});
+          {SchedulingPolicy::RecordMetricsForBackForwardCache()});
     }
   }
 

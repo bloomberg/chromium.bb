@@ -180,7 +180,7 @@ void RegisterWithScheduler(ExecutionContext* execution_context,
   if (feature_for_scheduler) {
     execution_context->GetScheduler()->RegisterStickyFeature(
         feature_for_scheduler.value(),
-        {SchedulingPolicy::DisableBackForwardCache()});
+        {SchedulingPolicy::RecordMetricsForBackForwardCache()});
   }
 }
 

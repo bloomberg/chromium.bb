@@ -762,7 +762,7 @@ RTCPeerConnection::RTCPeerConnection(
       document->GetFrame()->GetFrameScheduler()->RegisterFeature(
           SchedulingPolicy::Feature::kWebRTC,
           {SchedulingPolicy::DisableAggressiveThrottling(),
-           SchedulingPolicy::DisableBackForwardCache()});
+           SchedulingPolicy::RecordMetricsForBackForwardCache()});
 }
 
 RTCPeerConnection::~RTCPeerConnection() {

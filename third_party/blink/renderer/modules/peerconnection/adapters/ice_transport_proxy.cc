@@ -25,7 +25,7 @@ IceTransportProxy::IceTransportProxy(
       feature_handle_for_scheduler_(frame.GetFrameScheduler()->RegisterFeature(
           SchedulingPolicy::Feature::kWebRTC,
           {SchedulingPolicy::DisableAggressiveThrottling(),
-           SchedulingPolicy::DisableBackForwardCache()})),
+           SchedulingPolicy::RecordMetricsForBackForwardCache()})),
       weak_ptr_factory_(this) {
   DCHECK(host_thread_);
   DCHECK(delegate_);
