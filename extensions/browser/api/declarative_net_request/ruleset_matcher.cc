@@ -4,6 +4,7 @@
 
 #include "extensions/browser/api/declarative_net_request/ruleset_matcher.h"
 
+#include <limits>
 #include <utility>
 
 #include "base/containers/span.h"
@@ -13,15 +14,18 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/timer/elapsed_timer.h"
 #include "content/public/common/resource_type.h"
+#include "extensions/browser/api/declarative_net_request/constants.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_source.h"
 #include "extensions/browser/api/declarative_net_request/utils.h"
 #include "extensions/browser/api/web_request/web_request_info.h"
+#include "extensions/common/api/declarative_net_request.h"
 #include "extensions/common/api/declarative_net_request/utils.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 
 namespace extensions {
 namespace declarative_net_request {
 namespace flat_rule = url_pattern_index::flat;
+namespace dnr_api = api::declarative_net_request;
 
 namespace {
 
@@ -101,6 +105,45 @@ std::vector<url_pattern_index::UrlPatternIndexMatcher> GetMatchers(
   return matchers;
 }
 
+bool HasAnyRules(const url_pattern_index::flat::UrlPatternIndex* index) {
+  DCHECK(index);
+
+  if (index->fallback_rules()->size() > 0)
+    return true;
+
+  // Iterate over all ngrams and check their corresponding rules.
+  for (auto* ngram_to_rules : *index->ngram_index()) {
+    if (ngram_to_rules == index->ngram_index_empty_slot())
+      continue;
+
+    if (ngram_to_rules->rule_list()->size() > 0)
+      return true;
+  }
+
+  return false;
+}
+
+bool IsExtraHeadersMatcherInternal(
+    const flat::ExtensionIndexedRuleset& ruleset) {
+  // We only support removing a subset of extra headers currently. If that
+  // changes, the implementation here should change as well.
+  static_assert(flat::ActionIndex_count == 6,
+                "Modify this method to ensure IsExtraHeadersMatcherInternal is "
+                "updated as new actions are added.");
+  static const flat::ActionIndex extra_header_indices[] = {
+      flat::ActionIndex_remove_cookie_header,
+      flat::ActionIndex_remove_referer_header,
+      flat::ActionIndex_remove_set_cookie_header,
+  };
+
+  for (flat::ActionIndex index : extra_header_indices) {
+    if (HasAnyRules(ruleset.index_list()->Get(index)))
+      return true;
+  }
+
+  return false;
+}
+
 }  // namespace
 
 RequestParams::RequestParams(const WebRequestInfo& info)
@@ -153,6 +196,46 @@ RulesetMatcher::LoadRulesetResult RulesetMatcher::CreateVerifiedMatcher(
 
 RulesetMatcher::~RulesetMatcher() = default;
 
+uint8_t RulesetMatcher::GetRemoveHeadersMask(const RequestParams& params,
+                                             uint8_t current_mask) const {
+  uint8_t mask = current_mask;
+
+  static_assert(kRemoveHeadersMask_Max <= std::numeric_limits<uint8_t>::max(),
+                "RemoveHeadersMask can't fit in a uint8_t");
+
+  // Iterate over each RemoveHeaderType value.
+  uint8_t bit = 0;
+  for (int i = 0; i <= dnr_api::REMOVE_HEADER_TYPE_LAST; ++i) {
+    switch (i) {
+      case dnr_api::REMOVE_HEADER_TYPE_NONE:
+        break;
+      case dnr_api::REMOVE_HEADER_TYPE_COOKIE:
+        bit = kRemoveHeadersMask_Cookie;
+        if (mask & bit)
+          break;
+        if (GetMatchingRule(params, flat::ActionIndex_remove_cookie_header))
+          mask |= bit;
+        break;
+      case dnr_api::REMOVE_HEADER_TYPE_REFERER:
+        bit = kRemoveHeadersMask_Referer;
+        if (mask & bit)
+          break;
+        if (GetMatchingRule(params, flat::ActionIndex_remove_referer_header))
+          mask |= bit;
+        break;
+      case dnr_api::REMOVE_HEADER_TYPE_SETCOOKIE:
+        bit = kRemoveHeadersMask_SetCookie;
+        if (mask & bit)
+          break;
+        if (GetMatchingRule(params, flat::ActionIndex_remove_set_cookie_header))
+          mask |= bit;
+        break;
+    }
+  }
+
+  return mask;
+}
+
 bool RulesetMatcher::HasMatchingRedirectRule(const RequestParams& params,
                                              GURL* redirect_url) const {
   DCHECK(redirect_url);
@@ -186,7 +269,8 @@ RulesetMatcher::RulesetMatcher(std::string ruleset_data,
       matchers_(GetMatchers(root_)),
       metadata_list_(root_->extension_metadata()),
       id_(id),
-      priority_(priority) {}
+      priority_(priority),
+      is_extra_headers_matcher_(IsExtraHeadersMatcherInternal(*root_)) {}
 
 const flat_rule::UrlRule* RulesetMatcher::GetMatchingRule(
     const RequestParams& params,

@@ -50,6 +50,7 @@ struct TestRuleAction {
 
   base::Optional<std::string> type;
   base::Optional<std::string> redirect_url;
+  base::Optional<std::vector<std::string>> remove_headers_list;
   std::unique_ptr<base::DictionaryValue> ToValue() const;
 };
 

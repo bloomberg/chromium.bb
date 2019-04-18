@@ -5,6 +5,7 @@
 #ifndef EXTENSIONS_BROWSER_API_DECLARATIVE_NET_REQUEST_RULESET_MATCHER_H_
 #define EXTENSIONS_BROWSER_API_DECLARATIVE_NET_REQUEST_RULESET_MATCHER_H_
 
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <vector>
@@ -92,10 +93,19 @@ class RulesetMatcher {
     return GetMatchingRule(params, flat::ActionIndex_allow);
   }
 
+  // Returns the bitmask of headers to remove from the request. The bitmask
+  // corresponds to RemoveHeadersMask type. |current_mask| denotes the current
+  // mask of headers to be removed and is included in the return value.
+  uint8_t GetRemoveHeadersMask(const RequestParams& params,
+                               uint8_t current_mask) const;
+
   // Returns whether the ruleset has a matching redirect rule. Populates
   // |redirect_url| on returning true. |redirect_url| must not be null.
   bool HasMatchingRedirectRule(const RequestParams& params,
                                GURL* redirect_url) const;
+
+  // Returns whether this modifies "extraHeaders".
+  bool IsExtraHeadersMatcher() const { return is_extra_headers_matcher_; }
 
   // ID of the ruleset. Each extension can have multiple rulesets with
   // their own unique ids.
@@ -129,6 +139,8 @@ class RulesetMatcher {
 
   size_t id_;
   size_t priority_;
+
+  const bool is_extra_headers_matcher_;
 
   DISALLOW_COPY_AND_ASSIGN(RulesetMatcher);
 };

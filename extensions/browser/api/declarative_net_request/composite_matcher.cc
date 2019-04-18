@@ -70,6 +70,7 @@ void CompositeMatcher::AddOrUpdateRuleset(
   // Clear the renderers' cache so that they take the updated rules into
   // account.
   ClearRendererCacheOnNavigation();
+  has_any_extra_headers_matcher_.reset();
 }
 
 bool CompositeMatcher::ShouldBlockRequest(const RequestParams& params) const {
@@ -99,6 +100,28 @@ bool CompositeMatcher::ShouldRedirectRequest(const RequestParams& params,
       return true;
   }
 
+  return false;
+}
+
+uint8_t CompositeMatcher::GetRemoveHeadersMask(const RequestParams& params,
+                                               uint8_t current_mask) const {
+  uint8_t mask = current_mask;
+  for (const auto& matcher : matchers_)
+    mask |= matcher->GetRemoveHeadersMask(params, mask);
+  return mask;
+}
+
+bool CompositeMatcher::HasAnyExtraHeadersMatcher() const {
+  if (!has_any_extra_headers_matcher_.has_value())
+    has_any_extra_headers_matcher_ = ComputeHasAnyExtraHeadersMatcher();
+  return has_any_extra_headers_matcher_.value();
+}
+
+bool CompositeMatcher::ComputeHasAnyExtraHeadersMatcher() const {
+  for (const auto& matcher : matchers_) {
+    if (matcher->IsExtraHeadersMatcher())
+      return true;
+  }
   return false;
 }
 

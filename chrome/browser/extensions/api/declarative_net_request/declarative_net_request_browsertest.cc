@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <memory>
 #include <set>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -62,6 +63,7 @@
 #include "extensions/browser/api/declarative_net_request/ruleset_source.h"
 #include "extensions/browser/api/declarative_net_request/test_utils.h"
 #include "extensions/browser/api/declarative_net_request/utils.h"
+#include "extensions/browser/api/web_request/web_request_api.h"
 #include "extensions/browser/api/web_request/web_request_info.h"
 #include "extensions/browser/blocked_action_type.h"
 #include "extensions/browser/extension_prefs.h"
@@ -85,6 +87,7 @@
 #include "ipc/ipc_message.h"
 #include "net/base/net_errors.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/test/embedded_test_server/default_handlers.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/test/test_data_directory.h"
@@ -252,7 +255,9 @@ class DeclarativeNetRequestBrowserTest
     : public ExtensionBrowserTest,
       public ::testing::WithParamInterface<ExtensionLoadType> {
  public:
-  DeclarativeNetRequestBrowserTest() {}
+  DeclarativeNetRequestBrowserTest() {
+    net::test_server::RegisterDefaultHandlers(embedded_test_server());
+  }
 
   // ExtensionBrowserTest overrides:
   void SetUpOnMainThread() override {
@@ -319,6 +324,15 @@ class DeclarativeNetRequestBrowserTest
   }
 
   content::PageType GetPageType() const { return GetPageType(browser()); }
+
+  std::string GetPageBody() const {
+    std::string result;
+    const char* script =
+        "domAutomationController.send(document.body.innerText.trim())";
+    EXPECT_TRUE(content::ExecuteScriptAndExtractString(web_contents(), script,
+                                                       &result));
+    return result;
+  }
 
   // Sets whether the extension should have a background script.
   void set_has_background_script(bool has_background_script) {
@@ -2304,6 +2318,61 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, DynamicRules) {
       {*block_dynamic_rule.id, *allow_rule.id, kMinValidID + 100}));
   EXPECT_FALSE(IsNavigationBlocked(google_url));
   EXPECT_TRUE(IsNavigationBlocked(yahoo_url));
+}
+
+// Tests removal of the 'Referer' request header.
+IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
+                       BlockRefererRequestHeader) {
+  auto test_referrer_blocked = [this](bool expected_referrer_blocked) {
+    const GURL initial_url =
+        embedded_test_server()->GetURL("example.com", "/simulate_click.html");
+    const GURL url_with_referrer =
+        embedded_test_server()->GetURL("example.com", "/echoheader?referer");
+    content::TestNavigationObserver observer(web_contents(),
+                                             2 /* number_of_navigations */);
+    observer.set_wait_event(
+        content::TestNavigationObserver::WaitEvent::kNavigationFinished);
+    ui_test_utils::NavigateToURL(browser(), initial_url);
+    observer.WaitForNavigationFinished();
+    ASSERT_EQ(url_with_referrer, observer.last_navigation_url());
+
+    std::string expected_referrer =
+        expected_referrer_blocked ? "None" : initial_url.spec();
+    EXPECT_EQ(expected_referrer, GetPageBody());
+  };
+
+  test_referrer_blocked(false);
+
+  // Load an extension which blocks the Referer header for requests to
+  // "example.com".
+  TestRule rule = CreateGenericRule();
+  rule.condition->url_filter = std::string("||example.com");
+  rule.condition->resource_types = std::vector<std::string>({"main_frame"});
+  rule.action->type = std::string("removeHeaders");
+  rule.action->remove_headers_list = std::vector<std::string>({"referer"});
+
+  // Set up an observer for RulesetMatcher to monitor the number of extension
+  // rulesets.
+  RulesetCountWaiter ruleset_count_waiter;
+  ScopedRulesetManagerTestObserver scoped_observer(
+      &ruleset_count_waiter,
+      base::WrapRefCounted(ExtensionSystem::Get(profile())->info_map()));
+
+  EXPECT_FALSE(ExtensionWebRequestEventRouter::GetInstance()
+                   ->HasAnyExtraHeadersListenerOnUI(profile()));
+  ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules({rule}));
+  ruleset_count_waiter.WaitForRulesetCount(1);
+  content::RunAllTasksUntilIdle();
+  EXPECT_TRUE(ExtensionWebRequestEventRouter::GetInstance()
+                  ->HasAnyExtraHeadersListenerOnUI(profile()));
+  test_referrer_blocked(true);
+
+  DisableExtension(last_loaded_extension_id());
+  ruleset_count_waiter.WaitForRulesetCount(0);
+  content::RunAllTasksUntilIdle();
+  EXPECT_FALSE(ExtensionWebRequestEventRouter::GetInstance()
+                   ->HasAnyExtraHeadersListenerOnUI(profile()));
+  test_referrer_blocked(false);
 }
 
 // Test fixture to verify that host permissions for the request url and the

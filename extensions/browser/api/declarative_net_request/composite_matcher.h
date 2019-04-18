@@ -5,6 +5,7 @@
 #ifndef EXTENSIONS_BROWSER_API_DECLARATIVE_NET_REQUEST_COMPOSITE_MATCHER_H_
 #define EXTENSIONS_BROWSER_API_DECLARATIVE_NET_REQUEST_COMPOSITE_MATCHER_H_
 
+#include <cstdint>
 #include <memory>
 #include <vector>
 
@@ -37,12 +38,27 @@ class CompositeMatcher {
   bool ShouldRedirectRequest(const RequestParams& params,
                              GURL* redirect_url) const;
 
+  // Returns the bitmask of headers to remove from the request. The bitmask
+  // corresponds to RemoveHeadersMask type. |current_mask| denotes the current
+  // mask of headers to be removed and is included in the return value.
+  uint8_t GetRemoveHeadersMask(const RequestParams& params,
+                               uint8_t current_mask) const;
+
+  // Returns whether this modifies "extraHeaders".
+  bool HasAnyExtraHeadersMatcher() const;
+
  private:
+  bool ComputeHasAnyExtraHeadersMatcher() const;
+
   // Sorts |matchers_| in descending order of priority.
   void SortMatchersByPriority();
 
   // Sorted by priority in descending order.
   MatcherList matchers_;
+
+  // Denotes the cached return value for |HasAnyExtraHeadersMatcher|. Care must
+  // be taken to reset this as this object is modified.
+  mutable base::Optional<bool> has_any_extra_headers_matcher_;
 
   DISALLOW_COPY_AND_ASSIGN(CompositeMatcher);
 };

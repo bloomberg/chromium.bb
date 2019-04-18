@@ -21,6 +21,7 @@
 #include "extensions/browser/api/declarative_net_request/ruleset_manager.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_matcher.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_source.h"
+#include "extensions/browser/api/web_request/web_request_api.h"
 #include "extensions/browser/extension_file_task_runner.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_prefs_factory.h"
@@ -51,32 +52,65 @@ static base::LazyInstance<
 void LoadRulesetOnIOThread(ExtensionId extension_id,
                            std::unique_ptr<CompositeMatcher> matcher,
                            URLPatternSet allowed_pages,
-                           InfoMap* info_map) {
+                           InfoMap* info_map,
+                           void* browser_context) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(info_map);
 
-  info_map->GetRulesetManager()->AddRuleset(extension_id, std::move(matcher),
-                                            std::move(allowed_pages));
+  RulesetManager* manager = info_map->GetRulesetManager();
+  bool increment_extra_headers = !manager->HasAnyExtraHeadersMatcher() &&
+                                 matcher->HasAnyExtraHeadersMatcher();
+  manager->AddRuleset(extension_id, std::move(matcher),
+                      std::move(allowed_pages));
+
+  if (increment_extra_headers) {
+    ExtensionWebRequestEventRouter::GetInstance()
+        ->IncrementExtraHeadersListenerCount(browser_context);
+  }
 }
 
-void UnloadRulesetOnIOThread(ExtensionId extension_id, InfoMap* info_map) {
+void UnloadRulesetOnIOThread(ExtensionId extension_id,
+                             InfoMap* info_map,
+                             void* browser_context) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(info_map);
+
+  RulesetManager* manager = info_map->GetRulesetManager();
+  bool had_extra_headers_matcher = manager->HasAnyExtraHeadersMatcher();
   info_map->GetRulesetManager()->RemoveRuleset(extension_id);
+
+  if (had_extra_headers_matcher && !manager->HasAnyExtraHeadersMatcher()) {
+    ExtensionWebRequestEventRouter::GetInstance()
+        ->DecrementExtraHeadersListenerCount(browser_context);
+  }
 }
 
 void UpdateRulesetMatcherOnIOThread(
     ExtensionId extension_id,
     std::unique_ptr<RulesetMatcher> ruleset_matcher,
-    InfoMap* info_map) {
+    InfoMap* info_map,
+    void* browser_context) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(info_map);
+
+  RulesetManager* manager = info_map->GetRulesetManager();
+  bool had_extra_headers_matcher = manager->HasAnyExtraHeadersMatcher();
 
   CompositeMatcher* matcher =
       info_map->GetRulesetManager()->GetMatcherForExtension(extension_id);
   DCHECK(matcher);
-
   matcher->AddOrUpdateRuleset(std::move(ruleset_matcher));
+
+  bool has_extra_headers_matcher = manager->HasAnyExtraHeadersMatcher();
+  if (had_extra_headers_matcher == has_extra_headers_matcher)
+    return;
+  if (has_extra_headers_matcher) {
+    ExtensionWebRequestEventRouter::GetInstance()
+        ->IncrementExtraHeadersListenerCount(browser_context);
+  } else {
+    ExtensionWebRequestEventRouter::GetInstance()
+        ->DecrementExtraHeadersListenerCount(browser_context);
+  }
 }
 
 }  // namespace
@@ -263,8 +297,9 @@ void RulesMonitorService::OnExtensionUnloaded(
 
   DCHECK(IsAPIAvailable());
 
-  base::OnceClosure unload_ruleset_on_io_task = base::BindOnce(
-      &UnloadRulesetOnIOThread, extension->id(), base::RetainedRef(info_map_));
+  base::OnceClosure unload_ruleset_on_io_task =
+      base::BindOnce(&UnloadRulesetOnIOThread, extension->id(),
+                     base::RetainedRef(info_map_), context_);
   base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
                            std::move(unload_ruleset_on_io_task));
 }
@@ -352,7 +387,7 @@ void RulesMonitorService::OnRulesetLoaded(LoadRequestData load_data) {
       base::BindOnce(&LoadRulesetOnIOThread, load_data.extension_id,
                      std::make_unique<CompositeMatcher>(std::move(matchers)),
                      prefs_->GetDNRAllowedPages(load_data.extension_id),
-                     base::RetainedRef(info_map_));
+                     base::RetainedRef(info_map_), context_);
   base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
                            std::move(load_ruleset_on_io));
 }
@@ -395,7 +430,7 @@ void RulesMonitorService::OnDynamicRulesUpdated(
   // Update the dynamic ruleset on the IO thread.
   base::OnceClosure update_ruleset_on_io = base::BindOnce(
       &UpdateRulesetMatcherOnIOThread, load_data.extension_id,
-      dynamic_ruleset.TakeMatcher(), base::RetainedRef(info_map_));
+      dynamic_ruleset.TakeMatcher(), base::RetainedRef(info_map_), context_);
   base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
                            std::move(update_ruleset_on_io));
 }

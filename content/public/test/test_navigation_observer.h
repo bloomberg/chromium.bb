@@ -48,6 +48,8 @@ class TestNavigationObserver {
 
   virtual ~TestNavigationObserver();
 
+  void set_wait_event(WaitEvent event) { wait_event_ = event; }
+
   // Runs a nested run loop and blocks until the expected number of navigations
   // stop loading or |target_url| has loaded.
   void Wait();
