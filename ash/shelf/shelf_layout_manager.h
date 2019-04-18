@@ -11,6 +11,7 @@
 #include "ash/ash_export.h"
 #include "ash/home_screen/home_launcher_gesture_handler_observer.h"
 #include "ash/public/cpp/shelf_types.h"
+#include "ash/rotator/screen_rotation_animator_observer.h"
 #include "ash/session/session_observer.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell_observer.h"
@@ -51,21 +52,24 @@ class ShelfWidget;
 // To respond to bounds changes in the status area StatusAreaLayoutManager works
 // closely with ShelfLayoutManager.
 // On mus, widget bounds management is handled by the window manager.
-class ASH_EXPORT ShelfLayoutManager
-    : public AppListControllerObserver,
-      public HomeLauncherGestureHandlerObserver,
-      public ShellObserver,
-      public OverviewObserver,
-      public ::wm::ActivationChangeObserver,
-      public LockStateObserver,
-      public wm::WmSnapToPixelLayoutManager,
-      public display::DisplayObserver,
-      public SessionObserver,
-      public WallpaperControllerObserver,
-      public LocaleChangeObserver {
+class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
+                                      public HomeLauncherGestureHandlerObserver,
+                                      public ShellObserver,
+                                      public OverviewObserver,
+                                      public ::wm::ActivationChangeObserver,
+                                      public LockStateObserver,
+                                      public wm::WmSnapToPixelLayoutManager,
+                                      public display::DisplayObserver,
+                                      public SessionObserver,
+                                      public WallpaperControllerObserver,
+                                      public LocaleChangeObserver,
+                                      public ScreenRotationAnimatorObserver {
  public:
   ShelfLayoutManager(ShelfWidget* shelf_widget, Shelf* shelf);
   ~ShelfLayoutManager() override;
+
+  // Initializes observers.
+  void InitObservers();
 
   // Clears internal data for shutdown process.
   void PrepareForShutdown();
@@ -164,6 +168,11 @@ class ASH_EXPORT ShelfLayoutManager
 
   // LocaleChangeObserver:
   void OnLocaleChanged() override;
+
+  // ScreenRotationAnimatorObserver:
+  void OnScreenCopiedBeforeRotation() override;
+  void OnScreenRotationAnimationFinished(ScreenRotationAnimator* animator,
+                                         bool canceled) override;
 
   ShelfVisibilityState visibility_state() const {
     return state_.visibility_state;
