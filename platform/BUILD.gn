@@ -29,6 +29,7 @@ source_set("platform") {
     "../third_party/abseil",
   ]
   configs += [ "..:root_config_overrides" ]
+  allow_circular_includes_from = [ "../base" ]
 
   if (build_with_chromium) {
     deps += [ ":chromium" ]

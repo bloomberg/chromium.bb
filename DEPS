@@ -25,6 +25,11 @@ vars = {
 }
 
 deps = {
+    'buildtools': {
+        'url': Var('chromium_git')+ '/chromium/src/buildtools' +
+            '@' + 'd5c58b84d50d256968271db459cd29b22bff1ba2',
+        'condition': 'not build_with_chromium',
+    },
     'buildtools/linux64': {
         'packages': [
             {
@@ -84,4 +89,29 @@ deps = {
 
 recursedeps = [
     'third_party/chromium_quic/src',
+]
+
+include_rules = [
+    '+api',
+    '+base',
+    '+msgs',
+    '+platform',
+    '+third_party',
+
+    # Don't include abseil from the root so the path can change via include_dirs
+    # rules when in Chromium.
+    '-third_party/abseil',
+
+    # Abseil whitelist.
+    '+absl/algorithm/container.h',
+    '+absl/base/thread_annotations.h',
+    '+absl/strings/ascii.h',
+    '+absl/strings/match.h',
+    '+absl/strings/numbers.h',
+    '+absl/strings/string_view.h',
+    '+absl/types/optional.h',
+]
+
+skip_child_includes = [
+    'third_party/chromium_quic',
 ]
