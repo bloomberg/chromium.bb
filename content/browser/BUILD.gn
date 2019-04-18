@@ -2193,17 +2193,6 @@ jumbo_source_set("browser") {
       "renderer_host/pepper/pepper_tcp_server_socket_message_filter.h",
       "renderer_host/pepper/pepper_tcp_socket_message_filter.cc",
       "renderer_host/pepper/pepper_tcp_socket_message_filter.h",
-      "renderer_host/pepper/pepper_truetype_font.h",
-      "renderer_host/pepper/pepper_truetype_font_host.cc",
-      "renderer_host/pepper/pepper_truetype_font_host.h",
-      "renderer_host/pepper/pepper_truetype_font_linux.cc",
-      "renderer_host/pepper/pepper_truetype_font_list.h",
-      "renderer_host/pepper/pepper_truetype_font_list_host.cc",
-      "renderer_host/pepper/pepper_truetype_font_list_host.h",
-      "renderer_host/pepper/pepper_truetype_font_list_mac.mm",
-      "renderer_host/pepper/pepper_truetype_font_list_win.cc",
-      "renderer_host/pepper/pepper_truetype_font_mac.mm",
-      "renderer_host/pepper/pepper_truetype_font_win.cc",
       "renderer_host/pepper/pepper_udp_socket_message_filter.cc",
       "renderer_host/pepper/pepper_udp_socket_message_filter.h",
       "renderer_host/pepper/pepper_vpn_provider_message_filter_chromeos.cc",
@@ -2219,12 +2208,6 @@ jumbo_source_set("browser") {
       "//ppapi/proxy:ipc",
       "//ppapi/shared_impl",
     ]
-    if (use_ozone) {
-      sources += [ "renderer_host/pepper/pepper_truetype_font_list_ozone.cc" ]
-    }
-    if (use_pangocairo) {
-      sources += [ "renderer_host/pepper/pepper_truetype_font_list_pango.cc" ]
-    }
     if (is_linux) {
       deps += [ "//components/services/font:ppapi_fontconfig_matching" ]
     }
