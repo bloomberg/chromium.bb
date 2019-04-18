@@ -969,8 +969,8 @@
   },
   {
     "name": "enable-custom-context-menu",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "chrome-android-app" ],
+    "expiry_milestone": 77
   },
   {
     "name": "enable-custom-mac-paper-sizes",
