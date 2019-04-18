@@ -10,7 +10,7 @@
     <color name="default_primary_color">#F2F2F2</color>
     <color name="input_underline_error_color">#D32F2F</color>
     <color name="explanation_text_color">#909090</color>
-    <color name="text_highlight_color">#C6DAFC</color>
+    <color name="text_highlight_color">@color/highlight_color_on_dark_text</color>
 
     <!-- Control colors for toggles, checkboxes, ratio buttons, list item highlight, and accent.
          Note that these should NOT be used for icon tint. -->
@@ -141,7 +141,6 @@
     <!-- LocationBar colors -->
     <color name="locationbar_dark_hint_text">@color/search_box_hint</color>
     <color name="locationbar_light_hint_text">@color/white_alpha_70</color>
-    <color name="locationbar_light_selection_color">#CC5595FE</color>
     <color name="locationbar_status_offline_color">@color/modern_grey_900</color>
     <color name="locationbar_status_offline_color_light">@android:color/white</color>
     <color name="locationbar_status_preview_color">@color/modern_blue_600</color>
