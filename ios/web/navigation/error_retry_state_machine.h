@@ -35,6 +35,9 @@ enum class ErrorRetryState {
   // This navigation item failed to load and is in the process of loading a
   // placeholder.
   kLoadingPlaceholder,
+  // This navigation item failed to load and was stored in the WKBackForwardList
+  // and is now being reloaded.
+  kRetryPlaceholderNavigation,
   // This navigation item has an entry in WKBackForwardList. Ready to present
   // error in native view.
   kReadyToDisplayErrorForFailedNavigation,
@@ -85,6 +88,9 @@ class ErrorRetryStateMachine {
 
   // Transitions the state machine to kDisplayingWebErrorForFailedNavigation.
   void SetDisplayingWebError();
+
+  // Transitions the state machine to kRetryPlaceholderNavigation.
+  void SetRetryPlaceholderNavigation();
 
   // Runs state transitions upon a failed provisional navigation.
   ErrorRetryCommand DidFailProvisionalNavigation(const GURL& web_view_url,
