@@ -88,6 +88,7 @@ class VRUiHostImpl : public VRUiHost,
   base::CancelableClosure poll_capturing_state_task_;
   base::Time indicators_shown_start_time_;
   bool indicators_visible_ = false;
+  bool indicators_showing_first_time_ = true;
 
   THREAD_CHECKER(thread_checker_);
 
