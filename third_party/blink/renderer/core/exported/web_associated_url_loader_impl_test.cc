@@ -635,8 +635,8 @@ TEST_F(WebAssociatedURLLoaderTest, MAYBE_UntrustedCheckHeaders) {
 }
 
 // Test that the loader filters response headers according to the CORS standard.
-TEST_F(WebAssociatedURLLoaderTest, CrossOriginHeaderWhitelisting) {
-  // Test that whitelisted headers are returned without exposing them.
+TEST_F(WebAssociatedURLLoaderTest, CrossOriginHeaderSafelisting) {
+  // Test that safelisted headers are returned without exposing them.
   EXPECT_TRUE(CheckAccessControlHeaders("cache-control", false));
   EXPECT_TRUE(CheckAccessControlHeaders("content-language", false));
   EXPECT_TRUE(CheckAccessControlHeaders("content-type", false));
@@ -644,21 +644,21 @@ TEST_F(WebAssociatedURLLoaderTest, CrossOriginHeaderWhitelisting) {
   EXPECT_TRUE(CheckAccessControlHeaders("last-modified", false));
   EXPECT_TRUE(CheckAccessControlHeaders("pragma", false));
 
-  // Test that non-whitelisted headers aren't returned.
-  EXPECT_FALSE(CheckAccessControlHeaders("non-whitelisted", false));
+  // Test that non-safelisted headers aren't returned.
+  EXPECT_FALSE(CheckAccessControlHeaders("non-safelisted", false));
 
   // Test that Set-Cookie headers aren't returned.
   EXPECT_FALSE(CheckAccessControlHeaders("Set-Cookie", false));
   EXPECT_FALSE(CheckAccessControlHeaders("Set-Cookie2", false));
 
-  // Test that exposed headers that aren't whitelisted are returned.
-  EXPECT_TRUE(CheckAccessControlHeaders("non-whitelisted", true));
+  // Test that exposed headers that aren't safelisted are returned.
+  EXPECT_TRUE(CheckAccessControlHeaders("non-safelisted", true));
 
   // Test that Set-Cookie headers aren't returned, even if exposed.
   EXPECT_FALSE(CheckAccessControlHeaders("Set-Cookie", true));
 }
 
-// Test that the loader can allow non-whitelisted response headers for trusted
+// Test that the loader can allow non-safelisted response headers for trusted
 // CORS loads.
 TEST_F(WebAssociatedURLLoaderTest, CrossOriginHeaderAllowResponseHeaders) {
   KURL url =
@@ -667,7 +667,7 @@ TEST_F(WebAssociatedURLLoaderTest, CrossOriginHeaderAllowResponseHeaders) {
   request.SetFetchRequestMode(network::mojom::FetchRequestMode::kCors);
   request.SetFetchCredentialsMode(network::mojom::FetchCredentialsMode::kOmit);
 
-  WebString header_name_string(WebString::FromUTF8("non-whitelisted"));
+  WebString header_name_string(WebString::FromUTF8("non-safelisted"));
   expected_response_ = WebURLResponse();
   expected_response_.SetMimeType("text/html");
   expected_response_.SetHttpStatusCode(200);
@@ -677,8 +677,8 @@ TEST_F(WebAssociatedURLLoaderTest, CrossOriginHeaderAllowResponseHeaders) {
       url, expected_response_, frame_file_path_);
 
   WebAssociatedURLLoaderOptions options;
-  options.expose_all_response_headers =
-      true;  // This turns off response whitelisting.
+  // This turns off response safelisting.
+  options.expose_all_response_headers = true;
   expected_loader_ = CreateAssociatedURLLoader(options);
   EXPECT_TRUE(expected_loader_);
   expected_loader_->LoadAsynchronously(request, this);
