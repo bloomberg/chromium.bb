@@ -289,7 +289,7 @@ class ProfileSyncServiceTest : public ::testing::Test {
 TEST_F(ProfileSyncServiceTest, InitialState) {
   CreateService(ProfileSyncService::AUTO_START);
   InitializeForNthSync();
-  const std::string& url = service()->sync_service_url().spec();
+  const std::string& url = service()->GetSyncServiceUrlForDebugging().spec();
   EXPECT_TRUE(url == internal::kSyncServerUrl ||
               url == internal::kSyncDevServerUrl);
 }
@@ -810,7 +810,7 @@ TEST_F(ProfileSyncServiceTest, ClearDataOnSignOut) {
   InitializeForNthSync();
   ASSERT_EQ(SyncService::TransportState::ACTIVE,
             service()->GetTransportState());
-  base::Time last_synced_time = service()->GetLastSyncedTime();
+  base::Time last_synced_time = service()->GetLastSyncedTimeForDebugging();
   ASSERT_LT(base::Time::Now() - last_synced_time,
             base::TimeDelta::FromMinutes(1));
 
@@ -823,7 +823,7 @@ TEST_F(ProfileSyncServiceTest, ClearDataOnSignOut) {
             service()->GetTransportState());
   EXPECT_FALSE(service()->IsSyncFeatureEnabled());
 
-  EXPECT_NE(service()->GetLastSyncedTime(), last_synced_time);
+  EXPECT_NE(service()->GetLastSyncedTimeForDebugging(), last_synced_time);
 }
 
 TEST_F(ProfileSyncServiceTest, CancelSyncAfterSignOut) {
@@ -832,7 +832,7 @@ TEST_F(ProfileSyncServiceTest, CancelSyncAfterSignOut) {
   InitializeForNthSync();
   ASSERT_EQ(SyncService::TransportState::ACTIVE,
             service()->GetTransportState());
-  base::Time last_synced_time = service()->GetLastSyncedTime();
+  base::Time last_synced_time = service()->GetLastSyncedTimeForDebugging();
   ASSERT_LT(base::Time::Now() - last_synced_time,
             base::TimeDelta::FromMinutes(1));
 
@@ -1090,7 +1090,7 @@ TEST_F(ProfileSyncServiceTest, DisableSyncOnClient) {
 
   ASSERT_EQ(SyncService::TransportState::ACTIVE,
             service()->GetTransportState());
-  ASSERT_LT(base::Time::Now() - service()->GetLastSyncedTime(),
+  ASSERT_LT(base::Time::Now() - service()->GetLastSyncedTimeForDebugging(),
             base::TimeDelta::FromMinutes(1));
 
   SyncProtocolError client_cmd;
@@ -1113,7 +1113,7 @@ TEST_F(ProfileSyncServiceTest, DisableSyncOnClient) {
             service()->GetDisableReasons());
   EXPECT_EQ(SyncService::TransportState::DISABLED,
             service()->GetTransportState());
-  EXPECT_TRUE(service()->GetLastSyncedTime().is_null());
+  EXPECT_TRUE(service()->GetLastSyncedTimeForDebugging().is_null());
 #endif
 
   EXPECT_FALSE(service()->IsSyncFeatureEnabled());

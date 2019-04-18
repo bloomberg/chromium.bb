@@ -225,11 +225,11 @@ bool TestSyncService::QueryDetailedSyncStatusForDebugging(
   return detailed_sync_status_engine_available_;
 }
 
-base::Time TestSyncService::GetLastSyncedTime() const {
+base::Time TestSyncService::GetLastSyncedTimeForDebugging() const {
   return base::Time();
 }
 
-SyncCycleSnapshot TestSyncService::GetLastCycleSnapshot() const {
+SyncCycleSnapshot TestSyncService::GetLastCycleSnapshotForDebugging() const {
   return last_cycle_snapshot_;
 }
 
@@ -237,15 +237,16 @@ std::unique_ptr<base::Value> TestSyncService::GetTypeStatusMapForDebugging() {
   return std::make_unique<base::ListValue>();
 }
 
-const GURL& TestSyncService::sync_service_url() const {
+const GURL& TestSyncService::GetSyncServiceUrlForDebugging() const {
   return sync_service_url_;
 }
 
-std::string TestSyncService::unrecoverable_error_message() const {
+std::string TestSyncService::GetUnrecoverableErrorMessageForDebugging() const {
   return std::string();
 }
 
-base::Location TestSyncService::unrecoverable_error_location() const {
+base::Location TestSyncService::GetUnrecoverableErrorLocationForDebugging()
+    const {
   return base::Location();
 }
 
@@ -265,7 +266,7 @@ base::WeakPtr<JsController> TestSyncService::GetJsController() {
   return base::WeakPtr<JsController>();
 }
 
-void TestSyncService::GetAllNodes(
+void TestSyncService::GetAllNodesForDebugging(
     const base::Callback<void(std::unique_ptr<base::ListValue>)>& callback) {}
 
 void TestSyncService::SetInvalidationsForSessionsEnabled(bool enabled) {}

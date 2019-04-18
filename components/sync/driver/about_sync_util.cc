@@ -455,12 +455,13 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
   SyncStatus full_status;
   bool is_status_valid =
       service->QueryDetailedSyncStatusForDebugging(&full_status);
-  const SyncCycleSnapshot& snapshot = service->GetLastCycleSnapshot();
+  const SyncCycleSnapshot& snapshot =
+      service->GetLastCycleSnapshotForDebugging();
   const SyncTokenStatus& token_status = service->GetSyncTokenStatus();
 
   // Version Info.
   // |client_version| was already set above.
-  server_url->Set(service->sync_service_url().spec());
+  server_url->Set(service->GetSyncServiceUrlForDebugging().spec());
 
   // Identity.
   if (is_status_valid && !full_status.sync_id.empty())
@@ -485,7 +486,8 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
 
   // Local State.
   server_connection->Set(GetConnectionStatus(token_status));
-  last_synced->Set(GetLastSyncedTimeString(service->GetLastSyncedTime()));
+  last_synced->Set(
+      GetLastSyncedTimeString(service->GetLastSyncedTimeForDebugging()));
   is_setup_complete->Set(service->GetUserSettings()->IsFirstSetupComplete());
   if (is_status_valid)
     is_syncing->Set(full_status.syncing);
@@ -616,8 +618,8 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
   if (service->HasUnrecoverableError()) {
     std::string unrecoverable_error_message =
         "Unrecoverable error detected at " +
-        service->unrecoverable_error_location().ToString() + ": " +
-        service->unrecoverable_error_message();
+        service->GetUnrecoverableErrorLocationForDebugging().ToString() + ": " +
+        service->GetUnrecoverableErrorMessageForDebugging();
     about_info->SetKey("unrecoverable_error_message",
                        base::Value(unrecoverable_error_message));
   }

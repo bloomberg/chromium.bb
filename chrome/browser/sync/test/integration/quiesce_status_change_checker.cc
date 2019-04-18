@@ -56,8 +56,10 @@ bool ProgressMarkersMatch(const syncer::ProfileSyncService* service1,
       Intersection(service1->GetActiveDataTypes(),
                    service2->GetActiveDataTypes());
 
-  const syncer::SyncCycleSnapshot& snap1 = service1->GetLastCycleSnapshot();
-  const syncer::SyncCycleSnapshot& snap2 = service2->GetLastCycleSnapshot();
+  const syncer::SyncCycleSnapshot& snap1 =
+      service1->GetLastCycleSnapshotForDebugging();
+  const syncer::SyncCycleSnapshot& snap2 =
+      service2->GetLastCycleSnapshotForDebugging();
 
   for (syncer::ModelType type : common_types) {
     // Look up the progress markers.  Fail if either one is missing.

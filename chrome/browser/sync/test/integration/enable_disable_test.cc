@@ -76,7 +76,7 @@ class EnableDisableSingleClientTest : public SyncTest {
   bool ModelTypeExists(ModelType type) {
     base::RunLoop loop;
     std::unique_ptr<base::ListValue> all_nodes;
-    GetSyncService(0)->GetAllNodes(
+    GetSyncService(0)->GetAllNodesForDebugging(
         base::BindLambdaForTesting([&](std::unique_ptr<base::ListValue> nodes) {
           all_nodes = std::move(nodes);
           loop.Quit();
@@ -111,7 +111,7 @@ class EnableDisableSingleClientTest : public SyncTest {
 
   int GetNumUpdatesDownloadedInLastCycle() {
     return GetSyncService(0)
-        ->GetLastCycleSnapshot()
+        ->GetLastCycleSnapshotForDebugging()
         .model_neutral_state()
         .num_updates_downloaded_total;
   }

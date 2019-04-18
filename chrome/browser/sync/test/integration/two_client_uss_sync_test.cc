@@ -211,7 +211,8 @@ class SyncCycleFailedChecker : public SingleClientStatusChangeChecker {
       : SingleClientStatusChangeChecker(service) {}
 
   bool IsExitConditionSatisfied() override {
-    const syncer::SyncCycleSnapshot& snap = service()->GetLastCycleSnapshot();
+    const syncer::SyncCycleSnapshot& snap =
+        service()->GetLastCycleSnapshotForDebugging();
     return HasSyncerError(snap.model_neutral_state());
   }
 
