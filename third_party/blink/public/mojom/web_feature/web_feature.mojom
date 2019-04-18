@@ -2265,6 +2265,13 @@ enum WebFeature {
   kSelectElementMultiple = 2857,
   kV8Animation_Effect_AttributeGetter = 2858,
   kV8Animation_Effect_AttributeSetter = 2859,
+  kHidDeviceClose = 2860,
+  kHidDeviceOpen = 2861,
+  kHidDeviceReceiveFeatureReport = 2862,
+  kHidDeviceSendFeatureReport = 2863,
+  kHidDeviceSendReport = 2864,
+  kHidGetDevices = 2865,
+  kHidRequestDevice = 2866,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

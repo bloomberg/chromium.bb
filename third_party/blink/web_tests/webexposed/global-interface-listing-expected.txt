@@ -2365,6 +2365,74 @@ interface Gyroscope : Sensor
     method constructor
 interface HID : EventTarget
     attribute @@toStringTag
+    getter onconnect
+    getter ondisconnect
+    method constructor
+    method getDevices
+    method requestDevice
+    setter onconnect
+    setter ondisconnect
+interface HIDCollectionInfo
+    attribute @@toStringTag
+    getter children
+    getter featureReports
+    getter inputReports
+    getter outputReports
+    getter reportIds
+    getter usage
+    getter usagePage
+    method constructor
+interface HIDConnectionEvent : Event
+    attribute @@toStringTag
+    getter device
+    method constructor
+interface HIDDevice : EventTarget
+    attribute @@toStringTag
+    getter collections
+    getter oninputreport
+    getter opened
+    getter productId
+    getter productName
+    getter vendorId
+    method close
+    method constructor
+    method open
+    method receiveFeatureReport
+    method sendFeatureReport
+    method sendReport
+    setter oninputreport
+interface HIDInputReportEvent : Event
+    attribute @@toStringTag
+    getter data
+    getter device
+    getter reportId
+    method constructor
+interface HIDReportInfo
+    attribute @@toStringTag
+    getter items
+    getter reportId
+    method constructor
+interface HIDReportItem
+    attribute @@toStringTag
+    getter designatorMaximum
+    getter designatorMinimum
+    getter hasNull
+    getter isAbsolute
+    getter isArray
+    getter isRange
+    getter logicalMaximum
+    getter logicalMinimum
+    getter physicalMaximum
+    getter physicalMinimum
+    getter reportCount
+    getter reportSize
+    getter stringMaximum
+    getter stringMinimum
+    getter unit
+    getter unitExponent
+    getter usageMaximum
+    getter usageMinimum
+    getter usages
     method constructor
 interface HTMLAllCollection
     attribute @@toStringTag

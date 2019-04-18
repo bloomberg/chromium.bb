@@ -22857,6 +22857,13 @@ Called by update_net_error_codes.py.-->
   <int value="2857" label="SelectElementMultiple"/>
   <int value="2858" label="V8Animation_Effect_AttributeGetter"/>
   <int value="2859" label="V8Animation_Effect_AttributeSetter"/>
+  <int value="2860" label="HidDeviceClose"/>
+  <int value="2861" label="HidDeviceOpen"/>
+  <int value="2862" label="HidDeviceReceiveFeatureReport"/>
+  <int value="2863" label="HidDeviceSendFeatureReport"/>
+  <int value="2864" label="HidDeviceSendReport"/>
+  <int value="2865" label="HidGetDevices"/>
+  <int value="2866" label="HidRequestDevice"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">
