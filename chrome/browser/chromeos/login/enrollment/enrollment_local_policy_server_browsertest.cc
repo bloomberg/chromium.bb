@@ -8,6 +8,7 @@
 #include "chrome/browser/chromeos/login/enrollment/auto_enrollment_check_screen.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
+#include "chrome/browser/chromeos/login/test/device_state_mixin.h"
 #include "chrome/browser/chromeos/login/test/enrollment_ui_mixin.h"
 #include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
@@ -25,6 +26,7 @@
 #include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/dbus/cryptohome/fake_cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/tpm/install_attributes.h"
 #include "components/policy/core/common/policy_switches.h"
 #include "components/strings/grit/components_strings.h"
 
@@ -90,6 +92,7 @@ class EnrollmentLocalPolicyServerBase : public OobeBaseTest {
     OobeScreenWaiter(OobeScreen::SCREEN_OOBE_ENROLLMENT).Wait();
 
     ASSERT_FALSE(StartupUtils::IsDeviceRegistered());
+    ASSERT_FALSE(InstallAttributes::Get()->IsEnterpriseManaged());
     enrollment_screen()->OnLoginDone(FakeGaiaMixin::kFakeUserEmail,
                                      FakeGaiaMixin::kFakeAuthCode);
   }
@@ -97,6 +100,8 @@ class EnrollmentLocalPolicyServerBase : public OobeBaseTest {
   LocalPolicyTestServerMixin policy_server_{&mixin_host_};
   test::EnrollmentUIMixin enrollment_ui_{&mixin_host_};
   FakeGaiaMixin fake_gaia_{&mixin_host_, embedded_test_server()};
+  DeviceStateMixin device_state_{&mixin_host_,
+                                 DeviceStateMixin::State::BEFORE_OOBE};
 
  private:
   DISALLOW_COPY_AND_ASSIGN(EnrollmentLocalPolicyServerBase);
@@ -134,6 +139,7 @@ IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase, ManualEnrollment) {
 
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepSuccess);
   EXPECT_TRUE(StartupUtils::IsDeviceRegistered());
+  EXPECT_TRUE(InstallAttributes::Get()->IsCloudManaged());
 }
 
 // Simple manual enrollment with device attributes prompt.
@@ -148,6 +154,7 @@ IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
                                         test::values::kLocation);
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepSuccess);
   EXPECT_TRUE(StartupUtils::IsDeviceRegistered());
+  EXPECT_TRUE(InstallAttributes::Get()->IsCloudManaged());
 }
 
 // Simple manual enrollment with only license type available.
@@ -162,6 +169,7 @@ IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
 
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepSuccess);
   EXPECT_TRUE(StartupUtils::IsDeviceRegistered());
+  EXPECT_TRUE(InstallAttributes::Get()->IsCloudManaged());
 }
 
 // Simple manual enrollment with license selection.
@@ -179,6 +187,7 @@ IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
 
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepSuccess);
   EXPECT_TRUE(StartupUtils::IsDeviceRegistered());
+  EXPECT_TRUE(InstallAttributes::Get()->IsCloudManaged());
 }
 
 // Negative scenarios: see different HTTP error codes in
@@ -196,6 +205,7 @@ IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
       IDS_ENTERPRISE_ENROLLMENT_MISSING_LICENSES_ERROR, /* can retry */ true);
   enrollment_ui_.RetryAfterError();
   EXPECT_FALSE(StartupUtils::IsDeviceRegistered());
+  EXPECT_FALSE(InstallAttributes::Get()->IsEnterpriseManaged());
 }
 
 // Error during enrollment : 403 - management not allowed.
@@ -210,6 +220,7 @@ IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
       IDS_ENTERPRISE_ENROLLMENT_AUTH_ACCOUNT_ERROR, /* can retry */ true);
   enrollment_ui_.RetryAfterError();
   EXPECT_FALSE(StartupUtils::IsDeviceRegistered());
+  EXPECT_FALSE(InstallAttributes::Get()->IsEnterpriseManaged());
 }
 
 // Error during enrollment : 405 - invalid device serial.
@@ -226,6 +237,7 @@ IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
       /* can retry */ true);
   enrollment_ui_.RetryAfterError();
   EXPECT_FALSE(StartupUtils::IsDeviceRegistered());
+  EXPECT_FALSE(InstallAttributes::Get()->IsEnterpriseManaged());
 }
 
 // Error during enrollment : 406 - domain mismatch
@@ -240,6 +252,7 @@ IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
       IDS_ENTERPRISE_ENROLLMENT_DOMAIN_MISMATCH_ERROR, /* can retry */ true);
   enrollment_ui_.RetryAfterError();
   EXPECT_FALSE(StartupUtils::IsDeviceRegistered());
+  EXPECT_FALSE(InstallAttributes::Get()->IsEnterpriseManaged());
 }
 
 // Error during enrollment : 409 - Device ID is already in use
@@ -255,6 +268,7 @@ IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
       IDS_POLICY_DM_STATUS_SERVICE_DEVICE_ID_CONFLICT, /* can retry */ true);
   enrollment_ui_.RetryAfterError();
   EXPECT_FALSE(StartupUtils::IsDeviceRegistered());
+  EXPECT_FALSE(InstallAttributes::Get()->IsEnterpriseManaged());
 }
 
 // Error during enrollment : 412 - Activation is pending
@@ -269,6 +283,7 @@ IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
       IDS_POLICY_DM_STATUS_SERVICE_ACTIVATION_PENDING, /* can retry */ true);
   enrollment_ui_.RetryAfterError();
   EXPECT_FALSE(StartupUtils::IsDeviceRegistered());
+  EXPECT_FALSE(InstallAttributes::Get()->IsEnterpriseManaged());
 }
 
 // Error during enrollment : 417 - Consumer account with packaged license.
@@ -284,6 +299,7 @@ IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
       /* can retry */ true);
   enrollment_ui_.RetryAfterError();
   EXPECT_FALSE(StartupUtils::IsDeviceRegistered());
+  EXPECT_FALSE(InstallAttributes::Get()->IsEnterpriseManaged());
 }
 
 // Error during enrollment : 500 - Consumer account with packaged license.
@@ -298,6 +314,7 @@ IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
                                     /* can retry */ true);
   enrollment_ui_.RetryAfterError();
   EXPECT_FALSE(StartupUtils::IsDeviceRegistered());
+  EXPECT_FALSE(InstallAttributes::Get()->IsEnterpriseManaged());
 }
 
 // Error during enrollment : Strange HTTP response from server.
@@ -312,6 +329,7 @@ IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
                                     /* can retry */ true);
   enrollment_ui_.RetryAfterError();
   EXPECT_FALSE(StartupUtils::IsDeviceRegistered());
+  EXPECT_FALSE(InstallAttributes::Get()->IsEnterpriseManaged());
 }
 
 // Error during enrollment : Can not update device attributes
@@ -328,6 +346,7 @@ IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
 
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepDeviceAttributesError);
   EXPECT_TRUE(StartupUtils::IsDeviceRegistered());
+  EXPECT_TRUE(InstallAttributes::Get()->IsCloudManaged());
   enrollment_ui_.LeaveDeviceAttributeErrorScreen();
   OobeScreenWaiter(OobeScreen::SCREEN_GAIA_SIGNIN).Wait();
 }
@@ -343,6 +362,7 @@ IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
   enrollment_ui_.ExpectErrorMessage(IDS_POLICY_DM_STATUS_TEMPORARY_UNAVAILABLE,
                                     /* can retry */ true);
   EXPECT_FALSE(StartupUtils::IsDeviceRegistered());
+  EXPECT_FALSE(InstallAttributes::Get()->IsEnterpriseManaged());
   enrollment_ui_.RetryAfterError();
 }
 
@@ -358,6 +378,7 @@ IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
       IDS_POLICY_DM_STATUS_SERVICE_POLICY_NOT_FOUND,
       /* can retry */ true);
   EXPECT_FALSE(StartupUtils::IsDeviceRegistered());
+  EXPECT_FALSE(InstallAttributes::Get()->IsEnterpriseManaged());
   enrollment_ui_.RetryAfterError();
 }
 
@@ -372,6 +393,7 @@ IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
   enrollment_ui_.ExpectErrorMessage(IDS_POLICY_DM_STATUS_SERVICE_DEPROVISIONED,
                                     /* can retry */ true);
   EXPECT_FALSE(StartupUtils::IsDeviceRegistered());
+  EXPECT_FALSE(InstallAttributes::Get()->IsEnterpriseManaged());
   enrollment_ui_.RetryAfterError();
 }
 
@@ -443,6 +465,7 @@ IN_PROC_BROWSER_TEST_F(AutoEnrollmentLocalPolicyServer, Attestation) {
   host()->StartWizard(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK);
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepSuccess);
   EXPECT_TRUE(StartupUtils::IsDeviceRegistered());
+  EXPECT_TRUE(InstallAttributes::Get()->IsCloudManaged());
 }
 
 }  // namespace chromeos

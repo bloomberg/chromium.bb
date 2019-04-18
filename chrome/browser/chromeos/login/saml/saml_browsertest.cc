@@ -1402,7 +1402,10 @@ IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, SAMLInterstitialNext) {
 // forcing the WebUI login, thus allowing views-based login.
 class SAMLPolicyViewsBasedLoginTest : public SAMLPolicyTest {
  public:
-  SAMLPolicyViewsBasedLoginTest() = default;
+  SAMLPolicyViewsBasedLoginTest() : SAMLPolicyTest() {
+    device_state_.SetState(
+        chromeos::DeviceStateMixin::State::OOBE_COMPLETED_CONSUMER_OWNED);
+  }
   ~SAMLPolicyViewsBasedLoginTest() override = default;
 
  protected:
@@ -1415,13 +1418,6 @@ class SAMLPolicyViewsBasedLoginTest : public SAMLPolicyTest {
  private:
   DISALLOW_COPY_AND_ASSIGN(SAMLPolicyViewsBasedLoginTest);
 };
-
-IN_PROC_BROWSER_TEST_F(SAMLPolicyViewsBasedLoginTest,
-                       PRE_TestLoginMediaPermission) {
-  // Mark OOBE completed to go directly to the sign-in screen - this is
-  // currently needed to trigger the views-based login UI.
-  StartupUtils::MarkOobeCompleted();
-}
 
 // Ensure that the permission status of getUserMedia requests from SAML login
 // pages is controlled by the kLoginVideoCaptureAllowedUrls pref rather than the
