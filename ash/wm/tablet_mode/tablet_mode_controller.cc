@@ -353,6 +353,15 @@ void TabletModeController::OnAccelerometerUpdated(
   if (!AllowUiModeChange())
     return;
 
+  // When ChromeOS EC lid angle driver is present, EC can handle lid angle
+  // calculation, thus Chrome side lid angle calculation is disabled. In this
+  // case, TabletModeController no longer listens to accelerometer events.
+  if (update->HasLidAngleDriver(ACCELEROMETER_SOURCE_SCREEN) ||
+      update->HasLidAngleDriver(ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD)) {
+    AccelerometerReader::GetInstance()->RemoveObserver(this);
+    return;
+  }
+
   have_seen_accelerometer_data_ = true;
   can_detect_lid_angle_ = update->has(ACCELEROMETER_SOURCE_SCREEN) &&
                           update->has(ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD);
@@ -406,9 +415,12 @@ void TabletModeController::TabletModeEventReceived(
   if (!HasActiveInternalDisplay())
     return;
 
-  // The tablet mode switch activates at 300 degrees, so it is always reliable
-  // when |on|. However we wish to exit tablet mode at a smaller angle, so
-  // when |on| is false we ignore if it is possible to calculate the lid angle.
+  // For updated EC, the tablet mode switch activates at 200 degrees, and
+  // deactivates at 160 degrees.
+  // For old EC, the tablet mode switch activates at 300 degrees, so it's
+  // always reliable when |on|. However we wish to exit tablet mode at a
+  // smaller angle, so when |on| is false we ignore if it is possible to
+  // calculate the lid angle.
   if (on && !IsTabletModeWindowManagerEnabled()) {
     AttemptEnterTabletMode();
   } else if (!on && IsTabletModeWindowManagerEnabled() &&

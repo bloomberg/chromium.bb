@@ -422,6 +422,15 @@ void PowerButtonController::OnGetSwitchStates(
 
 void PowerButtonController::OnAccelerometerUpdated(
     scoped_refptr<const AccelerometerUpdate> update) {
+  // When ChromeOS EC lid angle driver is present, there's always tablet mode
+  // switch in device, so PowerButtonController doesn't need to listens to
+  // accelerometer events.
+  if (update->HasLidAngleDriver(ACCELEROMETER_SOURCE_SCREEN) ||
+      update->HasLidAngleDriver(ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD)) {
+    AccelerometerReader::GetInstance()->RemoveObserver(this);
+    return;
+  }
+
   if (!has_tablet_mode_switch_ && observe_accelerometer_events_)
     InitTabletPowerButtonMembers();
 }

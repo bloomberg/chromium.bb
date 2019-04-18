@@ -763,6 +763,9 @@ Shell::~Shell() {
   // the former may use the latter before destruction.
   app_list_controller_.reset();
 
+  // Accelerometer file reader stops listening to tablet mode controller.
+  AccelerometerReader::GetInstance()->StopListenToTabletModeController();
+
   // Destroy |assistant_controller_| earlier than |tablet_mode_controller_| so
   // that the former will destroy the Assistant view hierarchy which has a
   // dependency on the latter.
@@ -1043,6 +1046,9 @@ void Shell::Init(
   accessibility_delegate_.reset(shell_delegate_->CreateAccessibilityDelegate());
   accessibility_controller_ = std::make_unique<AccessibilityController>();
   toast_manager_ = std::make_unique<ToastManager>();
+
+  // Accelerometer file reader starts listening to tablet mode controller.
+  AccelerometerReader::GetInstance()->StartListenToTabletModeController();
 
   // Install the custom factory early on so that views::FocusManagers for Tray,
   // Shelf, and WallPaper could be created by the factory.
