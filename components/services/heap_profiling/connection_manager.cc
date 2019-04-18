@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/json/string_escape.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/threading/sequenced_task_runner_handle.h"
+#include "base/task/post_task.h"
 #include "components/services/heap_profiling/json_exporter.h"
 #include "components/services/heap_profiling/public/cpp/client.h"
 
@@ -85,8 +85,7 @@ struct ConnectionManager::Connection {
   uint32_t sampling_rate = 1;
 };
 
-ConnectionManager::ConnectionManager() : blocking_thread_("Blocking thread") {
-  blocking_thread_.Start();
+ConnectionManager::ConnectionManager() {
   metrics_timer_.Start(
       FROM_HERE, base::TimeDelta::FromHours(24),
       base::Bind(&ConnectionManager::ReportMetrics, base::Unretained(this)));
@@ -240,7 +239,7 @@ void ConnectionManager::HeapProfileRetrieved(
   }
 
   DCHECK(success);
-  DoDumpOneProcessForTracing(tracking, pid, process_type,
+  DoDumpOneProcessForTracing(std::move(tracking), pid, process_type,
                              strip_path_from_mapped_files, sampling_rate,
                              success, std::move(counts), std::move(context_map),
                              std::move(string_map));
@@ -289,55 +288,46 @@ void ConnectionManager::DoDumpOneProcessForTracing(
   ExportMemoryMapsAndV2StackTraceToJSON(&params, oss);
   std::string reply = oss.str();
   size_t reply_size = reply.size();
-
   next_id_ = params.next_id;
 
-  using FinishedCallback =
-      base::OnceCallback<void(mojo::ScopedSharedBufferHandle)>;
-  FinishedCallback finished_callback = base::BindOnce(
-      [](std::string reply, base::ProcessId pid,
-         scoped_refptr<DumpProcessesForTracingTracking> tracking,
-         mojo::ScopedSharedBufferHandle buffer) {
-        if (!buffer.is_valid()) {
-          DLOG(ERROR) << "Could not create Mojo shared buffer";
-        } else {
-          mojo::ScopedSharedBufferMapping mapping = buffer->Map(reply.size());
-          if (!mapping) {
-            DLOG(ERROR) << "Could not map Mojo shared buffer";
-          } else {
-            memcpy(mapping.get(), reply.c_str(), reply.size());
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE,
+      {base::TaskPriority::BEST_EFFORT, base::MayBlock(),
+       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+      base::BindOnce(
+          [](size_t size) {
+            // This call sends a synchronous IPC to the browser process.
+            return mojo::SharedBufferHandle::Create(size);
+          },
+          reply_size),
+      base::BindOnce(
+          [](std::string reply, base::ProcessId pid,
+             scoped_refptr<DumpProcessesForTracingTracking> tracking,
+             mojo::ScopedSharedBufferHandle buffer) {
+            if (!buffer.is_valid()) {
+              DLOG(ERROR) << "Could not create Mojo shared buffer";
+            } else {
+              mojo::ScopedSharedBufferMapping mapping =
+                  buffer->Map(reply.size());
+              if (!mapping) {
+                DLOG(ERROR) << "Could not map Mojo shared buffer";
+              } else {
+                memcpy(mapping.get(), reply.c_str(), reply.size());
 
-            memory_instrumentation::mojom::SharedBufferWithSizePtr result =
-                memory_instrumentation::mojom::SharedBufferWithSize::New();
-            result->buffer = std::move(buffer);
-            result->size = reply.size();
-            result->pid = pid;
-            tracking->results.push_back(std::move(result));
-          }
-        }
+                memory_instrumentation::mojom::SharedBufferWithSizePtr result =
+                    memory_instrumentation::mojom::SharedBufferWithSize::New();
+                result->buffer = std::move(buffer);
+                result->size = reply.size();
+                result->pid = pid;
+                tracking->results.push_back(std::move(result));
+              }
+            }
 
-        // When all responses complete, issue done callback.
-        tracking->waiting_responses--;
-        if (tracking->waiting_responses == 0)
-          std::move(tracking->callback).Run(std::move(tracking->results));
-      },
-      std::move(reply), pid, tracking);
-
-  blocking_thread_.task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(
-                     [](size_t size,
-                        scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-                        FinishedCallback callback) {
-                       // This call will send a synchronous IPC to the browser
-                       // process.
-                       mojo::ScopedSharedBufferHandle buffer =
-                           mojo::SharedBufferHandle::Create(size);
-                       task_runner->PostTask(FROM_HERE,
-                                             base::BindOnce(std::move(callback),
-                                                            std::move(buffer)));
-                     },
-                     reply_size, base::ThreadTaskRunnerHandle::Get(),
-                     std::move(finished_callback)));
+            // When all responses complete, issue done callback.
+            if (--tracking->waiting_responses == 0)
+              std::move(tracking->callback).Run(std::move(tracking->results));
+          },
+          std::move(reply), pid, std::move(tracking)));
 }
 
 }  // namespace heap_profiling
