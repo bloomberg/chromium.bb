@@ -476,7 +476,7 @@ public class VrShell extends GvrLayout
         if (mTab != null) {
             initializeTabForVR();
             mTab.addObserver(mTabObserver);
-            TabBrowserControlsState.get(mTab).update(BrowserControlsState.HIDDEN, false);
+            TabBrowserControlsState.update(mTab, BrowserControlsState.HIDDEN, false);
         }
         mTabObserver.onContentChanged(mTab);
     }
@@ -795,7 +795,7 @@ public class VrShell extends GvrLayout
                 View parent = mTab.getContentView();
                 mTab.getWebContents().setSize(parent.getWidth(), parent.getHeight());
             }
-            TabBrowserControlsState.get(mTab).update(BrowserControlsState.SHOWN, false);
+            TabBrowserControlsState.update(mTab, BrowserControlsState.SHOWN, false);
         }
 
         mContentVirtualDisplay.destroy();

@@ -985,9 +985,8 @@ public class BottomSheet
         mIsSheetOpen = true;
 
         // Make sure the toolbar is visible before expanding the sheet.
-        Tab tab = getActiveTab();
-        if (isToolbarAndroidViewHidden() && tab != null) {
-            TabBrowserControlsState.get(tab).update(BrowserControlsState.SHOWN, false);
+        if (isToolbarAndroidViewHidden()) {
+            TabBrowserControlsState.update(getActiveTab(), BrowserControlsState.SHOWN, false);
         }
 
         mBottomSheetContentContainer.setVisibility(View.VISIBLE);

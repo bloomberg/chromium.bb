@@ -317,7 +317,7 @@ public class ChromeFullscreenManager
             public void onFullscreenExited(Tab tab) {
                 // At this point, browser controls are hidden. Show browser controls only if it's
                 // permitted.
-                TabBrowserControlsState.get(tab).update(BrowserControlsState.SHOWN, true);
+                TabBrowserControlsState.update(tab, BrowserControlsState.SHOWN, true);
             }
 
             @Override

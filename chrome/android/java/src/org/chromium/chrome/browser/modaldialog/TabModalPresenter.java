@@ -352,8 +352,8 @@ public class TabModalPresenter
         if (isShowing && mActiveTab.areRendererInputEventsIgnored()) {
             offsetHelper.showAndroidControls(true);
         } else {
-            TabBrowserControlsState.get(mActiveTab)
-                    .update(BrowserControlsState.SHOWN, !offsetHelper.isControlsOffsetOverridden());
+            TabBrowserControlsState.update(mActiveTab, BrowserControlsState.SHOWN,
+                    !offsetHelper.isControlsOffsetOverridden());
         }
     }
 

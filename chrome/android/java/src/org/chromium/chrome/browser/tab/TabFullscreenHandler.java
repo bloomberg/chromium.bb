@@ -101,7 +101,7 @@ public final class TabFullscreenHandler extends TabWebContentsUserData implement
                 if (isResponsive) {
                     updateEnabledState();
                 } else {
-                    TabBrowserControlsState.get(mTab).update(BrowserControlsState.SHOWN, false);
+                    TabBrowserControlsState.update(mTab, BrowserControlsState.SHOWN, false);
                 }
             }
 
@@ -140,9 +140,9 @@ public final class TabFullscreenHandler extends TabWebContentsUserData implement
     private void updateEnabledState() {
         if (mTab.isFrozen()) return;
 
-        TabBrowserControlsState browserControls = TabBrowserControlsState.get(mTab);
-        browserControls.update(BrowserControlsState.BOTH,
-                browserControls.getConstraints() != BrowserControlsState.HIDDEN);
+        int current = TabBrowserControlsState.getConstraints(mTab);
+        TabBrowserControlsState.update(
+                mTab, BrowserControlsState.BOTH, current != BrowserControlsState.HIDDEN);
 
         WebContents webContents = mTab.getWebContents();
         if (webContents != null) {
