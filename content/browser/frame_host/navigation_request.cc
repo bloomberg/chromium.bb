@@ -1938,6 +1938,7 @@ void NavigationRequest::ResetExpectedProcess() {
     RenderProcessHostImpl::RemoveExpectedNavigationToSite(
         frame_tree_node()->navigator()->GetController()->GetBrowserContext(),
         process, site_url_);
+    process->RemoveObserver(this);
   }
   expected_render_process_host_id_ = ChildProcessHost::kInvalidUniqueID;
 }
@@ -1959,9 +1960,15 @@ void NavigationRequest::SetExpectedProcess(
   // Keep track of the speculative RenderProcessHost and tell it to expect a
   // navigation to |site_url_|.
   expected_render_process_host_id_ = expected_process->GetID();
+  expected_process->AddObserver(this);
   RenderProcessHostImpl::AddExpectedNavigationToSite(
       frame_tree_node()->navigator()->GetController()->GetBrowserContext(),
       expected_process, site_url_);
+}
+
+void NavigationRequest::RenderProcessHostDestroyed(RenderProcessHost* host) {
+  DCHECK_EQ(host->GetID(), expected_render_process_host_id_);
+  ResetExpectedProcess();
 }
 
 void NavigationRequest::UpdateSiteURL(

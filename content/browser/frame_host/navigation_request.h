@@ -23,6 +23,7 @@
 #include "content/common/navigation_params.mojom.h"
 #include "content/common/navigation_subresource_loader_params.h"
 #include "content/public/browser/navigation_throttle.h"
+#include "content/public/browser/render_process_host_observer.h"
 #include "content/public/common/previews_state.h"
 
 namespace network {
@@ -48,7 +49,8 @@ struct SubresourceLoaderParams;
 // TODO(clamy): Describe the interactions between the UI and IO thread during
 // the navigation following its refactoring.
 class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
-                                         NavigationThrottleRunner::Delegate {
+                                         NavigationThrottleRunner::Delegate,
+                                         private RenderProcessHostObserver {
  public:
   // Keeps track of the various stages of a NavigationRequest.
   enum NavigationState {
@@ -570,6 +572,9 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   // than once in the frame's ancestors.  This is a helper function used by
   // WillStartRequest and WillRedirectRequest to prevent the navigation.
   bool IsSelfReferentialURL();
+
+  // RenderProcessHostObserver implementation.
+  void RenderProcessHostDestroyed(RenderProcessHost* host) override;
 
   FrameTreeNode* frame_tree_node_;
 
