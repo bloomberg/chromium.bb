@@ -519,8 +519,9 @@ void NavigationSimulatorImpl::ReadyToCommit() {
   if (frame_tree_node_->navigation_request()) {
     static_cast<TestRenderFrameHost*>(frame_tree_node_->current_frame_host())
         ->PrepareForCommitDeprecatedForNavigationSimulator(
-            remote_endpoint_, is_signed_exchange_inner_response_,
-            http_connection_info_, ssl_info_);
+            remote_endpoint_, was_fetched_via_cache_,
+            is_signed_exchange_inner_response_, http_connection_info_,
+            ssl_info_);
   }
 
   // Synchronous failure can cause the navigation to finish here.
@@ -838,6 +839,13 @@ void NavigationSimulatorImpl::SetSocketAddress(
   CHECK_LE(state_, STARTED) << "The socket address cannot be set after the "
                                "navigation has committed or failed";
   remote_endpoint_ = remote_endpoint;
+}
+
+void NavigationSimulatorImpl::SetWasFetchedViaCache(
+    bool was_fetched_via_cache) {
+  CHECK_LE(state_, STARTED) << "The was_fetched_via_cache flag cannot be set "
+                               "after the navigation has committed or failed";
+  was_fetched_via_cache_ = was_fetched_via_cache;
 }
 
 void NavigationSimulatorImpl::SetIsSignedExchangeInnerResponse(
