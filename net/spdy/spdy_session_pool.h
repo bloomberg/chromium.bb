@@ -100,6 +100,7 @@ class NET_EXPORT SpdySessionPool
 
     // Constructor - this is called by the SpdySessionPool.
     SpdySessionRequest(const SpdySessionKey& key,
+                       bool enable_ip_based_pooling,
                        bool is_websocket,
                        Delegate* delegate,
                        SpdySessionPool* spdy_session_pool);
@@ -111,6 +112,7 @@ class NET_EXPORT SpdySessionPool
     void OnRemovedFromPool();
 
     const SpdySessionKey& key() const { return key_; }
+    bool enable_ip_based_pooling() const { return enable_ip_based_pooling_; }
     bool is_websocket() const { return is_websocket_; }
     Delegate* delegate() { return delegate_; }
 
@@ -120,6 +122,7 @@ class NET_EXPORT SpdySessionPool
 
    private:
     const SpdySessionKey key_;
+    const bool enable_ip_based_pooling_;
     const bool is_websocket_;
     Delegate* const delegate_;
     SpdySessionPool* spdy_session_pool_;
