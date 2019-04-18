@@ -38,6 +38,7 @@ class LauncherAnimationsTest : public UIPerformanceTest {
     DCHECK(!suffix_.empty());
     return {
         std::string("Apps.StateTransition.AnimationSmoothness.") + suffix_,
+        "Apps.StateTransition.AnimationSmoothness.Close.ClamshellMode",
     };
   }
 
@@ -101,6 +102,110 @@ IN_PROC_BROWSER_TEST_F(LauncherAnimationsTest, Peeking) {
     waiter.Run();
   }
   {
+    base::RunLoop waiter;
+    shell_test_api->WaitForLauncherAnimationState(
+        ash::mojom::AppListViewState::kClosed, waiter.QuitClosure());
+    ui_controls::SendKeyPress(browser_window, ui::VKEY_BROWSER_SEARCH,
+                              /*control=*/false,
+                              /*shift=*/false,
+                              /*alt=*/false,
+                              /* command = */ false);
+    waiter.Run();
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(LauncherAnimationsTest, Half) {
+  set_suffix("Half.ClamshellMode");
+  // Browser window is used to identify display, so we can use
+  // use the 1st browser window regardless of number of windows created.
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
+  aura::Window* browser_window = browser_view->GetWidget()->GetNativeWindow();
+  ash::mojom::ShellTestApiPtr shell_test_api = test::GetShellTestApi();
+  {
+    // Hit the search key; it should switch to kPeeking state.
+    base::RunLoop waiter;
+    shell_test_api->WaitForLauncherAnimationState(
+        ash::mojom::AppListViewState::kPeeking, waiter.QuitClosure());
+    ui_controls::SendKeyPress(browser_window, ui::VKEY_BROWSER_SEARCH,
+                              /*control=*/false,
+                              /*shift=*/false,
+                              /*alt=*/false,
+                              /* command = */ false);
+    waiter.Run();
+  }
+  {
+    // Type some query in the launcher; it should show search results in kHalf
+    // state.
+    base::RunLoop waiter;
+    shell_test_api->WaitForLauncherAnimationState(
+        ash::mojom::AppListViewState::kHalf, waiter.QuitClosure());
+    ui_controls::SendKeyPress(browser_window, ui::VKEY_A,
+                              /*control=*/false,
+                              /*shift=*/false,
+                              /*alt=*/false,
+                              /* command = */ false);
+    waiter.Run();
+  }
+  {
+    // Search key to close the launcher.
+    base::RunLoop waiter;
+    shell_test_api->WaitForLauncherAnimationState(
+        ash::mojom::AppListViewState::kClosed, waiter.QuitClosure());
+    ui_controls::SendKeyPress(browser_window, ui::VKEY_BROWSER_SEARCH,
+                              /*control=*/false,
+                              /*shift=*/false,
+                              /*alt=*/false,
+                              /* command = */ false);
+    waiter.Run();
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(LauncherAnimationsTest, FullscreenSearch) {
+  set_suffix("FullscreenSearch.ClamshellMode");
+  // Browser window is used to identify display, so we can use
+  // use the 1st browser window regardless of number of windows created.
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
+  aura::Window* browser_window = browser_view->GetWidget()->GetNativeWindow();
+  ash::mojom::ShellTestApiPtr shell_test_api = test::GetShellTestApi();
+  {
+    // Hit the search key; it should switch to the kPeeking state.
+    base::RunLoop waiter;
+    shell_test_api->WaitForLauncherAnimationState(
+        ash::mojom::AppListViewState::kPeeking, waiter.QuitClosure());
+    ui_controls::SendKeyPress(browser_window, ui::VKEY_BROWSER_SEARCH,
+                              /*control=*/false,
+                              /*shift=*/false,
+                              /*alt=*/false,
+                              /* command = */ false);
+    waiter.Run();
+  }
+  {
+    // Type some query; it should show the search results in the kHalf state.
+    base::RunLoop waiter;
+    shell_test_api->WaitForLauncherAnimationState(
+        ash::mojom::AppListViewState::kHalf, waiter.QuitClosure());
+    ui_controls::SendKeyPress(browser_window, ui::VKEY_A,
+                              /*control=*/false,
+                              /*shift=*/false,
+                              /*alt=*/false,
+                              /* command = */ false);
+    waiter.Run();
+  }
+  {
+    // Shift+search key; it should expand to fullscreen with search results
+    // (i.e. kFullscreenSearch state).
+    base::RunLoop waiter;
+    shell_test_api->WaitForLauncherAnimationState(
+        ash::mojom::AppListViewState::kFullscreenSearch, waiter.QuitClosure());
+    ui_controls::SendKeyPress(browser_window, ui::VKEY_BROWSER_SEARCH,
+                              /*control=*/false,
+                              /*shift=*/true,
+                              /*alt=*/false,
+                              /* command = */ false);
+    waiter.Run();
+  }
+  {
+    // Search key to close the launcher.
     base::RunLoop waiter;
     shell_test_api->WaitForLauncherAnimationState(
         ash::mojom::AppListViewState::kClosed, waiter.QuitClosure());
