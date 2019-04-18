@@ -43,6 +43,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceClient : public BluezDBusClient {
   // an optional message in |error_message|.
   using ErrorCallback = base::Callback<void(const std::string& error_name,
                                             const std::string& error_message)>;
+  // TODO(danakj): Switch back to using ErrorCallback once it is migrated to a
+  // OnceCallback.
+  using ErrorOnceCallback =
+      base::OnceCallback<void(const std::string& error_name,
+                              const std::string& error_message)>;
 
   // Structure of properties associated with bluetooth devices.
   struct Properties : public dbus::PropertySet {

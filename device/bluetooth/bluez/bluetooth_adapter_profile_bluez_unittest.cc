@@ -98,16 +98,16 @@ class BluetoothAdapterProfileBlueZTest : public testing::Test {
         base::ScopedFD fd,
         const bluez::BluetoothProfileServiceProvider::Delegate::Options&
             options,
-        const ConfirmationCallback& callback) override {
+        ConfirmationCallback callback) override {
       ++connections_;
       fd.reset();
-      callback.Run(SUCCESS);
+      std::move(callback).Run(SUCCESS);
       if (device_path_.value() != "")
         ASSERT_EQ(device_path_, device_path);
     }
 
     void RequestDisconnection(const dbus::ObjectPath& device_path,
-                              const ConfirmationCallback& callback) override {
+                              ConfirmationCallback callback) override {
       ++disconnections_;
     }
 
