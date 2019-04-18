@@ -1019,9 +1019,6 @@ static LayoutUnit ComputeContentSize(
   NGPositionedFloatVector empty_leading_floats;
   NGLineLayoutOpportunity line_opportunity(available_inline_size);
   LayoutUnit result;
-  LayoutUnit previous_floats_inline_size =
-      input.float_left_inline_size + input.float_right_inline_size;
-  DCHECK_GE(previous_floats_inline_size, 0);
   NGLineBreaker line_breaker(node, mode, space, line_opportunity,
                              empty_leading_floats,
                              /* handled_leading_floats_index */ 0u,
@@ -1029,22 +1026,92 @@ static LayoutUnit ComputeContentSize(
   line_breaker.SetMaxSizeCache(max_size_cache);
   const NGInlineItemsData& items_data = line_breaker.ItemsData();
 
+  // Computes max-size for floats in inline formatting context.
+  class FloatsMaxSize {
+    STACK_ALLOCATED();
+
+   public:
+    explicit FloatsMaxSize(const MinMaxSizeInput& input)
+        : floats_inline_size_(input.float_left_inline_size +
+                              input.float_right_inline_size) {
+      DCHECK_GE(floats_inline_size_, 0);
+    }
+
+    void AddFloat(const ComputedStyle& float_style,
+                  const ComputedStyle& style,
+                  LayoutUnit float_inline_max_size_with_margin) {
+      floating_objects_.push_back(FloatingObject{
+          float_style, style, float_inline_max_size_with_margin});
+    }
+
+    LayoutUnit ComputeMaxSizeForLine(LayoutUnit line_inline_size,
+                                     LayoutUnit max_inline_size) {
+      if (floating_objects_.IsEmpty())
+        return std::max(max_inline_size, line_inline_size);
+
+      EFloat previous_float_type = EFloat::kNone;
+      for (const auto& floating_object : floating_objects_) {
+        const EClear float_clear =
+            ResolvedClear(floating_object.float_style, floating_object.style);
+
+        // If this float clears the previous float we start a new "line".
+        // This is subtly different to block layout which will only reset either
+        // the left or the right float size trackers.
+        if ((previous_float_type == EFloat::kLeft &&
+             (float_clear == EClear::kBoth || float_clear == EClear::kLeft)) ||
+            (previous_float_type == EFloat::kRight &&
+             (float_clear == EClear::kBoth || float_clear == EClear::kRight))) {
+          max_inline_size =
+              std::max(max_inline_size, line_inline_size + floats_inline_size_);
+          floats_inline_size_ = LayoutUnit();
+        }
+
+        // When negative margins move the float outside the content area,
+        // such float should not affect the content size.
+        floats_inline_size_ += floating_object.float_inline_max_size_with_margin
+                                   .ClampNegativeToZero();
+        previous_float_type = ResolvedFloating(floating_object.float_style,
+                                               floating_object.style);
+      }
+      max_inline_size =
+          std::max(max_inline_size, line_inline_size + floats_inline_size_);
+      floats_inline_size_ = LayoutUnit();
+      floating_objects_.Shrink(0);
+      return max_inline_size;
+    }
+
+   private:
+    LayoutUnit floats_inline_size_;
+    struct FloatingObject {
+      const ComputedStyle& float_style;
+      const ComputedStyle& style;
+      LayoutUnit float_inline_max_size_with_margin;
+    };
+    Vector<FloatingObject, 4> floating_objects_;
+  };
+
   // This struct computes the max size from the line break results for the min
   // size.
   struct MaxSizeFromMinSize {
+    STACK_ALLOCATED();
+
+   public:
     LayoutUnit position;
     LayoutUnit max_size;
     const NGInlineItemsData& items_data;
     const NGInlineItem* next_item;
     const NGLineBreaker::MaxSizeCache& max_size_cache;
+    FloatsMaxSize* floats;
     bool is_after_break = true;
 
     explicit MaxSizeFromMinSize(
         const NGInlineItemsData& items_data,
-        const NGLineBreaker::MaxSizeCache& max_size_cache)
+        const NGLineBreaker::MaxSizeCache& max_size_cache,
+        FloatsMaxSize* floats)
         : items_data(items_data),
           next_item(items_data.items.begin()),
-          max_size_cache(max_size_cache) {}
+          max_size_cache(max_size_cache),
+          floats(floats) {}
 
     // Add all text items up to |end|. The line break results for min size
     // may break text into multiple lines, and may remove trailing spaces. For
@@ -1065,8 +1132,8 @@ static LayoutUnit ComputeContentSize(
       // removed during the line breaking.
       AddTextUntil(&item);
       next_item = std::next(&item);
-      // Reset |position| to zero.
-      max_size = std::max(max_size, position);
+      max_size = floats->ComputeMaxSizeForLine(position.ClampNegativeToZero(),
+                                               max_size);
       position = LayoutUnit();
       is_after_break = true;
     }
@@ -1088,7 +1155,8 @@ static LayoutUnit ComputeContentSize(
 
     LayoutUnit Finish(const NGInlineItem* end) {
       AddTextUntil(end);
-      return std::max(position, max_size);
+      return floats->ComputeMaxSizeForLine(position.ClampNegativeToZero(),
+                                           max_size);
     }
 
     void ComputeFromMinSize(const NGLineInfo& line_info) {
@@ -1129,12 +1197,9 @@ static LayoutUnit ComputeContentSize(
       }
     }
   };
-  // Instantiate |MaxSizeFromMinSize| if we can compute the max size in 1 pass.
-  base::Optional<MaxSizeFromMinSize> max_size_from_min_size;
-  if (mode == NGLineBreakerMode::kMinContent && !previous_floats_inline_size) {
-    DCHECK(max_size_cache);
-    max_size_from_min_size.emplace(items_data, *max_size_cache);
-  }
+  FloatsMaxSize floats_max_size(input);
+  MaxSizeFromMinSize max_size_from_min_size(items_data, *max_size_cache,
+                                            &floats_max_size);
 
   Vector<LayoutObject*> floats_for_min_max;
   do {
@@ -1148,25 +1213,6 @@ static LayoutUnit ComputeContentSize(
 
     LayoutUnit inline_size = line_info.Width();
     DCHECK_EQ(inline_size, line_info.ComputeWidth().ClampNegativeToZero());
-
-    // These variables are only used for the max-content calculation.
-    LayoutUnit floats_inline_size = mode == NGLineBreakerMode::kMaxContent
-                                        ? previous_floats_inline_size
-                                        : LayoutUnit();
-    EFloat previous_float_type = EFloat::kNone;
-
-    // Earlier floats can only be assumed to affect the first line, so clear
-    // them now.
-    previous_floats_inline_size = LayoutUnit();
-
-    // Compute the max size from the line break result for the min size.
-    if (max_size_from_min_size.has_value()) {
-      // If there were floats, fall back to 2 pass for now.
-      if (!floats_for_min_max.IsEmpty())
-        max_size_from_min_size.reset();
-      else
-        max_size_from_min_size->ComputeFromMinSize(line_info);
-    }
 
     for (auto* floating_object : floats_for_min_max) {
       DCHECK(floating_object->IsFloating());
@@ -1183,35 +1229,21 @@ static LayoutUnit ComputeContentSize(
 
       if (mode == NGLineBreakerMode::kMinContent) {
         result = std::max(result, child_sizes.min_size + child_inline_margins);
-      } else {
-        const EClear float_clear = ResolvedClear(float_style, style);
-
-        // If this float clears the previous float we start a new "line".
-        // This is subtly different to block layout which will only reset either
-        // the left or the right float size trackers.
-        if ((previous_float_type == EFloat::kLeft &&
-             (float_clear == EClear::kBoth || float_clear == EClear::kLeft)) ||
-            (previous_float_type == EFloat::kRight &&
-             (float_clear == EClear::kBoth || float_clear == EClear::kRight))) {
-          result = std::max(result, inline_size + floats_inline_size);
-          floats_inline_size = LayoutUnit();
-        }
-
-        // When negative margins move the float outside the content area,
-        // such float should not affect the content size.
-        floats_inline_size +=
-            (child_sizes.max_size + child_inline_margins).ClampNegativeToZero();
-        previous_float_type = ResolvedFloating(float_style, style);
       }
+      floats_max_size.AddFloat(float_style, style,
+                               child_sizes.max_size + child_inline_margins);
     }
 
-    // NOTE: floats_inline_size will be zero for the min-content calculation,
-    // and will just take the inline size of the un-breakable line.
-    result = std::max(result, inline_size + floats_inline_size);
+    if (mode == NGLineBreakerMode::kMinContent) {
+      result = std::max(result, inline_size);
+      max_size_from_min_size.ComputeFromMinSize(line_info);
+    } else {
+      result = floats_max_size.ComputeMaxSizeForLine(inline_size, result);
+    }
   } while (!line_breaker.IsFinished());
 
-  if (max_size_from_min_size.has_value()) {
-    *max_size_out = max_size_from_min_size->Finish(items_data.items.end());
+  if (mode == NGLineBreakerMode::kMinContent) {
+    *max_size_out = max_size_from_min_size.Finish(items_data.items.end());
     // Check the max size matches to the value computed from 2 pass.
     DCHECK_EQ(**max_size_out,
               ComputeContentSize(node, container_writing_mode, input,
@@ -1238,16 +1270,8 @@ MinMaxSize NGInlineNode::ComputeMinMaxSize(
   sizes.min_size = ComputeContentSize(*this, container_writing_mode, input,
                                       NGLineBreakerMode::kMinContent,
                                       &max_size_cache, &max_size);
-
-  // If the max size is also computed, use it.
-  if (max_size.has_value()) {
-    sizes.max_size = *max_size;
-  } else {
-    // Compute the sum of inline sizes of all inline boxes with no line breaks.
-    sizes.max_size = ComputeContentSize(*this, container_writing_mode, input,
-                                        NGLineBreakerMode::kMaxContent,
-                                        &max_size_cache, nullptr);
-  }
+  DCHECK(max_size.has_value());
+  sizes.max_size = *max_size;
 
   // Negative text-indent can make min > max. Ensure min is the minimum size.
   sizes.min_size = std::min(sizes.min_size, sizes.max_size);
