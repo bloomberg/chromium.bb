@@ -122,11 +122,9 @@ MachineLevelUserCloudPolicyController::CreatePolicyManager(
 
   DVLOG(1) << "Creating machine level cloud policy manager";
 
-  bool does_cloud_policy_has_priority =
+  bool cloud_policy_has_priority =
       DoesCloudPolicyHasPriority(platform_provider);
-  if (does_cloud_policy_has_priority) {
-    // TODO(crbug.com/749530): Pass this flag to
-    // MachineLevelUserCloudPolicyManager.
+  if (cloud_policy_has_priority) {
     DVLOG(1) << "Cloud policies are now overriding platform policies with "
                 "machine scope.";
   }
@@ -135,7 +133,7 @@ MachineLevelUserCloudPolicyController::CreatePolicyManager(
       user_data_dir.Append(MachineLevelUserCloudPolicyController::kPolicyDir);
   std::unique_ptr<MachineLevelUserCloudPolicyStore> policy_store =
       MachineLevelUserCloudPolicyStore::Create(
-          dm_token, client_id, policy_dir,
+          dm_token, client_id, policy_dir, cloud_policy_has_priority,
           base::CreateSequencedTaskRunnerWithTraits(
               {base::MayBlock(), base::TaskPriority::BEST_EFFORT}));
   return std::make_unique<MachineLevelUserCloudPolicyManager>(
