@@ -1489,6 +1489,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "enable-reader-mode",
+    "owners": [ "gilmanmh@google.com" ],
+    "expiry_milestone": 78
+  },
+  {
     "name": "enable-reader-mode-in-cct",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76

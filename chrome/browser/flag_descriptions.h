@@ -1608,6 +1608,9 @@ extern const char kRemoveNtpFakeboxDescription[];
 extern const char kNtpCustomizationMenuV2Name[];
 extern const char kNtpCustomizationMenuV2Description[];
 
+extern const char kEnableReaderModeName[];
+extern const char kEnableReaderModeDescription[];
+
 extern const char kEnableWebAuthenticationBleSupportName[];
 extern const char kEnableWebAuthenticationBleSupportDescription[];
 
