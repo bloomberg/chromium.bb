@@ -263,18 +263,40 @@ Cronet_RESULT Cronet_EngineImpl::Shutdown() {
 void Cronet_EngineImpl::AddRequestFinishedListener(
     Cronet_RequestFinishedInfoListenerPtr listener,
     Cronet_ExecutorPtr executor) {
-  NOTIMPLEMENTED();
+  if (listener == nullptr || executor == nullptr) {
+    LOG(DFATAL) << "Both listener and executor must be non-null. listener: "
+                << listener << " executor: " << executor << ".";
+    return;
+  }
+  base::AutoLock lock(lock_);
+  if (request_finished_registrations_.count(listener) > 0) {
+    LOG(DFATAL) << "Listener " << listener
+                << " already registered with executor "
+                << request_finished_registrations_[listener]
+                << ", *NOT* changing to new executor " << executor << ".";
+    return;
+  }
+  request_finished_registrations_.insert({listener, executor});
 }
 
 void Cronet_EngineImpl::RemoveRequestFinishedListener(
     Cronet_RequestFinishedInfoListenerPtr listener) {
-  NOTIMPLEMENTED();
+  base::AutoLock lock(lock_);
+  if (request_finished_registrations_.erase(listener) != 1) {
+    LOG(DFATAL) << "Asked to erase non-existent RequestFinishedInfoListener "
+                << listener << ".";
+  }
 }
 
 Cronet_RESULT Cronet_EngineImpl::CheckResult(Cronet_RESULT result) {
   if (enable_check_result_)
     CHECK_EQ(Cronet_RESULT_SUCCESS, result);
   return result;
+}
+
+bool Cronet_EngineImpl::HasRequestFinishedListener() {
+  base::AutoLock lock(lock_);
+  return request_finished_registrations_.size() > 0;
 }
 
 // The struct stream_engine for grpc support.

@@ -105,6 +105,21 @@ class Cronet_UrlRequestImpl : public Cronet_UrlRequest {
   std::unordered_multiset<Cronet_UrlRequestStatusListenerPtr> status_listeners_
       GUARDED_BY(lock_);
 
+  // Optional; allows a listener to receive request info and stats.
+  //
+  // A nullptr value indicates that there is no RequestFinishedInfo listener
+  // specified for the request (however, the Engine may have additional
+  // listeners -- Engine listeners apply to all its UrlRequests).
+  //
+  // Owned by the app -- must outlive this UrlRequest.
+  Cronet_RequestFinishedInfoListenerPtr request_finished_listener_ = nullptr;
+
+  // Executor upon which |request_finished_listener_| will run. If
+  // |request_finished_info_| is not nullptr, this won't be nullptr either.
+  //
+  // Owned by the app -- must outlive this UrlRequest.
+  Cronet_ExecutorPtr request_finished_executor_ = nullptr;
+
   // Response info updated by callback with number of bytes received. May be
   // nullptr, if no response has been received.
   std::unique_ptr<Cronet_UrlResponseInfo> response_info_;
