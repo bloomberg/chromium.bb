@@ -43,6 +43,12 @@ public class BrowserServicesMetrics {
                 "BrowserServices.VerificationResult", result, VerificationResult.NUM_ENTRIES);
     }
 
+    public static void recordVerificationTime(long duration, boolean online) {
+        RecordHistogram.recordTimesHistogram(
+                online ? "BrowserServices.VerificationTime.Online"
+                        : "BrowserServices.VerificationTime.Offline", duration);
+    }
+
     /**
      * Returns a {@link TimingMetric} that records the amount of time spent querying the Android
      * system for ResolveInfos that will deal with a given URL when launching from a background

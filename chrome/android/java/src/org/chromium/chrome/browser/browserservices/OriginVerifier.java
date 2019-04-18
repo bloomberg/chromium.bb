@@ -8,6 +8,7 @@ import android.annotation.SuppressLint;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.customtabs.CustomTabsService;
@@ -72,6 +73,7 @@ public class OriginVerifier {
     private long mNativeOriginVerifier;
     @Nullable private OriginVerificationListener mListener;
     private Origin mOrigin;
+    private long mVerificationStartTime;
 
     /**
      * A collection of Relationships (stored as Strings, with the signature set to an empty String)
@@ -268,6 +270,7 @@ public class OriginVerifier {
                 break;
         }
 
+        mVerificationStartTime = SystemClock.uptimeMillis();
         boolean requestSent = nativeVerifyOrigin(mNativeOriginVerifier, mPackageName,
                 mSignatureFingerprint, mOrigin.toString(), relationship);
         if (!requestSent) {
@@ -395,6 +398,12 @@ public class OriginVerifier {
         if (mListener != null) {
             mListener.onOriginVerified(mPackageName, mOrigin, originVerified, online);
         }
+
+        if (online != null) {
+            long duration = SystemClock.uptimeMillis() - mVerificationStartTime;
+            BrowserServicesMetrics.recordVerificationTime(duration, online);
+        }
+
         cleanUp();
     }
 
