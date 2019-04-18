@@ -481,15 +481,12 @@ def _ExtractAllChromeLocalesLists():
 
 # Misc regular expressions used to match elements and their attributes.
 _RE_OUTPUT_ELEMENT = re.compile(r'<output (.*)\s*/>')
-_RE_TRANSLATION_ELEMENT = re.compile(r'<file (.*\.xtb")\s*/>')
+_RE_TRANSLATION_ELEMENT = re.compile(r'<file( | .* )path="(.*\.xtb)".*/>')
 _RE_FILENAME_ATTRIBUTE = re.compile(r'filename="([^"]*)"')
 _RE_LANG_ATTRIBUTE = re.compile(r'lang="([^"]*)"')
 _RE_PATH_ATTRIBUTE = re.compile(r'path="([^"]*)"')
 _RE_TYPE_ANDROID_ATTRIBUTE = re.compile(r'type="android"')
 
-assert _RE_TRANSLATION_ELEMENT.match('<file path="foo/bar.xtb" />')
-assert _RE_TRANSLATION_ELEMENT.match('<file path="foo/bar.xtb"/>')
-assert _RE_TRANSLATION_ELEMENT.match('<file path="foo/bar.xml" />') is None
 
 
 def _IsGritInputFile(input_file):
@@ -497,12 +494,32 @@ def _IsGritInputFile(input_file):
   return input_file.endswith('.grd')
 
 
+def _GetXmlLangAttribute(xml_line):
+  """Extract the lang attribute value from an XML input line."""
+  m = _RE_LANG_ATTRIBUTE.search(xml_line)
+  if not m:
+    return None
+  return m.group(1)
+
+
+class _GetXmlLangAttributeTest(unittest.TestCase):
+  TEST_DATA = {
+      '': None,
+      'foo': None,
+      'lang=foo': None,
+      'lang="foo"': 'foo',
+      '<something lang="foo bar" />': 'foo bar',
+      '<file lang="fr-CA" path="path/to/strings_fr-CA.xtb" />': 'fr-CA',
+  }
+
+  def test_GetXmlLangAttribute(self):
+    for test_line, expected in self.TEST_DATA.iteritems():
+      self.assertEquals(_GetXmlLangAttribute(test_line), expected)
+
+
 def _SortGrdElementsRanges(grd_lines, element_predicate):
   """Sort all .grd elements of a given type by their lang attribute."""
-  return _SortElementsRanges(
-      grd_lines,
-      element_predicate,
-      lambda x: _RE_LANG_ATTRIBUTE.search(x).group(1))
+  return _SortElementsRanges(grd_lines, element_predicate, _GetXmlLangAttribute)
 
 
 def _CheckGrdElementRangeLang(grd_lines, start, end, wanted_locales):
@@ -526,12 +543,11 @@ def _CheckGrdElementRangeLang(grd_lines, start, end, wanted_locales):
   locales = set()
   for pos in xrange(start, end):
     line = grd_lines[pos]
-    m = _RE_LANG_ATTRIBUTE.search(line)
-    if not m:
+    lang = _GetXmlLangAttribute(line)
+    if not lang:
       errors.append('%d: Missing "lang" attribute in <output> element' % pos +
                     1)
       continue
-    lang = m.group(1)
     cr_locale = _FixChromiumLangAttribute(lang)
     if cr_locale in locales:
       errors.append(
@@ -590,10 +606,9 @@ def _CheckGrdElementRangeAndroidOutputFilename(grd_lines, start, end,
   errors = []
   for pos in xrange(start, end):
     line = grd_lines[pos]
-    m = _RE_LANG_ATTRIBUTE.search(line)
-    if not m:
+    lang = _GetXmlLangAttribute(line)
+    if not lang:
       continue
-    lang = m.group(1)
     cr_locale = _FixChromiumLangAttribute(lang)
 
     m = _RE_FILENAME_ATTRIBUTE.search(line)
@@ -650,7 +665,7 @@ def _AddMissingLocalesInGrdAndroidOutputs(grd_file, grd_lines, wanted_locales):
   for start, end in reversed(intervals):
     locales = set()
     for pos in xrange(start, end):
-      lang = _RE_LANG_ATTRIBUTE.search(grd_lines[pos]).group(1)
+      lang = _GetXmlLangAttribute(grd_lines[pos])
       locale = _FixChromiumLangAttribute(lang)
       locales.add(locale)
 
@@ -698,6 +713,29 @@ def _IsTranslationGrdOutputLine(line):
   return m is not None
 
 
+class _IsTranslationGrdOutputLineTest(unittest.TestCase):
+
+  def test_GrdTranslationOutputLines(self):
+    _VALID_INPUT_LINES = [
+        '<file path="foo/bar.xtb" />',
+        '<file path="foo/bar.xtb"/>',
+        '<file lang="fr-CA" path="translations/aw_strings_fr-CA.xtb"/>',
+        '<file lang="fr-CA" path="translations/aw_strings_fr-CA.xtb" />',
+        '  <file path="translations/aw_strings_ar.xtb" lang="ar" />',
+    ]
+    _INVALID_INPUT_LINES = ['<file path="foo/bar.xml" />']
+
+    for line in _VALID_INPUT_LINES:
+      self.assertTrue(
+          _IsTranslationGrdOutputLine(line),
+          '_IsTranslationGrdOutputLine() returned False for [%s]' % line)
+
+    for line in _INVALID_INPUT_LINES:
+      self.assertFalse(
+          _IsTranslationGrdOutputLine(line),
+          '_IsTranslationGrdOutputLine() returned True for [%s]' % line)
+
+
 def _CheckGrdTranslationElementRange(grd_lines, start, end,
                                      wanted_locales):
   """Check all <translations> sub-elements in specific input .grd lines range.
@@ -717,8 +755,8 @@ def _CheckGrdTranslationElementRange(grd_lines, start, end,
   errors = []
   for pos in xrange(start, end):
     line = grd_lines[pos]
-    m = _RE_LANG_ATTRIBUTE.search(line)
-    if not m:
+    lang = _GetXmlLangAttribute(line)
+    if not lang:
       continue
     m = _RE_PATH_ATTRIBUTE.search(line)
     if not m:
@@ -799,7 +837,7 @@ def _AddMissingLocalesInGrdTranslations(grd_file, grd_lines, wanted_locales):
   for start, end in reversed(intervals):
     locales = set()
     for pos in xrange(start, end):
-      lang = _RE_LANG_ATTRIBUTE.search(grd_lines[pos]).group(1)
+      lang = _GetXmlLangAttribute(grd_lines[pos])
       locale = _FixChromiumLangAttribute(lang)
       locales.add(locale)
 
@@ -1140,7 +1178,6 @@ def _UpdateLocalesInExpectationFile(pyl_path, wanted_locales):
     input_lines = [l.rstrip() for l in f.readlines()]
 
   updated_lines = _UpdateLocalesInExpectationLines(input_lines, tc_locales)
-  print repr(updated_lines)
   with build_utils.AtomicOutput(pyl_path) as f:
     f.writelines('\n'.join(updated_lines) + '\n')
 
