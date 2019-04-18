@@ -8,7 +8,22 @@ using content::WebContents;
 
 ////////////////////////////////////////////////////////////////////////////////
 // TabStripModelChange
-//
+
+TabStripModelChange::GroupChange::GroupChange(WebContents* contents,
+                                              int index,
+                                              base::Optional<int> old_group,
+                                              base::Optional<int> new_group)
+    : contents(contents),
+      index(index),
+      old_group(old_group),
+      new_group(new_group) {}
+
+TabStripModelChange::GroupChange::~GroupChange() {}
+
+TabStripModelChange::Delta::Delta() {}
+
+TabStripModelChange::Delta::~Delta() {}
+
 // static
 TabStripModelChange::Delta TabStripModelChange::CreateInsertDelta(
     content::WebContents* contents,
@@ -52,10 +67,10 @@ TabStripModelChange::Delta TabStripModelChange::CreateReplaceDelta(
 TabStripModelChange::Delta TabStripModelChange::CreateGroupChangeDelta(
     content::WebContents* contents,
     int index,
-    const TabGroupData* old_group_data,
-    const TabGroupData* new_group_data) {
+    base::Optional<int> old_group,
+    base::Optional<int> new_group) {
   TabStripModelChange::Delta delta;
-  delta.group_change = {contents, index, old_group_data, new_group_data};
+  delta.group_change = {contents, index, old_group, new_group};
   return delta;
 }
 

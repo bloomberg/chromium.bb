@@ -51,7 +51,7 @@ void TabMenuModel::Build(TabStripModel* tab_strip, int index) {
     }
 
     for (size_t index = 0; index < affected_indices.size(); index++) {
-      if (tab_strip->GetTabGroupForTab(affected_indices[index]) != nullptr) {
+      if (tab_strip->GetTabGroupForTab(affected_indices[index]).has_value()) {
         AddItemWithStringId(TabStripModel::CommandRemoveFromGroup,
                             IDS_TAB_CXMENU_REMOVE_TAB_FROM_GROUP);
         break;
