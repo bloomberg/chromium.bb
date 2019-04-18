@@ -1624,6 +1624,8 @@ jumbo_split_static_library("browser") {
     "ssl/ssl_error_navigation_throttle.h",
     "ssl/typed_navigation_timing_throttle.cc",
     "ssl/typed_navigation_timing_throttle.h",
+    "startup_data.cc",
+    "startup_data.h",
     "status_icons/status_icon.cc",
     "status_icons/status_icon.h",
     "status_icons/status_icon_menu_model.cc",

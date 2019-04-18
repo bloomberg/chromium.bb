@@ -85,9 +85,8 @@ class DarkResumeController;
 // src/ash or chrome/browser/ui/ash.
 class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
  public:
-  ChromeBrowserMainPartsChromeos(
-      const content::MainFunctionParams& parameters,
-      ChromeFeatureListCreator* chrome_feature_list_creator);
+  ChromeBrowserMainPartsChromeos(const content::MainFunctionParams& parameters,
+                                 StartupData* startup_data);
   ~ChromeBrowserMainPartsChromeos() override;
 
   // ChromeBrowserMainParts overrides.

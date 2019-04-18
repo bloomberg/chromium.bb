@@ -45,6 +45,7 @@ class RemoteDebuggingServer;
 class PrefRegistrySimple;
 class SiteIsolationPrefsObserver;
 class SystemNotificationHelper;
+class StartupData;
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 class PluginsResourceService;
@@ -79,11 +80,10 @@ class WebRtcEventLogManager;
 class BrowserProcessImpl : public BrowserProcess,
                            public KeepAliveStateObserver {
  public:
-  // |chrome_feature_list_creator| should not be null. The BrowserProcessImpl
+  // |startup_data| should not be null. The BrowserProcessImpl
   // will take the PrefService owned by the creator as the Local State instead
   // of loading the JSON file from disk.
-  explicit BrowserProcessImpl(
-      ChromeFeatureListCreator* chrome_feature_list_creator);
+  explicit BrowserProcessImpl(StartupData* startup_data);
   ~BrowserProcessImpl() override;
 
   // Called to complete initialization.

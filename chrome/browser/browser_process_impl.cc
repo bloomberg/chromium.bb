@@ -76,6 +76,7 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/site_isolation/prefs_observer.h"
+#include "chrome/browser/startup_data.h"
 #include "chrome/browser/status_icons/status_tray.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -227,12 +228,12 @@ rappor::RapporService* GetBrowserRapporService() {
   return nullptr;
 }
 
-BrowserProcessImpl::BrowserProcessImpl(
-    ChromeFeatureListCreator* chrome_feature_list_creator)
-    : chrome_feature_list_creator_(chrome_feature_list_creator) {
+BrowserProcessImpl::BrowserProcessImpl(StartupData* startup_data) {
   g_browser_process = this;
 
-  DCHECK(chrome_feature_list_creator_);
+  DCHECK(startup_data);
+
+  chrome_feature_list_creator_ = startup_data->chrome_feature_list_creator();
   browser_policy_connector_ =
       chrome_feature_list_creator_->TakeChromeBrowserPolicyConnector();
   created_browser_policy_connector_ = true;

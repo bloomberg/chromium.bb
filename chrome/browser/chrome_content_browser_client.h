@@ -20,7 +20,7 @@
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_service.h"
-#include "chrome/browser/metrics/chrome_feature_list_creator.h"
+#include "chrome/browser/startup_data.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/resource_type.h"
@@ -84,8 +84,7 @@ blink::UserAgentMetadata GetUserAgentMetadata();
 
 class ChromeContentBrowserClient : public content::ContentBrowserClient {
  public:
-  explicit ChromeContentBrowserClient(
-      ChromeFeatureListCreator* chrome_feature_list_creator = nullptr);
+  explicit ChromeContentBrowserClient(StartupData* startup_data = nullptr);
   ~ChromeContentBrowserClient() override;
 
   // TODO(https://crbug.com/787567): This file is about calls from content/ out
@@ -678,7 +677,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
                                               const url::Origin&>>
       worker_interfaces_parameterized_;
 
-  ChromeFeatureListCreator* chrome_feature_list_creator_;
+  StartupData* startup_data_;
 
 #if !defined(OS_ANDROID)
   std::unique_ptr<ChromeSerialDelegate> serial_delegate_;
