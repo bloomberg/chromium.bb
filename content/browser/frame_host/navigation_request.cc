@@ -10,8 +10,10 @@
 #include "base/bind_helpers.h"
 #include "base/debug/alias.h"
 #include "base/debug/dump_without_crashing.h"
+#include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/optional.h"
+#include "base/rand_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
@@ -90,6 +92,15 @@ namespace content {
 
 namespace {
 
+// crbug.com/954271: This feature is a part of an ablation study which makes
+// history navigations slower.
+// TODO(altimin): Clean this up after the study finishes.
+constexpr base::Feature kHistoryNavigationDoNotUseCacheAblationStudy{
+    "HistoryNavigationDoNotUseCacheAblationStudy",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+constexpr base::FeatureParam<double> kDoNotUseCacheProbability{
+    &kHistoryNavigationDoNotUseCacheAblationStudy, "probability", 0.0};
+
 // Returns the net load flags to use based on the navigation type.
 // TODO(clamy): Remove the blink code that sets the caching flags when
 // PlzNavigate launches.
@@ -122,6 +133,10 @@ void UpdateLoadFlagsWithCacheFlags(
       if (is_post) {
         *load_flags |=
             net::LOAD_ONLY_FROM_CACHE | net::LOAD_SKIP_CACHE_VALIDATION;
+      } else if (base::FeatureList::IsEnabled(
+                     kHistoryNavigationDoNotUseCacheAblationStudy) &&
+                 base::RandDouble() < kDoNotUseCacheProbability.Get()) {
+        *load_flags |= net::LOAD_BYPASS_CACHE;
       } else {
         *load_flags |= net::LOAD_SKIP_CACHE_VALIDATION;
       }
