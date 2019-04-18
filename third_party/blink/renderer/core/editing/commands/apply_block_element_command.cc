@@ -39,6 +39,7 @@
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -146,7 +147,7 @@ void ApplyBlockElementCommand::FormatSelection(
     InsertNodeAt(blockquote, caret_position, editing_state);
     if (editing_state->IsAborted())
       return;
-    HTMLBRElement* placeholder = HTMLBRElement::Create(GetDocument());
+    auto* placeholder = MakeGarbageCollected<HTMLBRElement>(GetDocument());
     AppendNode(placeholder, blockquote, editing_state);
     if (editing_state->IsAborted())
       return;

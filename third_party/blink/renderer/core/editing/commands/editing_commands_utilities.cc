@@ -45,6 +45,7 @@
 #include "third_party/blink/renderer/core/html/html_html_element.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -538,11 +539,12 @@ void TidyUpHTMLStructure(Document& document) {
       "is corrected automatically."));
   UseCounter::Count(document, WebFeature::kExecCommandAltersHTMLStructure);
 
-  Element* const root = HTMLHtmlElement::Create(document);
+  auto* const root = MakeGarbageCollected<HTMLHtmlElement>(document);
   if (existing_head)
     root->AppendChild(existing_head);
-  Element* const body =
-      existing_body ? existing_body : HTMLBodyElement::Create(document);
+  auto* const body = existing_body
+                         ? existing_body
+                         : MakeGarbageCollected<HTMLBodyElement>(document);
   if (document.documentElement() && body != document.documentElement())
     body->AppendChild(document.documentElement());
   root->AppendChild(body);

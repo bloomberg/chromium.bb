@@ -81,6 +81,7 @@
 #include "third_party/blink/renderer/core/layout/layout_text.h"
 #include "third_party/blink/renderer/core/layout/line/inline_text_box.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -937,7 +938,7 @@ HTMLBRElement* CompositeEditCommand::AppendBlockPlaceholder(
   // 4244964.
   DCHECK(container->GetLayoutObject()) << container;
 
-  HTMLBRElement* placeholder = HTMLBRElement::Create(GetDocument());
+  auto* placeholder = MakeGarbageCollected<HTMLBRElement>(GetDocument());
   AppendNode(placeholder, container, editing_state);
   if (editing_state->IsAborted())
     return nullptr;
@@ -954,7 +955,7 @@ HTMLBRElement* CompositeEditCommand::InsertBlockPlaceholder(
   // 4244964.
   DCHECK(pos.AnchorNode()->GetLayoutObject()) << pos;
 
-  HTMLBRElement* placeholder = HTMLBRElement::Create(GetDocument());
+  auto* placeholder = MakeGarbageCollected<HTMLBRElement>(GetDocument());
   InsertNodeAt(placeholder, pos, editing_state);
   if (editing_state->IsAborted())
     return nullptr;
@@ -1002,7 +1003,8 @@ HTMLElement* CompositeEditCommand::InsertNewDefaultParagraphElementAt(
     const Position& position,
     EditingState* editing_state) {
   HTMLElement* paragraph_element = CreateDefaultParagraphElement(GetDocument());
-  paragraph_element->AppendChild(HTMLBRElement::Create(GetDocument()));
+  paragraph_element->AppendChild(
+      MakeGarbageCollected<HTMLBRElement>(GetDocument()));
   InsertNodeAt(paragraph_element, position, editing_state);
   if (editing_state->IsAborted())
     return nullptr;
@@ -1362,7 +1364,7 @@ void CompositeEditCommand::MoveParagraphWithClones(
        before_paragraph.DeepEquivalent() == after_paragraph.DeepEquivalent())) {
     // FIXME: Trim text between beforeParagraph and afterParagraph if they
     // aren't equal.
-    InsertNodeAt(HTMLBRElement::Create(GetDocument()),
+    InsertNodeAt(MakeGarbageCollected<HTMLBRElement>(GetDocument()),
                  before_paragraph.DeepEquivalent(), editing_state);
   }
 }
@@ -1540,7 +1542,7 @@ void CompositeEditCommand::MoveParagraphs(
        before_paragraph.DeepEquivalent() == after_paragraph.DeepEquivalent())) {
     // FIXME: Trim text between beforeParagraph and afterParagraph if they
     // aren't equal.
-    InsertNodeAt(HTMLBRElement::Create(GetDocument()),
+    InsertNodeAt(MakeGarbageCollected<HTMLBRElement>(GetDocument()),
                  before_paragraph.DeepEquivalent(), editing_state);
     if (editing_state->IsAborted())
       return;
@@ -1669,13 +1671,13 @@ bool CompositeEditCommand::BreakOutOfEmptyListItem(
         RemoveNodePreservingChildren(list_node->parentNode(), editing_state);
         if (editing_state->IsAborted())
           return false;
-        new_block = HTMLLIElement::Create(GetDocument());
+        new_block = MakeGarbageCollected<HTMLLIElement>(GetDocument());
       }
       // If listNode does NOT appear at the end of the outer list item, then
       // behave as if in a regular paragraph.
     } else if (IsHTMLOListElement(*block_enclosing_list) ||
                IsHTMLUListElement(*block_enclosing_list)) {
-      new_block = HTMLLIElement::Create(GetDocument());
+      new_block = MakeGarbageCollected<HTMLLIElement>(GetDocument());
     }
   }
   if (!new_block)
@@ -1767,7 +1769,7 @@ bool CompositeEditCommand::BreakOutOfEmptyMailBlockquotedParagraph(
                           &IsMailHTMLBlockquoteElement))
     return false;
 
-  HTMLBRElement* br = HTMLBRElement::Create(GetDocument());
+  auto* br = MakeGarbageCollected<HTMLBRElement>(GetDocument());
   // We want to replace this quoted paragraph with an unquoted one, so insert a
   // br to hold the caret before the highest blockquote.
   InsertNodeBefore(br, highest_blockquote, editing_state);
@@ -1781,7 +1783,8 @@ bool CompositeEditCommand::BreakOutOfEmptyMailBlockquotedParagraph(
   //   foo<br><blockquote>...</blockquote>
   // insert a second one.
   if (!IsStartOfParagraph(at_br)) {
-    InsertNodeBefore(HTMLBRElement::Create(GetDocument()), br, editing_state);
+    InsertNodeBefore(MakeGarbageCollected<HTMLBRElement>(GetDocument()), br,
+                     editing_state);
     if (editing_state->IsAborted())
       return false;
     GetDocument().UpdateStyleAndLayout();

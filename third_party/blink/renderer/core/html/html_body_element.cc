@@ -42,7 +42,7 @@ namespace blink {
 
 using namespace html_names;
 
-inline HTMLBodyElement::HTMLBodyElement(Document& document)
+HTMLBodyElement::HTMLBodyElement(Document& document)
     : HTMLElement(kBodyTag, document) {}
 
 DEFINE_NODE_FACTORY(HTMLBodyElement)

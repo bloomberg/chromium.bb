@@ -55,6 +55,7 @@
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_text.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
@@ -1924,7 +1925,7 @@ void ApplyStyleCommand::ApplyInlineStyleChange(
         SetNodeAttribute(font_container, kSizeAttr,
                          AtomicString(style_change.FontSize()));
     } else {
-      HTMLFontElement* font_element = HTMLFontElement::Create(GetDocument());
+      auto* font_element = MakeGarbageCollected<HTMLFontElement>(GetDocument());
       if (style_change.ApplyFontColor())
         font_element->setAttribute(kColorAttr,
                                    AtomicString(style_change.FontColor()));
@@ -1969,47 +1970,50 @@ void ApplyStyleCommand::ApplyInlineStyleChange(
   }
 
   if (style_change.ApplyBold()) {
-    SurroundNodeRangeWithElement(start_node, end_node,
-                                 HTMLElement::Create(kBTag, GetDocument()),
-                                 editing_state);
+    SurroundNodeRangeWithElement(
+        start_node, end_node,
+        MakeGarbageCollected<HTMLElement>(kBTag, GetDocument()), editing_state);
     if (editing_state->IsAborted())
       return;
   }
 
   if (style_change.ApplyItalic()) {
-    SurroundNodeRangeWithElement(start_node, end_node,
-                                 HTMLElement::Create(kITag, GetDocument()),
-                                 editing_state);
+    SurroundNodeRangeWithElement(
+        start_node, end_node,
+        MakeGarbageCollected<HTMLElement>(kITag, GetDocument()), editing_state);
     if (editing_state->IsAborted())
       return;
   }
 
   if (style_change.ApplyUnderline()) {
-    SurroundNodeRangeWithElement(start_node, end_node,
-                                 HTMLElement::Create(kUTag, GetDocument()),
-                                 editing_state);
+    SurroundNodeRangeWithElement(
+        start_node, end_node,
+        MakeGarbageCollected<HTMLElement>(kUTag, GetDocument()), editing_state);
     if (editing_state->IsAborted())
       return;
   }
 
   if (style_change.ApplyLineThrough()) {
-    SurroundNodeRangeWithElement(start_node, end_node,
-                                 HTMLElement::Create(kStrikeTag, GetDocument()),
-                                 editing_state);
+    SurroundNodeRangeWithElement(
+        start_node, end_node,
+        MakeGarbageCollected<HTMLElement>(kStrikeTag, GetDocument()),
+        editing_state);
     if (editing_state->IsAborted())
       return;
   }
 
   if (style_change.ApplySubscript()) {
-    SurroundNodeRangeWithElement(start_node, end_node,
-                                 HTMLElement::Create(kSubTag, GetDocument()),
-                                 editing_state);
+    SurroundNodeRangeWithElement(
+        start_node, end_node,
+        MakeGarbageCollected<HTMLElement>(kSubTag, GetDocument()),
+        editing_state);
     if (editing_state->IsAborted())
       return;
   } else if (style_change.ApplySuperscript()) {
-    SurroundNodeRangeWithElement(start_node, end_node,
-                                 HTMLElement::Create(kSupTag, GetDocument()),
-                                 editing_state);
+    SurroundNodeRangeWithElement(
+        start_node, end_node,
+        MakeGarbageCollected<HTMLElement>(kSupTag, GetDocument()),
+        editing_state);
     if (editing_state->IsAborted())
       return;
   }

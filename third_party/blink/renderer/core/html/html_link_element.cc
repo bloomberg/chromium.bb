@@ -52,8 +52,8 @@ namespace blink {
 
 using namespace html_names;
 
-inline HTMLLinkElement::HTMLLinkElement(Document& document,
-                                        const CreateElementFlags flags)
+HTMLLinkElement::HTMLLinkElement(Document& document,
+                                 const CreateElementFlags flags)
     : HTMLElement(kLinkTag, document),
       link_loader_(LinkLoader::Create(this)),
       referrer_policy_(network::mojom::ReferrerPolicy::kDefault),
