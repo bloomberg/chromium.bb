@@ -208,7 +208,7 @@ void FtlSignalingPlayground::OnIncomingSession(
     protocol::SessionManager::IncomingSessionResponse* response) {
   HOST_LOG << "Received incoming session!\n";
   RegisterSession(base::WrapUnique(owned_session),
-                  protocol::TransportRole::CLIENT);
+                  protocol::TransportRole::SERVER);
   *response = protocol::SessionManager::ACCEPT;
 }
 
@@ -236,7 +236,7 @@ void FtlSignalingPlayground::OnClientSignalingConnected() {
       std::make_unique<protocol::NegotiatingClientAuthenticator>(
           signal_strategy_->GetLocalAddress().id(), host_jid,
           client_auth_config));
-  RegisterSession(std::move(session), protocol::TransportRole::SERVER);
+  RegisterSession(std::move(session), protocol::TransportRole::CLIENT);
 }
 
 void FtlSignalingPlayground::FetchSecret(
