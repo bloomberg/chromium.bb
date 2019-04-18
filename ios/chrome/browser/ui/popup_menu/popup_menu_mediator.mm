@@ -12,6 +12,8 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/feature_engagement/public/tracker.h"
+#include "components/language/ios/browser/ios_language_detection_tab_helper.h"
+#import "components/language/ios/browser/ios_language_detection_tab_helper_observer_bridge.h"
 #include "components/open_from_clipboard/clipboard_recent_content.h"
 #include "components/translate/core/browser/translate_manager.h"
 #include "components/translate/core/browser/translate_prefs.h"
@@ -74,12 +76,16 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
 
 @interface PopupMenuMediator () <BookmarkModelBridgeObserver,
                                  CRWWebStateObserver,
+                                 IOSLanguageDetectionTabHelperObserving,
                                  ReadingListMenuNotificationDelegate,
                                  WebStateListObserving> {
   std::unique_ptr<web::WebStateObserverBridge> _webStateObserver;
   std::unique_ptr<WebStateListObserverBridge> _webStateListObserver;
   // Bridge to register for bookmark changes.
   std::unique_ptr<bookmarks::BookmarkModelBridge> _bookmarkModelBridge;
+  // Bridge to get notified of the language detection event.
+  std::unique_ptr<language::IOSLanguageDetectionTabHelperObserverBridge>
+      _iOSLanguageDetectionTabHelperObserverBridge;
 }
 
 // Items to be displayed in the popup menu.
@@ -191,6 +197,7 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
 
   _readingListMenuNotifier = nil;
   _bookmarkModelBridge.reset();
+  _iOSLanguageDetectionTabHelperObserverBridge.reset();
 }
 
 #pragma mark - CRWWebStateObserver
@@ -298,12 +305,20 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
 - (void)setWebState:(web::WebState*)webState {
   if (_webState) {
     _webState->RemoveObserver(_webStateObserver.get());
+
+    _iOSLanguageDetectionTabHelperObserverBridge.reset();
   }
 
   _webState = webState;
 
   if (_webState) {
     _webState->AddObserver(_webStateObserver.get());
+
+    // Observer the language::IOSLanguageDetectionTabHelper for |_webState|.
+    _iOSLanguageDetectionTabHelperObserverBridge =
+        std::make_unique<language::IOSLanguageDetectionTabHelperObserverBridge>(
+            language::IOSLanguageDetectionTabHelper::FromWebState(_webState),
+            self);
 
     if (self.popupMenu) {
       [self updatePopupMenu];
@@ -451,6 +466,19 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
       self.webState->GetNavigationManager()->GetIndexOfItem(navigationItem);
   DCHECK_NE(index, -1);
   self.webState->GetNavigationManager()->GoToIndex(index);
+}
+
+#pragma mark - IOSLanguageDetectionTabHelperObserving
+
+- (void)iOSLanguageDetectionTabHelper:
+            (language::IOSLanguageDetectionTabHelper*)tabHelper
+                 didDetermineLanguage:
+                     (const translate::LanguageDetectionDetails&)details {
+  if (!self.translateItem)
+    return;
+  // Update the translate item state once language details have been determined.
+  self.translateItem.enabled = [self isTranslateEnabled];
+  [self.popupMenu itemsHaveChanged:@[ self.translateItem ]];
 }
 
 #pragma mark - ReadingListMenuNotificationDelegate Implementation
