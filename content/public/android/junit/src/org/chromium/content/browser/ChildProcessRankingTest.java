@@ -51,6 +51,17 @@ public class ChildProcessRankingTest {
 
     @Test
     public void testRanking() {
+        ChildProcessRanking ranking = new ChildProcessRanking(10);
+        doTestRanking(ranking);
+    }
+
+    @Test
+    public void testRankingWithoutLimit() {
+        ChildProcessRanking ranking = new ChildProcessRanking();
+        doTestRanking(ranking);
+    }
+
+    private void doTestRanking(ChildProcessRanking ranking) {
         ChildProcessConnection c1 = createConnection();
         ChildProcessConnection c2 = createConnection();
         ChildProcessConnection c3 = createConnection();
@@ -62,7 +73,6 @@ public class ChildProcessRankingTest {
         ChildProcessConnection c9 = createConnection();
         ChildProcessConnection c10 = createConnection();
 
-        ChildProcessRanking ranking = new ChildProcessRanking(10);
 
         // Insert in lowest ranked to highest ranked order.
 
@@ -212,5 +222,27 @@ public class ChildProcessRankingTest {
                 true /* intersectsViewport */, ChildProcessImportance.NORMAL);
 
         assertRankingAndRemoveAll(ranking, new ChildProcessConnection[] {c3, c2, c1});
+    }
+
+    @Test
+    public void testThrowExceptionWhenGoingOverLimit() {
+        ChildProcessRanking ranking = new ChildProcessRanking(2);
+
+        ChildProcessConnection c1 = createConnection();
+        ChildProcessConnection c2 = createConnection();
+        ChildProcessConnection c3 = createConnection();
+
+        ranking.addConnection(c1, true /* foreground */, 1 /* frameDepth */,
+                false /* intersectsViewport */, ChildProcessImportance.NORMAL);
+        ranking.addConnection(c2, true /* foreground */, 1 /* frameDepth */,
+                true /* intersectsViewport */, ChildProcessImportance.NORMAL);
+        boolean exceptionThrown = false;
+        try {
+            ranking.addConnection(c3, true /* foreground */, 1 /* frameDepth */,
+                    true /* intersectsViewport */, ChildProcessImportance.NORMAL);
+        } catch (Throwable e) {
+            exceptionThrown = true;
+        }
+        Assert.assertTrue(exceptionThrown);
     }
 }
