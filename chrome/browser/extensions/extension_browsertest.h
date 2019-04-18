@@ -25,6 +25,7 @@
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_protocols.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/sandboxed_unpacker.h"
 #include "extensions/browser/scoped_ignore_content_verifier_for_test.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/feature_switch.h"
@@ -418,6 +419,10 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest {
   // Conditionally disable install verification.
   std::unique_ptr<ScopedInstallVerifierBypassForTest>
       ignore_install_verification_;
+
+  // Used to disable CRX publisher signature checking.
+  SandboxedUnpacker::ScopedVerifierFormatOverrideForTest
+      verifier_format_override_;
 
   ExtensionUpdater::ScopedSkipScheduledCheckForTest skip_scheduled_check_;
 

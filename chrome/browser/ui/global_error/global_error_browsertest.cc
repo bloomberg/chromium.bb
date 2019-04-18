@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
+#include "components/crx_file/crx_verifier.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_utils.h"
@@ -34,6 +35,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/mock_external_provider.h"
+#include "extensions/browser/sandboxed_unpacker.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/feature_switch.h"
 
@@ -202,6 +204,8 @@ IN_PROC_BROWSER_TEST_F(GlobalErrorBubbleTest,
 
 IN_PROC_BROWSER_TEST_F(GlobalErrorBubbleTest,
                        InvokeUi_ExternalInstallBubbleAlert) {
+  extensions::SandboxedUnpacker::ScopedVerifierFormatOverrideForTest
+      verifier_format_override(crx_file::VerifierFormat::CRX3);
   extensions::FeatureSwitch::ScopedOverride prompt(
       extensions::FeatureSwitch::prompt_for_external_extensions(), true);
   ShowAndVerifyUi();

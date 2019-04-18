@@ -110,6 +110,15 @@ class SandboxedUnpackerClient
 //
 class SandboxedUnpacker : public base::RefCountedThreadSafe<SandboxedUnpacker> {
  public:
+  // Overrides the required verifier format for testing purposes. Only one
+  // ScopedVerifierFormatOverrideForTest may exist at a time.
+  class ScopedVerifierFormatOverrideForTest {
+   public:
+    explicit ScopedVerifierFormatOverrideForTest(
+        crx_file::VerifierFormat format);
+    ~ScopedVerifierFormatOverrideForTest();
+  };
+
   // Creates a SandboxedUnpacker that will do work to unpack an extension,
   // passing the |location| and |creation_flags| to Extension::Create. The
   // |extensions_dir| parameter should specify the directory under which we'll

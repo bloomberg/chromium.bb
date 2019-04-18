@@ -212,6 +212,8 @@ std::set<base::FilePath> GetMessageCatalogPathsToBeSanitized(
   return message_catalog_paths;
 }
 
+base::Optional<crx_file::VerifierFormat> g_verifier_format_override_for_test;
+
 }  // namespace
 
 SandboxedUnpackerClient::SandboxedUnpackerClient()
@@ -219,6 +221,17 @@ SandboxedUnpackerClient::SandboxedUnpackerClient()
           base::CreateSingleThreadTaskRunnerWithTraits(
               {content::BrowserThread::UI})) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+}
+
+SandboxedUnpacker::ScopedVerifierFormatOverrideForTest::
+    ScopedVerifierFormatOverrideForTest(crx_file::VerifierFormat format) {
+  DCHECK(!g_verifier_format_override_for_test.has_value());
+  g_verifier_format_override_for_test = format;
+}
+
+SandboxedUnpacker::ScopedVerifierFormatOverrideForTest::
+    ~ScopedVerifierFormatOverrideForTest() {
+  g_verifier_format_override_for_test.reset();
 }
 
 SandboxedUnpacker::SandboxedUnpacker(
@@ -295,7 +308,8 @@ void SandboxedUnpacker::StartWithCrx(const CRXFileInfo& crx_info) {
 
   // Extract the public key and validate the package.
   if (!ValidateSignature(crx_info.path, expected_hash,
-                         crx_info.required_format))
+                         g_verifier_format_override_for_test.value_or(
+                             crx_info.required_format)))
     return;  // ValidateSignature() already reported the error.
 
   // Copy the crx file into our working directory.
