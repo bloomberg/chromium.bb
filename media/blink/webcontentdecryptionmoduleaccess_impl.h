@@ -23,6 +23,10 @@ class WebEncryptedMediaClientImpl;
 class WebContentDecryptionModuleAccessImpl
     : public blink::WebContentDecryptionModuleAccess {
  public:
+  // Allow typecasting from blink type as this is the only implementation.
+  static WebContentDecryptionModuleAccessImpl* From(
+      blink::WebContentDecryptionModuleAccess* cdm_access);
+
   static std::unique_ptr<WebContentDecryptionModuleAccessImpl> Create(
       const blink::WebString& key_system,
       const blink::WebSecurityOrigin& security_origin,
@@ -43,6 +47,8 @@ class WebContentDecryptionModuleAccessImpl
   void CreateContentDecryptionModule(
       blink::WebContentDecryptionModuleResult result,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
+
+  const CdmConfig& GetCdmConfig() const;
 
  private:
   const blink::WebString key_system_;

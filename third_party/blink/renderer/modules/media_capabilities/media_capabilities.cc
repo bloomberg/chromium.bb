@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "media/base/mime_util.h"
 #include "media/base/supported_types.h"
@@ -83,10 +82,12 @@ class MediaCapabilitiesKeySystemAccessInitializer final
       ScriptState* script_state,
       const String& key_system,
       const HeapVector<Member<MediaKeySystemConfiguration>>&
-          supported_configurations)
+          supported_configurations,
+      const WebMediaDecodingConfiguration& web_config)
       : MediaKeySystemAccessInitializerBase(script_state,
                                             key_system,
-                                            supported_configurations) {}
+                                            supported_configurations),
+        web_config_(web_config) {}
 
   ~MediaCapabilitiesKeySystemAccessInitializer() override = default;
 
@@ -97,10 +98,21 @@ class MediaCapabilitiesKeySystemAccessInitializer final
     if (!IsExecutionContextValid())
       return;
 
-    // TODO(chcunningham): Query the VideoDecodePerfHistory to get real
-    // smoothness and power efficiency.
-    resolver_->Resolve(CreateEncryptedDecodingInfoWith(
-        true, MakeGarbageCollected<MediaKeySystemAccess>(std::move(access))));
+    // Query the client for smoothness and power efficiency of the video. It
+    // will resolve the promise.
+    if (web_config_.video_configuration) {
+      Platform::Current()->MediaCapabilitiesClient()->DecodingInfo(
+          web_config_, std::move(access),
+          std::make_unique<MediaCapabilitiesDecodingInfoCallbacks>(resolver_));
+    } else {
+      DCHECK(web_config_.audio_configuration);
+      // Audio-only is always smooth and power efficient.
+      MediaCapabilitiesDecodingInfo* info = CreateDecodingInfoWith(true);
+      info->setKeySystemAccess(
+          MakeGarbageCollected<MediaKeySystemAccess>(std::move(access)));
+
+      resolver_->Resolve(info);
+    }
   }
 
   void RequestNotSupported(const WebString& error_message) override {
@@ -120,6 +132,7 @@ class MediaCapabilitiesKeySystemAccessInitializer final
   }
 
  private:
+  const WebMediaDecodingConfiguration web_config_;
   DISALLOW_COPY_AND_ASSIGN(MediaCapabilitiesKeySystemAccessInitializer);
 };
 
@@ -439,7 +452,8 @@ bool CheckMseSupport(const WebMediaConfiguration& configuration) {
 }
 
 ScriptPromise CheckEmeSupport(ScriptState* script_state,
-                              const MediaDecodingConfiguration* configuration) {
+                              const MediaDecodingConfiguration* configuration,
+                              const WebMediaDecodingConfiguration& web_config) {
   DVLOG(3) << __func__;
   DCHECK(configuration->hasKeySystemConfiguration());
 
@@ -563,7 +577,8 @@ ScriptPromise CheckEmeSupport(ScriptState* script_state,
 
   MediaCapabilitiesKeySystemAccessInitializer* initializer =
       MakeGarbageCollected<MediaCapabilitiesKeySystemAccessInitializer>(
-          script_state, key_system_config->keySystem(), config_vector);
+          script_state, key_system_config->keySystem(), config_vector,
+          web_config);
 
   // IMPORTANT: Acquire the promise before potentially synchronously resolving
   // it in the code that follows. Otherwise the promise returned to JS will be
@@ -677,7 +692,7 @@ ScriptPromise MediaCapabilities::decodingInfo(
     // implicitly checks whether the audio and video with the given KeySystem
     // configuration. Therefore, return the promise here prior to performing the
     // audio and video decoding info checks below.
-    return CheckEmeSupport(script_state, configuration);
+    return CheckEmeSupport(script_state, configuration, web_config);
   }
 
   bool audio_supported = true;
@@ -714,7 +729,7 @@ ScriptPromise MediaCapabilities::decodingInfo(
   ScriptPromise promise = resolver->Promise();
 
   Platform::Current()->MediaCapabilitiesClient()->DecodingInfo(
-      web_config,
+      web_config, nullptr,
       std::make_unique<MediaCapabilitiesDecodingInfoCallbacks>(resolver));
 
   return promise;
