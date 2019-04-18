@@ -117,8 +117,9 @@ std::vector<TestParam> GetParams() {
                                         Mode::kBrowser, Mode::kGpu};
 
   std::vector<mojom::StackMode> stack_modes{
-      mojom::StackMode::MIXED, mojom::StackMode::NATIVE_WITHOUT_THREAD_NAMES,
-      mojom::StackMode::PSEUDO};
+      mojom::StackMode::MIXED, mojom::StackMode::PSEUDO,
+      mojom::StackMode::NATIVE_WITHOUT_THREAD_NAMES,
+      mojom::StackMode::NATIVE_WITH_THREAD_NAMES};
 
   for (const auto& stack_mode : stack_modes) {
     for (const auto& mode : dynamic_start_modes) {
