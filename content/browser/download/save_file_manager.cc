@@ -14,6 +14,7 @@
 #include "base/strings/string_util.h"
 #include "components/download/public/common/download_task_runner.h"
 #include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/data_url_loader_factory.h"
 #include "content/browser/download/save_file.h"
 #include "content/browser/download/save_package.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -240,12 +241,25 @@ void SaveFileManager::SaveURL(SaveItemId save_item_id,
     request->priority = net::DEFAULT_PRIORITY;
     request->load_flags = net::LOAD_SKIP_CACHE_VALIDATION;
 
+    network::mojom::URLLoaderFactory* factory = nullptr;
+    std::unique_ptr<DataURLLoaderFactory> data_url_loader_factory;
+
+    // TODO(qinmin): should this match the if statements in
+    // DownloadManagerImpl::BeginResourceDownloadOnChecksComplete so that it
+    // can handle blob, file, webui, embedder provided schemes etc?
+    // https://crbug.com/953967
+    if (url.SchemeIs(url::kDataScheme)) {
+      data_url_loader_factory = std::make_unique<DataURLLoaderFactory>();
+      factory = data_url_loader_factory.get();
+    } else {
+      factory = storage_partition->GetURLLoaderFactoryForBrowserProcess().get();
+    }
+
     url_loader_helpers_[save_item_id] =
         SimpleURLLoaderHelper::CreateAndStartDownload(
             std::move(request), save_item_id, save_package->id(),
             render_process_host_id, render_frame_routing_id, traffic_annotation,
-            storage_partition->GetURLLoaderFactoryForBrowserProcess().get(),
-            this);
+            factory, this);
   } else {
     // We manually start the save job.
     auto info = std::make_unique<SaveFileCreateInfo>(
