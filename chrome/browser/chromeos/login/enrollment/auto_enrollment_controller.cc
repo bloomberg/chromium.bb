@@ -361,8 +361,14 @@ AutoEnrollmentController::GetFRERequirement() {
     if (check_enrollment_value == "1")
       return FRERequirement::kExplicitlyRequired;
   }
-  if (!provider->GetMachineStatistic(system::kActivateDateKey, nullptr) &&
-      !provider->GetEnterpriseMachineID().empty()) {
+  // Assume that the presence of the machine serial number means that VPD has
+  // been read successfully. Don't trust a missing ActivateDate if VPD could not
+  // be read successfully.
+  bool vpd_read_successfully = !provider->GetEnterpriseMachineID().empty();
+  if (vpd_read_successfully &&
+      !provider->GetMachineStatistic(system::kActivateDateKey, nullptr)) {
+    // The device has never been activated (enterprise enrolled or
+    // consumer-owned) so doing a FRE check is not necessary.
     return FRERequirement::kNotRequired;
   }
   return FRERequirement::kRequired;
