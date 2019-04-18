@@ -9,7 +9,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.RelativeLayout.LayoutParams;
 import android.widget.TextView;
 
 import org.chromium.chrome.R;
@@ -21,7 +20,6 @@ import org.chromium.chrome.R;
 public class PasswordGenerationPopupAdapter extends BaseAdapter {
     private final Context mContext;
     private final String mExplanationText;
-    private final int mWidth;
 
     /**
      * UI shows an explanation about storing passwords in Chrome.
@@ -44,11 +42,6 @@ public class PasswordGenerationPopupAdapter extends BaseAdapter {
             Context context, String explanationText, float anchorWidthInDp) {
         mContext = context;
         mExplanationText = explanationText;
-        int horizontalMarginInPx = Math.round(mContext.getResources().getDimensionPixelSize(
-                R.dimen.password_generation_horizontal_margin));
-        int anchorWidthInPx =
-                Math.round(anchorWidthInDp * mContext.getResources().getDisplayMetrics().density);
-        mWidth = anchorWidthInPx - 2 * horizontalMarginInPx;
     }
 
     @Override
@@ -61,7 +54,6 @@ public class PasswordGenerationPopupAdapter extends BaseAdapter {
                 R.layout.password_generation_popup_explanation, null);
         TextView explanation = view.findViewById(R.id.password_generation_explanation);
         explanation.setText(mExplanationText);
-        explanation.setLayoutParams(new LayoutParams(mWidth, LayoutParams.WRAP_CONTENT));
         return view;
     }
 
