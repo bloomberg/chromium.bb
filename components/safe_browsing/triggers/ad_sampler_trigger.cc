@@ -39,13 +39,14 @@ const size_t kAdSamplerDefaultFrequency = 1000;
 // A frequency denominator with this value indicates sampling is disabled.
 const size_t kAdSamplerFrequencyDisabled = 0;
 
-// Number of milliseconds to wait after a page finished loading before starting
-// a report. Allows ads which load in the background to finish loading.
-const int64_t kAdSampleCollectionStartDelayMilliseconds = 1000;
-
 // Number of milliseconds to allow data collection to run before sending a
 // report (since this trigger runs in the background).
 const int64_t kAdSampleCollectionPeriodMilliseconds = 5000;
+
+// Range of number of milliseconds to wait after a page finished loading before
+// starting a report. Allows ads which load in the background to finish loading.
+const int64_t kMaxAdSampleCollectionStartDelayMilliseconds = 5000;
+const int64_t kMinAdSampleCollectionStartDelayMilliseconds = 500;
 
 // Metric for tracking what the Ad Sampler trigger does on each navigation.
 const char kAdSamplerTriggerActionMetricName[] =
@@ -110,7 +111,9 @@ AdSamplerTrigger::AdSamplerTrigger(
     history::HistoryService* history_service)
     : content::WebContentsObserver(web_contents),
       sampler_frequency_denominator_(GetSamplerFrequencyDenominator()),
-      start_report_delay_ms_(kAdSampleCollectionStartDelayMilliseconds),
+      start_report_delay_ms_(
+          base::RandInt(kMinAdSampleCollectionStartDelayMilliseconds,
+                        kMaxAdSampleCollectionStartDelayMilliseconds)),
       finish_report_delay_ms_(kAdSampleCollectionPeriodMilliseconds),
       trigger_manager_(trigger_manager),
       prefs_(prefs),
