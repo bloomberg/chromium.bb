@@ -907,15 +907,18 @@ void AppListView::SetChildViewsForStateTransition(
     ash::mojom::AppListViewState target_state) {
   if (target_state != ash::mojom::AppListViewState::kPeeking &&
       target_state != ash::mojom::AppListViewState::kFullscreenAllApps &&
-      target_state != ash::mojom::AppListViewState::kHalf) {
+      target_state != ash::mojom::AppListViewState::kHalf &&
+      target_state != ash::mojom::AppListViewState::kClosed) {
     return;
   }
 
   app_list_main_view_->contents_view()->OnAppListViewTargetStateChanged(
       target_state);
 
-  if (target_state == ash::mojom::AppListViewState::kHalf)
+  if (target_state == ash::mojom::AppListViewState::kHalf ||
+      target_state == ash::mojom::AppListViewState::kClosed) {
     return;
+  }
 
   if (GetAppsContainerView()->IsInFolderView())
     GetAppsContainerView()->ResetForShowApps();

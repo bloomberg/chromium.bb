@@ -158,6 +158,10 @@ void ContentsView::SetDragAndDropHostOfCurrentAppList(
 
 void ContentsView::OnAppListViewTargetStateChanged(
     ash::mojom::AppListViewState target_state) {
+  if (target_state == ash::mojom::AppListViewState::kClosed) {
+    CancelDrag();
+    return;
+  }
   UpdateExpandArrowFocusBehavior(target_state);
 }
 
