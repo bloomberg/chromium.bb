@@ -127,6 +127,7 @@
 #include "content/public/common/page_state.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
+#include "content/public/common/url_constants.h"
 #include "content/public/common/web_preferences.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
@@ -7231,6 +7232,19 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, NetworkErrorDoesntRevokeExemptions) {
 
   // We shouldn't get an interstitial this time.
   EXPECT_FALSE(IsShowingInterstitial(tab));
+}
+
+// Checks we don't attempt to show an interstitial (or crash) when visiting an
+// SSL error related page in chrome://network-errors. Regression test for
+// crbug.com/953812
+IN_PROC_BROWSER_TEST_P(SSLUITest, NoInterstitialOnNetworkErrorPage) {
+  GURL invalid_cert_url(content::kChromeUINetworkErrorURL);
+  GURL::Replacements replacements;
+  replacements.SetPathStr("-207");
+  invalid_cert_url = invalid_cert_url.ReplaceComponents(replacements);
+  ui_test_utils::NavigateToURL(browser(), invalid_cert_url);
+  EXPECT_FALSE(IsShowingInterstitial(
+      browser()->tab_strip_model()->GetActiveWebContents()));
 }
 
 // This SPKI hash is from a self signed certificate generated using the
