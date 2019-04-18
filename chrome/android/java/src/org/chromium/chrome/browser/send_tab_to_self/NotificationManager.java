@@ -10,7 +10,6 @@ import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.net.Uri;
 import android.provider.Browser;
@@ -36,19 +35,12 @@ import org.chromium.chrome.browser.notifications.PendingIntentProvider;
 import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
 import org.chromium.chrome.browser.profiles.Profile;
 
-import java.util.HashSet;
-import java.util.Set;
-
 /**
  * Manages all SendTabToSelf related notifications for Android. This includes displaying, handling
  * taps, and timeouts.
  */
 public class NotificationManager {
     private static final String NOTIFICATION_GUID_EXTRA = "send_tab_to_self.notification.guid";
-
-    // Tracks which GUIDs there is an active notification for.
-    private static final String PREF_ACTIVE_NOTIFICATIONS = "send_tab_to_self.notification.active";
-    private static final String PREF_NEXT_NOTIFICATION_ID = "send_tab_to_self.notification.next_id";
 
     /** Records dismissal when notification is swiped away. */
     public static final class DeleteReceiver extends BroadcastReceiver {
@@ -109,8 +101,9 @@ public class NotificationManager {
      */
     @CalledByNative
     private static void hideNotification(@Nullable String guid) {
-        ActiveNotification activeNotification = findActiveNotification(guid);
-        if (!removeActiveNotification(guid)) {
+        NotificationSharedPrefManager.ActiveNotification activeNotification =
+                NotificationSharedPrefManager.findActiveNotification(guid);
+        if (!NotificationSharedPrefManager.removeActiveNotification(guid)) {
             return;
         }
         Context context = ContextUtils.getApplicationContext();
@@ -132,7 +125,7 @@ public class NotificationManager {
     private static boolean showNotification(String guid, @NonNull String url, String title,
             String deviceName, long timeoutAtMillis) {
         // A notification associated with this Share entry already exists. Don't display a new one.
-        if (findActiveNotification(guid) != null) {
+        if (NotificationSharedPrefManager.findActiveNotification(guid) != null) {
             return false;
         }
 
@@ -140,7 +133,7 @@ public class NotificationManager {
         Context context = ContextUtils.getApplicationContext();
         NotificationManagerProxy manager = new NotificationManagerProxyImpl(context);
 
-        int nextId = getNextNotificationId();
+        int nextId = NotificationSharedPrefManager.getNextNotificationId();
         Uri uri = Uri.parse(url);
         PendingIntentProvider contentIntent = PendingIntentProvider.getBroadcast(context, nextId,
                 new Intent(context, TapReceiver.class)
@@ -182,7 +175,8 @@ public class NotificationManager {
                 NotificationUmaTracker.SystemNotificationType.SEND_TAB_TO_SELF,
                 notification.getNotification());
 
-        addActiveNotification(new ActiveNotification(nextId, guid));
+        NotificationSharedPrefManager.addActiveNotification(
+                new NotificationSharedPrefManager.ActiveNotification(nextId, guid));
 
         // Set timeout.
         if (timeoutAtMillis != Long.MAX_VALUE) {
@@ -196,129 +190,5 @@ public class NotificationManager {
                             context, nextId, timeoutIntent, PendingIntent.FLAG_UPDATE_CURRENT));
         }
         return true;
-    }
-
-    /**
-     * Returns a non-negative integer greater than any active notification's notification ID. Once
-     * this id hits close to the INT_MAX_VALUE (unlikely), gets reset to 0.
-     */
-    private static int getNextNotificationId() {
-        SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
-        int nextId = prefs.getInt(PREF_NEXT_NOTIFICATION_ID, -1);
-        // Reset the counter when it gets close to max value
-        if (nextId == Integer.MAX_VALUE - 1) {
-            nextId = -1;
-        }
-        nextId++;
-        prefs.edit().putInt(PREF_NEXT_NOTIFICATION_ID, nextId).apply();
-        return nextId;
-    }
-
-    /**
-     * State of all notifications currently being displayed to the user. It consists of the
-     * notification id and GUID of the Share Entry.
-     * <p>
-     * TODO(https://crbug.com/939026): Consider moving this to another class and add versioning.
-     */
-    private static class ActiveNotification {
-        public final int notificationId;
-        public final String guid;
-
-        ActiveNotification(int notificationId, String guid) {
-            this.notificationId = notificationId;
-            this.guid = guid;
-        }
-
-        static ActiveNotification deserialize(String notificationString) {
-            String[] tokens = notificationString.split("_");
-            if (tokens.length != 2) {
-                return null;
-            }
-            return new ActiveNotification(Integer.parseInt(tokens[0]), tokens[1]);
-        }
-
-        /** Serializes the fields to a notificationId_guid string format */
-        public String serialize() {
-            return new StringBuilder().append(notificationId).append("_").append(guid).toString();
-        }
-    }
-
-    /**
-     * Returns a mutable copy of the named pref. Never returns null.
-     *
-     * @param prefs The SharedPreferences to retrieve the set of strings from.
-     * @param prefName The name of the preference to retrieve.
-     * @return Existing set of strings associated with the prefName. If none exists, creates a new
-     *         set.
-     */
-    private static @NonNull Set<String> getMutableStringSetPreference(
-            SharedPreferences prefs, String prefName) {
-        Set<String> prefValue = prefs.getStringSet(prefName, null);
-        if (prefValue == null) {
-            return new HashSet<String>();
-        }
-        return new HashSet<String>(prefValue);
-    }
-
-    /**
-     * Adds notification to the "active" set.
-     *
-     * @param notification Notification to be inserted into the active set.
-     */
-    private static void addActiveNotification(ActiveNotification notification) {
-        SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
-        Set<String> activeNotifications =
-                getMutableStringSetPreference(prefs, PREF_ACTIVE_NOTIFICATIONS);
-        boolean added = activeNotifications.add(notification.serialize());
-        if (added) {
-            prefs.edit().putStringSet(PREF_ACTIVE_NOTIFICATIONS, activeNotifications).apply();
-        }
-    }
-
-    /**
-     * Removes notification from the "active" set.
-     *
-     * @param guid The GUID of the notification to remove.
-     * @return whether the notification could be found in the active set and successfully removed.
-     */
-    private static boolean removeActiveNotification(@Nullable String guid) {
-        SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
-        ActiveNotification notification = findActiveNotification(guid);
-        if (notification == null || guid == null) {
-            return false;
-        }
-
-        Set<String> activeNotifications =
-                getMutableStringSetPreference(prefs, PREF_ACTIVE_NOTIFICATIONS);
-        boolean removed = activeNotifications.remove(notification.serialize());
-
-        if (removed) {
-            prefs.edit().putStringSet(PREF_ACTIVE_NOTIFICATIONS, activeNotifications).apply();
-        }
-        return removed;
-    }
-
-    /**
-     * Returns an ActiveNotification corresponding to the GUID.
-     *
-     * @param guid The GUID of the notification to retrieve.
-     * @return The Active Notification associated with the passed in GUID. May be null if none
-     *         found.
-     */
-    @Nullable
-    private static ActiveNotification findActiveNotification(@Nullable String guid) {
-        SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
-        Set<String> activeNotifications = prefs.getStringSet(PREF_ACTIVE_NOTIFICATIONS, null);
-        if (activeNotifications == null || guid == null) {
-            return null;
-        }
-
-        for (String serialized : activeNotifications) {
-            ActiveNotification activeNotification = ActiveNotification.deserialize(serialized);
-            if ((activeNotification != null) && (guid.equals(activeNotification.guid))) {
-                return activeNotification;
-            }
-        }
-        return null;
     }
 }
