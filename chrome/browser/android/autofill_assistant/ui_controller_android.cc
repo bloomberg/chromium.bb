@@ -381,14 +381,16 @@ void UiControllerAndroid::UpdateActions() {
   if (!has_close_or_cancel) {
     if (ui_delegate_->GetState() == AutofillAssistantState::STOPPED) {
       Java_AutofillAssistantUiController_addCloseButton(
-          env, java_object_, chips, ICON_CLEAR,
-          base::android::ConvertUTF8ToJavaString(env, ""),
+          env, java_object_, chips, NO_ICON,
+          base::android::ConvertUTF8ToJavaString(
+              env, l10n_util::GetStringUTF8(IDS_CLOSE)),
           /* disabled= */ false);
     } else if (ui_delegate_->GetState() != AutofillAssistantState::INACTIVE) {
       Java_AutofillAssistantUiController_addCancelButton(
-          env, java_object_, chips, ICON_CLEAR,
-          base::android::ConvertUTF8ToJavaString(env, ""), -1,
-          /* disabled= */ false);
+          env, java_object_, chips, NO_ICON,
+          base::android::ConvertUTF8ToJavaString(
+              env, l10n_util::GetStringUTF8(IDS_CANCEL)),
+          -1, /* disabled= */ false);
     }
   }
 
