@@ -505,6 +505,9 @@ class ExtensionWebRequestEventRouter {
   // Like above, but for usage on the UI thread.
   bool HasAnyExtraHeadersListenerOnUI(content::BrowserContext* browser_context);
 
+  void IncrementExtraHeadersListenerCount(void* browser_context);
+  void DecrementExtraHeadersListenerCount(void* browser_context);
+
  private:
   friend class WebRequestAPI;
   friend class base::NoDestructor<ExtensionWebRequestEventRouter>;
@@ -682,7 +685,7 @@ class ExtensionWebRequestEventRouter {
 
   // Evaluates the rules of the declarative webrequest API and stores
   // modifications to the request that result from WebRequestActions as
-  // deltas in |blocked_requests_|. |original_response_headers| should only be
+  // deltas in |blocked_requests_|. |filtered_response_headers| should only be
   // set for the OnHeadersReceived stage and NULL otherwise. Returns whether any
   // deltas were generated.
   bool ProcessDeclarativeRules(
@@ -691,7 +694,7 @@ class ExtensionWebRequestEventRouter {
       const std::string& event_name,
       const WebRequestInfo* request,
       extensions::RequestStage request_stage,
-      const net::HttpResponseHeaders* original_response_headers);
+      const net::HttpResponseHeaders* filtered_response_headers);
 
   // If the BlockedRequest contains messages_to_extension entries in the event
   // deltas, we send them to subscribers of
@@ -749,7 +752,8 @@ class ExtensionWebRequestEventRouter {
   // extensions that are listening to that event.
   ListenerMap listeners_;
 
-  // Count of listeners per browser context which request extra headers.
+  // Count of listeners per browser context which request extra headers. Must be
+  // modified through [Increment/Decrement]ExtraHeadersListenerCount.
   ExtraHeadersListenerCountMap extra_headers_listener_count_;
 
   // Accessed on the UI thread to check if a given BrowserContext has any

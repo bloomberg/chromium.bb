@@ -16,13 +16,16 @@
 #include "components/web_cache/browser/web_cache_manager.h"
 #include "content/public/browser/resource_request_info.h"
 #include "extensions/browser/api/declarative_net_request/composite_matcher.h"
+#include "extensions/browser/api/declarative_net_request/constants.h"
 #include "extensions/browser/api/declarative_net_request/utils.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/api/web_request/web_request_info.h"
 #include "extensions/browser/api/web_request/web_request_permissions.h"
 #include "extensions/browser/info_map.h"
+#include "extensions/common/api/declarative_net_request.h"
 #include "extensions/common/api/declarative_net_request/utils.h"
 #include "extensions/common/constants.h"
+#include "net/http/http_request_headers.h"
 #include "url/origin.h"
 
 namespace extensions {
@@ -30,6 +33,7 @@ namespace declarative_net_request {
 namespace {
 
 namespace flat_rule = url_pattern_index::flat;
+namespace dnr_api = api::declarative_net_request;
 using PageAccess = PermissionsData::PageAccess;
 
 // Describes the different cases pertaining to initiator checks to find the main
@@ -44,6 +48,8 @@ enum class PageAllowingInitiatorCheck {
   kBothCandidatesMatchInitiator = 4,
   kMaxValue = kBothCandidatesMatchInitiator,
 };
+
+constexpr const char kSetCookieResponseHeader[] = "set-cookie";
 
 // Returns true if |request| came from a page from the set of
 // |allowed_pages|. This necessitates finding the main frame url
@@ -171,6 +177,44 @@ void NotifyRequestWithheld(const ExtensionId& extension_id,
   DCHECK(ExtensionsAPIClient::Get());
   ExtensionsAPIClient::Get()->NotifyWebRequestWithheld(
       request.render_process_id, request.frame_id, extension_id);
+}
+
+// Populates the list of headers corresponding to |mask|.
+void PopulateHeadersFromMask(uint8_t mask,
+                             std::vector<const char*>* request_headers,
+                             std::vector<const char*>* response_headers) {
+  DCHECK(request_headers);
+  DCHECK(response_headers);
+
+  uint8_t bit = 0;
+  // Iterate over each RemoveHeaderType value.
+  for (int i = 0; mask && i <= dnr_api::REMOVE_HEADER_TYPE_LAST; ++i) {
+    switch (i) {
+      case dnr_api::REMOVE_HEADER_TYPE_NONE:
+        break;
+      case dnr_api::REMOVE_HEADER_TYPE_COOKIE:
+        bit = kRemoveHeadersMask_Cookie;
+        if (mask & bit) {
+          mask &= ~bit;
+          request_headers->push_back(net::HttpRequestHeaders::kCookie);
+        }
+        break;
+      case dnr_api::REMOVE_HEADER_TYPE_REFERER:
+        bit = kRemoveHeadersMask_Referer;
+        if (mask & bit) {
+          mask &= ~bit;
+          request_headers->push_back(net::HttpRequestHeaders::kReferer);
+        }
+        break;
+      case dnr_api::REMOVE_HEADER_TYPE_SETCOOKIE:
+        bit = kRemoveHeadersMask_SetCookie;
+        if (mask & bit) {
+          mask &= ~bit;
+          response_headers->push_back(kSetCookieResponseHeader);
+        }
+        break;
+    }
+  }
 }
 
 }  // namespace
@@ -317,8 +361,8 @@ RulesetManager::Action RulesetManager::EvaluateRequest(
   // We first check if any extension wants the request to be blocked.
   {
     size_t i = 0;
-    auto ruleset_data = rulesets_.begin();
-    for (; ruleset_data != rulesets_.end(); ++ruleset_data, ++i) {
+    for (auto ruleset_data = rulesets_.begin(); ruleset_data != rulesets_.end();
+         ++ruleset_data, ++i) {
       // As a minor optimization, cache the value of
       // |ShouldEvaluateRulesetForRequest|.
       should_evaluate_rulesets_for_request[i] = ShouldEvaluateRulesetForRequest(
@@ -356,8 +400,8 @@ RulesetManager::Action RulesetManager::EvaluateRequest(
   // redirect url.
   {
     size_t i = 0;
-    auto ruleset_data = rulesets_.begin();
-    for (; ruleset_data != rulesets_.end(); ++ruleset_data, ++i) {
+    for (auto ruleset_data = rulesets_.begin(); ruleset_data != rulesets_.end();
+         ++ruleset_data, ++i) {
       if (!should_evaluate_rulesets_for_request[i])
         continue;
 
@@ -384,7 +428,65 @@ RulesetManager::Action RulesetManager::EvaluateRequest(
     }
   }
 
+  // Now check if extensions want to remove headers.
+  {
+    size_t i = 0;
+    uint8_t mask = 0;
+    for (auto ruleset_data = rulesets_.begin(); ruleset_data != rulesets_.end();
+         ++ruleset_data, ++i) {
+      if (!should_evaluate_rulesets_for_request[i])
+        continue;
+
+      // Now check if the extension has access to the request. Note: the
+      // extension does not require host permissions to remove headers.
+      PageAccess page_access = WebRequestPermissions::CanExtensionAccessURL(
+          info_map_, ruleset_data->extension_id, request.url, tab_id,
+          crosses_incognito, WebRequestPermissions::DO_NOT_CHECK_HOST,
+          request.initiator, request.type);
+      DCHECK_NE(PageAccess::kWithheld, page_access);
+      if (page_access != PageAccess::kAllowed)
+        continue;
+
+      mask |= ruleset_data->matcher->GetRemoveHeadersMask(params, mask);
+    }
+
+    if (mask) {
+      Action action(Action::Type::REMOVE_HEADERS);
+      PopulateHeadersFromMask(mask, &action.request_headers_to_remove,
+                              &action.response_headers_to_remove);
+      return action;
+    }
+  }
+
   return Action(Action::Type::NONE);
+}
+
+bool RulesetManager::HasAnyExtraHeadersMatcher() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  for (const auto& ruleset : rulesets_) {
+    if (ruleset.matcher->HasAnyExtraHeadersMatcher())
+      return true;
+  }
+
+  return false;
+}
+
+bool RulesetManager::HasExtraHeadersMatcherForRequest(
+    const WebRequestInfo& request,
+    bool is_incognito_context) const {
+  // TODO(karandeepb): This causes multiple EvaluateRequest calls for a single
+  // network request. We should cache the value of Action so that we only ever
+  // evaluate the rulesets once for a request.
+  Action action = EvaluateRequest(request, is_incognito_context);
+
+  // We only support removing a subset of extra headers currently. If that
+  // changes, the implementation here should change as well.
+  static_assert(flat::ActionIndex_count == 6,
+                "Modify this method to ensure HasExtraHeadersMatcherForRequest "
+                "is updated as new actions are added.");
+
+  return action.type == Action::Type::REMOVE_HEADERS;
 }
 
 void RulesetManager::SetObserverForTest(TestObserver* observer) {

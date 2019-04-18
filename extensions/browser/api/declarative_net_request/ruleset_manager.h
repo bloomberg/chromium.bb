@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 #include <memory>
+#include <vector>
 
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
@@ -39,6 +40,8 @@ class RulesetManager {
       COLLAPSE,
       // Redirect the network request.
       REDIRECT,
+      // Remove request/response headers.
+      REMOVE_HEADERS,
     };
 
     explicit Action(Type type);
@@ -52,6 +55,11 @@ class RulesetManager {
 
     // Valid iff |type| is |REDIRECT|.
     base::Optional<GURL> redirect_url;
+
+    // Valid iff |type| is |REMOVE_HEADERS|. The vectors point to strings of
+    // static storage duration.
+    std::vector<const char*> request_headers_to_remove;
+    std::vector<const char*> response_headers_to_remove;
 
     DISALLOW_COPY_AND_ASSIGN(Action);
   };
@@ -95,6 +103,14 @@ class RulesetManager {
   // preference.
   Action EvaluateRequest(const WebRequestInfo& request,
                          bool is_incognito_context) const;
+
+  // Returns true if there is an active matcher which modifies "extraHeaders".
+  bool HasAnyExtraHeadersMatcher() const;
+
+  // Returns true if there is a matcher which modifies "extraHeaders" for the
+  // given |request|.
+  bool HasExtraHeadersMatcherForRequest(const WebRequestInfo& request,
+                                        bool is_incognito_context) const;
 
   // Returns the number of CompositeMatchers currently being managed.
   size_t GetMatcherCountForTest() const { return rulesets_.size(); }

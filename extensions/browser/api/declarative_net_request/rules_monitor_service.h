@@ -127,7 +127,7 @@ class RulesMonitorService : public BrowserContextKeyedAPI,
 
   base::ObserverList<Observer>::Unchecked observers_;
 
-  const content::BrowserContext* const context_;
+  content::BrowserContext* const context_;
 
   // Must be the last member variable. See WeakPtrFactory documentation for
   // details.

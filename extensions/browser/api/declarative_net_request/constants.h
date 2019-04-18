@@ -5,6 +5,8 @@
 #ifndef EXTENSIONS_BROWSER_API_DECLARATIVE_NET_REQUEST_CONSTANTS_H_
 #define EXTENSIONS_BROWSER_API_DECLARATIVE_NET_REQUEST_CONSTANTS_H_
 
+#include <cstdint>
+
 #include "extensions/common/api/declarative_net_request/constants.h"
 
 namespace extensions {
@@ -62,6 +64,18 @@ enum class UpdateDynamicRulesStatus {
 enum class DynamicRuleUpdateAction {
   kAdd,
   kRemove,
+};
+
+// Bitmask corresponding to RemoveHeaderType defined in the API.
+enum RemoveHeadersMask : uint8_t {
+  kRemoveHeadersMask_Cookie = (1u << 0),
+  kRemoveHeadersMask_Referer = (1u << 1),
+  kRemoveHeadersMask_SetCookie = (1u << 2),
+
+  // Should be equal to the last value.
+  kRemoveHeadersMask_Last = kRemoveHeadersMask_SetCookie,
+  // Equals the maximum bitmask value.
+  kRemoveHeadersMask_Max = (kRemoveHeadersMask_Last << 1) - 1,
 };
 
 // Rule parsing errors.
