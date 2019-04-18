@@ -8,6 +8,7 @@
 
 #include <utility>
 
+#include "base/android/bundle_utils.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/vr/audio_delegate.h"
@@ -49,10 +50,9 @@ std::unique_ptr<UiInterface> UiModuleFactory::Create(
                                  std::move(keyboard_delegate),
                                  std::move(text_input_delegate),
                                  std::move(audio_delegate), ui_initial_state);
-
-  // TODO(crbug.com/921665): Make work with splitcompat.
   if (ui_library_handle_ == nullptr) {
-    ui_library_handle_ = dlopen("libvr_ui_dummy_lib.so", RTLD_LOCAL | RTLD_NOW);
+    ui_library_handle_ =
+        base::android::BundleUtils::DlOpenModuleLibrary("vr_ui_dummy_lib");
   }
   if (ui_library_handle_ == nullptr) {
     HandleError(std::string("Could not open VR UI library: ") + dlerror());
