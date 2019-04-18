@@ -2034,7 +2034,7 @@ TEST_P(WebStateObserverTest, DownloadNavigation) {
 }
 
 // Tests failed load after the navigation is sucessfully finished.
-TEST_P(WebStateObserverTest, FailedLoad) {
+TEST_P(WebStateObserverTest, FLAKY_FailedLoad) {
   GURL url = test_server_->GetURL("/exabyte_response");
 
   NavigationContext* context = nullptr;

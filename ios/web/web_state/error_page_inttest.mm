@@ -134,7 +134,7 @@ class ErrorPageTest
 
 // Tests that the error page is correctly displayed after navigating back to it
 // multiple times. See http://crbug.com/944037 .
-TEST_P(ErrorPageTest, BackForwardErrorPage) {
+TEST_P(ErrorPageTest, FLAKY_BackForwardErrorPage) {
   test::LoadUrl(web_state(), server_.GetURL("/close-socket"));
   ASSERT_TRUE(WaitForErrorText(web_state(), server_.GetURL("/close-socket")));
 
