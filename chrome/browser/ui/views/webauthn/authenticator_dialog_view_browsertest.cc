@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/webauthn/authenticator_request_dialog.h"
 #include "chrome/browser/ui/webauthn/authenticator_request_sheet_model.h"
 #include "chrome/browser/webauthn/authenticator_request_dialog_model.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/label.h"
 
 namespace {
@@ -47,9 +48,9 @@ class TestSheetModel : public AuthenticatorRequestSheetModel {
     return base::ASCIIToUTF16("Test OK");
   }
 
-  gfx::ImageSkia* GetStepIllustration(
+  const gfx::VectorIcon& GetStepIllustration(
       ImageColorScheme color_scheme) const override {
-    return nullptr;
+    return gfx::kNoneIcon;
   }
 
   base::string16 GetStepTitle() const override {

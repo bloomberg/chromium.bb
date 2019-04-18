@@ -91,6 +91,9 @@ class AuthenticatorRequestSheetView : public views::View,
   // and step-specific content, if any.
   std::unique_ptr<views::View> CreateContentsBelowIllustration();
 
+  // Updates the illustration icon shown on the sheet.
+  void UpdateIconImageFromModel();
+
   // views::View:
   void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
 
