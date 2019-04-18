@@ -279,7 +279,7 @@ void FakeBluetoothDeviceClient::Properties::Get(
     dbus::PropertyBase* property,
     dbus::PropertySet::GetCallback callback) {
   VLOG(1) << "Get " << property->name();
-  callback.Run(false);
+  std::move(callback).Run(false);
 }
 
 void FakeBluetoothDeviceClient::Properties::GetAll() {
@@ -291,10 +291,10 @@ void FakeBluetoothDeviceClient::Properties::Set(
     dbus::PropertySet::SetCallback callback) {
   VLOG(1) << "Set " << property->name();
   if (property->name() == trusted.name()) {
-    callback.Run(true);
+    std::move(callback).Run(true);
     property->ReplaceValueWithSetValue();
   } else {
-    callback.Run(false);
+    std::move(callback).Run(false);
   }
 }
 

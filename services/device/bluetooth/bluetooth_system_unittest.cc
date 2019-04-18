@@ -117,10 +117,11 @@ class DEVICE_BLUETOOTH_EXPORT TestBluetoothAdapterClient
         ++set_powered_call_count_;
         last_set_powered_value_ = powered.GetSetValueForTesting();
         if (next_set_powered_response_) {
-          callback.Run(GetValueAndReset(&next_set_powered_response_));
+          std::move(callback).Run(
+              GetValueAndReset(&next_set_powered_response_));
           return;
         }
-        set_powered_callbacks_.push_back(callback);
+        set_powered_callbacks_.push_back(std::move(callback));
       } else {
         NOTIMPLEMENTED();
       }

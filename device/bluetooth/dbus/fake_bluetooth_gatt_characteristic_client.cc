@@ -62,7 +62,7 @@ void FakeBluetoothGattCharacteristicClient::Properties::Get(
     dbus::PropertyBase* property,
     dbus::PropertySet::GetCallback callback) {
   VLOG(1) << "Get " << property->name();
-  callback.Run(true);
+  std::move(callback).Run(true);
 }
 
 void FakeBluetoothGattCharacteristicClient::Properties::GetAll() {
@@ -73,7 +73,7 @@ void FakeBluetoothGattCharacteristicClient::Properties::Set(
     dbus::PropertyBase* property,
     dbus::PropertySet::SetCallback callback) {
   VLOG(1) << "Set " << property->name();
-  callback.Run(false);
+  std::move(callback).Run(false);
 }
 
 FakeBluetoothGattCharacteristicClient::FakeBluetoothGattCharacteristicClient()
