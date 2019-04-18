@@ -1316,7 +1316,8 @@ TEST_F(PendingBookmarkAppManagerTest,
   }
 }
 
-TEST_F(PendingBookmarkAppManagerTest, ReinstallPlaceholderAppIfUnused_Success) {
+TEST_F(PendingBookmarkAppManagerTest,
+       ReinstallPlaceholderAppWhenUnused_NoOpenedWindows) {
   auto pending_app_manager = GetPendingBookmarkAppManagerWithTestFactories();
   // Install a placeholder app
   auto install_options = GetFooInstallOptions();
@@ -1338,7 +1339,7 @@ TEST_F(PendingBookmarkAppManagerTest, ReinstallPlaceholderAppIfUnused_Success) {
   // Reinstall placeholder
   {
     install_options.reinstall_placeholder = true;
-    install_options.stop_if_window_opened = true;
+    install_options.wait_for_windows_closed = true;
     ui_delegate()->SetNumWindowsForApp(GenerateFakeAppId(GURL(kFooWebAppUrl)),
                                        0);
     url_loader()->SetNextLoadUrlResult(
@@ -1362,7 +1363,7 @@ TEST_F(PendingBookmarkAppManagerTest, ReinstallPlaceholderAppIfUnused_Success) {
 }
 
 TEST_F(PendingBookmarkAppManagerTest,
-       ReinstallPlaceholderAppIfUnused_FailsWindowOpened) {
+       ReinstallPlaceholderAppWhenUnused_OneWindowOpened) {
   auto pending_app_manager = GetPendingBookmarkAppManagerWithTestFactories();
 
   // Install a placeholder app
@@ -1385,20 +1386,25 @@ TEST_F(PendingBookmarkAppManagerTest,
   // Reinstall placeholder
   {
     install_options.reinstall_placeholder = true;
-    install_options.stop_if_window_opened = true;
+    install_options.wait_for_windows_closed = true;
     ui_delegate()->SetNumWindowsForApp(GenerateFakeAppId(GURL(kFooWebAppUrl)),
                                        1);
+    url_loader()->SetNextLoadUrlResult(
+        GURL(kFooWebAppUrl), web_app::WebAppUrlLoader::Result::kUrlLoaded);
+    uninstaller()->SetNextResultForTesting(GURL(kFooWebAppUrl), true);
 
     base::Optional<GURL> url;
     base::Optional<web_app::InstallResultCode> code;
     std::tie(url, code) =
         InstallAndWait(pending_app_manager.get(), install_options);
 
-    EXPECT_EQ(web_app::InstallResultCode::kWindowOpened, code.value());
+    EXPECT_EQ(web_app::InstallResultCode::kSuccess, code.value());
     EXPECT_EQ(GURL(kFooWebAppUrl), url.value());
 
-    EXPECT_EQ(0u, uninstall_call_count());
-    EXPECT_EQ(0u, install_run_count());
+    EXPECT_EQ(1u, uninstall_call_count());
+    EXPECT_EQ(GURL(kFooWebAppUrl), last_uninstalled_app_url());
+
+    EXPECT_EQ(1u, install_run_count());
     EXPECT_EQ(1u, install_placeholder_run_count());
   }
 }

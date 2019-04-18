@@ -104,7 +104,7 @@ void WebAppPolicyManager::ReinstallPlaceholderAppIfNecessary(const GURL& url) {
   ParseInstallOptionsFromPolicyEntry(*it, &install_options);
 
   // No need to install a placeholder because there should be one already.
-  install_options.stop_if_window_opened = true;
+  install_options.wait_for_windows_closed = true;
   install_options.reinstall_placeholder = true;
 
   // If the app is not a placeholder app, PendingAppManager will ignore the
@@ -152,7 +152,7 @@ void WebAppPolicyManager::RefreshPolicyInstalledApps() {
     install_options.install_placeholder = true;
     // When the policy gets refreshed, we should try to reinstall placeholder
     // apps but only if they are not being used.
-    install_options.stop_if_window_opened = true;
+    install_options.wait_for_windows_closed = true;
     install_options.reinstall_placeholder = true;
 
     install_options_list.push_back(std::move(install_options));

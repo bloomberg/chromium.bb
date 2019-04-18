@@ -4,7 +4,12 @@
 
 #include "chrome/browser/web_applications/test/test_web_app_ui_delegate.h"
 
+#include <utility>
+
+#include "base/callback.h"
 #include "base/stl_util.h"
+#include "base/test/bind_test_util.h"
+#include "base/threading/thread_task_runner_handle.h"
 
 namespace web_app {
 
@@ -20,6 +25,18 @@ void TestWebAppUiDelegate::SetNumWindowsForApp(const AppId& app_id,
 size_t TestWebAppUiDelegate::GetNumWindowsForApp(const AppId& app_id) {
   DCHECK(base::ContainsKey(app_id_to_num_windows_map_, app_id));
   return app_id_to_num_windows_map_[app_id];
+}
+
+void TestWebAppUiDelegate::NotifyOnAllAppWindowsClosed(
+    const AppId& app_id,
+    base::OnceClosure callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(base::BindLambdaForTesting(
+                                    [&, app_id](base::OnceClosure callback) {
+                                      app_id_to_num_windows_map_[app_id] = 0;
+                                      std::move(callback).Run();
+                                    }),
+                                std::move(callback)));
 }
 
 }  // namespace web_app

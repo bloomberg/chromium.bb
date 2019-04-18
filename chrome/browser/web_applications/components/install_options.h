@@ -65,9 +65,9 @@ struct InstallOptions {
   // Whether the app should be reinstalled even if it is already installed.
   bool always_update = false;
 
-  // Whether we should check if there are any opened windows for the app
-  // before we try to reinstall it.
-  bool stop_if_window_opened = false;
+  // Whether we should wait for all app windows being closed before reinstalling
+  // the placeholder.
+  bool wait_for_windows_closed = false;
 
   // Whether a placeholder app should be installed if we fail to retrieve the
   // metadata for the app. A placeholder app uses:
