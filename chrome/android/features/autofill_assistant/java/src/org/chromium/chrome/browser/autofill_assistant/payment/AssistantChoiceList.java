@@ -235,7 +235,7 @@ public class AssistantChoiceList extends GridLayout {
     private TextView createAddButtonLabel(String addButtonText) {
         TextView addButtonLabel = new TextView(getContext());
         ApiCompatibilityUtils.setTextAppearance(
-                addButtonLabel, R.style.TextAppearance_BlueButtonText2);
+                addButtonLabel, org.chromium.chrome.R.style.TextAppearance_BlueButtonText2);
         addButtonLabel.setText(addButtonText);
         addButtonLabel.setOnClickListener(unusedView -> {
             if (mAddButtonListener != null) {

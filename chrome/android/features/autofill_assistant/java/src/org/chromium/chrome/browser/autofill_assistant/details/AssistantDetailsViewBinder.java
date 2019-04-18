@@ -188,8 +188,9 @@ class AssistantDetailsViewBinder
         // Set label icon color.
         ApiCompatibilityUtils.setImageTintList(viewHolder.mTotalPriceLabelIconView,
                 AppCompatResources.getColorStateList(mContext,
-                        details.getUserApprovalRequired() ? R.color.modern_grey_300
-                                                          : R.color.default_text_color_secondary));
+                        details.getUserApprovalRequired()
+                                ? org.chromium.chrome.R.color.modern_grey_300
+                                : org.chromium.chrome.R.color.default_text_color_secondary));
 
         viewHolder.mImageView.setVisibility(View.VISIBLE);
         if (details.getImageUrl().isEmpty()) {
@@ -266,15 +267,15 @@ class AssistantDetailsViewBinder
         setTextStyle(viewHolder.mTitleView, details.getUserApprovalRequired(),
                 details.getHighlightTitle(), R.style.TextAppearance_AssistantDetailsTitle);
         setTextStyle(viewHolder.mDescriptionLine1View, details.getUserApprovalRequired(),
-                details.getHighlightLine1(), R.style.TextAppearance_BlackBody);
+                details.getHighlightLine1(), org.chromium.chrome.R.style.TextAppearance_BlackBody);
         setTextStyle(viewHolder.mDescriptionLine2View, details.getUserApprovalRequired(),
-                details.getHighlightLine2(), R.style.TextAppearance_BlackBody);
+                details.getHighlightLine2(), org.chromium.chrome.R.style.TextAppearance_BlackBody);
         setTextStyle(viewHolder.mDescriptionLine3View, details.getUserApprovalRequired(),
                 details.getHighlightLine2(), R.style.TextAppearance_AssistantDetailsAttribution);
         setTextStyle(viewHolder.mPriceAttributionView, details.getUserApprovalRequired(),
                 details.getHighlightLine3(), R.style.TextAppearance_AssistantDetailsAttribution);
         setTextStyle(viewHolder.mTotalPriceLabelView, details.getUserApprovalRequired(),
-                /* highlight= */ false, R.style.TextAppearance_BlackButtonText);
+                /* highlight= */ false, org.chromium.chrome.R.style.TextAppearance_BlackButtonText);
         setTextStyle(viewHolder.mTotalPriceView, details.getUserApprovalRequired(),
                 /* highlight= */ false, R.style.TextAppearance_AssistantDetailsPrice);
 

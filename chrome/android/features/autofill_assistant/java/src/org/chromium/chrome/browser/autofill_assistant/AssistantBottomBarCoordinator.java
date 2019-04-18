@@ -117,7 +117,7 @@ class AssistantBottomBarCoordinator implements CompositorViewResizer {
             @Override
             public void onSheetClosed(int reason) {
                 mContent.mToolbarView.setBackgroundColor(ApiCompatibilityUtils.getColor(
-                        context.getResources(), R.color.modern_primary_color));
+                        context.getResources(), org.chromium.chrome.R.color.modern_primary_color));
             }
 
             @Override
