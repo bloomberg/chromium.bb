@@ -127,7 +127,7 @@ TEST_P(LinkHighlightImplTest, verifyWebViewImplIntegration) {
   WebGestureEvent touch_event(WebInputEvent::kGestureShowPress,
                               WebInputEvent::kNoModifiers,
                               WebInputEvent::GetStaticTimeStampForTests(),
-                              kWebGestureDeviceTouchscreen);
+                              WebGestureDevice::kTouchscreen);
 
   // The coordinates below are linked to absolute positions in the referenced
   // .html file.
@@ -181,7 +181,7 @@ TEST_P(LinkHighlightImplTest, resetDuringNodeRemoval) {
   WebGestureEvent touch_event(WebInputEvent::kGestureShowPress,
                               WebInputEvent::kNoModifiers,
                               WebInputEvent::GetStaticTimeStampForTests(),
-                              kWebGestureDeviceTouchscreen);
+                              WebGestureDevice::kTouchscreen);
   touch_event.SetPositionInWidget(WebFloatPoint(20, 20));
 
   GestureEventWithHitTestResults targeted_event = GetTargetedEvent(touch_event);
@@ -228,7 +228,7 @@ TEST_P(LinkHighlightImplTest, resetLayerTreeView) {
   WebGestureEvent touch_event(WebInputEvent::kGestureShowPress,
                               WebInputEvent::kNoModifiers,
                               WebInputEvent::GetStaticTimeStampForTests(),
-                              kWebGestureDeviceTouchscreen);
+                              WebGestureDevice::kTouchscreen);
   touch_event.SetPositionInWidget(WebFloatPoint(20, 20));
 
   GestureEventWithHitTestResults targeted_event = GetTargetedEvent(touch_event);
@@ -261,7 +261,7 @@ TEST_P(LinkHighlightImplTest, HighlightInvalidation) {
   WebGestureEvent touch_event(WebInputEvent::kGestureShowPress,
                               WebInputEvent::kNoModifiers,
                               WebInputEvent::GetStaticTimeStampForTests(),
-                              kWebGestureDeviceTouchscreen);
+                              WebGestureDevice::kTouchscreen);
   touch_event.SetPositionInWidget(WebFloatPoint(20, 20));
   GestureEventWithHitTestResults targeted_event = GetTargetedEvent(touch_event);
   auto* touch_element = ToElement(web_view_impl->BestTapNode(targeted_event));
@@ -306,7 +306,7 @@ TEST_P(LinkHighlightImplTest, HighlightLayerEffectNode) {
   WebGestureEvent touch_event(WebInputEvent::kGestureShowPress,
                               WebInputEvent::kNoModifiers,
                               WebInputEvent::GetStaticTimeStampForTests(),
-                              kWebGestureDeviceTouchscreen);
+                              WebGestureDevice::kTouchscreen);
   touch_event.SetPositionInWidget(WebFloatPoint(20, 20));
 
   GestureEventWithHitTestResults targeted_event = GetTargetedEvent(touch_event);
@@ -363,7 +363,7 @@ TEST_P(LinkHighlightImplTest, MultiColumn) {
   WebGestureEvent touch_event(WebInputEvent::kGestureShowPress,
                               WebInputEvent::kNoModifiers,
                               WebInputEvent::GetStaticTimeStampForTests(),
-                              kWebGestureDeviceTouchscreen);
+                              WebGestureDevice::kTouchscreen);
   // This will touch the link under multicol.
   touch_event.SetPositionInWidget(WebFloatPoint(20, 300));
 

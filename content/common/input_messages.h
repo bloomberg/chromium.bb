@@ -71,7 +71,7 @@ IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::WebPointerProperties::Button,
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebPointerProperties::PointerType,
                           blink::WebPointerProperties::PointerType::kLastEntry)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebGestureDevice,
-                          (blink::WebGestureDevice::kWebGestureDeviceCount - 1))
+                          blink::WebGestureDevice::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebInputEvent::DispatchType,
                           blink::WebInputEvent::DispatchType::kLastDispatchType)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebGestureEvent::ScrollUnits,

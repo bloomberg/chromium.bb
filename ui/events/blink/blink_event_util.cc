@@ -579,8 +579,9 @@ bool IsCompatibleScrollorPinch(const WebGestureEvent& new_event,
   return (event_in_queue.GetType() == WebInputEvent::kGestureScrollUpdate ||
           event_in_queue.GetType() == WebInputEvent::kGesturePinchUpdate) &&
          event_in_queue.GetModifiers() == new_event.GetModifiers() &&
-         event_in_queue.SourceDevice() == blink::kWebGestureDeviceTouchscreen &&
-         new_event.SourceDevice() == blink::kWebGestureDeviceTouchscreen;
+         event_in_queue.SourceDevice() ==
+             blink::WebGestureDevice::kTouchscreen &&
+         new_event.SourceDevice() == blink::WebGestureDevice::kTouchscreen;
 }
 
 std::pair<WebGestureEvent, WebGestureEvent> CoalesceScrollAndPinch(
@@ -708,13 +709,14 @@ WebGestureEvent CreateWebGestureEvent(const GestureEventDetails& details,
                                       const gfx::PointF& raw_location,
                                       int flags,
                                       uint32_t unique_touch_event_id) {
-  blink::WebGestureDevice source_device = blink::kWebGestureDeviceUninitialized;
+  blink::WebGestureDevice source_device =
+      blink::WebGestureDevice::kUninitialized;
   switch (details.device_type()) {
     case GestureDeviceType::DEVICE_TOUCHSCREEN:
-      source_device = blink::kWebGestureDeviceTouchscreen;
+      source_device = blink::WebGestureDevice::kTouchscreen;
       break;
     case GestureDeviceType::DEVICE_TOUCHPAD:
-      source_device = blink::kWebGestureDeviceTouchpad;
+      source_device = blink::WebGestureDevice::kTouchpad;
       break;
     case GestureDeviceType::DEVICE_UNKNOWN:
       NOTREACHED() << "Unknown device type is not allowed";
@@ -746,7 +748,7 @@ WebGestureEvent CreateWebGestureEvent(const GestureEventDetails& details,
       gesture.data.tap.width = details.bounding_box_f().width();
       gesture.data.tap.height = details.bounding_box_f().height();
       gesture.SetNeedsWheelEvent(source_device ==
-                                 blink::kWebGestureDeviceTouchpad);
+                                 blink::WebGestureDevice::kTouchpad);
       break;
     case ET_GESTURE_TAP:
       gesture.SetType(WebInputEvent::kGestureTap);
@@ -810,18 +812,18 @@ WebGestureEvent CreateWebGestureEvent(const GestureEventDetails& details,
     case ET_GESTURE_PINCH_BEGIN:
       gesture.SetType(WebInputEvent::kGesturePinchBegin);
       gesture.SetNeedsWheelEvent(source_device ==
-                                 blink::kWebGestureDeviceTouchpad);
+                                 blink::WebGestureDevice::kTouchpad);
       break;
     case ET_GESTURE_PINCH_UPDATE:
       gesture.SetType(WebInputEvent::kGesturePinchUpdate);
       gesture.data.pinch_update.scale = details.scale();
       gesture.SetNeedsWheelEvent(source_device ==
-                                 blink::kWebGestureDeviceTouchpad);
+                                 blink::WebGestureDevice::kTouchpad);
       break;
     case ET_GESTURE_PINCH_END:
       gesture.SetType(WebInputEvent::kGesturePinchEnd);
       gesture.SetNeedsWheelEvent(source_device ==
-                                 blink::kWebGestureDeviceTouchpad);
+                                 blink::WebGestureDevice::kTouchpad);
       break;
     case ET_GESTURE_TAP_CANCEL:
       gesture.SetType(WebInputEvent::kGestureTapCancel);
@@ -1257,9 +1259,9 @@ std::unique_ptr<WebGestureEvent> CreateWebGestureEventFromGestureEventAndroid(
   // event's fields better when extended to handle more cases.
   web_event->SetPositionInWidget(event.location());
   web_event->SetPositionInScreen(event.screen_location());
-  web_event->SetSourceDevice(blink::kWebGestureDeviceTouchscreen);
+  web_event->SetSourceDevice(blink::WebGestureDevice::kTouchscreen);
   if (event.synthetic_scroll())
-    web_event->SetSourceDevice(blink::kWebGestureDeviceSyntheticAutoscroll);
+    web_event->SetSourceDevice(blink::WebGestureDevice::kSyntheticAutoscroll);
   if (event_type == WebInputEvent::kGesturePinchUpdate) {
     web_event->data.pinch_update.scale = event.scale();
   } else if (event_type == WebInputEvent::kGestureScrollBegin) {

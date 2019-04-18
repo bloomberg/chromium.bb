@@ -2160,7 +2160,7 @@ TEST_F(WebFrameTest,
   WebGestureEvent gesture_event(WebInputEvent::kGestureTap,
                                 WebInputEvent::kNoModifiers,
                                 WebInputEvent::GetStaticTimeStampForTests(),
-                                kWebGestureDeviceTouchscreen);
+                                WebGestureDevice::kTouchscreen);
   gesture_event.SetFrameScale(1);
   gesture_event.SetPositionInWidget(hit_point);
   gesture_event.SetPositionInScreen(hit_point);
@@ -6474,7 +6474,7 @@ class CompositedSelectionBoundsTest
     WebGestureEvent gesture_event(WebInputEvent::kGestureTap,
                                   WebInputEvent::kNoModifiers,
                                   WebInputEvent::GetStaticTimeStampForTests(),
-                                  kWebGestureDeviceTouchscreen);
+                                  WebGestureDevice::kTouchscreen);
     gesture_event.SetFrameScale(1);
     gesture_event.SetPositionInWidget(hit_point);
     gesture_event.SetPositionInScreen(hit_point);
@@ -9791,7 +9791,7 @@ TEST_F(WebFrameTest, FrameWidgetTest) {
 
   WebGestureEvent event(WebInputEvent::kGestureTap, WebInputEvent::kNoModifiers,
                         WebInputEvent::GetStaticTimeStampForTests(),
-                        kWebGestureDeviceTouchscreen);
+                        WebGestureDevice::kTouchscreen);
   event.SetPositionInWidget(WebFloatPoint(20, 20));
   child_frame->FrameWidget()->HandleInputEvent(WebCoalescedInputEvent(event));
   EXPECT_TRUE(child_widget_client.DidHandleGestureEvent());
@@ -10164,8 +10164,8 @@ class WebFrameOverscrollTest
 
 INSTANTIATE_TEST_SUITE_P(All,
                          WebFrameOverscrollTest,
-                         testing::Values(kWebGestureDeviceTouchpad,
-                                         kWebGestureDeviceTouchscreen));
+                         testing::Values(WebGestureDevice::kTouchpad,
+                                         WebGestureDevice::kTouchscreen));
 
 TEST_P(WebFrameOverscrollTest,
        AccumulatedRootOverscrollAndUnsedDeltaValuesOnOverscroll) {
@@ -11304,13 +11304,13 @@ TEST_F(WebFrameTest, ScrollBeforeLayoutDoesntCrash) {
 
   WebGestureEvent begin_event(
       WebInputEvent::kGestureScrollBegin, WebInputEvent::kNoModifiers,
-      WebInputEvent::GetStaticTimeStampForTests(), kWebGestureDeviceTouchpad);
+      WebInputEvent::GetStaticTimeStampForTests(), WebGestureDevice::kTouchpad);
   WebGestureEvent update_event(
       WebInputEvent::kGestureScrollUpdate, WebInputEvent::kNoModifiers,
-      WebInputEvent::GetStaticTimeStampForTests(), kWebGestureDeviceTouchpad);
+      WebInputEvent::GetStaticTimeStampForTests(), WebGestureDevice::kTouchpad);
   WebGestureEvent end_event(
       WebInputEvent::kGestureScrollEnd, WebInputEvent::kNoModifiers,
-      WebInputEvent::GetStaticTimeStampForTests(), kWebGestureDeviceTouchpad);
+      WebInputEvent::GetStaticTimeStampForTests(), WebGestureDevice::kTouchpad);
 
   // Try GestureScrollEnd and GestureScrollUpdate first to make sure that not
   // seeing a Begin first doesn't break anything. (This currently happens).

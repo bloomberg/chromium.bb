@@ -327,7 +327,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
       blink::WebGestureEvent::kGestureScrollBegin,
       blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests(),
-      blink::kWebGestureDeviceTouchscreen);
+      blink::WebGestureDevice::kTouchscreen);
   gesture_scroll_begin.data.scroll_begin.delta_hint_units =
       blink::WebGestureEvent::ScrollUnits::kPrecisePixels;
   gesture_scroll_begin.data.scroll_begin.delta_x_hint = 0.f;
@@ -338,7 +338,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
       blink::WebGestureEvent::kGestureScrollUpdate,
       blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests(),
-      blink::kWebGestureDeviceTouchscreen);
+      blink::WebGestureDevice::kTouchscreen);
   gesture_scroll_update.data.scroll_update.delta_units =
       blink::WebGestureEvent::ScrollUnits::kPrecisePixels;
   gesture_scroll_update.data.scroll_update.delta_y = 0.f;
@@ -663,7 +663,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
 
     blink::WebGestureEvent scroll_begin =
         SyntheticWebGestureEventBuilder::BuildScrollBegin(
-            1, 1, blink::kWebGestureDeviceTouchscreen);
+            1, 1, blink::WebGestureDevice::kTouchscreen);
     GetRenderWidgetHost()->ForwardGestureEventWithLatencyInfo(
         scroll_begin, ui::LatencyInfo());
     // Scroll begin ignores ack disposition, so don't wait for the ack.
@@ -679,7 +679,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
 
       blink::WebGestureEvent scroll_update =
           SyntheticWebGestureEventBuilder::BuildScrollUpdate(
-              dx, 5, 0, blink::kWebGestureDeviceTouchscreen);
+              dx, 5, 0, blink::WebGestureDevice::kTouchscreen);
 
       GetRenderWidgetHost()->ForwardGestureEventWithLatencyInfo(
           scroll_update, ui::LatencyInfo());

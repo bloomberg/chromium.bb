@@ -235,7 +235,7 @@ TEST(BlinkEventUtilTest, GesturePinchUpdateCoalescing) {
       blink::WebInputEvent::kGesturePinchUpdate,
       blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests(),
-      blink::kWebGestureDeviceTouchpad);
+      blink::WebGestureDevice::kTouchpad);
   coalesced_event.data.pinch_update.scale = 1.1f;
   coalesced_event.SetPositionInWidget(position);
 
@@ -264,8 +264,8 @@ TEST(BlinkEventUtilTest, GesturePinchUpdateCoalescing) {
       IsCompatibleScrollorPinch(event_to_be_coalesced, coalesced_event));
 
   // Touchscreen pinch events can be logically coalesced.
-  coalesced_event.SetSourceDevice(blink::kWebGestureDeviceTouchscreen);
-  event_to_be_coalesced.SetSourceDevice(blink::kWebGestureDeviceTouchscreen);
+  coalesced_event.SetSourceDevice(blink::WebGestureDevice::kTouchscreen);
+  event_to_be_coalesced.SetSourceDevice(blink::WebGestureDevice::kTouchscreen);
   coalesced_event.data.pinch_update.scale = 1.1f;
   ASSERT_TRUE(
       IsCompatibleScrollorPinch(event_to_be_coalesced, coalesced_event));

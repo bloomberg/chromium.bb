@@ -788,7 +788,7 @@ TEST_F(WebPluginContainerTest, GestureLongPressReachesPlugin) {
   WebGestureEvent event(WebInputEvent::kGestureLongPress,
                         WebInputEvent::kNoModifiers,
                         WebInputEvent::GetStaticTimeStampForTests(),
-                        kWebGestureDeviceTouchscreen);
+                        WebGestureDevice::kTouchscreen);
 
   // First, send an event that doesn't hit the plugin to verify that the
   // plugin doesn't receive it.

@@ -4050,7 +4050,7 @@ IN_PROC_BROWSER_TEST_P(WebViewGuestScrollTest,
       blink::WebGestureEvent::kGestureScrollBegin,
       blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests(),
-      blink::kWebGestureDeviceTouchpad);
+      blink::WebGestureDevice::kTouchpad);
   scroll_begin.SetPositionInWidget(guest_scroll_location);
   scroll_begin.SetPositionInScreen(guest_scroll_location_in_root);
   scroll_begin.data.scroll_begin.delta_x_hint = 0;
@@ -4518,7 +4518,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, TouchpadPinchSyntheticWheelEvents) {
   const gfx::Point pinch_position(contents_rect.width() / 2,
                                   contents_rect.height() / 2);
   content::SimulateGesturePinchSequence(guest_contents, pinch_position, 1.23,
-                                        blink::kWebGestureDeviceTouchpad);
+                                        blink::WebGestureDevice::kTouchpad);
 
   ASSERT_TRUE(synthetic_wheel_listener.WaitUntilSatisfied());
 }

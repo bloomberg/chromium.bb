@@ -448,7 +448,7 @@ class ChromeSitePerProcessPDFTest : public ChromeSitePerProcessTest {
     blink::WebGestureEvent event(blink::WebInputEvent::kGestureScrollUpdate,
                                  blink::WebInputEvent::kNoModifiers,
                                  ui::EventTimeForNow(),
-                                 blink::kWebGestureDeviceTouchscreen);
+                                 blink::WebGestureDevice::kTouchscreen);
     // This should not crash.
     content::ResendGestureScrollUpdateToEmbedder(guest_web_contents, event);
   }
@@ -1192,7 +1192,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest, TwoFingerTapContextMenu) {
       blink::WebInputEvent::kGestureTwoFingerTap,
       blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests(),
-      blink::kWebGestureDeviceTouchscreen);
+      blink::WebGestureDevice::kTouchscreen);
   event.SetPositionInWidget(child_location);
   event.SetPositionInScreen(child_location_in_root);
   event.data.two_finger_tap.first_finger_width = 10;

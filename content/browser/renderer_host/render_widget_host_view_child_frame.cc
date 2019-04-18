@@ -971,7 +971,7 @@ InputEventAckState RenderWidgetHostViewChildFrame::FilterInputEvent(
     // Touchscreen pinch events may be targeted to a child in order to have the
     // child's TouchActionFilter filter them, but we may encounter
     // https://crbug.com/771330 which would let the pinch events through.
-    if (gesture_event.SourceDevice() == blink::kWebGestureDeviceTouchscreen) {
+    if (gesture_event.SourceDevice() == blink::WebGestureDevice::kTouchscreen) {
       return INPUT_EVENT_ACK_STATE_CONSUMED;
     }
     NOTREACHED();
@@ -982,7 +982,7 @@ InputEventAckState RenderWidgetHostViewChildFrame::FilterInputEvent(
         static_cast<const blink::WebGestureEvent&>(input_event);
     // Zero-velocity touchpad flings are an Aura-specific signal that the
     // touchpad scroll has ended, and should not be forwarded to the renderer.
-    if (gesture_event.SourceDevice() == blink::kWebGestureDeviceTouchpad &&
+    if (gesture_event.SourceDevice() == blink::WebGestureDevice::kTouchpad &&
         !gesture_event.data.fling_start.velocity_x &&
         !gesture_event.data.fling_start.velocity_y) {
       // Here we indicate that there was no consumer for this event, as

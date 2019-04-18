@@ -1679,8 +1679,7 @@ void RenderWidgetHostViewMac::GestureUpdate(
     mouse_wheel_phase_handler_.DispatchPendingWheelEndEvent();
     WebGestureEvent begin_event(*gesture_begin_event_);
     begin_event.SetType(WebInputEvent::kGesturePinchBegin);
-    begin_event.SetSourceDevice(
-        blink::WebGestureDevice::kWebGestureDeviceTouchpad);
+    begin_event.SetSourceDevice(blink::WebGestureDevice::kTouchpad);
     begin_event.SetNeedsWheelEvent(true);
     SendTouchpadZoomEvent(&begin_event);
     gesture_begin_pinch_sent_ = YES;

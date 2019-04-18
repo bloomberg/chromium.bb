@@ -1888,7 +1888,7 @@ TEST_P(VisualViewportTest, SlowScrollAfterImplScroll) {
   // Send a scroll event on the main thread path.
   WebGestureEvent gsb(
       WebInputEvent::kGestureScrollBegin, WebInputEvent::kNoModifiers,
-      WebInputEvent::GetStaticTimeStampForTests(), kWebGestureDeviceTouchpad);
+      WebInputEvent::GetStaticTimeStampForTests(), WebGestureDevice::kTouchpad);
   gsb.SetFrameScale(1);
   gsb.data.scroll_begin.delta_x_hint = -50;
   gsb.data.scroll_begin.delta_x_hint = -60;
@@ -1897,7 +1897,7 @@ TEST_P(VisualViewportTest, SlowScrollAfterImplScroll) {
 
   WebGestureEvent gsu(
       WebInputEvent::kGestureScrollUpdate, WebInputEvent::kNoModifiers,
-      WebInputEvent::GetStaticTimeStampForTests(), kWebGestureDeviceTouchpad);
+      WebInputEvent::GetStaticTimeStampForTests(), WebGestureDevice::kTouchpad);
   gsu.SetFrameScale(1);
   gsu.data.scroll_update.delta_x = -50;
   gsu.data.scroll_update.delta_y = -60;

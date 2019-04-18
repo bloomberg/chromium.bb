@@ -118,7 +118,7 @@ void SyntheticGestureTargetAndroid::DispatchWebMouseWheelEventToPlatform(
 void SyntheticGestureTargetAndroid::DispatchWebGestureEventToPlatform(
     const WebGestureEvent& web_gesture,
     const ui::LatencyInfo& latency_info) {
-  DCHECK_EQ(blink::kWebGestureDeviceTouchpad, web_gesture.SourceDevice());
+  DCHECK_EQ(blink::WebGestureDevice::kTouchpad, web_gesture.SourceDevice());
   DCHECK(blink::WebInputEvent::IsPinchGestureEventType(web_gesture.GetType()) ||
          blink::WebInputEvent::IsFlingGestureEventType(web_gesture.GetType()));
   GetView()->SendGestureEvent(web_gesture);

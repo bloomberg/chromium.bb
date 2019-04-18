@@ -26,11 +26,11 @@ bool IsGestureEventFromTouchpad(const blink::WebInputEvent& event) {
   DCHECK(blink::WebInputEvent::IsGestureEventType(event.GetType()));
   const blink::WebGestureEvent& gesture =
       static_cast<const blink::WebGestureEvent&>(event);
-  return gesture.SourceDevice() == blink::kWebGestureDeviceTouchpad;
+  return gesture.SourceDevice() == blink::WebGestureDevice::kTouchpad;
 }
 
 bool IsGestureEventFromAutoscroll(const blink::WebGestureEvent event) {
-  return event.SourceDevice() == blink::kWebGestureDeviceSyntheticAutoscroll;
+  return event.SourceDevice() == blink::WebGestureDevice::kSyntheticAutoscroll;
 }
 
 bool IsGestureScrollUpdateInertialEvent(const blink::WebInputEvent& event) {
@@ -388,7 +388,7 @@ bool OverscrollController::ProcessEventForOverscroll(
       event_processed = ProcessOverscroll(
           gesture.data.scroll_update.delta_x,
           gesture.data.scroll_update.delta_y,
-          gesture.SourceDevice() == blink::kWebGestureDeviceTouchpad,
+          gesture.SourceDevice() == blink::WebGestureDevice::kTouchpad,
           is_gesture_scroll_update_inertial_event);
       if (is_gesture_scroll_update_inertial_event) {
         // Record the timestamp of first inertial event.

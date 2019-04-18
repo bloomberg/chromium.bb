@@ -564,7 +564,7 @@ void RenderViewTest::SimulatePointRightClick(const gfx::Point& point) {
 void RenderViewTest::SimulateRectTap(const gfx::Rect& rect) {
   WebGestureEvent gesture_event(
       WebInputEvent::kGestureTap, WebInputEvent::kNoModifiers,
-      ui::EventTimeForNow(), blink::kWebGestureDeviceTouchscreen);
+      ui::EventTimeForNow(), blink::WebGestureDevice::kTouchscreen);
   gesture_event.SetPositionInWidget(gfx::PointF(rect.CenterPoint()));
   gesture_event.data.tap.tap_count = 1;
   gesture_event.data.tap.width = rect.width();

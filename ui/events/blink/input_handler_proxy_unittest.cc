@@ -340,7 +340,7 @@ class InputHandlerProxyTest
     mock_input_handler_.set_is_scrolling_root(synchronous_root_scroll_);
 
     // Set a default device so tests don't always have to set this.
-    gesture_.SetSourceDevice(blink::kWebGestureDeviceTouchpad);
+    gesture_.SetSourceDevice(blink::WebGestureDevice::kTouchpad);
   }
 
   virtual ~InputHandlerProxyTest() = default;
@@ -433,7 +433,7 @@ class InputHandlerProxyEventQueueTest : public testing::Test {
                           int x = 0,
                           int y = 0) {
     HandleGestureEventWithSourceDevice(
-        type, blink::kWebGestureDeviceTouchscreen, delta_y_or_scale, x, y);
+        type, blink::WebGestureDevice::kTouchscreen, delta_y_or_scale, x, y);
   }
 
   void HandleGestureEventWithSourceDevice(WebInputEvent::Type type,
@@ -451,9 +451,10 @@ class InputHandlerProxyEventQueueTest : public testing::Test {
   }
 
   void HandleMouseEvent(WebInputEvent::Type type, int x = 0, int y = 0) {
-    WebMouseEvent mouse_event(type, WebInputEvent::kNoModifiers,
-                              WebInputEvent::GetStaticTimeStampForTests(),
-                              blink::kWebGestureDeviceUninitialized);
+    WebMouseEvent mouse_event(
+        type, WebInputEvent::kNoModifiers,
+        WebInputEvent::GetStaticTimeStampForTests(),
+        static_cast<int>(blink::WebGestureDevice::kUninitialized));
 
     mouse_event.SetPositionInWidget(gfx::PointF(x, y));
     mouse_event.button = blink::WebMouseEvent::Button::kLeft;
@@ -1021,11 +1022,11 @@ void InputHandlerProxyTest::ScrollHandlingSwitchedToMainThread() {
   VERIFY_AND_RESET_MOCKS();
 }
 TEST_P(InputHandlerProxyTest, WheelScrollHandlingSwitchedToMainThread) {
-  gesture_.SetSourceDevice(blink::kWebGestureDeviceTouchpad);
+  gesture_.SetSourceDevice(blink::WebGestureDevice::kTouchpad);
   ScrollHandlingSwitchedToMainThread();
 }
 TEST_P(InputHandlerProxyTest, TouchScrollHandlingSwitchedToMainThread) {
-  gesture_.SetSourceDevice(blink::kWebGestureDeviceTouchscreen);
+  gesture_.SetSourceDevice(blink::WebGestureDevice::kTouchscreen);
   ScrollHandlingSwitchedToMainThread();
 }
 
@@ -1700,20 +1701,20 @@ TEST_F(InputHandlerProxyEventQueueTest, VSyncAlignedCoalesceTouchpadPinch) {
   EXPECT_CALL(mock_input_handler_, SetNeedsAnimateInput());
 
   HandleGestureEventWithSourceDevice(WebInputEvent::kGesturePinchBegin,
-                                     blink::kWebGestureDeviceTouchpad);
+                                     blink::WebGestureDevice::kTouchpad);
   HandleGestureEventWithSourceDevice(WebInputEvent::kGesturePinchUpdate,
-                                     blink::kWebGestureDeviceTouchpad, 1.1f, 10,
-                                     20);
+                                     blink::WebGestureDevice::kTouchpad, 1.1f,
+                                     10, 20);
   // The second update should coalesce with the first.
   HandleGestureEventWithSourceDevice(WebInputEvent::kGesturePinchUpdate,
-                                     blink::kWebGestureDeviceTouchpad, 1.1f, 10,
-                                     20);
+                                     blink::WebGestureDevice::kTouchpad, 1.1f,
+                                     10, 20);
   // The third update has a different anchor so it should not be coalesced.
   HandleGestureEventWithSourceDevice(WebInputEvent::kGesturePinchUpdate,
-                                     blink::kWebGestureDeviceTouchpad, 1.1f, 11,
-                                     21);
+                                     blink::WebGestureDevice::kTouchpad, 1.1f,
+                                     11, 21);
   HandleGestureEventWithSourceDevice(WebInputEvent::kGesturePinchEnd,
-                                     blink::kWebGestureDeviceTouchpad);
+                                     blink::WebGestureDevice::kTouchpad);
 
   // Only the PinchBegin was dispatched.
   EXPECT_EQ(3ul, event_queue().size());
@@ -1825,9 +1826,9 @@ TEST_F(InputHandlerProxyEventQueueTest, TouchpadGestureScrollEndFlushQueue) {
 
   // Simulate scroll.
   HandleGestureEventWithSourceDevice(WebInputEvent::kGestureScrollBegin,
-                                     blink::kWebGestureDeviceTouchpad);
+                                     blink::WebGestureDevice::kTouchpad);
   HandleGestureEventWithSourceDevice(WebInputEvent::kGestureScrollUpdate,
-                                     blink::kWebGestureDeviceTouchpad, -20);
+                                     blink::WebGestureDevice::kTouchpad, -20);
 
   // Both GSB and the first GSU will be dispatched immediately since the first
   // GSU has blocking wheel event source.
@@ -1839,13 +1840,13 @@ TEST_F(InputHandlerProxyEventQueueTest, TouchpadGestureScrollEndFlushQueue) {
   EXPECT_CALL(mock_input_handler_, SetNeedsAnimateInput())
       .Times(::testing::AtLeast(1));
   HandleGestureEventWithSourceDevice(WebInputEvent::kGestureScrollUpdate,
-                                     blink::kWebGestureDeviceTouchpad, -20);
+                                     blink::WebGestureDevice::kTouchpad, -20);
   EXPECT_EQ(1ul, event_queue().size());
   EXPECT_EQ(2ul, event_disposition_recorder_.size());
 
   // Touchpad GSE will flush the queue.
   HandleGestureEventWithSourceDevice(WebInputEvent::kGestureScrollEnd,
-                                     blink::kWebGestureDeviceTouchpad);
+                                     blink::WebGestureDevice::kTouchpad);
 
   EXPECT_EQ(0ul, event_queue().size());
   // GSB, GSU(with blocking wheel source), GSU(with non-blocking wheel
@@ -2015,14 +2016,14 @@ class InputHandlerProxyMainThreadScrollingReasonTest
         WebInputEvent::kGestureScrollBegin, WebInputEvent::kNoModifiers,
         WebInputEvent::GetStaticTimeStampForTests(),
         type == TestEventType::MouseWheel
-            ? blink::kWebGestureDeviceTouchpad
-            : blink::kWebGestureDeviceTouchscreen);
+            ? blink::WebGestureDevice::kTouchpad
+            : blink::WebGestureDevice::kTouchscreen);
     gesture_scroll_end_ = WebGestureEvent(
         WebInputEvent::kGestureScrollEnd, WebInputEvent::kNoModifiers,
         WebInputEvent::GetStaticTimeStampForTests(),
         type == TestEventType::MouseWheel
-            ? blink::kWebGestureDeviceTouchpad
-            : blink::kWebGestureDeviceTouchscreen);
+            ? blink::WebGestureDevice::kTouchpad
+            : blink::WebGestureDevice::kTouchscreen);
     touch_start_.touches_length = 1;
     touch_start_.touch_start_or_first_touch_move = true;
     touch_start_.touches[0] =
@@ -2225,7 +2226,7 @@ TEST_P(InputHandlerProxyMainThreadScrollingReasonTest, WheelScrollHistogram) {
   // Firstly check if input handler can correctly record main thread scrolling
   // reasons.
   input_handler_->RecordMainThreadScrollingReasonsForTest(
-      blink::kWebGestureDeviceTouchpad,
+      blink::WebGestureDevice::kTouchpad,
       cc::MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects |
           cc::MainThreadScrollingReason::kThreadedScrollingDisabled |
           cc::MainThreadScrollingReason::kFrameOverlay |
@@ -2252,7 +2253,7 @@ TEST_P(InputHandlerProxyMainThreadScrollingReasonTest, WheelScrollHistogram) {
   // that reason. So we should only include this reason in the histogram when
   // its on its own.
   input_handler_->RecordMainThreadScrollingReasonsForTest(
-      blink::kWebGestureDeviceTouchpad,
+      blink::WebGestureDevice::kTouchpad,
       cc::MainThreadScrollingReason::kHandlingScrollFromMainThread);
 
   EXPECT_THAT(
@@ -2475,7 +2476,7 @@ TEST_F(InputHandlerProxyForceHandlingOnMainThread, GestureEvents) {
   WebGestureEvent gesture(WebInputEvent::kGestureScrollBegin,
                           WebInputEvent::kNoModifiers,
                           WebInputEvent::GetStaticTimeStampForTests(),
-                          blink::kWebGestureDeviceTouchscreen);
+                          blink::WebGestureDevice::kTouchscreen);
 
   // The input event must return DID_NOT_HANDLE, indicating it should be
   // handled on the main thread.

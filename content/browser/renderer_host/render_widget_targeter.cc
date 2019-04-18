@@ -148,9 +148,9 @@ void RenderWidgetTargeter::FindTargetAndDispatch(
          blink::WebInputEvent::IsTouchEventType(event.GetType()) ||
          (blink::WebInputEvent::IsGestureEventType(event.GetType()) &&
           (static_cast<const blink::WebGestureEvent&>(event).SourceDevice() ==
-               blink::WebGestureDevice::kWebGestureDeviceTouchscreen ||
+               blink::WebGestureDevice::kTouchscreen ||
            static_cast<const blink::WebGestureEvent&>(event).SourceDevice() ==
-               blink::WebGestureDevice::kWebGestureDeviceTouchpad)));
+               blink::WebGestureDevice::kTouchpad)));
 
   if (request_in_flight_) {
     if (!requests_.empty()) {

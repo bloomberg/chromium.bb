@@ -118,7 +118,7 @@ void RenderWidgetHostViewBase::StopFlingingIfNecessary(
       event.GetType() == blink::WebInputEvent::kGestureScrollUpdate &&
       event.data.scroll_update.inertial_phase ==
           blink::WebGestureEvent::kMomentumPhase &&
-      event.SourceDevice() != blink::kWebGestureDeviceSyntheticAutoscroll) {
+      event.SourceDevice() != blink::WebGestureDevice::kSyntheticAutoscroll) {
     StopFling();
     view_stopped_flinging_for_test_ = true;
   }

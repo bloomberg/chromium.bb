@@ -1298,7 +1298,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
         blink::WebInputEvent::kGestureTapDown,
         blink::WebInputEvent::kNoModifiers,
         blink::WebInputEvent::GetStaticTimeStampForTests(),
-        blink::kWebGestureDeviceTouchscreen);
+        blink::WebGestureDevice::kTouchscreen);
     gesture_tap_event.unique_touch_event_id = 1;
     gesture_tap_event.SetPositionInWidget(touch_start_point);
     InputEventAckWaiter await_tap_in_child(
@@ -1336,7 +1336,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
         blink::WebGestureEvent::kGestureScrollBegin,
         blink::WebInputEvent::kNoModifiers,
         blink::WebInputEvent::GetStaticTimeStampForTests(),
-        blink::kWebGestureDeviceTouchscreen);
+        blink::WebGestureDevice::kTouchscreen);
     gesture_scroll_begin.unique_touch_event_id = 2;
     gesture_scroll_begin.data.scroll_begin.delta_hint_units =
         blink::WebGestureEvent::ScrollUnits::kPrecisePixels;
@@ -1348,7 +1348,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
         blink::WebGestureEvent::kGestureScrollUpdate,
         blink::WebInputEvent::kNoModifiers,
         blink::WebInputEvent::GetStaticTimeStampForTests(),
-        blink::kWebGestureDeviceTouchscreen);
+        blink::WebGestureDevice::kTouchscreen);
     gesture_scroll_update.unique_touch_event_id = 2;
     gesture_scroll_update.data.scroll_update.delta_units =
         blink::WebGestureEvent::ScrollUnits::kPrecisePixels;
@@ -1406,7 +1406,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
         blink::WebGestureEvent::kGestureScrollEnd,
         blink::WebInputEvent::kNoModifiers,
         blink::WebInputEvent::GetStaticTimeStampForTests(),
-        blink::kWebGestureDeviceTouchscreen);
+        blink::WebGestureDevice::kTouchscreen);
     gesture_scroll_end.unique_touch_event_id = 3;
     gesture_scroll_end.data.scroll_end.delta_units =
         blink::WebGestureEvent::ScrollUnits::kPrecisePixels;
@@ -1851,7 +1851,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
   blink::WebGestureEvent gesture_event(
       blink::WebInputEvent::kGestureTapDown, blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests(),
-      blink::kWebGestureDeviceTouchscreen);
+      blink::WebGestureDevice::kTouchscreen);
   gesture_event.unique_touch_event_id = touch_event.unique_touch_event_id;
   router->RouteGestureEvent(root_rwhv, &gesture_event,
                             ui::LatencyInfo(ui::SourceEventType::TOUCH));
@@ -1918,7 +1918,7 @@ class SitePerProcessEmulatedTouchBrowserTest
                       kHitTestTolerance);
           EXPECT_NEAR(expected_position.y(), gesture_event.PositionInWidget().y,
                       kHitTestTolerance);
-          EXPECT_EQ(blink::kWebGestureDeviceTouchscreen,
+          EXPECT_EQ(blink::WebGestureDevice::kTouchscreen,
                     gesture_event.SourceDevice());
           // We expect all gesture events to have non-zero ids otherwise they
           // can force hit-testing in RenderWidgetHostInputEventRouter even
@@ -2204,7 +2204,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
         blink::WebInputEvent::kGestureTapDown,
         blink::WebInputEvent::kNoModifiers,
         blink::WebInputEvent::GetStaticTimeStampForTests(),
-        blink::kWebGestureDeviceTouchscreen);
+        blink::WebGestureDevice::kTouchscreen);
     gesture_event.unique_touch_event_id = touch_event.unique_touch_event_id;
     router->RouteGestureEvent(rwhv_root, &gesture_event,
                               ui::LatencyInfo(ui::SourceEventType::TOUCH));
@@ -2250,7 +2250,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
       blink::WebGestureEvent::kGestureScrollBegin,
       blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests(),
-      blink::kWebGestureDeviceTouchscreen);
+      blink::WebGestureDevice::kTouchscreen);
   gesture_scroll_begin.unique_touch_event_id = 1;
   gesture_scroll_begin.data.scroll_begin.delta_hint_units =
       blink::WebGestureEvent::ScrollUnits::kPrecisePixels;
@@ -2275,7 +2275,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
       blink::WebGestureEvent::kGestureScrollUpdate,
       blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests(),
-      blink::kWebGestureDeviceTouchscreen);
+      blink::WebGestureDevice::kTouchscreen);
   gesture_scroll_update.unique_touch_event_id = 1;
   gesture_scroll_update.data.scroll_update.delta_units =
       blink::WebGestureEvent::ScrollUnits::kPrecisePixels;
@@ -2316,7 +2316,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
       blink::WebGestureEvent::kGestureScrollEnd,
       blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests(),
-      blink::kWebGestureDeviceTouchscreen);
+      blink::WebGestureDevice::kTouchscreen);
   gesture_scroll_end.unique_touch_event_id = 1;
   gesture_scroll_end.data.scroll_end.delta_units =
       blink::WebGestureEvent::ScrollUnits::kPrecisePixels;
@@ -5137,7 +5137,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
       blink::WebInputEvent::kGestureDoubleTap,
       blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests(),
-      blink::kWebGestureDeviceTouchpad);
+      blink::WebGestureDevice::kTouchpad);
   double_tap_zoom.SetPositionInWidget(root_location);
   double_tap_zoom.SetPositionInScreen(point_in_screen);
   double_tap_zoom.data.tap.tap_count = 1;

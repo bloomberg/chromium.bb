@@ -1869,9 +1869,9 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, TouchpadPinchInvokesCustomZoom) {
         const gfx::Rect guest_rect = guest_contents->GetContainerBounds();
         const gfx::Point mouse_position(guest_rect.width() / 2,
                                         guest_rect.height() / 2);
-        content::SimulateGesturePinchSequence(guest_contents, mouse_position,
-                                              1.23,
-                                              blink::kWebGestureDeviceTouchpad);
+        content::SimulateGesturePinchSequence(
+            guest_contents, mouse_position, 1.23,
+            blink::WebGestureDevice::kTouchpad);
       },
       guest_contents);
 

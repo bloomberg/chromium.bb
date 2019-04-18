@@ -1243,9 +1243,9 @@ void RenderWidgetHostImpl::ForwardMouseEvent(const WebMouseEvent& mouse_event) {
   // VrController moves the pointer during the scrolling and fling. To ensure
   // that scroll performance is not affected we drop mouse events during
   // scroll/fling.
-  if (GetView()->IsInVR() &&
-      (is_in_gesture_scroll_[blink::kWebGestureDeviceTouchpad] ||
-       is_in_touchpad_gesture_fling_)) {
+  if (GetView()->IsInVR() && (is_in_gesture_scroll_[static_cast<int>(
+                                  blink::WebGestureDevice::kTouchpad)] ||
+                              is_in_touchpad_gesture_fling_)) {
     return;
   }
 
@@ -1358,7 +1358,7 @@ void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
 
   // The gesture events must have a known source.
   DCHECK_NE(gesture_event.SourceDevice(),
-            blink::WebGestureDevice::kWebGestureDeviceUninitialized);
+            blink::WebGestureDevice::kUninitialized);
 
   bool scroll_update_needs_wrapping = false;
   if (gesture_event.GetType() == blink::WebInputEvent::kGestureScrollBegin) {
@@ -1371,20 +1371,23 @@ void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
     // GSB and GSU events instead of sending them to the renderer and continues
     // to progress the fling. So, the renderer doesn't receive two GSB events
     // without any GSE in between.
-    DCHECK(!is_in_gesture_scroll_[gesture_event.SourceDevice()] ||
+    DCHECK(!is_in_gesture_scroll_[static_cast<int>(
+               gesture_event.SourceDevice())] ||
            FlingCancellationIsDeferred());
-    is_in_gesture_scroll_[gesture_event.SourceDevice()] = true;
+    is_in_gesture_scroll_[static_cast<int>(gesture_event.SourceDevice())] =
+        true;
   } else if (gesture_event.GetType() ==
              blink::WebInputEvent::kGestureScrollEnd) {
-    DCHECK(is_in_gesture_scroll_[gesture_event.SourceDevice()]);
-    is_in_gesture_scroll_[gesture_event.SourceDevice()] = false;
+    DCHECK(
+        is_in_gesture_scroll_[static_cast<int>(gesture_event.SourceDevice())]);
+    is_in_gesture_scroll_[static_cast<int>(gesture_event.SourceDevice())] =
+        false;
     is_in_touchpad_gesture_fling_ = false;
     if (view_)
       view_->set_is_currently_scrolling_viewport(false);
   } else if (gesture_event.GetType() ==
              blink::WebInputEvent::kGestureFlingStart) {
-    if (gesture_event.SourceDevice() ==
-        blink::WebGestureDevice::kWebGestureDeviceTouchpad) {
+    if (gesture_event.SourceDevice() == blink::WebGestureDevice::kTouchpad) {
       // TODO(sahel): Remove the VR specific case when motion events are used
       // for Android VR event processing and VR touchpad scrolling is handled by
       // sending wheel events rather than directly injecting Gesture Scroll
@@ -1392,14 +1395,16 @@ void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
       if (GetView()->IsInVR()) {
         // Regardless of the state of the wheel scroll latching
         // WebContentsEventForwarder doesn't inject any GSE events before GFS.
-        DCHECK(is_in_gesture_scroll_[gesture_event.SourceDevice()]);
+        DCHECK(is_in_gesture_scroll_[static_cast<int>(
+            gesture_event.SourceDevice())]);
 
         // Reset the is_in_gesture_scroll since while scrolling in Android VR
         // the first wheel event sent by the FlingController will cause a GSB
         // generation in MouseWheelEventQueue. This is because GSU events before
         // the GFS are directly injected to RWHI rather than being generated
         // from wheel events in MouseWheelEventQueue.
-        is_in_gesture_scroll_[gesture_event.SourceDevice()] = false;
+        is_in_gesture_scroll_[static_cast<int>(gesture_event.SourceDevice())] =
+            false;
       }
       // a GSB event is generated from the first wheel event in a sequence after
       // the event is acked as not consumed by the renderer. Sometimes when the
@@ -1412,7 +1417,8 @@ void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
 
       is_in_touchpad_gesture_fling_ = true;
     } else {
-      DCHECK(is_in_gesture_scroll_[gesture_event.SourceDevice()]);
+      DCHECK(is_in_gesture_scroll_[static_cast<int>(
+          gesture_event.SourceDevice())]);
 
       // The FlingController handles GFS with touchscreen source and sends GSU
       // events with inertial state to the renderer to progress the fling.
@@ -1428,7 +1434,7 @@ void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
   scroll_update_needs_wrapping =
       gesture_event.GetType() == blink::WebInputEvent::kGestureScrollUpdate &&
       gesture_event.resending_plugin_id != -1 &&
-      !is_in_gesture_scroll_[gesture_event.SourceDevice()];
+      !is_in_gesture_scroll_[static_cast<int>(gesture_event.SourceDevice())];
 
   // TODO(crbug.com/544782): Fix WebViewGuestScrollTest.TestGuestWheelScrolls-
   // Bubble to test the resending logic of gesture events.
@@ -2424,7 +2430,7 @@ void RenderWidgetHostImpl::OnAutoscrollFling(const gfx::Vector2dF& velocity) {
     // Send a GSB event with valid delta hints.
     WebGestureEvent scroll_begin = SyntheticWebGestureEventBuilder::Build(
         WebInputEvent::kGestureScrollBegin,
-        blink::kWebGestureDeviceSyntheticAutoscroll);
+        blink::WebGestureDevice::kSyntheticAutoscroll);
     scroll_begin.SetPositionInWidget(autoscroll_start_position_);
     scroll_begin.data.scroll_begin.delta_x_hint = velocity.x();
     scroll_begin.data.scroll_begin.delta_y_hint = velocity.y();
@@ -2436,7 +2442,7 @@ void RenderWidgetHostImpl::OnAutoscrollFling(const gfx::Vector2dF& velocity) {
 
   WebGestureEvent event = SyntheticWebGestureEventBuilder::Build(
       WebInputEvent::kGestureFlingStart,
-      blink::kWebGestureDeviceSyntheticAutoscroll);
+      blink::WebGestureDevice::kSyntheticAutoscroll);
   event.SetPositionInWidget(autoscroll_start_position_);
   event.data.fling_start.velocity_x = velocity.x();
   event.data.fling_start.velocity_y = velocity.y();
@@ -2454,7 +2460,7 @@ void RenderWidgetHostImpl::OnAutoscrollEnd() {
   sent_autoscroll_scroll_begin_ = false;
   WebGestureEvent cancel_event = SyntheticWebGestureEventBuilder::Build(
       WebInputEvent::kGestureFlingCancel,
-      blink::kWebGestureDeviceSyntheticAutoscroll);
+      blink::WebGestureDevice::kSyntheticAutoscroll);
   cancel_event.data.fling_cancel.prevent_boosting = true;
   cancel_event.SetPositionInWidget(autoscroll_start_position_);
 
@@ -2506,7 +2512,8 @@ void RenderWidgetHostImpl::OnImeCancelComposition() {
 }
 
 bool RenderWidgetHostImpl::IsWheelScrollInProgress() {
-  return is_in_gesture_scroll_[blink::kWebGestureDeviceTouchpad];
+  return is_in_gesture_scroll_[static_cast<int>(
+      blink::WebGestureDevice::kTouchpad)];
 }
 
 void RenderWidgetHostImpl::SetMouseCapture(bool capture) {

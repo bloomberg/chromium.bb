@@ -147,14 +147,14 @@ class RootScrollerTest : public testing::Test,
   WebCoalescedInputEvent GenerateTouchGestureEvent(WebInputEvent::Type type,
                                                    int delta_x = 0,
                                                    int delta_y = 0) {
-    return GenerateGestureEvent(type, kWebGestureDeviceTouchscreen, delta_x,
+    return GenerateGestureEvent(type, WebGestureDevice::kTouchscreen, delta_x,
                                 delta_y);
   }
 
   WebCoalescedInputEvent GenerateWheelGestureEvent(WebInputEvent::Type type,
                                                    int delta_x = 0,
                                                    int delta_y = 0) {
-    return GenerateGestureEvent(type, kWebGestureDeviceTouchpad, delta_x,
+    return GenerateGestureEvent(type, WebGestureDevice::kTouchpad, delta_x,
                                 delta_y);
   }
 
