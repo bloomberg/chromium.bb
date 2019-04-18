@@ -858,6 +858,11 @@ class WKBasedNavigationManagerDetachedModeTest
     ASSERT_EQ(url2_, manager_->GetItemAtIndex(2)->GetURL());
   }
 
+  NSString* CreateRedirectUrlForWKList(GURL url) {
+    GURL redirect_url = wk_navigation_util::CreateRedirectUrl(url);
+    return base::SysUTF8ToNSString(redirect_url.spec());
+  }
+
   GURL url0_;
   GURL url1_;
   GURL url2_;
@@ -1000,6 +1005,18 @@ TEST_F(WKBasedNavigationManagerDetachedModeTest, LoadURLWithParams) {
 
   histogram_tester_.ExpectTotalCount(kRestoreNavigationItemCount, 1);
   histogram_tester_.ExpectBucketCount(kRestoreNavigationItemCount, 3, 1);
+}
+
+// Tests that detaching placeholder urls are cleaned before being cached.
+TEST_F(WKBasedNavigationManagerDetachedModeTest, CachedPlaceholders) {
+  [mock_wk_list_ setCurrentURL:CreateRedirectUrlForWKList(url1_)
+                  backListURLs:@[ CreateRedirectUrlForWKList(url0_) ]
+               forwardListURLs:@[ CreateRedirectUrlForWKList(url2_) ]];
+  manager_->DetachFromWebView();
+
+  EXPECT_EQ(url0_, manager_->GetNavigationItemImplAtIndex(0)->GetURL());
+  EXPECT_EQ(url1_, manager_->GetNavigationItemImplAtIndex(1)->GetURL());
+  EXPECT_EQ(url2_, manager_->GetNavigationItemImplAtIndex(2)->GetURL());
 }
 
 }  // namespace web
