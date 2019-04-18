@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/signin/core/browser/consistency_cookie_manager_base.h"
+#include "components/signin/core/browser/consistency_cookie_manager_android.h"
 
 #include <memory>
 #include <string>
@@ -49,19 +49,9 @@ class MockCookieManager
            network::mojom::CookieManager::SetCanonicalCookieCallback callback));
 };
 
-class FakeConsistencyCookieManager
-    : public signin::ConsistencyCookieManagerBase {
+class ConsistencyCookieManagerAndroidTest : public ::testing::Test {
  public:
-  FakeConsistencyCookieManager(SigninClient* signin_client,
-                               AccountReconcilor* reconcilor)
-      : ConsistencyCookieManagerBase(signin_client, reconcilor) {
-    UpdateCookie();
-  }
-};
-
-class ConsistencyCookieManagerTest : public ::testing::Test {
- public:
-  ConsistencyCookieManagerTest()
+  ConsistencyCookieManagerAndroidTest()
       : signin_client_(&pref_service_),
         identity_test_env_(/*test_url_loader_factory=*/nullptr,
                            &pref_service_,
@@ -75,12 +65,10 @@ class ConsistencyCookieManagerTest : public ::testing::Test {
     reconcilor_ = std::make_unique<AccountReconcilor>(
         identity_test_env_.identity_manager(), &signin_client_,
         std::make_unique<AccountReconcilorDelegate>());
-    reconcilor_->Initialize(/*start_reconcile_if_tokens_available=*/false);
   }
 
-  ~ConsistencyCookieManagerTest() override { reconcilor_->Shutdown(); }
+  ~ConsistencyCookieManagerAndroidTest() override { reconcilor_->Shutdown(); }
 
-  SigninClient* signin_client() { return &signin_client_; }
   AccountReconcilor* reconcilor() { return reconcilor_.get(); }
 
   MockCookieManager* mock_cookie_manager() {
@@ -102,12 +90,10 @@ class ConsistencyCookieManagerTest : public ::testing::Test {
 };
 
 // Tests that the cookie is updated when the account reconcilor state changes.
-TEST_F(ConsistencyCookieManagerTest, AccountReconcilorState) {
+TEST_F(ConsistencyCookieManagerAndroidTest, AccountReconcilorState) {
   // AccountReconcilor::Initialize() creates the ConsistencyCookieManager.
   mock_cookie_manager()->ExpectSetCookieCall("Consistent");
-  reconcilor()->SetConsistencyCookieManager(
-      std::make_unique<FakeConsistencyCookieManager>(signin_client(),
-                                                     reconcilor()));
+  reconcilor()->Initialize(/*start_reconcile_if_tokens_available=*/false);
   testing::Mock::VerifyAndClearExpectations(mock_cookie_manager());
   ASSERT_EQ(signin_metrics::ACCOUNT_RECONCILOR_OK, reconcilor()->GetState());
 
