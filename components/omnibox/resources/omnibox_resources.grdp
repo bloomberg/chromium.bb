@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This part is included by /components/omnibox_strings.grdp so its resources can be per-language. -->
+<grit-part>
+  <if expr="lang == 'de'">
+    <include name="IDR_OMNIBOX_PEDAL_CONCEPTS" file="omnibox/resources/omnibox_pedal_concepts_de.json" type="BINDATA" compress="gzip" />
+  </if>
+  <if expr="lang == 'en'">
+    <include name="IDR_OMNIBOX_PEDAL_CONCEPTS" file="omnibox/resources/omnibox_pedal_concepts_en.json" type="BINDATA" compress="gzip" />
+  </if>
+  <if expr="lang == 'fr'">
+    <include name="IDR_OMNIBOX_PEDAL_CONCEPTS" file="omnibox/resources/omnibox_pedal_concepts_fr.json" type="BINDATA" compress="gzip" />
+  </if>
+  <if expr="lang == 'ja'">
+    <include name="IDR_OMNIBOX_PEDAL_CONCEPTS" file="omnibox/resources/omnibox_pedal_concepts_ja.json" type="BINDATA" compress="gzip" />
+  </if>
+  <if expr="lang == 'zh-CN'">
+    <include name="IDR_OMNIBOX_PEDAL_CONCEPTS" file="omnibox/resources/omnibox_pedal_concepts_zh-CN.json" type="BINDATA" compress="gzip" />
+  </if>
+  <if expr="not lang in ['de', 'en', 'fr', 'ja', 'zh-CN']">
+    <!-- Fall back to English for unsupported languages. -->
+    <include name="IDR_OMNIBOX_PEDAL_CONCEPTS" file="omnibox/resources/omnibox_pedal_concepts_en.json" type="BINDATA" compress="gzip" />
+  </if>
+</grit-part>

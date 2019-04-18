@@ -193,7 +193,8 @@
     "messages": [15070],
   },
   "components/components_strings.grd": {
-    "messages": [15100],
+    "includes": [15100],
+    "messages": [15110],
   },
   "components/policy/resources/policy_templates.grd": {
     "structures": [17200],
