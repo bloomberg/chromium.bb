@@ -473,9 +473,11 @@ CookiePriority DBCookiePriorityToCookiePriority(DBCookiePriority value) {
 
 // Possible values for the 'samesite' column
 enum DBCookieSameSite {
+  kCookieSameSiteUnspecified = -1,
   kCookieSameSiteNoRestriction = 0,
   kCookieSameSiteLax = 1,
   kCookieSameSiteStrict = 2,
+  kCookieSameSiteExtended = 3
 };
 
 DBCookieSameSite CookieSameSiteToDBCookieSameSite(CookieSameSite value) {
@@ -486,6 +488,10 @@ DBCookieSameSite CookieSameSiteToDBCookieSameSite(CookieSameSite value) {
       return kCookieSameSiteLax;
     case CookieSameSite::STRICT_MODE:
       return kCookieSameSiteStrict;
+    case CookieSameSite::EXTENDED_MODE:
+      return kCookieSameSiteExtended;
+    case CookieSameSite::UNSPECIFIED:
+      return kCookieSameSiteUnspecified;
   }
 
   NOTREACHED();
@@ -500,6 +506,10 @@ CookieSameSite DBCookieSameSiteToCookieSameSite(DBCookieSameSite value) {
       return CookieSameSite::LAX_MODE;
     case kCookieSameSiteStrict:
       return CookieSameSite::STRICT_MODE;
+    case kCookieSameSiteExtended:
+      return CookieSameSite::EXTENDED_MODE;
+    case kCookieSameSiteUnspecified:
+      return CookieSameSite::UNSPECIFIED;
   }
 
   NOTREACHED();

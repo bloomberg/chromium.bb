@@ -18,6 +18,8 @@ const char kPriorityHigh[] = "high";
 const char kSameSiteLax[] = "lax";
 const char kSameSiteStrict[] = "strict";
 const char kSameSiteNone[] = "none";
+const char kSameSiteExtended[] = "extended";
+const char kSameSiteUnspecified[] = "unspecified";
 
 }  // namespace
 
@@ -56,6 +58,10 @@ std::string CookieSameSiteToString(CookieSameSite same_site) {
       return kSameSiteStrict;
     case CookieSameSite::NO_RESTRICTION:
       return kSameSiteNone;
+    case CookieSameSite::EXTENDED_MODE:
+      return kSameSiteExtended;
+    case CookieSameSite::UNSPECIFIED:
+      return kSameSiteUnspecified;
   }
   return "INVALID";
 }

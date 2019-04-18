@@ -21,7 +21,14 @@ enum CookiePriority {
 // See https://tools.ietf.org/html/draft-ietf-httpbis-cookie-same-site-00
 // and https://tools.ietf.org/html/draft-ietf-httpbis-rfc6265bis for
 // information about same site cookie restrictions.
-enum class CookieSameSite { NO_RESTRICTION = 0, LAX_MODE = 1, STRICT_MODE = 2 };
+// Note: Don't renumber, as these values are persisted to a database.
+enum class CookieSameSite {
+  UNSPECIFIED = -1,
+  NO_RESTRICTION = 0,
+  LAX_MODE = 1,
+  STRICT_MODE = 2,
+  EXTENDED_MODE = 3
+};
 
 // Returns the Set-Cookie header priority token corresponding to |priority|.
 //
