@@ -213,6 +213,7 @@ source_set("browser_impl") {
     "//ios/chrome/browser/open_from_clipboard",
     "//ios/chrome/browser/prefs",
     "//ios/chrome/browser/prefs:browser_prefs",
+    "//ios/chrome/browser/send_tab_to_self",
     "//ios/chrome/browser/translate",
     "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/update_client",

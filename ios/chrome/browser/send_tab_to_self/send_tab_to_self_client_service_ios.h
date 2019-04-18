@@ -45,6 +45,9 @@ class SendTabToSelfClientServiceIOS : public KeyedService,
   // Owned by the SendTabToSelfSyncService which should outlive this class
   SendTabToSelfModel* model_;
 
+  // The current browser state. Must outlive this object.
+  ios::ChromeBrowserState* browser_state_;
+
   DISALLOW_COPY_AND_ASSIGN(SendTabToSelfClientServiceIOS);
 };
 
