@@ -49,6 +49,7 @@ public class ExploreSitesCategoryCardView extends LinearLayout {
             mModelChangeProcessors;
     private ExploreSitesCategory mCategory;
     private int mCategoryCardIndex;
+    private int mTileViewLayout;
 
     public View getTileViewAt(int tilePosition) {
         return mTileView.getChildAt(tilePosition);
@@ -63,6 +64,10 @@ public class ExploreSitesCategoryCardView extends LinearLayout {
             }
         }
         return defaultIndex;
+    }
+
+    public void setTileResource(int tileResource) {
+        mTileViewLayout = tileResource;
     }
 
     private class CategoryCardInteractionDelegate
@@ -214,7 +219,7 @@ public class ExploreSitesCategoryCardView extends LinearLayout {
         if (mTileView.getChildCount() < tileMax) {
             for (int i = mTileView.getChildCount(); i < tileMax; i++) {
                 mTileView.addView(LayoutInflater.from(getContext())
-                                          .inflate(R.layout.explore_sites_tile_view, mTileView,
+                                          .inflate(mTileViewLayout, mTileView,
                                                   /* attachToRoot = */ false));
             }
         }
