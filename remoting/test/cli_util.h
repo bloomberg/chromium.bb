@@ -37,6 +37,10 @@ void RunCommandOptionsLoop(const std::vector<CommandOption>& options);
 // Reads a newline-terminated string from stdin.
 std::string ReadString();
 
+// Reads a newline-terminated string from stdin and returns true iff the string
+// is `Y` or `y`, or the string is empty and |default_value| is true.
+bool ReadYNBool(bool default_value = false);
+
 // Read the value of |switch_name| from command line if it exists, otherwise
 // read from stdin.
 std::string ReadStringFromCommandLineOrStdin(const std::string& switch_name,
