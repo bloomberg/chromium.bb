@@ -744,7 +744,6 @@ bool FuchsiaVideoDecoder::InitializeInputBuffers(
 
   auto settings = fidl::Clone(constraints.default_settings());
   settings.set_buffer_lifetime_ordinal(input_buffer_lifetime_ordinal_);
-  settings.set_packet_count_for_client(0);
   codec_->SetInputBufferSettings(fidl::Clone(settings));
 
   int total_buffers =
