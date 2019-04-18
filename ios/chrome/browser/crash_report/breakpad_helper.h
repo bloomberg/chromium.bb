@@ -21,8 +21,12 @@ void SetEnabled(bool enabled);
 // Enable/Disable uploading crash reports.
 void SetUploadingEnabled(bool enabled);
 
-// Returns true if uploading crash reports is enabled.
-bool IsUploadingEnabled();
+// Sets the user preferences related to Breakpad and cache them to be used on
+// next startup to check if safe mode must be started.
+void SetUserEnabledUploading(bool enabled);
+
+// Returns true if uploading crash reports is enabled in the settings.
+bool UserEnabledUploading();
 
 // Cleans up all stored crash reports.
 void CleanupCrashReports();

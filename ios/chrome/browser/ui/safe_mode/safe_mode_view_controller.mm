@@ -79,7 +79,7 @@ const NSTimeInterval kUploadTotalTime = 5;
   // If uploading is enabled and more than one report has stacked up, then we
   // assume that the app may be in a state that is preventing crash report
   // uploads before crashing again.
-  return breakpad_helper::IsUploadingEnabled() &&
+  return breakpad_helper::UserEnabledUploading() &&
          breakpad_helper::GetCrashReportCount() > 1;
 }
 

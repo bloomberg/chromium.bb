@@ -265,6 +265,7 @@ using metrics_mediator::kAppEnteredBackgroundDateKey;
 }
 
 - (void)setBreakpadEnabled:(BOOL)enabled withUploading:(BOOL)allowUploading {
+  breakpad_helper::SetUserEnabledUploading(enabled);
   if (enabled) {
     breakpad_helper::SetEnabled(true);
 
