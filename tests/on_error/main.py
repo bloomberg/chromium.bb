@@ -19,6 +19,11 @@ from utils import on_error
 
 # third_party/
 from depot_tools import fix_encoding
+import urllib3
+
+
+# This is not useful here, since it's accessing a local host for the test.
+urllib3.disable_warnings()
 
 
 def run_shell_out(url, mode):

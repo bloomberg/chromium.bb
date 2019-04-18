@@ -23,6 +23,7 @@ import urlparse
 import requests
 from requests import adapters
 from requests import structures
+import urllib3
 
 from utils import authenticators
 from utils import oauth
@@ -487,7 +488,7 @@ class HttpService(object):
     # Prepare headers.
     headers = get_case_insensitive_dict(headers or {})
     if body is not None:
-      headers['Content-Length'] = len(body)
+      headers['Content-Length'] = str(len(body))
       if content_type:
         headers['Content-Type'] = content_type
 
@@ -742,8 +743,8 @@ class RequestsLibEngine(object):
       socket.timeout, ssl.SSLError,
       requests.Timeout,
       requests.ConnectionError,
-      requests.packages.urllib3.exceptions.ProtocolError,
-      requests.packages.urllib3.exceptions.TimeoutError)
+      urllib3.exceptions.ProtocolError,
+      urllib3.exceptions.TimeoutError)
 
   def __init__(self):
     super(RequestsLibEngine, self).__init__()
