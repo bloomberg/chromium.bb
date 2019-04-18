@@ -34,7 +34,8 @@ class PrefsTabHelper : public content::NotificationObserver,
  public:
   ~PrefsTabHelper() override;
 
-  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
+                                   const std::string& locale);
   static void GetServiceInstance();
 
  protected:

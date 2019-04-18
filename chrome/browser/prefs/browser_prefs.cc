@@ -636,7 +636,8 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
 }
 
 // Register prefs applicable to all profiles.
-void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
+void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
+                          const std::string& locale) {
   TRACE_EVENT0("browser", "chrome::RegisterProfilePrefs");
   SCOPED_UMA_HISTOGRAM_TIMER("Settings.RegisterProfilePrefsTime");
   // User prefs. Please keep this list alphabetized.
@@ -680,7 +681,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   policy::DeveloperToolsPolicyHandler::RegisterProfilePrefs(registry);
   policy::URLBlacklistManager::RegisterProfilePrefs(registry);
   PrefProxyConfigTrackerImpl::RegisterProfilePrefs(registry);
-  PrefsTabHelper::RegisterProfilePrefs(registry);
+  PrefsTabHelper::RegisterProfilePrefs(registry, locale);
   PreviewsLitePageDecider::RegisterProfilePrefs(registry);
   Profile::RegisterProfilePrefs(registry);
   ProfileImpl::RegisterProfilePrefs(registry);
@@ -888,7 +889,12 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 }
 
 void RegisterUserProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
-  RegisterProfilePrefs(registry);
+  RegisterUserProfilePrefs(registry, g_browser_process->GetApplicationLocale());
+}
+
+void RegisterUserProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
+                              const std::string& locale) {
+  RegisterProfilePrefs(registry, locale);
 
 #if defined(OS_ANDROID)
   ::android::RegisterUserProfilePrefs(registry);
@@ -901,7 +907,7 @@ void RegisterScreenshotPrefs(PrefRegistrySimple* registry) {
 
 #if defined(OS_CHROMEOS)
 void RegisterLoginProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
-  RegisterProfilePrefs(registry);
+  RegisterProfilePrefs(registry, g_browser_process->GetApplicationLocale());
 }
 
 #if BUILDFLAG(ENABLE_CROS_ASSISTANT)
