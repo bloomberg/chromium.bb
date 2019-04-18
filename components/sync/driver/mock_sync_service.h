@@ -46,7 +46,6 @@ class MockSyncService : public SyncService {
   MOCK_CONST_METHOD0(IsSetupInProgress, bool());
 
   MOCK_CONST_METHOD0(GetRegisteredDataTypes, ModelTypeSet());
-  MOCK_CONST_METHOD0(GetForcedDataTypes, ModelTypeSet());
   MOCK_CONST_METHOD0(GetPreferredDataTypes, ModelTypeSet());
   MOCK_CONST_METHOD0(GetActiveDataTypes, ModelTypeSet());
 

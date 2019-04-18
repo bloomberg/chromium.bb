@@ -311,9 +311,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientUssSyncTest, DisableEnable) {
   ASSERT_EQ(1U, model1->db().metadata_count());
 
   // Disable PREFERENCES.
-  syncer::ModelTypeSet types = syncer::UserSelectableTypes();
-  types.Remove(syncer::PREFERENCES);
-  GetSyncService(0)->GetUserSettings()->SetChosenDataTypes(false, types);
+  syncer::UserSelectableTypeSet types = syncer::UserSelectableTypeSet::All();
+  types.Remove(syncer::UserSelectableType::kPreferences);
+  GetSyncService(0)->GetUserSettings()->SetSelectedTypes(false, types);
 
   // Wait for it to take effect and remove the metadata.
   ASSERT_TRUE(MetadataAbsentChecker(model0, kKey1).Wait());
@@ -324,8 +324,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientUssSyncTest, DisableEnable) {
   ASSERT_EQ(1U, model1->db().metadata_count());
 
   // Re-enable PREFERENCES.
-  GetSyncService(0)->GetUserSettings()->SetChosenDataTypes(
-      true, syncer::UserSelectableTypes());
+  GetSyncService(0)->GetUserSettings()->SetSelectedTypes(
+      true, syncer::UserSelectableTypeSet::All());
 
   // Wait for metadata to be re-added.
   ASSERT_TRUE(MetadataPresentChecker(model0, kKey1).Wait());

@@ -413,8 +413,8 @@ TEST_F(ProfileSyncServiceStartupTest, DisableSync) {
 TEST_F(ProfileSyncServiceStartupTest, StartRecoverDatatypePrefs) {
   // Clear the datatype preference fields (simulating bug 154940).
   pref_service()->ClearPref(prefs::kSyncKeepEverythingSynced);
-  for (ModelType type : UserSelectableTypes()) {
-    pref_service()->ClearPref(SyncPrefs::GetPrefNameForDataType(type));
+  for (UserSelectableType type : UserSelectableTypeSet::All()) {
+    pref_service()->ClearPref(SyncPrefs::GetPrefNameForTypeForTesting(type));
   }
 
   sync_prefs()->SetFirstSetupComplete();
@@ -437,10 +437,10 @@ TEST_F(ProfileSyncServiceStartupTest, StartRecoverDatatypePrefs) {
 TEST_F(ProfileSyncServiceStartupTest, StartDontRecoverDatatypePrefs) {
   // Explicitly set Keep Everything Synced to false and have only bookmarks
   // enabled.
-  sync_prefs()->SetDataTypesConfiguration(
+  sync_prefs()->SetSelectedTypes(
       /*keep_everything_synced=*/false,
-      /*choosable_types=*/UserSelectableTypes(),
-      /*chosen_types=*/{BOOKMARKS});
+      /*choosable_types=*/UserSelectableTypeSet::All(),
+      /*chosen_types=*/{UserSelectableType::kBookmarks});
 
   sync_prefs()->SetFirstSetupComplete();
   CreateSyncService(ProfileSyncService::MANUAL_START);

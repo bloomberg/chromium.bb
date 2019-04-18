@@ -81,8 +81,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientPollingSyncTest, ShouldPollOnStartup) {
   // clear its data even with KEEP_DATA, which means we'd always send a regular
   // GetUpdates request on starting Sync again, and so we'd have no need for a
   // poll.
-  GetClient(0)->DisableSyncForDatatype(syncer::AUTOFILL);
-  GetClient(1)->DisableSyncForDatatype(syncer::AUTOFILL);
+  GetClient(0)->DisableSyncForType(syncer::UserSelectableType::kAutofill);
+  GetClient(1)->DisableSyncForType(syncer::UserSelectableType::kAutofill);
   // TODO(crbug.com/890737): Once AUTOFILL_WALLET_DATA gets properly disabled
   // based on the pref, we can just disable that instead of all of AUTOFILL:
   // autofill::prefs::SetPaymentsIntegrationEnabled(GetProfile(0)->GetPrefs(),

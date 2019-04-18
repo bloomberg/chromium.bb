@@ -42,6 +42,7 @@
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/base/passphrase_enums.h"
+#include "components/sync/base/user_selectable_type.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_service_utils.h"
 #include "components/sync/driver/sync_user_settings.h"
@@ -84,7 +85,7 @@ struct SyncConfigInfo {
 
   bool encrypt_all;
   bool sync_everything;
-  syncer::ModelTypeSet data_types;
+  syncer::UserSelectableTypeSet selected_types;
   bool payments_integration_enabled;
   std::string passphrase;
   bool set_new_passphrase;
@@ -119,18 +120,16 @@ bool GetConfiguration(const std::string& json, SyncConfigInfo* config) {
     return false;
   }
 
-  syncer::ModelTypeNameMap type_names = syncer::GetUserSelectableTypeNameMap();
-
-  for (syncer::ModelTypeNameMap::const_iterator it = type_names.begin();
-       it != type_names.end(); ++it) {
-    std::string key_name = it->second + std::string("Synced");
+  for (syncer::UserSelectableType type : syncer::UserSelectableTypeSet::All()) {
+    std::string key_name =
+        syncer::GetUserSelectableTypeName(type) + std::string("Synced");
     bool sync_value;
     if (!result->GetBoolean(key_name, &sync_value)) {
       DLOG(ERROR) << "GetConfiguration() not passed a value for " << key_name;
       return false;
     }
     if (sync_value)
-      config->data_types.Put(it->first);
+      config->selected_types.Put(type);
   }
 
   // Encryption settings.
@@ -497,8 +496,8 @@ void PeopleHandler::HandleSetDatatypes(const base::ListValue* args) {
     return;
   }
 
-  service->GetUserSettings()->SetChosenDataTypes(configuration.sync_everything,
-                                                 configuration.data_types);
+  service->GetUserSettings()->SetSelectedTypes(configuration.sync_everything,
+                                               configuration.selected_types);
 
   // Choosing data types to sync never fails.
   ResolveJavascriptCallback(*callback_id, base::Value(kConfigurePageStatus));
@@ -1065,41 +1064,41 @@ void PeopleHandler::PushSyncPrefs() {
   //
   base::DictionaryValue args;
 
+  syncer::SyncUserSettings* sync_user_settings = service->GetUserSettings();
   // Tell the UI layer which data types are registered/enabled by the user.
-  const syncer::ModelTypeSet registered_types =
-      service->GetRegisteredDataTypes();
-  const syncer::ModelTypeSet preferred_types = service->GetPreferredDataTypes();
-  const syncer::ModelTypeSet enforced_types = service->GetForcedDataTypes();
-  syncer::ModelTypeNameMap type_names = syncer::GetUserSelectableTypeNameMap();
-  for (syncer::ModelTypeNameMap::const_iterator it = type_names.begin();
-       it != type_names.end(); ++it) {
-    syncer::ModelType sync_type = it->first;
-    const std::string key_name = it->second;
-    args.SetBoolean(key_name + "Registered", registered_types.Has(sync_type));
-    args.SetBoolean(key_name + "Synced", preferred_types.Has(sync_type));
-    args.SetBoolean(key_name + "Enforced", enforced_types.Has(sync_type));
+  const syncer::UserSelectableTypeSet registered_types =
+      sync_user_settings->GetRegisteredSelectableTypes();
+  const syncer::UserSelectableTypeSet selected_types =
+      sync_user_settings->GetSelectedTypes();
+  const syncer::UserSelectableTypeSet enforced_types =
+      sync_user_settings->GetForcedTypes();
+  for (syncer::UserSelectableType type : syncer::UserSelectableTypeSet::All()) {
+    const std::string type_name = syncer::GetUserSelectableTypeName(type);
+    args.SetBoolean(type_name + "Registered", registered_types.Has(type));
+    args.SetBoolean(type_name + "Synced", selected_types.Has(type));
+    args.SetBoolean(type_name + "Enforced", enforced_types.Has(type));
   }
   args.SetBoolean("syncAllDataTypes",
-                  service->GetUserSettings()->IsSyncEverythingEnabled());
+                  sync_user_settings->IsSyncEverythingEnabled());
   args.SetBoolean(
       "paymentsIntegrationEnabled",
       autofill::prefs::IsPaymentsIntegrationEnabled(profile_->GetPrefs()));
   args.SetBoolean("encryptAllData",
-                  service->GetUserSettings()->IsEncryptEverythingEnabled());
+                  sync_user_settings->IsEncryptEverythingEnabled());
   args.SetBoolean("encryptAllDataAllowed",
-                  service->GetUserSettings()->IsEncryptEverythingAllowed());
+                  sync_user_settings->IsEncryptEverythingAllowed());
 
   // We call IsPassphraseRequired() here, instead of calling
   // IsPassphraseRequiredForDecryption(), because we want to show the passphrase
   // UI even if no encrypted data types are enabled.
   args.SetBoolean("passphraseRequired",
-                  service->GetUserSettings()->IsPassphraseRequired());
+                  sync_user_settings->IsPassphraseRequired());
 
   syncer::PassphraseType passphrase_type =
-      service->GetUserSettings()->GetPassphraseType();
+      sync_user_settings->GetPassphraseType();
   if (syncer::IsExplicitPassphrase(passphrase_type)) {
     base::Time passphrase_time =
-        service->GetUserSettings()->GetExplicitPassphraseTime();
+        sync_user_settings->GetExplicitPassphraseTime();
     args.SetString("enterPassphraseBody",
                    GetEnterPassphraseBody(passphrase_type, passphrase_time));
     args.SetString("fullEncryptionBody",

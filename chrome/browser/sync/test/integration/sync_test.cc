@@ -734,14 +734,17 @@ void SyncTest::SetupSyncInternal(bool wait_for_completion) {
 
     if (encryption_passphrase_provided) {
       CHECK(client->SetupSyncWithEncryptionPassphraseNoWaitForCompletion(
-          syncer::UserSelectableTypes(), encryption_passphrase_it->second))
+          syncer::UserSelectableTypeSet::All(),
+          encryption_passphrase_it->second))
           << "SetupSync() failed.";
     } else if (decryption_passphrase_provided) {
       CHECK(client->SetupSyncWithDecryptionPassphraseNoWaitForCompletion(
-          syncer::UserSelectableTypes(), decryption_passphrase_it->second))
+          syncer::UserSelectableTypeSet::All(),
+          decryption_passphrase_it->second))
           << "SetupSync() failed.";
     } else {
-      CHECK(client->SetupSyncNoWaitForCompletion(syncer::UserSelectableTypes()))
+      CHECK(client->SetupSyncNoWaitForCompletion(
+          syncer::UserSelectableTypeSet::All()))
           << "SetupSync() failed.";
     }
     if (wait_for_completion) {
@@ -983,11 +986,11 @@ bool SyncTest::EnableEncryption(int index) {
 
   // In order to kick off the encryption we have to reconfigure. Just grab the
   // currently synced types and use them.
-  syncer::ModelTypeSet synced_datatypes =
-      service->GetUserSettings()->GetChosenDataTypes();
-  bool sync_everything = (synced_datatypes == syncer::UserSelectableTypes());
-  service->GetUserSettings()->SetChosenDataTypes(sync_everything,
-                                                 synced_datatypes);
+  syncer::UserSelectableTypeSet selected_types =
+      service->GetUserSettings()->GetSelectedTypes();
+  bool sync_everything =
+      (selected_types == syncer::UserSelectableTypeSet::All());
+  service->GetUserSettings()->SetSelectedTypes(sync_everything, selected_types);
 
   return AwaitEncryptionComplete(index);
 }

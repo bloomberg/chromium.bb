@@ -84,6 +84,8 @@ jumbo_static_library("base") {
     "base/unrecoverable_error_handler.h",
     "base/unrecoverable_error_info.cc",
     "base/unrecoverable_error_info.h",
+    "base/user_selectable_type.cc",
+    "base/user_selectable_type.h",
     "base/weak_handle.cc",
     "base/weak_handle.h",
   ]

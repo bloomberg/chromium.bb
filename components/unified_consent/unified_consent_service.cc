@@ -10,7 +10,7 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/pref_registry/pref_registry_syncable.h"
-#include "components/sync/base/model_type.h"
+#include "components/sync/base/user_selectable_type.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
 #include "components/sync_preferences/pref_service_syncable.h"
@@ -187,8 +187,8 @@ void UnifiedConsentService::UpdateSettingsForMigration() {
   // consent.
   bool url_keyed_metrics_enabled =
       sync_service_->IsSyncFeatureEnabled() &&
-      sync_service_->GetUserSettings()->GetChosenDataTypes().Has(
-          syncer::TYPED_URLS) &&
+      sync_service_->GetUserSettings()->GetSelectedTypes().Has(
+          syncer::UserSelectableType::kHistory) &&
       !sync_service_->GetUserSettings()->IsUsingSecondaryPassphrase();
   SetUrlKeyedAnonymizedDataCollectionEnabled(url_keyed_metrics_enabled);
 }

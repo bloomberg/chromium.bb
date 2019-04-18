@@ -123,7 +123,6 @@ class SyncSetupService : public KeyedService {
   void SetSyncEnabledWithoutChangingDatatypes(bool sync_enabled);
 
   syncer::SyncService* const sync_service_;
-  syncer::ModelTypeSet user_selectable_types_;
 
   // Prevents Sync from running until configuration is complete.
   std::unique_ptr<syncer::SyncSetupInProgressHandle> sync_blocker_;

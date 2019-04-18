@@ -443,19 +443,6 @@ ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
   return UNSPECIFIED;
 }
 
-ModelTypeNameMap GetUserSelectableTypeNameMap() {
-  ModelTypeNameMap type_names;
-  ModelTypeSet type_set = UserSelectableTypes();
-  ModelTypeSet::Iterator it = type_set.begin();
-  DCHECK_EQ(base::size(kUserSelectableDataTypeNames), type_set.Size());
-  for (size_t i = 0;
-       i < base::size(kUserSelectableDataTypeNames) && it != type_set.end();
-       ++i, ++it) {
-    type_names[*it] = kUserSelectableDataTypeNames[i];
-  }
-  return type_names;
-}
-
 ModelTypeSet EncryptableUserTypes() {
   static_assert(44 == ModelType::NUM_ENTRIES,
                 "If adding an unencryptable type, remove from "

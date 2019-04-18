@@ -106,7 +106,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientCustomPassphraseSyncTest,
   // Set up a new sync client.
   ASSERT_TRUE(
       GetClient(kDecryptingClientId)
-          ->SetupSyncNoWaitForCompletion(syncer::UserSelectableTypes()));
+          ->SetupSyncNoWaitForCompletion(syncer::UserSelectableTypeSet::All()));
   ASSERT_TRUE(
       PassphraseRequiredChecker(GetSyncService(kDecryptingClientId)).Wait());
 

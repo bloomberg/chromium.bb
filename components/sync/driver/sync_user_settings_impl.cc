@@ -12,33 +12,12 @@ namespace syncer {
 
 namespace {
 
-ModelTypeSet ResolvePrefGroups(ModelTypeSet chosen_types) {
-  DCHECK(UserSelectableTypes().HasAll(chosen_types));
-  ModelTypeSet types_with_groups = chosen_types;
-  if (chosen_types.Has(APPS)) {
-    types_with_groups.PutAll({APP_SETTINGS, APP_LIST, ARC_PACKAGE});
+ModelTypeSet ResolvePreferredTypes(UserSelectableTypeSet selected_types) {
+  ModelTypeSet preferred_types;
+  for (UserSelectableType type : selected_types) {
+    preferred_types.PutAll(UserSelectableTypeToAllModelTypes(type));
   }
-  if (chosen_types.Has(AUTOFILL)) {
-    types_with_groups.PutAll(
-        {AUTOFILL_PROFILE, AUTOFILL_WALLET_DATA, AUTOFILL_WALLET_METADATA});
-  }
-  if (chosen_types.Has(EXTENSIONS)) {
-    types_with_groups.Put(EXTENSION_SETTINGS);
-  }
-  if (chosen_types.Has(PREFERENCES)) {
-    types_with_groups.PutAll(
-        {DICTIONARY, PRIORITY_PREFERENCES, SEARCH_ENGINES});
-  }
-  if (chosen_types.Has(TYPED_URLS)) {
-    types_with_groups.PutAll({HISTORY_DELETE_DIRECTIVES, SESSIONS,
-                              FAVICON_IMAGES, FAVICON_TRACKING, USER_EVENTS});
-  }
-  if (chosen_types.Has(PROXY_TABS)) {
-    types_with_groups.PutAll(
-        {SESSIONS, FAVICON_IMAGES, FAVICON_TRACKING, SEND_TAB_TO_SELF});
-  }
-
-  return types_with_groups;
+  return preferred_types;
 }
 
 }  // namespace
@@ -46,14 +25,14 @@ ModelTypeSet ResolvePrefGroups(ModelTypeSet chosen_types) {
 SyncUserSettingsImpl::SyncUserSettingsImpl(
     SyncServiceCrypto* crypto,
     SyncPrefs* prefs,
-    ModelTypeSet registered_types,
-    const base::RepeatingCallback<void(bool)>& sync_allowed_by_platform_changed,
-    const base::RepeatingCallback<bool()>& is_encrypt_everything_allowed)
+    const SyncTypePreferenceProvider* preference_provider,
+    ModelTypeSet registered_model_types,
+    const base::RepeatingCallback<void(bool)>& sync_allowed_by_platform_changed)
     : crypto_(crypto),
       prefs_(prefs),
-      registered_types_(registered_types),
-      sync_allowed_by_platform_changed_cb_(sync_allowed_by_platform_changed),
-      is_encrypt_everything_allowed_cb_(is_encrypt_everything_allowed) {
+      preference_provider_(preference_provider),
+      registered_model_types_(registered_model_types),
+      sync_allowed_by_platform_changed_cb_(sync_allowed_by_platform_changed) {
   DCHECK(crypto_);
   DCHECK(prefs_);
 }
@@ -94,26 +73,42 @@ bool SyncUserSettingsImpl::IsSyncEverythingEnabled() const {
   return prefs_->HasKeepEverythingSynced();
 }
 
-ModelTypeSet SyncUserSettingsImpl::GetChosenDataTypes() const {
-  ModelTypeSet types = prefs_->GetChosenDataTypes();
-  DCHECK(UserSelectableTypes().HasAll(types));
-  types.RetainAll(registered_types_);
+UserSelectableTypeSet SyncUserSettingsImpl::GetSelectedTypes() const {
+  UserSelectableTypeSet types = prefs_->GetSelectedTypes();
+  types.PutAll(GetForcedTypes());
+  types.RetainAll(GetRegisteredSelectableTypes());
   return types;
 }
 
-void SyncUserSettingsImpl::SetChosenDataTypes(bool sync_everything,
-                                              ModelTypeSet types) {
-  DCHECK(UserSelectableTypes().HasAll(types));
-  DCHECK(registered_types_.HasAll(types));
-  prefs_->SetDataTypesConfiguration(
-      sync_everything,
-      /*choosable_types=*/
-      Intersection(registered_types_, UserSelectableTypes()),
-      /*chosen_types=*/Intersection(registered_types_, types));
+void SyncUserSettingsImpl::SetSelectedTypes(bool sync_everything,
+                                            UserSelectableTypeSet types) {
+  UserSelectableTypeSet registered_types = GetRegisteredSelectableTypes();
+  DCHECK(registered_types.HasAll(types));
+  prefs_->SetSelectedTypes(sync_everything, registered_types, types);
+}
+
+UserSelectableTypeSet SyncUserSettingsImpl::GetRegisteredSelectableTypes()
+    const {
+  UserSelectableTypeSet registered_types;
+  for (UserSelectableType type : UserSelectableTypeSet::All()) {
+    if (registered_model_types_.Has(
+            UserSelectableTypeToCanonicalModelType(type))) {
+      registered_types.Put(type);
+    }
+  }
+  return registered_types;
+}
+
+UserSelectableTypeSet SyncUserSettingsImpl::GetForcedTypes() const {
+  if (preference_provider_) {
+    return preference_provider_->GetForcedTypes();
+  }
+  return UserSelectableTypeSet();
 }
 
 bool SyncUserSettingsImpl::IsEncryptEverythingAllowed() const {
-  return is_encrypt_everything_allowed_cb_.Run();
+  return !preference_provider_ ||
+         preference_provider_->IsEncryptEverythingAllowed();
 }
 
 bool SyncUserSettingsImpl::IsEncryptEverythingEnabled() const {
@@ -180,11 +175,11 @@ ModelTypeSet SyncUserSettingsImpl::GetPreferredDataTypes() const {
     // implementation treats that corresponding type as preferred while
     // implementation without processing of this case won't treat that type
     // as preferred.
-    types = registered_types_;
+    types = registered_model_types_;
   } else {
-    types = ResolvePrefGroups(GetChosenDataTypes());
+    types = ResolvePreferredTypes(GetSelectedTypes());
     types.PutAll(AlwaysPreferredUserTypes());
-    types.RetainAll(registered_types_);
+    types.RetainAll(registered_model_types_);
   }
 
   static_assert(44 == ModelType::NUM_ENTRIES,
@@ -218,9 +213,9 @@ bool SyncUserSettingsImpl::IsEncryptionPending() const {
 }
 
 // static
-ModelTypeSet SyncUserSettingsImpl::ResolvePrefGroupsForTesting(
-    ModelTypeSet chosen_types) {
-  return ResolvePrefGroups(chosen_types);
+ModelTypeSet SyncUserSettingsImpl::ResolvePreferredTypesForTesting(
+    UserSelectableTypeSet selected_types) {
+  return ResolvePreferredTypes(selected_types);
 }
 
 }  // namespace syncer

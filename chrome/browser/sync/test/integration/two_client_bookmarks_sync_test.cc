@@ -1598,12 +1598,14 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllModelsMatchVerifier());
 
-  ASSERT_TRUE(GetClient(1)->DisableSyncForDatatype(syncer::BOOKMARKS));
+  ASSERT_TRUE(
+      GetClient(1)->DisableSyncForType(syncer::UserSelectableType::kBookmarks));
   ASSERT_NE(nullptr, AddFolder(1, kGenericFolderName));
   ASSERT_TRUE(AwaitQuiescence());
   ASSERT_FALSE(AllModelsMatch());
 
-  ASSERT_TRUE(GetClient(1)->EnableSyncForDatatype(syncer::BOOKMARKS));
+  ASSERT_TRUE(
+      GetClient(1)->EnableSyncForType(syncer::UserSelectableType::kBookmarks));
   ASSERT_TRUE(BookmarksMatchChecker().Wait());
 }
 
@@ -1651,7 +1653,8 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
 IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
                        MC_DeleteBookmark) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(GetClient(1)->DisableSyncForDatatype(syncer::BOOKMARKS));
+  ASSERT_TRUE(
+      GetClient(1)->DisableSyncForType(syncer::UserSelectableType::kBookmarks));
 
   const GURL bar_url("http://example.com/bar");
   const GURL other_url("http://example.com/other");
@@ -1672,7 +1675,8 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
   ASSERT_FALSE(HasNodeWithURL(0, bar_url));
   ASSERT_TRUE(HasNodeWithURL(0, other_url));
 
-  ASSERT_TRUE(GetClient(1)->EnableSyncForDatatype(syncer::BOOKMARKS));
+  ASSERT_TRUE(
+      GetClient(1)->EnableSyncForType(syncer::UserSelectableType::kBookmarks));
   ASSERT_TRUE(AwaitQuiescence());
 
   ASSERT_FALSE(HasNodeWithURL(0, bar_url));
@@ -2258,11 +2262,13 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
   // Disable bookmark syncing on the first client, add another bookmark,
   // re-enable bookmark syncing and see that the second bookmark reaches the
   // second client.
-  ASSERT_TRUE(GetClient(0)->DisableSyncForDatatype(syncer::BOOKMARKS));
+  ASSERT_TRUE(
+      GetClient(0)->DisableSyncForType(syncer::UserSelectableType::kBookmarks));
   const std::string url_title_2 = "another happy little url";
   const GURL url_2("https://example.com/second");
   ASSERT_NE(nullptr, AddURL(0, GetBookmarkBarNode(0), 0, url_title_2, url_2));
-  ASSERT_TRUE(GetClient(0)->EnableSyncForDatatype(syncer::BOOKMARKS));
+  ASSERT_TRUE(
+      GetClient(0)->EnableSyncForType(syncer::UserSelectableType::kBookmarks));
   ASSERT_TRUE(BookmarksMatchChecker().Wait());
   ASSERT_EQ(initial_count + 2, CountAllBookmarks(0));
   ASSERT_EQ(initial_count + 2, CountAllBookmarks(1));

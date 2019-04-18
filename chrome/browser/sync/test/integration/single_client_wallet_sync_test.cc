@@ -1071,7 +1071,8 @@ IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTestWithDefaultFeatures,
   ASSERT_EQ(1U, GetServerAddressesMetadata(0).size());
 
   // Turn off autofill sync, the data & metadata should be gone.
-  ASSERT_TRUE(GetClient(0)->DisableSyncForDatatype(syncer::AUTOFILL));
+  ASSERT_TRUE(
+      GetClient(0)->DisableSyncForType(syncer::UserSelectableType::kAutofill));
   WaitForOnPersonalDataChanged(/*should_trigger_refresh=*/false, pdm);
 
   EXPECT_EQ(0uL, pdm->GetServerProfiles().size());
@@ -1571,8 +1572,8 @@ IN_PROC_BROWSER_TEST_P(
   ASSERT_EQ(syncer::SyncService::TransportState::PENDING_DESIRED_CONFIGURATION,
             GetSyncService(0)->GetTransportState());
 
-  GetSyncService(0)->GetUserSettings()->SetChosenDataTypes(
-      /*sync_everything=*/false, syncer::ModelTypeSet(syncer::AUTOFILL));
+  GetSyncService(0)->GetUserSettings()->SetSelectedTypes(
+      /*sync_everything=*/false, {syncer::UserSelectableType::kAutofill});
 
   // Once the user finishes the setup, we can actually configure.
   setup_handle.reset();

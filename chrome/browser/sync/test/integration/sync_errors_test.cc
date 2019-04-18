@@ -177,7 +177,8 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest, MAYBE_ErrorWhileSettingUp) {
   // In contrast on auto start enabled platforms like chrome os we should be
   // able to set up even if the first sync while setting up fails.
   ASSERT_TRUE(SetupSync()) << "Setup sync failed";
-  ASSERT_TRUE(GetClient(0)->DisableSyncForDatatype(syncer::AUTOFILL));
+  ASSERT_TRUE(
+      GetClient(0)->DisableSyncForType(syncer::UserSelectableType::kAutofill));
 #endif
 
   EXPECT_TRUE(GetFakeServer()->TriggerError(
@@ -190,7 +191,8 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest, MAYBE_ErrorWhileSettingUp) {
 #else
   // Now enable a datatype, whose first 2 syncs would fail, but we should
   // recover and setup succesfully on the third attempt.
-  ASSERT_TRUE(GetClient(0)->EnableSyncForDatatype(syncer::AUTOFILL));
+  ASSERT_TRUE(
+      GetClient(0)->EnableSyncForType(syncer::UserSelectableType::kAutofill));
 #endif
 }
 
