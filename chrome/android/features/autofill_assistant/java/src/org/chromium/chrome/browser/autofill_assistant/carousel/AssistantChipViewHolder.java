@@ -16,7 +16,7 @@ import org.chromium.chrome.autofill_assistant.R;
  * ButtonView}.
  */
 class AssistantChipViewHolder extends ViewHolder {
-    final ButtonView mView;
+    private final ButtonView mView;
 
     private AssistantChipViewHolder(ButtonView view) {
         super(view);
@@ -42,8 +42,6 @@ class AssistantChipViewHolder extends ViewHolder {
                 assert false : "Unsupported view type " + viewType;
         }
 
-        view.setLayoutParams(new ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
         if (viewType >= AssistantChip.Type.NUM_ENTRIES) {
             view.setEnabled(false);
         }
@@ -68,7 +66,6 @@ class AssistantChipViewHolder extends ViewHolder {
             mView.getPrimaryTextView().setVisibility(View.GONE);
         } else {
             mView.getPrimaryTextView().setText(text);
-            mView.getPrimaryTextView().setVisibility(View.VISIBLE);
         }
 
         mView.setOnClickListener(ignoredView -> chip.getSelectedListener().run());
