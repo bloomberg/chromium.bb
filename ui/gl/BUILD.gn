@@ -68,6 +68,8 @@ jumbo_component("gl") {
     "android/surface_texture_listener.h",
     "ca_renderer_layer_params.cc",
     "ca_renderer_layer_params.h",
+    "color_space_utils.cc",
+    "color_space_utils.h",
     "dc_renderer_layer_params.cc",
     "dc_renderer_layer_params.h",
     "egl_timestamps.h",

@@ -31,6 +31,10 @@ template <class T, class U>
 struct StructTraits;
 }  // namespace mojo
 
+namespace gl {
+class ColorSpaceUtils;
+}  // namespace gl
+
 namespace gfx {
 
 namespace mojom {
@@ -182,6 +186,12 @@ class COLOR_SPACE_EXPORT ColorSpace {
                       RangeID::FULL);
   }
 
+  // HDR10 uses BT.2020 primaries with SMPTE ST 2084 PQ transfer function.
+  static constexpr ColorSpace CreateHDR10() {
+    return ColorSpace(PrimaryID::BT2020, TransferID::SMPTEST2084, MatrixID::RGB,
+                      RangeID::FULL);
+  }
+
   // TODO(ccameron): Remove these, and replace with more generic constructors.
   static constexpr ColorSpace CreateJpeg() {
     // TODO(ccameron): Determine which primaries and transfer function were
@@ -283,6 +293,7 @@ class COLOR_SPACE_EXPORT ColorSpace {
   friend struct IPC::ParamTraits<ColorSpace>;
   friend struct mojo::StructTraits<gfx::mojom::ColorSpaceDataView,
                                    gfx::ColorSpace>;
+  friend class gl::ColorSpaceUtils;
   FRIEND_TEST_ALL_PREFIXES(SimpleColorSpace, GetColorSpace);
 };
 

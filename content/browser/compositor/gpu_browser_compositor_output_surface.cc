@@ -20,7 +20,7 @@
 #include "gpu/command_buffer/common/swap_buffers_flags.h"
 #include "gpu/ipc/client/command_buffer_proxy_impl.h"
 #include "services/ws/public/cpp/gpu/context_provider_command_buffer.h"
-#include "ui/gl/gl_utils.h"
+#include "ui/gl/color_space_utils.h"
 
 namespace content {
 
@@ -102,7 +102,7 @@ void GpuBrowserCompositorOutputSurface::Reshape(
   has_set_draw_rectangle_since_last_resize_ = false;
   context_provider()->ContextGL()->ResizeCHROMIUM(
       size.width(), size.height(), device_scale_factor,
-      gl::GetGLColorSpace(color_space), has_alpha);
+      gl::ColorSpaceUtils::GetGLColorSpace(color_space), has_alpha);
 }
 
 void GpuBrowserCompositorOutputSurface::SwapBuffers(

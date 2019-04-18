@@ -11,7 +11,7 @@
 #include "components/viz/test/begin_frame_args_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/presentation_feedback.h"
-#include "ui/gl/gl_utils.h"
+#include "ui/gl/color_space_utils.h"
 
 namespace viz {
 
@@ -37,7 +37,7 @@ void FakeOutputSurface::Reshape(const gfx::Size& size,
   if (context_provider()) {
     context_provider()->ContextGL()->ResizeCHROMIUM(
         size.width(), size.height(), device_scale_factor,
-        gl::GetGLColorSpace(color_space), has_alpha);
+        gl::ColorSpaceUtils::GetGLColorSpace(color_space), has_alpha);
   } else {
     software_device()->Resize(size, device_scale_factor);
   }

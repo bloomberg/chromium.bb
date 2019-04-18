@@ -32,6 +32,7 @@
 #include "third_party/skia/include/core/SkPromiseImageTexture.h"
 #include "third_party/skia/include/core/SkYUVAIndex.h"
 #include "ui/gfx/skia_util.h"
+#include "ui/gl/color_space_utils.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_gl_api_implementation.h"
@@ -134,11 +135,8 @@ void SkiaOutputSurfaceImplNonDDL::Reshape(const gfx::Size& size,
     auto* context_provider = shared_context_state_->vk_context_provider();
     DCHECK(context_provider->GetGrSecondaryCBDrawContext());
   } else {
-    // Conversion to GLSurface's color space follows the same logic as in
-    // gl::GetGLColorSpace().
     gl::GLSurface::ColorSpace surface_color_space =
-        color_space.IsHDR() ? gl::GLSurface::ColorSpace::SCRGB_LINEAR
-                            : gl::GLSurface::ColorSpace::UNSPECIFIED;
+        gl::ColorSpaceUtils::GetGLSurfaceColorSpace(color_space);
     gl_surface_->Resize(size, device_scale_factor, surface_color_space,
                         has_alpha);
 

@@ -394,7 +394,7 @@ ColorSpace ColorSpace::GetRasterColorSpace() const {
   // Rasterization doesn't support more than 8 bit unorm values. If the output
   // space has an extended range, use Display P3 for the rasterization space,
   // to get a somewhat wider color gamut.
-  if (HasExtendedSkTransferFn())
+  if (IsHDR())
     return CreateDisplayP3D65();
 
   return *this;
@@ -403,7 +403,7 @@ ColorSpace ColorSpace::GetRasterColorSpace() const {
 ColorSpace ColorSpace::GetBlendingColorSpace() const {
   // HDR output on windows requires output have a linear transfer function.
   // Linear blending breaks the web, so use extended-sRGB for blending.
-  if (transfer_ == TransferID::LINEAR_HDR)
+  if (IsHDR())
     return CreateExtendedSRGB();
   return *this;
 }
