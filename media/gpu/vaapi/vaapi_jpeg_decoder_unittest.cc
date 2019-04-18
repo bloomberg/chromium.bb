@@ -120,13 +120,22 @@ bool CompareImages(base::span<const uint8_t> encoded_image,
   }
 
   const uint32_t va_fourcc = decoded_image->image()->format.fourcc;
-  if (!(va_fourcc == VA_FOURCC_I420 || va_fourcc == VA_FOURCC_YUY2 ||
-        va_fourcc == VA_FOURCC('Y', 'U', 'Y', 'V'))) {
-    DLOG(ERROR) << "Not supported FourCC: " << FourccToString(va_fourcc);
-    return false;
+  uint32_t libyuv_fourcc = 0;
+  switch (va_fourcc) {
+    case VA_FOURCC_I420:
+      libyuv_fourcc = libyuv::FOURCC_I420;
+      break;
+    case VA_FOURCC_NV12:
+      libyuv_fourcc = libyuv::FOURCC_NV12;
+      break;
+    case VA_FOURCC_YUY2:
+    case VA_FOURCC('Y', 'U', 'Y', 'V'):
+      libyuv_fourcc = libyuv::FOURCC_YUY2;
+      break;
+    default:
+      DLOG(ERROR) << "Not supported FourCC: " << FourccToString(va_fourcc);
+      return false;
   }
-  const uint32_t libyuv_fourcc =
-      (va_fourcc == VA_FOURCC_I420) ? libyuv::FOURCC_I420 : libyuv::FOURCC_YUY2;
 
   if (libyuv_fourcc == libyuv::FOURCC_I420) {
     const auto* decoded_data_y =
@@ -148,6 +157,38 @@ bool CompareImages(base::span<const uint8_t> encoded_image,
         decoded_data_v,
         base::checked_cast<int>(decoded_image->image()->pitches[2]), width,
         height);
+    if (ssim < kMinSsim) {
+      DLOG(ERROR) << "Too low SSIM: " << ssim << " < " << kMinSsim;
+      return false;
+    }
+  } else if (libyuv_fourcc == libyuv::FOURCC_NV12) {
+    const auto* decoded_data_y =
+        static_cast<const uint8_t*>(decoded_image->va_buffer()->data()) +
+        decoded_image->image()->offsets[0];
+    const auto* decoded_data_uv =
+        static_cast<const uint8_t*>(decoded_image->va_buffer()->data()) +
+        decoded_image->image()->offsets[1];
+
+    auto temp_y = std::make_unique<uint8_t[]>(width * height);
+    auto temp_u = std::make_unique<uint8_t[]>(even_width * even_height);
+    auto temp_v = std::make_unique<uint8_t[]>(even_width * even_height);
+
+    const int conversion_result = libyuv::NV12ToI420(
+        decoded_data_y,
+        base::checked_cast<int>(decoded_image->image()->pitches[0]),
+        decoded_data_uv,
+        base::checked_cast<int>(decoded_image->image()->pitches[1]),
+        temp_y.get(), width, temp_u.get(), even_width, temp_v.get(), even_width,
+        width, height);
+    if (conversion_result != 0) {
+      DLOG(ERROR) << "libyuv conversion error";
+      return false;
+    }
+
+    const double ssim = libyuv::I420Ssim(
+        ref_y.get(), width, ref_u.get(), even_width, ref_v.get(), even_width,
+        temp_y.get(), width, temp_u.get(), even_width, temp_v.get(), even_width,
+        width, height);
     if (ssim < kMinSsim) {
       DLOG(ERROR) << "Too low SSIM: " << ssim << " < " << kMinSsim;
       return false;
@@ -377,11 +418,13 @@ TEST_F(VaapiJpegDecoderTest, MinimalImageFormatSupport) {
   // All drivers should support at least I420.
   ASSERT_TRUE(VaapiWrapper::IsImageFormatSupported({.fourcc = VA_FOURCC_I420}));
 
-  // Additionally, the mesa VAAPI driver should support YV12 and YUYV.
+  // Additionally, the mesa VAAPI driver should support YV12, NV12 and YUYV.
   if (base::StartsWith(VaapiWrapper::GetVendorStringForTesting(),
                        "Mesa Gallium driver", base::CompareCase::SENSITIVE)) {
     ASSERT_TRUE(
         VaapiWrapper::IsImageFormatSupported({.fourcc = VA_FOURCC_YV12}));
+    ASSERT_TRUE(
+        VaapiWrapper::IsImageFormatSupported({.fourcc = VA_FOURCC_NV12}));
     ASSERT_TRUE(VaapiWrapper::IsImageFormatSupported(
         {.fourcc = VA_FOURCC('Y', 'U', 'Y', 'V')}));
   }
@@ -427,9 +470,11 @@ TEST_P(VaapiJpegDecoderTest, DecodeSucceeds) {
         Decode(encoded_image, image_format.fourcc);
     ASSERT_TRUE(scoped_image);
     const uint32_t actual_fourcc = scoped_image->image()->format.fourcc;
-    // TODO(andrescj): CompareImages() only supports I420, YUY2, and YUYV. Make
-    // it support all the image formats we expect and call it unconditionally.
-    if (actual_fourcc == VA_FOURCC_I420 || actual_fourcc == VA_FOURCC_YUY2 ||
+    // TODO(andrescj): CompareImages() only supports I420, NV12, YUY2, and YUYV.
+    // Make it support all the image formats we expect and call it
+    // unconditionally.
+    if (actual_fourcc == VA_FOURCC_I420 || actual_fourcc == VA_FOURCC_NV12 ||
+        actual_fourcc == VA_FOURCC_YUY2 ||
         actual_fourcc == VA_FOURCC('Y', 'U', 'Y', 'V')) {
       ASSERT_TRUE(CompareImages(encoded_image, scoped_image.get()));
     }
