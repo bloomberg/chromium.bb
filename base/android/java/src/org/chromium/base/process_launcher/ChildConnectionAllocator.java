@@ -40,8 +40,8 @@ public class ChildConnectionAllocator {
         @Override
         public ChildProcessConnection createConnection(Context context, ComponentName serviceName,
                 boolean bindToCaller, boolean bindAsExternalService, Bundle serviceBundle) {
-            return new ChildProcessConnection(
-                    context, serviceName, bindToCaller, bindAsExternalService, serviceBundle);
+            return new ChildProcessConnection(context, serviceName, bindToCaller,
+                    bindAsExternalService, serviceBundle, null /* instanceName */);
         }
     }
 
