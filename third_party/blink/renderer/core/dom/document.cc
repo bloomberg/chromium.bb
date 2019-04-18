@@ -3505,6 +3505,10 @@ bool Document::CheckCompletedInternal() {
       ukm_binding->SetDocumentSourceId(ukm_source_id_);
     }
 
+    frame_->GetFrameScheduler()->RegisterStickyFeature(
+        SchedulingPolicy::Feature::kDocumentLoaded,
+        {SchedulingPolicy::RecordMetricsForBackForwardCache()});
+
     AnchorElementMetrics::MaybeReportViewportMetricsOnLoad(*this);
 
     // If this is a document associated with a resource loading hints based

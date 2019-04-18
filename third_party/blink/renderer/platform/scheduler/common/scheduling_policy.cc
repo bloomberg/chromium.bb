@@ -24,6 +24,7 @@ bool SchedulingPolicy::IsFeatureSticky(SchedulingPolicy::Feature feature) {
     case Feature::kFreezeEventListener:
     case Feature::kResumeEventListener:
     case Feature::kContainsPlugins:
+    case Feature::kDocumentLoaded:
       return true;
     case Feature::kCount:
       NOTREACHED();
