@@ -573,7 +573,7 @@ void P2PQuicTransportImpl::OnMessageReceived(quic::QuicStringPiece message) {
   // This will never overflow because of the datagram size limit.
   Vector<uint8_t> datagram(static_cast<wtf_size_t>(message.size()));
   memcpy(datagram.data(), message.data(), message.size());
-  delegate_->OnReceivedDatagram(std::move(datagram));
+  delegate_->OnDatagramReceived(std::move(datagram));
 }
 
 void P2PQuicTransportImpl::OnMessageLost(quic::QuicMessageId message_id) {
