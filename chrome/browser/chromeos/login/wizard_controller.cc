@@ -286,9 +286,7 @@ PrefService* WizardController::local_state_for_testing_ = nullptr;
 
 WizardController::WizardController()
     : screen_manager_(std::make_unique<ScreenManager>()),
-      network_state_helper_(std::make_unique<login::NetworkStateHelper>()),
-      oobe_configuration_(base::Value(base::Value::Type::DICTIONARY)),
-      weak_factory_(this) {
+      network_state_helper_(std::make_unique<login::NetworkStateHelper>()) {
   // In session OOBE was initiated from voice interaction keyboard shortcuts.
   is_in_session_oobe_ =
       session_manager::SessionManager::Get()->IsSessionStarted();
@@ -1279,7 +1277,7 @@ void WizardController::ShowCurrentScreen() {
   smooth_show_timer_.Stop();
 
   UpdateStatusAreaVisibilityForScreen(current_screen_->screen_id());
-  current_screen_->SetConfiguration(&oobe_configuration_, false /*notify */);
+  current_screen_->SetConfiguration(&oobe_configuration_);
   current_screen_->Show();
 }
 
@@ -1296,7 +1294,7 @@ void WizardController::SetCurrentScreenSmooth(BaseScreen* new_current,
 
   if (current_screen_) {
     current_screen_->Hide();
-    current_screen_->SetConfiguration(nullptr, false /*notify */);
+    current_screen_->SetConfiguration(nullptr);
   }
 
   const OobeScreen screen = new_current->screen_id();

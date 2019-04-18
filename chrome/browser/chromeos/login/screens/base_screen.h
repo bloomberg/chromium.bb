@@ -38,7 +38,8 @@ class BaseScreen {
   // counterpart.
   virtual void OnUserAction(const std::string& action_id);
 
-  virtual void SetConfiguration(base::Value* configuration, bool notify);
+  // Change the configuration for the screen. |configuration| is unowned.
+  virtual void SetConfiguration(base::Value* configuration);
 
  protected:
   // Global configuration for OOBE screens, that can be used to automate some
@@ -50,9 +51,6 @@ class BaseScreen {
   // Outside that time the configuration is set to nullptr to prevent any logic
   // triggering while the screen is not displayed.
   base::Value* GetConfiguration() { return configuration_; }
-
-  // This is called when configuration is changed while screen is displayed.
-  virtual void OnConfigurationChanged();
 
  private:
   // Configuration itself is owned by WizardController and is accessible
