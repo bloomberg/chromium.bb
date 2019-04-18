@@ -225,10 +225,12 @@ interface FrameNavigationControl {
   // activated. The frame has the option to adopt the previous page as a portal
   // identified by |portal_token| with the interface |portal|. The activation
   // can optionally include a message |data| dispatched with the
-  // PortalActivateEvent.
+  // PortalActivateEvent. The return value |was_adopted| indicates if the portal
+  // for the predecessor (identified by |portal_token|) was adopted by the
+  // current frame.
   OnPortalActivated(mojo_base.mojom.UnguessableToken portal_token,
                     associated blink.mojom.Portal portal,
-                    blink.mojom.TransferableMessage data);
+                    blink.mojom.TransferableMessage data) => (bool was_adopted);
 };
 
 // Implemented by the frame (e.g. renderer processes).

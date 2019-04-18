@@ -2571,7 +2571,8 @@ void WebLocalFrameImpl::PerformMediaPlayerAction(
 void WebLocalFrameImpl::OnPortalActivated(
     const base::UnguessableToken& portal_token,
     mojo::ScopedInterfaceEndpointHandle portal_pipe,
-    TransferableMessage data) {
+    TransferableMessage data,
+    OnPortalActivatedCallback callback) {
   GetFrame()->GetPage()->SetInsidePortal(false);
 
   LocalDOMWindow* window = GetFrame()->DomWindow();
@@ -2587,7 +2588,7 @@ void WebLocalFrameImpl::OnPortalActivated(
       frame_.Get(), portal_token,
       mojom::blink::PortalAssociatedPtr(mojom::blink::PortalAssociatedPtrInfo(
           std::move(portal_pipe), mojom::blink::Portal::Version_)),
-      std::move(blink_data.message), ports);
+      std::move(blink_data.message), ports, std::move(callback));
 
   ThreadDebugger* debugger = MainThreadDebugger::Instance();
   if (debugger)
@@ -2595,6 +2596,7 @@ void WebLocalFrameImpl::OnPortalActivated(
   GetFrame()->DomWindow()->DispatchEvent(*event);
   if (debugger)
     debugger->ExternalAsyncTaskFinished(blink_data.sender_stack_trace_id);
+  event->DetachPortalIfNotAdopted();
 }
 
 void WebLocalFrameImpl::ForwardMessageToPortalHost(

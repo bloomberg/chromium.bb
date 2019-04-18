@@ -15,7 +15,7 @@ interface Portal {
   Navigate(url.mojom.Url url);
 
   // When a portal is activated, it'll replace the current tab with the portal.
-  Activate(TransferableMessage data) => ();
+  Activate(TransferableMessage data) => (bool was_adopted);
 
   // Sends message to the browser process, where it can be forwarded to the
   // portal's main frame.

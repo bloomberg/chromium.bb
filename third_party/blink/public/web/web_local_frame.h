@@ -631,10 +631,12 @@ class WebLocalFrame : public WebFrame {
   // portal's unique identifier, and the message pipe |portal_pipe| is the
   // portal's mojo interface. |data| is an optional message sent together with
   // the portal's activation.
+  using OnPortalActivatedCallback = base::OnceCallback<void(bool)>;
   virtual void OnPortalActivated(
       const base::UnguessableToken& portal_token,
       mojo::ScopedInterfaceEndpointHandle portal_pipe,
-      TransferableMessage data) = 0;
+      TransferableMessage data,
+      OnPortalActivatedCallback callback) = 0;
 
   // Forwards message to the PortalHost associated with frame.
   virtual void ForwardMessageToPortalHost(

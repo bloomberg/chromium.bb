@@ -214,17 +214,20 @@ ScriptPromise HTMLPortalElement::activate(ScriptState* script_state,
   // PortalPtr stays alive until the callback is called.
   is_activating_ = true;
   auto* raw_portal_ptr = portal_ptr_.get();
-  raw_portal_ptr->Activate(std::move(data),
-                           WTF::Bind(
-                               [](HTMLPortalElement* portal,
-                                  mojom::blink::PortalAssociatedPtr portal_ptr,
-                                  ScriptPromiseResolver* resolver) {
-                                 resolver->Resolve();
-                                 portal->is_activating_ = false;
-                                 portal->ConsumePortal();
-                               },
-                               WrapPersistent(this), std::move(portal_ptr_),
-                               WrapPersistent(resolver)));
+  raw_portal_ptr->Activate(
+      std::move(data),
+      WTF::Bind(
+          [](HTMLPortalElement* portal,
+             mojom::blink::PortalAssociatedPtr portal_ptr,
+             ScriptPromiseResolver* resolver, bool was_adopted) {
+            if (was_adopted)
+              portal->GetDocument().GetPage()->SetInsidePortal(true);
+            resolver->Resolve();
+            portal->is_activating_ = false;
+            portal->ConsumePortal();
+          },
+          WrapPersistent(this), std::move(portal_ptr_),
+          WrapPersistent(resolver)));
   return promise;
 }
 
