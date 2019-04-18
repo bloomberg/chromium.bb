@@ -4,10 +4,6 @@
 
 package org.chromium.base.task;
 
-import android.view.Choreographer;
-
-import org.chromium.base.ThreadUtils;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -15,18 +11,15 @@ import java.util.Map;
  * The default {@link TaskExecutor} which maps directly to base::ThreadPool.
  */
 class DefaultTaskExecutor implements TaskExecutor {
-    private final Map<TaskTraits, TaskRunner> mTraitsToRunnerMap = new HashMap<>();
-    private ChoreographerTaskRunner mChoreographerTaskRunner;
+    Map<TaskTraits, TaskRunner> mTraitsToRunnerMap = new HashMap<>();
 
     @Override
     public TaskRunner createTaskRunner(TaskTraits taskTraits) {
-        if (taskTraits.mIsChoreographerFrame) return getChoreographerTaskRunner();
         return new TaskRunnerImpl(taskTraits);
     }
 
     @Override
     public SequencedTaskRunner createSequencedTaskRunner(TaskTraits taskTraits) {
-        if (taskTraits.mIsChoreographerFrame) return getChoreographerTaskRunner();
         return new SequencedTaskRunnerImpl(taskTraits);
     }
 
@@ -36,13 +29,12 @@ class DefaultTaskExecutor implements TaskExecutor {
      */
     @Override
     public SingleThreadTaskRunner createSingleThreadTaskRunner(TaskTraits taskTraits) {
-        if (taskTraits.mIsChoreographerFrame) return getChoreographerTaskRunner();
         // Tasks posted via this API will not execute until after native has started.
         return new SingleThreadTaskRunnerImpl(null, taskTraits);
     }
 
     @Override
-    public synchronized void postDelayedTask(TaskTraits taskTraits, Runnable task, long delay) {
+    public void postDelayedTask(TaskTraits taskTraits, Runnable task, long delay) {
         if (taskTraits.hasExtension()) {
             TaskRunner runner = createTaskRunner(taskTraits);
             runner.postDelayedTask(task, delay);
@@ -64,15 +56,5 @@ class DefaultTaskExecutor implements TaskExecutor {
     @Override
     public boolean canRunTaskImmediately(TaskTraits traits) {
         return false;
-    }
-
-    private synchronized ChoreographerTaskRunner getChoreographerTaskRunner() {
-        // TODO(alexclarke): Migrate to the new Android UI thread trait when available.
-        ChoreographerTaskRunner choreographerTaskRunner =
-                ThreadUtils.runOnUiThreadBlockingNoException(
-                        () -> { return new ChoreographerTaskRunner(Choreographer.getInstance()); });
-
-        mTraitsToRunnerMap.put(TaskTraits.CHOREOGRAPHER_FRAME, choreographerTaskRunner);
-        return choreographerTaskRunner;
     }
 }

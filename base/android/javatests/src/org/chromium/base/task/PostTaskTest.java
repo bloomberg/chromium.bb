@@ -18,7 +18,6 @@ import org.chromium.base.test.task.SchedulerTestHelpers;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -95,35 +94,5 @@ public class PostTaskTest {
         } finally {
             taskQueue.destroy();
         }
-    }
-
-    @Test
-    @SmallTest
-    public void testChoreographerFrameTrait() throws Exception {
-        List<Integer> orderList = new ArrayList<>();
-        CountDownLatch latch = new CountDownLatch(2);
-        PostTask.postTask(TaskTraits.CHOREOGRAPHER_FRAME, new Runnable() {
-            @Override
-            public void run() {
-                synchronized (orderList) {
-                    orderList.add(1);
-                    latch.countDown();
-                }
-            }
-        });
-
-        PostTask.postTask(TaskTraits.CHOREOGRAPHER_FRAME, new Runnable() {
-            @Override
-            public void run() {
-                synchronized (orderList) {
-                    orderList.add(2);
-                    latch.countDown();
-                }
-            }
-        });
-
-        latch.await();
-
-        assertThat(orderList, contains(1, 2));
     }
 }
