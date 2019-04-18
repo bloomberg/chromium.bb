@@ -11,7 +11,6 @@
 #include "base/callback.h"
 #include "base/debug/crash_logging.h"
 #include "base/format_macros.h"
-#include "base/guid.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
@@ -2089,7 +2088,7 @@ void TemplateURLService::UpdateProvidersCreatedByPolicy(
     default_search_provider_source_ = DefaultSearchManager::FROM_POLICY;
     TemplateURLData new_data(*default_from_prefs);
     if (new_data.sync_guid.empty())
-      new_data.sync_guid = base::GenerateGUID();
+      new_data.GenerateSyncGUID();
     new_data.created_by_policy = true;
     std::unique_ptr<TemplateURL> new_dse_ptr =
         std::make_unique<TemplateURL>(new_data);
@@ -2321,7 +2320,7 @@ void TemplateURLService::PatchMissingSyncGUIDs(
     DCHECK(template_url);
     if (template_url->sync_guid().empty() &&
         (template_url->type() == TemplateURL::NORMAL)) {
-      template_url->data_.sync_guid = base::GenerateGUID();
+      template_url->data_.GenerateSyncGUID();
       if (web_data_service_)
         web_data_service_->UpdateKeyword(template_url->data());
     }
