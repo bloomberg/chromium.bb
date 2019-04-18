@@ -922,8 +922,7 @@ public class ChromeTabbedActivity
         boolean isOverviewVisible = mOverviewModeController.overviewVisible();
 
         // Experiment: show tab switcher on return after {x} minutes (enable-tab-switcher-on-return}
-        long lastBackgroundedTimeMillis =
-                ContextUtils.getAppSharedPreferences().getLong(LAST_BACKGROUNDED_TIME_MS_PREF, -1);
+        long lastBackgroundedTimeMillis = mInactivityTracker.getLastBackgroundedTimeMs();
         if (ReturnToChromeExperimentsUtil.shouldShowTabSwitcher(lastBackgroundedTimeMillis)
                 && isMainIntentFromLauncher(getIntent()) && !isOverviewVisible) {
             toggleOverview();

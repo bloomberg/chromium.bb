@@ -4,13 +4,15 @@
 
 package org.chromium.chrome.browser.tasks;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeFeatureList;
 
 /**
  * This is a utility class for managing experiments related to returning to Chrome.
  */
 public final class ReturnToChromeExperimentsUtil {
-    private static final String TAB_SWITCHER_ON_RETURN_MS = "tab_switcher_on_return_time_ms";
+    @VisibleForTesting
+    public static final String TAB_SWITCHER_ON_RETURN_MS = "tab_switcher_on_return_time_ms";
 
     private ReturnToChromeExperimentsUtil() {}
 
