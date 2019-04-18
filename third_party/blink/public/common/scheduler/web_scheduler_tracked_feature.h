@@ -29,8 +29,9 @@ enum class WebSchedulerTrackedFeature {
 
   kContainsPlugins = 12,
   kDocumentLoaded = 13,
+  kDedicatedWorkerOrWorklet = 14,
 
-  kCount = 14
+  kCount = 15
 };
 
 }  // namespace scheduler
