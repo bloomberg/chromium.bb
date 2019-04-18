@@ -274,7 +274,8 @@ public class FeedLoggingBridge implements BasicLoggingApi {
 
     @Override
     public void onTaskFinished(@Task int task, int delayTime, int taskTime) {
-        // TODO(https://crbug.com/924739): Implementation.
+        if (mNativeFeedLoggingBridge == 0) return;
+        nativeOnTaskFinished(mNativeFeedLoggingBridge, task, delayTime, taskTime);
     }
 
     /**
@@ -402,6 +403,8 @@ public class FeedLoggingBridge implements BasicLoggingApi {
             long nativeFeedLoggingBridge, int zeroStateShowReason);
     private native void nativeOnZeroStateRefreshCompleted(
             long nativeFeedLoggingBridge, int newContentCount, int newTokenCount);
+    private native void nativeOnTaskFinished(
+            long nativeFeedLoggingBridge, int task, int delayTimeMs, int taskTimeMs);
     private native void nativeOnContentTargetVisited(
             long nativeFeedLoggingBridge, long visitTimeMs, boolean isOffline, boolean returnToNtp);
     private native void nativeReportScrolledAfterOpen(long nativeFeedLoggingBridge);

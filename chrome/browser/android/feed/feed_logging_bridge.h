@@ -131,6 +131,12 @@ class FeedLoggingBridge {
       const jint j_new_content_count,
       const jint j_new_token_count);
 
+  void OnTaskFinished(JNIEnv* j_env,
+                      const base::android::JavaRef<jobject>& j_this,
+                      const jint j_task_type,
+                      const jint j_delay_time_ms,
+                      const jint j_task_time_ms);
+
   void OnContentTargetVisited(JNIEnv* j_env,
                               const base::android::JavaRef<jobject>& j_this,
                               const jlong visit_time_ms,
