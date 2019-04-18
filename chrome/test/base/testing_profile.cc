@@ -388,6 +388,13 @@ void TestingProfile::Init() {
                           profile_manager->GetSystemProfilePath());
   }
 
+  if (IsOffTheRecord()) {
+    key_ = std::make_unique<ProfileKey>(original_profile_->GetPath(),
+                                        original_profile_->GetProfileKey());
+  } else {
+    key_ = std::make_unique<ProfileKey>(profile_path_);
+  }
+
   BrowserContext::Initialize(this, profile_path_);
 
 #if defined(OS_ANDROID)
@@ -425,13 +432,7 @@ void TestingProfile::Init() {
   else
     CreateTestingPrefService();
 
-  if (IsOffTheRecord()) {
-    key_ =
-        std::make_unique<ProfileKey>(original_profile_->GetPath(), prefs_.get(),
-                                     original_profile_->GetProfileKey());
-  } else {
-    key_ = std::make_unique<ProfileKey>(profile_path_, prefs_.get());
-  }
+  key_->SetPrefs(prefs_.get());
   SimpleKeyMap::GetInstance()->Associate(this, key_.get());
 
   if (!base::PathExists(profile_path_))
