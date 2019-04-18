@@ -130,14 +130,18 @@ std::unique_ptr<Network::Cookie> BuildCookie(
           .SetSession(!cookie.IsPersistent())
           .Build();
 
+  // TODO(chlily): Add EXTENDED_MODE and UNSPECIFIED to devtools'
+  // Network::CookieSameSiteEnum.
   switch (cookie.SameSite()) {
     case net::CookieSameSite::STRICT_MODE:
       devtools_cookie->SetSameSite(Network::CookieSameSiteEnum::Strict);
       break;
     case net::CookieSameSite::LAX_MODE:
+    case net::CookieSameSite::EXTENDED_MODE:
       devtools_cookie->SetSameSite(Network::CookieSameSiteEnum::Lax);
       break;
     case net::CookieSameSite::NO_RESTRICTION:
+    case net::CookieSameSite::UNSPECIFIED:
       break;
   }
   return devtools_cookie;

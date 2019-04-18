@@ -82,10 +82,14 @@ Cookie CreateCookie(const net::CanonicalCookie& canonical_cookie,
   cookie.http_only = canonical_cookie.IsHttpOnly();
 
   switch (canonical_cookie.SameSite()) {
+    // TODO(chlily): UNSPECIFIED should map to SAME_SITE_STATUS_NONE and vice
+    // versa.
     case net::CookieSameSite::NO_RESTRICTION:
+    case net::CookieSameSite::UNSPECIFIED:
       cookie.same_site = api::cookies::SAME_SITE_STATUS_NO_RESTRICTION;
       break;
     case net::CookieSameSite::LAX_MODE:
+    case net::CookieSameSite::EXTENDED_MODE:
       cookie.same_site = api::cookies::SAME_SITE_STATUS_LAX;
       break;
     case net::CookieSameSite::STRICT_MODE:

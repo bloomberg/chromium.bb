@@ -44,12 +44,16 @@ network::mojom::CookieSameSite
 EnumTraits<network::mojom::CookieSameSite, net::CookieSameSite>::ToMojom(
     net::CookieSameSite input) {
   switch (input) {
+    case net::CookieSameSite::UNSPECIFIED:
+      return network::mojom::CookieSameSite::UNSPECIFIED;
     case net::CookieSameSite::NO_RESTRICTION:
       return network::mojom::CookieSameSite::NO_RESTRICTION;
     case net::CookieSameSite::LAX_MODE:
       return network::mojom::CookieSameSite::LAX_MODE;
     case net::CookieSameSite::STRICT_MODE:
       return network::mojom::CookieSameSite::STRICT_MODE;
+    case net::CookieSameSite::EXTENDED_MODE:
+      return network::mojom::CookieSameSite::EXTENDED_MODE;
   }
   NOTREACHED();
   return static_cast<network::mojom::CookieSameSite>(input);
@@ -59,6 +63,9 @@ bool EnumTraits<network::mojom::CookieSameSite, net::CookieSameSite>::FromMojom(
     network::mojom::CookieSameSite input,
     net::CookieSameSite* output) {
   switch (input) {
+    case network::mojom::CookieSameSite::UNSPECIFIED:
+      *output = net::CookieSameSite::UNSPECIFIED;
+      return true;
     case network::mojom::CookieSameSite::NO_RESTRICTION:
       *output = net::CookieSameSite::NO_RESTRICTION;
       return true;
@@ -67,6 +74,9 @@ bool EnumTraits<network::mojom::CookieSameSite, net::CookieSameSite>::FromMojom(
       return true;
     case network::mojom::CookieSameSite::STRICT_MODE:
       *output = net::CookieSameSite::STRICT_MODE;
+      return true;
+    case network::mojom::CookieSameSite::EXTENDED_MODE:
+      *output = net::CookieSameSite::EXTENDED_MODE;
       return true;
   }
   return false;
