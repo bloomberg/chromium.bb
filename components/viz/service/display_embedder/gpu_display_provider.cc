@@ -238,8 +238,16 @@ std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
           std::move(context_provider), std::move(update_vsync_callback),
           use_overlays);
 #elif defined(OS_ANDROID)
+      const bool surface_control_enabled =
+          task_executor_->gpu_feature_info()
+              .status_values[gpu::GPU_FEATURE_TYPE_ANDROID_SURFACE_CONTROL] ==
+          gpu::kGpuFeatureStatusEnabled;
+      DCHECK(!surface_control_enabled ||
+             renderer_settings.backed_by_surface_texture);
+
       output_surface = std::make_unique<GLOutputSurfaceAndroid>(
-          std::move(context_provider), std::move(update_vsync_callback));
+          std::move(context_provider), std::move(update_vsync_callback),
+          !surface_control_enabled /* allow_overlays */);
 #else
       output_surface = std::make_unique<GLOutputSurface>(
           std::move(context_provider), std::move(update_vsync_callback));

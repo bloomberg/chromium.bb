@@ -85,7 +85,7 @@ void ContentViewRenderView::SurfaceCreated(JNIEnv* env,
 
 void ContentViewRenderView::SurfaceDestroyed(JNIEnv* env,
                                              const JavaParamRef<jobject>& obj) {
-  compositor_->SetSurface(NULL);
+  compositor_->SetSurface(nullptr, false);
   current_surface_format_ = 0;
 }
 
@@ -98,7 +98,7 @@ void ContentViewRenderView::SurfaceChanged(
     const JavaParamRef<jobject>& surface) {
   if (current_surface_format_ != format) {
     current_surface_format_ = format;
-    compositor_->SetSurface(surface);
+    compositor_->SetSurface(surface, false /* backed_by_surface_texture */);
   }
   compositor_->SetWindowBounds(gfx::Size(width, height));
 }

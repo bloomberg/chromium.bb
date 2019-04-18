@@ -617,7 +617,7 @@ CompositorImpl::~CompositorImpl() {
   display::Screen::GetScreen()->RemoveObserver(this);
   DetachRootWindow();
   // Clean-up any surface references.
-  SetSurface(NULL);
+  SetSurface(nullptr, false);
 }
 
 void CompositorImpl::DetachRootWindow() {
@@ -682,7 +682,8 @@ void CompositorImpl::SetRootLayer(scoped_refptr<cc::Layer> root_layer) {
   }
 }
 
-void CompositorImpl::SetSurface(jobject surface) {
+void CompositorImpl::SetSurface(jobject surface,
+                                bool backed_by_surface_texture) {
   JNIEnv* env = base::android::AttachCurrentThread();
   gpu::GpuSurfaceTracker* tracker = gpu::GpuSurfaceTracker::Get();
 
@@ -693,6 +694,7 @@ void CompositorImpl::SetSurface(jobject surface) {
     ANativeWindow_release(window_);
     window_ = NULL;
     surface_handle_ = gpu::kNullSurfaceHandle;
+    backed_by_surface_texture_ = false;
   }
 
   ANativeWindow* window = NULL;
@@ -706,6 +708,7 @@ void CompositorImpl::SetSurface(jobject surface) {
 
   if (window) {
     window_ = window;
+    backed_by_surface_texture_ = backed_by_surface_texture;
     ANativeWindow_acquire(window);
     // Register first, SetVisible() might create a LayerTreeFrameSink.
     surface_handle_ = tracker->AddSurfaceForNativeWidget(
@@ -1223,6 +1226,8 @@ void CompositorImpl::InitializeVizLayerTreeFrameSink(
           .GetSizeInPixel();
   renderer_settings.use_skia_renderer = features::IsUsingSkiaRenderer();
   renderer_settings.color_space = display_color_space_;
+  renderer_settings.backed_by_surface_texture = backed_by_surface_texture_;
+
   root_params->frame_sink_id = frame_sink_id_;
   root_params->widget = surface_handle_;
   root_params->gpu_compositing = true;
@@ -1273,7 +1278,7 @@ void CompositorImpl::OnFatalOrSurfaceContextCreationFailure(
       << "Fatal error making Gpu context";
 
   if (context_result == gpu::ContextResult::kSurfaceFailure) {
-    SetSurface(nullptr);
+    SetSurface(nullptr, false);
     client_->RecreateSurface();
   }
 }
