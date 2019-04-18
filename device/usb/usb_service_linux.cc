@@ -212,7 +212,9 @@ UsbServiceLinux::UsbServiceLinux()
                                 base::Unretained(helper_.get())));
 }
 
-UsbServiceLinux::~UsbServiceLinux() = default;
+UsbServiceLinux::~UsbServiceLinux() {
+  NotifyWillDestroyUsbService();
+}
 
 void UsbServiceLinux::GetDevices(const GetDevicesCallback& callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

@@ -84,6 +84,10 @@ class UsbService {
   void NotifyDeviceAdded(scoped_refptr<UsbDevice> device);
   void NotifyDeviceRemoved(scoped_refptr<UsbDevice> device);
 
+  // Subclasses must call this method as the first line of their destructor so
+  // that observers can clean up before any fields are destroyed.
+  void NotifyWillDestroyUsbService();
+
   std::unordered_map<std::string, scoped_refptr<UsbDevice>>& devices() {
     return devices_;
   }

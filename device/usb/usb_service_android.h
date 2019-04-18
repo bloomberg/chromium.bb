@@ -20,7 +20,7 @@ class UsbDeviceAndroid;
 
 // USB service implementation for Android. This is a stub implementation that
 // does not return any devices.
-class UsbServiceAndroid : public UsbService {
+class UsbServiceAndroid final : public UsbService {
  public:
   UsbServiceAndroid();
   ~UsbServiceAndroid() override;

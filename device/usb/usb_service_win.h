@@ -19,7 +19,8 @@
 
 namespace device {
 
-class UsbServiceWin : public DeviceMonitorWin::Observer, public UsbService {
+class UsbServiceWin final : public DeviceMonitorWin::Observer,
+                            public UsbService {
  public:
   UsbServiceWin();
   ~UsbServiceWin() override;

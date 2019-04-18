@@ -19,7 +19,7 @@ namespace device {
 struct UsbDeviceDescriptor;
 class UsbDeviceLinux;
 
-class UsbServiceLinux : public UsbService {
+class UsbServiceLinux final : public UsbService {
  public:
   UsbServiceLinux();
   ~UsbServiceLinux() override;
