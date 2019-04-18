@@ -42,6 +42,7 @@
 #import "ios/chrome/browser/download/download_manager_tab_helper.h"
 #include "ios/chrome/browser/feature_engagement/tracker_factory.h"
 #include "ios/chrome/browser/feature_engagement/tracker_util.h"
+#import "ios/chrome/browser/find_in_page/find_in_page_response_delegate.h"
 #import "ios/chrome/browser/find_in_page/find_tab_helper.h"
 #include "ios/chrome/browser/first_run/first_run.h"
 #import "ios/chrome/browser/geolocation/omnibox_geolocation_controller.h"
@@ -372,6 +373,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                                      CRWWebStateDelegate,
                                      CRWWebStateObserver,
                                      DialogPresenterDelegate,
+                                     FindInPageResponseDelegate,
                                      FullscreenUIElement,
                                      InfobarPositioner,
                                      KeyCommandsPlumbing,
@@ -4222,6 +4224,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   DCHECK(tab);
   auto* helper = FindTabHelper::FromWebState(tab.webState);
   DCHECK(!helper->IsFindUIActive());
+  helper->SetResponseDelegate(self);
   helper->SetFindUIActive(true);
   [self showFindBarWithAnimation:YES selectText:YES shouldFocus:YES];
 }
@@ -4338,6 +4341,12 @@ NSString* const kBrowserViewControllerSnackbarCategory =
       gfx::ResizedImageForSearchByImage(gfxImage).ToUIImage();
   NSData* data = UIImageJPEGRepresentation(resizedImage, 1.0);
   [self searchByResizedImageData:data atURL:nil inNewTab:NO];
+}
+
+#pragma mark - FindInPageResponseDelegate
+
+- (void)findDidFinishWithUpdatedModel:(FindInPageModel*)model {
+  [_findBarController updateResultsCount:model];
 }
 
 #pragma mark - BrowserCommands helpers
