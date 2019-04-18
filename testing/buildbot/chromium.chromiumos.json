@@ -97,7 +97,8 @@
               "os": "Ubuntu-14.04",
               "pool": "Chrome-CrOS-VM"
             }
-          ]
+          ],
+          "idempotent": false
         },
         "test": "chrome_all_tast_tests"
       },
@@ -455,7 +456,8 @@
               "os": "ChromeOS",
               "pool": "chrome-cros-dut"
             }
-          ]
+          ],
+          "idempotent": false
         },
         "test": "chrome_kevin_tast_tests",
         "trigger_script": {
