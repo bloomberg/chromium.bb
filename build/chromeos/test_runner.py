@@ -679,45 +679,46 @@ def setup_env():
   return env
 
 
-def add_common_args(parser):
-  parser.add_argument(
-      '--cros-cache', type=str, default=DEFAULT_CROS_CACHE,
-      help='Path to cros cache.')
-  parser.add_argument(
-      '--path-to-outdir', type=str, required=True,
-      help='Path to output directory, all of whose contents will be '
-           'deployed to the device.')
-  parser.add_argument(
-      '--runtime-deps-path', type=str,
-      help='Runtime data dependency file from GN.')
-  parser.add_argument(
-      '--vpython-dir', type=str,
-      help='Location on host of a directory containing a vpython binary to '
-           'deploy to the device before the test starts. The location of this '
-           'dir will be added onto PATH in the device. WARNING: The arch of '
-           'the device might not match the arch of the host, so avoid using '
-           '"${platform}" when downloading vpython via CIPD.')
-  # TODO(bpastene): Switch all uses of "--vm-logs-dir" to "--logs-dir".
-  parser.add_argument(
-      '--vm-logs-dir', '--logs-dir', type=str, dest='logs_dir',
-      help='Will copy everything under /var/log/ from the device after the '
-           'test into the specified dir.')
+def add_common_args(*parsers):
+  for parser in parsers:
+    parser.add_argument('--verbose', '-v', action='store_true')
+    parser.add_argument(
+        '--board', type=str, required=True, help='Type of CrOS device.')
+    parser.add_argument(
+        '--cros-cache', type=str, default=DEFAULT_CROS_CACHE,
+        help='Path to cros cache.')
+    parser.add_argument(
+        '--path-to-outdir', type=str, required=True,
+        help='Path to output directory, all of whose contents will be '
+             'deployed to the device.')
+    parser.add_argument(
+        '--runtime-deps-path', type=str,
+        help='Runtime data dependency file from GN.')
+    parser.add_argument(
+        '--vpython-dir', type=str,
+        help='Location on host of a directory containing a vpython binary to '
+             'deploy to the device before the test starts. The location of '
+             'this dir will be added onto PATH in the device. WARNING: The '
+             'arch of the device might not match the arch of the host, so '
+             'avoid using "${platform}" when downloading vpython via CIPD.')
+    # TODO(bpastene): Switch all uses of "--vm-logs-dir" to "--logs-dir".
+    parser.add_argument(
+        '--vm-logs-dir', '--logs-dir', type=str, dest='logs_dir',
+        help='Will copy everything under /var/log/ from the device after the '
+             'test into the specified dir.')
+
+    vm_or_device_group = parser.add_mutually_exclusive_group()
+    vm_or_device_group.add_argument(
+        '--use-vm', action='store_true',
+        help='Will run the test in the VM instead of a device.')
+    vm_or_device_group.add_argument(
+        '--device', type=str,
+        help='Hostname (or IP) of device to run the test on. This arg is not '
+             'required if --use-vm is set.')
 
 
 def main():
   parser = argparse.ArgumentParser()
-  parser.add_argument('--verbose', '-v', action='store_true')
-  # Required args.
-  parser.add_argument(
-      '--board', type=str, required=True, help='Type of CrOS device.')
-  vm_or_device_group = parser.add_mutually_exclusive_group()
-  vm_or_device_group.add_argument(
-      '--use-vm', action='store_true',
-      help='Will run the test in the VM instead of a device.')
-  vm_or_device_group.add_argument(
-      '--device', type=str,
-      help='Hostname (or IP) of device to run the test on. This arg is not '
-           'required if --use-vm is set.')
   subparsers = parser.add_subparsers(dest='test_type')
   # Host-side test args.
   host_cmd_parser = subparsers.add_parser(
@@ -726,13 +727,6 @@ def main():
            '"--". If --use-vm is passed, hostname and port for the device '
            'will be 127.0.0.1:9222.')
   host_cmd_parser.set_defaults(func=host_cmd)
-  host_cmd_parser.add_argument(
-      '--cros-cache', type=str, default=DEFAULT_CROS_CACHE,
-      help='Path to cros cache.')
-  host_cmd_parser.add_argument(
-      '--path-to-outdir', type=os.path.realpath,
-      help='Path to output directory, all of whose contents will be deployed '
-           'to the device.')
   host_cmd_parser.add_argument(
       '--deploy-chrome', action='store_true',
       help='Will deploy a locally built Chrome binary to the device before '
@@ -797,8 +791,7 @@ def main():
       help='Use the host-side Tast bin to run the tests instead of the '
            'DUT-side local_test_runner. TODO(bpastene): Make this default.')
 
-  add_common_args(gtest_parser)
-  add_common_args(tast_test_parser)
+  add_common_args(gtest_parser, tast_test_parser, host_cmd_parser)
   args, unknown_args = parser.parse_known_args()
 
   logging.basicConfig(level=logging.DEBUG if args.verbose else logging.WARN)

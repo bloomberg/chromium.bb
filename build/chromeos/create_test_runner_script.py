@@ -63,13 +63,7 @@ def main(args):
   run_test_path = RelativizePathToScript(
       os.path.join(os.path.dirname(__file__), 'test_runner.py'))
 
-  vm_test_args = [
-      '--board', args.board,
-      '-v',
-  ]
-  if args.use_vm:
-    vm_test_args += ['--use-vm']
-
+  vm_test_args = []
   if args.test_exe:
     vm_test_args.extend([
         'vm-test',
@@ -94,6 +88,13 @@ def main(args):
     vm_test_args.append('host-cmd')
     if args.deploy_chrome:
       vm_test_args.append('--deploy-chrome')
+
+  vm_test_args += [
+      '--board', args.board,
+      '-v',
+  ]
+  if args.use_vm:
+    vm_test_args += ['--use-vm']
 
   vm_test_path_args = [
       ('--cros-cache', RelativizePathToScript(args.cros_cache)),
