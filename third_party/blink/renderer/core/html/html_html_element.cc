@@ -38,7 +38,7 @@ namespace blink {
 
 using namespace html_names;
 
-inline HTMLHtmlElement::HTMLHtmlElement(Document& document)
+HTMLHtmlElement::HTMLHtmlElement(Document& document)
     : HTMLElement(kHTMLTag, document) {}
 
 DEFINE_NODE_FACTORY(HTMLHtmlElement)

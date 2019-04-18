@@ -39,6 +39,7 @@
 #include "third_party/blink/renderer/core/html/html_quote_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/layout/layout_list_item.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -126,7 +127,7 @@ void BreakBlockquoteCommand::DoApply(EditingState* editing_state) {
   if (!top_blockquote || !top_blockquote->parentNode())
     return;
 
-  HTMLBRElement* break_element = HTMLBRElement::Create(GetDocument());
+  auto* break_element = MakeGarbageCollected<HTMLBRElement>(GetDocument());
 
   bool is_last_vis_pos_in_node =
       IsLastVisiblePositionInNode(visible_pos, top_blockquote);

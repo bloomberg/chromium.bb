@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/dom/static_node_list.h"
 #include "third_party/blink/renderer/core/html/html_document.h"
 #include "third_party/blink/renderer/core/html/html_html_element.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 // Uncomment to run the SelectorQueryTests for stats in a release build.
 // #define RELEASE_QUERY_STATS
@@ -62,7 +63,7 @@ void RunTests(ContainerNode& scope, const QueryTest (&test_cases)[length]) {
 
 TEST(SelectorQueryTest, NotMatchingPseudoElement) {
   Document* document = Document::CreateForTest();
-  HTMLHtmlElement* html = HTMLHtmlElement::Create(*document);
+  auto* html = MakeGarbageCollected<HTMLHtmlElement>(*document);
   document->AppendChild(html);
   document->documentElement()->SetInnerHTMLFromString(
       "<body><style>span::before { content: 'X' }</style><span></span></body>");
@@ -91,7 +92,7 @@ TEST(SelectorQueryTest, NotMatchingPseudoElement) {
 
 TEST(SelectorQueryTest, LastOfTypeNotFinishedParsing) {
   Document* document = HTMLDocument::CreateForTest();
-  HTMLHtmlElement* html = HTMLHtmlElement::Create(*document);
+  auto* html = MakeGarbageCollected<HTMLHtmlElement>(*document);
   document->AppendChild(html);
   document->documentElement()->SetInnerHTMLFromString(
       "<body><p></p><p id=last></p></body>", ASSERT_NO_EXCEPTION);

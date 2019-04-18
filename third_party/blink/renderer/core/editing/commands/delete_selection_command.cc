@@ -46,6 +46,7 @@
 #include "third_party/blink/renderer/core/html/html_table_row_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/layout/layout_table_cell.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -858,8 +859,8 @@ void DeleteSelectionCommand::MergeParagraphs(EditingState* editing_state) {
       (starts_at_empty_line_ &&
        merge_destination.DeepEquivalent() !=
            start_of_paragraph_to_move.DeepEquivalent())) {
-    InsertNodeAt(HTMLBRElement::Create(GetDocument()), upstream_start_,
-                 editing_state);
+    InsertNodeAt(MakeGarbageCollected<HTMLBRElement>(GetDocument()),
+                 upstream_start_, editing_state);
     if (editing_state->IsAborted())
       return;
     GetDocument().UpdateStyleAndLayout();
@@ -1178,8 +1179,9 @@ void DeleteSelectionCommand::DoApply(EditingState* editing_state) {
                         !line_break_at_end_of_selection_to_delete;
   }
 
-  HTMLBRElement* placeholder =
-      need_placeholder_ ? HTMLBRElement::Create(GetDocument()) : nullptr;
+  auto* placeholder = need_placeholder_
+                          ? MakeGarbageCollected<HTMLBRElement>(GetDocument())
+                          : nullptr;
 
   if (placeholder) {
     if (options_.IsSanitizeMarkup()) {

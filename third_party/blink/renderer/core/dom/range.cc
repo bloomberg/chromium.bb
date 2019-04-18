@@ -1024,7 +1024,7 @@ DocumentFragment* Range::createContextualFragmentFromString(
       // is available.
       element = document.body();
       if (!element)
-        element = HTMLBodyElement::Create(document);
+        element = MakeGarbageCollected<HTMLBodyElement>(document);
     }
   }
 

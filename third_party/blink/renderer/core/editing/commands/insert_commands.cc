@@ -41,6 +41,7 @@
 #include "third_party/blink/renderer/core/html/html_hr_element.h"
 #include "third_party/blink/renderer/core/html/html_image_element.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -91,7 +92,7 @@ bool InsertCommands::ExecuteInsertHorizontalRule(LocalFrame& frame,
                                                  EditorCommandSource,
                                                  const String& value) {
   DCHECK(frame.GetDocument());
-  HTMLHRElement* const rule = HTMLHRElement::Create(*frame.GetDocument());
+  auto* const rule = MakeGarbageCollected<HTMLHRElement>(*frame.GetDocument());
   if (!value.IsEmpty())
     rule->SetIdAttribute(AtomicString(value));
   return ExecuteInsertElement(frame, rule);

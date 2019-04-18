@@ -53,6 +53,8 @@ class CORE_EXPORT HTMLElement : public Element {
  public:
   DECLARE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLElement);
 
+  HTMLElement(const QualifiedName& tag_name, Document&, ConstructionType);
+
   bool HasTagName(const HTMLQualifiedName& name) const {
     return HasLocalName(name.LocalName());
   }
@@ -146,8 +148,6 @@ class CORE_EXPORT HTMLElement : public Element {
   bool IsFormAssociatedCustomElement() const;
 
  protected:
-  HTMLElement(const QualifiedName& tag_name, Document&, ConstructionType);
-
   enum AllowPercentage { kDontAllowPercentageValues, kAllowPercentageValues };
   void AddHTMLLengthToStyle(MutableCSSPropertyValueSet*,
                             CSSPropertyID,

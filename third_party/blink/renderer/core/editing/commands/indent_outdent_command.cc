@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -274,7 +275,7 @@ void IndentOutdentCommand::OutdentParagraph(EditingState* editing_state) {
         CreateVisiblePosition(visible_start_of_paragraph.DeepEquivalent());
     if (visible_start_of_paragraph.IsNotNull() &&
         !IsStartOfParagraph(visible_start_of_paragraph)) {
-      InsertNodeAt(HTMLBRElement::Create(GetDocument()),
+      InsertNodeAt(MakeGarbageCollected<HTMLBRElement>(GetDocument()),
                    visible_start_of_paragraph.DeepEquivalent(), editing_state);
       if (editing_state->IsAborted())
         return;
@@ -285,7 +286,7 @@ void IndentOutdentCommand::OutdentParagraph(EditingState* editing_state) {
         CreateVisiblePosition(visible_end_of_paragraph.DeepEquivalent());
     if (visible_end_of_paragraph.IsNotNull() &&
         !IsEndOfParagraph(visible_end_of_paragraph))
-      InsertNodeAt(HTMLBRElement::Create(GetDocument()),
+      InsertNodeAt(MakeGarbageCollected<HTMLBRElement>(GetDocument()),
                    visible_end_of_paragraph.DeepEquivalent(), editing_state);
     return;
   }
@@ -347,7 +348,7 @@ void IndentOutdentCommand::OutdentParagraph(EditingState* editing_state) {
       EndOfParagraph(visible_end_of_paragraph);
   if (start_of_paragraph_to_move.IsNull() || end_of_paragraph_to_move.IsNull())
     return;
-  HTMLBRElement* placeholder = HTMLBRElement::Create(GetDocument());
+  auto* placeholder = MakeGarbageCollected<HTMLBRElement>(GetDocument());
   InsertNodeBefore(placeholder, split_blockquote_node, editing_state);
   if (editing_state->IsAborted())
     return;

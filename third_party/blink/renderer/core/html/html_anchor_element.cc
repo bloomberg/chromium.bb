@@ -50,6 +50,7 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_types_util.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_url.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
@@ -57,6 +58,9 @@
 namespace blink {
 
 using namespace html_names;
+
+HTMLAnchorElement::HTMLAnchorElement(Document& document)
+    : HTMLAnchorElement(kATag, document) {}
 
 HTMLAnchorElement::HTMLAnchorElement(const QualifiedName& tag_name,
                                      Document& document)

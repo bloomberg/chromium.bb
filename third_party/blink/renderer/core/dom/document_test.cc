@@ -59,6 +59,7 @@
 #include "third_party/blink/renderer/core/page/validation_message_client.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/mojo/interface_invalidator.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
@@ -424,13 +425,15 @@ TEST_F(DocumentTest, LinkManifest) {
   EXPECT_EQ(nullptr, GetDocument().LinkManifest());
 
   // Check that we use the first manifest with <link rel=manifest>
-  auto* link = HTMLLinkElement::Create(GetDocument(), CreateElementFlags());
+  auto* link = MakeGarbageCollected<HTMLLinkElement>(GetDocument(),
+                                                     CreateElementFlags());
   link->setAttribute(blink::html_names::kRelAttr, "manifest");
   link->setAttribute(blink::html_names::kHrefAttr, "foo.json");
   GetDocument().head()->AppendChild(link);
   EXPECT_EQ(link, GetDocument().LinkManifest());
 
-  auto* link2 = HTMLLinkElement::Create(GetDocument(), CreateElementFlags());
+  auto* link2 = MakeGarbageCollected<HTMLLinkElement>(GetDocument(),
+                                                      CreateElementFlags());
   link2->setAttribute(blink::html_names::kRelAttr, "manifest");
   link2->setAttribute(blink::html_names::kHrefAttr, "bar.json");
   GetDocument().head()->InsertBefore(link2, link);

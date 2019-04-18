@@ -53,6 +53,7 @@
 #include "third_party/blink/renderer/core/svg_names.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/graphics/image.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/network/mime/content_type.h"
 #include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
@@ -212,7 +213,7 @@ Document* DOMImplementation::createHTMLDocument(const String& title) {
   if (!title.IsNull()) {
     HTMLHeadElement* head_element = d->head();
     DCHECK(head_element);
-    HTMLTitleElement* title_element = HTMLTitleElement::Create(*d);
+    auto* title_element = MakeGarbageCollected<HTMLTitleElement>(*d);
     head_element->AppendChild(title_element);
     title_element->AppendChild(d->createTextNode(title), ASSERT_NO_EXCEPTION);
   }

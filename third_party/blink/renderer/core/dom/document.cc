@@ -934,7 +934,7 @@ Element* Document::CreateRawElement(const QualifiedName& qname,
       // HTMLElement.
       // 7. Return HTMLUnknownElement.
       if (CustomElement::IsValidName(qname.LocalName()))
-        element = HTMLElement::Create(qname, *this);
+        element = MakeGarbageCollected<HTMLElement>(qname, *this);
       else
         element = HTMLUnknownElement::Create(qname, *this);
     }
@@ -1680,7 +1680,7 @@ void Document::setTitle(const String& title) {
       HTMLElement* head_element = head();
       if (!head_element)
         return;
-      title_element_ = HTMLTitleElement::Create(*this);
+      title_element_ = MakeGarbageCollected<HTMLTitleElement>(*this);
       head_element->AppendChild(title_element_.Get());
     }
     if (auto* html_title = ToHTMLTitleElementOrNull(title_element_))

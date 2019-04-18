@@ -39,7 +39,7 @@ namespace blink {
 using namespace cssvalue;
 using namespace html_names;
 
-inline HTMLFontElement::HTMLFontElement(Document& document)
+HTMLFontElement::HTMLFontElement(Document& document)
     : HTMLElement(kFontTag, document) {}
 
 DEFINE_NODE_FACTORY(HTMLFontElement)

@@ -67,6 +67,7 @@ class CORE_EXPORT HTMLAnchorElement : public HTMLElement, public DOMURLUtils {
  public:
   static HTMLAnchorElement* Create(Document&);
 
+  HTMLAnchorElement(Document& document);
   HTMLAnchorElement(const QualifiedName&, Document&);
   ~HTMLAnchorElement() override;
 

@@ -35,7 +35,7 @@ namespace blink {
 using namespace cssvalue;
 using namespace html_names;
 
-inline HTMLHRElement::HTMLHRElement(Document& document)
+HTMLHRElement::HTMLHRElement(Document& document)
     : HTMLElement(kHrTag, document) {}
 
 DEFINE_NODE_FACTORY(HTMLHRElement)
