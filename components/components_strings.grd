@@ -363,5 +363,9 @@
         Privacy
       </message>
     </messages>
+    <includes>
+      <!-- This part includes resources that do not require translation or further processing because they are already handled by a separate localization process. -->
+      <part file="omnibox/resources/omnibox_resources.grdp" />
+    </includes>
   </release>
 </grit>
