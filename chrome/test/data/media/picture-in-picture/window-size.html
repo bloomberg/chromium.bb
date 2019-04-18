@@ -137,5 +137,13 @@
       document.title = 'leavepictureinpicture';
     });
   }
+
+  function tryToEnterPictureInPictureAfterLeaving() {
+    video.addEventListener('leavepictureinpicture', () => {
+      video.requestPictureInPicture()
+      .then(_ => { document.title = 'entered Picture-in-Picture after leaving'; })
+      .catch(e => { document.title = 'failed to enter Picture-in-Picture after leaving'; });
+    });
+  }
 </script>
 </html>
