@@ -184,3 +184,5 @@ constexpr CGFloat kMinimumMargin = 4;
     [stackView addArrangedSubview:button];
   }
 }
+
+@end

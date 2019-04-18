@@ -7,7 +7,9 @@ source_set("alert_view_controller") {
     "alert_view_controller.h",
     "alert_view_controller.mm",
   ]
-  deps = []
+  deps = [
+    "//ios/chrome/common/ui_util",
+  ]
   libs = [ "UIKit.framework" ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }
