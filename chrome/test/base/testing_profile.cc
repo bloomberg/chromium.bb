@@ -86,6 +86,9 @@
 #include "components/omnibox/browser/autocomplete_classifier.h"
 #include "components/omnibox/browser/history_index_restore_observer.h"
 #include "components/omnibox/browser/in_memory_url_index.h"
+#include "components/policy/core/common/cloud/cloud_external_data_manager.h"
+#include "components/policy/core/common/cloud/mock_user_cloud_policy_store.h"
+#include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
 #include "components/policy/core/common/configuration_policy_provider.h"
 #include "components/policy/core/common/policy_service.h"
 #include "components/policy/core/common/policy_service_impl.h"
@@ -117,6 +120,7 @@
 #include "net/url_request/url_request_test_util.h"
 #include "services/identity/public/cpp/identity_test_utils.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/test/test_network_connection_tracker.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -292,6 +296,7 @@ TestingProfile::TestingProfile(
     bool allows_browser_windows,
     base::Optional<bool> is_new_profile,
     const std::string& supervised_user_id,
+    std::unique_ptr<policy::UserCloudPolicyManager> policy_manager,
     std::unique_ptr<policy::PolicyService> policy_service,
     TestingFactories testing_factories,
     const std::string& profile_name)
@@ -312,6 +317,7 @@ TestingProfile::TestingProfile(
       browser_context_dependency_manager_(
           BrowserContextDependencyManager::GetInstance()),
       resource_context_(nullptr),
+      user_cloud_policy_manager_(std::move(policy_manager)),
       delegate_(delegate),
       profile_name_(profile_name),
       policy_service_(policy_service.release()) {
@@ -556,6 +562,9 @@ TestingProfile::~TestingProfile() {
   key_.reset();
 
   SimpleKeyMap::GetInstance()->Dissociate(this);
+
+  if (user_cloud_policy_manager_)
+    user_cloud_policy_manager_->Shutdown();
 
   if (host_content_settings_map_.get())
     host_content_settings_map_->ShutdownOnUIThread();
@@ -926,6 +935,10 @@ TestingProfile::GetPolicySchemaRegistryService() {
   return schema_registry_service_.get();
 }
 
+policy::UserCloudPolicyManager* TestingProfile::GetUserCloudPolicyManager() {
+  return user_cloud_policy_manager_.get();
+}
+
 base::FilePath TestingProfile::last_selected_directory() {
   return last_selected_directory_;
 }
@@ -1133,6 +1146,11 @@ void TestingProfile::Builder::SetSupervisedUserId(
   supervised_user_id_ = supervised_user_id;
 }
 
+void TestingProfile::Builder::SetUserCloudPolicyManager(
+    std::unique_ptr<policy::UserCloudPolicyManager> user_cloud_policy_manager) {
+  user_cloud_policy_manager_ = std::move(user_cloud_policy_manager);
+}
+
 void TestingProfile::Builder::SetPolicyService(
     std::unique_ptr<policy::PolicyService> policy_service) {
   policy_service_ = std::move(policy_service);
@@ -1152,15 +1170,15 @@ std::unique_ptr<TestingProfile> TestingProfile::Builder::Build() {
   DCHECK(!build_called_);
   build_called_ = true;
 
-  return std::unique_ptr<TestingProfile>(
-      new TestingProfile(path_, delegate_,
+  return std::unique_ptr<TestingProfile>(new TestingProfile(
+      path_, delegate_,
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-                         extension_policy_,
+      extension_policy_,
 #endif
-                         std::move(pref_service_), nullptr, guest_session_,
-                         allows_browser_windows_, std::move(is_new_profile_),
-                         supervised_user_id_, std::move(policy_service_),
-                         std::move(testing_factories_), profile_name_));
+      std::move(pref_service_), nullptr, guest_session_,
+      allows_browser_windows_, std::move(is_new_profile_), supervised_user_id_,
+      std::move(user_cloud_policy_manager_), std::move(policy_service_),
+      std::move(testing_factories_), profile_name_));
 }
 
 TestingProfile* TestingProfile::Builder::BuildIncognito(
@@ -1177,5 +1195,6 @@ TestingProfile* TestingProfile::Builder::BuildIncognito(
 #endif
       std::move(pref_service_), original_profile, guest_session_,
       allows_browser_windows_, std::move(is_new_profile_), supervised_user_id_,
-      std::move(policy_service_), std::move(testing_factories_), profile_name_);
+      std::move(user_cloud_policy_manager_), std::move(policy_service_),
+      std::move(testing_factories_), profile_name_);
 }

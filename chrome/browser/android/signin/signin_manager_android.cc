@@ -19,7 +19,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
-#include "chrome/browser/policy/cloud/user_cloud_policy_manager_factory.h"
 #include "chrome/browser/policy/cloud/user_policy_signin_service_factory.h"
 #include "chrome/browser/policy/cloud/user_policy_signin_service_mobile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -230,7 +229,7 @@ SigninManagerAndroid::GetManagementDomain(JNIEnv* env,
   base::android::ScopedJavaLocalRef<jstring> domain;
 
   policy::UserCloudPolicyManager* manager =
-      policy::UserCloudPolicyManagerFactory::GetForBrowserContext(profile_);
+      profile_->GetUserCloudPolicyManager();
   policy::CloudPolicyStore* store = manager->core()->store();
 
   if (store && store->is_managed() && store->policy()->has_username()) {

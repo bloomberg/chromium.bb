@@ -38,7 +38,8 @@ class WebUI;
 
 namespace policy {
 class SchemaRegistryService;
-}
+class UserCloudPolicyManager;
+}  // namespace policy
 
 namespace network {
 class SharedURLLoaderFactory;
@@ -232,6 +233,9 @@ class Profile : public content::BrowserContext {
 
   // Returns the SchemaRegistryService.
   virtual policy::SchemaRegistryService* GetPolicySchemaRegistryService();
+
+  // Returns the UserCloudPolicyManager.
+  virtual policy::UserCloudPolicyManager* GetUserCloudPolicyManager();
 
   // Returns the last directory that was chosen for uploading or opening a file.
   virtual base::FilePath last_selected_directory() = 0;

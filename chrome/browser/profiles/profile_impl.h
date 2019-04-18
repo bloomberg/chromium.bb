@@ -50,6 +50,7 @@ namespace policy {
 class ConfigurationPolicyProvider;
 class ProfilePolicyConnector;
 class SchemaRegistryService;
+class UserCloudPolicyManager;
 }
 
 namespace sync_preferences {
@@ -141,6 +142,7 @@ class ProfileImpl : public Profile {
   PrefService* GetOffTheRecordPrefs() override;
   PrefService* GetReadOnlyOffTheRecordPrefs() override;
   policy::SchemaRegistryService* GetPolicySchemaRegistryService() override;
+  policy::UserCloudPolicyManager* GetUserCloudPolicyManager() override;
   net::URLRequestContextGetter* GetRequestContext() override;
   base::OnceCallback<net::CookieStore*()> GetExtensionsCookieStoreGetter()
       override;
@@ -226,6 +228,7 @@ class ProfileImpl : public Profile {
   std::unique_ptr<policy::SchemaRegistryService> schema_registry_service_;
   std::unique_ptr<policy::ConfigurationPolicyProvider>
       configuration_policy_provider_;
+  policy::UserCloudPolicyManager* user_cloud_policy_manager_;
   std::unique_ptr<policy::ProfilePolicyConnector> profile_policy_connector_;
 
   // Keep |prefs_| on top for destruction order because |extension_prefs_|,

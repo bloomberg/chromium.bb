@@ -24,7 +24,6 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "components/user_manager/user.h"
 #else  // Non-ChromeOS.
-#include "chrome/browser/policy/cloud/user_cloud_policy_manager_factory.h"
 #include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
 #endif
 
@@ -77,8 +76,6 @@ ProfilePolicyConnectorFactory::ProfilePolicyConnectorFactory()
         BrowserContextDependencyManager::GetInstance()) {
 #if defined(OS_CHROMEOS)
   DependsOn(UserPolicyManagerFactoryChromeOS::GetInstance());
-#else
-  DependsOn(UserCloudPolicyManagerFactory::GetInstance());
 #endif
 }
 
@@ -134,7 +131,7 @@ ProfilePolicyConnectorFactory::CreateForBrowserContextInternal(
   }
 #else
   CloudPolicyManager* user_cloud_policy_manager =
-      UserCloudPolicyManagerFactory::GetForBrowserContext(context);
+      profile->GetUserCloudPolicyManager();
   if (user_cloud_policy_manager) {
     policy_provider = user_cloud_policy_manager;
     policy_store = user_cloud_policy_manager->core()->store();

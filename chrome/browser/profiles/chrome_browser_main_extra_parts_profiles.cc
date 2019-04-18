@@ -124,7 +124,6 @@
 #include "chrome/browser/chromeos/tether/tether_service_factory.h"
 #include "chrome/browser/extensions/api/platform_keys/verify_trust_api.h"
 #else
-#include "chrome/browser/policy/cloud/user_cloud_policy_manager_factory.h"
 #include "chrome/browser/policy/cloud/user_policy_signin_service_factory.h"
 #endif
 
@@ -355,7 +354,6 @@ void ChromeBrowserMainExtraPartsProfiles::
   policy::UserCloudPolicyTokenForwarderFactory::GetInstance();
   policy::UserNetworkConfigurationUpdaterFactory::GetInstance();
 #else  // !defined(OS_CHROMEOS)
-  policy::UserCloudPolicyManagerFactory::GetInstance();
   policy::UserPolicySigninServiceFactory::GetInstance();
 #endif
   policy::PolicyHeaderServiceFactory::GetInstance();
