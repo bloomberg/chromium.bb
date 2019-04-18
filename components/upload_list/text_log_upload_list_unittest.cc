@@ -209,7 +209,7 @@ TEST_F(TextLogUploadListTest, ParseMultipleEntries) {
     test_entry += ",";
     test_entry.append(kTestUploadId);
     test_entry += ",";
-    test_entry.append(kTestLocalID);
+    test_entry.append(base::NumberToString(i));
     test_entry += ",";
     test_entry.append(kTestCaptureTime);
     test_entry += "\n";
@@ -227,11 +227,12 @@ TEST_F(TextLogUploadListTest, ParseMultipleEntries) {
   upload_list->GetUploads(999, &uploads);
 
   EXPECT_EQ(4u, uploads.size());
+  // The entries order should be reversed during the parsing.
   for (size_t i = 0; i < uploads.size(); ++i) {
     double time_double = uploads[i].upload_time.ToDoubleT();
     EXPECT_STREQ(kTestUploadTime, base::NumberToString(time_double).c_str());
     EXPECT_STREQ(kTestUploadId, uploads[i].upload_id.c_str());
-    EXPECT_STREQ(kTestLocalID, uploads[i].local_id.c_str());
+    EXPECT_EQ(base::NumberToString(uploads.size() - i), uploads[i].local_id);
     time_double = uploads[i].capture_time.ToDoubleT();
     EXPECT_STREQ(kTestCaptureTime, base::NumberToString(time_double).c_str());
   }
