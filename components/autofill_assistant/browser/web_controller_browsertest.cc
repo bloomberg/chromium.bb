@@ -298,8 +298,7 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
   }
 
   void GetFieldsValue(const std::vector<Selector>& selectors,
-                      const std::vector<std::string>& expected_values,
-                      bool expect_eq) {
+                      const std::vector<std::string>& expected_values) {
     base::RunLoop run_loop;
     ASSERT_EQ(selectors.size(), expected_values.size());
     size_t pending_number_of_checks = selectors.size();
@@ -308,30 +307,19 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
           selectors[i],
           base::BindOnce(&WebControllerBrowserTest::OnGetFieldValue,
                          base::Unretained(this), run_loop.QuitClosure(),
-                         &pending_number_of_checks, expected_values[i],
-                         expect_eq));
+                         &pending_number_of_checks, expected_values[i]));
     }
     run_loop.Run();
-  }
-
-  void GetFieldsValue(const std::vector<Selector>& selectors,
-                      const std::vector<std::string>& expected_values) {
-    GetFieldsValue(selectors, expected_values, true);
   }
 
   void OnGetFieldValue(const base::Closure& done_callback,
                        size_t* pending_number_of_checks_output,
                        const std::string& expected_value,
-                       bool expect_eq,
                        bool exists,
                        const std::string& value) {
     // Don't use ASSERT_EQ here: if the check fails, this would result in
     // an endless loop without meaningful test results.
-    if (expect_eq) {
-      EXPECT_EQ(expected_value, value);
-    } else {
-      EXPECT_NE(expected_value, value);
-    }
+    EXPECT_EQ(expected_value, value);
     *pending_number_of_checks_output -= 1;
     if (*pending_number_of_checks_output == 0) {
       std::move(done_callback).Run();
@@ -344,7 +332,7 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
     base::RunLoop run_loop;
     ClientStatus result;
     web_controller_->SetFieldValue(
-        selector, value, simulate_key_presses, 0,
+        selector, value, simulate_key_presses,
         base::BindOnce(&WebControllerBrowserTest::OnSetFieldValue,
                        base::Unretained(this), run_loop.QuitClosure(),
                        &result));
@@ -360,22 +348,16 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
   }
 
   ClientStatus SendKeyboardInput(const Selector& selector,
-                                 const std::vector<UChar32>& codepoints,
-                                 int delay_in_milli) {
+                                 const std::vector<UChar32>& codepoints) {
     base::RunLoop run_loop;
     ClientStatus result;
     web_controller_->SendKeyboardInput(
-        selector, codepoints, delay_in_milli,
+        selector, codepoints,
         base::BindOnce(&WebControllerBrowserTest::OnSendKeyboardInput,
                        base::Unretained(this), run_loop.QuitClosure(),
                        &result));
     run_loop.Run();
     return result;
-  }
-
-  ClientStatus SendKeyboardInput(const Selector& selector,
-                                 const std::vector<UChar32>& codepoints) {
-    return SendKeyboardInput(selector, codepoints, -1);
   }
 
   void OnSendKeyboardInput(const base::Closure& done_callback,
@@ -944,43 +926,6 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
   EXPECT_EQ(ACTION_APPLIED,
             SendKeyboardInput(a_selector, input).proto_status());
   GetFieldsValue(selectors, {expected_output});
-}
-
-IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
-                       SendKeyboardInputSetsKeyPropertyWithTimeout) {
-  // Sends input keys to a field where JS will intercept KeyDown and
-  // at index 3 it will set a timeout whick inserts an space after the
-  // timeout. If key press delay is enabled, it should handle this
-  // correctly.
-  auto input = UTF8ToUnicode("012345");
-  std::string expected_output = "012 345";
-
-  std::vector<Selector> selectors;
-  Selector a_selector;
-  a_selector.selectors.emplace_back("#input_js_event_with_timeout");
-  selectors.emplace_back(a_selector);
-  EXPECT_EQ(ACTION_APPLIED,
-            SendKeyboardInput(a_selector, input, /*delay_in_milli*/ 100)
-                .proto_status());
-  GetFieldsValue(selectors, {expected_output});
-}
-
-IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
-                       SendKeyboardInputWithoutDelayFailsWithJSFields) {
-  // Sends input keys to a field where JS will intercept KeyDown and
-  // at index 3 it will set a timeout whick inserts an space after the
-  // timeout. If key press delay is disabled, it should insert one of
-  // 3/4/5 at insertion point.
-  auto input = UTF8ToUnicode("012345");
-  std::string expected_output = "012 345";
-
-  std::vector<Selector> selectors;
-  Selector a_selector;
-  a_selector.selectors.emplace_back("#input_js_event_with_timeout");
-  selectors.emplace_back(a_selector);
-  EXPECT_EQ(ACTION_APPLIED,
-            SendKeyboardInput(a_selector, input).proto_status());
-  GetFieldsValue(selectors, {expected_output}, /*expect_eq*/ false);
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, SetAttribute) {

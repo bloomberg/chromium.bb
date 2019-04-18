@@ -174,21 +174,6 @@ found in the LICENSE file.
       </script>
     </div>
 
-    <div>
-      <input id="input_js_event_with_timeout" type="text">
-      <!-- Uses the 'key' property of a keydown event. -->
-      <script>
-        var t = document.getElementById("input_js_event_with_timeout");
-        t.addEventListener('keydown', e => {
-        var value = e.target.value;
-        if (value.length === 3) {
-          e.preventDefault();
-          setTimeout(() => {e.target.value = value + ' ' + e.key}, 10);
-        }
-      });
-      </script>
-    </div>
-
     <div id="testOuterHtml"><span>Span</span><p>Paragraph</p></div>
 
     <div id="hidden" style="display: none;">This text is hidden</div>
