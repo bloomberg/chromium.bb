@@ -17,7 +17,6 @@
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
-#include "components/ukm/ios/features.h"
 #import "ios/chrome/app/main_controller.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -251,15 +250,6 @@ id<GREYMatcher> BandwidthSettingsButton() {
   preferences->SetBoolean(browsing_data::prefs::kDeleteFormData, false);
 }
 
-- (void)setMetricsReportingEnabled:(BOOL)reportingEnabled {
-  chrome_test_util::SetBooleanLocalStatePref(
-      metrics::prefs::kMetricsReportingEnabled, reportingEnabled);
-  // Breakpad uses dispatch_async to update its state. Wait to get to a
-  // consistent state.
-  chrome_test_util::WaitForBreakpadQueue();
-}
-
-// TODO(crbug.com/953862): Remove as part of feature flag cleanup.
 - (void)setMetricsReportingEnabled:(BOOL)reportingEnabled
                           wifiOnly:(BOOL)wifiOnly {
   chrome_test_util::SetBooleanLocalStatePref(
@@ -365,24 +355,14 @@ id<GREYMatcher> BandwidthSettingsButton() {
   // kMetricsReportingEnabled ON and kMetricsReportingWifiOnly OFF
   //  - Services record data and upload data.
 
-  if (base::FeatureList::IsEnabled(kUmaCellular)) {
-    // kMetricsReportingEnabled OFF
-    [self setMetricsReportingEnabled:NO];
-  } else {
-    // kMetricsReportingEnabled OFF and kMetricsReportingWifiOnly OFF
-    [self setMetricsReportingEnabled:NO wifiOnly:NO];
-  }
+  // kMetricsReportingEnabled OFF and kMetricsReportingWifiOnly OFF
+  [self setMetricsReportingEnabled:NO wifiOnly:NO];
   // Service should be completely disabled.
   // I.e. no recording of data, and no uploading of what's been recorded.
   [self assertMetricsServiceDisabled:serviceType];
 
-  if (base::FeatureList::IsEnabled(kUmaCellular)) {
-    // kMetricsReportingEnabled OFF
-    [self setMetricsReportingEnabled:NO];
-  } else {
-    // kMetricsReportingEnabled OFF and kMetricsReportingWifiOnly ON
-    [self setMetricsReportingEnabled:NO wifiOnly:YES];
-  }
+  // kMetricsReportingEnabled OFF and kMetricsReportingWifiOnly ON
+  [self setMetricsReportingEnabled:NO wifiOnly:YES];
   // If kMetricsReportingEnabled is OFF, any service should remain completely
   // disabled, i.e. no uploading even if kMetricsReportingWifiOnly is ON.
   [self assertMetricsServiceDisabled:serviceType];
@@ -395,28 +375,25 @@ id<GREYMatcher> BandwidthSettingsButton() {
   // The values of the prefs and the wwan vs wifi state should be honored by
   // the services, turning on and off according to the rules laid out above.
 
-  if (!base::FeatureList::IsEnabled(kUmaCellular)) {
-    // kMetricsReportingEnabled ON and kMetricsReportingWifiOnly ON.
-    [self setMetricsReportingEnabled:YES wifiOnly:YES];
-    // Service should be enabled.
-    [self assertMetricsServiceEnabled:serviceType];
+  // kMetricsReportingEnabled ON and kMetricsReportingWifiOnly ON.
+  [self setMetricsReportingEnabled:YES wifiOnly:YES];
+  // Service should be enabled.
+  [self assertMetricsServiceEnabled:serviceType];
 
-    // Set the network to use a cellular network, which should disable uploading
-    // when the wifi-only flag is set.
-    chrome_test_util::SetWWANStateTo(YES);
-    chrome_test_util::WaitForBreakpadQueue();
-    [self assertMetricsServiceEnabledButNotUploading:serviceType];
+  // Set the network to use a cellular network, which should disable uploading
+  // when the wifi-only flag is set.
+  chrome_test_util::SetWWANStateTo(YES);
+  chrome_test_util::WaitForBreakpadQueue();
+  [self assertMetricsServiceEnabledButNotUploading:serviceType];
 
-    // Turn off cellular network usage, which should enable uploading.
-    chrome_test_util::SetWWANStateTo(NO);
-    chrome_test_util::WaitForBreakpadQueue();
-    [self assertMetricsServiceEnabled:serviceType];
+  // Turn off cellular network usage, which should enable uploading.
+  chrome_test_util::SetWWANStateTo(NO);
+  chrome_test_util::WaitForBreakpadQueue();
+  [self assertMetricsServiceEnabled:serviceType];
 
-    // kMetricsReportingEnabled ON and kMetricsReportingWifiOnly OFF
-    [self setMetricsReportingEnabled:YES wifiOnly:NO];
-    [self assertMetricsServiceEnabled:serviceType];
-  }
-
+  // kMetricsReportingEnabled ON and kMetricsReportingWifiOnly OFF
+  [self setMetricsReportingEnabled:YES wifiOnly:NO];
+  [self assertMetricsServiceEnabled:serviceType];
 #else
   // Development build.  Do not allow any recording or uploading of data.
   // Specifically, the kMetricsReportingEnabled preference is completely
@@ -425,17 +402,15 @@ id<GREYMatcher> BandwidthSettingsButton() {
   // This tests that no matter the state change, pref or network connection,
   // services remain disabled.
 
-  if (!base::FeatureList::IsEnabled(kUmaCellular)) {
-    // kMetricsReportingEnabled ON and kMetricsReportingWifiOnly ON
-    [self setMetricsReportingEnabled:YES wifiOnly:YES];
-    // Service should remain disabled.
-    [self assertMetricsServiceDisabled:serviceType];
+  // kMetricsReportingEnabled ON and kMetricsReportingWifiOnly ON
+  [self setMetricsReportingEnabled:YES wifiOnly:YES];
+  // Service should remain disabled.
+  [self assertMetricsServiceDisabled:serviceType];
 
-    // kMetricsReportingEnabled ON and kMetricsReportingWifiOnly OFF
-    [self setMetricsReportingEnabled:YES wifiOnly:NO];
-    // Service should remain disabled.
-    [self assertMetricsServiceDisabled:serviceType];
-  }
+  // kMetricsReportingEnabled ON and kMetricsReportingWifiOnly OFF
+  [self setMetricsReportingEnabled:YES wifiOnly:NO];
+  // Service should remain disabled.
+  [self assertMetricsServiceDisabled:serviceType];
 #endif
 }
 
