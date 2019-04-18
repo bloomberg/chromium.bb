@@ -25,6 +25,7 @@
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/u2f/u2f_tab_helper.h"
 #import "ios/chrome/browser/ui/main/browser_interface_provider.h"
+#import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "net/base/mac/url_conversions.h"
@@ -172,11 +173,10 @@ NSString* const kShortcutQRScanner = @"OpenQRScanner";
         [[startupInformation startupParameters] launchInIncognito]
             ? ApplicationMode::INCOGNITO
             : ApplicationMode::NORMAL;
+    UrlLoadParams params = UrlLoadParams::InNewTab(webpageGURL);
     [tabOpener dismissModalsAndOpenSelectedTabInMode:targetMode
-                                             withURL:webpageGURL
-                                          virtualURL:GURL::EmptyGURL()
+                                   withUrlLoadParams:params
                                       dismissOmnibox:YES
-                                          transition:ui::PAGE_TRANSITION_LINK
                                           completion:^{
                                             [startupInformation
                                                 setStartupParameters:nil];
@@ -275,14 +275,14 @@ NSString* const kShortcutQRScanner = @"OpenQRScanner";
     } else {
       URL = externalURL;
     }
+    UrlLoadParams params = UrlLoadParams::InNewTab(URL, virtualURL);
+
     [tabOpener dismissModalsAndOpenSelectedTabInMode:targetMode
-                                             withURL:URL
-                                          virtualURL:virtualURL
+                                   withUrlLoadParams:params
                                       dismissOmnibox:[[startupInformation
                                                          startupParameters]
                                                          postOpeningAction] !=
                                                      FOCUS_OMNIBOX
-                                          transition:ui::PAGE_TRANSITION_LINK
                                           completion:^{
                                             [startupInformation
                                                 setStartupParameters:nil];

@@ -467,18 +467,14 @@ enum class EnterTabSwitcherSnapshotResult {
 // |completion| is executed after the tab is opened. After Tab is open the
 // virtual URL is set to the pending navigation item.
 - (void)openSelectedTabInMode:(ApplicationMode)targetMode
-                      withURL:(const GURL&)url
-                   virtualURL:(const GURL&)virtualURL
-                   transition:(ui::PageTransition)transition
+            withUrlLoadParams:(const UrlLoadParams&)urlLoadParams
                    completion:(ProceduralBlock)completion;
 // Checks the target BVC's current tab's URL. If this URL is chrome://newtab,
-// loads |url| in this tab. Otherwise, open |url| in a new tab in the target
-// BVC.
-// |tabDisplayedCompletion| will be called on the new tab (if not nil).
+// loads |urlLoadParams| in this tab. Otherwise, open |urlLoadParams| in a new
+// tab in the target BVC. |tabDisplayedCompletion| will be called on the new tab
+// (if not nil).
 - (void)openOrReuseTabInMode:(ApplicationMode)targetMode
-                     withURL:(const GURL&)url
-                  virtualURL:(const GURL&)virtualURL
-                  transition:(ui::PageTransition)transition
+           withUrlLoadParams:(const UrlLoadParams&)urlLoadParams
          tabOpenedCompletion:(ProceduralBlock)tabOpenedCompletion;
 // Returns whether the restore infobar should be displayed.
 - (bool)mustShowRestoreInfobar;
@@ -845,11 +841,11 @@ enum class EnterTabSwitcherSnapshotResult {
   [self markEulaAsAccepted];
 
   if (_startupParameters) {
+    UrlLoadParams params =
+        UrlLoadParams::InNewTab(_startupParameters.externalURL);
     [self dismissModalsAndOpenSelectedTabInMode:ApplicationMode::NORMAL
-                                        withURL:_startupParameters.externalURL
-                                     virtualURL:GURL::EmptyGURL()
+                              withUrlLoadParams:params
                                  dismissOmnibox:YES
-                                     transition:ui::PAGE_TRANSITION_LINK
                                      completion:^{
                                        [self setStartupParameters:nil];
                                      }];
@@ -1799,12 +1795,12 @@ enum class EnterTabSwitcherSnapshotResult {
 
 - (void)openUrlFromSettings:(OpenNewTabCommand*)command {
   DCHECK([command fromChrome]);
+  UrlLoadParams params = UrlLoadParams::InNewTab([command URL]);
+  params.web_params.transition_type = ui::PAGE_TRANSITION_TYPED;
   ProceduralBlock completion = ^{
     [self dismissModalsAndOpenSelectedTabInMode:ApplicationMode::NORMAL
-                                        withURL:[command URL]
-                                     virtualURL:GURL::EmptyGURL()
+                              withUrlLoadParams:params
                                  dismissOmnibox:YES
-                                     transition:ui::PAGE_TRANSITION_TYPED
                                      completion:nil];
   };
   [self closeSettingsAnimated:YES completion:completion];
@@ -2062,11 +2058,13 @@ enum class EnterTabSwitcherSnapshotResult {
   if (!_tabSwitcher)
     return NO;
 
+  UrlLoadParams urlLoadParams =
+      UrlLoadParams::InNewTab(GURL(kChromeUINewTabURL));
+  urlLoadParams.web_params.transition_type = ui::PAGE_TRANSITION_TYPED;
+
   [_tabSwitcher dismissWithNewTabAnimationToModel:self.mainTabModel
-                                          withURL:GURL(kChromeUINewTabURL)
-                                       virtualURL:GURL::EmptyGURL()
-                                          atIndex:self.mainTabModel.count
-                                       transition:ui::PAGE_TRANSITION_TYPED];
+                                withUrlLoadParams:urlLoadParams
+                                          atIndex:self.mainTabModel.count];
   return YES;
 }
 
@@ -2256,9 +2254,7 @@ enum class EnterTabSwitcherSnapshotResult {
 #pragma mark - Tab opening utility methods.
 
 - (void)openOrReuseTabInMode:(ApplicationMode)targetMode
-                     withURL:(const GURL&)URL
-                  virtualURL:(const GURL&)virtualURL
-                  transition:(ui::PageTransition)transition
+           withUrlLoadParams:(const UrlLoadParams&)urlLoadParams
          tabOpenedCompletion:(ProceduralBlock)tabOpenedCompletion {
   BrowserViewController* targetBVC =
       targetMode == ApplicationMode::NORMAL ? self.mainBVC : self.otrBVC;
@@ -2271,7 +2267,7 @@ enum class EnterTabSwitcherSnapshotResult {
   // NTP hasn't finished loading.
   if (currentTabInTargetBVC.webState &&
       IsURLNtp(currentTabInTargetBVC.webState->GetVisibleURL()) &&
-      IsURLNtp(URL)) {
+      IsURLNtp(urlLoadParams.web_params.url)) {
     if (tabOpenedCompletion) {
       tabOpenedCompletion();
     }
@@ -2290,17 +2286,19 @@ enum class EnterTabSwitcherSnapshotResult {
       !(currentTabInTargetBVC.webState &&
         IsURLNtp(currentTabInTargetBVC.webState->GetVisibleURL()))) {
     [targetBVC appendTabAddedCompletion:tabOpenedCompletion];
-    UrlLoadParams params = UrlLoadParams::InNewTab(URL, virtualURL);
-    params.web_params.transition_type = transition;
-    params.in_incognito = targetMode == ApplicationMode::INCOGNITO;
+    UrlLoadParams newTabParams = urlLoadParams;
+    newTabParams.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
+    newTabParams.in_incognito = targetMode == ApplicationMode::INCOGNITO;
     UrlLoadingServiceFactory::GetForBrowserState([targetBVC browserState])
-        ->Load(params);
+        ->Load(newTabParams);
     return;
   }
 
-  // Otherwise, load |url| in the current tab.
+  // Otherwise, load |urlLoadParams| in the current tab.
+  UrlLoadParams sameTabParams = urlLoadParams;
+  sameTabParams.disposition = WindowOpenDisposition::CURRENT_TAB;
   UrlLoadingServiceFactory::GetForBrowserState([targetBVC browserState])
-      ->Load(UrlLoadParams::InCurrentTab(URL, virtualURL));
+      ->Load(sameTabParams);
   if (tabOpenedCompletion) {
     tabOpenedCompletion();
   }
@@ -2335,9 +2333,7 @@ enum class EnterTabSwitcherSnapshotResult {
 }
 
 - (void)openSelectedTabInMode:(ApplicationMode)targetMode
-                      withURL:(const GURL&)url
-                   virtualURL:(const GURL&)virtualURL
-                   transition:(ui::PageTransition)transition
+            withUrlLoadParams:(const UrlLoadParams&)urlLoadParams
                    completion:(ProceduralBlock)completion {
   id<BrowserInterface> targetInterface =
       targetMode == ApplicationMode::NORMAL
@@ -2349,7 +2345,7 @@ enum class EnterTabSwitcherSnapshotResult {
                                                    postOpeningAction]];
 
   // Commands are only allowed on NTP.
-  DCHECK(IsURLNtp(url) || !startupCompletion);
+  DCHECK(IsURLNtp(urlLoadParams.web_params.url) || !startupCompletion);
 
   ProceduralBlock tabOpenedCompletion = nil;
   if (startupCompletion && completion) {
@@ -2375,12 +2371,11 @@ enum class EnterTabSwitcherSnapshotResult {
               ? TabSwitcherDismissalMode::NORMAL
               : TabSwitcherDismissalMode::INCOGNITO;
       [targetInterface.bvc appendTabAddedCompletion:tabOpenedCompletion];
-      UrlLoadParams params = UrlLoadParams::InNewTab(url, virtualURL);
-      params.web_params.transition_type = transition;
-      params.in_incognito = targetMode == ApplicationMode::INCOGNITO;
+      UrlLoadParams savedParams = urlLoadParams;
+      savedParams.in_incognito = targetMode == ApplicationMode::INCOGNITO;
       UrlLoadingServiceFactory::GetForBrowserState(
           [targetInterface.bvc browserState])
-          ->Load(params);
+          ->Load(savedParams);
     } else {
       // Voice search, QRScanner and the omnibox are presented by the BVC.
       // They must be started after the BVC view is added in the hierarchy.
@@ -2388,10 +2383,8 @@ enum class EnterTabSwitcherSnapshotResult {
           [_startupParameters postOpeningAction];
       [self setStartupParameters:nil];
       [_tabSwitcher dismissWithNewTabAnimationToModel:targetInterface.tabModel
-                                              withURL:url
-                                           virtualURL:virtualURL
-                                              atIndex:tabIndex
-                                           transition:transition];
+                                    withUrlLoadParams:urlLoadParams
+                                              atIndex:tabIndex];
     }
   } else {
     if (!self.currentBVC.presentedViewController) {
@@ -2399,9 +2392,7 @@ enum class EnterTabSwitcherSnapshotResult {
     }
     [self setCurrentInterfaceForMode:targetMode];
     [self openOrReuseTabInMode:targetMode
-                       withURL:url
-                    virtualURL:virtualURL
-                    transition:transition
+             withUrlLoadParams:urlLoadParams
            tabOpenedCompletion:tabOpenedCompletion];
   }
 
@@ -2544,19 +2535,15 @@ enum class EnterTabSwitcherSnapshotResult {
 #pragma mark - TabOpening implementation.
 
 - (void)dismissModalsAndOpenSelectedTabInMode:(ApplicationMode)targetMode
-                                      withURL:(const GURL&)url
-                                   virtualURL:(const GURL&)virtualURL
+                            withUrlLoadParams:
+                                (const UrlLoadParams&)urlLoadParams
                                dismissOmnibox:(BOOL)dismissOmnibox
-                                   transition:(ui::PageTransition)transition
                                    completion:(ProceduralBlock)completion {
-  GURL copyOfURL = url;
-  GURL copyOfVirtualURL = virtualURL;
+  UrlLoadParams copyOfUrlLoadParams = urlLoadParams;
   [self
       dismissModalDialogsWithCompletion:^{
         [self openSelectedTabInMode:targetMode
-                            withURL:copyOfURL
-                         virtualURL:copyOfVirtualURL
-                         transition:transition
+                  withUrlLoadParams:copyOfUrlLoadParams
                          completion:completion];
       }
                          dismissOmnibox:dismissOmnibox];
