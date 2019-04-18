@@ -18,6 +18,8 @@ from chromite.lib import osutils
 def _GetImageDir(build_root, target):
   """Return path containing images for the given build target.
 
+  TODO(saklein) Expand image_lib.GetLatestImageLink to support this use case.
+
   Args:
     build_root (str): Path to checkout where build occurs.
     target (str): Name of the build target.
@@ -82,7 +84,7 @@ def BundleTestUpdatePayloads(input_proto, output_proto):
   # a list of generated files. As a workaround, we have commands.py
   # put the files in a separate temporary directory so we can catalog them,
   # then move them to the output dir.
-  # TODO(saklein): Repalce with a chromite/service implementation.
+  # TODO(crbug.com/954283): Replace with a chromite/service implementation.
   with osutils.TempDir() as temp:
     commands.GeneratePayloads(img, temp, full=True, stateful=True, delta=True)
     commands.GenerateQuickProvisionPayloads(img, temp)
@@ -107,7 +109,7 @@ def BundleAutotestFiles(input_proto, output_proto):
 
   # Note that unlike the functions below, this returns the full path
   # to *multiple* tarballs.
-  # TODO(saklein): Replace with a chromite/service implementation.
+  # TODO(crbug.com/954289): Replace with a chromite/service implementation.
   archives = commands.BuildAutotestTarballsForHWTest(build_root, cwd,
                                                      output_dir)
 
@@ -129,7 +131,7 @@ def BundleTastFiles(input_proto, output_proto):
 
   # Note that unlike the functions below, this returns the full path
   # to the tarball.
-  # TODO(saklein): Replace with a chromite/service implementation.
+  # TODO(crbug.com/954294): Replace with a chromite/service implementation.
   archive = commands.BuildTastBundleTarball(build_root, cwd, output_dir)
 
   if archive is None:
@@ -151,7 +153,7 @@ def BundlePinnedGuestImages(input_proto, output_proto):
   output_dir = input_proto.output_dir
   build_root = constants.SOURCE_ROOT
 
-  # TODO(saklein): Replace with a chromite/service implementation.
+  # TODO(crbug.com/954299): Replace with a chromite/service implementation.
   archive = commands.BuildPinnedGuestImagesTarball(build_root, target,
                                                    output_dir)
 
@@ -174,7 +176,7 @@ def BundleFirmware(input_proto, output_proto):
   output_dir = input_proto.output_dir
   build_root = constants.SOURCE_ROOT
 
-  # TODO(saklein): Replace with a chromite/service implementation.
+  # TODO(crbug.com/954300): Replace with a chromite/service implementation.
   archive = commands.BuildFirmwareArchive(build_root, target, output_dir)
 
   if archive is None:
@@ -198,7 +200,7 @@ def BundleEbuildLogs(input_proto, output_proto):
   # Adjust accordingly...
   build_root = os.path.join(constants.SOURCE_ROOT, 'chroot', 'build')
 
-  # TODO(saklein): Replace with a chromite/service implementation.
+  # TODO(crbug.com/954303): Replace with a chromite/service implementation.
   archive = commands.BuildEbuildLogsTarball(build_root, target, output_dir)
 
   if archive is None:
