@@ -49,9 +49,9 @@ class COMPONENT_EXPORT(MPRIS) MprisServiceImpl : public MprisService {
   void SetCanPlay(bool value) override;
   void SetCanPause(bool value) override;
   void SetPlaybackStatus(PlaybackStatus value) override;
-  void SetTitle(const std::string& value) override;
-  void SetArtist(const std::string& value) override;
-  void SetAlbum(const std::string& value) override;
+  void SetTitle(const base::string16& value) override;
+  void SetArtist(const base::string16& value) override;
+  void SetAlbum(const base::string16& value) override;
   std::string GetServiceName() const override;
 
   // Used for testing with a mock DBus Bus.

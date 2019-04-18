@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/component_export.h"
+#include "base/strings/string16.h"
 
 namespace mpris {
 
@@ -43,9 +44,9 @@ class COMPONENT_EXPORT(MPRIS) MprisService {
   virtual void SetCanPlay(bool value) = 0;
   virtual void SetCanPause(bool value) = 0;
   virtual void SetPlaybackStatus(PlaybackStatus value) = 0;
-  virtual void SetTitle(const std::string& value) = 0;
-  virtual void SetArtist(const std::string& value) = 0;
-  virtual void SetAlbum(const std::string& value) = 0;
+  virtual void SetTitle(const base::string16& value) = 0;
+  virtual void SetArtist(const base::string16& value) = 0;
+  virtual void SetAlbum(const base::string16& value) = 0;
 
   // Returns the generated service name.
   virtual std::string GetServiceName() const = 0;

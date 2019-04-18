@@ -101,15 +101,15 @@ void MprisServiceImpl::SetPlaybackStatus(PlaybackStatus value) {
                       status);
 }
 
-void MprisServiceImpl::SetTitle(const std::string& value) {
+void MprisServiceImpl::SetTitle(const base::string16& value) {
   SetMetadataPropertyInternal("xesam:title", base::Value(value));
 }
 
-void MprisServiceImpl::SetArtist(const std::string& value) {
+void MprisServiceImpl::SetArtist(const base::string16& value) {
   SetMetadataPropertyInternal("xesam:artist", base::Value(value));
 }
 
-void MprisServiceImpl::SetAlbum(const std::string& value) {
+void MprisServiceImpl::SetAlbum(const base::string16& value) {
   SetMetadataPropertyInternal("xesam:album", base::Value(value));
 }
 

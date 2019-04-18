@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/containers/flat_map.h"
 #include "base/run_loop.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/dbus/dbus_thread_linux.h"
 #include "dbus/message.h"
@@ -306,11 +307,11 @@ TEST_F(MprisServiceImplTest, ChangingMetadataEmitsSignal) {
 
   // Setting the title should emit an
   // org.freedesktop.DBus.Properties.PropertiesChanged signal.
-  GetService()->SetTitle("Foo");
+  GetService()->SetTitle(base::ASCIIToUTF16("Foo"));
   wait_for_signal.Run();
 
   // Setting the title to the same value as before should not emit a new signal.
-  GetService()->SetTitle("Foo");
+  GetService()->SetTitle(base::ASCIIToUTF16("Foo"));
 }
 
 }  // namespace mpris
