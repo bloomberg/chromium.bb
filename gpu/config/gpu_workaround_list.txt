@@ -113,3 +113,4 @@ disable_copy_tex_image_2d_rgb10_a2_adreno
 disable_copy_tex_image_2d_rgb10_a2_tegra
 use_eqaa_storage_samples_2
 max_3d_array_texture_size_1024
+disable_copy_tex_image_2d_rgb10_a2_mali

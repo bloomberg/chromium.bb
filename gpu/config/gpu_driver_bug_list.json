@@ -3281,6 +3281,19 @@
         "max_texture_size_limit_4096",
         "max_3d_array_texture_size_1024"
       ]
+    },
+    {
+      "id": 302,
+      "description": "glCopyTexImage2D on Mali-T820 fails in certain cases if source is GL_RGB10_A2.",
+      "cr_bugs": [953771],
+      "os": {
+        "type": "android"
+      },
+      "gl_vendor": "ARM.*",
+      "gl_renderer": "Mali-T820",
+      "features": [
+        "disable_copy_tex_image_2d_rgb10_a2_mali"
+      ]
     }
   ]
 }
