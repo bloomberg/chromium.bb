@@ -45,9 +45,6 @@ public class ImageFetcherTest {
                 String url, String clientName, int width, int height, Callback<Bitmap> callback) {}
 
         @Override
-        public void clear() {}
-
-        @Override
         public int getConfig() {
             return 0;
         }

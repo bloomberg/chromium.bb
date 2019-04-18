@@ -50,7 +50,7 @@ import java.util.List;
  */
 public class AutocompleteCoordinator implements UrlFocusChangeListener, UrlTextChangeListener {
     private final ViewGroup mParent;
-    private AutocompleteMediator mMediator;
+    private final AutocompleteMediator mMediator;
 
     private ListView mListView;
 
@@ -168,11 +168,6 @@ public class AutocompleteCoordinator implements UrlFocusChangeListener, UrlTextC
 
         mMediator =
                 new AutocompleteMediator(context, delegate, urlBarEditingTextProvider, listModel);
-    }
-
-    public void destroy() {
-        mMediator.destroy();
-        mMediator = null;
     }
 
     private ViewProvider<SuggestionListViewHolder> createViewProvider(Context context) {

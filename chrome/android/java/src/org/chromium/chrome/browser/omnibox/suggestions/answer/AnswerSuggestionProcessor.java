@@ -11,13 +11,10 @@ import android.util.TypedValue;
 import android.view.View;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.image_fetcher.ImageFetcher;
-import org.chromium.chrome.browser.image_fetcher.ImageFetcherConfig;
-import org.chromium.chrome.browser.image_fetcher.ImageFetcherFactory;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
 import org.chromium.chrome.browser.omnibox.UrlBarEditingTextStateProvider;
+import org.chromium.chrome.browser.omnibox.suggestions.AnswersImageFetcher;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinator.SuggestionProcessor;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionUiType;
@@ -27,7 +24,6 @@ import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionViewDeleg
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionViewProperties;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionViewProperties.SuggestionIcon;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionViewProperties.SuggestionTextContainer;
-import org.chromium.chrome.browser.util.ConversionUtils;
 import org.chromium.components.omnibox.AnswerType;
 import org.chromium.components.omnibox.SuggestionAnswer;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -39,12 +35,10 @@ import java.util.Map;
 
 /** A class that handles model and view creation for the most commonly used omnibox suggestion. */
 public class AnswerSuggestionProcessor implements SuggestionProcessor {
-    private static final int MAX_CACHE_SIZE = 500 * ConversionUtils.BYTES_PER_KILOBYTE;
-
     private final Map<String, List<PropertyModel>> mPendingAnswerRequestUrls;
     private final Context mContext;
     private final SuggestionHost mSuggestionHost;
-    private ImageFetcher mImageFetcher;
+    private final AnswersImageFetcher mImageFetcher;
     private final UrlBarEditingTextStateProvider mUrlBarEditingTextProvider;
     private boolean mEnableNewAnswerLayout;
 
@@ -57,14 +51,8 @@ public class AnswerSuggestionProcessor implements SuggestionProcessor {
         mContext = context;
         mSuggestionHost = suggestionHost;
         mPendingAnswerRequestUrls = new HashMap<>();
+        mImageFetcher = new AnswersImageFetcher();
         mUrlBarEditingTextProvider = editingTextProvider;
-    }
-
-    public void destroy() {
-        if (mImageFetcher != null) {
-            mImageFetcher.destroy();
-            mImageFetcher = null;
-        }
     }
 
     @Override
@@ -108,10 +96,7 @@ public class AnswerSuggestionProcessor implements SuggestionProcessor {
 
     @Override
     public void onUrlFocusChange(boolean hasFocus) {
-        // This clear is necessary for memory as well as clearing when switching to/from incognito.
-        if (!hasFocus && mImageFetcher != null) {
-            mImageFetcher.clear();
-        }
+        if (!hasFocus) mImageFetcher.clearCache();
     }
 
     private void maybeFetchAnswerIcon(OmniboxSuggestion suggestion, PropertyModel model) {
@@ -132,35 +117,30 @@ public class AnswerSuggestionProcessor implements SuggestionProcessor {
             return;
         }
 
-        if (mImageFetcher == null) {
-            mImageFetcher = ImageFetcherFactory.createImageFetcher(
-                    ImageFetcherConfig.IN_MEMORY_ONLY,
-                    ((ChromeApplication) mContext.getApplicationContext()).getReferencePool(),
-                    MAX_CACHE_SIZE);
-        }
-
         List<PropertyModel> models = new ArrayList<>();
         models.add(model);
         mPendingAnswerRequestUrls.put(url, models);
+        mImageFetcher.requestAnswersImage(mSuggestionHost.getCurrentProfile(), url,
+                new AnswersImageFetcher.AnswersImageObserver() {
+                    @Override
+                    public void onAnswersImageChanged(Bitmap bitmap) {
+                        ThreadUtils.assertOnUiThread();
 
-        mImageFetcher.fetchImage(
-                url, ImageFetcher.ANSWER_SUGGESTIONS_UMA_CLIENT_NAME, (Bitmap bitmap) -> {
-                    ThreadUtils.assertOnUiThread();
+                        List<PropertyModel> models = mPendingAnswerRequestUrls.remove(url);
+                        boolean didUpdate = false;
+                        for (int i = 0; i < models.size(); i++) {
+                            PropertyModel model = models.get(i);
+                            if (!mSuggestionHost.isActiveModel(model)) continue;
 
-                    List<PropertyModel> currentModels = mPendingAnswerRequestUrls.remove(url);
-                    boolean didUpdate = false;
-                    for (int i = 0; i < currentModels.size(); i++) {
-                        PropertyModel currentModel = currentModels.get(i);
-                        if (!mSuggestionHost.isActiveModel(currentModel)) continue;
-
-                        if (mEnableNewAnswerLayout) {
-                            model.set(AnswerSuggestionViewProperties.ANSWER_IMAGE, bitmap);
-                        } else {
-                            model.set(SuggestionViewProperties.ANSWER_IMAGE, bitmap);
+                            if (mEnableNewAnswerLayout) {
+                                model.set(AnswerSuggestionViewProperties.ANSWER_IMAGE, bitmap);
+                            } else {
+                                model.set(SuggestionViewProperties.ANSWER_IMAGE, bitmap);
+                            }
+                            didUpdate = true;
                         }
-                        didUpdate = true;
+                        if (didUpdate) mSuggestionHost.notifyPropertyModelsChanged();
                     }
-                    if (didUpdate) mSuggestionHost.notifyPropertyModelsChanged();
                 });
     }
 
