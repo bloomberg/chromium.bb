@@ -35,10 +35,10 @@ constexpr char kOauthRedirectUrl[] =
     "https://chromoting-oauth.talkgadget."
     "google.com/talkgadget/oauth/chrome-remote-desktop/dev";
 
-std::string GetAuthorizationCodeUri() {
+std::string GetAuthorizationCodeUri(bool show_consent_page) {
   // Replace space characters with a '+' sign when formatting.
   bool use_plus = true;
-  return base::StringPrintf(
+  std::string uri = base::StringPrintf(
       "https://accounts.google.com/o/oauth2/auth"
       "?scope=%s"
       "&redirect_uri=https://chromoting-oauth.talkgadget.google.com/"
@@ -51,11 +51,20 @@ std::string GetAuthorizationCodeUri() {
           google_apis::GetOAuth2ClientID(google_apis::CLIENT_REMOTING),
           use_plus)
           .c_str());
+  if (show_consent_page) {
+    uri += "&approval_prompt=force";
+  }
+  return uri;
 }
 
 }  // namespace
 
 constexpr char TestOAuthTokenGetter::kSwitchNameAuthCode[];
+
+// static
+bool TestOAuthTokenGetter::IsServiceAccount(const std::string& email) {
+  return email.find("@chromoting.gserviceaccount.com") != std::string::npos;
+}
 
 TestOAuthTokenGetter::TestOAuthTokenGetter(TestTokenStorage* token_storage)
     : weak_factory_(this) {
@@ -74,14 +83,20 @@ TestOAuthTokenGetter::~TestOAuthTokenGetter() = default;
 void TestOAuthTokenGetter::Initialize(base::OnceClosure on_done) {
   std::string user_email = token_storage_->FetchUserEmail();
   std::string access_token = token_storage_->FetchAccessToken();
-  if (user_email.empty() || access_token.empty()) {
+  std::string refresh_token = token_storage_->FetchRefreshToken();
+  if (user_email.empty() || (access_token.empty() && refresh_token.empty())) {
     ResetWithAuthenticationFlow(std::move(on_done));
     return;
   }
-  VLOG(0) << "Reusing user_email: " << user_email << ", "
-          << "access_token: " << access_token;
-  token_getter_ = std::make_unique<FakeOAuthTokenGetter>(
-      OAuthTokenGetter::Status::SUCCESS, user_email, access_token);
+  VLOG(0) << "Reusing user_email: " << user_email;
+  if (!refresh_token.empty()) {
+    VLOG(0) << "Reusing refresh_token: " << refresh_token;
+    token_getter_ = CreateWithRefreshToken(refresh_token, user_email);
+  } else {
+    VLOG(0) << "Reusing access token: " << access_token;
+    token_getter_ = std::make_unique<FakeOAuthTokenGetter>(
+        OAuthTokenGetter::Status::SUCCESS, user_email, access_token);
+  }
   std::move(on_done).Run();
 }
 
@@ -102,26 +117,27 @@ void TestOAuthTokenGetter::InvalidateCache() {
 
   is_authenticating_ = true;
 
+  printf(
+      "Is your account whitelisted to use 1P scope in consent page? [Y/n]: ");
+  bool show_consent_page = test::ReadYNBool(true);
+
   static const std::string read_auth_code_prompt = base::StringPrintf(
       "Please authenticate at:\n\n"
       "  %s\n\n"
       "Enter the auth code: ",
-      GetAuthorizationCodeUri().c_str());
+      GetAuthorizationCodeUri(show_consent_page).c_str());
   std::string auth_code = test::ReadStringFromCommandLineOrStdin(
       kSwitchNameAuthCode, read_auth_code_prompt);
 
   // Make sure we don't try to reuse an auth code.
   base::CommandLine::ForCurrentProcess()->RemoveSwitch(kSwitchNameAuthCode);
 
-  // We can't get back the refresh token since we have first-party scope, so
-  // we are not trying to store it.
   token_getter_ = CreateFromIntermediateCredentials(
-      auth_code,
-      base::DoNothing::Repeatedly<const std::string&, const std::string&>());
+      auth_code, base::BindRepeating(&TestOAuthTokenGetter::OnCredentialsUpdate,
+                                     weak_factory_.GetWeakPtr()));
 
-  // Get the access token so that we can reuse it for next time.
-  token_getter_->CallWithToken(base::BindOnce(
-      &TestOAuthTokenGetter::OnAccessToken, weak_factory_.GetWeakPtr()));
+  // This triggers |OnCredentialsUpdate| to be called.
+  token_getter_->CallWithToken(base::DoNothing());
 }
 
 std::unique_ptr<OAuthTokenGetter>
@@ -139,6 +155,38 @@ TestOAuthTokenGetter::CreateFromIntermediateCredentials(
       /* auto_refresh */ true);
 }
 
+std::unique_ptr<OAuthTokenGetter> TestOAuthTokenGetter::CreateWithRefreshToken(
+    const std::string& refresh_token,
+    const std::string& email) {
+  bool is_service_account = IsServiceAccount(email);
+  auto oauth_credentials =
+      std::make_unique<OAuthTokenGetter::OAuthAuthorizationCredentials>(
+          email, refresh_token, is_service_account);
+
+  return std::make_unique<OAuthTokenGetterImpl>(
+      std::move(oauth_credentials),
+      url_loader_factory_owner_->GetURLLoaderFactory(),
+      /*auto_refresh=*/true);
+}
+
+void TestOAuthTokenGetter::OnCredentialsUpdate(
+    const std::string& user_email,
+    const std::string& refresh_token) {
+  VLOG(0) << "Received user_email: " << user_email
+          << ", refresh_token: " << refresh_token;
+  token_storage_->StoreUserEmail(user_email);
+  if (refresh_token.empty()) {
+    VLOG(0)
+        << "No refresh token is returned. Will cache the access token instead.";
+    token_getter_->CallWithToken(base::BindOnce(
+        &TestOAuthTokenGetter::OnAccessToken, weak_factory_.GetWeakPtr()));
+    return;
+  }
+  is_authenticating_ = false;
+  token_storage_->StoreRefreshToken(refresh_token);
+  RunAuthenticationDoneCallbacks();
+}
+
 void TestOAuthTokenGetter::OnAccessToken(OAuthTokenGetter::Status status,
                                          const std::string& user_email,
                                          const std::string& access_token) {
@@ -151,8 +199,11 @@ void TestOAuthTokenGetter::OnAccessToken(OAuthTokenGetter::Status status,
     return;
   }
   VLOG(0) << "Received access_token: " << access_token;
-  token_storage_->StoreUserEmail(user_email);
   token_storage_->StoreAccessToken(access_token);
+  RunAuthenticationDoneCallbacks();
+}
+
+void TestOAuthTokenGetter::RunAuthenticationDoneCallbacks() {
   while (!on_authentication_done_.empty()) {
     std::move(on_authentication_done_.front()).Run();
     on_authentication_done_.pop();

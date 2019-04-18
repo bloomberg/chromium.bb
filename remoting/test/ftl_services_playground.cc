@@ -343,8 +343,7 @@ void FtlServicesPlayground::HandleGrpcStatusError(base::OnceClosure on_done,
           "Request is unauthenticated. You should run SignInGaia first if "
           "you haven't done so, otherwise your OAuth token might be expired. \n"
           "Request for new OAuth token? [y/N]: ");
-      std::string result = test::ReadString();
-      if (result != "y" && result != "Y") {
+      if (!test::ReadYNBool()) {
         std::move(on_done).Run();
         return;
       }

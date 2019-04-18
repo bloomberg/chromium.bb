@@ -76,6 +76,11 @@ std::string ReadString() {
   return str;
 }
 
+bool ReadYNBool(bool default_value) {
+  std::string result = test::ReadString();
+  return result == "y" || result == "Y" || (default_value && result.empty());
+}
+
 std::string ReadStringFromCommandLineOrStdin(const std::string& switch_name,
                                              const std::string& read_prompt) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();

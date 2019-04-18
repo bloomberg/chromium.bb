@@ -53,6 +53,7 @@ namespace {
 
 constexpr char kSwitchNameHelp[] = "help";
 constexpr char kSwitchNameUsername[] = "username";
+constexpr char kSwitchNameHostOwner[] = "host-owner";
 constexpr char kSwitchNameStoragePath[] = "storage-path";
 constexpr char kSwitchNamePin[] = "pin";
 constexpr char kSwitchNameHostId[] = "host-id";
@@ -123,7 +124,8 @@ bool FtlSignalingPlayground::ShouldPrintHelp() {
 void FtlSignalingPlayground::PrintHelp() {
   printf(
       "Usage: %s [--auth-code=<auth-code>] [--host-id=<host-id>] [--pin=<pin>] "
-      "[--storage-path=<storage-path>] [--username=<example@gmail.com>]\n",
+      "[--storage-path=<storage-path>] [--username=<example@gmail.com>] "
+      "[--host-owner=<example@gmail.com>]\n",
       base::CommandLine::ForCurrentProcess()
           ->GetProgram()
           .MaybeAsASCII()
@@ -184,9 +186,17 @@ void FtlSignalingPlayground::AcceptIncoming(base::OnceClosure on_done) {
 
   auto key_pair = RsaKeyPair::Generate();
   std::string cert = key_pair->GenerateCertificate();
+
+  std::string user_email = storage_->FetchUserEmail();
+  std::string host_owner = cmd->HasSwitch(kSwitchNameHostOwner)
+                               ? cmd->GetSwitchValueASCII(kSwitchNameHostOwner)
+                               : user_email;
+  HOST_LOG << "Using host owner: " << host_owner;
+  bool is_service_account =
+      test::TestOAuthTokenGetter::IsServiceAccount(user_email);
   auto factory = protocol::Me2MeHostAuthenticatorFactory::CreateWithPin(
-      /* use_service_account */ false, storage_->FetchUserEmail(), cert,
-      key_pair, /* domain_list */ {}, pin_hash, /* pairing_registry */ {});
+      is_service_account, host_owner, cert, key_pair,
+      /* domain_list */ {}, pin_hash, /* pairing_registry */ {});
   session_manager_->set_authenticator_factory(std::move(factory));
   HOST_LOG << "Waiting for incoming session...";
   session_manager_->AcceptIncoming(base::BindRepeating(
