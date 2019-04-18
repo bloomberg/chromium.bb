@@ -118,7 +118,7 @@ class LocalNetworkRequestsPageLoadMetricsObserverTest
         (net_error ? 1024 * 20 : 0) /* raw_body_bytes */,
         0 /* original_network_content_length */,
         nullptr /* data_reduction_proxy_data */,
-        content::ResourceType::RESOURCE_TYPE_MAIN_FRAME, net_error,
+        content::ResourceType::kMainFrame, net_error,
         {} /* load_timing_info */);
 
     PageLoadMetricsObserverTestHarness::SimulateLoadedResource(
@@ -782,8 +782,7 @@ TEST_F(LocalNetworkRequestsPageLoadMetricsObserverTest,
        -1 /* frame_tree_node_id */, true /* was_cached */,
        1024 * 20 /* raw_body_bytes */, 0 /* original_network_content_length */,
        nullptr /* data_reduction_proxy_data */,
-       content::ResourceType::RESOURCE_TYPE_MAIN_FRAME, 0,
-       nullptr /* load_timing_info */},
+       content::ResourceType::kMainFrame, 0, nullptr /* load_timing_info */},
       GetGlobalRequestID());
   DeleteContents();
 
@@ -810,8 +809,7 @@ TEST_F(LocalNetworkRequestsPageLoadMetricsObserverTest,
        -1 /* frame_tree_node_id */, false /* was_cached */,
        0 /* raw_body_bytes */, 0 /* original_network_content_length */,
        nullptr /* data_reduction_proxy_data */,
-       content::ResourceType::RESOURCE_TYPE_MAIN_FRAME, -20,
-       nullptr /* load_timing_info */},
+       content::ResourceType::kMainFrame, -20, nullptr /* load_timing_info */},
       GetGlobalRequestID());
   DeleteContents();
 

@@ -656,14 +656,18 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
 
   resource_request->referrer_policy =
       Referrer::ReferrerPolicyForUrlRequest(request.GetReferrerPolicy());
-  resource_request->resource_type = WebURLRequestToResourceType(request);
+  resource_request->resource_type =
+      static_cast<int>(WebURLRequestToResourceType(request));
 
   resource_request->headers = GetWebURLRequestHeaders(request);
-  if (resource_request->resource_type == RESOURCE_TYPE_STYLESHEET) {
+  if (resource_request->resource_type ==
+      static_cast<int>(ResourceType::kStylesheet)) {
     resource_request->headers.SetHeader(network::kAcceptHeader,
                                         kStylesheetAcceptHeader);
-  } else if (resource_request->resource_type == RESOURCE_TYPE_FAVICON ||
-             resource_request->resource_type == RESOURCE_TYPE_IMAGE) {
+  } else if (resource_request->resource_type ==
+                 static_cast<int>(ResourceType::kFavicon) ||
+             resource_request->resource_type ==
+                 static_cast<int>(ResourceType::kImage)) {
     resource_request->headers.SetHeader(network::kAcceptHeader,
                                         kImageAcceptHeader);
   } else {
@@ -687,8 +691,10 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
         WebString(request.GetPurposeHeader()).Utf8());
   }
 
-  if (resource_request->resource_type == RESOURCE_TYPE_PREFETCH ||
-      resource_request->resource_type == RESOURCE_TYPE_FAVICON) {
+  if (resource_request->resource_type ==
+          static_cast<int>(ResourceType::kPrefetch) ||
+      resource_request->resource_type ==
+          static_cast<int>(ResourceType::kFavicon)) {
     resource_request->do_not_prompt_for_login = true;
   }
 
@@ -761,8 +767,8 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   if (request.IsDownloadToNetworkCacheOnly()) {
     peer = std::make_unique<SinkPeer>(this);
   } else {
-    const bool discard_body =
-        (resource_request->resource_type == RESOURCE_TYPE_PREFETCH);
+    const bool discard_body = (resource_request->resource_type ==
+                               static_cast<int>(ResourceType::kPrefetch));
     peer =
         std::make_unique<WebURLLoaderImpl::RequestPeerImpl>(this, discard_body);
   }

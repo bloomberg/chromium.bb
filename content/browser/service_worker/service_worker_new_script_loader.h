@@ -229,8 +229,8 @@ class CONTENT_EXPORT ServiceWorkerNewScriptLoader
 
   const GURL request_url_;
 
-  // This is RESOURCE_TYPE_SERVICE_WORKER for the main script or
-  // RESOURCE_TYPE_SCRIPT for an imported script.
+  // This is ResourceType::kServiceWorker for the main script or
+  // ResourceType::kScript for an imported script.
   const ResourceType resource_type_;
 
   scoped_refptr<ServiceWorkerVersion> version_;

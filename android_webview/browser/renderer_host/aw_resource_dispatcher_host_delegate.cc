@@ -280,7 +280,7 @@ void AwResourceDispatcherHostDelegate::RequestBeginning(
   // webcontents is created.
   throttles->push_back(std::move(ioThreadThrottle));
 
-  bool is_main_frame = resource_type == content::RESOURCE_TYPE_MAIN_FRAME;
+  bool is_main_frame = resource_type == content::ResourceType::kMainFrame;
   throttles->push_back(
       std::make_unique<web_restrictions::WebRestrictionsResourceThrottle>(
           AwBrowserContext::GetDefault()->GetWebRestrictionProvider(),
@@ -359,7 +359,7 @@ void AwResourceDispatcherHostDelegate::OnResponseStarted(
     return;
   }
 
-  if (request_info->GetResourceType() == content::RESOURCE_TYPE_MAIN_FRAME) {
+  if (request_info->GetResourceType() == content::ResourceType::kMainFrame) {
     // Check for x-auto-login header.
     HeaderData header_data;
     if (ParserHeaderInResponse(request, ALLOW_ANY_REALM, &header_data)) {

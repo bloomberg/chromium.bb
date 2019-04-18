@@ -108,7 +108,7 @@ void PageLoadMetricsTestWaiter::OnLoadedResource(
     return;
 
   if (extra_request_complete_info.resource_type !=
-      content::RESOURCE_TYPE_MAIN_FRAME) {
+      content::ResourceType::kMainFrame) {
     // The waiter confirms loading timing for the main frame only.
     return;
   }

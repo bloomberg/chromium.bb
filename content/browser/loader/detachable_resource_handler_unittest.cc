@@ -61,7 +61,7 @@ class DetachableResourceHandlerTest
                                         nullptr,
                                         TRAFFIC_ANNOTATION_FOR_TESTS)) {
     ResourceRequestInfo::AllocateForTesting(request_.get(),
-                                            RESOURCE_TYPE_MAIN_FRAME,
+                                            ResourceType::kMainFrame,
                                             nullptr,  // context
                                             0,        // render_process_id
                                             0,        // render_view_id

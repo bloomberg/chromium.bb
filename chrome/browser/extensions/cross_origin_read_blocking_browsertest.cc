@@ -210,7 +210,8 @@ class CrossOriginReadBlockingExtensionTest : public ExtensionBrowserTest {
       const base::HistogramTester& histograms,
       content::ResourceType resource_type) {
     VerifyContentScriptHistogram(
-        histograms, testing::ElementsAre(base::Bucket(resource_type, 1)));
+        histograms,
+        testing::ElementsAre(base::Bucket(static_cast<int>(resource_type), 1)));
   }
 
   void VerifyContentScriptHistogramIsMissing(
@@ -498,7 +499,7 @@ class CrossOriginReadBlockingExtensionAllowlistingTest
       // LogInitiatorSchemeBypassingDocumentBlocking method in
       // ChromeContentBrowserClientExtensionsPart).
       VerifyContentScriptHistogramIsPresent(histograms,
-                                            content::RESOURCE_TYPE_XHR);
+                                            content::ResourceType::kXhr);
     }
   }
 

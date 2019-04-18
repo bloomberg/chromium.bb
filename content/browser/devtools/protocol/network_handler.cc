@@ -997,55 +997,55 @@ bool NetworkHandler::AddInterceptedResourceType(
     const std::string& resource_type,
     base::flat_set<ResourceType>* intercepted_resource_types) {
   if (resource_type == protocol::Network::ResourceTypeEnum::Document) {
-    intercepted_resource_types->insert(RESOURCE_TYPE_MAIN_FRAME);
-    intercepted_resource_types->insert(RESOURCE_TYPE_SUB_FRAME);
+    intercepted_resource_types->insert(ResourceType::kMainFrame);
+    intercepted_resource_types->insert(ResourceType::kSubFrame);
     return true;
   }
   if (resource_type == protocol::Network::ResourceTypeEnum::Stylesheet) {
-    intercepted_resource_types->insert(RESOURCE_TYPE_STYLESHEET);
+    intercepted_resource_types->insert(ResourceType::kStylesheet);
     return true;
   }
   if (resource_type == protocol::Network::ResourceTypeEnum::Image) {
-    intercepted_resource_types->insert(RESOURCE_TYPE_IMAGE);
+    intercepted_resource_types->insert(ResourceType::kImage);
     return true;
   }
   if (resource_type == protocol::Network::ResourceTypeEnum::Media) {
-    intercepted_resource_types->insert(RESOURCE_TYPE_MEDIA);
+    intercepted_resource_types->insert(ResourceType::kMedia);
     return true;
   }
   if (resource_type == protocol::Network::ResourceTypeEnum::Font) {
-    intercepted_resource_types->insert(RESOURCE_TYPE_FONT_RESOURCE);
+    intercepted_resource_types->insert(ResourceType::kFontResource);
     return true;
   }
   if (resource_type == protocol::Network::ResourceTypeEnum::Script) {
-    intercepted_resource_types->insert(RESOURCE_TYPE_SCRIPT);
+    intercepted_resource_types->insert(ResourceType::kScript);
     return true;
   }
   if (resource_type == protocol::Network::ResourceTypeEnum::XHR) {
-    intercepted_resource_types->insert(RESOURCE_TYPE_XHR);
+    intercepted_resource_types->insert(ResourceType::kXhr);
     return true;
   }
   if (resource_type == protocol::Network::ResourceTypeEnum::Fetch) {
-    intercepted_resource_types->insert(RESOURCE_TYPE_PREFETCH);
+    intercepted_resource_types->insert(ResourceType::kPrefetch);
     return true;
   }
   if (resource_type ==
       protocol::Network::ResourceTypeEnum::CSPViolationReport) {
-    intercepted_resource_types->insert(RESOURCE_TYPE_CSP_REPORT);
+    intercepted_resource_types->insert(ResourceType::kCspReport);
     return true;
   }
   if (resource_type == protocol::Network::ResourceTypeEnum::Ping) {
-    intercepted_resource_types->insert(RESOURCE_TYPE_PING);
+    intercepted_resource_types->insert(ResourceType::kPing);
     return true;
   }
   if (resource_type == protocol::Network::ResourceTypeEnum::Other) {
-    intercepted_resource_types->insert(RESOURCE_TYPE_SUB_RESOURCE);
-    intercepted_resource_types->insert(RESOURCE_TYPE_OBJECT);
-    intercepted_resource_types->insert(RESOURCE_TYPE_WORKER);
-    intercepted_resource_types->insert(RESOURCE_TYPE_SHARED_WORKER);
-    intercepted_resource_types->insert(RESOURCE_TYPE_FAVICON);
-    intercepted_resource_types->insert(RESOURCE_TYPE_SERVICE_WORKER);
-    intercepted_resource_types->insert(RESOURCE_TYPE_PLUGIN_RESOURCE);
+    intercepted_resource_types->insert(ResourceType::kSubResource);
+    intercepted_resource_types->insert(ResourceType::kObject);
+    intercepted_resource_types->insert(ResourceType::kWorker);
+    intercepted_resource_types->insert(ResourceType::kSharedWorker);
+    intercepted_resource_types->insert(ResourceType::kFavicon);
+    intercepted_resource_types->insert(ResourceType::kServiceWorker);
+    intercepted_resource_types->insert(ResourceType::kPluginResource);
     return true;
   }
   return false;
@@ -1054,41 +1054,41 @@ bool NetworkHandler::AddInterceptedResourceType(
 // static
 const char* NetworkHandler::ResourceTypeToString(ResourceType resource_type) {
   switch (resource_type) {
-    case RESOURCE_TYPE_MAIN_FRAME:
+    case ResourceType::kMainFrame:
       return protocol::Network::ResourceTypeEnum::Document;
-    case RESOURCE_TYPE_SUB_FRAME:
+    case ResourceType::kSubFrame:
       return protocol::Network::ResourceTypeEnum::Document;
-    case RESOURCE_TYPE_STYLESHEET:
+    case ResourceType::kStylesheet:
       return protocol::Network::ResourceTypeEnum::Stylesheet;
-    case RESOURCE_TYPE_SCRIPT:
+    case ResourceType::kScript:
       return protocol::Network::ResourceTypeEnum::Script;
-    case RESOURCE_TYPE_IMAGE:
+    case ResourceType::kImage:
       return protocol::Network::ResourceTypeEnum::Image;
-    case RESOURCE_TYPE_FONT_RESOURCE:
+    case ResourceType::kFontResource:
       return protocol::Network::ResourceTypeEnum::Font;
-    case RESOURCE_TYPE_SUB_RESOURCE:
+    case ResourceType::kSubResource:
       return protocol::Network::ResourceTypeEnum::Other;
-    case RESOURCE_TYPE_OBJECT:
+    case ResourceType::kObject:
       return protocol::Network::ResourceTypeEnum::Other;
-    case RESOURCE_TYPE_MEDIA:
+    case ResourceType::kMedia:
       return protocol::Network::ResourceTypeEnum::Media;
-    case RESOURCE_TYPE_WORKER:
+    case ResourceType::kWorker:
       return protocol::Network::ResourceTypeEnum::Other;
-    case RESOURCE_TYPE_SHARED_WORKER:
+    case ResourceType::kSharedWorker:
       return protocol::Network::ResourceTypeEnum::Other;
-    case RESOURCE_TYPE_PREFETCH:
+    case ResourceType::kPrefetch:
       return protocol::Network::ResourceTypeEnum::Fetch;
-    case RESOURCE_TYPE_FAVICON:
+    case ResourceType::kFavicon:
       return protocol::Network::ResourceTypeEnum::Other;
-    case RESOURCE_TYPE_XHR:
+    case ResourceType::kXhr:
       return protocol::Network::ResourceTypeEnum::XHR;
-    case RESOURCE_TYPE_PING:
+    case ResourceType::kPing:
       return protocol::Network::ResourceTypeEnum::Ping;
-    case RESOURCE_TYPE_SERVICE_WORKER:
+    case ResourceType::kServiceWorker:
       return protocol::Network::ResourceTypeEnum::Other;
-    case RESOURCE_TYPE_CSP_REPORT:
+    case ResourceType::kCspReport:
       return protocol::Network::ResourceTypeEnum::CSPViolationReport;
-    case RESOURCE_TYPE_PLUGIN_RESOURCE:
+    case ResourceType::kPluginResource:
       return protocol::Network::ResourceTypeEnum::Other;
     default:
       return protocol::Network::ResourceTypeEnum::Other;

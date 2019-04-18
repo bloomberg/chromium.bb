@@ -182,7 +182,7 @@ TEST(ServiceWorkerMetricsTest,
   base::HistogramTester histogram_tester;
   ServiceWorkerMetrics::RecordNavigationPreloadResponse(
       worker_start, response_start, initial_worker_status, start_situation,
-      RESOURCE_TYPE_MAIN_FRAME);
+      ResourceType::kMainFrame);
 
   histogram_tester.ExpectUniqueSample(
       "ServiceWorker.NavPreload.WorkerPreparationType_MainFrame",
@@ -209,7 +209,7 @@ TEST(ServiceWorkerMetricsTest,
   base::HistogramTester histogram_tester;
   ServiceWorkerMetrics::RecordNavigationPreloadResponse(
       worker_start, response_start, initial_worker_status, start_situation,
-      RESOURCE_TYPE_SUB_FRAME);
+      ResourceType::kSubFrame);
 
   ExpectNoNavPreloadMainFrameUMA(histogram_tester);
 }
@@ -224,7 +224,7 @@ TEST(ServiceWorkerMetricsTest,
   base::HistogramTester histogram_tester;
   ServiceWorkerMetrics::RecordNavigationPreloadResponse(
       worker_start, response_start, initial_worker_status, start_situation,
-      RESOURCE_TYPE_MAIN_FRAME);
+      ResourceType::kMainFrame);
 
   histogram_tester.ExpectUniqueSample(
       "ServiceWorker.NavPreload.WorkerPreparationType_MainFrame",
@@ -261,7 +261,7 @@ TEST(ServiceWorkerMetricsTest, NavigationPreloadResponse_WorkerStart_SubFrame) {
   base::HistogramTester histogram_tester;
   ServiceWorkerMetrics::RecordNavigationPreloadResponse(
       worker_start, response_start, initial_worker_status, start_situation,
-      RESOURCE_TYPE_SUB_FRAME);
+      ResourceType::kSubFrame);
 
   ExpectNoNavPreloadMainFrameUMA(histogram_tester);
 }
@@ -277,7 +277,7 @@ TEST(ServiceWorkerMetricsTest,
   base::HistogramTester histogram_tester;
   ServiceWorkerMetrics::RecordNavigationPreloadResponse(
       worker_start, response_start, initial_worker_status, start_situation,
-      RESOURCE_TYPE_MAIN_FRAME);
+      ResourceType::kMainFrame);
 
   histogram_tester.ExpectUniqueSample(
       "ServiceWorker.NavPreload.WorkerPreparationType_MainFrame",
@@ -320,7 +320,7 @@ TEST(ServiceWorkerMetricsTest,
   base::HistogramTester histogram_tester;
   ServiceWorkerMetrics::RecordNavigationPreloadResponse(
       worker_start, response_start, initial_worker_status, start_situation,
-      RESOURCE_TYPE_MAIN_FRAME);
+      ResourceType::kMainFrame);
   histogram_tester.ExpectUniqueSample(
       "ServiceWorker.NavPreload.WorkerPreparationType_MainFrame",
       static_cast<int>(WorkerPreparationType::STOPPING), 1);
@@ -357,7 +357,7 @@ TEST(ServiceWorkerMetricsTest,
   base::HistogramTester histogram_tester;
   ServiceWorkerMetrics::RecordNavigationPreloadResponse(
       worker_start, response_start, initial_worker_status, start_situation,
-      RESOURCE_TYPE_SUB_FRAME);
+      ResourceType::kSubFrame);
 
   ExpectNoNavPreloadMainFrameUMA(histogram_tester);
 }
@@ -371,7 +371,7 @@ TEST(ServiceWorkerMetricsTest, NavigationPreloadResponse_BrowserStartup) {
   base::HistogramTester histogram_tester;
   ServiceWorkerMetrics::RecordNavigationPreloadResponse(
       worker_start, response_start, initial_worker_status, start_situation,
-      RESOURCE_TYPE_MAIN_FRAME);
+      ResourceType::kMainFrame);
   histogram_tester.ExpectUniqueSample(
       "ServiceWorker.NavPreload.WorkerPreparationType_MainFrame",
       static_cast<int>(WorkerPreparationType::START_DURING_STARTUP), 1);

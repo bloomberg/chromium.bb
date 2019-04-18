@@ -82,7 +82,7 @@ bool IsRequestPageAllowed(const WebRequestInfo& request,
     return false;
 
   // If this is a main frame request, |request.url| will be the main frame url.
-  if (request.type == content::RESOURCE_TYPE_MAIN_FRAME)
+  if (request.type == content::ResourceType::kMainFrame)
     return allowed_pages.MatchesURL(request.url);
 
   // This should happen for:

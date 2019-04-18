@@ -1140,8 +1140,8 @@ std::unique_ptr<net::URLRequest> OfflinePageRequestJobBuilder::CreateRequest(
 
   content::ResourceRequestInfo::AllocateForTesting(
       request.get(),
-      is_main_frame ? content::RESOURCE_TYPE_MAIN_FRAME
-                    : content::RESOURCE_TYPE_SUB_FRAME,
+      is_main_frame ? content::ResourceType::kMainFrame
+                    : content::ResourceType::kSubFrame,
       nullptr,
       /*render_process_id=*/1,
       /*render_view_id=*/-1,

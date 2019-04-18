@@ -1176,8 +1176,8 @@ std::unique_ptr<InterceptedRequestInfo> InterceptionJob::BuildRequestInfo(
   ResourceType resource_type =
       static_cast<ResourceType>(create_loader_params_->request.resource_type);
   result->resource_type = resource_type;
-  result->is_navigation = resource_type == RESOURCE_TYPE_MAIN_FRAME ||
-                          resource_type == RESOURCE_TYPE_SUB_FRAME;
+  result->is_navigation = resource_type == ResourceType::kMainFrame ||
+                          resource_type == ResourceType::kSubFrame;
 
   if (head && head->headers)
     result->response_headers = head->headers;

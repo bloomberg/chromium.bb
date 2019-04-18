@@ -435,7 +435,7 @@ class ResourceLoaderTest : public testing::Test,
 
     // A request marked as a main frame request must also belong to a main
     // frame.
-    ASSERT_TRUE((resource_type != RESOURCE_TYPE_MAIN_FRAME) ||
+    ASSERT_TRUE((resource_type != ResourceType::kMainFrame) ||
                 belongs_to_main_frame);
 
     RenderFrameHost* rfh = web_contents_->GetMainFrame();
@@ -459,7 +459,7 @@ class ResourceLoaderTest : public testing::Test,
         test_url_request_context_.CreateRequest(
             test_url, net::DEFAULT_PRIORITY, nullptr /* delegate */,
             TRAFFIC_ANNOTATION_FOR_TESTS));
-    SetUpResourceLoader(std::move(request), RESOURCE_TYPE_MAIN_FRAME, true);
+    SetUpResourceLoader(std::move(request), ResourceType::kMainFrame, true);
   }
 
   void SetUp() override {
@@ -767,13 +767,13 @@ TEST_F(ClientCertResourceLoaderTest, StoreAsyncCancel) {
   SetBrowserClientForTesting(old_client);
 }
 
-// Tests that a RESOURCE_TYPE_PREFETCH request sets the LOAD_PREFETCH flag.
+// Tests that a ResourceType::kPrefetch request sets the LOAD_PREFETCH flag.
 TEST_F(ResourceLoaderTest, PrefetchFlag) {
   std::unique_ptr<net::URLRequest> request(
       test_url_request_context_.CreateRequest(
           test_async_url(), net::DEFAULT_PRIORITY, nullptr /* delegate */,
           TRAFFIC_ANNOTATION_FOR_TESTS));
-  SetUpResourceLoader(std::move(request), RESOURCE_TYPE_PREFETCH, true);
+  SetUpResourceLoader(std::move(request), ResourceType::kPrefetch, true);
 
   loader_->StartRequest();
   raw_ptr_resource_handler_->WaitUntilResponseComplete();
@@ -1593,14 +1593,14 @@ class EffectiveConnectionTypeResourceLoaderTest : public ResourceLoaderTest {
 
 // Tests that the effective connection type is set on main frame requests.
 TEST_F(EffectiveConnectionTypeResourceLoaderTest, Slow2G) {
-  VerifyEffectiveConnectionType(RESOURCE_TYPE_MAIN_FRAME, true,
+  VerifyEffectiveConnectionType(ResourceType::kMainFrame, true,
                                 net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G,
                                 net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
 }
 
 // Tests that the effective connection type is set on main frame requests.
 TEST_F(EffectiveConnectionTypeResourceLoaderTest, 3G) {
-  VerifyEffectiveConnectionType(RESOURCE_TYPE_MAIN_FRAME, true,
+  VerifyEffectiveConnectionType(ResourceType::kMainFrame, true,
                                 net::EFFECTIVE_CONNECTION_TYPE_3G,
                                 net::EFFECTIVE_CONNECTION_TYPE_3G);
 }
@@ -1608,7 +1608,7 @@ TEST_F(EffectiveConnectionTypeResourceLoaderTest, 3G) {
 // Tests that the effective connection type is not set on requests that belong
 // to main frame.
 TEST_F(EffectiveConnectionTypeResourceLoaderTest, BelongsToMainFrame) {
-  VerifyEffectiveConnectionType(RESOURCE_TYPE_OBJECT, true,
+  VerifyEffectiveConnectionType(ResourceType::kObject, true,
                                 net::EFFECTIVE_CONNECTION_TYPE_3G,
                                 net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN);
 }
@@ -1616,7 +1616,7 @@ TEST_F(EffectiveConnectionTypeResourceLoaderTest, BelongsToMainFrame) {
 // Tests that the effective connection type is not set on non-main frame
 // requests.
 TEST_F(EffectiveConnectionTypeResourceLoaderTest, DoesNotBelongToMainFrame) {
-  VerifyEffectiveConnectionType(RESOURCE_TYPE_OBJECT, false,
+  VerifyEffectiveConnectionType(ResourceType::kObject, false,
                                 net::EFFECTIVE_CONNECTION_TYPE_3G,
                                 net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN);
 }

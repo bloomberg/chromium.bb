@@ -316,10 +316,10 @@ net::URLRequestContext* GetRequestContext(
     scoped_refptr<net::URLRequestContextGetter> request_context,
     scoped_refptr<net::URLRequestContextGetter> media_request_context,
     ResourceType resource_type) {
-  // If the request has resource type of RESOURCE_TYPE_MEDIA, we use a request
+  // If the request has resource type of ResourceType::kMedia, we use a request
   // context specific to media for handling it because these resources have
   // specific needs for caching.
-  if (resource_type == RESOURCE_TYPE_MEDIA)
+  if (resource_type == ResourceType::kMedia)
     return media_request_context->GetURLRequestContext();
   return request_context->GetURLRequestContext();
 }

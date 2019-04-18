@@ -1701,7 +1701,7 @@ class AppCacheStorageImplTest : public testing::Test {
       request.url = GetMockUrl("manifest");
       handler_ =
           host2->CreateRequestHandler(AppCacheURLLoaderRequest::Create(request),
-                                      RESOURCE_TYPE_MAIN_FRAME, false);
+                                      ResourceType::kMainFrame, false);
       handler_->MaybeCreateLoader(request, nullptr, base::DoNothing(),
                                   base::DoNothing());
     }

@@ -4498,7 +4498,7 @@ void WebContentsImpl::OnDidLoadResourceFromMemoryCache(
                                                              top_frame_origin);
     } else {
       scoped_refptr<net::URLRequestContextGetter> request_context(
-          resource_type == RESOURCE_TYPE_MEDIA
+          resource_type == ResourceType::kMedia
               ? partition->GetMediaURLRequestContext()
               : partition->GetURLRequestContext());
       base::PostTaskWithTraits(

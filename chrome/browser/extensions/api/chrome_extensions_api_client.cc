@@ -131,7 +131,7 @@ bool ChromeExtensionsAPIClient::ShouldHideBrowserNetworkRequest(
   // requests.
   // Exclude main frame navigation requests.
   bool is_browser_request = request.render_process_id == -1 &&
-                            request.type != content::RESOURCE_TYPE_MAIN_FRAME;
+                            request.type != content::ResourceType::kMainFrame;
 
   // Hide requests made by the Devtools frontend.
   bool is_sensitive_request =

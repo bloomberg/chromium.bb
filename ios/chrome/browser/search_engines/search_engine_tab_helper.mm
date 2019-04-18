@@ -208,11 +208,10 @@ void SearchEngineTabHelper::AddTemplateURLByOSDD(const GURL& page_url,
   //      https://cs.chromium.org/chromium/src/services/network/public/cpp/resource_request.h?rcl=39c6fbea496641a6514e34c0ab689871d14e6d52&l=100
   //      Use the same value as the SearchEngineTabHelper for Desktop.
   ios::TemplateURLFetcherFactory::GetForBrowserState(browser_state)
-      ->ScheduleDownload(
-          keyword, osdd_url, item->GetFavicon().url,
-          url::Origin::Create(web_state_->GetLastCommittedURL()),
-          browser_state->GetURLLoaderFactory(), MSG_ROUTING_NONE,
-          /* content::ResourceType::RESOURCE_TYPE_SUB_RESOURCE */ 6);
+      ->ScheduleDownload(keyword, osdd_url, item->GetFavicon().url,
+                         url::Origin::Create(web_state_->GetLastCommittedURL()),
+                         browser_state->GetURLLoaderFactory(), MSG_ROUTING_NONE,
+                         /* content::ResourceType::kSubResource */ 6);
 }
 
 // Creates a TemplateURL by |searchable_url| and adds it to TemplateURLService.

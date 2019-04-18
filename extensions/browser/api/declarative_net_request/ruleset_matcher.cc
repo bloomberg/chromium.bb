@@ -35,37 +35,36 @@ using FindRuleStrategy =
 // Maps content::ResourceType to flat_rule::ElementType.
 flat_rule::ElementType GetElementType(content::ResourceType type) {
   switch (type) {
-    case content::RESOURCE_TYPE_LAST_TYPE:
-    case content::RESOURCE_TYPE_PREFETCH:
-    case content::RESOURCE_TYPE_SUB_RESOURCE:
-    case content::RESOURCE_TYPE_NAVIGATION_PRELOAD:
+    case content::ResourceType::kPrefetch:
+    case content::ResourceType::kSubResource:
+    case content::ResourceType::kNavigationPreload:
       return flat_rule::ElementType_OTHER;
-    case content::RESOURCE_TYPE_MAIN_FRAME:
+    case content::ResourceType::kMainFrame:
       return flat_rule::ElementType_MAIN_FRAME;
-    case content::RESOURCE_TYPE_CSP_REPORT:
+    case content::ResourceType::kCspReport:
       return flat_rule::ElementType_CSP_REPORT;
-    case content::RESOURCE_TYPE_SCRIPT:
-    case content::RESOURCE_TYPE_WORKER:
-    case content::RESOURCE_TYPE_SHARED_WORKER:
-    case content::RESOURCE_TYPE_SERVICE_WORKER:
+    case content::ResourceType::kScript:
+    case content::ResourceType::kWorker:
+    case content::ResourceType::kSharedWorker:
+    case content::ResourceType::kServiceWorker:
       return flat_rule::ElementType_SCRIPT;
-    case content::RESOURCE_TYPE_IMAGE:
-    case content::RESOURCE_TYPE_FAVICON:
+    case content::ResourceType::kImage:
+    case content::ResourceType::kFavicon:
       return flat_rule::ElementType_IMAGE;
-    case content::RESOURCE_TYPE_STYLESHEET:
+    case content::ResourceType::kStylesheet:
       return flat_rule::ElementType_STYLESHEET;
-    case content::RESOURCE_TYPE_OBJECT:
-    case content::RESOURCE_TYPE_PLUGIN_RESOURCE:
+    case content::ResourceType::kObject:
+    case content::ResourceType::kPluginResource:
       return flat_rule::ElementType_OBJECT;
-    case content::RESOURCE_TYPE_XHR:
+    case content::ResourceType::kXhr:
       return flat_rule::ElementType_XMLHTTPREQUEST;
-    case content::RESOURCE_TYPE_SUB_FRAME:
+    case content::ResourceType::kSubFrame:
       return flat_rule::ElementType_SUBDOCUMENT;
-    case content::RESOURCE_TYPE_PING:
+    case content::ResourceType::kPing:
       return flat_rule::ElementType_PING;
-    case content::RESOURCE_TYPE_MEDIA:
+    case content::ResourceType::kMedia:
       return flat_rule::ElementType_MEDIA;
-    case content::RESOURCE_TYPE_FONT_RESOURCE:
+    case content::ResourceType::kFontResource:
       return flat_rule::ElementType_FONT;
   }
   NOTREACHED();

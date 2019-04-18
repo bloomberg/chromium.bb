@@ -78,7 +78,7 @@ void AndroidPageLoadMetricsObserver::OnLoadedResource(
         extra_request_complete_info) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (extra_request_complete_info.resource_type ==
-      content::RESOURCE_TYPE_MAIN_FRAME) {
+      content::ResourceType::kMainFrame) {
     DCHECK(!did_dispatch_on_main_resource_);
     if (did_dispatch_on_main_resource_) {
       // We are defensive for the case of something strange happening and return

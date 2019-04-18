@@ -447,13 +447,13 @@ TEST_P(RulesetManagerTest, PageAllowingAPI) {
     bool expect_blocked_with_allowed_pages;
   } test_cases[] = {
       // Main frame requests. Allowed based on request url.
-      {kAllowedPageURL, content::RESOURCE_TYPE_MAIN_FRAME, base::nullopt,
+      {kAllowedPageURL, content::ResourceType::kMainFrame, base::nullopt,
        MSG_ROUTING_NONE,
        FrameDataParams({ExtensionApiFrameIdMap::kTopFrameId,
                         ExtensionApiFrameIdMap::kInvalidFrameId,
                         "http://google.com/xyz", base::nullopt}),
        false},
-      {"http://google.com/xyz", content::RESOURCE_TYPE_MAIN_FRAME,
+      {"http://google.com/xyz", content::ResourceType::kMainFrame,
        base::nullopt, MSG_ROUTING_NONE,
        FrameDataParams({ExtensionApiFrameIdMap::kTopFrameId,
                         ExtensionApiFrameIdMap::kInvalidFrameId,
@@ -462,17 +462,17 @@ TEST_P(RulesetManagerTest, PageAllowingAPI) {
 
       // Non-navigation browser or service worker request. Not allowed,
       // since the request doesn't correspond to a frame.
-      {"http://google.com/xyz", content::RESOURCE_TYPE_SCRIPT, base::nullopt,
+      {"http://google.com/xyz", content::ResourceType::kScript, base::nullopt,
        MSG_ROUTING_NONE, base::nullopt, true},
 
       // Renderer requests - with no |pending_main_frame_url|. Allowed based
       // on the |last_committed_main_frame_url|.
-      {kAllowedPageURL, content::RESOURCE_TYPE_SCRIPT, "http://google.com",
+      {kAllowedPageURL, content::ResourceType::kScript, "http://google.com",
        kDummyFrameRoutingId,
        FrameDataParams({kDummyFrameId, kDummyParentFrameId,
                         "http://google.com/xyz", base::nullopt}),
        true},
-      {"http://google.com/xyz", content::RESOURCE_TYPE_SCRIPT,
+      {"http://google.com/xyz", content::ResourceType::kScript,
        "http://google.com", kDummyFrameRoutingId,
        FrameDataParams({kDummyFrameId, kDummyParentFrameId, kAllowedPageURL,
                         base::nullopt}),
@@ -483,7 +483,7 @@ TEST_P(RulesetManagerTest, PageAllowingAPI) {
 
       // Here we'll determine "http://example.com/xyz" to be the main frame url
       // due to the origin.
-      {"http://example.com/script.js", content::RESOURCE_TYPE_SCRIPT,
+      {"http://example.com/script.js", content::ResourceType::kScript,
        "http://example.com", kDummyFrameRoutingId,
        FrameDataParams({ExtensionApiFrameIdMap::kTopFrameId,
                         ExtensionApiFrameIdMap::kInvalidFrameId,
@@ -492,7 +492,7 @@ TEST_P(RulesetManagerTest, PageAllowingAPI) {
 
       // Here we'll determine |kAllowedPageURL| to be the main
       // frame url due to the origin.
-      {"http://example.com/script.js", content::RESOURCE_TYPE_SCRIPT,
+      {"http://example.com/script.js", content::ResourceType::kScript,
        "http://google.com", kDummyFrameRoutingId,
        FrameDataParams({ExtensionApiFrameIdMap::kTopFrameId,
                         ExtensionApiFrameIdMap::kInvalidFrameId,
@@ -502,19 +502,19 @@ TEST_P(RulesetManagerTest, PageAllowingAPI) {
       // In these cases both |pending_main_frame_url| and
       // |last_committed_main_frame_url| will be tested since we won't be able
       // to determine the correct top level frame url using origin.
-      {"http://example.com/script.js", content::RESOURCE_TYPE_SCRIPT,
+      {"http://example.com/script.js", content::ResourceType::kScript,
        "http://google.com", kDummyFrameRoutingId,
        FrameDataParams({ExtensionApiFrameIdMap::kTopFrameId,
                         ExtensionApiFrameIdMap::kInvalidFrameId,
                         "http://google.com/abc", kAllowedPageURL}),
        false},
-      {"http://example.com/script.js", content::RESOURCE_TYPE_SCRIPT,
+      {"http://example.com/script.js", content::ResourceType::kScript,
        base::nullopt, kDummyFrameRoutingId,
        FrameDataParams({ExtensionApiFrameIdMap::kTopFrameId,
                         ExtensionApiFrameIdMap::kInvalidFrameId,
                         kAllowedPageURL, "http://google.com/abc"}),
        false},
-      {"http://example.com/script.js", content::RESOURCE_TYPE_SCRIPT,
+      {"http://example.com/script.js", content::ResourceType::kScript,
        base::nullopt, kDummyFrameRoutingId,
        FrameDataParams({ExtensionApiFrameIdMap::kTopFrameId,
                         ExtensionApiFrameIdMap::kInvalidFrameId,

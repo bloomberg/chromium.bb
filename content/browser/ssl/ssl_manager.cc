@@ -159,9 +159,9 @@ void SSLManager::OnSSLCertificateError(
   DCHECK(delegate.get());
   DVLOG(1) << "OnSSLCertificateError() cert_error: "
            << net::MapCertStatusToNetError(ssl_info.cert_status)
-           << " resource_type: " << resource_type
-           << " url: " << url.spec()
-           << " cert_status: " << std::hex << ssl_info.cert_status;
+           << " resource_type: " << static_cast<int>(resource_type)
+           << " url: " << url.spec() << " cert_status: " << std::hex
+           << ssl_info.cert_status;
 
   if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     HandleSSLErrorOnUI(web_contents_getter, delegate, BrowserThread::UI,
@@ -185,7 +185,7 @@ void SSLManager::OnSSLCertificateSubresourceError(
     int render_frame_id,
     const net::SSLInfo& ssl_info,
     bool fatal) {
-  OnSSLCertificateError(delegate, RESOURCE_TYPE_SUB_RESOURCE, url,
+  OnSSLCertificateError(delegate, ResourceType::kSubResource, url,
                         base::Bind(&WebContentsImpl::FromRenderFrameHostID,
                                    render_process_id, render_frame_id),
                         ssl_info, fatal);

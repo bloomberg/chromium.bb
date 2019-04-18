@@ -59,9 +59,9 @@ void WorkerScriptFetchInitiator::Start(
     CompletionCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(storage_partition);
-  DCHECK(resource_type == RESOURCE_TYPE_WORKER ||
-         resource_type == RESOURCE_TYPE_SHARED_WORKER)
-      << resource_type;
+  DCHECK(resource_type == ResourceType::kWorker ||
+         resource_type == ResourceType::kSharedWorker)
+      << static_cast<int>(resource_type);
 
   BrowserContext* browser_context = storage_partition->browser_context();
   ResourceContext* resource_context =
@@ -96,7 +96,7 @@ void WorkerScriptFetchInitiator::Start(
     resource_request->url = script_url;
     resource_request->site_for_cookies = script_url;
     resource_request->request_initiator = request_initiator;
-    resource_request->resource_type = resource_type;
+    resource_request->resource_type = static_cast<int>(resource_type);
 
     AddAdditionalRequestHeaders(resource_request.get(), browser_context);
   }

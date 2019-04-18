@@ -37,7 +37,7 @@ void NavigationBodyLoader::FillNavigationParamsResponseAndBodyLoader(
       !commit_params.original_method.empty() ? commit_params.original_method
                                              : common_params.method,
       common_params.referrer.url,
-      is_main_frame ? RESOURCE_TYPE_MAIN_FRAME : RESOURCE_TYPE_SUB_FRAME);
+      is_main_frame ? ResourceType::kMainFrame : ResourceType::kSubFrame);
 
   size_t redirect_count = commit_params.redirect_response.size();
   navigation_params->redirects.reserve(redirect_count);

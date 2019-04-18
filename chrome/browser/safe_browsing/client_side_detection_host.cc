@@ -380,8 +380,8 @@ void ClientSideDetectionHost::DidFinishNavigation(
       navigation_handle->HasCommitted() && !navigation_handle->IsDownload() &&
       !navigation_handle->IsSameDocument()) {
     content::ResourceType resource_type =
-        navigation_handle->IsInMainFrame() ? content::RESOURCE_TYPE_MAIN_FRAME
-                                           : content::RESOURCE_TYPE_SUB_FRAME;
+        navigation_handle->IsInMainFrame() ? content::ResourceType::kMainFrame
+                                           : content::ResourceType::kSubFrame;
     UpdateIPUrlMap(
         navigation_handle->GetSocketAddress().ToStringWithoutPort() /* ip */,
         navigation_handle->GetURL().spec() /* url */,

@@ -199,7 +199,7 @@ TEST_F(AndroidPageLoadMetricsObserverTest, LoadTimingInfo) {
       10 * 1024 /* size */, 0 /* original_network_content_length */,
       nullptr
       /* data_reduction_proxy_data */,
-      content::RESOURCE_TYPE_MAIN_FRAME, 0, std::move(load_timing_info));
+      content::ResourceType::kMainFrame, 0, std::move(load_timing_info));
   SimulateLoadedResource(info, navigation_simulator->GetGlobalRequestID());
   EXPECT_EQ(kNow.since_origin().InMilliseconds(),
             observer()->reported_dns_start_ms());

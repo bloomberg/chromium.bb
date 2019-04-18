@@ -129,7 +129,7 @@ TEST_F(WebSocketSBHandshakeThrottleTest, CheckArguments) {
   EXPECT_EQ("GET", safe_browsing_.method_);
   EXPECT_TRUE(safe_browsing_.headers_.GetHeaderVector().empty());
   EXPECT_EQ(0, safe_browsing_.load_flags_);
-  EXPECT_EQ(content::RESOURCE_TYPE_SUB_RESOURCE, safe_browsing_.resource_type_);
+  EXPECT_EQ(content::ResourceType::kSubResource, safe_browsing_.resource_type_);
   EXPECT_FALSE(safe_browsing_.has_user_gesture_);
   EXPECT_FALSE(safe_browsing_.originated_from_service_worker_);
   EXPECT_TRUE(safe_browsing_.callback_);

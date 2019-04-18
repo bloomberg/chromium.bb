@@ -291,9 +291,9 @@ std::ostream& operator<<(std::ostream& os, const CommonNetworkInfo& info) {
 }
 
 std::ostream& operator<<(std::ostream& os, const ResourceLoadInfo& info) {
-  return os << "[" << info.url.spec() << "," << info.resource_type << ","
-            << info.mime_type << "," << info.method << "," << *info.network_info
-            << "]";
+  return os << "[" << info.url.spec() << ","
+            << static_cast<int>(info.resource_type) << "," << info.mime_type
+            << "," << info.method << "," << *info.network_info << "]";
 }
 
 bool operator==(const CommonNetworkInfo& lhs, const CommonNetworkInfo& rhs) {

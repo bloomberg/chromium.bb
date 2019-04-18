@@ -171,7 +171,7 @@ std::unique_ptr<net::URLRequest> CreateRequestHelper(
   std::unique_ptr<net::URLRequest> request = context->CreateRequest(
       url, net::DEFAULT_PRIORITY, delegate, TRAFFIC_ANNOTATION_FOR_TESTS);
   content::ResourceRequestInfo::AllocateForTesting(
-      request.get(), content::RESOURCE_TYPE_MAIN_FRAME, /*context*/ nullptr,
+      request.get(), content::ResourceType::kMainFrame, /*context*/ nullptr,
       -1 /* render_process_id */, -1 /* render_view_id */,
       -1 /* render_frame_id */, true /* is_main_frame */,
       content::ResourceInterceptPolicy::kAllowNone, false /* is_async */,

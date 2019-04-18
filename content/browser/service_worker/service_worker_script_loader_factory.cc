@@ -169,10 +169,12 @@ bool ServiceWorkerScriptLoaderFactory::CheckIfScriptRequestIsValid(
   if (!version)
     return false;
 
-  // Handle only the service worker main script (RESOURCE_TYPE_SERVICE_WORKER)
-  // or importScripts() (RESOURCE_TYPE_SCRIPT).
-  if (resource_request.resource_type != RESOURCE_TYPE_SERVICE_WORKER &&
-      resource_request.resource_type != RESOURCE_TYPE_SCRIPT) {
+  // Handle only the service worker main script (ResourceType::kServiceWorker)
+  // or importScripts() (ResourceType::kScript).
+  if (resource_request.resource_type !=
+          static_cast<int>(ResourceType::kServiceWorker) &&
+      resource_request.resource_type !=
+          static_cast<int>(ResourceType::kScript)) {
     static auto* key = base::debug::AllocateCrashKeyString(
         "swslf_bad_type", base::debug::CrashKeySize::Size32);
     base::debug::SetCrashKeyString(

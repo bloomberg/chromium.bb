@@ -5332,7 +5332,7 @@ void RenderFrameImpl::WillSendRequestInternal(
   extra_data->set_frame_request_blocker(frame_request_blocker_);
 
   request.SetDownloadToNetworkCacheOnly(
-      is_for_no_state_prefetch && resource_type != RESOURCE_TYPE_MAIN_FRAME);
+      is_for_no_state_prefetch && resource_type != ResourceType::kMainFrame);
 
   // The RenderThreadImpl or its URLLoaderThrottleProvider member may not be
   // valid in some tests.
@@ -7102,7 +7102,7 @@ void RenderFrameImpl::BeginNavigationInternal(
   // else in blink.
   WillSendRequestInternal(
       request,
-      frame_->Parent() ? RESOURCE_TYPE_SUB_FRAME : RESOURCE_TYPE_MAIN_FRAME,
+      frame_->Parent() ? ResourceType::kSubFrame : ResourceType::kMainFrame,
       document_state, transition_type);
 
   if (!info->url_request.GetExtraData())

@@ -54,7 +54,7 @@ WebRequestInfo CreateRequest(const GURL& url) {
   WebRequestInfo info;
   info.url = url;
   info.is_browser_side_navigation = true;
-  info.type = content::RESOURCE_TYPE_MAIN_FRAME;
+  info.type = content::ResourceType::kMainFrame;
   info.web_request_type = WebRequestResourceType::MAIN_FRAME;
   return info;
 }

@@ -99,7 +99,7 @@ ServiceWorkerNewScriptLoader::ServiceWorkerNewScriptLoader(
   // ServiceWorkerVersion keeps the registration alive while the service
   // worker is starting up, and it must be starting up here.
   DCHECK(registration);
-  const bool is_main_script = resource_type_ == RESOURCE_TYPE_SERVICE_WORKER;
+  const bool is_main_script = resource_type_ == ResourceType::kServiceWorker;
   if (is_main_script) {
     ServiceWorkerVersion* stored_version = registration->waiting_version()
                                                ? registration->waiting_version()
@@ -310,7 +310,7 @@ void ServiceWorkerNewScriptLoader::OnReceiveResponse(
     return;
   }
 
-  if (resource_type_ == RESOURCE_TYPE_SERVICE_WORKER) {
+  if (resource_type_ == ResourceType::kServiceWorker) {
     if (!blink::IsSupportedJavascriptMimeType(response_head.mime_type)) {
       std::string error_message =
           response_head.mime_type.empty()
@@ -485,7 +485,7 @@ void ServiceWorkerNewScriptLoader::WillWriteInfo(
   const net::HttpResponseInfo* info = response_info->http_info.get();
   DCHECK(info);
 
-  if (resource_type_ == RESOURCE_TYPE_SERVICE_WORKER) {
+  if (resource_type_ == ResourceType::kServiceWorker) {
     version_->SetMainScriptHttpResponseInfo(*info);
   }
 
@@ -608,9 +608,9 @@ void ServiceWorkerNewScriptLoader::CheckVersionStatusBeforeLoad() {
   // defines importScripts() works only on the initial script evaluation and the
   // install event. Update this check once importScripts() is fixed.
   // (https://crbug.com/719052)
-  DCHECK((resource_type_ == RESOURCE_TYPE_SERVICE_WORKER &&
+  DCHECK((resource_type_ == ResourceType::kServiceWorker &&
           version_->status() == ServiceWorkerVersion::NEW) ||
-         (resource_type_ == RESOURCE_TYPE_SCRIPT &&
+         (resource_type_ == ResourceType::kScript &&
           version_->status() != ServiceWorkerVersion::REDUNDANT));
 }
 #endif  // DCHECK_IS_ON()

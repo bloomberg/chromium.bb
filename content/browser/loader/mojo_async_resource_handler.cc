@@ -119,10 +119,10 @@ MojoAsyncResourceHandler::MojoAsyncResourceHandler(
       report_transfer_size_async_timer_(std::make_unique<base::OneShotTimer>()),
       weak_factory_(this) {
   DCHECK(IsResourceTypeFrame(resource_type) ||
-         resource_type == RESOURCE_TYPE_SERVICE_WORKER ||
+         resource_type == ResourceType::kServiceWorker ||
          !(url_loader_options_ &
            network::mojom::kURLLoadOptionSendSSLInfoWithResponse));
-  DCHECK(resource_type == RESOURCE_TYPE_MAIN_FRAME ||
+  DCHECK(resource_type == ResourceType::kMainFrame ||
          !(url_loader_options_ &
            network::mojom::kURLLoadOptionSendSSLInfoForCertificateError));
   DCHECK(url_loader_client_);

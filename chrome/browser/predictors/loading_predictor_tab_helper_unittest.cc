@@ -188,7 +188,7 @@ TEST_F(LoadingPredictorTabHelperTest, ResourceLoadComplete) {
 
   auto navigation_id = CreateNavigationID(GetTabID(), "http://test.org");
   auto resource_load_info = CreateResourceLoadInfo(
-      "http://test.org/script.js", content::RESOURCE_TYPE_SCRIPT);
+      "http://test.org/script.js", content::ResourceType::kScript);
   EXPECT_CALL(*mock_collector_,
               RecordResourceLoadComplete(navigation_id,
                                          Eq(ByRef(*resource_load_info))));
@@ -207,7 +207,7 @@ TEST_F(LoadingPredictorTabHelperTest, ResourceLoadCompleteInSubFrame) {
 
   // Resource loaded in subframe shouldn't be recorded.
   auto resource_load_info = CreateResourceLoadInfo(
-      "http://sub.test.org/script.js", content::RESOURCE_TYPE_SCRIPT);
+      "http://sub.test.org/script.js", content::ResourceType::kScript);
   tab_helper_->ResourceLoadComplete(subframe, content::GlobalRequestID(),
                                     *resource_load_info);
 }
@@ -219,15 +219,15 @@ TEST_F(LoadingPredictorTabHelperTest, LoadResourceFromMemoryCache) {
 
   auto navigation_id = CreateNavigationID(GetTabID(), "http://test.org");
   auto resource_load_info = CreateResourceLoadInfo(
-      "http://test.org/script.js", content::RESOURCE_TYPE_SCRIPT, false);
+      "http://test.org/script.js", content::ResourceType::kScript, false);
   resource_load_info->mime_type = "application/javascript";
   resource_load_info->network_info->network_accessed = false;
   EXPECT_CALL(*mock_collector_,
               RecordResourceLoadComplete(navigation_id,
                                          Eq(ByRef(*resource_load_info))));
-  tab_helper_->DidLoadResourceFromMemoryCache(
-      GURL("http://test.org/script.js"), "application/javascript",
-      content::ResourceType::RESOURCE_TYPE_SCRIPT);
+  tab_helper_->DidLoadResourceFromMemoryCache(GURL("http://test.org/script.js"),
+                                              "application/javascript",
+                                              content::ResourceType::kScript);
 }
 
 }  // namespace predictors

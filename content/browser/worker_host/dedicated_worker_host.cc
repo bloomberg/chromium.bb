@@ -98,7 +98,8 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
         storage_partition_impl->GetAppCacheService(), process_id_);
 
     WorkerScriptFetchInitiator::Start(
-        process_id_, script_url, request_initiator_origin, RESOURCE_TYPE_WORKER,
+        process_id_, script_url, request_initiator_origin,
+        ResourceType::kWorker,
         storage_partition_impl->GetServiceWorkerContext(),
         appcache_handle_->core(), std::move(blob_url_loader_factory),
         storage_partition_impl,
