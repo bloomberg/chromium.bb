@@ -4,11 +4,24 @@
 
 #include "chrome/browser/chromeos/file_manager/file_tasks_notifier.h"
 
+#include <memory>
+#include <utility>
+
+#include "base/barrier_closure.h"
 #include "base/callback.h"
+#include "base/files/file_util.h"
+#include "base/task/post_task.h"
+#include "base/threading/sequenced_task_runner_handle.h"
+#include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/file_manager/file_tasks_notifier_factory.h"
 #include "chrome/browser/chromeos/file_manager/file_tasks_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/download/public/common/download_item.h"
+#include "content/public/browser/network_service_instance.h"
+#include "mojo/public/cpp/bindings/callback_helpers.h"
+#include "services/network/public/cpp/network_connection_tracker.h"
+#include "storage/browser/fileapi/external_mount_points.h"
+#include "storage/browser/fileapi/file_system_context.h"
 #include "storage/browser/fileapi/file_system_url.h"
 #include "storage/common/fileapi/file_system_types.h"
 #include "ui/shell_dialogs/selected_file_info.h"
@@ -28,7 +41,20 @@ bool IsSupportedFileSystemType(storage::FileSystemType type) {
   }
 }
 
+void ReturnQueryResults(
+    std::unique_ptr<std::vector<FileTasksNotifier::FileAvailability>> results,
+    base::OnceCallback<void(std::vector<FileTasksNotifier::FileAvailability>)>
+        callback) {
+  std::move(callback).Run(std::move(*results));
+}
+
 }  // namespace
+
+struct FileTasksNotifier::PendingFileAvailabilityTask {
+  storage::FileSystemURL url;
+  FileTasksNotifier::FileAvailability* output;
+  base::OnceClosure done;
+};
 
 FileTasksNotifier::FileTasksNotifier(Profile* profile)
     : profile_(profile),
@@ -48,6 +74,45 @@ void FileTasksNotifier::AddObserver(FileTasksObserver* observer) {
 
 void FileTasksNotifier::RemoveObserver(FileTasksObserver* observer) {
   observers_.RemoveObserver(observer);
+}
+
+void FileTasksNotifier::QueryFileAvailability(
+    const std::vector<base::FilePath>& paths,
+    base::OnceCallback<void(std::vector<FileAvailability>)> callback) {
+  const auto* mount_points = storage::ExternalMountPoints::GetSystemInstance();
+  std::vector<FileAvailability> results(paths.size(),
+                                        FileAvailability::kUnknown);
+
+  std::vector<PendingFileAvailabilityTask> tasks;
+  for (size_t i = 0; i < paths.size(); ++i) {
+    base::FilePath virtual_path;
+    if (!mount_points->GetVirtualPath(paths[i], &virtual_path)) {
+      continue;
+    }
+    auto url = mount_points->CreateCrackedFileSystemURL(
+        url::Origin(), storage::kFileSystemTypeExternal, virtual_path);
+    if (!url.is_valid() || !IsSupportedFileSystemType(url.type())) {
+      results[i] = FileAvailability::kGone;
+      continue;
+    }
+    tasks.push_back({url, &results[i]});
+  }
+  if (tasks.empty()) {
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), std::move(results)));
+    return;
+  }
+
+  auto results_owner = std::make_unique<std::vector<FileAvailability>>();
+  std::swap(results, *results_owner);
+  auto closure = base::BarrierClosure(
+      tasks.size(),
+      base::BindOnce(&ReturnQueryResults, std::move(results_owner),
+                     std::move(callback)));
+  for (auto& task : tasks) {
+    task.done = closure;
+    GetFileAvailability(std::move(task));
+  }
 }
 
 void FileTasksNotifier::OnDownloadUpdated(content::DownloadManager* manager,
@@ -101,6 +166,84 @@ void FileTasksNotifier::NotifyObservers(
   for (auto& observer : observers_) {
     observer.OnFilesOpened(opens);
   }
+}
+
+void FileTasksNotifier::GetFileAvailability(PendingFileAvailabilityTask task) {
+  if (task.url.type() != storage::kFileSystemTypeDriveFs) {
+    base::FilePath path = std::move(task.url.path());
+    base::PostTaskWithTraitsAndReplyWithResult(
+        FROM_HERE, {base::MayBlock()},
+        base::BindOnce(&base::PathExists, std::move(path)),
+        base::BindOnce(&FileTasksNotifier::ForwardQueryResult,
+                       std::move(task)));
+    return;
+  }
+  if (!GetDriveFsInterface()) {
+    *task.output = FileTasksNotifier::FileAvailability::kUnknown;
+    base::SequencedTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                     std::move(task.done));
+    return;
+  }
+  base::FilePath drive_path;
+  if (!GetRelativeDrivePath(task.url.path(), &drive_path)) {
+    *task.output = FileTasksNotifier::FileAvailability::kGone;
+    base::SequencedTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                     std::move(task.done));
+    return;
+  }
+  GetDriveFsInterface()->GetMetadata(
+      drive_path,
+      mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+          base::BindOnce(&FileTasksNotifier::ForwardDriveFsQueryResult,
+                         std::move(task), IsOffline()),
+          drive::FILE_ERROR_SERVICE_UNAVAILABLE, nullptr));
+}
+
+// static
+void FileTasksNotifier::ForwardQueryResult(PendingFileAvailabilityTask task,
+                                           bool exists) {
+  *task.output = exists ? FileTasksNotifier::FileAvailability::kOk
+                        : FileTasksNotifier::FileAvailability::kGone;
+  std::move(task.done).Run();
+}
+
+// static
+void FileTasksNotifier::ForwardDriveFsQueryResult(
+    PendingFileAvailabilityTask task,
+    bool is_offline,
+    drive::FileError error,
+    drivefs::mojom::FileMetadataPtr metadata) {
+  if (error == drive::FILE_ERROR_NOT_FOUND) {
+    *task.output = FileTasksNotifier::FileAvailability::kGone;
+  } else if (error != drive::FILE_ERROR_OK) {
+    *task.output = FileTasksNotifier::FileAvailability::kUnknown;
+  } else {
+    *task.output =
+        metadata->available_offline || !is_offline
+            ? FileTasksNotifier::FileAvailability::kOk
+            : FileTasksNotifier::FileAvailability::kTemporarilyUnavailable;
+  }
+  std::move(task.done).Run();
+}
+
+drivefs::mojom::DriveFs* FileTasksNotifier::GetDriveFsInterface() {
+  drive::DriveIntegrationService* integration_service =
+      drive::DriveIntegrationServiceFactory::FindForProfile(profile_);
+  if (!integration_service || !integration_service->IsMounted()) {
+    return nullptr;
+  }
+  return integration_service->GetDriveFsInterface();
+}
+
+bool FileTasksNotifier::GetRelativeDrivePath(
+    const base::FilePath& path,
+    base::FilePath* drive_relative_path) {
+  return drive::DriveIntegrationServiceFactory::FindForProfile(profile_)
+      ->GetRelativeDrivePath(path, drive_relative_path);
+}
+
+bool FileTasksNotifier::IsOffline() {
+  return content::GetNetworkConnectionTracker()->IsOffline();
 }
 
 }  // namespace file_tasks

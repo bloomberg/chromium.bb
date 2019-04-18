@@ -10,7 +10,9 @@
 #include "base/callback_forward.h"
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/file_manager/file_tasks_observer.h"
+#include "chromeos/components/drivefs/mojom/drivefs.mojom.h"
 #include "components/download/content/public/all_download_item_notifier.h"
+#include "components/drive/file_errors.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 class Profile;
@@ -56,6 +58,10 @@ class FileTasksNotifier : public KeyedService,
   void AddObserver(FileTasksObserver*);
   void RemoveObserver(FileTasksObserver*);
 
+  void QueryFileAvailability(
+      const std::vector<base::FilePath>&,
+      base::OnceCallback<void(std::vector<FileAvailability>)>);
+
   void NotifyFileTasks(const std::vector<storage::FileSystemURL>& file_urls);
 
   void NotifyFileDialogSelection(const std::vector<ui::SelectedFileInfo>& files,
@@ -66,8 +72,24 @@ class FileTasksNotifier : public KeyedService,
                          download::DownloadItem* item) override;
 
  private:
+  struct PendingFileAvailabilityTask;
   void NotifyObservers(const std::vector<base::FilePath>& paths,
                        FileTasksObserver::OpenType open_type);
+
+  void GetFileAvailability(PendingFileAvailabilityTask task);
+  static void ForwardQueryResult(PendingFileAvailabilityTask task, bool exists);
+
+  static void ForwardDriveFsQueryResult(
+      PendingFileAvailabilityTask task,
+      bool is_offline,
+      drive::FileError error,
+      drivefs::mojom::FileMetadataPtr metadata);
+
+  // Virtual for stubbing out in tests.
+  virtual drivefs::mojom::DriveFs* GetDriveFsInterface();
+  virtual bool GetRelativeDrivePath(const base::FilePath& path,
+                                    base::FilePath* drive_relative_path);
+  virtual bool IsOffline();
 
   Profile* const profile_;
   download::AllDownloadItemNotifier download_notifier_;
