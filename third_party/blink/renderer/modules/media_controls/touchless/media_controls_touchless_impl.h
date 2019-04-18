@@ -11,11 +11,12 @@
 #include "third_party/blink/renderer/core/html/media/media_controls.h"
 #include "third_party/blink/renderer/modules/media_controls/touchless/media_controls_touchless_media_event_listener_observer.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
-#include "third_party/blink/renderer/platform/timer.h"
 
 namespace blink {
 
 class MediaControlsOrientationLockDelegate;
+class MediaControlsTouchlessBottomContainerElement;
+class MediaControlsTouchlessOverlayElement;
 class MediaControlsTouchlessMediaEventListener;
 class MediaControlsTextTrackManager;
 
@@ -54,8 +55,8 @@ class MODULES_EXPORT MediaControlsTouchlessImpl final
   void OnTimeUpdate() override {}
   void OnDurationChange() override {}
   void OnLoadingProgress() override {}
-  void OnPlay() override {}
-  void OnPause() override {}
+  void OnPlay() override;
+  void OnPause() override;
   void OnError() override {}
   void OnLoadedMetadata() override {}
   void OnKeyPress(KeyboardEvent* event) override {}
@@ -86,12 +87,6 @@ class MODULES_EXPORT MediaControlsTouchlessImpl final
   // Node
   bool IsMediaControls() const override { return true; }
 
-  void MakeOpaque();
-  void MakeTransparent();
-  void HideMediaControlsTimerFired(TimerBase*);
-  void StartHideMediaControlsTimer();
-  void StopHideMediaControlsTimer();
-
   void EnsureMediaControlsMenuHost();
   mojom::blink::VideoStatePtr GetVideoState();
   WTF::Vector<mojom::blink::TextTrackMetadataPtr> GetTextTracks();
@@ -99,11 +94,12 @@ class MODULES_EXPORT MediaControlsTouchlessImpl final
   void OnMediaMenuResult(mojom::blink::MenuResponsePtr);
   void OnMediaControlsMenuHostConnectionError();
 
+  Member<MediaControlsTouchlessOverlayElement> overlay_;
+  Member<MediaControlsTouchlessBottomContainerElement> bottom_container_;
+
   Member<MediaControlsTouchlessMediaEventListener> media_event_listener_;
   Member<MediaControlsTextTrackManager> text_track_manager_;
   Member<MediaControlsOrientationLockDelegate> orientation_lock_delegate_;
-
-  TaskRunnerTimer<MediaControlsTouchlessImpl> hide_media_controls_timer_;
 
   mojom::blink::MediaControlsMenuHostPtr media_controls_host_;
 

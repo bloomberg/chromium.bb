@@ -12,15 +12,13 @@ MediaControlsTouchlessSeekButtonElement::
     MediaControlsTouchlessSeekButtonElement(
         MediaControlsTouchlessImpl& controls,
         bool forward)
-    : HTMLDivElement(controls.GetDocument()),
-      MediaControlsTouchlessElement(controls) {
+    : MediaControlsTouchlessElement(controls) {
   SetShadowPseudoId(AtomicString(
       forward ? "-internal-media-controls-touchless-seek-forward-button"
               : "-internal-media-controls-touchless-seek-backward-button"));
 }
 
 void MediaControlsTouchlessSeekButtonElement::Trace(blink::Visitor* visitor) {
-  HTMLDivElement::Trace(visitor);
   MediaControlsTouchlessElement::Trace(visitor);
 }
 

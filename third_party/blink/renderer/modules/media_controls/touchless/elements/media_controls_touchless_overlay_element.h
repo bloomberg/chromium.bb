@@ -13,10 +13,7 @@ namespace blink {
 class MediaControlsTouchlessImpl;
 
 class MediaControlsTouchlessOverlayElement
-    : public HTMLDivElement,
-      public MediaControlsTouchlessElement {
-  USING_GARBAGE_COLLECTED_MIXIN(MediaControlsTouchlessOverlayElement);
-
+    : public MediaControlsTouchlessElement {
  public:
   MediaControlsTouchlessOverlayElement(MediaControlsTouchlessImpl&);
   void Trace(blink::Visitor*) override;

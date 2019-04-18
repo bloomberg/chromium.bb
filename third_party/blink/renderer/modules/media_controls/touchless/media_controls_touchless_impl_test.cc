@@ -108,8 +108,8 @@ class MediaControlsTouchlessImplTest : public PageTestBase {
     WebMediaPlayer()->buffered_.Assign(&time_range, 1);
   }
 
-  bool IsControlsVisible() {
-    return !MediaControls().classList().contains("transparent");
+  bool IsControlsVisible(Element* element) {
+    return !element->classList().contains("transparent");
   }
 
   Element* GetControlByShadowPseudoId(const char* shadow_pseudo_id) {
@@ -293,37 +293,85 @@ TEST_F(MediaControlsTouchlessImplTest, TimeDisplay) {
   EXPECT_EQ(time_display->InnerHTMLAsString(), expect_display);
 }
 
-TEST_F(MediaControlsTouchlessImplTestWithMockScheduler, ControlsShowAndHide) {
-  // Controls should starts hidden.
-  ASSERT_FALSE(IsControlsVisible());
+TEST_F(MediaControlsTouchlessImplTestWithMockScheduler,
+       MidOverlayHideTimerTest) {
+  Element* overlay =
+      GetControlByShadowPseudoId("-internal-media-controls-touchless-overlay");
+  ASSERT_NE(nullptr, overlay);
 
-  // Controls should show when focus in.
+  // Overlay should starts hidden.
+  EXPECT_FALSE(IsControlsVisible(overlay));
+
+  // Overlay should show when focus in.
   MediaElement().SetFocused(true, WebFocusType::kWebFocusTypeNone);
   MediaElement().DispatchEvent(*Event::Create(event_type_names::kFocusin));
-  ASSERT_TRUE(IsControlsVisible());
+  EXPECT_TRUE(IsControlsVisible(overlay));
 
-  // Controls should hide after 3 seconds.
+  // Overlay should hide after 3 seconds.
   platform()->RunForPeriodSeconds(2.99);
-  ASSERT_TRUE(IsControlsVisible());
+  EXPECT_TRUE(IsControlsVisible(overlay));
   platform()->RunForPeriodSeconds(0.01);
-  ASSERT_FALSE(IsControlsVisible());
+  EXPECT_FALSE(IsControlsVisible(overlay));
 
-  // Controls should show upon pressing return key.
+  // Overlay should show upon pressing return key.
   SimulateKeydownEvent(MediaElement(), VKEY_RETURN);
-  ASSERT_TRUE(IsControlsVisible());
+  EXPECT_TRUE(IsControlsVisible(overlay));
 
-  // Controls should not disappear after 2 seconds.
+  // Overlay should not disappear after 2 seconds.
   platform()->RunForPeriodSeconds(2);
-  ASSERT_TRUE(IsControlsVisible());
+  EXPECT_TRUE(IsControlsVisible(overlay));
 
-  // Pressing return key again should reset hiding timer.
-  SimulateKeydownEvent(MediaElement(), VKEY_RETURN);
-  platform()->RunForPeriodSeconds(2);
-  ASSERT_TRUE(IsControlsVisible());
-
-  // Controls should hide 3 seconds after last key press.
+  // Overlay should hide 3 seconds after last key press.
   platform()->RunForPeriodSeconds(1);
-  ASSERT_FALSE(IsControlsVisible());
+  EXPECT_FALSE(IsControlsVisible(overlay));
+}
+
+TEST_F(MediaControlsTouchlessImplTestWithMockScheduler,
+       BottomContainerHideTimerTest) {
+  Element* bottom_container = GetControlByShadowPseudoId(
+      "-internal-media-controls-touchless-bottom-container");
+  ASSERT_NE(nullptr, bottom_container);
+
+  // Bottom container starts opaque since video is paused.
+  EXPECT_TRUE(IsControlsVisible(bottom_container));
+
+  MediaElement().Play();
+  platform()->RunForPeriodSeconds(3);
+  EXPECT_FALSE(IsControlsVisible(bottom_container));
+
+  MediaElement().pause();
+
+  // Pause after play should stop hide timer.
+  MediaElement().Play();
+  MediaElement().pause();
+  platform()->RunForPeriodSeconds(5);
+  EXPECT_TRUE(IsControlsVisible(bottom_container));
+
+  MediaElement().Play();
+  platform()->RunForPeriodSeconds(5);
+  EXPECT_FALSE(IsControlsVisible(bottom_container));
+
+  // Bottom container should show after focus in.
+  MediaElement().SetFocused(true, WebFocusType::kWebFocusTypeNone);
+  MediaElement().DispatchEvent(*Event::Create(event_type_names::kFocusin));
+  EXPECT_TRUE(IsControlsVisible(bottom_container));
+
+  // Hide after 3 seconds
+  platform()->RunForPeriodSeconds(3);
+  EXPECT_FALSE(IsControlsVisible(bottom_container));
+
+  // Bottom container should show after pressing right/left arrow.
+  SimulateKeydownEvent(MediaElement(), VK_RIGHT);
+  EXPECT_TRUE(IsControlsVisible(bottom_container));
+
+  platform()->RunForPeriodSeconds(3);
+  EXPECT_FALSE(IsControlsVisible(bottom_container));
+
+  SimulateKeydownEvent(MediaElement(), VK_LEFT);
+  EXPECT_TRUE(IsControlsVisible(bottom_container));
+
+  platform()->RunForPeriodSeconds(3);
+  EXPECT_FALSE(IsControlsVisible(bottom_container));
 }
 
 }  // namespace

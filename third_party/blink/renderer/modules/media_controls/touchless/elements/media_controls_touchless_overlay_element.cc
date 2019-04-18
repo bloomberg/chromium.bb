@@ -13,8 +13,7 @@ namespace blink {
 
 MediaControlsTouchlessOverlayElement::MediaControlsTouchlessOverlayElement(
     MediaControlsTouchlessImpl& media_controls)
-    : HTMLDivElement(media_controls.GetDocument()),
-      MediaControlsTouchlessElement(media_controls) {
+    : MediaControlsTouchlessElement(media_controls) {
   SetShadowPseudoId(AtomicString("-internal-media-controls-touchless-overlay"));
 
   MediaControlsTouchlessPlayButtonElement* play_button =
@@ -43,7 +42,6 @@ MediaControlsTouchlessOverlayElement::MediaControlsTouchlessOverlayElement(
 }
 
 void MediaControlsTouchlessOverlayElement::Trace(blink::Visitor* visitor) {
-  HTMLDivElement::Trace(visitor);
   MediaControlsTouchlessElement::Trace(visitor);
 }
 

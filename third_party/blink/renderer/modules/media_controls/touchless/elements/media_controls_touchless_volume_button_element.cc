@@ -12,15 +12,13 @@ MediaControlsTouchlessVolumeButtonElement::
     MediaControlsTouchlessVolumeButtonElement(
         MediaControlsTouchlessImpl& controls,
         bool up)
-    : HTMLDivElement(controls.GetDocument()),
-      MediaControlsTouchlessElement(controls) {
+    : MediaControlsTouchlessElement(controls) {
   SetShadowPseudoId(AtomicString(
       up ? "-internal-media-controls-touchless-volume-up-button"
          : "-internal-media-controls-touchless-volume-down-button"));
 }
 
 void MediaControlsTouchlessVolumeButtonElement::Trace(blink::Visitor* visitor) {
-  HTMLDivElement::Trace(visitor);
   MediaControlsTouchlessElement::Trace(visitor);
 }
 

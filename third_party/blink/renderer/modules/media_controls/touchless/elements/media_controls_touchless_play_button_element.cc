@@ -20,8 +20,7 @@ const char kPausedCSSClass[] = "paused";
 MediaControlsTouchlessPlayButtonElement::
     MediaControlsTouchlessPlayButtonElement(
         MediaControlsTouchlessImpl& controls)
-    : HTMLDivElement(controls.GetDocument()),
-      MediaControlsTouchlessElement(controls) {
+    : MediaControlsTouchlessElement(controls) {
   SetShadowPseudoId(
       AtomicString("-internal-media-controls-touchless-play-button"));
 
@@ -37,7 +36,6 @@ void MediaControlsTouchlessPlayButtonElement::OnPause() {
 }
 
 void MediaControlsTouchlessPlayButtonElement::Trace(blink::Visitor* visitor) {
-  HTMLDivElement::Trace(visitor);
   MediaControlsTouchlessElement::Trace(visitor);
 }
 

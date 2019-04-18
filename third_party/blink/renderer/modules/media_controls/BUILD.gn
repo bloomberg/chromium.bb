@@ -104,6 +104,8 @@ blink_modules_sources("media_controls") {
 
   if (is_android && notouch_build) {
     sources += [
+      "touchless/elements/media_controls_touchless_bottom_container_element.cc",
+      "touchless/elements/media_controls_touchless_bottom_container_element.h",
       "touchless/elements/media_controls_touchless_element.cc",
       "touchless/elements/media_controls_touchless_element.h",
       "touchless/elements/media_controls_touchless_overlay_element.cc",
