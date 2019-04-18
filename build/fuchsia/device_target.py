@@ -227,12 +227,6 @@ class DeviceTarget(target.Target):
         EnsurePathExists(boot_data.GetBootImage(self._output_dir,
                                                 self._GetTargetSdkArch()))]
 
-    if self._GetTargetSdkArch() == 'x64':
-      bootserver_command += [
-          '--efi',
-          EnsurePathExists(boot_data.GetTargetFile(self._GetTargetSdkArch(),
-                                                   'local.esp.blk'))]
-
     if self._node_name:
       bootserver_command += ['-n', self._node_name]
 
