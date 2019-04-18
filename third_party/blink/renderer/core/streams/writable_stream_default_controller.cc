@@ -374,6 +374,19 @@ void WritableStreamDefaultController::Write(
   AdvanceQueueIfNeeded(script_state, controller);
 }
 
+void WritableStreamDefaultController::ErrorIfNeeded(
+    ScriptState* script_state,
+    WritableStreamDefaultController* controller,
+    v8::Local<v8::Value> error) {
+  // https://streams.spec.whatwg.org/#writable-stream-default-controller-error-if-needed
+  //  1. If controller.[[controlledWritableStream]].[[state]] is "writable",
+  //     perform ! WritableStreamDefaultControllerError(controller, error).
+  const auto state = controller->controlled_writable_stream_->GetState();
+  if (state == WritableStreamNative::kWritable) {
+    Error(script_state, controller, error);
+  }
+}
+
 void WritableStreamDefaultController::Trace(Visitor* visitor) {
   visitor->Trace(abort_algorithm_);
   visitor->Trace(close_algorithm_);
@@ -455,19 +468,6 @@ void WritableStreamDefaultController::AdvanceQueueIfNeeded(
   // ("Otherwise" here means if the chunk is not a `"close"` marker).
   WritableStreamDefaultController::ProcessWrite(script_state, controller,
                                                 chunk);
-}
-
-void WritableStreamDefaultController::ErrorIfNeeded(
-    ScriptState* script_state,
-    WritableStreamDefaultController* controller,
-    v8::Local<v8::Value> error) {
-  // https://streams.spec.whatwg.org/#writable-stream-default-controller-error-if-needed
-  //  1. If controller.[[controlledWritableStream]].[[state]] is "writable",
-  //     perform ! WritableStreamDefaultControllerError(controller, error).
-  const auto state = controller->controlled_writable_stream_->GetState();
-  if (state == WritableStreamNative::kWritable) {
-    Error(script_state, controller, error);
-  }
 }
 
 void WritableStreamDefaultController::ProcessClose(

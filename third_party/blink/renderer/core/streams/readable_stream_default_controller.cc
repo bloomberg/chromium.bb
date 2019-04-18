@@ -226,6 +226,45 @@ base::Optional<double> ReadableStreamDefaultController::GetDesiredSize() const {
   }
 }
 
+bool ReadableStreamDefaultController::CanCloseOrEnqueue(
+    const ReadableStreamDefaultController* controller) {
+  // https://streams.spec.whatwg.org/#readable-stream-default-controller-can-close-or-enqueue
+  // 1. Let state be controller.[[controlledReadableStream]].[[state]].
+  const auto state = controller->controlled_readable_stream_->state_;
+
+  // 2. If controller.[[closeRequested]] is false and state is "readable",
+  //    return true.
+  // 3. Otherwise, return false.
+  return !controller->is_close_requested_ &&
+         state == ReadableStreamNative::kReadable;
+}
+
+bool ReadableStreamDefaultController::HasBackpressure(
+    const ReadableStreamDefaultController* controller) {
+  // https://streams.spec.whatwg.org/#rs-default-controller-has-backpressure
+  // 1. If ! ReadableStreamDefaultControllerShouldCallPull(controller) is true,
+  //    return false.
+  // 2. Otherwise, return true.
+  return !ShouldCallPull(controller);
+}
+
+// Used internally by enqueue() and also by TransformStream.
+const char* ReadableStreamDefaultController::EnqueueExceptionMessage(
+    const ReadableStreamDefaultController* controller) {
+  if (controller->is_close_requested_) {
+    return "Cannot enqueue a chunk into a readable stream that is closed or "
+           "has been requested to be closed";
+  }
+
+  const ReadableStreamNative* stream = controller->controlled_readable_stream_;
+  const auto state = stream->state_;
+  if (state == ReadableStreamNative::kErrored) {
+    return "Cannot enqueue a chunk into an errored readable stream";
+  }
+  DCHECK(state == ReadableStreamNative::kClosed);
+  return "Cannot enqueue a chunk into a closed readable stream";
+}
+
 void ReadableStreamDefaultController::Trace(Visitor* visitor) {
   visitor->Trace(cancel_algorithm_);
   visitor->Trace(controlled_readable_stream_);
@@ -446,28 +485,6 @@ void ReadableStreamDefaultController::ClearAlgorithms(
   controller->strategy_size_algorithm_ = nullptr;
 }
 
-bool ReadableStreamDefaultController::HasBackpressure(
-    const ReadableStreamDefaultController* controller) {
-  // https://streams.spec.whatwg.org/#rs-default-controller-has-backpressure
-  // 1. If ! ReadableStreamDefaultControllerShouldCallPull(controller) is true,
-  //    return false.
-  // 2. Otherwise, return true.
-  return !ShouldCallPull(controller);
-}
-
-bool ReadableStreamDefaultController::CanCloseOrEnqueue(
-    const ReadableStreamDefaultController* controller) {
-  // https://streams.spec.whatwg.org/#readable-stream-default-controller-can-close-or-enqueue
-  // 1. Let state be controller.[[controlledReadableStream]].[[state]].
-  const auto state = controller->controlled_readable_stream_->state_;
-
-  // 2. If controller.[[closeRequested]] is false and state is "readable",
-  //    return true.
-  // 3. Otherwise, return false.
-  return !controller->is_close_requested_ &&
-         state == ReadableStreamNative::kReadable;
-}
-
 void ReadableStreamDefaultController::SetUp(
     ScriptState* script_state,
     ReadableStreamNative* stream,
@@ -641,23 +658,6 @@ void ReadableStreamDefaultController::SetUpFromUnderlyingSource(
   SetUp(script_state, stream, controller, start_algorithm, pull_algorithm,
         cancel_algorithm, high_water_mark, size_algorithm,
         enable_blink_lock_notifications, exception_state);
-}
-
-// Used internally by enqueue() and also by TransformStream.
-const char* ReadableStreamDefaultController::EnqueueExceptionMessage(
-    const ReadableStreamDefaultController* controller) {
-  if (controller->is_close_requested_) {
-    return "Cannot enqueue a chunk into a readable stream that is closed or "
-           "has been requested to be closed";
-  }
-
-  const ReadableStreamNative* stream = controller->controlled_readable_stream_;
-  const auto state = stream->state_;
-  if (state == ReadableStreamNative::kErrored) {
-    return "Cannot enqueue a chunk into an errored readable stream";
-  }
-  DCHECK(state == ReadableStreamNative::kClosed);
-  return "Cannot enqueue a chunk into a closed readable stream";
 }
 
 }  // namespace blink
