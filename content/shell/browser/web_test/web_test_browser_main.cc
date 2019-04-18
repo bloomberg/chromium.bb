@@ -31,7 +31,6 @@
 #include "content/shell/common/web_test/web_test_switches.h"
 #include "content/shell/renderer/web_test/blink_test_helpers.h"
 #include "gpu/config/gpu_switches.h"
-#include "media/base/media_switches.h"
 #include "net/base/filename_util.h"
 
 #if defined(OS_ANDROID)
@@ -136,13 +135,6 @@ int WebTestBrowserMain(
   // seconds after chrome starts.
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kDisableGpuProcessForDX12VulkanInfoCollection);
-
-  // Disable audio output to avoid unnecessary log output from platform audio
-  // layers. Seems to cause flakiness on Mac.
-#if !defined(OS_MACOSX)
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kDisableAudioOutput);
-#endif
 
 #if defined(OS_ANDROID)
   content::ScopedAndroidConfiguration android_configuration;
