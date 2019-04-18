@@ -224,7 +224,7 @@ html[darkmode=true] .md-add-icon {
   text-align: center;
   text-overflow: ellipsis;
   white-space: nowrap;
-  width: 96px;
+  width: 88px;
 }
 
 .md-title span {
@@ -253,7 +253,7 @@ body.using-theme .md-title-container {
   background-color: white;
   /* Necessary for a "pill" shape. Using 50% creates an oval. */
   border-radius: 500px;
-  padding: 0 4px;
+  padding: 0 8px;
 }
 
 html[darkmode=true] body.using-theme .md-title-container {
