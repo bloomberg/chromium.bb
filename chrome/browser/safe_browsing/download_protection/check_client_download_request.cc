@@ -615,6 +615,7 @@ void CheckClientDownloadRequest::SendRequest() {
           g_browser_process->browser_policy_connector()));
   request->mutable_population()->set_is_under_advanced_protection(
       is_under_advanced_protection_);
+  request->mutable_population()->set_is_incognito(is_incognito_);
 
   request->set_url(SanitizeUrl(item_->GetUrlChain().back()));
   request->mutable_digests()->set_sha256(item_->GetHash());
