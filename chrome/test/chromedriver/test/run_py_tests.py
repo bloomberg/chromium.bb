@@ -94,6 +94,8 @@ _OS_SPECIFIC_FILTER['win'] = [
     'ChromeLogPathCapabilityTest.testChromeLogPath',
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1367
     'ChromeExtensionsCapabilityTest.testWaitsForExtensionToLoad',
+    # https://bugs.chromium.org/p/chromium/issues/detail?id=946704
+    'ChromeDownloadDirTest.testFileDownloadWithClick',
 ]
 _OS_SPECIFIC_FILTER['linux'] = [
     # https://bugs.chromium.org/p/chromium/issues/detail?id=932073
