@@ -336,8 +336,6 @@ class CORE_EXPORT WebLocalFrameImpl final
       std::unique_ptr<WebDocumentLoader::ExtraData>) override;
 
   void SetLifecycleState(mojom::FrameLifecycleState state) override;
-  void WasHidden() override;
-  void WasShown() override;
 
   void InitializeCoreFrame(Page&, FrameOwner*, const AtomicString& name);
   LocalFrame* GetFrame() const { return frame_.Get(); }

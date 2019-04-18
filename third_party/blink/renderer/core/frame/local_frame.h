@@ -431,9 +431,6 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   void SetLifecycleState(mojom::FrameLifecycleState state);
 
-  void WasHidden();
-  void WasShown();
-
   // For a navigation initiated from this LocalFrame with user gesture, record
   // the UseCounter AdClickNavigation if this frame is an adframe.
   //
