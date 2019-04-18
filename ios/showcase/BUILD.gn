@@ -22,6 +22,7 @@ ios_app_bundle("showcase") {
 
 group("features") {
   deps = [
+    "//ios/showcase/alert",
     "//ios/showcase/bubble",
     "//ios/showcase/content_suggestions",
     "//ios/showcase/infobars",
