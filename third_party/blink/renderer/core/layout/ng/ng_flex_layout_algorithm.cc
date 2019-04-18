@@ -107,17 +107,23 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
         child_style.GetWritingMode(), *layout_result->PhysicalFragment());
 
     LayoutUnit flex_base_border_box;
-    const Length& length_in_main_axis =
+    const Length& specified_length_in_main_axis =
         is_horizontal_flow ? child_style.Width() : child_style.Height();
     const Length& flex_basis = child_style.FlexBasis();
-    if (flex_basis.IsAuto() && length_in_main_axis.IsAuto()) {
+    // TODO(dgrogan): Generalize IsAuto: See the <'width'> section of
+    // https://drafts.csswg.org/css-flexbox/#valdef-flex-flex-basis
+    // and https://drafts.csswg.org/css-flexbox/#flex-basis-property, which says
+    // that if a flex-basis value would resolve to auto (but not literally auto)
+    // we should interpret it as flex-basis:content.
+    if (flex_basis.IsAuto() && specified_length_in_main_axis.IsAuto()) {
       if (MainAxisIsInlineAxis(child))
         flex_base_border_box = intrinsic_sizes_border_box.max_size;
       else
         flex_base_border_box = fragment_in_child_writing_mode.BlockSize();
     } else {
+      // TODO(dgrogan): Check for definiteness.
       const Length& length_to_resolve =
-          flex_basis.IsAuto() ? length_in_main_axis : flex_basis;
+          flex_basis.IsAuto() ? specified_length_in_main_axis : flex_basis;
       DCHECK(!length_to_resolve.IsAuto());
 
       if (MainAxisIsInlineAxis(child)) {
@@ -147,16 +153,18 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
 
     MinMaxSize min_max_sizes_in_main_axis_direction{LayoutUnit(),
                                                     LayoutUnit::Max()};
-    const Length& max = is_horizontal_flow ? child.Style().MaxWidth()
-                                           : child.Style().MaxHeight();
+    const Length& max_property_in_main_axis = is_horizontal_flow
+                                                  ? child.Style().MaxWidth()
+                                                  : child.Style().MaxHeight();
     if (MainAxisIsInlineAxis(child)) {
       min_max_sizes_in_main_axis_direction.max_size = ResolveMaxInlineLength(
           child_space, child_style, border_padding_in_child_writing_mode,
-          intrinsic_sizes_border_box, max, LengthResolvePhase::kLayout);
+          intrinsic_sizes_border_box, max_property_in_main_axis,
+          LengthResolvePhase::kLayout);
     } else {
       min_max_sizes_in_main_axis_direction.max_size = ResolveMaxBlockLength(
-          child_space, child_style, border_padding_in_child_writing_mode, max,
-          fragment_in_child_writing_mode.BlockSize(),
+          child_space, child_style, border_padding_in_child_writing_mode,
+          max_property_in_main_axis, fragment_in_child_writing_mode.BlockSize(),
           LengthResolvePhase::kLayout);
     }
 
@@ -164,19 +172,66 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
                                            : child.Style().MinHeight();
     if (min.IsAuto()) {
       if (algorithm_->ShouldApplyMinSizeAutoForChild(*child.GetLayoutBox())) {
-        // TODO(dgrogan): Port logic from
-        // https://www.w3.org/TR/css-flexbox-1/#min-size-auto and
-        // LayoutFlexibleBox::ComputeMinAndMaxSizesForChild
+        // TODO(dgrogan): Do the aspect ratio parts of
+        // https://www.w3.org/TR/css-flexbox-1/#min-size-auto
+
+        LayoutUnit content_size_suggestion =
+            MainAxisIsInlineAxis(child) ? intrinsic_sizes_border_box.min_size
+                                        : layout_result->IntrinsicBlockSize();
+        content_size_suggestion =
+            std::min(content_size_suggestion,
+                     min_max_sizes_in_main_axis_direction.max_size);
+        content_size_suggestion -= main_axis_border_scrollbar_padding;
+
+        LayoutUnit specified_size_suggestion(LayoutUnit::Max());
+        // If the item’s computed main size property is definite, then the
+        // specified size suggestion is that size.
+        if (MainAxisIsInlineAxis(child)) {
+          if (!specified_length_in_main_axis.IsAuto()) {
+            // TODO(dgrogan): Optimization opportunity: we may have already
+            // resolved specified_length_in_main_axis in the flex basis
+            // calculation. Reuse that if possible.
+            specified_size_suggestion = ResolveMainInlineLength(
+                child_space, child_style, border_padding_in_child_writing_mode,
+                intrinsic_sizes_border_box, specified_length_in_main_axis);
+          }
+        } else if (!specified_length_in_main_axis.IsAuto() &&
+                   !BlockLengthUnresolvable(child_space,
+                                            specified_length_in_main_axis,
+                                            LengthResolvePhase::kLayout)) {
+          specified_size_suggestion = ResolveMainBlockLength(
+              child_space, child_style, border_padding_in_child_writing_mode,
+              specified_length_in_main_axis,
+              layout_result->IntrinsicBlockSize(), LengthResolvePhase::kLayout);
+          DCHECK_NE(specified_size_suggestion, NGSizeIndefinite);
+        }
+        // Spec says to clamp specified_size_suggestion by max size but because
+        // content_size_suggestion already is, and we take the min of those
+        // two, we don't need to clamp specified_size_suggestion.
+        // https://github.com/w3c/csswg-drafts/issues/3669
+        if (specified_size_suggestion != LayoutUnit::Max())
+          specified_size_suggestion -= main_axis_border_scrollbar_padding;
+
+        min_max_sizes_in_main_axis_direction.min_size =
+            std::min(specified_size_suggestion, content_size_suggestion);
       }
     } else if (MainAxisIsInlineAxis(child)) {
-      min_max_sizes_in_main_axis_direction.min_size = ResolveMinInlineLength(
-          child_space, child_style, border_padding_in_child_writing_mode,
-          intrinsic_sizes_border_box, min, LengthResolvePhase::kLayout);
+      min_max_sizes_in_main_axis_direction.min_size =
+          ResolveMinInlineLength(
+              child_space, child_style, border_padding_in_child_writing_mode,
+              intrinsic_sizes_border_box, min, LengthResolvePhase::kLayout) -
+          main_axis_border_scrollbar_padding;
+      // TODO(dgrogan): No tests changed status as result of subtracting
+      // main_axis_border_scrollbar_padding. It may be untested.
     } else {
-      min_max_sizes_in_main_axis_direction.min_size = ResolveMinBlockLength(
-          child_space, child_style, border_padding_in_child_writing_mode, min,
-          fragment_in_child_writing_mode.BlockSize(),
-          LengthResolvePhase::kLayout);
+      min_max_sizes_in_main_axis_direction.min_size =
+          ResolveMinBlockLength(child_space, child_style,
+                                border_padding_in_child_writing_mode, min,
+                                fragment_in_child_writing_mode.BlockSize(),
+                                LengthResolvePhase::kLayout) -
+          main_axis_border_scrollbar_padding;
+      // TODO(dgrogan): Same as above WRT subtracting
+      // main_axis_border_scrollbar_padding. It may be untested.
     }
 
     algorithm_
