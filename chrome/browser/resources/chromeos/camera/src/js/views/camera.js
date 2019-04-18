@@ -223,17 +223,26 @@ cca.views.Camera.prototype.start_ = function() {
       (async () => {
         if (!suspend) {
           for (const id of await this.options_.videoDeviceIds()) {
-            const modesAndConstraints =
-                await this.modes_.getConstraitsForModes(id);
-            this.modes_.updateModeSelectionUI(modesAndConstraints.map(([
-                                                                        m,
-                                                                      ]) => m));
-            for (const [mode, candidates] of modesAndConstraints) {
-              for (const constraints of candidates) {
+            let supportedModes = null;
+            for (const mode of this.modes_.getModeCandidates()) {
+              if (supportedModes && !supportedModes.includes(mode)) {
+                continue;
+              }
+              for (const constraints of this.modes_.getConstraitsCandidates(
+                       id, mode)) {
                 try {
                   const stream =
                       await navigator.mediaDevices.getUserMedia(constraints);
+                  if (!supportedModes) {
+                    supportedModes =
+                        await this.modes_.getSupportedModes(stream);
+                    if (!supportedModes.includes(mode)) {
+                      stream.getTracks()[0].stop();
+                      break;
+                    }
+                  }
                   await this.preview_.start(stream);
+                  await this.modes_.updateModeSelectionUI(supportedModes);
                   this.facingMode_ =
                       this.options_.updateValues(constraints, stream);
                   await this.modes_.updateMode(mode, stream);
