@@ -663,6 +663,7 @@ void WKBasedNavigationManagerImpl::AddRestoreCompletionCallback(
 void WKBasedNavigationManagerImpl::LoadIfNecessary() {
   if (!web_view_cache_.IsAttachedToWebView()) {
     // Loading from detached mode is equivalent to restoring cached history.
+    // This can happen after clearing browsing data by removing the web view.
     Restore(web_view_cache_.GetCurrentItemIndex(),
             web_view_cache_.ReleaseCachedItems());
     DCHECK(web_view_cache_.IsAttachedToWebView());
@@ -817,6 +818,13 @@ void WKBasedNavigationManagerImpl::WKWebViewCache::DetachFromWebView() {
     for (size_t index = 0; index < GetBackForwardListItemCount(); index++) {
       cached_items_[index].reset(new NavigationItemImpl(
           *GetNavigationItemImplAtIndex(index, true /* create_if_missing */)));
+      // Don't put restore URL's into |cached_items|, extract them first.
+      GURL url = cached_items_[index]->GetURL();
+      if (wk_navigation_util::IsRestoreSessionUrl(url)) {
+        GURL extracted_url;
+        if (wk_navigation_util::ExtractTargetURL(url, &extracted_url))
+          cached_items_[index]->SetURL(extracted_url);
+      }
     }
   }
   attached_to_web_view_ = false;
