@@ -147,11 +147,11 @@ class BluetoothAgentServiceProviderImpl : public BluetoothAgentServiceProvider {
       return;
     }
 
-    Delegate::PinCodeCallback callback = base::Bind(
+    Delegate::PinCodeCallback callback = base::BindOnce(
         &BluetoothAgentServiceProviderImpl::OnPinCode,
         weak_ptr_factory_.GetWeakPtr(), method_call, response_sender);
 
-    delegate_->RequestPinCode(device_path, callback);
+    delegate_->RequestPinCode(device_path, std::move(callback));
   }
 
   // Called by dbus:: when the Bluetooth daemon requires that the user
@@ -191,11 +191,11 @@ class BluetoothAgentServiceProviderImpl : public BluetoothAgentServiceProvider {
       return;
     }
 
-    Delegate::PasskeyCallback callback = base::Bind(
+    Delegate::PasskeyCallback callback = base::BindOnce(
         &BluetoothAgentServiceProviderImpl::OnPasskey,
         weak_ptr_factory_.GetWeakPtr(), method_call, response_sender);
 
-    delegate_->RequestPasskey(device_path, callback);
+    delegate_->RequestPasskey(device_path, std::move(callback));
   }
 
   // Called by dbus:: when the Bluetooth daemon requires that the user
@@ -240,11 +240,11 @@ class BluetoothAgentServiceProviderImpl : public BluetoothAgentServiceProvider {
       return;
     }
 
-    Delegate::ConfirmationCallback callback = base::Bind(
+    Delegate::ConfirmationCallback callback = base::BindOnce(
         &BluetoothAgentServiceProviderImpl::OnConfirmation,
         weak_ptr_factory_.GetWeakPtr(), method_call, response_sender);
 
-    delegate_->RequestConfirmation(device_path, passkey, callback);
+    delegate_->RequestConfirmation(device_path, passkey, std::move(callback));
   }
 
   // Called by dbus:: when the Bluetooth daemon requires that the user
@@ -263,11 +263,11 @@ class BluetoothAgentServiceProviderImpl : public BluetoothAgentServiceProvider {
       return;
     }
 
-    Delegate::ConfirmationCallback callback = base::Bind(
+    Delegate::ConfirmationCallback callback = base::BindOnce(
         &BluetoothAgentServiceProviderImpl::OnConfirmation,
         weak_ptr_factory_.GetWeakPtr(), method_call, response_sender);
 
-    delegate_->RequestAuthorization(device_path, callback);
+    delegate_->RequestAuthorization(device_path, std::move(callback));
   }
 
   // Called by dbus:: when the Bluetooth daemon requires that the user
@@ -287,11 +287,11 @@ class BluetoothAgentServiceProviderImpl : public BluetoothAgentServiceProvider {
       return;
     }
 
-    Delegate::ConfirmationCallback callback = base::Bind(
+    Delegate::ConfirmationCallback callback = base::BindOnce(
         &BluetoothAgentServiceProviderImpl::OnConfirmation,
         weak_ptr_factory_.GetWeakPtr(), method_call, response_sender);
 
-    delegate_->AuthorizeService(device_path, uuid, callback);
+    delegate_->AuthorizeService(device_path, uuid, std::move(callback));
   }
 
   // Called by dbus:: when the request failed before a reply was returned

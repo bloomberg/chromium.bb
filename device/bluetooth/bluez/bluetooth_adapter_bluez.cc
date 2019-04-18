@@ -774,18 +774,18 @@ void BluetoothAdapterBlueZ::Released() {
 }
 
 void BluetoothAdapterBlueZ::RequestPinCode(const dbus::ObjectPath& device_path,
-                                           const PinCodeCallback& callback) {
+                                           PinCodeCallback callback) {
   DCHECK(IsPresent());
   DCHECK(agent_.get());
   BLUETOOTH_LOG(EVENT) << device_path.value() << ": RequestPinCode";
 
   BluetoothPairingBlueZ* pairing = GetPairing(device_path);
   if (!pairing) {
-    callback.Run(REJECTED, "");
+    std::move(callback).Run(REJECTED, "");
     return;
   }
 
-  pairing->RequestPinCode(callback);
+  pairing->RequestPinCode(std::move(callback));
 }
 
 void BluetoothAdapterBlueZ::DisplayPinCode(const dbus::ObjectPath& device_path,
@@ -803,18 +803,18 @@ void BluetoothAdapterBlueZ::DisplayPinCode(const dbus::ObjectPath& device_path,
 }
 
 void BluetoothAdapterBlueZ::RequestPasskey(const dbus::ObjectPath& device_path,
-                                           const PasskeyCallback& callback) {
+                                           PasskeyCallback callback) {
   DCHECK(IsPresent());
   DCHECK(agent_.get());
   BLUETOOTH_LOG(EVENT) << device_path.value() << ": RequestPasskey";
 
   BluetoothPairingBlueZ* pairing = GetPairing(device_path);
   if (!pairing) {
-    callback.Run(REJECTED, 0);
+    std::move(callback).Run(REJECTED, 0);
     return;
   }
 
-  pairing->RequestPasskey(callback);
+  pairing->RequestPasskey(std::move(callback));
 }
 
 void BluetoothAdapterBlueZ::DisplayPasskey(const dbus::ObjectPath& device_path,
@@ -838,7 +838,7 @@ void BluetoothAdapterBlueZ::DisplayPasskey(const dbus::ObjectPath& device_path,
 void BluetoothAdapterBlueZ::RequestConfirmation(
     const dbus::ObjectPath& device_path,
     uint32_t passkey,
-    const ConfirmationCallback& callback) {
+    ConfirmationCallback callback) {
   DCHECK(IsPresent());
   DCHECK(agent_.get());
   BLUETOOTH_LOG(EVENT) << device_path.value()
@@ -846,40 +846,40 @@ void BluetoothAdapterBlueZ::RequestConfirmation(
 
   BluetoothPairingBlueZ* pairing = GetPairing(device_path);
   if (!pairing) {
-    callback.Run(REJECTED);
+    std::move(callback).Run(REJECTED);
     return;
   }
 
-  pairing->RequestConfirmation(passkey, callback);
+  pairing->RequestConfirmation(passkey, std::move(callback));
 }
 
 void BluetoothAdapterBlueZ::RequestAuthorization(
     const dbus::ObjectPath& device_path,
-    const ConfirmationCallback& callback) {
+    ConfirmationCallback callback) {
   DCHECK(IsPresent());
   DCHECK(agent_.get());
   BLUETOOTH_LOG(EVENT) << device_path.value() << ": RequestAuthorization";
 
   BluetoothPairingBlueZ* pairing = GetPairing(device_path);
   if (!pairing) {
-    callback.Run(REJECTED);
+    std::move(callback).Run(REJECTED);
     return;
   }
 
-  pairing->RequestAuthorization(callback);
+  pairing->RequestAuthorization(std::move(callback));
 }
 
 void BluetoothAdapterBlueZ::AuthorizeService(
     const dbus::ObjectPath& device_path,
     const std::string& uuid,
-    const ConfirmationCallback& callback) {
+    ConfirmationCallback callback) {
   DCHECK(IsPresent());
   DCHECK(agent_.get());
   BLUETOOTH_LOG(EVENT) << device_path.value() << ": AuthorizeService: " << uuid;
 
   BluetoothDeviceBlueZ* device_bluez = GetDeviceWithPath(device_path);
   if (!device_bluez) {
-    callback.Run(CANCELLED);
+    std::move(callback).Run(CANCELLED);
     return;
   }
 
@@ -888,7 +888,7 @@ void BluetoothAdapterBlueZ::AuthorizeService(
   // our "Set('Trusted', true)" method call is still pending in the Bluetooth
   // daemon because it's busy handling the incoming connection.
   if (device_bluez->IsPaired()) {
-    callback.Run(SUCCESS);
+    std::move(callback).Run(SUCCESS);
     return;
   }
 
@@ -896,7 +896,7 @@ void BluetoothAdapterBlueZ::AuthorizeService(
   // whether this is acceptable long-term.
   BLUETOOTH_LOG(ERROR) << "Rejecting service connection from unpaired device "
                        << device_bluez->GetAddress() << " for UUID " << uuid;
-  callback.Run(REJECTED);
+  std::move(callback).Run(REJECTED);
 }
 
 void BluetoothAdapterBlueZ::Cancel() {
