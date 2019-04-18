@@ -42,6 +42,7 @@ using ::testing::Pair;
 using ::testing::Pointee;
 using ::testing::Return;
 using ::testing::ReturnRef;
+using ::testing::SaveArg;
 using ::testing::Sequence;
 using ::testing::SizeIs;
 using ::testing::StrEq;
@@ -136,12 +137,19 @@ class ControllerTest : public content::RenderViewHostTestHarness {
     run_once->set_status(SCRIPT_STATUS_NOT_RUN);
   }
 
-  void SetupScriptsForURL(const std::string& url,
-                          SupportsScriptResponseProto scripts) {
+  void SetupScripts(SupportsScriptResponseProto scripts) {
     std::string scripts_str;
     scripts.SerializeToString(&scripts_str);
-    EXPECT_CALL(*mock_service_, OnGetScriptsForUrl(Eq(GURL(url)), _, _))
+    EXPECT_CALL(*mock_service_, OnGetScriptsForUrl(_, _, _))
         .WillOnce(RunOnceCallback<2>(true, scripts_str));
+  }
+
+  void SetupActionsForScript(const std::string& path,
+                             ActionsResponseProto actions_response) {
+    std::string actions_response_str;
+    actions_response.SerializeToString(&actions_response_str);
+    EXPECT_CALL(*mock_service_, OnGetActions(StrEq("script"), _, _, _, _, _))
+        .WillOnce(RunOnceCallback<5>(true, actions_response_str));
   }
 
   void Start() { Start("http://initialurl.com"); }
@@ -849,6 +857,81 @@ TEST_F(ControllerTest, RemoveListener) {
       GURL("http://initialurl.com"), web_contents()->GetMainFrame());
 
   EXPECT_THAT(listener.events, IsEmpty());
+}
+
+TEST_F(ControllerTest, WaitForNavigationActionTimesOut) {
+  // A single script, with a wait_for_navigation action
+  SupportsScriptResponseProto script_response;
+  AddRunnableScript(&script_response, "script");
+  SetupScripts(script_response);
+
+  ActionsResponseProto actions_response;
+  actions_response.add_actions()->mutable_expect_navigation();
+  auto* action = actions_response.add_actions()->mutable_wait_for_navigation();
+  action->set_timeout_ms(1000);
+  SetupActionsForScript("script", actions_response);
+
+  std::vector<ProcessedActionProto> processed_actions_capture;
+  EXPECT_CALL(*mock_service_, OnGetNextActions(_, _, _, _, _))
+      .WillOnce(DoAll(SaveArg<3>(&processed_actions_capture),
+                      RunOnceCallback<4>(true, "")));
+
+  Start("http://a.example.com/path");
+  EXPECT_THAT(controller_->GetSuggestions(), SizeIs(1));
+
+  // Start script, which waits for some navigation event to happen after the
+  // expect_navigation action has run..
+  controller_->SelectSuggestion(0);
+
+  // No navigation event happened within the action timeout and the script ends.
+  EXPECT_THAT(processed_actions_capture, SizeIs(0));
+  thread_bundle()->FastForwardBy(base::TimeDelta::FromSeconds(1));
+
+  ASSERT_THAT(processed_actions_capture, SizeIs(2));
+  EXPECT_EQ(ACTION_APPLIED, processed_actions_capture[0].status());
+  EXPECT_EQ(TIMED_OUT, processed_actions_capture[1].status());
+}
+
+TEST_F(ControllerTest, WaitForNavigationActionStartWithinTimeout) {
+  // A single script, with a wait_for_navigation action
+  SupportsScriptResponseProto script_response;
+  AddRunnableScript(&script_response, "script");
+  SetupScripts(script_response);
+
+  ActionsResponseProto actions_response;
+  actions_response.add_actions()->mutable_expect_navigation();
+  auto* action = actions_response.add_actions()->mutable_wait_for_navigation();
+  action->set_timeout_ms(1000);
+  SetupActionsForScript("script", actions_response);
+
+  std::vector<ProcessedActionProto> processed_actions_capture;
+  EXPECT_CALL(*mock_service_, OnGetNextActions(_, _, _, _, _))
+      .WillOnce(DoAll(SaveArg<3>(&processed_actions_capture),
+                      RunOnceCallback<4>(true, "")));
+
+  Start("http://a.example.com/path");
+  EXPECT_THAT(controller_->GetSuggestions(), SizeIs(1));
+
+  // Start script, which waits for some navigation event to happen after the
+  // expect_navigation action has run..
+  controller_->SelectSuggestion(0);
+
+  // Navigation starts, but does not end, within the timeout.
+  EXPECT_THAT(processed_actions_capture, SizeIs(0));
+  std::unique_ptr<content::NavigationSimulator> simulator =
+      content::NavigationSimulator::CreateRendererInitiated(
+          GURL("http://a.example.com/path"), web_contents()->GetMainFrame());
+  simulator->SetTransition(ui::PAGE_TRANSITION_LINK);
+  simulator->Start();
+  thread_bundle()->FastForwardBy(base::TimeDelta::FromSeconds(1));
+
+  // Navigation finishes and the script ends.
+  EXPECT_THAT(processed_actions_capture, SizeIs(0));
+  simulator->Commit();
+
+  ASSERT_THAT(processed_actions_capture, SizeIs(2));
+  EXPECT_EQ(ACTION_APPLIED, processed_actions_capture[0].status());
+  EXPECT_EQ(ACTION_APPLIED, processed_actions_capture[1].status());
 }
 
 }  // namespace autofill_assistant

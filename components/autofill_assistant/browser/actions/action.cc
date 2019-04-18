@@ -109,6 +109,12 @@ std::ostream& operator<<(std::ostream& out,
     case ActionProto::ActionInfoCase::kShowInfoBox:
       out << "ShowInfoBox";
       break;
+    case ActionProto::ActionInfoCase::kExpectNavigation:
+      out << "ExpectNavigation";
+      break;
+    case ActionProto::ActionInfoCase::kWaitForNavigation:
+      out << "WaitForNavigation";
+      break;
     case ActionProto::ActionInfoCase::ACTION_INFO_NOT_SET:
       out << "ACTION_INFO_NOT_SET";
       break;

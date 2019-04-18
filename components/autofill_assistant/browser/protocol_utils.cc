@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "components/autofill_assistant/browser/actions/autofill_action.h"
 #include "components/autofill_assistant/browser/actions/click_action.h"
+#include "components/autofill_assistant/browser/actions/expect_navigation_action.h"
 #include "components/autofill_assistant/browser/actions/focus_element_action.h"
 #include "components/autofill_assistant/browser/actions/get_payment_information_action.h"
 #include "components/autofill_assistant/browser/actions/highlight_element_action.h"
@@ -27,6 +28,7 @@
 #include "components/autofill_assistant/browser/actions/unsupported_action.h"
 #include "components/autofill_assistant/browser/actions/upload_dom_action.h"
 #include "components/autofill_assistant/browser/actions/wait_for_dom_action.h"
+#include "components/autofill_assistant/browser/actions/wait_for_navigation_action.h"
 #include "components/autofill_assistant/browser/service.pb.h"
 #include "url/gurl.h"
 
@@ -258,6 +260,14 @@ bool ProtocolUtils::ParseActions(const std::string& response,
       }
       case ActionProto::ActionInfoCase::kShowInfoBox: {
         client_action = std::make_unique<ShowInfoBoxAction>(action);
+        break;
+      }
+      case ActionProto::ActionInfoCase::kExpectNavigation: {
+        client_action = std::make_unique<ExpectNavigationAction>(action);
+        break;
+      }
+      case ActionProto::ActionInfoCase::kWaitForNavigation: {
+        client_action = std::make_unique<WaitForNavigationAction>(action);
         break;
       }
       case ActionProto::ActionInfoCase::ACTION_INFO_NOT_SET: {

@@ -160,6 +160,9 @@ class ScriptExecutor : public ActionDelegate,
       const Selector& selector,
       base::OnceCallback<void(const ClientStatus&, const std::string&)>
           callback) override;
+  void ExpectNavigation() override;
+  bool ExpectedNavigationHasStarted() override;
+  bool WaitForNavigation(base::OnceCallback<void(bool)> callback) override;
   void LoadURL(const GURL& url) override;
   void Shutdown() override;
   void Close() override;
@@ -333,6 +336,24 @@ class ScriptExecutor : public ActionDelegate,
   const std::vector<Script*>* ordered_interrupts_;
 
   std::unique_ptr<WaitForDomOperation> wait_for_dom_;
+
+  // Steps towards the requirements for calling |on_expected_navigation_done_|
+  // to be fulfilled.
+  enum class ExpectedNavigationStep {
+    // No navigation is expected.
+    UNEXPECTED = 0,
+    // Navigation start is expected.
+    EXPECTED,
+    // Navigation has started, end is expected.
+    STARTED,
+    // Expected navigation has ended.
+    DONE
+  };
+  ExpectedNavigationStep expected_navigation_step_ =
+      ExpectedNavigationStep::UNEXPECTED;
+
+  // Callback called the next time |expected_navigation_step_| becomes DONE.
+  base::OnceCallback<void(bool)> on_expected_navigation_done_;
 
   // Callback set by Prompt(). This is called when the prompt is terminated
   // without selecting any chips. nullptr unless showing a prompt.
