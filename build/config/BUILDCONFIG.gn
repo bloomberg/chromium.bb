@@ -516,6 +516,13 @@ default_executable_configs = default_compiler_configs + [
                                "//build/config:default_libs",
                                "//build/config:executable_config",
                              ] + _linker_configs
+
+if (is_win) {
+  # Currently only turn on linker CFI for executables, and position it so it can
+  # be removed when needed.
+  default_executable_configs += [ "//build/config/win:cfi_linker" ]
+}
+
 set_defaults("executable") {
   configs = default_executable_configs
 }
