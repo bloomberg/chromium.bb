@@ -28,20 +28,20 @@
 
 namespace blink {
 
-enum WebGestureDevice {
-  kWebGestureDeviceUninitialized,
-  kWebGestureDeviceTouchpad,
-  kWebGestureDeviceTouchscreen,
-  kWebGestureDeviceSyntheticAutoscroll,
+enum class WebGestureDevice {
+  kUninitialized,
+  kTouchpad,
+  kTouchscreen,
+  kSyntheticAutoscroll,
 
   // This is the device type used when generating synthetic gesture scrolls for
   // compositor thread scrollbar scrolling. Please refer to
   // ui::InputHandlerProxy::InjectScrollbarGestureScroll to see how this is
   // consumed. Explainer:
   // https://github.com/MicrosoftEdge/MSEdgeExplainers/blob/master/Scrolling/ImplScrollbars/dev-diagram.md
-  kWebGestureDeviceScrollbar,
+  kScrollbar,
 
-  kWebGestureDeviceCount,
+  kMaxValue = kScrollbar,
 };
 
 }  // namespace blink

@@ -1811,8 +1811,7 @@ void RenderWidgetHostViewAndroid::SendGestureEvent(
   // We let the touch selection controller see gesture events here, since they
   // may be routed and not make it to FilterInputEvent().
   if (touch_selection_controller_ &&
-      event.SourceDevice() ==
-          blink::WebGestureDevice::kWebGestureDeviceTouchscreen) {
+      event.SourceDevice() == blink::WebGestureDevice::kTouchscreen) {
     switch (event.GetType()) {
       case blink::WebInputEvent::kGestureLongPress:
         touch_selection_controller_->HandleLongPressEvent(
@@ -1835,8 +1834,7 @@ void RenderWidgetHostViewAndroid::SendGestureEvent(
 
   ui::LatencyInfo latency_info =
       ui::WebInputEventTraits::CreateLatencyInfoForWebGestureEvent(event);
-  if (event.SourceDevice() ==
-      blink::WebGestureDevice::kWebGestureDeviceTouchscreen) {
+  if (event.SourceDevice() == blink::WebGestureDevice::kTouchscreen) {
     if (event.GetType() == blink::WebInputEvent::kGestureScrollBegin) {
       // If there is a current scroll going on and a new scroll that isn't
       // wheel based, send a synthetic wheel event with kPhaseEnded to cancel
@@ -1850,8 +1848,7 @@ void RenderWidgetHostViewAndroid::SendGestureEvent(
     }
 
   } else if (event.GetType() == blink::WebInputEvent::kGestureFlingStart &&
-             event.SourceDevice() ==
-                 blink::WebGestureDevice::kWebGestureDeviceTouchpad) {
+             event.SourceDevice() == blink::WebGestureDevice::kTouchpad) {
     // Ignore the pending wheel end event to avoid sending a wheel event with
     // kPhaseEnded before a GFS.
     mouse_wheel_phase_handler_.IgnorePendingWheelEndEvent();

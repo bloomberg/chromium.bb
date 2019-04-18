@@ -178,7 +178,7 @@ void InputRouterImpl::SendGestureEventWithoutQueueing(
   wheel_event_queue_.OnGestureScrollEvent(gesture_event);
 
   if (gesture_event.event.SourceDevice() ==
-      blink::kWebGestureDeviceTouchscreen) {
+      blink::WebGestureDevice::kTouchscreen) {
     if (gesture_event.event.GetType() ==
         blink::WebInputEvent::kGestureScrollBegin) {
       touch_scroll_started_sent_ = false;

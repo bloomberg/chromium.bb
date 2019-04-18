@@ -115,7 +115,7 @@ TEST(WebInputEventUtilTest, ScrollUpdateConversion) {
   EXPECT_EQ(pos.y(), web_event.PositionInWidget().y);
   EXPECT_EQ(raw_pos.x(), web_event.PositionInScreen().x);
   EXPECT_EQ(raw_pos.y(), web_event.PositionInScreen().y);
-  EXPECT_EQ(blink::kWebGestureDeviceTouchscreen, web_event.SourceDevice());
+  EXPECT_EQ(blink::WebGestureDevice::kTouchscreen, web_event.SourceDevice());
   EXPECT_EQ(delta.x(), web_event.data.scroll_update.delta_x);
   EXPECT_EQ(delta.y(), web_event.data.scroll_update.delta_y);
 }

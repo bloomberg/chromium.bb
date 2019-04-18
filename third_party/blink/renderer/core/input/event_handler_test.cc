@@ -51,7 +51,7 @@ class TapEventBuilder : public WebGestureEvent {
       : WebGestureEvent(WebInputEvent::kGestureTap,
                         WebInputEvent::kNoModifiers,
                         CurrentTimeTicks(),
-                        kWebGestureDeviceTouchscreen) {
+                        WebGestureDevice::kTouchscreen) {
     SetPositionInWidget(position);
     SetPositionInScreen(position);
     data.tap.tap_count = tap_count;
@@ -67,7 +67,7 @@ class TapDownEventBuilder : public WebGestureEvent {
       : WebGestureEvent(WebInputEvent::kGestureTapDown,
                         WebInputEvent::kNoModifiers,
                         CurrentTimeTicks(),
-                        kWebGestureDeviceTouchscreen) {
+                        WebGestureDevice::kTouchscreen) {
     SetPositionInWidget(position);
     SetPositionInScreen(position);
     data.tap_down.width = 5;
@@ -82,7 +82,7 @@ class ShowPressEventBuilder : public WebGestureEvent {
       : WebGestureEvent(WebInputEvent::kGestureShowPress,
                         WebInputEvent::kNoModifiers,
                         CurrentTimeTicks(),
-                        kWebGestureDeviceTouchscreen) {
+                        WebGestureDevice::kTouchscreen) {
     SetPositionInWidget(position);
     SetPositionInScreen(position);
     data.show_press.width = 5;
@@ -97,7 +97,7 @@ class LongPressEventBuilder : public WebGestureEvent {
       : WebGestureEvent(WebInputEvent::kGestureLongPress,
                         WebInputEvent::kNoModifiers,
                         CurrentTimeTicks(),
-                        kWebGestureDeviceTouchscreen) {
+                        WebGestureDevice::kTouchscreen) {
     SetPositionInWidget(position);
     SetPositionInScreen(position);
     data.long_press.width = 5;
@@ -1414,16 +1414,16 @@ TEST_F(EventHandlerSimTest, TestUpdateHoverAfterMainThreadScrollAtBeginFrame) {
   WebGestureEvent scroll_begin_event(
       WebInputEvent::kGestureScrollBegin, WebInputEvent::kNoModifiers,
       WebInputEvent::GetStaticTimeStampForTests(),
-      blink::kWebGestureDeviceTouchpad);
+      blink::WebGestureDevice::kTouchpad);
   WebGestureEvent scroll_update_event(
       WebInputEvent::kGestureScrollUpdate, WebInputEvent::kNoModifiers,
       WebInputEvent::GetStaticTimeStampForTests(),
-      blink::kWebGestureDeviceTouchpad);
+      blink::WebGestureDevice::kTouchpad);
   scroll_update_event.data.scroll_update.delta_y = -500;
   WebGestureEvent scroll_end_event(WebInputEvent::kGestureScrollEnd,
                                    WebInputEvent::kNoModifiers,
                                    WebInputEvent::GetStaticTimeStampForTests(),
-                                   blink::kWebGestureDeviceTouchpad);
+                                   blink::WebGestureDevice::kTouchpad);
   WebView().MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(scroll_begin_event));
   WebView().MainFrameWidget()->HandleInputEvent(

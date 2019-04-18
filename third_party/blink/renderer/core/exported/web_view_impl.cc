@@ -3196,7 +3196,7 @@ WebHitTestResult WebViewImpl::HitTestResultForTap(
 
   WebGestureEvent tap_event(
       WebInputEvent::kGestureTap, WebInputEvent::kNoModifiers,
-      WTF::CurrentTimeTicks(), kWebGestureDeviceTouchscreen);
+      WTF::CurrentTimeTicks(), WebGestureDevice::kTouchscreen);
   // GestureTap is only ever from a touchscreen.
   tap_event.SetPositionInWidget(FloatPoint(IntPoint(tap_point_window_pos)));
   tap_event.data.tap.tap_count = 1;

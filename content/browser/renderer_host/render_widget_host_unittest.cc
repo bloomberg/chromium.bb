@@ -1233,17 +1233,17 @@ TEST_F(RenderWidgetHostTest, EventsCausingFocus) {
   EXPECT_EQ(2, delegate_->GetFocusOwningWebContentsCallCount());
 
   SimulateGestureEvent(WebInputEvent::kGestureTapDown,
-                       blink::kWebGestureDeviceTouchscreen);
+                       blink::WebGestureDevice::kTouchscreen);
   EXPECT_EQ(2, delegate_->GetFocusOwningWebContentsCallCount());
 
   SimulateGestureEvent(WebInputEvent::kGestureTap,
-                       blink::kWebGestureDeviceTouchscreen);
+                       blink::WebGestureDevice::kTouchscreen);
   EXPECT_EQ(3, delegate_->GetFocusOwningWebContentsCallCount());
 }
 
 TEST_F(RenderWidgetHostTest, UnhandledGestureEvent) {
   SimulateGestureEvent(WebInputEvent::kGestureTwoFingerTap,
-                       blink::kWebGestureDeviceTouchscreen);
+                       blink::WebGestureDevice::kTouchscreen);
 
   MockWidgetInputHandler::MessageVector dispatched_events =
       host_->mock_widget_input_handler_.GetAndResetDispatchedMessages();
@@ -1440,7 +1440,7 @@ TEST_F(RenderWidgetHostTest, IgnoreInputEvent) {
   EXPECT_FALSE(host_->mock_input_router()->sent_wheel_event_);
 
   SimulateGestureEvent(WebInputEvent::kGestureScrollBegin,
-                       blink::kWebGestureDeviceTouchpad);
+                       blink::WebGestureDevice::kTouchpad);
   EXPECT_FALSE(host_->mock_input_router()->sent_gesture_event_);
 
   PressTouchPoint(100, 100);
@@ -1592,7 +1592,7 @@ TEST_F(RenderWidgetHostTest, InputEventRWHLatencyComponent) {
                                      WebInputEvent::kTouchStart);
 
   SimulateGestureEvent(WebInputEvent::kGestureScrollBegin,
-                       blink::kWebGestureDeviceTouchscreen);
+                       blink::WebGestureDevice::kTouchscreen);
   dispatched_events =
       host_->mock_widget_input_handler_.GetAndResetDispatchedMessages();
   CheckLatencyInfoComponentInMessage(dispatched_events,
@@ -1600,7 +1600,7 @@ TEST_F(RenderWidgetHostTest, InputEventRWHLatencyComponent) {
 
   // Tests RWHI::ForwardGestureEventWithLatencyInfo().
   SimulateGestureEventWithLatencyInfo(WebInputEvent::kGestureScrollUpdate,
-                                      blink::kWebGestureDeviceTouchscreen,
+                                      blink::WebGestureDevice::kTouchscreen,
                                       ui::LatencyInfo());
   dispatched_events =
       host_->mock_widget_input_handler_.GetAndResetDispatchedMessages();
@@ -1732,7 +1732,7 @@ TEST_F(RenderWidgetHostTest, EventDispatchPostDetach) {
 
   // Tests RWHI::ForwardGestureEventWithLatencyInfo().
   SimulateGestureEventWithLatencyInfo(WebInputEvent::kGestureScrollUpdate,
-                                      blink::kWebGestureDeviceTouchscreen,
+                                      blink::WebGestureDevice::kTouchscreen,
                                       ui::LatencyInfo());
 
   // Tests RWHI::ForwardWheelEventWithLatencyInfo().

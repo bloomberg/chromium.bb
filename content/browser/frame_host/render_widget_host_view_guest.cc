@@ -606,7 +606,7 @@ void RenderWidgetHostViewGuest::MaybeSendSyntheticTapGesture(
     blink::WebGestureEvent gesture_tap_event(
         blink::WebGestureEvent::kGestureTapDown,
         blink::WebInputEvent::kNoModifiers, ui::EventTimeForNow(),
-        blink::kWebGestureDeviceTouchscreen);
+        blink::WebGestureDevice::kTouchscreen);
     gesture_tap_event.SetPositionInWidget(point_in_owner);
     gesture_tap_event.SetPositionInScreen(screen_position);
     // The touch action may not be set yet because this is still at the

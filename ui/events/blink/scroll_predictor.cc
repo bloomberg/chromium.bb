@@ -49,7 +49,7 @@ ScrollPredictor::~ScrollPredictor() = default;
 void ScrollPredictor::ResetOnGestureScrollBegin(const WebGestureEvent& event) {
   DCHECK(event.GetType() == WebInputEvent::kGestureScrollBegin);
   // Only do resampling for scroll on touchscreen.
-  if (event.SourceDevice() == blink::kWebGestureDeviceTouchscreen) {
+  if (event.SourceDevice() == blink::WebGestureDevice::kTouchscreen) {
     should_resample_scroll_events_ = true;
     Reset();
   }

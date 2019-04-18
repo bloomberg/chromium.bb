@@ -461,7 +461,7 @@ TEST_F(ScrollbarsTest, scrollbarIsNotHandlingTouchpadScroll) {
   DCHECK(scrollable_area->VerticalScrollbar());
   WebGestureEvent scroll_begin(WebInputEvent::kGestureScrollBegin,
                                WebInputEvent::kNoModifiers, CurrentTimeTicks(),
-                               kWebGestureDeviceTouchpad);
+                               WebGestureDevice::kTouchpad);
   scroll_begin.SetPositionInWidget(
       WebFloatPoint(scrollable->OffsetLeft() + scrollable->OffsetWidth() - 2,
                     scrollable->OffsetTop()));

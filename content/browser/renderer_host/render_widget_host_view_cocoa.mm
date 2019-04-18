@@ -1006,8 +1006,7 @@ void ExtractUnderlines(NSAttributedString* string,
       [event type] == NSEventTypeEndGesture) {
     WebGestureEvent endEvent(WebGestureEventBuilder::Build(event, self));
     endEvent.SetType(WebInputEvent::kGesturePinchEnd);
-    endEvent.SetSourceDevice(
-        blink::WebGestureDevice::kWebGestureDeviceTouchpad);
+    endEvent.SetSourceDevice(blink::WebGestureDevice::kTouchpad);
     endEvent.SetNeedsWheelEvent(true);
     clientHelper_->GestureEnd(endEvent);
   }

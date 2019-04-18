@@ -367,7 +367,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Signals if this host has forwarded a GestureScrollBegin without yet having
   // forwarded a matching GestureScrollEnd/GestureFlingStart.
   bool is_in_touchscreen_gesture_scroll() const {
-    return is_in_gesture_scroll_[blink::kWebGestureDeviceTouchscreen];
+    return is_in_gesture_scroll_[static_cast<int>(
+        blink::WebGestureDevice::kTouchscreen)];
   }
 
   bool visual_properties_ack_pending_for_testing() {
@@ -1092,7 +1093,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // TODO(wjmaclean) Remove the code for supporting resending gesture events
   // when WebView transitions to OOPIF and BrowserPlugin is removed.
   // http://crbug.com/533069
-  bool is_in_gesture_scroll_[blink::kWebGestureDeviceCount] = {false};
+  bool is_in_gesture_scroll_[static_cast<int>(
+                                 blink::WebGestureDevice::kMaxValue) +
+                             1] = {false};
   bool is_in_touchpad_gesture_fling_ = false;
 
   std::unique_ptr<SyntheticGestureController> synthetic_gesture_controller_;

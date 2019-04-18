@@ -96,18 +96,19 @@ cc::ScrollState CreateScrollStateForInertialUpdate(
 cc::InputHandler::ScrollInputType GestureScrollInputType(
     blink::WebGestureDevice device) {
   switch (device) {
-    case blink::kWebGestureDeviceTouchpad:
+    case blink::WebGestureDevice::kTouchpad:
       return cc::InputHandler::WHEEL;
-    case blink::kWebGestureDeviceTouchscreen:
+    case blink::WebGestureDevice::kTouchscreen:
       return cc::InputHandler::TOUCHSCREEN;
-    case blink::kWebGestureDeviceSyntheticAutoscroll:
+    case blink::WebGestureDevice::kSyntheticAutoscroll:
       return cc::InputHandler::AUTOSCROLL;
-    case blink::kWebGestureDeviceScrollbar:
+    case blink::WebGestureDevice::kScrollbar:
       return cc::InputHandler::SCROLLBAR;
-    default:
-      NOTREACHED();
-      return cc::InputHandler::SCROLL_INPUT_UNKNOWN;
+    case blink::WebGestureDevice::kUninitialized:
+      break;
   }
+  NOTREACHED();
+  return cc::InputHandler::SCROLL_INPUT_UNKNOWN;
 }
 
 cc::SnapFlingController::GestureScrollType GestureScrollEventType(
@@ -218,13 +219,13 @@ void InputHandlerProxy::HandleInputEventWithLatencyInfo(
   if (has_ongoing_compositor_scroll_or_pinch_) {
     const auto& gesture_event = ToWebGestureEvent(event_with_callback->event());
     bool is_from_set_non_blocking_touch =
-        gesture_event.SourceDevice() == blink::kWebGestureDeviceTouchscreen &&
+        gesture_event.SourceDevice() == blink::WebGestureDevice::kTouchscreen &&
         gesture_event.is_source_touch_event_set_non_blocking;
     bool is_scroll_end_from_wheel =
-        gesture_event.SourceDevice() == blink::kWebGestureDeviceTouchpad &&
+        gesture_event.SourceDevice() == blink::WebGestureDevice::kTouchpad &&
         gesture_event.GetType() == blink::WebGestureEvent::kGestureScrollEnd;
     bool scroll_update_has_blocking_wheel_source =
-        gesture_event.SourceDevice() == blink::kWebGestureDeviceTouchpad &&
+        gesture_event.SourceDevice() == blink::WebGestureDevice::kTouchpad &&
         gesture_event.GetType() ==
             blink::WebGestureEvent::kGestureScrollUpdate &&
         is_first_gesture_scroll_update_;
@@ -320,7 +321,7 @@ void InputHandlerProxy::InjectScrollbarGestureScroll(
     const base::TimeTicks now) {
   std::unique_ptr<WebGestureEvent> synthetic_gesture_event =
       std::make_unique<WebGestureEvent>(type, WebInputEvent::kNoModifiers, now,
-                                        blink::kWebGestureDeviceScrollbar);
+                                        blink::WebGestureDevice::kScrollbar);
 
   if (type == WebInputEvent::Type::kGestureScrollBegin) {
     // GestureEvent(s) expect the scroll delta to be flipped. The reason being
@@ -347,7 +348,7 @@ void InputHandlerProxy::InjectScrollbarGestureScroll(
   }
 
   synthetic_gesture_event->SetPositionInWidget(position_in_widget);
-  synthetic_gesture_event->SetSourceDevice(blink::kWebGestureDeviceScrollbar);
+  synthetic_gesture_event->SetSourceDevice(blink::WebGestureDevice::kScrollbar);
 
   WebScopedInputEvent web_scoped_gesture_event(
       synthetic_gesture_event.release());
@@ -407,7 +408,7 @@ InputHandlerProxy::RouteToTypeSpecificHandler(const WebInputEvent& event,
           static_cast<const WebGestureEvent&>(event);
       input_handler_->PinchGestureEnd(
           gfx::ToFlooredPoint(gesture_event.PositionInWidget()),
-          gesture_event.SourceDevice() == blink::kWebGestureDeviceTouchpad);
+          gesture_event.SourceDevice() == blink::WebGestureDevice::kTouchpad);
       return DID_HANDLE;
     }
 
@@ -522,8 +523,8 @@ void InputHandlerProxy::RecordMainThreadScrollingReasons(
   static const char* kWheelHistogramName =
       "Renderer4.MainThreadWheelScrollReason";
 
-  if (device != blink::kWebGestureDeviceTouchpad &&
-      device != blink::kWebGestureDeviceTouchscreen) {
+  if (device != blink::WebGestureDevice::kTouchpad &&
+      device != blink::WebGestureDevice::kTouchscreen) {
     return;
   }
 
@@ -532,12 +533,12 @@ void InputHandlerProxy::RecordMainThreadScrollingReasons(
       !cc::MainThreadScrollingReason::HasNonCompositedScrollReasons(reasons));
 
   int32_t event_disposition_result =
-      (device == blink::kWebGestureDeviceTouchpad ? mouse_wheel_result_
-                                                  : touch_result_);
+      (device == blink::WebGestureDevice::kTouchpad ? mouse_wheel_result_
+                                                    : touch_result_);
   if (event_disposition_result == DID_NOT_HANDLE) {
     // We should also collect main thread scrolling reasons if a scroll event
     // scrolls on impl thread but is blocked by main thread event handlers.
-    reasons |= (device == blink::kWebGestureDeviceTouchpad
+    reasons |= (device == blink::WebGestureDevice::kTouchpad
                     ? cc::MainThreadScrollingReason::kWheelEventHandlerRegion
                     : cc::MainThreadScrollingReason::kTouchEventHandlerRegion);
   }
@@ -550,7 +551,7 @@ void InputHandlerProxy::RecordMainThreadScrollingReasons(
   constexpr uint32_t kMainThreadScrollingReasonEnumMax =
       cc::MainThreadScrollingReason::kMainThreadScrollingReasonCount + 1;
   if (reasons == cc::MainThreadScrollingReason::kNotScrollingOnMain) {
-    if (device == blink::kWebGestureDeviceTouchscreen) {
+    if (device == blink::WebGestureDevice::kTouchscreen) {
       UMA_HISTOGRAM_ENUMERATION(
           kGestureHistogramName,
           cc::MainThreadScrollingReason::kNotScrollingOnMain,
@@ -576,7 +577,7 @@ void InputHandlerProxy::RecordMainThreadScrollingReasons(
         if (reasons & ~val)
           continue;
       }
-      if (device == blink::kWebGestureDeviceTouchscreen) {
+      if (device == blink::WebGestureDevice::kTouchscreen) {
         UMA_HISTOGRAM_ENUMERATION(kGestureHistogramName, i + 1,
                                   kMainThreadScrollingReasonEnumMax);
       } else {

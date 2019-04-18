@@ -431,7 +431,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestInertialToScrollHistograms) {
     ResetHistograms();
     {
       auto scroll = SyntheticWebGestureEventBuilder::BuildScrollUpdate(
-          5.f, -5.f, 0, blink::kWebGestureDeviceTouchscreen);
+          5.f, -5.f, 0, blink::WebGestureDevice::kTouchscreen);
       base::TimeTicks now = base::TimeTicks::Now();
       scroll.SetTimeStamp(now);
       ui::LatencyInfo scroll_latency(ui::SourceEventType::INERTIAL);
@@ -486,7 +486,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestTouchToFirstScrollHistograms) {
     ResetHistograms();
     {
       auto scroll = SyntheticWebGestureEventBuilder::BuildScrollUpdate(
-          5.f, -5.f, 0, blink::kWebGestureDeviceTouchscreen);
+          5.f, -5.f, 0, blink::WebGestureDevice::kTouchscreen);
       base::TimeTicks now = base::TimeTicks::Now();
       scroll.SetTimeStamp(now);
       ui::LatencyInfo scroll_latency;
@@ -596,7 +596,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestTouchToScrollHistograms) {
     ResetHistograms();
     {
       auto scroll = SyntheticWebGestureEventBuilder::BuildScrollUpdate(
-          5.f, -5.f, 0, blink::kWebGestureDeviceTouchscreen);
+          5.f, -5.f, 0, blink::WebGestureDevice::kTouchscreen);
       base::TimeTicks now = base::TimeTicks::Now();
       scroll.SetTimeStamp(now);
       ui::LatencyInfo scroll_latency;
@@ -696,7 +696,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest,
        LatencyTerminatedOnAckIfRenderingNotScheduled) {
   {
     auto scroll = SyntheticWebGestureEventBuilder::BuildScrollBegin(
-        5.f, -5.f, blink::kWebGestureDeviceTouchscreen);
+        5.f, -5.f, blink::WebGestureDevice::kTouchscreen);
     ui::LatencyInfo scroll_latency;
     AddFakeComponents(*tracker(), &scroll_latency);
     // Don't include the rendering schedule component, since we're testing the
@@ -771,8 +771,8 @@ TEST_F(RenderWidgetHostLatencyTrackerTest,
 
 TEST_F(RenderWidgetHostLatencyTrackerTest, LatencyTerminatedOnAckIfGSUIgnored) {
   for (blink::WebGestureDevice source_device :
-       {blink::kWebGestureDeviceTouchscreen,
-        blink::kWebGestureDeviceTouchpad}) {
+       {blink::WebGestureDevice::kTouchscreen,
+        blink::WebGestureDevice::kTouchpad}) {
     for (bool rendering_on_main : {false, true}) {
       auto scroll = SyntheticWebGestureEventBuilder::BuildScrollUpdate(
           5.f, -5.f, 0, source_device);
@@ -780,7 +780,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, LatencyTerminatedOnAckIfGSUIgnored) {
       scroll.SetTimeStamp(now);
       ui::LatencyInfo scroll_latency;
       scroll_latency.set_source_event_type(
-          source_device == blink::kWebGestureDeviceTouchscreen
+          source_device == blink::WebGestureDevice::kTouchscreen
               ? ui::SourceEventType::TOUCH
               : ui::SourceEventType::WHEEL);
       AddFakeComponentsWithTimeStamp(*tracker(), &scroll_latency, now);
@@ -795,7 +795,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, LatencyTerminatedOnAckIfGSUIgnored) {
 
 TEST_F(RenderWidgetHostLatencyTrackerTest, ScrollLatency) {
   auto scroll_begin = SyntheticWebGestureEventBuilder::BuildScrollBegin(
-      5, -5, blink::kWebGestureDeviceTouchscreen);
+      5, -5, blink::WebGestureDevice::kTouchscreen);
   ui::LatencyInfo scroll_latency;
   scroll_latency.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT);
   tracker()->OnInputEvent(scroll_begin, &scroll_latency);
@@ -806,7 +806,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, ScrollLatency) {
   // The first GestureScrollUpdate should be provided with
   // INPUT_EVENT_LATENCY_FIRST_SCROLL_UPDATE_ORIGINAL_COMPONENT.
   auto first_scroll_update = SyntheticWebGestureEventBuilder::BuildScrollUpdate(
-      5.f, -5.f, 0, blink::kWebGestureDeviceTouchscreen);
+      5.f, -5.f, 0, blink::WebGestureDevice::kTouchscreen);
   scroll_latency = ui::LatencyInfo();
   scroll_latency.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT);
   tracker()->OnInputEvent(first_scroll_update, &scroll_latency);
@@ -823,7 +823,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, ScrollLatency) {
   // Subsequent GestureScrollUpdates should be provided with
   // INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT.
   auto scroll_update = SyntheticWebGestureEventBuilder::BuildScrollUpdate(
-      -5.f, 5.f, 0, blink::kWebGestureDeviceTouchscreen);
+      -5.f, 5.f, 0, blink::WebGestureDevice::kTouchscreen);
   scroll_latency = ui::LatencyInfo();
   scroll_latency.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT);
   tracker()->OnInputEvent(scroll_update, &scroll_latency);

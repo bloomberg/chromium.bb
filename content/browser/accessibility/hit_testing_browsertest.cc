@@ -324,7 +324,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingBrowserTest,
   const gfx::Rect contents_rect = shell()->web_contents()->GetContainerBounds();
   const gfx::Point pinch_position(contents_rect.x(), contents_rect.y());
   SimulateGesturePinchSequence(shell()->web_contents(), pinch_position, 2.0f,
-                               blink::kWebGestureDeviceTouchscreen);
+                               blink::WebGestureDevice::kTouchscreen);
   scale_observer.WaitForPageScaleUpdate();
 
   // (10, 10) -> "Button 1"
@@ -389,7 +389,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingBrowserTest,
   const gfx::Point pinch_position(contents_rect.x(), contents_rect.y());
 
   SimulateGesturePinchSequence(shell()->web_contents(), pinch_position, 1.25f,
-                               blink::kWebGestureDeviceTouchscreen);
+                               blink::WebGestureDevice::kTouchscreen);
   scale_observer.WaitForPageScaleUpdate();
 
   BrowserAccessibility* hit_node;

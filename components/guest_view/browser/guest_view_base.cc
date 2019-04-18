@@ -701,8 +701,7 @@ bool GuestViewBase::PreHandleGestureEvent(WebContents* source,
   // Pinch events which cause a scale change should not be routed to a guest.
   // We still allow synthetic wheel events for touchpad pinch to go to the page.
   DCHECK(!blink::WebInputEvent::IsPinchGestureEventType(event.GetType()) ||
-         (event.SourceDevice() ==
-              blink::WebGestureDevice::kWebGestureDeviceTouchpad &&
+         (event.SourceDevice() == blink::WebGestureDevice::kTouchpad &&
           event.NeedsWheelEvent()));
   return false;
 }

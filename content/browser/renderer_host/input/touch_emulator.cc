@@ -514,7 +514,7 @@ void TouchEmulator::PinchEnd(const WebGestureEvent& event) {
 void TouchEmulator::ScrollEnd(const WebGestureEvent& event) {
   WebGestureEvent scroll_event(
       WebInputEvent::kGestureScrollEnd, ModifiersWithoutMouseButtons(event),
-      event.TimeStamp(), blink::kWebGestureDeviceTouchscreen);
+      event.TimeStamp(), blink::WebGestureDevice::kTouchscreen);
   scroll_event.unique_touch_event_id = event.unique_touch_event_id;
   client_->ForwardEmulatedGestureEvent(scroll_event);
 }
@@ -524,7 +524,7 @@ WebGestureEvent TouchEmulator::GetPinchGestureEvent(
     const WebGestureEvent& original_event) {
   WebGestureEvent event(type, ModifiersWithoutMouseButtons(original_event),
                         original_event.TimeStamp(),
-                        blink::kWebGestureDeviceTouchscreen);
+                        blink::WebGestureDevice::kTouchscreen);
   event.SetPositionInWidget(pinch_anchor_);
   event.unique_touch_event_id = original_event.unique_touch_event_id;
   return event;
