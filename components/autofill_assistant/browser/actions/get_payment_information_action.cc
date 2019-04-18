@@ -80,6 +80,13 @@ void GetPaymentInformationAction::OnGetPaymentInformation(
           ->set_card_issuer_network(card_issuer_network);
       delegate->GetClientMemory()->set_selected_card(
           std::move(payment_information->card));
+
+      if (!get_payment_information.billing_address_name().empty()) {
+        DCHECK(payment_information->billing_address);
+        delegate->GetClientMemory()->set_selected_address(
+            get_payment_information.billing_address_name(),
+            std::move(payment_information->billing_address));
+      }
     }
 
     if (!get_payment_information.shipping_address_name().empty()) {
@@ -87,13 +94,6 @@ void GetPaymentInformationAction::OnGetPaymentInformation(
       delegate->GetClientMemory()->set_selected_address(
           get_payment_information.shipping_address_name(),
           std::move(payment_information->shipping_address));
-    }
-
-    if (!get_payment_information.billing_address_name().empty()) {
-      DCHECK(payment_information->billing_address);
-      delegate->GetClientMemory()->set_selected_address(
-          get_payment_information.billing_address_name(),
-          std::move(payment_information->billing_address));
     }
 
     if (get_payment_information.has_contact_details()) {
