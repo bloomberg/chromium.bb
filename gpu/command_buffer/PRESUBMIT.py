@@ -24,13 +24,22 @@ def CommonChecks(input_api, output_api):
       file_filter=lambda x: os.path.basename(x.LocalPath()) in [
           'build_cmd_buffer_lib.py', 'build_webgpu_cmd_buffer.py',
           'webgpu_cmd_buffer_functions.txt'])
+
   autogen_files = input_api.AffectedFiles(
       file_filter=lambda x: x.LocalPath().endswith('_autogen.h'))
+
+  # Use input_api.change.AffectedFiles() to get files outside this directory.
+  external_gl_headers = input_api.change.AffectedFiles(
+      file_filter=lambda x: os.path.basename(x.LocalPath()) in [
+          'gl2.h', 'gl2ext.h', 'gl3.h', 'gl31.h', 'gl2chromium.h',
+          'gl2extchromium.h'
+      ])
 
   messages = []
 
   if (len(autogen_files) > 0 and len(gles2_cmd_buffer_files) == 0 and
-      len(raster_cmd_buffer_files) == 0 and len(webgpu_cmd_buffer_files) == 0):
+      len(external_gl_headers) == 0 and len(raster_cmd_buffer_files) == 0 and
+      len(webgpu_cmd_buffer_files) == 0):
     long_text = 'Changed files:\n'
     for file in autogen_files:
       long_text += file.LocalPath() + '\n'
