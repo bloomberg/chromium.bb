@@ -328,6 +328,15 @@ Cronet_RESULT Cronet_UrlRequestImpl::InitWithParams(
   callback_ = callback;
   executor_ = executor;
 
+  if (params->request_finished_listener != nullptr &&
+      params->request_finished_executor == nullptr) {
+    return engine_->CheckResult(
+        Cronet_RESULT_NULL_POINTER_REQUEST_FINISHED_INFO_LISTENER_EXECUTOR);
+  }
+
+  request_finished_listener_ = params->request_finished_listener;
+  request_finished_executor_ = params->request_finished_executor;
+
   auto network_tasks = std::make_unique<NetworkTasks>(url, this);
   network_tasks_ = network_tasks.get();
 
@@ -335,7 +344,8 @@ Cronet_RESULT Cronet_UrlRequestImpl::InitWithParams(
       engine_->cronet_url_request_context(), std::move(network_tasks),
       GURL(url), ConvertRequestPriority(params->priority),
       params->disable_cache, true /* params->disableConnectionMigration */,
-      false /* params->enableMetrics */,
+      request_finished_listener_ != nullptr ||
+          engine_->HasRequestFinishedListener() /* params->enableMetrics */,
       // TODO(pauljensen): Consider exposing TrafficStats API via C++ API.
       false /* traffic_stats_tag_set */, 0 /* traffic_stats_tag */,
       false /* traffic_stats_uid_set */, 0 /* traffic_stats_uid */);
