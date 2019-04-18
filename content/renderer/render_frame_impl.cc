@@ -5773,7 +5773,6 @@ void RenderFrameImpl::OnCollapse(bool collapsed) {
 }
 
 void RenderFrameImpl::WasHidden() {
-  frame_->WasHidden();
   for (auto& observer : observers_)
     observer.WasHidden();
 
@@ -5784,7 +5783,6 @@ void RenderFrameImpl::WasHidden() {
 }
 
 void RenderFrameImpl::WasShown() {
-  frame_->WasShown();
   for (auto& observer : observers_)
     observer.WasShown();
 

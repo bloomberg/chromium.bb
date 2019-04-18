@@ -436,12 +436,6 @@ void LocalFrameView::Dispose() {
   ukm_aggregator_.reset();
   jank_tracker_->Dispose();
 
-  if (visibility_observer_) {
-    visibility_observer_->disconnect();
-    visibility_observer_ = nullptr;
-    UpdateVisibility(false);
-  }
-
 #if DCHECK_IS_ON()
   has_been_disposed_ = true;
 #endif
@@ -1083,18 +1077,6 @@ void LocalFrameView::RunIntersectionObserverSteps() {
   DCHECK(was_dirty || !NeedsLayout());
 #endif
   DeliverSynchronousIntersectionObservations();
-}
-
-void LocalFrameView::ForceUpdateViewportIntersections() {
-  // IntersectionObserver targets in this frame (and its frame tree) need to
-  // update; but we can't wait for a lifecycle update to run them, because a
-  // hidden frame won't run lifecycle updates. Force layout and run them now.
-  DocumentLifecycle::DisallowThrottlingScope disallow_throttling(Lifecycle());
-  UpdateLifecycleToCompositingCleanPlusScrolling();
-  UpdateViewportIntersectionsForSubtree(
-      IntersectionObservation::kImplicitRootObserversNeedUpdate |
-      IntersectionObservation::kIgnoreDelay);
-  frame_->Owner()->SetNeedsOcclusionTracking(false);
 }
 
 LayoutSVGRoot* LocalFrameView::EmbeddedReplacedContent() const {
@@ -4123,11 +4105,6 @@ unsigned LocalFrameView::GetIntersectionObservationFlags(
   // local frame tree, as passed down from the parent.
   flags |= (parent_flags &
             IntersectionObservation::kImplicitRootObserversNeedUpdate);
-
-  // The kIgnoreDelay parameter is used to force computation in an OOPIF which
-  // is hidden in the parent document, thus not running lifecycle updates. It
-  // applies to the entire frame tree.
-  flags |= (parent_flags & IntersectionObservation::kIgnoreDelay);
 
   return flags;
 }
