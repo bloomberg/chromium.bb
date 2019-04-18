@@ -175,5 +175,17 @@ TEST_F(NavigationItemTest, GetDisplayTitleForURL) {
   EXPECT_EQ("1.gz", base::UTF16ToUTF8(title));
 }
 
+// Tests NavigationItemImpl::GetTitleForDisplay method
+TEST_F(NavigationItemTest, GetTitleForDisplay) {
+  item_->SetURL(GURL("file://foo/test.pdf"));
+  item_->SetVirtualURL(GURL("testappspecific://foo/"));
+  EXPECT_EQ("test.pdf", base::UTF16ToUTF8(item_->GetTitleForDisplay()));
+
+  item_->SetURL(GURL("testappspecific://foo/test.pdf"));
+  item_->SetVirtualURL(GURL("testappspecific://foo/test.pdf"));
+  EXPECT_EQ("testappspecific://foo/test.pdf",
+            base::UTF16ToUTF8(item_->GetTitleForDisplay()));
+}
+
 }  // namespace
 }  // namespace web
