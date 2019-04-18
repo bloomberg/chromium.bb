@@ -322,10 +322,8 @@ std::unique_ptr<CloudPolicyClient> DeviceCloudPolicyInitializer::CreateClient(
 }
 
 void DeviceCloudPolicyInitializer::TryToCreateClient() {
-  if (!device_store_->is_initialized() ||
-      !device_store_->has_policy() ||
-      state_keys_broker_->pending() ||
-      enrollment_handler_ ||
+  if (!device_store_->is_initialized() || !device_store_->has_policy() ||
+      !state_keys_broker_->available() || enrollment_handler_ ||
       install_attributes_->IsActiveDirectoryManaged()) {
     return;
   }

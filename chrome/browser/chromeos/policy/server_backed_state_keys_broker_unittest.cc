@@ -33,7 +33,6 @@ class ServerBackedStateKeysBrokerTest : public testing::Test {
   }
 
   void ExpectGood() {
-    EXPECT_FALSE(broker_.pending());
     EXPECT_TRUE(broker_.available());
     EXPECT_EQ(state_keys_, broker_.state_keys());
     EXPECT_EQ(state_keys_.front(), broker_.current_state_key());
@@ -59,7 +58,6 @@ class ServerBackedStateKeysBrokerTest : public testing::Test {
 };
 
 TEST_F(ServerBackedStateKeysBrokerTest, Load) {
-  EXPECT_TRUE(broker_.pending());
   EXPECT_FALSE(broker_.available());
   EXPECT_TRUE(broker_.state_keys().empty());
   EXPECT_TRUE(broker_.current_state_key().empty());
