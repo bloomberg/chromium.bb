@@ -3831,34 +3831,34 @@
     Plugin VM
   </message>
   <message name="IDS_PLUGIN_VM_LAUNCHER_ENVIRONMENT_SETTING_TITLE" desc="Title of the PluginVm launcher, a dialog for launching PluginVm." translateable="false">
-    Finishing <ph name="APP_NAME">PluginVm</ph> environment setting...
+    Finishing <ph name="APP_NAME">Plugin VM</ph> installation...
   </message>
   <message name="IDS_PLUGIN_VM_LAUNCHER_FINISHED_TITLE" desc="Title of the PluginVm launcher, a dialog for launching PluginVm." translateable="false">
-    <ph name="APP_NAME">PluginVm</ph> environment setting complete
+    <ph name="APP_NAME">Plugin VM</ph> installation complete
   </message>
   <message name="IDS_PLUGIN_VM_LAUNCHER_ERROR_TITLE" desc="Title of the PluginVm launcher, a dialog for launching PluginVm." translateable="false">
-    Error setting <ph name="APP_NAME">PluginVm</ph> environment
+    Error installing <ph name="APP_NAME">Plugin VM</ph>
   </message>
   <message name="IDS_PLUGIN_VM_LAUNCHER_START_DOWNLOADING_MESSAGE" desc="Message that informs user that PluginVm environment setting may take a while." translateable="false">
-    This process may take a few minutes
+    This process may take a few minutes.
   </message>
   <message name="IDS_PLUGIN_VM_LAUNCHER_DOWNLOADING_MESSAGE" desc="Description of the current state of PluginVm environment setting." translateable="false">
-    Downloading <ph name="APP_NAME">PluginVm</ph> image...
+    Downloading the virtual machine.
   </message>
   <message name="IDS_PLUGIN_VM_LAUNCHER_UNZIPPING_MESSAGE" desc="Description of the current state of PluginVm environment setting." translateable="false">
-    Configuring <ph name="APP_NAME">PluginVm</ph> image...
+    Configuring the virtual machine. This process might take around 3 minutes.
   </message>
   <message name="IDS_PLUGIN_VM_LAUNCHER_REGISTERING_MESSAGE" desc="Description of the current state of PluginVm environment setting." translateable="false">
     Putting on final touches...
   </message>
   <message name="IDS_PLUGIN_VM_LAUNCHER_FINISHED_MESSAGE" desc="Description of the current state of PluginVm environment setting." translateable="false">
-    Set up was successfully completed. Click on the launch button to start using <ph name="APP_NAME">PluginVm</ph>.
+    Set up was successfully completed. Click on the launch button to start using <ph name="APP_NAME">Plugin VM</ph>.
   </message>
   <message name="IDS_PLUGIN_VM_LAUNCHER_ERROR_MESSAGE" desc="Description of the current state of PluginVm environment setting." translateable="false">
-    The <ph name="APP_NAME">PluginVm</ph> environment didn't set. Please try again.
+    The <ph name="APP_NAME">Plugin VM</ph> installation failed. Please try again.
   </message>
   <message name="IDS_PLUGIN_VM_LAUNCHER_DOWNLOAD_PROGRESS_MESSAGE" desc="Text shown in the PluginVm launcher during downloading PluginVm image that shows download progress." translateable="false">
-    <ph name="DOWNLOADED_SIZE">$1<ex>1.2 GB</ex></ph>/<ph name="DOWNLOAD_SIZE">$2<ex>3.4 GB</ex></ph>
+    <ph name="DOWNLOADED_SIZE">$1<ex>1.2</ex></ph>/<ph name="DOWNLOAD_SIZE">$2<ex>3.4 GB</ex></ph>
   </message>
   <message name="IDS_PLUGIN_VM_LAUNCHER_DOWNLOAD_PROGRESS_WITHOUT_DOWNLOAD_SIZE_MESSAGE" desc="Text shown in the PluginVm launcher during downloading PluginVm image that shows download progress." translateable="false">
     <ph name="DOWNLOADED_SIZE">$1<ex>1.2 GB</ex></ph>
