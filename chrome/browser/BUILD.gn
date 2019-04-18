@@ -715,6 +715,8 @@ jumbo_split_static_library("browser") {
     "media/webrtc/desktop_media_picker.h",
     "media/webrtc/desktop_media_picker_factory.cc",
     "media/webrtc/desktop_media_picker_factory.h",
+    "media/webrtc/desktop_media_picker_manager.cc",
+    "media/webrtc/desktop_media_picker_manager.h",
     "media/webrtc/media_capture_devices_dispatcher.cc",
     "media/webrtc/media_capture_devices_dispatcher.h",
     "media/webrtc/media_stream_capture_indicator.cc",

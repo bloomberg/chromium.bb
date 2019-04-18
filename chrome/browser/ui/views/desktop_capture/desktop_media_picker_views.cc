@@ -9,6 +9,7 @@
 #include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/media/webrtc/desktop_media_list.h"
+#include "chrome/browser/media/webrtc/desktop_media_picker_manager.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -436,6 +437,8 @@ void DesktopMediaPickerViews::Show(
     const DesktopMediaPicker::Params& params,
     std::vector<std::unique_ptr<DesktopMediaList>> source_lists,
     const DoneCallback& done_callback) {
+  DesktopMediaPickerManager::Get()->OnShowDialog();
+
   callback_ = done_callback;
   dialog_ =
       new DesktopMediaPickerDialogView(params, this, std::move(source_lists));
@@ -445,6 +448,8 @@ void DesktopMediaPickerViews::NotifyDialogResult(DesktopMediaID source) {
   // Once this method is called the |dialog_| will close and destroy itself.
   dialog_->DetachParent();
   dialog_ = nullptr;
+
+  DesktopMediaPickerManager::Get()->OnHideDialog();
 
   if (callback_.is_null())
     return;

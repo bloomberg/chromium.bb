@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chrome/browser/media/webrtc/desktop_media_picker_manager.h"
 #include "chrome/browser/media/webrtc/fake_desktop_media_list.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/desktop_capture/desktop_media_list_controller.h"
@@ -35,6 +36,13 @@
 using content::DesktopMediaID;
 
 namespace views {
+
+class MockDesktopMediaPickerDialogObserver
+    : public DesktopMediaPickerManager::DialogObserver {
+ public:
+  MOCK_METHOD0(OnDialogOpened, void());
+  MOCK_METHOD0(OnDialogClosed, void());
+};
 
 const std::vector<DesktopMediaID::Type> kSourceTypes = {
     DesktopMediaID::TYPE_SCREEN, DesktopMediaID::TYPE_WINDOW,
@@ -72,6 +80,9 @@ class DesktopMediaPickerViewsTest : public testing::Test {
     picker_params.app_name = app_name;
     picker_params.target_name = app_name;
     picker_params.request_audio = true;
+    DesktopMediaPickerManager::Get()->AddObserver(&observer_);
+    EXPECT_CALL(observer_, OnDialogOpened());
+    EXPECT_CALL(observer_, OnDialogClosed());
     picker_views_->Show(picker_params, std::move(source_lists),
                         base::Bind(&DesktopMediaPickerViewsTest::OnPickerDone,
                                    base::Unretained(this)));
@@ -82,6 +93,7 @@ class DesktopMediaPickerViewsTest : public testing::Test {
       EXPECT_CALL(*this, OnPickerDone(content::DesktopMediaID()));
       GetPickerDialogView()->GetWidget()->CloseNow();
     }
+    DesktopMediaPickerManager::Get()->RemoveObserver(&observer_);
   }
 
   DesktopMediaPickerDialogView* GetPickerDialogView() const {
@@ -96,6 +108,7 @@ class DesktopMediaPickerViewsTest : public testing::Test {
   std::map<DesktopMediaID::Type, FakeDesktopMediaList*> media_lists_;
   std::unique_ptr<DesktopMediaPickerViews> picker_views_;
   DesktopMediaPickerViewsTestApi test_api_;
+  MockDesktopMediaPickerDialogObserver observer_;
 };
 
 TEST_F(DesktopMediaPickerViewsTest, DoneCallbackCalledWhenWindowClosed) {
@@ -281,5 +294,4 @@ TEST_F(DesktopMediaPickerViewsTest, DoneWithAudioShare) {
   GetPickerDialogView()->GetDialogClientView()->AcceptWindow();
   base::RunLoop().RunUntilIdle();
 }
-
 }  // namespace views
