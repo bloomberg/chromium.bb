@@ -42,8 +42,8 @@ class UsbServiceAndroid : public UsbService {
   base::android::ScopedJavaLocalRef<jobject> OpenDevice(
       JNIEnv* env,
       const base::android::JavaRef<jobject>& wrapper);
-  void RequestDevicePermission(const base::android::JavaRef<jobject>& wrapper,
-                               jint device_id);
+  bool HasDevicePermission(const base::android::JavaRef<jobject>& wrapper);
+  void RequestDevicePermission(const base::android::JavaRef<jobject>& wrapper);
 
  private:
   void AddDevice(scoped_refptr<UsbDeviceAndroid> device);

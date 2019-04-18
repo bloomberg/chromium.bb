@@ -84,10 +84,15 @@ ScopedJavaLocalRef<jobject> UsbServiceAndroid::OpenDevice(
   return Java_ChromeUsbService_openDevice(env, j_object_, wrapper);
 }
 
-void UsbServiceAndroid::RequestDevicePermission(const JavaRef<jobject>& wrapper,
-                                                jint device_id) {
+bool UsbServiceAndroid::HasDevicePermission(const JavaRef<jobject>& wrapper) {
+  return Java_ChromeUsbService_hasDevicePermission(AttachCurrentThread(),
+                                                   j_object_, wrapper);
+}
+
+void UsbServiceAndroid::RequestDevicePermission(
+    const JavaRef<jobject>& wrapper) {
   Java_ChromeUsbService_requestDevicePermission(AttachCurrentThread(),
-                                                j_object_, wrapper, device_id);
+                                                j_object_, wrapper);
 }
 
 void UsbServiceAndroid::AddDevice(scoped_refptr<UsbDeviceAndroid> device) {
