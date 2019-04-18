@@ -86,6 +86,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
       let checkTexture = new UrlTexture('../../media/textures/check-button.png');
       let xTexture = new UrlTexture('../../media/textures/x-button.png');
+      let waitTexture = new UrlTexture('../test-media/third-party/hourglass-button.png');
 
       function initXR() {
         xrButton = new XRDeviceButton({
@@ -123,6 +124,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
         function addPermissionButton(iconUrl, callback, yAngle, yOffset) {
           let button = new ButtonNode(new UrlTexture(iconUrl), () => {
+            button.iconTexture = waitTexture;
             callback(
               () => { button.iconTexture = checkTexture; }, // Success callback
               () => { button.iconTexture = xTexture; } // Failure callback
@@ -187,6 +189,20 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             icon: '../../media/textures/usb-button.png',
             callback: (success, fail) => {
               navigator.usb.requestDevice({filters: [{}]})
+              .then(success, fail);
+            }
+          },
+          {
+            icon: '../test-media/third-party/midi-button.png',
+            callback: (success, fail) => {
+              navigator.requestMIDIAccess({ sysex: true })
+              .then(success, fail);
+            }
+          },
+          {
+            icon: '../test-media/third-party/screen-share-button.png',
+            callback: (success, fail) => {
+              navigator.mediaDevices.getDisplayMedia()
               .then(success, fail);
             }
           },
