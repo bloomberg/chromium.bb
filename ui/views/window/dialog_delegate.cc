@@ -173,6 +173,8 @@ bool DialogDelegate::ShouldHaveRoundCorners() const {
 View* DialogDelegate::GetInitiallyFocusedView() {
   // Focus the default button if any.
   const DialogClientView* dcv = GetDialogClientView();
+  if (!dcv)
+    return nullptr;
   int default_button = GetDefaultDialogButton();
   if (default_button == ui::DIALOG_BUTTON_NONE)
     return nullptr;
@@ -234,6 +236,8 @@ bool DialogDelegate::ShouldUseCustomFrame() const {
 }
 
 const DialogClientView* DialogDelegate::GetDialogClientView() const {
+  if (!GetWidget())
+    return nullptr;
   return GetWidget()->client_view()->AsDialogClientView();
 }
 
