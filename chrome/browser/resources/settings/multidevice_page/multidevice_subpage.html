@@ -88,7 +88,8 @@
             <template is="dom-if"
                 if="[[doesAndroidMessagesRequireSetUp_(pageContentData)]]"
                 restamp>
-              <paper-button disabled$="[[!isSuiteOn(pageContentData)]]"
+              <paper-button disabled$="[[isAndroidMessagesSetupButtonDisabled_(
+                                       pageContentData)]]"
                 on-click="handleAndroidMessagesButtonClick_"
                   slot="feature-controller">
                 $i18n{multideviceSetupButton}
