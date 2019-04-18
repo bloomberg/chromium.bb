@@ -3065,8 +3065,10 @@
   },
   {
     "name": "wallet-service-use-sandbox",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "jsaul@google.com", "jiahuiguo", "payments-autofill-team@google.com" ],
+    // This flag is used by testing teams to run Google Payments calls against
+    // the development server environment.
+    "expiry_milestone": -1
   },
   {
     "name": "web-contents-occlusion",
