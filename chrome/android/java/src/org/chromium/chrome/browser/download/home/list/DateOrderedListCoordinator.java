@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.download.home.list;
 
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.text.TextUtils;
@@ -13,6 +14,7 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
 import org.chromium.base.Callback;
+import org.chromium.base.Log;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.home.DownloadManagerUiConfig;
 import org.chromium.chrome.browser.download.home.StableIds;
@@ -74,6 +76,7 @@ public class DateOrderedListCoordinator implements ToolbarCoordinator.ToolbarLis
         void onEmptyStateChanged(boolean isEmpty);
     }
 
+    private static final String TAG = "DownloadHome";
     private final Context mContext;
     private final StorageCoordinator mStorageCoordinator;
     private final FilterCoordinator mFilterCoordinator;
@@ -186,8 +189,14 @@ public class DateOrderedListCoordinator implements ToolbarCoordinator.ToolbarLis
     }
 
     private void startShareIntent(Intent intent) {
-        mContext.startActivity(Intent.createChooser(
-                intent, mContext.getString(R.string.share_link_chooser_title)));
+        try {
+            mContext.startActivity(Intent.createChooser(
+                    intent, mContext.getString(R.string.share_link_chooser_title)));
+        } catch (ActivityNotFoundException e) {
+            Log.e(TAG, "Cannot find activity for sharing");
+        } catch (Exception e) {
+            Log.e(TAG, "Cannot start activity for sharing, exception: " + e);
+        }
     }
 
     private void startRename(String name, DateOrderedListMediator.RenameCallback callback) {
