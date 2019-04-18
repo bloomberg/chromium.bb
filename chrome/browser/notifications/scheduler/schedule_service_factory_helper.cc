@@ -13,7 +13,8 @@ namespace notifications {
 
 KeyedService* CreateNotificationScheduleService(
     std::unique_ptr<NotificationBackgroundTaskScheduler>
-        background_task_scheduler) {
+        background_task_scheduler,
+    leveldb_proto::ProtoDatabaseProvider* db_provider) {
   auto config = SchedulerConfig::Create();
   auto context = std::make_unique<NotificationSchedulerContext>(
       std::move(background_task_scheduler), std::move(config));

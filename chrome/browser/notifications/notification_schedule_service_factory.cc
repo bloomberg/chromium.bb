@@ -9,7 +9,9 @@
 #include "chrome/browser/notifications/scheduler/notification_scheduler_context.h"
 #include "chrome/browser/notifications/scheduler/schedule_service_factory_helper.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
+#include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/leveldb_proto/content/proto_database_provider_factory.h"
 
 // static
 NotificationScheduleServiceFactory*
@@ -29,7 +31,9 @@ NotificationScheduleServiceFactory::GetForBrowserContext(
 NotificationScheduleServiceFactory::NotificationScheduleServiceFactory()
     : BrowserContextKeyedServiceFactory(
           "notifications::NotificationScheduleService",
-          BrowserContextDependencyManager::GetInstance()) {}
+          BrowserContextDependencyManager::GetInstance()) {
+  DependsOn(leveldb_proto::ProtoDatabaseProviderFactory::GetInstance());
+}
 
 NotificationScheduleServiceFactory::~NotificationScheduleServiceFactory() =
     default;
@@ -40,8 +44,10 @@ KeyedService* NotificationScheduleServiceFactory::BuildServiceInstanceFor(
   // instance.
   auto background_task_scheduler =
       std::make_unique<NotificationBackgroundTaskSchedulerImpl>();
+  auto* db_provider = leveldb_proto::ProtoDatabaseProviderFactory::GetForKey(
+      Profile::FromBrowserContext(context)->GetProfileKey());
   return notifications::CreateNotificationScheduleService(
-      std::move(background_task_scheduler));
+      std::move(background_task_scheduler), db_provider);
 }
 
 content::BrowserContext*
