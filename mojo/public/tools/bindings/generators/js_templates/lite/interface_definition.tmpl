@@ -128,6 +128,8 @@ goog.provide('{{module.namespace}}.{{interface.name}}Request');
 {%-   endif %}
         impl.{{method.name}}.bind(impl));
 {%- endfor %}
+    /** @public {!mojo.internal.interfaceSupport.ConnectionErrorEventRouter} */
+    this.onConnectionError = this.target_.getConnectionErrorEventRouter();
   }
 
   /**
@@ -218,6 +220,8 @@ goog.provide('{{module.namespace}}.{{interface.name}}Request');
         this.{{method.name}}.createTargetHandler(false /* expectsResponse */));
 {%-   endif %}
 {%- endfor %}
+    /** @public {!mojo.internal.interfaceSupport.ConnectionErrorEventRouter} */
+    this.onConnectionError = this.target_.getConnectionErrorEventRouter();
   }
 
   /**

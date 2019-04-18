@@ -257,7 +257,7 @@ mojo.internal.interfaceSupport.InterfaceProxyBase = class {
     }
 
     // The pipe has already been closed, so just drop the message.
-    if (!this.reader_ || this.reader_.isStopped())
+    if (responseStruct && (!this.reader_ || this.reader_.isStopped()))
       return Promise.reject(new Error('The pipe has already been closed.'));
 
     const requestId = this.nextRequestId_++;
@@ -531,6 +531,10 @@ mojo.internal.interfaceSupport.InterfaceTarget = class {
 
     /** @private {mojo.internal.interfaceSupport.ControlMessageHandler} */
     this.controlMessageHandler_ = null;
+
+    /** @private {!mojo.internal.interfaceSupport.ConnectionErrorEventRouter} */
+    this.connectionErrorEventRouter_ =
+      new mojo.internal.interfaceSupport.ConnectionErrorEventRouter;
   }
 
   /**
@@ -566,6 +570,14 @@ mojo.internal.interfaceSupport.InterfaceTarget = class {
     for (const reader of this.readers_.values())
       reader.stopAndCloseHandle();
     this.readers_.clear();
+  }
+
+  /**
+   * @return {!mojo.internal.interfaceSupport.ConnectionErrorEventRouter}
+   * @export
+   */
+  getConnectionErrorEventRouter() {
+    return this.connectionErrorEventRouter_;
   }
 
   /**
@@ -634,6 +646,7 @@ mojo.internal.interfaceSupport.InterfaceTarget = class {
     const reader = this.readers_.get(handle);
     if (!reader)
       return;
+    this.connectionErrorEventRouter_.dispatchErrorEvent();
     reader.stopAndCloseHandle();
     this.readers_.delete(handle);
   }
@@ -679,6 +692,8 @@ mojo.internal.interfaceSupport.HandleReader = class {
   }
 
   stopAndCloseHandle() {
+    if (!this.watcher_)
+      return;
     this.stop();
     this.handle_.close();
   }
