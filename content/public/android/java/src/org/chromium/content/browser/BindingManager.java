@@ -33,6 +33,7 @@ class BindingManager implements ComponentCallbacks2 {
     private static final long MODERATE_BINDING_POOL_CLEARER_DELAY_MILLIS = 10 * 1000;
 
     private final Set<ChildProcessConnection> mConnections = new ArraySet<ChildProcessConnection>();
+    // Can be -1 to mean no max size.
     private final int mMaxSize;
     private final Iterable<ChildProcessConnection> mRanking;
     private final Runnable mDelayedClearer;
@@ -146,16 +147,27 @@ class BindingManager implements ComponentCallbacks2 {
     }
 
     /**
-     * The constructor is private to hide parameters exposed for testing from the regular consumer.
-     * Use factory methods to create an instance.
+     * Construct instance without maxsize and can support arbitrary number of connections.
+     */
+    BindingManager(Context context, Iterable<ChildProcessConnection> ranking) {
+        this(-1, ranking, context);
+    }
+
+    /**
+     * Construct instance with maxSize.
      */
     BindingManager(Context context, int maxSize, Iterable<ChildProcessConnection> ranking) {
+        this(maxSize, ranking, context);
+        assert maxSize > 0;
+    }
+
+    private BindingManager(int maxSize, Iterable<ChildProcessConnection> ranking, Context context) {
         assert LauncherThread.runningOnLauncherThread();
         Log.i(TAG, "Moderate binding enabled: maxSize=%d", maxSize);
 
         mMaxSize = maxSize;
         mRanking = ranking;
-        assert mMaxSize > 0;
+        assert mMaxSize > 0 || mMaxSize == -1;
 
         mDelayedClearer = new Runnable() {
             @Override
@@ -183,7 +195,7 @@ class BindingManager implements ComponentCallbacks2 {
         // If it became bigger we should consider using an alternate data structure.
         boolean alreadyInQueue = !mConnections.add(connection);
         if (!alreadyInQueue) connection.addModerateBinding();
-        assert mConnections.size() <= mMaxSize;
+        assert mMaxSize == -1 || mConnections.size() <= mMaxSize;
     }
 
     public void removeConnection(ChildProcessConnection connection) {
