@@ -258,16 +258,7 @@ void AutocompleteControllerAndroid::OnSuggestionSelected(
 
   const auto& match =
       autocomplete_controller_->result().match_at(selected_index);
-
-  auto answer_type = SuggestionAnswer::ANSWER_TYPE_INVALID;
-  if (match.answer) {
-    answer_type =
-        static_cast<SuggestionAnswer::AnswerType>(match.answer->type());
-  }
-  UMA_HISTOGRAM_ENUMERATION("Omnibox.SuggestionUsed.AnswerInSuggest",
-                            answer_type,
-                            SuggestionAnswer::ANSWER_TYPE_TOTAL_COUNT);
-
+  SuggestionAnswer::LogAnswerUsed(match.answer);
   if (match.type == AutocompleteMatchType::CLIPBOARD_URL) {
     UMA_HISTOGRAM_LONG_TIMES_100(
         "MobileOmnibox.PressedClipboardSuggestionAge",
