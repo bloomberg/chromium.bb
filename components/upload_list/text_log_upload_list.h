@@ -35,6 +35,8 @@ class TextLogUploadList : public UploadList {
   void ClearUploadList(const base::Time& begin, const base::Time& end) override;
 
   // Parses upload log lines, converting them to UploadInfo entries.
+  // The method also reverse the order of the entries (the first entry in
+  // |uploads| is the last in |log_entries|).
   void ParseLogEntries(const std::vector<std::string>& log_entries,
                        std::vector<UploadInfo>* uploads);
 

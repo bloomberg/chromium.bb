@@ -97,7 +97,9 @@ void TextLogUploadList::ClearUploadList(const base::Time& begin,
 void TextLogUploadList::ParseLogEntries(
     const std::vector<std::string>& log_entries,
     std::vector<UploadInfo>* uploads) {
-  for (const std::string& line : log_entries) {
+  std::vector<std::string>::const_reverse_iterator i;
+  for (i = log_entries.rbegin(); i != log_entries.rend(); ++i) {
+    const std::string& line = *i;
     std::vector<std::string> components = SplitIntoComponents(line);
     // Skip any blank (or corrupted) lines.
     if (components.size() < 2 || components.size() > 5)
