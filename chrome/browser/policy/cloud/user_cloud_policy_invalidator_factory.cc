@@ -13,7 +13,6 @@
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/user_policy_manager_factory_chromeos.h"
 #else
-#include "chrome/browser/policy/cloud/user_cloud_policy_manager_factory.h"
 #include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
 #endif
 
@@ -33,8 +32,6 @@ UserCloudPolicyInvalidatorFactory::UserCloudPolicyInvalidatorFactory()
                 GetInstance());
 #if defined(OS_CHROMEOS)
   DependsOn(UserPolicyManagerFactoryChromeOS::GetInstance());
-#else
-  DependsOn(UserCloudPolicyManagerFactory::GetInstance());
 #endif
 }
 
@@ -48,8 +45,7 @@ KeyedService* UserCloudPolicyInvalidatorFactory::BuildServiceInstanceFor(
       UserPolicyManagerFactoryChromeOS::GetCloudPolicyManagerForProfile(
           profile);
 #else
-  CloudPolicyManager* policy_manager =
-      UserCloudPolicyManagerFactory::GetForBrowserContext(context);
+  CloudPolicyManager* policy_manager = profile->GetUserCloudPolicyManager();
 #endif
   if (!policy_manager)
     return NULL;

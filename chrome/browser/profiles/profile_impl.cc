@@ -205,7 +205,7 @@
 #endif
 
 #if !defined(OS_CHROMEOS)
-#include "chrome/browser/policy/cloud/user_cloud_policy_manager_factory.h"
+#include "chrome/browser/policy/cloud/user_cloud_policy_manager_builder.h"
 #include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
 #endif
 
@@ -523,10 +523,15 @@ ProfileImpl::ProfileImpl(
   configuration_policy_provider_ =
       policy::UserPolicyManagerFactoryChromeOS::CreateForProfile(
           this, force_immediate_policy_load, io_task_runner_);
+  user_cloud_policy_manager_ = nullptr;
 #else
-  configuration_policy_provider_ =
-      policy::UserCloudPolicyManagerFactory::CreateForOriginalBrowserContext(
-          this, force_immediate_policy_load, io_task_runner_);
+  std::unique_ptr<policy::UserCloudPolicyManager> user_cloud_policy_manager =
+      CreateUserCloudPolicyManager(
+          GetPath(), GetPolicySchemaRegistryService()->registry(),
+          force_immediate_policy_load, io_task_runner_);
+  user_cloud_policy_manager_ = user_cloud_policy_manager.get();
+
+  configuration_policy_provider_ = std::move(user_cloud_policy_manager);
 #endif
   profile_policy_connector_ =
       policy::ProfilePolicyConnectorFactory::CreateForBrowserContext(
@@ -815,6 +820,15 @@ ProfileImpl::~ProfileImpl() {
 
   SimpleKeyMap::GetInstance()->Dissociate(this);
 
+  // TODO(crbug.com/937770): In Chrome OS, UserPolicyManagerFactoryChromeOS
+  // calls Shutdown() in BrowserContextShutdown(), so we should not call it here
+  // despite owning the instance. When the BrowserContextKeyedBaseFactory does
+  // not have the responsibility to call Shutdown() anymore, remove this
+  // condition.
+#if !defined(OS_CHROMEOS)
+  configuration_policy_provider_->Shutdown();
+#endif
+
   // This causes the Preferences file to be written to disk.
   if (prefs_loaded)
     SetExitType(EXIT_NORMAL);
@@ -1097,6 +1111,10 @@ PrefService* ProfileImpl::GetReadOnlyOffTheRecordPrefs() {
 
 policy::SchemaRegistryService* ProfileImpl::GetPolicySchemaRegistryService() {
   return schema_registry_service_.get();
+}
+
+policy::UserCloudPolicyManager* ProfileImpl::GetUserCloudPolicyManager() {
+  return user_cloud_policy_manager_;
 }
 
 content::ResourceContext* ProfileImpl::GetResourceContext() {

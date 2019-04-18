@@ -90,10 +90,6 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #endif
 
-#if !defined(OS_CHROMEOS)
-#include "chrome/browser/policy/cloud/user_cloud_policy_manager_factory.h"
-#endif
-
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
@@ -166,13 +162,6 @@ void OffTheRecordProfileImpl::Init() {
   // derived class (e.g. GuestSessionProfile) until a ctor finishes.  Thus,
   // we have to instantiate OffTheRecordProfileIOData::Handle here after a ctor.
   InitIoData();
-
-#if !defined(OS_CHROMEOS)
-  // Because UserCloudPolicyManager is in a component, it cannot access
-  // GetOriginalProfile. Instead, we have to inject this relation here.
-  policy::UserCloudPolicyManagerFactory::RegisterForOffTheRecordBrowserContext(
-      this->GetOriginalProfile(), this);
-#endif
 
   BrowserContextDependencyManager::GetInstance()->CreateBrowserContextServices(
       this);
@@ -409,6 +398,11 @@ OffTheRecordProfileImpl::HandleServiceRequest(
   }
 
   return nullptr;
+}
+
+policy::UserCloudPolicyManager*
+OffTheRecordProfileImpl::GetUserCloudPolicyManager() {
+  return GetOriginalProfile()->GetUserCloudPolicyManager();
 }
 
 net::URLRequestContextGetter* OffTheRecordProfileImpl::GetRequestContext() {

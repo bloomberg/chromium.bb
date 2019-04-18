@@ -24,7 +24,6 @@
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/user_policy_manager_factory_chromeos.h"
 #else
-#include "chrome/browser/policy/cloud/user_cloud_policy_manager_factory.h"
 #include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
 #endif
 
@@ -60,8 +59,6 @@ PolicyHeaderServiceFactory::PolicyHeaderServiceFactory()
         BrowserContextDependencyManager::GetInstance()) {
 #if defined(OS_CHROMEOS)
   DependsOn(UserPolicyManagerFactoryChromeOS::GetInstance());
-#else
-  DependsOn(UserCloudPolicyManagerFactory::GetInstance());
 #endif
 }
 
@@ -91,8 +88,8 @@ KeyedService* PolicyHeaderServiceFactory::BuildServiceInstanceFor(
 #endif
 
   CloudPolicyStore* user_store;
-#if defined(OS_CHROMEOS)
   Profile* profile = Profile::FromBrowserContext(context);
+#if defined(OS_CHROMEOS)
   CloudPolicyManager* cloud_manager =
       UserPolicyManagerFactoryChromeOS::GetCloudPolicyManagerForProfile(
           profile);
@@ -107,8 +104,7 @@ KeyedService* PolicyHeaderServiceFactory::BuildServiceInstanceFor(
     user_store = active_directory_manager->store();
   }
 #else
-  CloudPolicyManager* manager =
-      UserCloudPolicyManagerFactory::GetForBrowserContext(context);
+  CloudPolicyManager* manager = profile->GetUserCloudPolicyManager();
   if (!manager)
     return nullptr;
   user_store = manager->core()->store();
