@@ -21,6 +21,8 @@
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/feature_engagement/public/event_constants.h"
+#include "components/feature_engagement/public/tracker.h"
 #import "components/language/ios/browser/ios_language_detection_tab_helper.h"
 #include "components/omnibox/browser/location_bar_model_impl.h"
 #include "components/reading_list/core/reading_list_model.h"
@@ -38,6 +40,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/download/download_manager_tab_helper.h"
+#include "ios/chrome/browser/feature_engagement/tracker_factory.h"
 #include "ios/chrome/browser/feature_engagement/tracker_util.h"
 #import "ios/chrome/browser/find_in_page/find_tab_helper.h"
 #include "ios/chrome/browser/first_run/first_run.h"
@@ -4189,6 +4192,11 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 #endif  // !defined(NDEBUG)
 
 - (void)showTranslate {
+  feature_engagement::Tracker* engagement_tracker =
+      feature_engagement::TrackerFactory::GetForBrowserState(self.browserState);
+  engagement_tracker->NotifyEvent(
+      feature_engagement::events::kTriggeredTranslateInfobar);
+
   DCHECK(self.currentWebState);
   ChromeIOSTranslateClient* translateClient =
       ChromeIOSTranslateClient::FromWebState(self.currentWebState);
