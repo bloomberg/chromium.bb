@@ -371,11 +371,41 @@ ContextResult WebGPUDecoderImpl::Initialize() {
 DawnDevice WebGPUDecoderImpl::CreateDefaultDevice() {
   dawn_instance_->DiscoverDefaultAdapters();
   std::vector<dawn_native::Adapter> adapters = dawn_instance_->GetAdapters();
+
+  dawn_native::Adapter integrated_gpu_adapter = {};
+  dawn_native::Adapter cpu_adapter = {};
+  dawn_native::Adapter unknown_adapter = {};
+
   for (dawn_native::Adapter adapter : adapters) {
     if (adapter.GetBackendType() != dawn_native::BackendType::Null &&
         adapter.GetBackendType() != dawn_native::BackendType::OpenGL) {
-      return adapter.CreateDevice();
+      switch (adapter.GetDeviceType()) {
+        case dawn_native::DeviceType::DiscreteGPU:
+          // For now, we always prefer the discrete GPU
+          return adapter.CreateDevice();
+        case dawn_native::DeviceType::IntegratedGPU:
+          integrated_gpu_adapter = adapter;
+          break;
+        case dawn_native::DeviceType::CPU:
+          cpu_adapter = adapter;
+          break;
+        case dawn_native::DeviceType::Unknown:
+          unknown_adapter = adapter;
+          break;
+        default:
+          NOTREACHED();
+          break;
+      }
     }
+  }
+  if (integrated_gpu_adapter) {
+    return integrated_gpu_adapter.CreateDevice();
+  }
+  if (cpu_adapter) {
+    return cpu_adapter.CreateDevice();
+  }
+  if (unknown_adapter) {
+    return unknown_adapter.CreateDevice();
   }
   return nullptr;
 }
