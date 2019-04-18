@@ -53,7 +53,7 @@ class FindInPageJsTest : public WebTestWithWebState {
 // with 1 match.
 TEST_F(FindInPageJsTest, FindText) {
   ASSERT_TRUE(LoadHtml("<span>foo</span>"));
-  base::TimeDelta kCallJavascriptFunctionTimeout =
+  const base::TimeDelta kCallJavascriptFunctionTimeout =
       base::TimeDelta::FromSeconds(kWaitForJSCompletionTimeout);
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
     return frames_manager()->GetAllWebFrames().size() == 1;
@@ -82,7 +82,7 @@ TEST_F(FindInPageJsTest, FindText) {
 // hidden and responds with 0 matches.
 TEST_F(FindInPageJsTest, FindTextNoResults) {
   ASSERT_TRUE(LoadHtml("<span style='display:none'>foo</span>"));
-  base::TimeDelta kCallJavascriptFunctionTimeout =
+  const base::TimeDelta kCallJavascriptFunctionTimeout =
       base::TimeDelta::FromSeconds(kWaitForJSCompletionTimeout);
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
     return frames_manager()->GetAllWebFrames().size() == 1;
@@ -111,7 +111,7 @@ TEST_F(FindInPageJsTest, FindIFrameText) {
   ASSERT_TRUE(LoadHtml(
       "<iframe "
       "srcdoc='<html><body><span>foo</span></body></html>'></iframe>"));
-  base::TimeDelta kCallJavascriptFunctionTimeout =
+  const base::TimeDelta kCallJavascriptFunctionTimeout =
       base::TimeDelta::FromSeconds(kWaitForJSCompletionTimeout);
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
     return frames_manager()->GetAllWebFrames().size() == 2;
@@ -146,7 +146,7 @@ TEST_F(FindInPageJsTest, FindIFrameText) {
 // Tests that FindInPage works when searching for white space.
 TEST_F(FindInPageJsTest, FindWhiteSpace) {
   ASSERT_TRUE(LoadHtml("<span> </span>"));
-  base::TimeDelta kCallJavascriptFunctionTimeout =
+  const base::TimeDelta kCallJavascriptFunctionTimeout =
       base::TimeDelta::FromSeconds(kWaitForJSCompletionTimeout);
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
     return frames_manager()->GetAllWebFrames().size() == 1;
@@ -173,7 +173,7 @@ TEST_F(FindInPageJsTest, FindWhiteSpace) {
 TEST_F(FindInPageJsTest, FindAcrossMultipleNodes) {
   ASSERT_TRUE(
       LoadHtml("<p>xx1<span>2</span>3<a>4512345xxx12</a>34<a>5xxx12345xx</p>"));
-  base::TimeDelta kCallJavascriptFunctionTimeout =
+  const base::TimeDelta kCallJavascriptFunctionTimeout =
       base::TimeDelta::FromSeconds(kWaitForJSCompletionTimeout);
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
     return frames_manager()->GetAllWebFrames().size() == 1;
@@ -199,7 +199,7 @@ TEST_F(FindInPageJsTest, FindAcrossMultipleNodes) {
 // Tests that a FindInPage match can be highlighted.
 TEST_F(FindInPageJsTest, FindHighlightMatch) {
   ASSERT_TRUE(LoadHtml("<span>foo</span>"));
-  base::TimeDelta kCallJavascriptFunctionTimeout =
+  const base::TimeDelta kCallJavascriptFunctionTimeout =
       base::TimeDelta::FromSeconds(kWaitForJSCompletionTimeout);
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
     return frames_manager()->GetAllWebFrames().size() == 1;
@@ -244,7 +244,7 @@ TEST_F(FindInPageJsTest, FindHighlightMatch) {
 // highlight is removed when another match is highlighted.
 TEST_F(FindInPageJsTest, FindHighlightSeparateMatches) {
   ASSERT_TRUE(LoadHtml("<span>foo foo</span>"));
-  base::TimeDelta kCallJavascriptFunctionTimeout =
+  const base::TimeDelta kCallJavascriptFunctionTimeout =
       base::TimeDelta::FromSeconds(kWaitForJSCompletionTimeout);
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
     return frames_manager()->GetAllWebFrames().size() == 1;
@@ -310,7 +310,7 @@ TEST_F(FindInPageJsTest, FindHighlightSeparateMatches) {
 // Tests that FindInPage does not highlight any matches given an invalid index.
 TEST_F(FindInPageJsTest, FindHighlightMatchAtInvalidIndex) {
   ASSERT_TRUE(LoadHtml("<span>invalid </span>"));
-  base::TimeDelta kCallJavascriptFunctionTimeout =
+  const base::TimeDelta kCallJavascriptFunctionTimeout =
       base::TimeDelta::FromSeconds(kWaitForJSCompletionTimeout);
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
     return frames_manager()->GetAllWebFrames().size() == 1;
@@ -355,7 +355,7 @@ TEST_F(FindInPageJsTest, FindHighlightMatchAtInvalidIndex) {
 // characters.
 TEST_F(FindInPageJsTest, SearchForNonAscii) {
   ASSERT_TRUE(LoadHtml("<span>école francais</span>"));
-  base::TimeDelta kCallJavascriptFunctionTimeout =
+  const base::TimeDelta kCallJavascriptFunctionTimeout =
       base::TimeDelta::FromSeconds(kWaitForJSCompletionTimeout);
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
     return frames_manager()->GetAllWebFrames().size() == 1;
@@ -388,7 +388,7 @@ TEST_F(FindInPageJsTest, CheckFindInPageScrollsToMatch) {
   // on all devices.
   ASSERT_TRUE(
       LoadHtml("<div style=\"height: 4000px;\"></div><span>foo</span>"));
-  base::TimeDelta kCallJavascriptFunctionTimeout =
+  const base::TimeDelta kCallJavascriptFunctionTimeout =
       base::TimeDelta::FromSeconds(kWaitForJSCompletionTimeout);
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
     return frames_manager()->GetAllWebFrames().size() == 1;
@@ -438,7 +438,7 @@ TEST_F(FindInPageJsTest, CheckFindInPageScrollsToMatch) {
 // Tests that FindInPage is able to clear CSS and match highlighting.
 TEST_F(FindInPageJsTest, StopFindInPage) {
   ASSERT_TRUE(LoadHtml("<span>foo foo</span>"));
-  base::TimeDelta kCallJavascriptFunctionTimeout =
+  const base::TimeDelta kCallJavascriptFunctionTimeout =
       base::TimeDelta::FromSeconds(kWaitForJSCompletionTimeout);
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
     return frames_manager()->GetAllWebFrames().size() == 1;
