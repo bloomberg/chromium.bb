@@ -22,6 +22,9 @@ namespace safe_browsing {
 const base::Feature kAdSamplerTriggerFeature{"SafeBrowsingAdSamplerTrigger",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kCaptureSafetyNetId{"SafeBrowsingCaptureSafetyNetId",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
 // If enabled in pre-network-service world, SafeBrowsing URL checks are done by
 // applying SafeBrowsing's URLLoaderThrottle subclasses to ThrottlingURLLoader.
 //
