@@ -2991,6 +2991,20 @@ crbug.com/921242 [ Mac ] paint/invalidation/compositing/fixed-pos-inside-composi
 crbug.com/921242 [ Mac ] paint/invalidation/scroll/fixed-under-composited-absolute-scrolled.html [ Failure ]
 crbug.com/921242 [ Mac ] paint/invalidation/scroll/fixed-with-border-under-composited-absolute-scrolled.html [ Failure ]
 
+# Failures on Mac scrollbars for compositor threaded scrollbar scrolling.
+crbug.com/953847 [ Mac ] fast/scrolling/scrollbars/mouse-scrolling-on-div-scrollbar.html [ Failure ]
+crbug.com/953847 [ Mac ] fast/scrolling/scrollbars/mouse-scrolling-on-root-scrollbar.html [ Failure ]
+crbug.com/953847 [ Mac ] virtual/compositor_threaded_scrollbar_scrolling/fast/scrolling/scrollbars/mouse-scrolling-on-div-scrollbar.html [ Failure ]
+crbug.com/953847 [ Mac ] virtual/compositor_threaded_scrollbar_scrolling/fast/scrolling/scrollbars/mouse-scrolling-on-root-scrollbar.html [ Failure ]
+crbug.com/953847 [ Mac ] virtual/fractional_scrolling/fast/scrolling/scrollbars/mouse-scrolling-on-div-scrollbar.html [ Failure ]
+crbug.com/953847 [ Mac ] virtual/fractional_scrolling/fast/scrolling/scrollbars/mouse-scrolling-on-root-scrollbar.html [ Failure ]
+crbug.com/953847 [ Mac ] virtual/scroll_customization/fast/scrolling/scrollbars/mouse-scrolling-on-div-scrollbar.html [ Failure ]
+crbug.com/953847 [ Mac ] virtual/scroll_customization/fast/scrolling/scrollbars/mouse-scrolling-on-root-scrollbar.html [ Failure ]
+crbug.com/953847 [ Mac ] virtual/threaded/fast/scrolling/scrollbars/mouse-scrolling-on-div-scrollbar.html [ Failure ]
+crbug.com/953847 [ Mac ] virtual/threaded/fast/scrolling/scrollbars/mouse-scrolling-on-root-scrollbar.html [ Failure ]
+crbug.com/953847 [ Mac ] virtual/fractional_scrolling_threaded/fast/scrolling/scrollbars/mouse-scrolling-on-div-scrollbar.html [ Failure ]
+crbug.com/953847 [ Mac ] virtual/fractional_scrolling_threaded/fast/scrolling/scrollbars/mouse-scrolling-on-root-scrollbar.html [ Failure ]
+
 # Some control characters still not visible
 crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-001.html [ Failure ]
 crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-002.html [ Failure ]

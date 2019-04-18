@@ -81,7 +81,15 @@ class InputHandlerProxy : public cc::InputHandlerClient,
   void HandleInputEventWithLatencyInfo(WebScopedInputEvent event,
                                        const LatencyInfo& latency_info,
                                        EventDispositionCallback callback);
-  EventDisposition HandleInputEvent(const blink::WebInputEvent& event);
+  void InjectScrollbarGestureScroll(
+      const blink::WebInputEvent::Type type,
+      const blink::WebFloatPoint& position_in_widget,
+      const cc::InputHandlerPointerResult& pointer_result,
+      const LatencyInfo& latency_info,
+      const base::TimeTicks now);
+  EventDisposition RouteToTypeSpecificHandler(
+      const blink::WebInputEvent& event,
+      const LatencyInfo& latency_info = LatencyInfo());
 
   // cc::InputHandlerClient implementation.
   void WillShutdown() override;

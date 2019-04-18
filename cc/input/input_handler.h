@@ -33,6 +33,26 @@ namespace cc {
 
 class ScrollElasticityHelper;
 
+enum PointerResultType { kUnhandled = 0, kScrollbarScroll };
+
+struct CC_EXPORT InputHandlerPointerResult {
+  InputHandlerPointerResult();
+  // Tells what type of processing occurred in the input handler as a result of
+  // the pointer event.
+  PointerResultType type;
+
+  // If the input handler processed the event as a scrollbar scroll, it will
+  // return a gfx::ScrollOffset that produces the necessary scroll. However,
+  // it is still the client's responsibility to generate the gesture scrolls
+  // instead of the input handler performing it as a part of handling the
+  // pointer event (due to the latency attribution that happens at the
+  // InputHandlerProxy level).
+  gfx::ScrollOffset scroll_offset;
+
+  // TODO(arakeri): Extend this structure to contain scroll_units and
+  // element_id. For now, assume kPrecisePixels and root layer scroll.
+};
+
 struct CC_EXPORT InputHandlerScrollResult {
   InputHandlerScrollResult();
   // Did any layer scroll as a result this ScrollBy call?
@@ -112,7 +132,13 @@ class CC_EXPORT InputHandler {
     bool bubble;
   };
 
-  enum ScrollInputType { TOUCHSCREEN, WHEEL, AUTOSCROLL, SCROLL_INPUT_UNKNOWN };
+  enum ScrollInputType {
+    TOUCHSCREEN,
+    WHEEL,
+    AUTOSCROLL,
+    SCROLLBAR,
+    SCROLL_INPUT_UNKNOWN
+  };
 
   enum class TouchStartOrMoveEventListenerType {
     NO_HANDLER,
@@ -163,8 +189,10 @@ class CC_EXPORT InputHandler {
   virtual InputHandlerScrollResult ScrollBy(ScrollState* scroll_state) = 0;
 
   virtual void MouseMoveAt(const gfx::Point& mouse_position) = 0;
-  virtual void MouseDown() = 0;
-  virtual void MouseUp() = 0;
+  virtual InputHandlerPointerResult MouseDown(
+      const gfx::PointF& mouse_position) = 0;
+  virtual InputHandlerPointerResult MouseUp(
+      const gfx::PointF& mouse_position) = 0;
   virtual void MouseLeave() = 0;
 
   // Stop scrolling the selected layer. Should only be called if ScrollBegin()

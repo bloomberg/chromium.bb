@@ -102,6 +102,8 @@ cc::InputHandler::ScrollInputType GestureScrollInputType(
       return cc::InputHandler::TOUCHSCREEN;
     case blink::kWebGestureDeviceSyntheticAutoscroll:
       return cc::InputHandler::AUTOSCROLL;
+    case blink::kWebGestureDeviceScrollbar:
+      return cc::InputHandler::SCROLLBAR;
     default:
       NOTREACHED();
       return cc::InputHandler::SCROLL_INPUT_UNKNOWN;
@@ -269,8 +271,8 @@ void InputHandlerProxy::DispatchSingleInputEvent(
 
   current_overscroll_params_.reset();
 
-  InputHandlerProxy::EventDisposition disposition =
-      HandleInputEvent(event_with_callback->event());
+  InputHandlerProxy::EventDisposition disposition = RouteToTypeSpecificHandler(
+      event_with_callback->event(), monitored_latency_info);
 
   switch (event_with_callback->event().GetType()) {
     case blink::WebGestureEvent::kGestureScrollBegin:
@@ -307,8 +309,64 @@ void InputHandlerProxy::DispatchQueuedInputEvents() {
   }
 }
 
-InputHandlerProxy::EventDisposition InputHandlerProxy::HandleInputEvent(
-    const WebInputEvent& event) {
+// This function handles creating synthetic Gesture events. It is currently used
+// for creating Gesture event equivalents for mouse events on a composited
+// scrollbar. (See InputHandlerProxy::HandleInputEvent)
+void InputHandlerProxy::InjectScrollbarGestureScroll(
+    const WebInputEvent::Type type,
+    const blink::WebFloatPoint& position_in_widget,
+    const cc::InputHandlerPointerResult& pointer_result,
+    const LatencyInfo& latency_info,
+    const base::TimeTicks now) {
+  std::unique_ptr<WebGestureEvent> synthetic_gesture_event =
+      std::make_unique<WebGestureEvent>(type, WebInputEvent::kNoModifiers, now,
+                                        blink::kWebGestureDeviceScrollbar);
+
+  if (type == WebInputEvent::Type::kGestureScrollBegin) {
+    // GestureEvent(s) expect the scroll delta to be flipped. The reason being
+    // that gesture events scroll deltas are interpreted as the finger's delta
+    // in relation to the screen (which happens to be the reverse of the
+    // scrolling direction).
+    synthetic_gesture_event->data.scroll_begin.delta_x_hint =
+        -pointer_result.scroll_offset.x();
+    synthetic_gesture_event->data.scroll_begin.delta_y_hint =
+        -pointer_result.scroll_offset.y();
+    synthetic_gesture_event->data.scroll_begin.inertial_phase =
+        WebGestureEvent::kNonMomentumPhase;
+    synthetic_gesture_event->data.scroll_begin.delta_hint_units =
+        WebGestureEvent::kPixels;
+  } else if (type == WebInputEvent::Type::kGestureScrollUpdate) {
+    synthetic_gesture_event->data.scroll_update.delta_x =
+        -pointer_result.scroll_offset.x();
+    synthetic_gesture_event->data.scroll_update.delta_y =
+        -pointer_result.scroll_offset.y();
+    synthetic_gesture_event->data.scroll_update.inertial_phase =
+        WebGestureEvent::kNonMomentumPhase;
+    synthetic_gesture_event->data.scroll_update.delta_units =
+        WebGestureEvent::kPixels;
+  }
+
+  synthetic_gesture_event->SetPositionInWidget(position_in_widget);
+  synthetic_gesture_event->SetSourceDevice(blink::kWebGestureDeviceScrollbar);
+
+  WebScopedInputEvent web_scoped_gesture_event(
+      synthetic_gesture_event.release());
+
+  std::unique_ptr<EventWithCallback> gesture_event_with_callback_update =
+      std::make_unique<EventWithCallback>(std::move(web_scoped_gesture_event),
+                                          latency_info, now, now, nullptr);
+
+  bool needs_animate_input = compositor_event_queue_->empty();
+  compositor_event_queue_->Queue(std::move(gesture_event_with_callback_update),
+                                 now);
+
+  if (needs_animate_input)
+    input_handler_->SetNeedsAnimateInput();
+}
+
+InputHandlerProxy::EventDisposition
+InputHandlerProxy::RouteToTypeSpecificHandler(const WebInputEvent& event,
+                                              const LatencyInfo& latency_info) {
   DCHECK(input_handler_);
 
   if (force_input_to_main_thread_)
@@ -379,8 +437,28 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleInputEvent(
 
       if (mouse_event.button == blink::WebMouseEvent::Button::kLeft) {
         CHECK(input_handler_);
-        input_handler_->MouseDown();
+        cc::InputHandlerPointerResult pointer_result =
+            input_handler_->MouseDown(
+                gfx::PointF(mouse_event.PositionInWidget()));
+        if (pointer_result.type == cc::PointerResultType::kScrollbarScroll) {
+          // Generate GSB and GSU events and add them to the
+          // CompositorThreadEventQueue.
+          InjectScrollbarGestureScroll(WebInputEvent::Type::kGestureScrollBegin,
+                                       mouse_event.PositionInWidget(),
+                                       pointer_result, latency_info,
+                                       mouse_event.TimeStamp());
+          InjectScrollbarGestureScroll(
+              WebInputEvent::Type::kGestureScrollUpdate,
+              mouse_event.PositionInWidget(), pointer_result, latency_info,
+              mouse_event.TimeStamp());
+
+          // Drop the mousedown for now as the gesture event equivalent for this
+          // has already been added to the CompositorThreadEventQueue and will
+          // be dispatched at the vsync boundary.
+          return DROP_EVENT;
+        }
       }
+
       return DID_NOT_HANDLE;
     }
     case WebInputEvent::kMouseUp: {
@@ -390,7 +468,20 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleInputEvent(
 
       if (mouse_event.button == blink::WebMouseEvent::Button::kLeft) {
         CHECK(input_handler_);
-        input_handler_->MouseUp();
+        cc::InputHandlerPointerResult pointer_result = input_handler_->MouseUp(
+            gfx::PointF(mouse_event.PositionInWidget()));
+        if (pointer_result.type == cc::PointerResultType::kScrollbarScroll) {
+          // Generate a GSE and add it to the CompositorThreadEventQueue.
+          InjectScrollbarGestureScroll(WebInputEvent::Type::kGestureScrollEnd,
+                                       mouse_event.PositionInWidget(),
+                                       pointer_result, latency_info,
+                                       mouse_event.TimeStamp());
+
+          // Drop the mouseup for now as the gesture event equivalent for this
+          // has already been added to the CompositorThreadEventQueue and will
+          // be dispatched at the vsync boundary.
+          return DROP_EVENT;
+        }
       }
       return DID_NOT_HANDLE;
     }
