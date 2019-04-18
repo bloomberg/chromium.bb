@@ -84,4 +84,8 @@
         <!-- drawableTint wasn't added in Android until API level 23. -->
         <attr name="chromeDrawableTint" format="color"/>
     </declare-styleable>
+
+    <declare-styleable name="TileGridLayout">
+        <attr name="minHorizontalSpacing" format="dimension"/>
+    </declare-styleable>
 </resources>

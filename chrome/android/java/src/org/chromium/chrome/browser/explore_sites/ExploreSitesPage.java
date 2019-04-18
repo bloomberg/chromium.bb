@@ -29,6 +29,7 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationEntry;
@@ -132,8 +133,12 @@ public class ExploreSitesPage extends BasicNativePage {
 
         mView.setTab(mTab);
         mRecyclerView = mView.findViewById(R.id.explore_sites_category_recycler);
+
+        CategoryCardViewHolderFactory factory = FeatureUtilities.isNoTouchModeEnabled()
+                ? new CondensedCategoryCardViewHolderFactory()
+                : new CategoryCardViewHolderFactory();
         RecyclerViewAdapter<CategoryCardViewHolderFactory.CategoryCardViewHolder, Void> adapter =
-                new RecyclerViewAdapter<>(adapterDelegate, new CategoryCardViewHolderFactory());
+                new RecyclerViewAdapter<>(adapterDelegate, factory);
 
         mRecyclerView.setLayoutManager(mLayoutManager);
         mRecyclerView.setAdapter(adapter);
