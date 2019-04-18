@@ -85,6 +85,9 @@ class VIZ_SERVICE_EXPORT DirectLayerTreeFrameSink
   void DisplayDidReceiveCALayerParams(
       const gfx::CALayerParams& ca_layer_params) override;
   void DisplayDidCompleteSwapWithSize(const gfx::Size& pixel_size) override;
+  void SetPreferredFrameInterval(base::TimeDelta interval) override;
+  base::TimeDelta GetPreferredFrameIntervalForFrameSinkId(
+      const FrameSinkId& id) override;
 
  private:
   // mojom::CompositorFrameSinkClient implementation:

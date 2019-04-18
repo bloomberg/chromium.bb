@@ -234,6 +234,19 @@ void DirectLayerTreeFrameSink::DisplayDidCompleteSwapWithSize(
   // Not needed in non-OOP-D mode.
 }
 
+void DirectLayerTreeFrameSink::SetPreferredFrameInterval(
+    base::TimeDelta interval) {
+  // Not supported in non-OOP-D mode.
+  NOTREACHED() << "Can not specify preferred interval, "
+                  "no supported intervals were provided";
+}
+
+base::TimeDelta
+DirectLayerTreeFrameSink::GetPreferredFrameIntervalForFrameSinkId(
+    const FrameSinkId& id) {
+  return frame_sink_manager_->GetPreferredFrameIntervalForFrameSinkId(id);
+}
+
 void DirectLayerTreeFrameSink::DidReceiveCompositorFrameAck(
     const std::vector<ReturnedResource>& resources) {
   // Submitting a CompositorFrame can synchronously draw and dispatch a frame

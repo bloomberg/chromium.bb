@@ -197,6 +197,9 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
   const CompositorFrameSinkSupport* GetFrameSinkForId(
       const FrameSinkId& frame_sink_id) const;
 
+  base::TimeDelta GetPreferredFrameIntervalForFrameSinkId(
+      const FrameSinkId& id) const;
+
  private:
   friend class FrameSinkManagerTest;
 
@@ -216,6 +219,8 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
     // Indicates whether the client wishes to receive FirstSurfaceActivation
     // notification.
     bool report_activation;
+
+    base::TimeDelta preferred_frame_interval = BeginFrameArgs::MinInterval();
 
    private:
     DISALLOW_COPY_AND_ASSIGN(FrameSinkData);

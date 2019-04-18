@@ -39,6 +39,8 @@ class UI_ANDROID_EXPORT WindowAndroidCompositor {
   virtual bool IsDrawingFirstVisibleFrame() const = 0;
   virtual void SetVSyncPaused(bool paused) = 0;
   virtual void OnUpdateRefreshRate(float refresh_rate) = 0;
+  virtual void OnUpdateSupportedRefreshRates(
+      const std::vector<float>& supported_refresh_rates) = 0;
 };
 
 }  // namespace ui

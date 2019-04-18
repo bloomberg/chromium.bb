@@ -12,6 +12,7 @@ struct CALayerParams;
 }  // namespace gfx
 
 namespace viz {
+class FrameSinkId;
 
 class DisplayClient {
  public:
@@ -25,6 +26,9 @@ class DisplayClient {
   virtual void DisplayDidReceiveCALayerParams(
       const gfx::CALayerParams& ca_layer_params) = 0;
   virtual void DisplayDidCompleteSwapWithSize(const gfx::Size& pixel_size) = 0;
+  virtual void SetPreferredFrameInterval(base::TimeDelta interval) = 0;
+  virtual base::TimeDelta GetPreferredFrameIntervalForFrameSinkId(
+      const FrameSinkId& id) = 0;
 };
 
 }  // namespace viz

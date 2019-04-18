@@ -270,4 +270,9 @@ void TestLayerTreeFrameSink::SendCompositorFrameAckToClient() {
   client_->DidReceiveCompositorFrameAck();
 }
 
+base::TimeDelta TestLayerTreeFrameSink::GetPreferredFrameIntervalForFrameSinkId(
+    const FrameSinkId& id) {
+  return BeginFrameArgs::MinInterval();
+}
+
 }  // namespace viz

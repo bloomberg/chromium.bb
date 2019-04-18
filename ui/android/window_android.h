@@ -42,14 +42,11 @@ class UI_ANDROID_EXPORT WindowAndroid : public ViewAndroid {
   static WindowAndroid* FromJavaWindowAndroid(
       const base::android::JavaParamRef<jobject>& jwindow_android);
 
-  WindowAndroid(
-      JNIEnv* env,
-      jobject obj,
-      int display_id,
-      float scroll_factor,
-      bool window_is_wide_color_gamut,
-      float current_refresh_rate,
-      const base::android::JavaParamRef<jfloatArray>& supported_refresh_rates);
+  WindowAndroid(JNIEnv* env,
+                jobject obj,
+                int display_id,
+                float scroll_factor,
+                bool window_is_wide_color_gamut);
 
   ~WindowAndroid() override;
 
@@ -69,6 +66,8 @@ class UI_ANDROID_EXPORT WindowAndroid : public ViewAndroid {
   WindowAndroidCompositor* GetCompositor() { return compositor_; }
   viz::BeginFrameSource* GetBeginFrameSource();
   float GetRefreshRate();
+  std::vector<float> GetSupportedRefreshRates();
+  void SetPreferredRefreshRate(float refresh_rate);
 
   // Runs the provided callback as soon as the current vsync was handled.
   // This call is only allowed from inside the OnBeginFrame call from the
@@ -156,8 +155,6 @@ class UI_ANDROID_EXPORT WindowAndroid : public ViewAndroid {
   bool vsync_paused_ = false;
 
   bool force_60hz_refresh_rate_ = false;
-  float current_refresh_rate_ = 0.f;
-  std::vector<float> supported_refresh_rates_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowAndroid);
 };

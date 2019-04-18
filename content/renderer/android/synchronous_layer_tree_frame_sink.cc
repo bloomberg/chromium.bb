@@ -107,6 +107,11 @@ class SynchronousLayerTreeFrameSink::SoftwareOutputSurface
   unsigned UpdateGpuFence() override { return 0; }
 };
 
+base::TimeDelta SynchronousLayerTreeFrameSink::StubDisplayClient::
+    GetPreferredFrameIntervalForFrameSinkId(const viz::FrameSinkId& id) {
+  return viz::BeginFrameArgs::MinInterval();
+}
+
 SynchronousLayerTreeFrameSink::SynchronousLayerTreeFrameSink(
     scoped_refptr<viz::ContextProvider> context_provider,
     scoped_refptr<viz::RasterContextProvider> worker_context_provider,
