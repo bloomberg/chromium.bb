@@ -18,9 +18,9 @@
     <output filename="values-et/android_chrome_autofill_assistant_strings.xml" lang="et" type="android" />
     <output filename="values-fa/android_chrome_autofill_assistant_strings.xml" lang="fa" type="android" />
     <output filename="values-fi/android_chrome_autofill_assistant_strings.xml" lang="fi" type="android" />
+    <output filename="values-gu/android_chrome_autofill_assistant_strings.xml" lang="fi" type="android" />
     <output filename="values-tl/android_chrome_autofill_assistant_strings.xml" lang="fil" type="android" />
     <output filename="values-fr/android_chrome_autofill_assistant_strings.xml" lang="fr" type="android" />
-    <output filename="values-gu/android_chrome_autofill_assistant_strings.xml" lang="gu" type="android" />
     <output filename="values-hi/android_chrome_autofill_assistant_strings.xml" lang="hi" type="android" />
     <output filename="values-hr/android_chrome_autofill_assistant_strings.xml" lang="hr" type="android" />
     <output filename="values-hu/android_chrome_autofill_assistant_strings.xml" lang="hu" type="android" />
