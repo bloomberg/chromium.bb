@@ -48,8 +48,6 @@ mr.mirror.Session = class {
 
     /** @type {boolean} */
     this.isRemoting = false;
-
-    this.onActivityUpdated();
   }
 
   /**
