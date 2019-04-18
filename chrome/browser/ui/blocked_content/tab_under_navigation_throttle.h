@@ -42,6 +42,7 @@ constexpr char kBlockTabUnderFormatMessage[] =
 //  legitimate for some cases (like auth).
 class TabUnderNavigationThrottle : public content::NavigationThrottle {
  public:
+  // TODO(https://crbug.com/954178): Remove this.
   static const base::Feature kBlockTabUnders;
 
   // This enum backs a histogram. Update enums.xml if you make any updates, and

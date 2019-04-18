@@ -145,9 +145,6 @@ extern const char kAutoplayPolicyDocumentUserActivation[];
 extern const char kAwaitOptimizationName[];
 extern const char kAwaitOptimizationDescription[];
 
-extern const char kBlockTabUndersName[];
-extern const char kBlockTabUndersDescription[];
-
 extern const char kBrowserTaskSchedulerName[];
 extern const char kBrowserTaskSchedulerDescription[];
 
