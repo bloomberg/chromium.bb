@@ -84,6 +84,7 @@
 #include "content/browser/net/browser_online_state_observer.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
+#include "content/browser/scheduler/browser_task_executor.h"
 #include "content/browser/scheduler/responsiveness/watcher.h"
 #include "content/browser/screenlock_monitor/screenlock_monitor.h"
 #include "content/browser/screenlock_monitor/screenlock_monitor_device_source.h"
@@ -1208,6 +1209,11 @@ void BrowserMainLoop::InitializeMainThread() {
   DCHECK(base::ThreadTaskRunnerHandle::IsSet());
   main_thread_.reset(new BrowserThreadImpl(
       BrowserThread::UI, base::ThreadTaskRunnerHandle::Get()));
+  // TODO(https://crbug.com/863341): Replace with a better API
+  GetContentClient()->browser()->PostAfterStartupTask(
+      FROM_HERE, base::SequencedTaskRunnerHandle::Get(), base::BindOnce([]() {
+        content::BrowserTaskExecutor::NotifyBrowserStartupCompleted();
+      }));
 }
 
 int BrowserMainLoop::BrowserThreadsStarted() {

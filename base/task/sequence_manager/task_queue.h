@@ -208,6 +208,8 @@ class BASE_EXPORT TaskQueue : public RefCountedThreadSafe<TaskQueue> {
     // created on.
     void SetVoteToEnable(bool enabled);
 
+    bool IsVotingToEnable() const { return enabled_; }
+
    private:
     friend class TaskQueue;
     explicit QueueEnabledVoter(scoped_refptr<TaskQueue> task_queue);

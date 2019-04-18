@@ -7,12 +7,14 @@
 #include <utility>
 
 #include "base/feature_list.h"
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/process/process.h"
 #include "base/run_loop.h"
 #include "base/task/sequence_manager/sequence_manager.h"
 #include "base/task/sequence_manager/sequence_manager_impl.h"
+#include "base/task/sequence_manager/task_queue.h"
 #include "base/task/sequence_manager/time_domain.h"
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
@@ -77,6 +79,12 @@ void BrowserUIThreadScheduler::InitialiseTaskQueues() {
 
   // To avoid locks in BrowserUIThreadScheduler::GetTaskRunner, eagerly
   // create all the well known task queues.
+  CreateTaskQueuesAndRunners();
+
+  InitialiseBestEffortQueue();
+}
+
+void BrowserUIThreadScheduler::CreateTaskQueuesAndRunners() {
   for (int i = 0;
        i < static_cast<int>(BrowserUIThreadTaskQueue::QueueType::kCount); i++) {
     BrowserUIThreadTaskQueue::QueueType queue_type =
@@ -92,6 +100,14 @@ void BrowserUIThreadScheduler::InitialiseTaskQueues() {
   }
 }
 
+void BrowserUIThreadScheduler::InitialiseBestEffortQueue() {
+  auto queue = task_queues_[BrowserUIThreadTaskQueue::QueueType::kBestEffort];
+  queue->SetQueuePriority(
+      base::sequence_manager::TaskQueue::kBestEffortPriority);
+  best_effort_voter_ = queue->CreateQueueEnabledVoter();
+  best_effort_voter_->SetVoteToEnable(false);
+}
+
 scoped_refptr<base::SingleThreadTaskRunner>
 BrowserUIThreadScheduler::GetTaskRunnerForTesting(QueueType queue_type) {
   return GetTaskRunner(queue_type);
@@ -104,6 +120,11 @@ BrowserUIThreadScheduler::GetTaskRunner(QueueType queue_type) {
     return it->second;
   NOTREACHED();
   return scoped_refptr<base::SingleThreadTaskRunner>();
+}
+
+void BrowserUIThreadScheduler::EnableBestEffortQueues() {
+  DCHECK(!best_effort_voter_->IsVotingToEnable());
+  best_effort_voter_->SetVoteToEnable(true);
 }
 
 void BrowserUIThreadScheduler::RunAllPendingTasksForTesting() {
