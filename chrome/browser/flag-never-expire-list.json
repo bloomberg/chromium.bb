@@ -61,5 +61,6 @@
   "ui-slow-animations",
   "update-menu-item-custom-summary",
   "use-angle",
-  "use-sync-sandbox"
+  "use-sync-sandbox",
+  "wallet-service-use-sandbox"
 ]
