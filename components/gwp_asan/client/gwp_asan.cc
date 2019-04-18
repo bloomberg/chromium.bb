@@ -24,11 +24,11 @@ namespace gwp_asan {
 namespace internal {
 namespace {
 
-constexpr int kDefaultMaxAllocations = 7;
-constexpr int kDefaultMaxMetadata = 30;
+constexpr int kDefaultMaxAllocations = 35;
+constexpr int kDefaultMaxMetadata = 150;
 
 #if defined(ARCH_CPU_64_BITS)
-constexpr int kDefaultTotalPages = 512;
+constexpr int kDefaultTotalPages = 2048;
 #else
 // Use much less virtual memory on 32-bit builds (where OOMing due to lack of
 // address space is a concern.)
@@ -39,8 +39,7 @@ constexpr int kDefaultAllocationSamplingFrequency = 1000;
 constexpr double kDefaultProcessSamplingProbability = 0.2;
 constexpr int kDefaultProcessSamplingBoost = 4;
 
-const base::Feature kGwpAsan{"GwpAsanMalloc",
-                             base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kGwpAsan{"GwpAsanMalloc", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::FeatureParam<int> kMaxAllocationsParam{&kGwpAsan, "MaxAllocations",
                                                    kDefaultMaxAllocations};
