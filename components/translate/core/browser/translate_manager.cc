@@ -206,7 +206,7 @@ bool TranslateManager::CanManuallyTranslate() {
   return true;
 }
 
-void TranslateManager::InitiateManualTranslation() {
+void TranslateManager::InitiateManualTranslation(bool auto_translate) {
   std::unique_ptr<TranslatePrefs> translate_prefs(
       translate_client_->GetTranslatePrefs());
   const std::string source_code = TranslateDownloadManager::GetLanguageCode(
@@ -215,6 +215,14 @@ void TranslateManager::InitiateManualTranslation() {
       source_code, language_state_, translate_prefs.get(), language_model_);
 
   language_state_.SetTranslateEnabled(true);
+
+  // Translate the page if it has not been translated and manual translate
+  // should trigger translation automatically. Otherwise, only show the infobar.
+  if (!language_state_.IsPageTranslated() && auto_translate) {
+    TranslatePage(source_code, target_lang, false);
+    return;
+  }
+
   const translate::TranslateStep step =
       language_state_.IsPageTranslated()
           ? translate::TRANSLATE_STEP_AFTER_TRANSLATE
