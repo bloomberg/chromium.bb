@@ -105,6 +105,11 @@ class Cronet_UrlRequestImpl : public Cronet_UrlRequest {
   std::unordered_multiset<Cronet_UrlRequestStatusListenerPtr> status_listeners_
       GUARDED_BY(lock_);
 
+  // Metrics to include in RequestFinishedInfo report sent to attached
+  // RequestFinishedListener(s). A nullptr value indicates that the metrics
+  // haven't been collected.
+  std::unique_ptr<Cronet_Metrics> metrics_ GUARDED_BY(lock_);
+
   // Optional; allows a listener to receive request info and stats.
   //
   // A nullptr value indicates that there is no RequestFinishedInfo listener

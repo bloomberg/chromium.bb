@@ -15,6 +15,7 @@
 #include "components/cronet/native/generated/cronet.idl_impl_struct.h"
 #include "components/cronet/native/include/cronet_c.h"
 #include "components/cronet/native/io_buffer_with_cronet_buffer.h"
+#include "components/cronet/native/native_metrics_util.h"
 #include "components/cronet/native/runnables.h"
 #include "components/cronet/native/upload_data_sink.h"
 #include "net/base/io_buffer.h"
@@ -266,7 +267,8 @@ class Cronet_UrlRequestImpl::NetworkTasks : public CronetURLRequest::Callback {
                           const base::TimeTicks& request_end,
                           bool socket_reused,
                           int64_t sent_bytes_count,
-                          int64_t received_bytes_count) override;
+                          int64_t received_bytes_count)
+      LOCKS_EXCLUDED(url_request_->lock_) override;
 
   // The UrlRequest which owns context that owns the callback.
   Cronet_UrlRequestImpl* const url_request_ = nullptr;
@@ -752,6 +754,38 @@ void Cronet_UrlRequestImpl::NetworkTasks::OnMetricsCollected(
     int64_t sent_bytes_count,
     int64_t received_bytes_count) {
   DCHECK_CALLED_ON_VALID_THREAD(network_thread_checker_);
+  base::AutoLock lock(url_request_->lock_);
+  DCHECK_EQ(url_request_->metrics_, nullptr)
+      << "Metrics collection should only happen once.";
+  auto metrics = std::make_unique<Cronet_Metrics>();
+  using native_metrics_util::ConvertTime;
+  ConvertTime(request_start, request_start, request_start_time,
+              &metrics->request_start);
+  ConvertTime(dns_start, request_start, request_start_time,
+              &metrics->dns_start);
+  ConvertTime(dns_end, request_start, request_start_time, &metrics->dns_end);
+  ConvertTime(connect_start, request_start, request_start_time,
+              &metrics->connect_start);
+  ConvertTime(connect_end, request_start, request_start_time,
+              &metrics->connect_end);
+  ConvertTime(ssl_start, request_start, request_start_time,
+              &metrics->ssl_start);
+  ConvertTime(ssl_end, request_start, request_start_time, &metrics->ssl_end);
+  ConvertTime(send_start, request_start, request_start_time,
+              &metrics->sending_start);
+  ConvertTime(send_end, request_start, request_start_time,
+              &metrics->sending_end);
+  ConvertTime(push_start, request_start, request_start_time,
+              &metrics->push_start);
+  ConvertTime(push_end, request_start, request_start_time, &metrics->push_end);
+  ConvertTime(receive_headers_end, request_start, request_start_time,
+              &metrics->response_start);
+  ConvertTime(request_end, request_start, request_start_time,
+              &metrics->request_end);
+  metrics->socket_reused = socket_reused;
+  metrics->sent_byte_count = sent_bytes_count;
+  metrics->received_byte_count = received_bytes_count;
+  url_request_->metrics_ = std::move(metrics);
 }
 
 void Cronet_UrlRequestImpl::NetworkTasks::OnStatus(
