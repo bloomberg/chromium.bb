@@ -16,10 +16,14 @@
 #include "net/dns/mock_host_resolver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/scheduler/web_scheduler_tracked_feature.h"
 
 namespace content {
 
 namespace {
+
+constexpr int kPageShowFeature = static_cast<int>(
+    blink::scheduler::WebSchedulerTrackedFeature::kPageShowEventListener);
 
 ukm::SourceId ToSourceId(int64_t navigation_id) {
   return ukm::ConvertToSourceId(navigation_id,
@@ -325,8 +329,6 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheMetricsBrowserTest, Features_MainFrame) {
     navigation_observer.WaitForNavigationFinished();
   }
 
-  constexpr int kPageShowFeature = 6;
-
   ASSERT_EQ(navigation_ids_.size(), static_cast<size_t>(3));
   // ukm::SourceId id1 = ToSourceId(navigation_ids_[0]);
   // ukm::SourceId id2 = ToSourceId(navigation_ids_[1]);
@@ -355,8 +357,6 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheMetricsBrowserTest,
     navigation_observer.WaitForNavigationFinished();
   }
 
-  constexpr int kPageShowFeature = 6;
-
   ASSERT_EQ(navigation_ids_.size(), static_cast<size_t>(3));
   // ukm::SourceId id1 = ToSourceId(navigation_ids_[0]);
   // ukm::SourceId id2 = ToSourceId(navigation_ids_[1]);
@@ -383,8 +383,6 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheMetricsBrowserTest,
     shell()->GoBackOrForward(-1);
     navigation_observer.WaitForNavigationFinished();
   }
-
-  constexpr int kPageShowFeature = 6;
 
   ASSERT_EQ(navigation_ids_.size(), static_cast<size_t>(5));
   // ukm::SourceId id1 = ToSourceId(navigation_ids_[0]);
@@ -415,8 +413,6 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheMetricsBrowserTest,
     navigation_observer.WaitForNavigationFinished();
   }
 
-  constexpr int kPageShowFeature = 6;
-
   ASSERT_EQ(navigation_ids_.size(), static_cast<size_t>(5));
   // ukm::SourceId id1 = ToSourceId(navigation_ids_[0]);
   // ukm::SourceId id2 = ToSourceId(navigation_ids_[1]);
@@ -445,8 +441,6 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheMetricsBrowserTest,
     shell()->GoBackOrForward(-1);
     navigation_observer.WaitForNavigationFinished();
   }
-
-  constexpr int kPageShowFeature = 6;
 
   ASSERT_EQ(navigation_ids_.size(), static_cast<size_t>(5));
   // ukm::SourceId id1 = ToSourceId(navigation_ids_[0]);
