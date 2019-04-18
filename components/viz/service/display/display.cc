@@ -890,15 +890,12 @@ void Display::RunDrawCallbacks() {
 }
 
 void Display::SetPreferredFrameInterval(base::TimeDelta interval) {
-  // TODO(khushalsagar): Plumb this to the |client_| and hook it up to the
-  // platform API for toggling the preferred setting.
+  client_->SetPreferredFrameInterval(interval);
 }
 
 base::TimeDelta Display::GetPreferredFrameIntervalForFrameSinkId(
     const FrameSinkId& id) {
-  // TODO(khushalsagar): Hook up with the preferred setting received from the
-  // media code.
-  return base::TimeDelta::Max();
+  return client_->GetPreferredFrameIntervalForFrameSinkId(id);
 }
 
 void Display::SetSupportedFrameIntervals(

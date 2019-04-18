@@ -33,7 +33,6 @@ FrameRateDecider::~FrameRateDecider() {
 
 void FrameRateDecider::SetSupportedFrameIntervals(
     std::vector<base::TimeDelta> supported_intervals) {
-  DCHECK_GT(supported_intervals.size(), 0u);
   DCHECK(!inside_surface_aggregation_);
 
   supported_intervals_ = std::move(supported_intervals);

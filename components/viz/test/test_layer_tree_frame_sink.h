@@ -115,6 +115,9 @@ class TestLayerTreeFrameSink : public cc::LayerTreeFrameSink,
   void DisplayDidReceiveCALayerParams(
       const gfx::CALayerParams& ca_layer_params) override;
   void DisplayDidCompleteSwapWithSize(const gfx::Size& pixel_size) override;
+  void SetPreferredFrameInterval(base::TimeDelta interval) override {}
+  base::TimeDelta GetPreferredFrameIntervalForFrameSinkId(
+      const FrameSinkId& id) override;
 
   const std::set<SharedBitmapId>& owned_bitmaps() const {
     return owned_bitmaps_;

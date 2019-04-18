@@ -168,6 +168,19 @@ void RootCompositorFrameSinkImpl::UpdateRefreshRate(float refresh_rate) {
   if (external_begin_frame_source_)
     external_begin_frame_source_->UpdateRefreshRate(refresh_rate);
 }
+
+void RootCompositorFrameSinkImpl::SetSupportedRefreshRates(
+    const std::vector<float>& supported_refresh_rates) {
+  std::vector<base::TimeDelta> supported_frame_intervals(
+      supported_refresh_rates.size());
+  for (size_t i = 0; i < supported_refresh_rates.size(); ++i) {
+    supported_frame_intervals[i] =
+        base::TimeDelta::FromSecondsD(1 / supported_refresh_rates[i]);
+  }
+
+  display_->SetSupportedFrameIntervals(supported_frame_intervals);
+}
+
 #endif  // defined(OS_ANDROID)
 
 void RootCompositorFrameSinkImpl::SetNeedsBeginFrame(bool needs_begin_frame) {
@@ -303,6 +316,24 @@ void RootCompositorFrameSinkImpl::DisplayDidCompleteSwapWithSize(
   NOTREACHED();
   ALLOW_UNUSED_LOCAL(display_client_);
 #endif
+}
+
+void RootCompositorFrameSinkImpl::SetPreferredFrameInterval(
+    base::TimeDelta interval) {
+#if defined(OS_ANDROID)
+  float refresh_rate = 1 / interval.InSecondsF();
+  if (display_client_)
+    display_client_->SetPreferredRefreshRate(refresh_rate);
+#else
+  NOTREACHED();
+#endif
+}
+
+base::TimeDelta
+RootCompositorFrameSinkImpl::GetPreferredFrameIntervalForFrameSinkId(
+    const FrameSinkId& id) {
+  return support_->frame_sink_manager()
+      ->GetPreferredFrameIntervalForFrameSinkId(id);
 }
 
 void RootCompositorFrameSinkImpl::DisplayDidDrawAndSwap() {}

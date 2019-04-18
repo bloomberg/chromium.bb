@@ -146,34 +146,6 @@ class SingleThreadTaskGraphRunner : public cc::SingleThreadTaskGraphRunner {
   ~SingleThreadTaskGraphRunner() override { Shutdown(); }
 };
 
-// An implementation of HostDisplayClient which handles swap callbacks.
-class AndroidHostDisplayClient : public viz::HostDisplayClient {
- public:
-  explicit AndroidHostDisplayClient(
-      base::RepeatingCallback<void(const gfx::Size&)> on_swap,
-      base::RepeatingCallback<void(gpu::ContextResult)>
-          on_context_creation_failure)
-      : HostDisplayClient(gfx::kNullAcceleratedWidget),
-        on_swap_(std::move(on_swap)),
-        on_context_creation_failure_(std::move(on_context_creation_failure)) {}
-
-  // viz::mojom::DisplayClient implementation:
-  void DidCompleteSwapWithSize(const gfx::Size& pixel_size) override {
-    if (on_swap_)
-      on_swap_.Run(pixel_size);
-  }
-  void OnFatalOrSurfaceContextCreationFailure(
-      gpu::ContextResult context_result) override {
-    if (on_context_creation_failure_)
-      on_context_creation_failure_.Run(context_result);
-  }
-
- private:
-  base::RepeatingCallback<void(const gfx::Size&)> on_swap_;
-  base::RepeatingCallback<void(gpu::ContextResult)>
-      on_context_creation_failure_;
-};
-
 class CompositorDependencies {
  public:
   static CompositorDependencies& Get() {
@@ -541,6 +513,30 @@ class AndroidOutputSurface : public viz::OutputSurface {
 static bool g_initialized = false;
 
 }  // anonymous namespace
+
+// An implementation of HostDisplayClient which handles swap callbacks.
+class CompositorImpl::AndroidHostDisplayClient : public viz::HostDisplayClient {
+ public:
+  explicit AndroidHostDisplayClient(CompositorImpl* compositor)
+      : HostDisplayClient(gfx::kNullAcceleratedWidget),
+        compositor_(compositor) {}
+
+  // viz::mojom::DisplayClient implementation:
+  void DidCompleteSwapWithSize(const gfx::Size& pixel_size) override {
+    compositor_->DidSwapBuffers(pixel_size);
+  }
+  void OnFatalOrSurfaceContextCreationFailure(
+      gpu::ContextResult context_result) override {
+    compositor_->OnFatalOrSurfaceContextCreationFailure(context_result);
+  }
+  void SetPreferredRefreshRate(float refresh_rate) override {
+    if (compositor_->root_window_)
+      compositor_->root_window_->SetPreferredRefreshRate(refresh_rate);
+  }
+
+ private:
+  CompositorImpl* compositor_;
+};
 
 // static
 Compositor* Compositor::Create(CompositorClient* client,
@@ -1185,6 +1181,12 @@ void CompositorImpl::OnUpdateRefreshRate(float refresh_rate) {
     display_private_->UpdateRefreshRate(refresh_rate);
 }
 
+void CompositorImpl::OnUpdateSupportedRefreshRates(
+    const std::vector<float>& supported_refresh_rates) {
+  if (display_private_)
+    display_private_->SetSupportedRefreshRates(supported_refresh_rates);
+}
+
 void CompositorImpl::InitializeVizLayerTreeFrameSink(
     scoped_refptr<ws::ContextProviderCommandBuffer> context_provider) {
   DCHECK(enable_viz_);
@@ -1206,12 +1208,7 @@ void CompositorImpl::InitializeVizLayerTreeFrameSink(
   viz::mojom::CompositorFrameSinkClientRequest client_request =
       mojo::MakeRequest(&root_params->compositor_frame_sink_client);
   root_params->display_private = mojo::MakeRequest(&display_private_);
-  display_client_ = std::make_unique<AndroidHostDisplayClient>(
-      base::BindRepeating(&CompositorImpl::DidSwapBuffers,
-                          weak_factory_.GetWeakPtr()),
-      base::BindRepeating(
-          &CompositorImpl::OnFatalOrSurfaceContextCreationFailure,
-          weak_factory_.GetWeakPtr()));
+  display_client_ = std::make_unique<AndroidHostDisplayClient>(this);
   root_params->display_client =
       display_client_->GetBoundPtr(task_runner).PassInterface();
 
@@ -1260,6 +1257,8 @@ void CompositorImpl::InitializeVizLayerTreeFrameSink(
   display_private_->SetDisplayColorSpace(display_color_space_,
                                          display_color_space_);
   display_private_->SetVSyncPaused(vsync_paused_);
+  display_private_->SetSupportedRefreshRates(
+      root_window_->GetSupportedRefreshRates());
 }
 
 viz::LocalSurfaceIdAllocation CompositorImpl::GenerateLocalSurfaceId() {

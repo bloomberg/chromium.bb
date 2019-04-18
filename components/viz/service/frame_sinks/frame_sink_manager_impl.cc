@@ -583,4 +583,13 @@ const CompositorFrameSinkSupport* FrameSinkManagerImpl::GetFrameSinkForId(
   return nullptr;
 }
 
+base::TimeDelta FrameSinkManagerImpl::GetPreferredFrameIntervalForFrameSinkId(
+    const FrameSinkId& id) const {
+  auto it = frame_sink_data_.find(id);
+  if (it == frame_sink_data_.end())
+    return BeginFrameArgs::MinInterval();
+
+  return it->second.preferred_frame_interval;
+}
+
 }  // namespace viz

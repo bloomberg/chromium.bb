@@ -63,6 +63,9 @@ class MockWindowAndroidCompositor : public WindowAndroidCompositor {
   MOCK_METHOD1(SetVSyncPaused, void(bool));
   MOCK_METHOD1(OnUpdateRefreshRate, void(float));
 
+  void OnUpdateSupportedRefreshRates(
+      const std::vector<float>& supported_refresh_rates) override {}
+
   // Helpers for move-only types:
   void RequestCopyOfOutputOnRootLayer(
       std::unique_ptr<viz::CopyOutputRequest> request) override {

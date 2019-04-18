@@ -97,6 +97,8 @@ class CONTENT_EXPORT CompositorImpl
   }
 
  private:
+  class AndroidHostDisplayClient;
+
   // Compositor implementation.
   void SetRootWindow(gfx::NativeWindow root_window) override;
   void SetRootLayer(scoped_refptr<cc::Layer> root) override;
@@ -160,6 +162,8 @@ class CONTENT_EXPORT CompositorImpl
   bool IsDrawingFirstVisibleFrame() const override;
   void SetVSyncPaused(bool paused) override;
   void OnUpdateRefreshRate(float refresh_rate) override;
+  void OnUpdateSupportedRefreshRates(
+      const std::vector<float>& supported_refresh_rates) override;
 
   // viz::HostFrameSinkClient implementation.
   void OnFirstSurfaceActivation(const viz::SurfaceInfo& surface_info) override;

@@ -55,6 +55,10 @@ interface DisplayPrivate {
   // Updates the refresh rate of the associated Display.
   [EnableIf=is_android]
   UpdateRefreshRate(float refresh_rate);
+
+  // Updates the list of refresh rates supported by the associated Display.
+  [EnableIf=is_android]
+  SetSupportedRefreshRates(array<float> refresh_rates);
 };
 
 interface DisplayClient {
@@ -75,4 +79,7 @@ interface DisplayClient {
   // SW in these cases, so we need to handle this specifically.
   [EnableIf=is_android]
   OnFatalOrSurfaceContextCreationFailure(gpu.mojom.ContextResult result);
+
+  [EnableIf=is_android]
+  SetPreferredRefreshRate(float refresh_rate);
 };
