@@ -2174,10 +2174,6 @@
     "label": "//printing:printing_unittests",
     "type": "console_test_launcher",
   },
-  "profiling_fuzzer": {
-    "label": "//components/services/heap_profiling:profiling_fuzzer",
-    "type": "fuzzer",
-  },
   "prtime_fuzzer": {
     "label": "//testing/libfuzzer/fuzzers:prtime_fuzzer",
     "type": "fuzzer",

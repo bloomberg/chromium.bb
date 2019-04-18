@@ -9936,14 +9936,6 @@
       },
       {
         "isolate_coverage_data": true,
-        "isolate_name": "profiling_fuzzer",
-        "name": "profiling_fuzzer",
-        "swarming": {
-          "can_use_on_swarming_builders": false
-        }
-      },
-      {
-        "isolate_coverage_data": true,
         "isolate_name": "prtime_fuzzer",
         "name": "prtime_fuzzer",
         "swarming": {
