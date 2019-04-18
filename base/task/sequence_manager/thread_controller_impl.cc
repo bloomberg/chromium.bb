@@ -182,6 +182,12 @@ void ThreadControllerImpl::DoWork(WorkType work_type) {
       // Trace events should finish before we call DidRunTask to ensure that
       // SequenceManager trace events do not interfere with them.
       TRACE_TASK_EXECUTION("ThreadControllerImpl::RunTask", *task);
+
+      // Trace-parsing tools (DevTools, Lighthouse, etc) consume this event
+      // to determine long tasks.
+      // See https://crbug.com/681863 and https://crbug.com/874982
+      TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "RunTask");
+
       task_annotator_.RunTask("SequenceManager RunTask", &*task);
     }
 
