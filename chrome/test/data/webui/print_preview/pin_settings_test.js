@@ -101,6 +101,44 @@ cr.define('pin_settings_test', function() {
       assertEquals(false, input.disabled);
     });
 
+    // Tests that entering empty pin value updates the validity of the
+    // setting.
+    test('enter empty pin value', async () => {
+      const checkbox = pinSection.$$('cr-checkbox');
+      checkbox.checked = true;
+      checkbox.dispatchEvent(new CustomEvent('change'));
+      const input = pinSection.$$('cr-input');
+
+      // Verify that initial pin value is empty and the setting is invalid.
+      assertTrue(pinSection.getSettingValue('pin'));
+      assertEquals('', pinSection.getSettingValue('pinValue'));
+      assertEquals(false, pinSection.getSetting('pinValue').valid);
+
+      // Verify that entering the pin value in the input sets the setting.
+      await print_preview_test_utils.triggerInputEvent(
+          input, '0000', pinSection);
+      assertTrue(pinSection.getSettingValue('pin'));
+      assertEquals('0000', pinSection.getSettingValue('pinValue'));
+      assertEquals(true, pinSection.getSetting('pinValue').valid);
+
+      // Verify that entering empty pin value in the input updates the
+      // setting validity and its value.
+      await print_preview_test_utils.triggerInputEvent(input, '', pinSection);
+      assertTrue(pinSection.getSettingValue('pin'));
+      assertEquals('', pinSection.getSettingValue('pinValue'));
+      assertEquals(false, pinSection.getSetting('pinValue').valid);
+
+      // Check that checkbox and input are still enabled so user can correct
+      // invalid input.
+      assertEquals(false, checkbox.disabled);
+      assertEquals(false, input.disabled);
+
+      // Check that after unchecking the checkbox the pin value is valid again.
+      checkbox.checked = false;
+      checkbox.dispatchEvent(new CustomEvent('change'));
+      assertEquals(true, pinSection.getSetting('pinValue').valid);
+    });
+
     // Tests that if settings are enforced by enterprise policy the
     // appropriate UI is disabled.
     test('disabled by policy', function() {
