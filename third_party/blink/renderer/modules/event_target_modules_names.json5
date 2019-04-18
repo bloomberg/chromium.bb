@@ -17,6 +17,7 @@
     "MediaKeySession",
     "FileWriter",
     "HID",
+    "HIDDevice",
     "IdleDetector",
     "ImageCapture",
     "IDBDatabase",
