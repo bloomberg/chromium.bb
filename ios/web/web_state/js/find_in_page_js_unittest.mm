@@ -435,4 +435,61 @@ TEST_F(FindInPageJsTest, CheckFindInPageScrollsToMatch) {
   EXPECT_NEAR(top_scroll_after_select, 1035.0, 0.5);
 }
 
+// Tests that FindInPage is able to clear CSS and match highlighting.
+TEST_F(FindInPageJsTest, StopFindInPage) {
+  ASSERT_TRUE(LoadHtml("<span>foo foo</span>"));
+  base::TimeDelta kCallJavascriptFunctionTimeout =
+      base::TimeDelta::FromSeconds(kWaitForJSCompletionTimeout);
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
+    return frames_manager()->GetAllWebFrames().size() == 1;
+  }));
+
+  // Do a search to ensure match highlighting is cleared properly.
+  __block bool message_received = false;
+  std::vector<base::Value> params;
+  params.push_back(base::Value("foo"));
+  params.push_back(base::Value(kPumpSearchTimeout));
+  main_web_frame()->CallJavaScriptFunction(
+      kFindInPageSearch, params, base::BindOnce(^(const base::Value* result) {
+        message_received = true;
+      }),
+      kCallJavascriptFunctionTimeout);
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
+    base::RunLoop().RunUntilIdle();
+    return message_received;
+  }));
+
+  message_received = false;
+  std::vector<base::Value> highlight_params;
+  highlight_params.push_back(base::Value(0));
+  main_web_frame()->CallJavaScriptFunction(
+      kFindInPageSelectAndScrollToMatch, highlight_params,
+      base::BindOnce(^(const base::Value* result) {
+        message_received = true;
+      }),
+      kCallJavascriptFunctionTimeout);
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
+    base::RunLoop().RunUntilIdle();
+    return message_received;
+  }));
+
+  message_received = false;
+  main_web_frame()->CallJavaScriptFunction(
+      kFindInPageStop, std::vector<base::Value>(),
+      base::BindOnce(^(const base::Value* result) {
+        message_received = true;
+      }),
+      kCallJavascriptFunctionTimeout);
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
+    base::RunLoop().RunUntilIdle();
+    return message_received;
+  }));
+
+  id inner_html = ExecuteJavaScript(@"document.body.innerHTML");
+  ASSERT_TRUE([inner_html isKindOfClass:[NSString class]]);
+  EXPECT_FALSE([inner_html containsString:@"find_selected"]);
+  EXPECT_FALSE([inner_html containsString:@"find_in_page"]);
+  EXPECT_FALSE([inner_html containsString:@"chrome_find"]);
+}
+
 }  // namespace web

@@ -277,7 +277,20 @@ void FindInPageManagerImpl::StartSearch(NSString* query) {
   }
 }
 
-void FindInPageManagerImpl::StopFinding() {}
+void FindInPageManagerImpl::StopFinding() {
+  last_find_request_.Reset(/*new_query=*/nil,
+                           /*new_pending_frame_call_count=*/0);
+
+  std::vector<base::Value> params;
+  for (WebFrame* frame : GetAllWebFrames(web_state_)) {
+    frame->CallJavaScriptFunction(kFindInPageStop, params);
+  }
+  if (delegate_) {
+    delegate_->DidHighlightMatches(web_state_,
+                                   last_find_request_.GetTotalMatchCount(),
+                                   last_find_request_.query);
+  }
+}
 
 bool FindInPageManagerImpl::CanSearchContent() {
   return web_state_->ContentIsHTML();
@@ -287,7 +300,7 @@ void FindInPageManagerImpl::ProcessFindInPageResult(const std::string& frame_id,
                                                     const int unique_id,
                                                     const base::Value* result) {
   if (unique_id != last_find_request_.unique_id) {
-    // New find was started.
+    // New find was started or current find was stopped.
     return;
   }
   if (!web_state_) {

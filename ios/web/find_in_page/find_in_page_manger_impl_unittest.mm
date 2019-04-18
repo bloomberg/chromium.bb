@@ -603,4 +603,25 @@ TEST_F(FindInPageManagerImplTest, FindInPageCanSearchContent) {
   EXPECT_TRUE(GetFindInPageManager()->CanSearchContent());
 }
 
+// Tests that Find in Page resets the match count to 0 and the query to nil
+// after calling StopFinding().
+TEST_F(FindInPageManagerImplTest, FindInPageCanStopFind) {
+  auto frame_with_one_match = CreateMainWebFrameWithJsResultForFind(
+      std::make_unique<base::Value>(1.0), kOneMatchFrameId);
+  test_web_state_->AddWebFrame(std::move(frame_with_one_match));
+
+  GetFindInPageManager()->Find(@"foo", FindInPageOptions::FindInPageSearch);
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^bool {
+    base::RunLoop().RunUntilIdle();
+    return fake_delegate_.state() && fake_delegate_.state()->match_count == 1;
+  }));
+
+  GetFindInPageManager()->StopFinding();
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^bool {
+    base::RunLoop().RunUntilIdle();
+    return fake_delegate_.state() && fake_delegate_.state()->match_count == 0;
+  }));
+  EXPECT_FALSE(fake_delegate_.state()->query);
+}
+
 }  // namespace web

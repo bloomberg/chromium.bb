@@ -23,9 +23,11 @@ class FindInPageManagerDelegate {
   // matches were highlighted after calling FindInPageManager::Find() with
   // FindInPageSearch. Even if no matches are found, call will be made once a
   // find has completed, assuming it has not been interrupted by another find.
-  // Will also be called if the total match count in the current page changes.
+  // Will also be called if the total match count in the current page changes or
+  // if FindInPageManager::StopFinding() is called.
   // Client should check |query| to ensure that it is processing |match_count|
-  // for the correct find.
+  // for the correct find. |query| will be nil if responding to
+  // FindInPageManager::StopFinding().
   virtual void DidHighlightMatches(WebState* web_state,
                                    int match_count,
                                    NSString* query) = 0;
