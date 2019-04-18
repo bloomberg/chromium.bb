@@ -932,6 +932,9 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("myFilesFolderRename"),
         TestCase("myFilesFolderRename").EnableMyFilesVolume(),
         TestCase("myFilesUpdatesChildren"),
+        TestCase("myFilesUpdatesWhenAndroidVolumeMounts")
+            .EnableMyFilesVolume()
+            .DontMountVolumes(),
         TestCase("myFilesUpdatesChildren").EnableMyFilesVolume(),
         TestCase("myFilesAutoExpandOnce").EnableMyFilesVolume()));
 

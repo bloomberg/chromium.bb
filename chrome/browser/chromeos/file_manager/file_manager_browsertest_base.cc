@@ -1892,6 +1892,18 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     return;
   }
 
+  if (name == "mountPlayFiles") {
+    DCHECK(android_files_volume_);
+    android_files_volume_->Mount(profile());
+    return;
+  }
+
+  if (name == "unmountPlayFiles") {
+    DCHECK(android_files_volume_);
+    android_files_volume_->Unmount(profile());
+    return;
+  }
+
   if (name == "setDriveEnabled") {
     bool enabled;
     ASSERT_TRUE(value.GetBoolean("enabled", &enabled));

@@ -1195,17 +1195,14 @@ DirectoryModel.prototype.onVolumeInfoListUpdated_ = function(event) {
     });
   }
 
-  // If a volume within My files is mounted, rescan the contents.
-  // TODO(crbug.com/901690): Remove this special case.
-  if (this.getCurrentRootType() === VolumeManagerCommon.RootType.MY_FILES) {
-    for (let newVolume of event.added) {
-      if (newVolume.volumeType === VolumeManagerCommon.VolumeType.DOWNLOADS ||
-          newVolume.volumeType ===
-              VolumeManagerCommon.VolumeType.ANDROID_FILES ||
-          newVolume.volumeType === VolumeManagerCommon.VolumeType.CROSTINI) {
-        this.rescan(false);
-        break;
-      }
+  // If a volume within My files or removable root is mounted/unmounted rescan
+  // its contents.
+  const currentDir = this.getCurrentDirEntry();
+  const affectedVolumes = event.added.concat(event.removed);
+  for (let volume of affectedVolumes) {
+    if (util.isSameEntry(currentDir, volume.prefixEntry)) {
+      this.rescan(false);
+      break;
     }
   }
 
