@@ -83,6 +83,14 @@ class ServiceWorkerUtils {
   CONTENT_EXPORT static const char* FetchResponseSourceToSuffix(
       network::mojom::FetchResponseSource source);
 
+  CONTENT_EXPORT static void SendHttpResponseInfoToClient(
+      const net::HttpResponseInfo* http_info,
+      uint32_t options,
+      base::TimeTicks request_start_time,
+      base::TimeTicks response_start_time,
+      int response_data_size,
+      network::mojom::URLLoaderClientProxy* client_proxy);
+
  private:
   static bool IsPathRestrictionSatisfiedInternal(
       const GURL& scope,

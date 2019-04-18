@@ -12,9 +12,11 @@
 #include "base/command_line.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/post_task.h"
+#include "content/browser/service_worker/service_worker_cache_writer.h"
 #include "content/browser/service_worker/service_worker_database.h"
 #include "content/browser/service_worker/service_worker_disk_cache.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
+#include "content/browser/service_worker/service_worker_single_script_update_checker.h"
 #include "content/common/navigation_client.mojom.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -31,6 +33,7 @@ class HttpResponseInfo;
 
 namespace content {
 
+class EmbeddedWorkerTestHelper;
 class ServiceWorkerContextCore;
 class ServiceWorkerProviderHost;
 class ServiceWorkerStorage;
@@ -310,6 +313,63 @@ class MockServiceWorkerResponseWriter : public ServiceWorkerResponseWriter {
   OnceCompletionCallback pending_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(MockServiceWorkerResponseWriter);
+};
+
+class ServiceWorkerUpdateCheckTestUtils {
+ public:
+  ServiceWorkerUpdateCheckTestUtils();
+  ~ServiceWorkerUpdateCheckTestUtils();
+
+  // Creates a cache writer in the paused state (a difference was found between
+  // the old and new script data). |bytes_compared| is the length compared
+  // until the difference was found. |new_headers| is the new script's headers.
+  // |diff_data_block| is the first block of new script data that differs from
+  // the old data.
+  static std::unique_ptr<ServiceWorkerCacheWriter> CreatePausedCacheWriter(
+      EmbeddedWorkerTestHelper* worker_test_helper,
+      size_t bytes_compared,
+      const std::string& new_headers,
+      const std::string& diff_data_block,
+      int64_t old_resource_id,
+      int64_t new_resource_id);
+
+  static std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker::PausedState>
+  CreateUpdateCheckerPausedState(
+      std::unique_ptr<ServiceWorkerCacheWriter> cache_writer,
+      ServiceWorkerNewScriptLoader::NetworkLoaderState network_loader_state,
+      ServiceWorkerNewScriptLoader::WriterState body_writer_state,
+      mojo::ScopedDataPipeConsumerHandle network_consumer);
+
+  static void SetComparedScriptInfoForVersion(
+      const GURL& script_url,
+      int64_t resource_id,
+      ServiceWorkerSingleScriptUpdateChecker::Result compare_result,
+      std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker::PausedState>
+          paused_state,
+      ServiceWorkerVersion* version);
+
+  // This method calls above three methods to create a cache writer, paused
+  // state and compared script info. Then set it to the service worker version.
+  static void CreateAndSetComparedScriptInfoForVersion(
+      const GURL& script_url,
+      size_t bytes_compared,
+      const std::string& new_headers,
+      const std::string& diff_data_block,
+      int64_t old_resource_id,
+      int64_t new_resource_id,
+      EmbeddedWorkerTestHelper* worker_test_helper,
+      ServiceWorkerNewScriptLoader::NetworkLoaderState network_loader_state,
+      ServiceWorkerNewScriptLoader::WriterState body_writer_state,
+      mojo::ScopedDataPipeConsumerHandle network_consumer,
+      ServiceWorkerSingleScriptUpdateChecker::Result compare_result,
+      ServiceWorkerVersion* version);
+
+  // Returns false if the entry for |resource_id| doesn't exist in the storage.
+  // Returns true when response status is "OK" and response body is same as
+  // expected if body exists.
+  static bool VerifyStoredResponse(int64_t resource_id,
+                                   ServiceWorkerStorage* storage,
+                                   const std::string& expected_body);
 };
 
 }  // namespace content
