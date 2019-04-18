@@ -37,6 +37,7 @@ const char kDoNotTrackHeader[] = "DNT";
 const char kMachBootstrapName[] = "rohitfork";
 #endif
 
+const char kCorsExemptPurposeHeaderName[] = "Purpose";
 const char kCorsExemptRequestedWithHeaderName[] = "X-Requested-With";
 
 } // namespace content
