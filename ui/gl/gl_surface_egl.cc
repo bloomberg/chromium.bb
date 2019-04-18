@@ -161,6 +161,7 @@ bool g_egl_robust_resource_init_supported = false;
 bool g_egl_display_texture_share_group_supported = false;
 bool g_egl_create_context_client_arrays_supported = false;
 bool g_egl_android_native_fence_sync_supported = false;
+bool g_egl_ext_pixel_format_float_supported = false;
 
 constexpr const char kSwapEventTraceCategories[] = "gpu";
 
@@ -750,8 +751,8 @@ bool GLSurfaceEGL::InitializeOneOffCommon() {
 
     // Ensure context supports GL_OES_surfaceless_context.
     if (g_egl_surfaceless_context_supported) {
-      g_egl_surfaceless_context_supported = context->HasExtension(
-          "GL_OES_surfaceless_context");
+      g_egl_surfaceless_context_supported =
+          context->HasExtension("GL_OES_surfaceless_context");
       context->ReleaseCurrent(surface.get());
     }
   }
@@ -772,6 +773,9 @@ bool GLSurfaceEGL::InitializeOneOffCommon() {
     g_egl_android_native_fence_sync_supported = true;
   }
 #endif
+
+  g_egl_ext_pixel_format_float_supported =
+      HasEGLExtension("EGL_EXT_pixel_format_float");
 
   initialized_ = true;
   return true;
@@ -874,6 +878,10 @@ bool GLSurfaceEGL::IsCreateContextClientArraysSupported() {
 
 bool GLSurfaceEGL::IsAndroidNativeFenceSyncSupported() {
   return g_egl_android_native_fence_sync_supported;
+}
+
+bool GLSurfaceEGL::IsPixelFormatFloatSupported() {
+  return g_egl_ext_pixel_format_float_supported;
 }
 
 GLSurfaceEGL::~GLSurfaceEGL() {}
