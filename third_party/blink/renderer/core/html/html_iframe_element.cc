@@ -44,7 +44,7 @@ namespace blink {
 
 using namespace html_names;
 
-inline HTMLIFrameElement::HTMLIFrameElement(Document& document)
+HTMLIFrameElement::HTMLIFrameElement(Document& document)
     : HTMLFrameElementBase(kIFrameTag, document),
       collapsed_by_client_(false),
       sandbox_(MakeGarbageCollected<HTMLIFrameElementSandbox>(this)),

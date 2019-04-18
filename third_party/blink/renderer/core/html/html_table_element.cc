@@ -51,7 +51,7 @@ namespace blink {
 
 using namespace html_names;
 
-inline HTMLTableElement::HTMLTableElement(Document& document)
+HTMLTableElement::HTMLTableElement(Document& document)
     : HTMLElement(kTableTag, document),
       border_attr_(false),
       border_color_attr_(false),
