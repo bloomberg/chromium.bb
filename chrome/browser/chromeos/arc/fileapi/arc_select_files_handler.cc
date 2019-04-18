@@ -146,17 +146,10 @@ void BuildFileTypeInfo(const mojom::SelectFilesRequestPtr& request,
 
 ArcSelectFilesHandler::ArcSelectFilesHandler(content::BrowserContext* context)
     : profile_(Profile::FromBrowserContext(context)) {
-  select_file_dialog_ = ui::SelectFileDialog::Create(this, nullptr);
-  dialog_script_executor_ =
-      base::MakeRefCounted<SelectFileDialogScriptExecutor>(
-          select_file_dialog_.get());
+  dialog_holder_ = std::make_unique<SelectFileDialogHolder>(this);
 }
 
-ArcSelectFilesHandler::~ArcSelectFilesHandler() {
-  // select_file_dialog_ can be nullptr only in unit tests.
-  if (select_file_dialog_.get())
-    select_file_dialog_->ListenerDestroyed();
-}
+ArcSelectFilesHandler::~ArcSelectFilesHandler() = default;
 
 void ArcSelectFilesHandler::SelectFiles(
     const mojom::SelectFilesRequestPtr& request,
@@ -178,14 +171,7 @@ void ArcSelectFilesHandler::SelectFiles(
   BuildFileTypeInfo(request, &file_type_info);
   base::FilePath default_path = GetInitialFilePath(request);
 
-  select_file_dialog_->SelectFile(
-      dialog_type,
-      /*title=*/base::string16(),
-      /*default_path=*/default_path, &file_type_info,
-      /*file_type_index=*/0,
-      /*default_extension=*/base::FilePath::StringType(),
-      /*owning_window=*/nullptr,
-      /*params=*/nullptr);
+  dialog_holder_->SelectFile(dialog_type, default_path, &file_type_info);
 }
 
 void ArcSelectFilesHandler::FileSelected(const base::FilePath& path,
@@ -254,7 +240,7 @@ void ArcSelectFilesHandler::OnFileSelectorEvent(
           base::StringPrintf(kScriptClickFile, quotedClickTargetName.c_str());
       break;
   }
-  dialog_script_executor_->ExecuteJavaScript(script, {});
+  dialog_holder_->ExecuteJavaScript(script, {});
 
   std::move(callback).Run();
 }
@@ -263,33 +249,45 @@ void ArcSelectFilesHandler::GetFileSelectorElements(
     mojom::FileSystemHost::GetFileSelectorElementsCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  dialog_script_executor_->ExecuteJavaScript(
+  dialog_holder_->ExecuteJavaScript(
       kScriptGetElements,
       base::BindOnce(&OnGetElementsScriptResults, std::move(callback)));
 }
 
-void ArcSelectFilesHandler::SetSelectFileDialogForTesting(
-    ui::SelectFileDialog* dialog) {
-  select_file_dialog_ = dialog;
+void ArcSelectFilesHandler::SetDialogHolderForTesting(
+    std::unique_ptr<SelectFileDialogHolder> dialog_holder) {
+  dialog_holder_ = std::move(dialog_holder);
 }
 
-void ArcSelectFilesHandler::SetDialogScriptExecutorForTesting(
-    SelectFileDialogScriptExecutor* dialog_script_executor) {
-  dialog_script_executor_ = dialog_script_executor;
+SelectFileDialogHolder::SelectFileDialogHolder(
+    ui::SelectFileDialog::Listener* listener) {
+  select_file_dialog_ = static_cast<SelectFileDialogExtension*>(
+      ui::SelectFileDialog::Create(listener, nullptr).get());
 }
 
-SelectFileDialogScriptExecutor::SelectFileDialogScriptExecutor(
-    ui::SelectFileDialog* dialog)
-    : select_file_dialog_(dialog) {}
+SelectFileDialogHolder::~SelectFileDialogHolder() {
+  // select_file_dialog_ can be nullptr only in unit tests.
+  if (select_file_dialog_.get())
+    select_file_dialog_->ListenerDestroyed();
+}
 
-SelectFileDialogScriptExecutor::~SelectFileDialogScriptExecutor() {}
+void SelectFileDialogHolder::SelectFile(
+    ui::SelectFileDialog::Type type,
+    const base::FilePath& default_path,
+    const ui::SelectFileDialog::FileTypeInfo* file_types) {
+  select_file_dialog_->SelectFile(
+      type,
+      /*title=*/base::string16(), default_path, file_types,
+      /*file_type_index=*/0,
+      /*default_extension=*/base::FilePath::StringType(),
+      /*owning_window=*/nullptr,
+      /*params=*/nullptr);
+}
 
-void SelectFileDialogScriptExecutor::ExecuteJavaScript(
+void SelectFileDialogHolder::ExecuteJavaScript(
     const std::string& script,
     content::RenderFrameHost::JavaScriptResultCallback callback) {
-  content::RenderViewHost* view_host =
-      static_cast<SelectFileDialogExtension*>(select_file_dialog_)
-          ->GetRenderViewHost();
+  content::RenderViewHost* view_host = select_file_dialog_->GetRenderViewHost();
   content::RenderFrameHost* frame_host =
       view_host ? view_host->GetMainFrame() : nullptr;
 
