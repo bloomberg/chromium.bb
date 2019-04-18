@@ -164,18 +164,13 @@ void LayoutBlock::StyleWillChange(StyleDifference diff,
   SetIsAtomicInlineLevel(new_style.IsDisplayInlineType());
 
   if (old_style && Parent()) {
-    bool old_style_contains_fixed_position =
-        old_style->CanContainFixedPositionObjects(IsDocumentElement()) ||
-        old_style->ContainsPaint() || old_style->ContainsLayout();
+    bool old_style_contains_fixed_position = ComputeIsFixedContainer(old_style);
     bool old_style_contains_absolute_position =
-        old_style_contains_fixed_position ||
-        old_style->CanContainAbsolutePositionObjects();
+        ComputeIsAbsoluteContainer(old_style);
     bool new_style_contains_fixed_position =
-        new_style.CanContainFixedPositionObjects(IsDocumentElement()) ||
-        new_style.ContainsPaint() || new_style.ContainsLayout();
+        ComputeIsFixedContainer(&new_style);
     bool new_style_contains_absolute_position =
-        new_style_contains_fixed_position ||
-        new_style.CanContainAbsolutePositionObjects();
+        ComputeIsAbsoluteContainer(&new_style);
 
     if ((old_style_contains_fixed_position &&
          !new_style_contains_fixed_position) ||
