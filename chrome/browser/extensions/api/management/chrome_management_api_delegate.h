@@ -48,6 +48,8 @@ class ChromeManagementAPIDelegate : public extensions::ManagementAPIDelegate {
       const GURL& launch_url) const override;
   bool IsWebAppInstalled(content::BrowserContext* context,
                          const GURL& web_app_url) const override;
+  bool CanContextInstallWebApps(
+      content::BrowserContext* context) const override;
   void InstallReplacementWebApp(
       content::BrowserContext* context,
       const GURL& web_app_url,

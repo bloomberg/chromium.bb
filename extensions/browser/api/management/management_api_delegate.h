@@ -124,6 +124,9 @@ class ManagementAPIDelegate {
   // Returns true if there is already a web app installed for |web_app_url|.
   virtual bool IsWebAppInstalled(content::BrowserContext* context,
                                  const GURL& web_app_url) const = 0;
+  // Returns whether the current user type can install web apps.
+  virtual bool CanContextInstallWebApps(
+      content::BrowserContext* context) const = 0;
 
   // Installs a web app for |web_app_url|.
   virtual void InstallReplacementWebApp(

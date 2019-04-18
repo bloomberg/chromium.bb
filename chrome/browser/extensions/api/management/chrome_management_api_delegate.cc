@@ -32,6 +32,7 @@
 #include "chrome/browser/web_applications/components/install_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
+#include "chrome/browser/web_applications/components/web_app_utils.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
 #include "chrome/common/extensions/extension_metrics.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
@@ -368,6 +369,12 @@ bool ChromeManagementAPIDelegate::IsWebAppInstalled(
     content::BrowserContext* context,
     const GURL& web_app_url) const {
   return extensions::BookmarkOrHostedAppInstalled(context, web_app_url);
+}
+
+bool ChromeManagementAPIDelegate::CanContextInstallWebApps(
+    content::BrowserContext* context) const {
+  return web_app::AreWebAppsUserInstallable(
+      Profile::FromBrowserContext(context));
 }
 
 void ChromeManagementAPIDelegate::InstallReplacementWebApp(

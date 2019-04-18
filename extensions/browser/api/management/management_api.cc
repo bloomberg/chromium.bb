@@ -846,6 +846,11 @@ ManagementInstallReplacementWebAppFunction::Run() {
   auto* api_delegate = ManagementAPI::GetFactoryInstance()
                            ->Get(browser_context())
                            ->GetDelegate();
+  if (!api_delegate->CanContextInstallWebApps(browser_context())) {
+    return RespondNow(
+        Error(keys::kInstallReplacementWebAppInvalidContextError));
+  }
+
   if (api_delegate->IsWebAppInstalled(browser_context(), web_app_url)) {
     return RespondNow(
         Error(keys::kInstallReplacementWebAppAlreadyInstalledError));
