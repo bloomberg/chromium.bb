@@ -21,7 +21,6 @@ import("//build/config/pch.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 import("//build/config/ui.gni")
 import("//build/toolchain/goma.gni")
-
 declare_args() {
   # When set (the default) enables C++ iterator debugging in debug builds.
   # Iterator debugging is always off in release builds (technically, this flag
@@ -348,9 +347,6 @@ config("executable_config") {
 
   if (is_win) {
     configs += _windows_linker_configs
-
-    # Currently only turn on linker CFI for executables.
-    configs += [ "//build/config/win:cfi_linker" ]
   } else if (is_mac) {
     configs += [ "//build/config/mac:mac_dynamic_flags" ]
   } else if (is_ios) {
