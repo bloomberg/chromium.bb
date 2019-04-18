@@ -58,7 +58,7 @@ void QuicStreamHost::MarkReceivedDataConsumed(uint32_t amount) {
 void QuicStreamHost::WriteData(Vector<uint8_t> data, bool fin) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(p2p_stream_);
-  p2p_stream_->WriteData(data, fin);
+  p2p_stream_->WriteData(std::move(data), fin);
   if (fin) {
     DCHECK(writable_);
     writable_ = false;
