@@ -448,13 +448,6 @@ bool AccessibleNode::GetPropertyOrARIAAttribute(Element* element,
   if (!element)
     return false;
 
-  AccessibleNode* accessible_node = element->ExistingAccessibleNode();
-  if (accessible_node) {
-    bool result = accessible_node->GetProperty(property, is_null);
-    if (!is_null)
-      return result;
-  }
-
   // Fall back on the equivalent ARIA attribute.
   QualifiedName attribute = GetCorrespondingARIAAttribute(property);
   AtomicString attr_value = element->FastGetAttribute(attribute);
