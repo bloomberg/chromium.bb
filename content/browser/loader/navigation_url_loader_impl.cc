@@ -23,7 +23,6 @@
 #include "content/browser/appcache/appcache_navigation_handle_core.h"
 #include "content/browser/appcache/appcache_request_handler.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
-#include "content/browser/data_url_loader_factory.h"
 #include "content/browser/devtools/devtools_instrumentation.h"
 #include "content/browser/file_url_loader_factory.h"
 #include "content/browser/fileapi/file_system_url_loader_factory.h"
@@ -1578,9 +1577,6 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
 
   non_network_url_loader_factories_[url::kAboutScheme] =
       std::make_unique<AboutURLLoaderFactory>();
-
-  non_network_url_loader_factories_[url::kDataScheme] =
-      std::make_unique<DataURLLoaderFactory>();
 
   std::unique_ptr<network::mojom::URLLoaderFactory> file_url_loader_factory =
       std::make_unique<FileURLLoaderFactory>(

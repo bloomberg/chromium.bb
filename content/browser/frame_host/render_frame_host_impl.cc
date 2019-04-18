@@ -40,7 +40,6 @@
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/contacts/contacts_manager_impl.h"
-#include "content/browser/data_url_loader_factory.h"
 #include "content/browser/devtools/devtools_instrumentation.h"
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
 #include "content/browser/download/mhtml_generation_manager.h"
@@ -4714,9 +4713,6 @@ void RenderFrameHostImpl::CommitNavigation(
         content::CreateFileSystemURLLoaderFactory(
             this, /*is_navigation=*/false, partition->GetFileSystemContext(),
             storage_domain));
-
-    non_network_url_loader_factories_.emplace(
-        url::kDataScheme, std::make_unique<DataURLLoaderFactory>());
 
     GetContentClient()
         ->browser()

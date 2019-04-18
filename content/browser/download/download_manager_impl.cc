@@ -39,7 +39,6 @@
 #include "components/download/public/common/url_download_handler_factory.h"
 #include "content/browser/byte_stream.h"
 #include "content/browser/child_process_security_policy_impl.h"
-#include "content/browser/data_url_loader_factory.h"
 #include "content/browser/devtools/devtools_instrumentation.h"
 #include "content/browser/download/byte_stream_input_stream.h"
 #include "content/browser/download/download_resource_handler.h"
@@ -317,21 +316,6 @@ CreateDownloadURLLoaderFactoryGetter(StoragePartitionImpl* storage_partition,
   return base::MakeRefCounted<NetworkDownloadURLLoaderFactoryGetter>(
       storage_partition->url_loader_factory_getter(),
       std::move(proxy_factory_ptr_info), std::move(proxy_factory_request));
-}
-
-scoped_refptr<download::DownloadURLLoaderFactoryGetter>
-CreateDownloadURLLoaderFactoryGetterFromURLLoaderFactory(
-    std::unique_ptr<network::mojom::URLLoaderFactory> factory) {
-  network::mojom::URLLoaderFactoryPtr factory_ptr;
-  mojo::MakeStrongBinding(std::move(factory), mojo::MakeRequest(&factory_ptr));
-  network::mojom::URLLoaderFactoryPtrInfo factory_ptr_info =
-      factory_ptr.PassInterface();
-
-  auto wrapper_factory =
-      std::make_unique<network::WrapperSharedURLLoaderFactoryInfo>(
-          std::move(factory_ptr_info));
-  return base::MakeRefCounted<download::DownloadURLLoaderFactoryGetterImpl>(
-      std::move(wrapper_factory));
 }
 
 }  // namespace
@@ -1349,10 +1333,6 @@ void DownloadManagerImpl::BeginResourceDownloadOnChecksComplete(
         base::MakeRefCounted<FileSystemDownloadURLLoaderFactoryGetter>(
             params->url(), rfh, /*is_navigation=*/false,
             storage_partition->GetFileSystemContext(), storage_domain);
-  } else if (params->url().SchemeIs(url::kDataScheme)) {
-    url_loader_factory_getter =
-        CreateDownloadURLLoaderFactoryGetterFromURLLoaderFactory(
-            std::make_unique<DataURLLoaderFactory>(params->url()));
   } else if (rfh && !IsURLHandledByNetworkService(params->url())) {
     ContentBrowserClient::NonNetworkURLLoaderFactoryMap
         non_network_url_loader_factories;
@@ -1367,9 +1347,20 @@ void DownloadManagerImpl::BeginResourceDownloadOnChecksComplete(
       DLOG(ERROR) << "No URLLoaderFactory found to download " << params->url();
       return;
     } else {
+      std::unique_ptr<network::mojom::URLLoaderFactory> factory =
+          std::move(it->second);
+      network::mojom::URLLoaderFactoryPtr factory_ptr;
+      mojo::MakeStrongBinding(std::move(factory),
+                              mojo::MakeRequest(&factory_ptr));
+      network::mojom::URLLoaderFactoryPtrInfo factory_ptr_info =
+          factory_ptr.PassInterface();
+
+      auto wrapper_factory =
+          std::make_unique<network::WrapperSharedURLLoaderFactoryInfo>(
+              std::move(factory_ptr_info));
       url_loader_factory_getter =
-          CreateDownloadURLLoaderFactoryGetterFromURLLoaderFactory(
-              std::move(it->second));
+          base::MakeRefCounted<download::DownloadURLLoaderFactoryGetterImpl>(
+              std::move(wrapper_factory));
     }
   } else {
     StoragePartitionImpl* storage_partition =
