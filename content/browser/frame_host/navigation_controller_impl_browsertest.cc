@@ -9388,6 +9388,134 @@ IN_PROC_BROWSER_TEST_F(
       "Navigation.BackForward.SetShouldSkipOnBackForwardUI", true, 0);
 }
 
+// Tests that all same document entries are marked as skippable together.
+IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
+                       SetSkipOnBackForwardSameDocumentEntries) {
+  // Consider the case:
+  // 1. [Z, A, (click), A#1, A#2, A#3, A#4, B]
+  // At this time all of A and A#1 through A#4 are non-skippable due to the
+  // click.
+  // 2. Let A#3 do a location.replace to another document
+  // [Z, A, A#1, A#2, Y, A#4, B]
+  // 3. Go to A#4, which is now the "current entry". All As are still
+  // non-skippable.
+  // 4. Let it now redirect without any user gesture to C.
+  // [Z, A, A#1, A#2, Y, A#4, C]
+  // At this time all of A entries should be marked as skippable.
+  // 5. Go back should skip A's and go to Z.
+
+  GURL z_url(embedded_test_server()->GetURL("/empty.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), z_url));
+
+  GURL a_url(embedded_test_server()->GetURL("/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), a_url));
+
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  EXPECT_FALSE(root->HasBeenActivated());
+  EXPECT_FALSE(root->HasTransientUserActivation());
+
+  NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
+      shell()->web_contents()->GetController());
+
+  // Add the 2 pushstate entries. Note that ExecuteScript also sends a user
+  // gesture.
+  GURL a1_url(embedded_test_server()->GetURL("/title2.html"));
+  GURL a2_url(embedded_test_server()->GetURL("/title3.html"));
+  GURL a3_url(embedded_test_server()->GetURL("/simple_page_1.html"));
+  GURL a4_url(embedded_test_server()->GetURL("/simple_page_2.html"));
+  std::string script("history.pushState('', '','" + a1_url.spec() + "');");
+  ASSERT_TRUE(ExecJs(shell()->web_contents(), script));
+  script = "history.pushState('', '','" + a2_url.spec() + "');";
+  ASSERT_TRUE(ExecJs(shell()->web_contents(), script));
+  script = "history.pushState('', '','" + a3_url.spec() + "');";
+  ASSERT_TRUE(ExecJs(shell()->web_contents(), script));
+  script = "history.pushState('', '','" + a4_url.spec() + "');";
+  ASSERT_TRUE(ExecJs(shell()->web_contents(), script));
+
+  EXPECT_TRUE(root->HasBeenActivated());
+  EXPECT_TRUE(root->HasTransientUserActivation());
+
+  // None of the entries should be skippable.
+  EXPECT_EQ(6, controller.GetEntryCount());
+  EXPECT_FALSE(controller.GetEntryAtIndex(0)->should_skip_on_back_forward_ui());
+  EXPECT_FALSE(controller.GetEntryAtIndex(1)->should_skip_on_back_forward_ui());
+  EXPECT_FALSE(controller.GetEntryAtIndex(2)->should_skip_on_back_forward_ui());
+  EXPECT_FALSE(controller.GetEntryAtIndex(3)->should_skip_on_back_forward_ui());
+  EXPECT_FALSE(controller.GetEntryAtIndex(4)->should_skip_on_back_forward_ui());
+  EXPECT_FALSE(controller.GetEntryAtIndex(5)->should_skip_on_back_forward_ui());
+
+  // Navigate to B.
+  GURL b_url(embedded_test_server()->GetURL("/empty.html"));
+  EXPECT_TRUE(NavigateToURLFromRenderer(shell(), b_url));
+
+  // Go back to a3_url and do location.replace.
+  TestNavigationObserver load_observer(shell()->web_contents());
+  controller.GoToOffset(-2);
+  load_observer.Wait();
+  EXPECT_EQ(a3_url, controller.GetLastCommittedEntry()->GetURL());
+  GURL y_url(embedded_test_server()->GetURL("/frame_tree/top.html"));
+  ASSERT_TRUE(RendererLocationReplace(shell(), y_url));
+
+  EXPECT_EQ(7, controller.GetEntryCount());
+  EXPECT_FALSE(controller.GetEntryAtIndex(0)->should_skip_on_back_forward_ui());
+  EXPECT_FALSE(controller.GetEntryAtIndex(1)->should_skip_on_back_forward_ui());
+  EXPECT_FALSE(controller.GetEntryAtIndex(2)->should_skip_on_back_forward_ui());
+  EXPECT_FALSE(controller.GetEntryAtIndex(3)->should_skip_on_back_forward_ui());
+  EXPECT_FALSE(controller.GetEntryAtIndex(4)->should_skip_on_back_forward_ui());
+  EXPECT_FALSE(controller.GetEntryAtIndex(5)->should_skip_on_back_forward_ui());
+  EXPECT_FALSE(controller.GetEntryAtIndex(6)->should_skip_on_back_forward_ui());
+
+  // Go forward to a4_url.
+  {
+    TestNavigationObserver load_observer(shell()->web_contents());
+    controller.GoForward();
+    load_observer.Wait();
+  }
+  EXPECT_EQ(a4_url, controller.GetLastCommittedEntry()->GetURL());
+
+  // Redirect without user gesture to C.
+  GURL c_url(embedded_test_server()->GetURL("/frame_tree/top.html"));
+  EXPECT_TRUE(NavigateToURLFromRendererWithoutUserGesture(shell(), c_url));
+
+  // All entries belonging to A should be marked skippable.
+  EXPECT_EQ(7, controller.GetEntryCount());
+  EXPECT_EQ(a_url, controller.GetEntryAtIndex(1)->GetURL());
+  EXPECT_TRUE(controller.GetEntryAtIndex(1)->should_skip_on_back_forward_ui());
+
+  EXPECT_EQ(a1_url, controller.GetEntryAtIndex(2)->GetURL());
+  EXPECT_TRUE(controller.GetEntryAtIndex(2)->should_skip_on_back_forward_ui());
+
+  EXPECT_EQ(a2_url, controller.GetEntryAtIndex(3)->GetURL());
+  EXPECT_TRUE(controller.GetEntryAtIndex(3)->should_skip_on_back_forward_ui());
+
+  EXPECT_EQ(y_url, controller.GetEntryAtIndex(4)->GetURL());
+  EXPECT_FALSE(controller.GetEntryAtIndex(4)->should_skip_on_back_forward_ui());
+
+  EXPECT_EQ(a4_url, controller.GetEntryAtIndex(5)->GetURL());
+  EXPECT_TRUE(controller.GetEntryAtIndex(5)->should_skip_on_back_forward_ui());
+
+  EXPECT_EQ(c_url, controller.GetEntryAtIndex(6)->GetURL());
+  EXPECT_FALSE(controller.GetEntryAtIndex(6)->should_skip_on_back_forward_ui());
+
+  // Go back should skip all A entries and go to Y.
+  {
+    TestNavigationObserver load_observer(shell()->web_contents());
+    controller.GoBack();
+    load_observer.Wait();
+  }
+  EXPECT_EQ(y_url, controller.GetLastCommittedEntry()->GetURL());
+
+  // Going back again should skip all A entries and go to Z.
+  {
+    TestNavigationObserver load_observer(shell()->web_contents());
+    controller.GoBack();
+    load_observer.Wait();
+  }
+  EXPECT_EQ(z_url, controller.GetLastCommittedEntry()->GetURL());
+}
+
 // Tests that a same document navigation followed by a client redirect
 // do not add any more session history entries and going to previous entry
 // works.
