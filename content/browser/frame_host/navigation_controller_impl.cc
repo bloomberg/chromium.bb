@@ -423,23 +423,6 @@ void ValidateRequestMatchesEntry(NavigationRequest* request,
 }
 #endif  // DCHECK_IS_ON()
 
-// Resets |should_skip_on_back_forward_ui| flag for |entry| if it has a frame
-// entry for |root_frame| with the same document sequence number as
-// |document_sequence_number|.
-bool ResetSkippableForSameDocumentEntry(FrameTreeNode* root_frame,
-                                        int64_t& document_sequence_number,
-                                        NavigationEntryImpl* entry) {
-  if (entry && entry->should_skip_on_back_forward_ui()) {
-    auto* frame_entry = entry->GetFrameEntry(root_frame);
-    if (frame_entry &&
-        frame_entry->document_sequence_number() == document_sequence_number) {
-      entry->set_should_skip_on_back_forward_ui(false);
-      return true;
-    }
-  }
-  return false;
-}
-
 // Returns whether the session history NavigationRequests in |navigations|
 // would stay within the subtree of the sandboxed iframe in
 // |sandbox_frame_tree_node_id|.
@@ -2144,35 +2127,12 @@ void NavigationControllerImpl::NotifyUserActivation() {
   auto* last_committed_entry = GetLastCommittedEntry();
   if (!last_committed_entry)
     return;
-  int last_committed_entry_index = GetLastCommittedEntryIndex();
-
-  auto* root_frame = delegate_->GetFrameTree()->root();
-  auto* frame_entry = last_committed_entry->GetFrameEntry(root_frame);
-  if (!frame_entry)
-    return;
-
-  int64_t document_sequence_number = frame_entry->document_sequence_number();
 
   // |last_committed_entry| should not be skippable because it is the current
   // entry and in case the skippable bit was earlier set then on re-navigation
   // it would have been reset.
   DCHECK(!last_committed_entry->should_skip_on_back_forward_ui());
-
-  for (int index = last_committed_entry_index - 1; index >= 0; index--) {
-    auto* entry = GetEntryAtIndex(index);
-    if (!ResetSkippableForSameDocumentEntry(root_frame,
-                                            document_sequence_number, entry)) {
-      break;
-    }
-  }
-  for (int index = last_committed_entry_index + 1; index < GetEntryCount();
-       index++) {
-    auto* entry = GetEntryAtIndex(index);
-    if (!ResetSkippableForSameDocumentEntry(root_frame,
-                                            document_sequence_number, entry)) {
-      break;
-    }
-  }
+  SetSkippableForSameDocumentEntries(GetLastCommittedEntryIndex(), false);
 }
 
 bool NavigationControllerImpl::StartHistoryNavigationInNewSubframe(
@@ -3461,7 +3421,7 @@ void NavigationControllerImpl::SetShouldSkipOnBackForwardUIIfNeeded(
   if (last_committed_entry_index_ == -1)
     return;
 
-  GetLastCommittedEntry()->set_should_skip_on_back_forward_ui(true);
+  SetSkippableForSameDocumentEntries(last_committed_entry_index_, true);
   UMA_HISTOGRAM_BOOLEAN("Navigation.BackForward.SetShouldSkipOnBackForwardUI",
                         true);
 
@@ -3474,6 +3434,23 @@ void NavigationControllerImpl::SetShouldSkipOnBackForwardUIIfNeeded(
       rfh->delegate()->GetUkmSourceIdForLastCommittedSource();
   ukm::builders::HistoryManipulationIntervention(source_id).Record(
       ukm::UkmRecorder::Get());
+}
+
+void NavigationControllerImpl::SetSkippableForSameDocumentEntries(
+    int reference_index,
+    bool skippable) {
+  auto* reference_entry = GetEntryAtIndex(reference_index);
+  reference_entry->set_should_skip_on_back_forward_ui(skippable);
+
+  int64_t document_sequence_number =
+      reference_entry->root_node()->frame_entry->document_sequence_number();
+  for (int index = 0; index < GetEntryCount(); index++) {
+    auto* entry = GetEntryAtIndex(index);
+    if (entry->root_node()->frame_entry->document_sequence_number() ==
+        document_sequence_number) {
+      entry->set_should_skip_on_back_forward_ui(skippable);
+    }
+  }
 }
 
 }  // namespace content

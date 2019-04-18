@@ -478,6 +478,14 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
       bool previous_document_was_activated,
       bool is_renderer_initiated);
 
+  // This function sets all same document entries with the same value
+  // of skippable flag. This is to avoid back button abuse by inserting
+  // multiple history entries and also to help valid cases where a user gesture
+  // on the document should apply to all same document history entries and none
+  // should be skipped. All entries belonging to the same document as the entry
+  // at |reference_index| will get their skippable flag set to |skippable|.
+  void SetSkippableForSameDocumentEntries(int reference_index, bool skippable);
+
   // ---------------------------------------------------------------------------
 
   // The user browser context associated with this controller.
