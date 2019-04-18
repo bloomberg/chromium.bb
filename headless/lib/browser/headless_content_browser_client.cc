@@ -166,7 +166,7 @@ void HeadlessContentBrowserClient::RegisterOutOfProcessServices(
 #endif
 }
 
-content::QuotaPermissionContext*
+scoped_refptr<content::QuotaPermissionContext>
 HeadlessContentBrowserClient::CreateQuotaPermissionContext() {
   return new HeadlessQuotaPermissionContext();
 }

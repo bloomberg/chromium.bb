@@ -542,7 +542,7 @@ bool AwContentBrowserClient::AllowWorkerIndexedDB(
   return true;
 }
 
-content::QuotaPermissionContext*
+scoped_refptr<content::QuotaPermissionContext>
 AwContentBrowserClient::CreateQuotaPermissionContext() {
   return new AwQuotaPermissionContext;
 }

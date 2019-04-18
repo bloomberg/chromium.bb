@@ -106,7 +106,8 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
       const GURL& url,
       content::ResourceContext* context,
       const std::vector<content::GlobalFrameRoutingId>& render_frames) override;
-  content::QuotaPermissionContext* CreateQuotaPermissionContext() override;
+  scoped_refptr<content::QuotaPermissionContext> CreateQuotaPermissionContext()
+      override;
   void GetQuotaSettings(
       content::BrowserContext* context,
       content::StoragePartition* partition,

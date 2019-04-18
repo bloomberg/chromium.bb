@@ -59,7 +59,8 @@ class ShellContentBrowserClient : public ContentBrowserClient {
   std::string GetDefaultDownloadName() override;
   WebContentsViewDelegate* GetWebContentsViewDelegate(
       WebContents* web_contents) override;
-  QuotaPermissionContext* CreateQuotaPermissionContext() override;
+  scoped_refptr<content::QuotaPermissionContext> CreateQuotaPermissionContext()
+      override;
   void GetQuotaSettings(
       content::BrowserContext* context,
       content::StoragePartition* partition,
