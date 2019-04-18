@@ -29,15 +29,20 @@ base::TimeDelta GetStrongAuthTimeout(PrefService* pref_service) {
 
 }  // namespace
 
-QuickUnlockStorage::QuickUnlockStorage(Profile* profile) : profile_(profile) {
+QuickUnlockStorage::QuickUnlockStorage(Profile* profile)
+    : profile_(profile), clock_(base::DefaultClock::GetInstance()) {
   fingerprint_storage_ = std::make_unique<FingerprintStorage>(profile);
   pin_storage_prefs_ = std::make_unique<PinStoragePrefs>(profile->GetPrefs());
 }
 
 QuickUnlockStorage::~QuickUnlockStorage() {}
 
+void QuickUnlockStorage::SetClockForTesting(base::Clock* test_clock) {
+  clock_ = test_clock;
+}
+
 void QuickUnlockStorage::MarkStrongAuth() {
-  last_strong_auth_ = base::Time::Now();
+  last_strong_auth_ = clock_->Now();
   fingerprint_storage()->ResetUnlockAttemptCount();
   pin_storage_prefs()->ResetUnlockAttemptCount();
 }
@@ -50,7 +55,7 @@ bool QuickUnlockStorage::HasStrongAuth() const {
 
 base::TimeDelta QuickUnlockStorage::TimeSinceLastStrongAuth() const {
   DCHECK(!last_strong_auth_.is_null());
-  return base::Time::Now() - last_strong_auth_;
+  return clock_->Now() - last_strong_auth_;
 }
 
 base::TimeDelta QuickUnlockStorage::TimeUntilNextStrongAuth() const {

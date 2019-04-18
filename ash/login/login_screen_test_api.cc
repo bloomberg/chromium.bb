@@ -147,6 +147,14 @@ void LoginScreenTestApi::IsShutdownButtonShown(
       IsLoginShelfViewButtonShown(LoginShelfView::kShutdown));
 }
 
+void LoginScreenTestApi::IsAuthErrorBubbleShown(
+    IsAuthErrorBubbleShownCallback callback) {
+  ash::LockScreen::TestApi lock_screen_test(ash::LockScreen::Get());
+  ash::LockContentsView::TestApi lock_contents_test(
+      lock_screen_test.contents_view());
+  std::move(callback).Run(lock_contents_test.auth_error_bubble()->visible());
+}
+
 void LoginScreenTestApi::SubmitPassword(const AccountId& account_id,
                                         const std::string& password,
                                         SubmitPasswordCallback callback) {
