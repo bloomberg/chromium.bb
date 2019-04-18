@@ -273,10 +273,6 @@ class CORE_EXPORT LayoutTableCell : public LayoutBlockFlow {
     collapsed_border_values_valid_ = false;
   }
 
-  LayoutRect DebugRect() const override;
-
-  void AdjustChildDebugRect(LayoutRect&) const override;
-
   // A table cell's location is relative to its containing section.
   LayoutBox* LocationContainer() const override { return Section(); }
 

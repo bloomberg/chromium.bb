@@ -872,15 +872,8 @@ bool LayoutView::RecalcLayoutOverflow() {
 }
 
 LayoutRect LayoutView::DebugRect() const {
-  LayoutRect rect;
-  LayoutBlock* block = ContainingBlock();
-  if (block)
-    block->AdjustChildDebugRect(rect);
-
-  rect.SetWidth(LayoutUnit(ViewWidth(kIncludeScrollbars)));
-  rect.SetHeight(LayoutUnit(ViewHeight(kIncludeScrollbars)));
-
-  return rect;
+  return LayoutRect(0, 0, ViewWidth(kIncludeScrollbars),
+                    ViewHeight(kIncludeScrollbars));
 }
 
 bool LayoutView::UpdateLogicalWidthAndColumnWidth() {

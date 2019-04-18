@@ -2488,19 +2488,8 @@ void LayoutText::InvalidateDisplayItemClients(
   }
 }
 
-// TODO(loonybear): Would be better to dump the bounding box x and y rather than
-// the first run's x and y, but that would involve updating many test results.
 LayoutRect LayoutText::DebugRect() const {
-  IntRect lines_box = EnclosingIntRect(LinesBoundingBox());
-  FloatPoint first_run_offset = FirstRunOrigin();
-  LayoutRect rect =
-      LayoutRect(IntRect(first_run_offset.X(), first_run_offset.Y(),
-                         lines_box.Width(), lines_box.Height()));
-  LayoutBlock* block = ContainingBlock();
-  if (block && HasLegacyTextBoxes())
-    block->AdjustChildDebugRect(rect);
-
-  return rect;
+  return LayoutRect(EnclosingIntRect(LinesBoundingBox()));
 }
 
 NodeHolder LayoutText::EnsureNodeHolder() {

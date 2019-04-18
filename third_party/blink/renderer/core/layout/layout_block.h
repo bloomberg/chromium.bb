@@ -587,11 +587,6 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
   // This is necessary for now for interoperability between the old and new
   // layout code. Primarily for calling layoutPositionedObjects at the moment.
   friend class NGBlockNode;
-
- public:
-  // TODO(loonybear): Temporary in order to ensure compatibility with existing
-  // web test results.
-  virtual void AdjustChildDebugRect(LayoutRect&) const {}
 };
 
 template <>

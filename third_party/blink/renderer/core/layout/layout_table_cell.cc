@@ -1177,26 +1177,6 @@ bool LayoutTableCell::BackgroundIsKnownToBeOpaqueInRect(
   return LayoutBlockFlow::BackgroundIsKnownToBeOpaqueInRect(local_rect);
 }
 
-// TODO(loonybear): Deliberately dump the "inner" box of table cells, since that
-// is what current results reflect.  We'd like to clean up the results to dump
-// both the outer box and the intrinsic padding so that both bits of information
-// are captured by the results.
-LayoutRect LayoutTableCell::DebugRect() const {
-  LayoutRect rect = LayoutRect(
-      Location().X(), Location().Y() + IntrinsicPaddingBefore(), Size().Width(),
-      Size().Height() - IntrinsicPaddingBefore() - IntrinsicPaddingAfter());
-
-  LayoutBlock* cb = ContainingBlock();
-  if (cb)
-    cb->AdjustChildDebugRect(rect);
-
-  return rect;
-}
-
-void LayoutTableCell::AdjustChildDebugRect(LayoutRect& r) const {
-  r.Move(0, -IntrinsicPaddingBefore());
-}
-
 bool LayoutTableCell::HasLineIfEmpty() const {
   if (GetNode() && HasEditableStyle(*GetNode()))
     return true;
