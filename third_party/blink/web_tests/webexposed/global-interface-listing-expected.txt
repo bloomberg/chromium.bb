@@ -5869,6 +5869,7 @@ interface RTCQuicStreamEvent : Event
     method constructor
 interface RTCQuicTransport : EventTarget
     attribute @@toStringTag
+    getter maxDatagramLength
     getter onerror
     getter onquicstream
     getter onstatechange
@@ -5880,6 +5881,9 @@ interface RTCQuicTransport : EventTarget
     method getKey
     method getStats
     method listen
+    method readyToSendDatagram
+    method receiveDatagrams
+    method sendDatagram
     method stop
     setter onerror
     setter onquicstream

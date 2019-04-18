@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
+#include "third_party/blink/renderer/modules/peerconnection/adapters/p2p_quic_transport.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/p2p_quic_transport_factory.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/p2p_quic_transport_stats.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
@@ -43,7 +44,7 @@ class QuicTransportProxy final {
 
     // Called when the QUIC handshake finishes and fingerprints have been
     // verified.
-    virtual void OnConnected() {}
+    virtual void OnConnected(P2PQuicNegotiatedParams negotiated_params) {}
     // Called when the remote side has indicated it is closed.
     virtual void OnRemoteStopped() {}
     // Called when the connection is closed due to a QUIC error. This can happen
@@ -57,6 +58,11 @@ class QuicTransportProxy final {
     // |request_id| maps to |request_id| used in GetStats().
     virtual void OnStats(uint32_t request_id,
                          const P2PQuicTransportStats& stats) {}
+    // Called when the datagram (sent with SendDatagram) has been
+    // consumed by the QUIC library and sent on the network.
+    virtual void OnDatagramSent() {}
+    // Called when we receive a datagram from the remote side.
+    virtual void OnDatagramReceived(Vector<uint8_t> datagram) {}
   };
 
   // Construct a Proxy with the underlying QUIC implementation running on the
@@ -81,6 +87,8 @@ class QuicTransportProxy final {
 
   QuicStreamProxy* CreateStream();
 
+  void SendDatagram(Vector<uint8_t> datagram);
+
   // Gathers stats on the host thread, then returns them asynchronously with
   // Delegate::OnStats. The |request_id| is used to map the GetStats call to the
   // returned stats.
@@ -92,11 +100,13 @@ class QuicTransportProxy final {
  private:
   // Callbacks from QuicTransportHost.
   friend class QuicTransportHost;
-  void OnConnected();
+  void OnConnected(P2PQuicNegotiatedParams negotiated_params);
   void OnRemoteStopped();
   void OnConnectionFailed(const std::string& error_details, bool from_remote);
   void OnStream(std::unique_ptr<QuicStreamProxy> stream_proxy);
   void OnStats(uint32_t request_id, const P2PQuicTransportStats& stats);
+  void OnDatagramSent();
+  void OnDatagramReceived(Vector<uint8_t> datagram);
 
   // Since the Host is deleted on the host thread (Via OnTaskRunnerDeleter), as
   // long as this is alive it is safe to post tasks to it (using unretained).

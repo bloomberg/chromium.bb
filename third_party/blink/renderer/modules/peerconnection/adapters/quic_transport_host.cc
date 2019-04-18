@@ -81,6 +81,12 @@ void QuicTransportHost::CreateStream(
       std::make_pair(stream_host.get(), std::move(stream_host)));
 }
 
+void QuicTransportHost::SendDatagram(Vector<uint8_t> datagram) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  quic_transport_->SendDatagram(std::move(datagram));
+}
+
 void QuicTransportHost::GetStats(uint32_t request_id) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
@@ -117,11 +123,9 @@ void QuicTransportHost::OnConnectionFailed(const std::string& error_details,
 
 void QuicTransportHost::OnConnected(P2PQuicNegotiatedParams negotiated_params) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  // TODO(shampson): When datagrams are integrated with RTCQuicTransport
-  // propagate the negotiated_params up.
-  PostCrossThreadTask(
-      *proxy_thread(), FROM_HERE,
-      CrossThreadBind(&QuicTransportProxy::OnConnected, proxy_));
+  PostCrossThreadTask(*proxy_thread(), FROM_HERE,
+                      CrossThreadBind(&QuicTransportProxy::OnConnected, proxy_,
+                                      negotiated_params));
 }
 
 void QuicTransportHost::OnStream(P2PQuicStream* p2p_stream) {
@@ -145,14 +149,18 @@ void QuicTransportHost::OnStream(P2PQuicStream* p2p_stream) {
 
 void QuicTransportHost::OnDatagramSent() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  // TODO(shampson): Implement when this is hooked into RTCQuicTransport.
-  return;
+
+  PostCrossThreadTask(
+      *proxy_thread(), FROM_HERE,
+      CrossThreadBind(&QuicTransportProxy::OnDatagramSent, proxy_));
 }
 
-void QuicTransportHost::OnReceivedDatagram(Vector<uint8_t> datagram) {
+void QuicTransportHost::OnDatagramReceived(Vector<uint8_t> datagram) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  // TODO(shampson): Implement when this is hooked into RTCQuicTransport.
-  return;
+
+  PostCrossThreadTask(*proxy_thread(), FROM_HERE,
+                      CrossThreadBind(&QuicTransportProxy::OnDatagramReceived,
+                                      proxy_, std::move(datagram)));
 }
 
 }  // namespace blink

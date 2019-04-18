@@ -22,6 +22,7 @@ struct P2PQuicNegotiatedParams final {
   bool datagrams_supported() const { return max_datagram_length_.has_value(); }
 
   void set_max_datagram_length(uint16_t max_datagram_length) {
+    DCHECK_GT(max_datagram_length, 0);
     max_datagram_length_ = max_datagram_length;
   }
 
@@ -35,7 +36,6 @@ struct P2PQuicNegotiatedParams final {
   // negotiated as a transport parameter, although in the QUICHE implementation
   // it is based upon the QUIC version (determines packet header size) and
   // default max packet size (1350 bytes).
-  // 0 means datagrams are not supported.
   base::Optional<uint16_t> max_datagram_length_;
 };
 
@@ -95,7 +95,7 @@ class P2PQuicTransport {
     virtual void OnDatagramSent() {}
 
     // Called when we receive a datagram from the remote side.
-    virtual void OnReceivedDatagram(Vector<uint8_t> datagram) {}
+    virtual void OnDatagramReceived(Vector<uint8_t> datagram) {}
 
     // Called when an incoming stream is received from the remote side. This
     // stream is owned by the P2PQuicTransport. Its lifetime is managed by the

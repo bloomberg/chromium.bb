@@ -1244,10 +1244,10 @@ TEST_F(P2PQuicTransportTest, DatagramsSentReceivedOnRemoteSide) {
 
   // We should get the appropriate message on each end.
   EXPECT_CALL(*server_peer()->quic_transport_delegate(),
-              OnReceivedDatagram(ElementsAreArray(kClientMessage)))
+              OnDatagramReceived(ElementsAreArray(kClientMessage)))
       .WillOnce(FireCallback(run_loop.CreateCallback()));
   EXPECT_CALL(*client_peer()->quic_transport_delegate(),
-              OnReceivedDatagram(ElementsAreArray(kServerMessage)))
+              OnDatagramReceived(ElementsAreArray(kServerMessage)))
       .WillOnce(FireCallback(run_loop.CreateCallback()));
   // The OnDatagramSent callback should fire for each datagram being sent.
   EXPECT_CALL(*server_peer()->quic_transport_delegate(), OnDatagramSent())
@@ -1410,10 +1410,10 @@ class P2PQuicTransportMockConnectionTest : public testing::Test {
 };
 
 // Test that when a datagram is received it properly fires the
-// OnReceivedDatagram function on the delegate.
-TEST_F(P2PQuicTransportMockConnectionTest, OnReceivedDatagram) {
+// OnDatagramReceived function on the delegate.
+TEST_F(P2PQuicTransportMockConnectionTest, OnDatagramReceived) {
   EXPECT_TRUE(transport()->CanSendDatagram());
-  EXPECT_CALL(*delegate(), OnReceivedDatagram(ElementsAreArray(kMessage)));
+  EXPECT_CALL(*delegate(), OnDatagramReceived(ElementsAreArray(kMessage)));
   transport()->OnMessageReceived(quic::QuicStringPiece(
       reinterpret_cast<const char*>(kMessage), sizeof(kMessage)));
 }

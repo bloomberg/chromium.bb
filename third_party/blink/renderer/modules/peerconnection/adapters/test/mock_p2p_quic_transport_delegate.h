@@ -18,7 +18,7 @@ class MockP2PQuicTransportDelegate
   MOCK_METHOD2(OnConnectionFailed, void(const std::string&, bool));
   MOCK_METHOD1(OnConnected, void(P2PQuicNegotiatedParams));
   MOCK_METHOD1(OnStream, void(P2PQuicStream*));
-  MOCK_METHOD1(OnReceivedDatagram, void(Vector<uint8_t> datagram));
+  MOCK_METHOD1(OnDatagramReceived, void(Vector<uint8_t> datagram));
   MOCK_METHOD0(OnDatagramSent, void());
 };
 
