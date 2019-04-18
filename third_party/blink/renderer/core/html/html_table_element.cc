@@ -44,6 +44,7 @@
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/weborigin/referrer.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
@@ -128,8 +129,8 @@ void HTMLTableElement::setTFoot(HTMLTableSectionElement* new_foot,
 HTMLTableSectionElement* HTMLTableElement::createTHead() {
   if (HTMLTableSectionElement* existing_head = tHead())
     return existing_head;
-  HTMLTableSectionElement* head =
-      HTMLTableSectionElement::Create(kTheadTag, GetDocument());
+  auto* head =
+      MakeGarbageCollected<HTMLTableSectionElement>(kTheadTag, GetDocument());
   setTHead(head, IGNORE_EXCEPTION_FOR_TESTING);
   return head;
 }
@@ -141,8 +142,8 @@ void HTMLTableElement::deleteTHead() {
 HTMLTableSectionElement* HTMLTableElement::createTFoot() {
   if (HTMLTableSectionElement* existing_foot = tFoot())
     return existing_foot;
-  HTMLTableSectionElement* foot =
-      HTMLTableSectionElement::Create(kTfootTag, GetDocument());
+  auto* foot =
+      MakeGarbageCollected<HTMLTableSectionElement>(kTfootTag, GetDocument());
   setTFoot(foot, IGNORE_EXCEPTION_FOR_TESTING);
   return foot;
 }
@@ -152,8 +153,8 @@ void HTMLTableElement::deleteTFoot() {
 }
 
 HTMLTableSectionElement* HTMLTableElement::createTBody() {
-  HTMLTableSectionElement* body =
-      HTMLTableSectionElement::Create(kTbodyTag, GetDocument());
+  auto* body =
+      MakeGarbageCollected<HTMLTableSectionElement>(kTbodyTag, GetDocument());
   Node* reference_element = LastBody() ? LastBody()->nextSibling() : nullptr;
 
   InsertBefore(body, reference_element);
@@ -163,8 +164,7 @@ HTMLTableSectionElement* HTMLTableElement::createTBody() {
 HTMLTableCaptionElement* HTMLTableElement::createCaption() {
   if (HTMLTableCaptionElement* existing_caption = caption())
     return existing_caption;
-  HTMLTableCaptionElement* caption =
-      HTMLTableCaptionElement::Create(GetDocument());
+  auto* caption = MakeGarbageCollected<HTMLTableCaptionElement>(GetDocument());
   setCaption(caption, IGNORE_EXCEPTION_FOR_TESTING);
   return caption;
 }
@@ -216,16 +216,16 @@ HTMLTableRowElement* HTMLTableElement::insertRow(
   } else {
     parent = LastBody();
     if (!parent) {
-      HTMLTableSectionElement* new_body =
-          HTMLTableSectionElement::Create(kTbodyTag, GetDocument());
-      HTMLTableRowElement* new_row = HTMLTableRowElement::Create(GetDocument());
+      auto* new_body = MakeGarbageCollected<HTMLTableSectionElement>(
+          kTbodyTag, GetDocument());
+      auto* new_row = MakeGarbageCollected<HTMLTableRowElement>(GetDocument());
       new_body->AppendChild(new_row, exception_state);
       AppendChild(new_body, exception_state);
       return new_row;
     }
   }
 
-  HTMLTableRowElement* new_row = HTMLTableRowElement::Create(GetDocument());
+  auto* new_row = MakeGarbageCollected<HTMLTableRowElement>(GetDocument());
   parent->InsertBefore(new_row, row, exception_state);
   return new_row;
 }

@@ -58,6 +58,7 @@
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
@@ -786,7 +787,7 @@ bool TextControlElement::LastChangeWasUserEdit() const {
 }
 
 Node* TextControlElement::CreatePlaceholderBreakElement() const {
-  return HTMLBRElement::Create(GetDocument());
+  return MakeGarbageCollected<HTMLBRElement>(GetDocument());
 }
 
 void TextControlElement::AddPlaceholderBreakElementIfNecessary() {

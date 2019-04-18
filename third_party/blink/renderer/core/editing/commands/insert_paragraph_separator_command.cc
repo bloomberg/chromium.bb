@@ -43,6 +43,7 @@
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_text.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -435,7 +436,7 @@ void InsertParagraphSeparatorCommand::DoApply(EditingState* editing_state) {
   // it if visiblePos is at the start of a paragraph so that the
   // content will move down a line.
   if (IsStartOfParagraph(visible_pos)) {
-    HTMLBRElement* br = HTMLBRElement::Create(GetDocument());
+    auto* br = MakeGarbageCollected<HTMLBRElement>(GetDocument());
     InsertNodeAt(br, insertion_position, editing_state);
     if (editing_state->IsAborted())
       return;
@@ -544,8 +545,8 @@ void InsertParagraphSeparatorCommand::DoApply(EditingState* editing_state) {
   // won't be one that will hold an empty line open, add a br.
   if (IsEndOfParagraph(visible_pos) &&
       !LineBreakExistsAtVisiblePosition(visible_pos)) {
-    AppendNode(HTMLBRElement::Create(GetDocument()), block_to_insert,
-               editing_state);
+    AppendNode(MakeGarbageCollected<HTMLBRElement>(GetDocument()),
+               block_to_insert, editing_state);
     if (editing_state->IsAborted())
       return;
     GetDocument().UpdateStyleAndLayout();

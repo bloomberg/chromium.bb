@@ -31,7 +31,7 @@ namespace blink {
 
 using namespace html_names;
 
-inline HTMLTableCaptionElement::HTMLTableCaptionElement(Document& document)
+HTMLTableCaptionElement::HTMLTableCaptionElement(Document& document)
     : HTMLElement(kCaptionTag, document) {}
 
 DEFINE_NODE_FACTORY(HTMLTableCaptionElement)

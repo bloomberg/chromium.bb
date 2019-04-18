@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/html_element_factory.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -104,10 +105,10 @@ HTMLElement* CustomElementDefinition::CreateElementForConstructor(
   if (element) {
     element->SetIsValue(Descriptor().GetName());
   } else {
-    element =
-        HTMLElement::Create(QualifiedName(g_null_atom, Descriptor().LocalName(),
-                                          html_names::xhtmlNamespaceURI),
-                            document);
+    element = MakeGarbageCollected<HTMLElement>(
+        QualifiedName(g_null_atom, Descriptor().LocalName(),
+                      html_names::xhtmlNamespaceURI),
+        document);
   }
   // TODO(davaajav): write this as one call to setCustomElementState instead of
   // two
@@ -162,7 +163,7 @@ HTMLElement* CustomElementDefinition::CreateElement(
   // interface, with no attributes, namespace set to the HTML namespace,
   // namespace prefix set to prefix, local name set to localName, custom
   // element state set to "undefined", and node document set to document.
-  HTMLElement* element = HTMLElement::Create(tag_name, document);
+  auto* element = MakeGarbageCollected<HTMLElement>(tag_name, document);
   element->SetCustomElementState(CustomElementState::kUndefined);
   // 6.2.2. Enqueue a custom element upgrade reaction given result and
   // definition.

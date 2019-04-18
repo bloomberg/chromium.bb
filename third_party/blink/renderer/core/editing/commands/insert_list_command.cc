@@ -42,6 +42,7 @@
 #include "third_party/blink/renderer/core/html/html_ulist_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -57,7 +58,7 @@ static Node* EnclosingListChild(Node* node, Node* list_node) {
 HTMLUListElement* InsertListCommand::FixOrphanedListChild(
     Node* node,
     EditingState* editing_state) {
-  HTMLUListElement* list_element = HTMLUListElement::Create(GetDocument());
+  auto* list_element = MakeGarbageCollected<HTMLUListElement>(GetDocument());
   InsertNodeBefore(list_element, node, editing_state);
   if (editing_state->IsAborted())
     return nullptr;
@@ -499,12 +500,12 @@ void InsertListCommand::UnlistifyParagraph(
 
   // When removing a list, we must always create a placeholder to act as a point
   // of insertion for the list content being removed.
-  HTMLBRElement* placeholder = HTMLBRElement::Create(GetDocument());
+  auto* placeholder = MakeGarbageCollected<HTMLBRElement>(GetDocument());
   HTMLElement* element_to_insert = placeholder;
   // If the content of the list item will be moved into another list, put it in
   // a list item so that we don't create an orphaned list child.
   if (EnclosingList(list_element)) {
-    element_to_insert = HTMLLIElement::Create(GetDocument());
+    element_to_insert = MakeGarbageCollected<HTMLLIElement>(GetDocument());
     AppendNode(placeholder, element_to_insert, editing_state);
     if (editing_state->IsAborted())
       return;
@@ -589,7 +590,8 @@ void InsertListCommand::ListifyParagraph(const VisiblePosition& original_start,
       start, NextPositionOf(end, kCannotCrossEditingBoundary), list_tag);
   if (previous_list || next_list) {
     // Place list item into adjoining lists.
-    HTMLLIElement* list_item_element = HTMLLIElement::Create(GetDocument());
+    auto* list_item_element =
+        MakeGarbageCollected<HTMLLIElement>(GetDocument());
     if (previous_list)
       AppendNode(list_item_element, previous_list, editing_state);
     else
@@ -653,7 +655,7 @@ void InsertListCommand::ListifyParagraph(const VisiblePosition& original_start,
   InsertNodeAt(list_element, insertion_pos, editing_state);
   if (editing_state->IsAborted())
     return;
-  HTMLLIElement* list_item_element = HTMLLIElement::Create(GetDocument());
+  auto* list_item_element = MakeGarbageCollected<HTMLLIElement>(GetDocument());
   AppendNode(list_item_element, list_element, editing_state);
   if (editing_state->IsAborted())
     return;
@@ -685,7 +687,7 @@ void InsertListCommand::MoveParagraphOverPositionIntoEmptyListItem(
     HTMLLIElement* list_item_element,
     EditingState* editing_state) {
   DCHECK(!list_item_element->HasChildren());
-  HTMLBRElement* placeholder = HTMLBRElement::Create(GetDocument());
+  auto* placeholder = MakeGarbageCollected<HTMLBRElement>(GetDocument());
   AppendNode(placeholder, list_item_element, editing_state);
   if (editing_state->IsAborted())
     return;

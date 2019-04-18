@@ -45,8 +45,8 @@ namespace blink {
 
 using namespace html_names;
 
-inline HTMLScriptElement::HTMLScriptElement(Document& document,
-                                            const CreateElementFlags flags)
+HTMLScriptElement::HTMLScriptElement(Document& document,
+                                     const CreateElementFlags flags)
     : HTMLElement(kScriptTag, document),
       loader_(InitializeScriptLoader(flags.IsCreatedByParser(),
                                      flags.WasAlreadyStarted())) {}
