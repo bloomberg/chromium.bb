@@ -6,9 +6,7 @@
 
 #include "base/allocator/allocator_interception_mac.h"
 #include "base/bind.h"
-#include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
-#include "base/task/task_traits.h"
 #include "base/trace_event/malloc_dump_provider.h"
 #include "build/build_config.h"
 #include "components/services/heap_profiling/public/cpp/sampling_profiler_wrapper.h"
@@ -19,23 +17,6 @@
 #endif
 
 namespace heap_profiling {
-
-namespace {
-
-#if defined(OS_ANDROID) && BUILDFLAG(CAN_UNWIND_WITH_CFI_TABLE) && \
-    defined(OFFICIAL_BUILD)
-void EnsureCFIInitializedOnBackgroundThread(
-    scoped_refptr<base::SingleThreadTaskRunner> callback_task_runner,
-    base::OnceClosure callback) {
-  bool can_unwind =
-      base::trace_event::CFIBacktraceAndroid::GetInitializedInstance()
-          ->can_unwind_stack_frames();
-  DCHECK(can_unwind);
-  callback_task_runner->PostTask(FROM_HERE, std::move(callback));
-}
-#endif
-
-}  // namespace
 
 Client::Client() : sampling_profiler_(new SamplingProfilerWrapper()) {}
 
@@ -67,17 +48,18 @@ void Client::StartProfiling(mojom::ProfilingParamsPtr params) {
     defined(OFFICIAL_BUILD)
   // On Android the unwinder initialization requires file reading before
   // initializing shim. So, post task on background thread.
-  auto init_callback =
+  base::PostTaskWithTraitsAndReply(
+      FROM_HERE,
+      {base::TaskPriority::BEST_EFFORT, base::MayBlock(),
+       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+      base::BindOnce([]() {
+        bool can_unwind =
+            base::trace_event::CFIBacktraceAndroid::GetInitializedInstance()
+                ->can_unwind_stack_frames();
+        DCHECK(can_unwind);
+      }),
       base::BindOnce(&Client::StartProfilingInternal,
-                     weak_factory_.GetWeakPtr(), std::move(params));
-
-  auto background_task = base::BindOnce(&EnsureCFIInitializedOnBackgroundThread,
-                                        base::ThreadTaskRunnerHandle::Get(),
-                                        std::move(init_callback));
-  base::PostTaskWithTraits(FROM_HERE,
-                           {base::TaskPriority::BEST_EFFORT, base::MayBlock(),
-                            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
-                           std::move(background_task));
+                     weak_factory_.GetWeakPtr(), std::move(params)));
 #else
   StartProfilingInternal(std::move(params));
 #endif

@@ -122,13 +122,7 @@ class ConnectionManager {
   // Every 24-hours, reports the types of profiled processes.
   base::RepeatingTimer metrics_timer_;
 
-  // To avoid deadlock, synchronous calls to the browser are made on a dedicated
-  // thread that does nothing else. Both the IO thread and connection-specific
-  // threads could potentially be processing messages from the browser process,
-  // which in turn could be blocked on sending more messages over the pipe.
-  base::Thread blocking_thread_;
-
-  // Must be last.
+  // Must be the last.
   base::WeakPtrFactory<ConnectionManager> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ConnectionManager);
