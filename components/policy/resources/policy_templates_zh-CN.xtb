@@ -566,7 +566,6 @@
       当此政策设为 False 时，系统不会收集可用于识别用户身份的信息。
 
       仅当已启用 <ph name="CHROME_REPORTING_EXTENSION_NAME" /> 且已使用 <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> 注册相应设备后，此政策才有效。</translation>
-<translation id="2126178089984117495">限制 PIN 码打印模式。如果此政策未设置，则会被视为无限制。如果这种模式不适用，系统会忽略此政策。</translation>
 <translation id="2127599828444728326">允许在这些网站上显示通知</translation>
 <translation id="2131902621292742709">使用电源供电时的屏幕变暗延迟时间</translation>
 <translation id="2134437727173969994">允许锁定屏幕</translation>
@@ -1908,12 +1907,6 @@
 <translation id="4983201894483989687">允许运行过期的插件</translation>
 <translation id="4986560318567565414">控制用于从替代浏览器切换至 Chrome 的路径。</translation>
 <translation id="4988291787868618635">闲置延迟时间已过时执行的操作</translation>
-<translation id="5030889661505907084">
-      如果此政策设为 true，当云政策与平台政策冲突时，即会以云政策为准。
-      如果不设置此政策或将其设为 false，当平台政策与云政策冲突时，就会以平台政策为准。
-
-      此政策仅可作为平台使用。
-      </translation>
 <translation id="5034604678285451405">用于设定用电高峰转移电量阈值（以百分比表示）。
 
           仅当 DevicePowerPeakShiftEnabled 设为 true 时才会使用此政策。
@@ -3540,21 +3533,6 @@
 <translation id="8259592978873597235">如果将此政策设置为 true 或未设置此政策，则播放视频时计算机不会被视为闲置。这样，系统就不会开始计算闲置延迟、屏幕变暗、屏幕关闭和锁定的延迟时间，也不会执行相应的操作。
 
           如果将此政策设置为 false，则视频活动不会影响系统将计算机视为闲置状态。</translation>
-<translation id="8264653492961233132">以列表形式指定要进行如下处理的应用或扩展程序：在无需用户干预的情况下自动静默安装，且用户无法卸载或停用。此类应用/扩展程序所请求的所有权限（包括相应应用/扩展程序的后续版本所请求的任何其他权限）均由系统默认授予（无需用户干预）。此外，系统还会向 enterprise.deviceAttributes 和 enterprise.platformKeys 扩展程序 API 授予相关权限（这两个 API 不适用于非强制安装的应用/扩展程序）。
-
-          此政策优先于可能会与其冲突的 <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> 政策。如果从此列表中移除了之前强制安装的某个应用或扩展程序，<ph name="PRODUCT_NAME" /> 便会自动卸载该应用或扩展程序。
-
-          对于未加入 <ph name="MS_AD_NAME" /> 网域的 Windows 实例，强制安装仅限于 Chrome 网上应用店中所列的应用和扩展程序。
-
-          请注意，用户可通过开发者工具更改任何扩展程序的源代码（此类更改可能会导致相应扩展程序无法正常运行）。如果您不希望用户进行此类更改，则应设置 <ph name="DEVELOPER_TOOLS_POLICY_NAME" /> 政策。
-
-          此政策的每个列表项都是一个字符串，其中包含一个扩展程序 ID 和一个可选的“更新”网址（这两者之间以英文分号 (<ph name="SEMICOLON" />) 分隔）。扩展程序 ID 是一个由 32 个字母构成的字符串；若想查看示例，请在开发者模式下前往 <ph name="CHROME_EXTENSIONS_LINK" />。“更新”网址（如指定）应指向一个更新清单 XML 文档，如 <ph name="LINK_TO_EXTENSION_DOC1" /> 中所述。默认情况下，系统会使用 Chrome 网上应用店的更新网址（目前为“https://clients2.google.com/service/update2/crx”）。请注意，此政策中设置的“更新”网址仅用于初次安装；相应扩展程序的后续更新将会使用该扩展程序的清单中指定的更新网址。另请注意，在 <ph name="PRODUCT_NAME" /> 67 及更低版本中，明确指定“更新”网址是一项强制性要求。
-
-          例如，<ph name="EXTENSION_POLICY_EXAMPLE" /> 会从标准的 Chrome 网上应用店“更新”网址安装“<ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" />”应用。要详细了解如何托管扩展程序，请访问 <ph name="LINK_TO_EXTENSION_DOC2" />。
-
-          如果未设置此政策，系统便不会自动安装任何应用或扩展程序，而且用户可在 <ph name="PRODUCT_NAME" /> 中卸载任何应用或扩展程序。
-
-          请注意，此政策不适用于无痕模式。</translation>
 <translation id="8274603902181597201">清空用户的 ecryptfs 主目录，并改用全新的 ext4 加密主目录。</translation>
 <translation id="8285435910062771358">已启用全屏放大镜</translation>
 <translation id="8288199156259560552">启用 Android Google 位置信息服务</translation>

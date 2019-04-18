@@ -153,6 +153,7 @@ Informacije o privatnosti potražite u Googleovim pravilima o privatnosti (http:
 <translation id="4240294130679914010">Program za deinstaliranje usluge Chromoting</translation>
 <translation id="4277463233460010382">To je računalo konfigurirano tako da dozvoljava povezivanje jednog ili više klijenata bez unosa PIN-a.</translation>
 <translation id="4277736576214464567">Pristupni je kôd nevažeći. Pokušajte ponovo.</translation>
+<translation id="4281844954008187215">Uvjeti upotrebe usluge</translation>
 <translation id="4361728918881830843">Da biste omogućili povezivanje s različitim udaljenim računalima, na njima instalirajte Udaljenu radnu površinu Chrome pa kliknite gumb "<ph name="BUTTON_NAME" />".</translation>
 <translation id="4394049700291259645">Onemogući</translation>
 <translation id="4405930547258349619">Središnja biblioteka</translation>
@@ -345,6 +346,7 @@ Da biste omogućili ovu funkciju, odaberite '<ph name="BUTTON_NAME" />' za prika
 <translation id="8747048596626351634">Sesija se srušila ili se nije pokrenula. Ako ~/.chrome-remote-desktop-session postoji na udaljenom računalu, neka pokrene dugotrajan postupak u prednjem planu kao što je okruženje radnje površine ili upravitelj prozora.</translation>
 <translation id="8759753423332885148">Saznajte više.</translation>
 <translation id="8791202241915690908">Preuzimanje programa za instalaciju hosta Chromotinga</translation>
+<translation id="8804164990146287819">Pravila o privatnosti</translation>
 <translation id="894763922177556086">Dobra</translation>
 <translation id="895780780740011433">Za Windows 7 i novije verzije</translation>
 <translation id="897805526397249209">Da biste omogućili daljinsko povezivanje s drugim računalom, instalirajte na njega Chromoting i kliknite "<ph name="BUTTON_NAME" />".</translation>

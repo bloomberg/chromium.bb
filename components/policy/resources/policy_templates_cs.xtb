@@ -583,7 +583,6 @@ Pokud zásadu nenastavíte, bude se považovat za aktivované (viz popis výše)
       Když je tato zásada nastavena na hodnotu False, informace, pomocí nichž lze identifikovat uživatele, se neshromažďují.
 
       Tato zásada je účinná, když je zapnuto rozšíření <ph name="CHROME_REPORTING_EXTENSION_NAME" /> a počítač je zaregistrován pomocí tokenu <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
-<translation id="2126178089984117495">Omezuje režim tisku s kódem PIN. Pokud tato zásada není nastavená, žádná omezení se neuplatňují. Pokud režim není k dispozici, zásada se ignoruje.</translation>
 <translation id="2127599828444728326">Povolit na těchto stránkách oznámení</translation>
 <translation id="2131902621292742709">Prodleva snížení jasu obrazovky při napájení z baterie</translation>
 <translation id="2134437727173969994">Povolit uzamknutí obrazovky</translation>
@@ -1957,12 +1956,6 @@ Pokud ji ponecháte nenastavenou, velký kurzor bude ve výchozím nastavení de
 <translation id="4983201894483989687">Povolit spouštění zastaralých pluginů</translation>
 <translation id="4986560318567565414">Cesta k Chromu pro přepínání z alternativního prohlížeče.</translation>
 <translation id="4988291787868618635">Akce prováděná po určité době nečinnosti</translation>
-<translation id="5030889661505907084">
-      Je-li tato zásada nastavená na hodnotu true, mají cloudové zásady v případě konfliktu přednost před zásadami platformy.
-      Pokud je tato zásada nastavená na hodnotu false nebo není nakonfigurovaná, mají v případě konfliktu zásady platformy přednost před cloudovými zásadami.
-
-      Tato zásada je k dispozici pouze jako platforma.
-      </translation>
 <translation id="5034604678285451405">Nastaví mezní procentuální nabití baterie pro používání režimu napájení Peak Shift.
 
           Tato zásada se používá jen v případě, že je zásada DevicePowerPeakShiftEnabled nastavená na hodnotu true.
@@ -3647,21 +3640,6 @@ Doporučený způsob nastavení zásad ve Windows je prostřednictvím objektu z
 <translation id="8259592978873597235">Pokud je tato zásada nastavena na hodnotu true nebo není nastavena vůbec, není přehrávání videa považováno za nečinnost uživatele. V takovém případě nebudou dosaženy prodlevy režimu nečinnosti ani snížení jasu, vypnutí a uzamčení obrazovky a nebudou provedeny příslušné akce.
 
           Pokud je tato zásada nastavena na hodnotu false, přehrávání videa je považováno za nečinnost uživatele.</translation>
-<translation id="8264653492961233132">Určuje seznam aplikací a rozšíření, které se instalují na pozadí bez zásahu uživatele a které uživatel nemůže odinstalovat ani deaktivovat. Všechna oprávnění požadovaná aplikacemi nebo rozšířeními jsou udělována implicitně bez zásahu uživatele, a to včetně všech dodatečných oprávnění požadovaných budoucími verzemi aplikace nebo rozšíření. Kromě toho jsou udělována také oprávnění k používání těchto rozhraní API pro rozšíření: enterprise.deviceAttributes a enterprise.platformKeys. (Tato rozhraní API jsou k dispozici pouze u aplikací/rozšíření, jejichž instalace je vynucena.)
-
-Tato zásada má přednost před potenciálně konfliktní zásadou <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />. Bude-li aplikace nebo rozšíření, které bylo dříve vynuceně nainstalováno, z tohoto seznamu odebráno, <ph name="PRODUCT_NAME" /> je automaticky odinstaluje.
-
-U instancí systému Windows, které nejsou propojeny s doménou <ph name="MS_AD_NAME" />, je vynucená instalace omezena pouze na aplikace a rozšíření z Internetového obchodu Chrome.
-
-Zdrojový kód libovolného rozšíření mohou uživatelé pomocí Nástrojů pro vývojáře upravit (což může způsobit, že rozšíření nebude fungovat). Pokud je to problém, nastavte zásadu <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
-
-Každá položka v seznamu zásady představuje řetězec, který obsahuje ID rozšíření a volitelně také adresu URL pro aktualizaci oddělené středníkem (<ph name="SEMICOLON" />). ID rozšíření je řetězec s 32 písmeny a naleznete jej například zde: <ph name="CHROME_EXTENSIONS_LINK" /> (v režimu pro vývojáře). Pokud je zadána adresa URL pro aktualizaci, měla by odkazovat na dokument XML manifestu aktualizace (viz <ph name="LINK_TO_EXTENSION_DOC1" />). Ve výchozím nastavení se použije adresa URL pro aktualizaci Internetového obchodu Chrome (v současné době https://clients2.google.com/service/update2/crx). Adresa URL pro aktualizaci nastavená v této zásadě slouží pouze k počáteční instalaci. Další aktualizace rozšíření budou používat adresu URL pro aktualizaci uvedenou v manifestu rozšíření. Upozorňujeme, že až do verze 67 prohlížeče <ph name="PRODUCT_NAME" /> bylo explicitní zadání adresy URL pro aktualizaci povinné.
-
-Například <ph name="EXTENSION_POLICY_EXAMPLE" /> nainstaluje aplikaci <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> ze standardní adresy URL pro aktualizaci z Internetového obchodu Chrome. Další informace o hostování rozšíření viz <ph name="LINK_TO_EXTENSION_DOC2" />.
-
-Je-li tato zásada ponechána nenastavená, žádné aplikace ani rozšíření se automaticky neinstalují a uživatel v prohlížeči <ph name="PRODUCT_NAME" /> může kteroukoliv aplikaci nebo rozšíření odinstalovat.
-
-Tato zásada se nevztahuje na anonymní režim.</translation>
 <translation id="8274603902181597201">Vymazat domovský adresář ecryptfs uživatele a začít s novým zašifrovaným domovským adresářem ext4.</translation>
 <translation id="8285435910062771358">Aktivace lupy pro celou obrazovku</translation>
 <translation id="8288199156259560552">Zapnout službu určování polohy Google systému Android</translation>

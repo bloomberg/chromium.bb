@@ -615,7 +615,6 @@
       När principen är inställd på falskt samlas information som kan användas för att identifiera användarna inte in.
 
       Principen träder bara i kraft när tillägget <ph name="CHROME_REPORTING_EXTENSION_NAME" /> har aktiverats och enheten har registrerats med <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
-<translation id="2126178089984117495">Begränsar PIN-utskriftsläge. Om principen saknar inställning räknas det som ingen begränsning. Om läget inte är tillgängligt ignoreras den här principen.</translation>
 <translation id="2127599828444728326">Tillåt meddelanden på dessa webbplatser</translation>
 <translation id="2131902621292742709">Skärmdämpningstid när enheten drivs av batteriet</translation>
 <translation id="2134437727173969994">Tillåt att skärmen låses</translation>
@@ -2013,12 +2012,6 @@
 <translation id="4983201894483989687">Tillåt att föråldrade plugin-program körs</translation>
 <translation id="4986560318567565414">Sökväg till Chrome för att byta från den alternativa webbläsaren.</translation>
 <translation id="4988291787868618635">Åtgärd som ska vidtas när inaktivitetstiden har gått</translation>
-<translation id="5030889661505907084">
-      Om den här principen är inställd på sant har molnprinciper företräde om de är i konflikt med plattformens principer.
-      Om den här principen är inställd på falskt eller inte är konfigurerad har plattformens principer företräde om de är i konflikt med molnprinciper.
-
-      Denna princip är endast tillgänglig som plattform.
-      </translation>
 <translation id="5034604678285451405">Ange ett tröskelvärde i procent för batterianvändning vid belastningsförskjutning.
 
           Principen används bara om DevicePowerPeakShiftEnabled är inställd på sant.
@@ -3747,28 +3740,6 @@ Det rekommenderade sättet att konfigurera principer på när du använder Windo
 <translation id="8259592978873597235">Om den här principen är inställd på sant eller inte alls är inställd räknas det inte som att användaren är inaktiv så länge video spelas upp. Detta förhindrar att inaktivitetstid, skärmdämpningstid, skärmavstängningstid och skärmlåstid nås och att motsvarande åtgärder vidtas.
 
           Om principen är inställd på falskt förhindrar inte videoaktivitet att användaren räknas som inaktiv.</translation>
-<translation id="8264653492961233132">Anger en lista med appar och tillägg som installeras tyst, utan att
-          användaren gör något, och som användaren inte kan avinstallera
-          eller inaktivera. Alla behörigheter som apparna eller tilläggen behöver
-          beviljas implicit utan att användaren blir tillfrågad. Det gäller även nya
-          behörigheter som tillkommer i framtida versioner av appen eller tillägget.
-          Dessutom beviljas behörighet för tilläggs-API:erna
-          enterprise.deviceAttributes och enterprise.platformKeys. (Dessa API:er
-          är inte tillgängliga för appar eller tillägg som inte tvångsinstallerats.)
-
-          Den här principen har företräde framför <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> vid en eventuell konflikt. Om en app eller ett tillägg som tidigare har tvångsinstallerats tas bort från den här listan avinstalleras den/det automatiskt i <ph name="PRODUCT_NAME" />.
-
-          På Windows-domäner som inte har anslutits till en <ph name="MS_AD_NAME" />-domän kan bara appar och tillägg som finns på Chrome Web Store tvångsinstalleras.
-
-          Observera att användarna kan ändra i källkoden till vilket tillägg som helst med hjälp av verktygen för utvecklare (vilket kan leda till att tillägget slutar fungera). Om detta är ett problem bör principen <ph name="DEVELOPER_TOOLS_POLICY_NAME" /> ställas in.
-
-          Varje listpost i principen är en sträng med ett tilläggs-id och eventuellt en ”uppdateringsadress” med semikolon (<ph name="SEMICOLON" />) som avgränsare. Tilläggs-id:t är den sträng med 32 tecken som visas exempelvis på <ph name="CHROME_EXTENSIONS_LINK" /> i utvecklarläget. Om en ”uppdateringsadress” anges ska den peka på ett uppdateringsmanifest i XML-format enligt beskrivningen på <ph name="LINK_TO_EXTENSION_DOC1" />. Som standard används uppdateringsadressen på Chrome Web Store (som för närvarande är https://clients2.google.com/service/update2/crx). Observera att den ”uppdateringsadress” som anges i den här principen bara används vid den första installationen. För senare uppdateringar av tillägget används uppdateringsadressen i tilläggets manifestfil. Observera även att det var obligatoriskt att ange ”uppdateringsadressen” explicit i version 67 och äldre versioner av <ph name="PRODUCT_NAME" />.
-
-          Med <ph name="EXTENSION_POLICY_EXAMPLE" /> installeras t.ex. appen <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> från den vanliga ”uppdateringsadressen” på Chrome Web Store. Mer information om att stå värd för tillägg finns här: <ph name="LINK_TO_EXTENSION_DOC2" />.
-
-          Om den här principen lämnas utan inställning installeras inga appar eller tillägg automatiskt och användaren får avinstallera alla appar och tillägg i <ph name="PRODUCT_NAME" />.
-
-         Observera att principen inte gäller i inkognitoläge.</translation>
 <translation id="8274603902181597201">Rensa bort användarens ecryptfs-krypterade hemkatalog och börja om med en ny ext4-krypterad hemkatalog.</translation>
 <translation id="8285435910062771358">Helskärmsförstoraren är aktiverad</translation>
 <translation id="8288199156259560552">Aktivera Googles platstjänst för Android</translation>

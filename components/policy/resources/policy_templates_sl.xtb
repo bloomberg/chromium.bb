@@ -615,7 +615,6 @@
       Če je ta pravilnik onemogočen, se podatki, s katerimi je mogoče prepoznati uporabnike, ne zbirajo.
 
       Ta pravilnik se uporablja samo, če je omogočena razširitev <ph name="CHROME_REPORTING_EXTENSION_NAME" />, računalnik pa je včlanjen v pravilnik <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
-<translation id="2126178089984117495">Omejuje način tiskanja s kodo PIN. Če pravilnik ni nastavljen, ni omejitve. Če način ni na voljo, je ta pravilnik prezrt.</translation>
 <translation id="2127599828444728326">Dovoli obvestila na teh mestih</translation>
 <translation id="2131902621292742709">Časovni zamik zatemnitve zaslona ob napajanju iz akumulatorja</translation>
 <translation id="2134437727173969994">Dovoli zaklepanje zaslona</translation>
@@ -2013,12 +2012,6 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="4983201894483989687">Dovoli izvajanje zastarelih vtičnikov</translation>
 <translation id="4986560318567565414">Pot do Chroma za preklop z nadomestnega brskalnika.</translation>
 <translation id="4988291787868618635">Dejanje, ki naj se izvede, ko preteče časovni zamik nedejavnosti</translation>
-<translation id="5030889661505907084">
-      Če je pravilnik nastavljen na »true«, ima v primeru spora s pravilnikom okolja prednost pravilnik oblaka.
-      Če je pravilnik nastavljen na »false« ali ni nastavljen, ima v primeru spora s pravilnikom o oblaku prednost pravilnik o okolju.
-
-      Ta pravilnik je na voljo samo kot okolje.
-      </translation>
 <translation id="5034604678285451405">Nastavitev praga za funkcijo preklopa na akumulatorsko napajanje ob konicah v odstotkih.
 
           Ta pravilnik se uporablja samo, če je omogočen pravilnik DevicePowerPeakShiftEnabled.
@@ -3745,29 +3738,6 @@ Teh nastavitev ni treba konfigurirati ročno. Za sisteme Windows, macOS in Linux
 <translation id="8259592978873597235">Če je pravilnik nastavljen na »True« ali če pravilnik ni nastavljen, uporabnik ne velja za nedejavnega, če se predvaja videoposnetek. S tem se prepreči doseganje časovnega zamika ob nedejavnosti ter časovnega zamika zatemnitve, izklopa zaslona in zaklepa zaslona, s tem pa se preprečijo tudi ustrezna dejanja.
 
           Če je pravilnik nastavljen na »False«, uporabnik kljub videodejavnosti velja za nedejavnega.</translation>
-<translation id="8264653492961233132">Določa seznam aplikacij in razširitev, ki so nameščene brez obveščanja
-          in posegov uporabnika ter jih uporabnik ne more odstraniti ali
-          onemogočiti. Vsa dovoljenja, ki jih zahtevajo aplikacije/razširitve,
-          so implicitno odobrena brez posegov uporabnika,
-          vključno z morebitnimi dodatnimi dovoljenji, ki jih bodo zahtevale
-          prihodnje različice aplikacije/razširitve. Prav tako so odobrena dovoljenja
-          za razširitvena API-ja enterprise.deviceAttributes in enterprise.platformKeys.
-          (Ta API-ja nista na voljo aplikacijam/razširitvam,
-          ki niso vsiljeno nameščene.)
-
-          Ta pravilnik ima prednost pred pravilnikom <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> v primeru njunega spora. Če je aplikacija ali razširitev, ki je bila vsiljeno nameščena, odstranjena s tega seznama, jo brskalnik <ph name="PRODUCT_NAME" /> samodejno odstrani.
-
-          Za primerke sistema Windows, ki niso pridruženi v domeno <ph name="MS_AD_NAME" />, je vsiljeno nameščanje omejeno na aplikacije in razširitve, navedene v Spletni trgovini Chrome.
-
-          Upoštevajte, da lahko uporabniki spremenijo izvorno kodo katere koli razširitve z orodji za razvijalce (s čimer razširitev morda izgubi funkcionalnost). Če imate glede tega pomisleke, nastavite pravilnik <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
-
-          Vsak element na seznamu pravilnika je niz, ki vsebuje ID razširitve in (neobvezno) URL za »posodobitev«, ločen s podpičjem (<ph name="SEMICOLON" />). ID razširitve je 32-mestni črkovni niz, ki ga je mogoče v načinu za razvijalce najti na primer na <ph name="CHROME_EXTENSIONS_LINK" />. Če je URL za »posodobitev« naveden, mora kazati na dokument XML manifesta za posodobitev, kot je opisano na <ph name="LINK_TO_EXTENSION_DOC1" />. Privzeto se uporabi URL za posodobitev v Spletni trgovini Chrome (ki je trenutno »https://clients2.google.com/service/update2/crx«). Upoštevajte, da se URL za »posodobitev«, nastavljen v tem pravilniku, uporabi samo pri začetni namestitvi; pri vseh nadaljnjih posodobitvah razširitve je uporabljen URL, naveden v manifestu razširitve. Upoštevajte tudi, da je bila izrecna navedba URL-ja za »posodobitev« obvezna v različicah brskalnika <ph name="PRODUCT_NAME" /> do vključno različice 67.
-
-          <ph name="EXTENSION_POLICY_EXAMPLE" /> namesti na primer aplikacijo <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> s standardnega URL-ja za »posodobitev« v Spletni trgovini Chrome. Več informacij o gostovanju razširitev je na voljo tukaj: <ph name="LINK_TO_EXTENSION_DOC2" />.
-
-          Če ta pravilnik ni nastavljen, nobena aplikacija ali razširitev ni nameščena samodejno in uporabnik lahko odstrani katero koli aplikacijo ali razširitev v brskalnik <ph name="PRODUCT_NAME" />.
-
-          Upoštevajte, da se ta pravilnik ne uporablja za način brez beleženja zgodovine.</translation>
 <translation id="8274603902181597201">Brisanje uporabnikovega domačega imenika, šifriranega s šifriranjem ecryptfs, in začetek z novim domačim imenikom, šifriranim s šifriranjem ext4.</translation>
 <translation id="8285435910062771358">Vklop lupe celozaslonskega načina</translation>
 <translation id="8288199156259560552">Omogoči Googlovo lokacijsko storitev za Android</translation>

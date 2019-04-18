@@ -1631,7 +1631,6 @@
 <translation id="3576324189521867626">ติดตั้งเรียบร้อยแล้ว</translation>
 <translation id="3578594933904494462">เนื้อหาของแท็บนี้กำลังถูกแชร์</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; ต้องการแชร์เครื่องพิมพ์ &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; กับกลุ่มที่คุณเป็นเจ้าของ: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt; หากคุณยอมรับ สมาชิกในกลุ่มทั้งหมดจะสามารถสั่งพิมพ์ไปยังเครื่องพิมพ์ดังกล่าวได้</translation>
-<translation id="3580923162759633716">กำลังสร้างโปรไฟล์บริการ</translation>
 <translation id="3584169441612580296">อ่านและเปลี่ยนแปลงรูปภาพ เพลง และสื่ออื่นๆ จากคอมพิวเตอร์ของคุณ</translation>
 <translation id="3587482841069643663">ทั้งหมด</translation>
 <translation id="358796204584394954">พิมพ์รหัสนี้บน "<ph name="DEVICE_NAME" />" เพื่อจับคู่:</translation>
@@ -3529,7 +3528,7 @@
 <translation id="6564072216966459757">นำแอป Linux สำหรับ <ph name="DEVICE_TYPE" /> ออก</translation>
 <translation id="6567688344210276845">ไม่สามารถโหลดไอคอน "<ph name="ICON" />" เพื่อให้เกิดการทำงานบนหน้าเว็บ</translation>
 <translation id="6571979863037191371">ยกเลิกการเชื่อมต่อโทรศัพท์กับ Chromebook อุปกรณ์ทั้งสองจะไม่เชื่อมต่อกันโดยอัตโนมัติอีกต่อไป</translation>
-<translation id="6573998787994398565"><ph name="FILE_NAME" /> ไม่ได้ถูกดาวน์โหลดตามปกติและอาจเป็นอันตราย คุณได้รับการปกป้องโดยการปกป้องขั้นสูงแล้ว</translation>
+<translation id="6573998787994398565"><ph name="FILE_NAME" /> ไม่ได้มีการดาวน์โหลดกันโดยทั่วไปและอาจเป็นอันตราย คุณได้รับการปกป้องโดยการปกป้องขั้นสูงแล้ว</translation>
 <translation id="657402800789773160">&amp;โหลดหน้านี้ใหม่</translation>
 <translation id="6577284282025554716">ยกเลิกการดาวน์โหลดแล้ว: <ph name="FILE_NAME" /></translation>
 <translation id="6578664922716508575">เข้ารหัสลับรหัสผ่านที่ซิงค์ด้วยชื่อผู้ใช้และรหัสผ่าน Google ของคุณ</translation>
@@ -4640,7 +4639,6 @@
 <translation id="8284279544186306258">ไซต์ <ph name="WEBSITE_1" /> ทั้งหมด</translation>
 <translation id="8286036467436129157">ลงชื่อเข้าใช้</translation>
 <translation id="8286963743045814739">คุณจะท่องเว็บแบบส่วนตัวได้โดยใช้หน้าต่างที่ไม่ระบุตัวตน</translation>
-<translation id="82871696630048499">มีการโหลดหน้าเว็บซ้ำเพราะหน่วยความจำเต็ม</translation>
 <translation id="8287902281644548111">ค้นหาตามการเรียก API/URL</translation>
 <translation id="8288032458496410887">ถอนการติดตั้ง <ph name="APP" />...</translation>
 <translation id="8291967909914612644">ประเทศผู้ให้บริการหน้าแรก</translation>
@@ -5107,7 +5105,7 @@
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="9040661932550800571">อัปเดตรหัสผ่านสำหรับ <ph name="ORIGIN" /> ไหม</translation>
 <translation id="9041692268811217999">ผู้ดูแลระบบปิดการเข้าถึงไฟล์ในเครื่องของคุณ</translation>
-<translation id="9041909613332246191">ไฟล์นี้ไม่ได้มีการดาวน์โหลดเป็นที่แพร่หลายและอาจเป็นอันตราย คุณได้รับการปกป้องโดยการปกป้องขั้นสูงแล้ว</translation>
+<translation id="9041909613332246191">ไฟล์นี้ไม่ได้มีการดาวน์โหลดกันโดยทั่วไปและอาจเป็นอันตราย คุณได้รับการปกป้องโดยการปกป้องขั้นสูงแล้ว</translation>
 <translation id="9042893549633094279">ข้อมูลส่วนบุคคลและความปลอดภัย</translation>
 <translation id="904451693890288097">โปรดป้อนรหัสผ่านสำหรับ "<ph name="DEVICE_NAME" />":</translation>
 <translation id="9044646465488564462">ไม่สามารถเชื่อมต่อเครือข่าย: <ph name="DETAILS" /></translation>

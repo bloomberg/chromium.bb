@@ -153,6 +153,7 @@ Gizlilikle ilgili daha fazla bilgi edinmek için lütfen Google Gizlilik Politik
 <translation id="4240294130679914010">Chromoting Ana Makine Yüklemesini Kaldırma Programı</translation>
 <translation id="4277463233460010382">Bu bilgisayar PIN girmeden bir veya daha fazla istemcinin bağlanmasına izin verecek şekilde yapılandırılmıştır.</translation>
 <translation id="4277736576214464567">Erişim kodu geçersiz. Lütfen tekrar deneyin.</translation>
+<translation id="4281844954008187215">Hizmet Şartları</translation>
 <translation id="4361728918881830843">Başka bir bilgisayara uzaktan bağlantıları etkinleştirmek için Chrome Uzaktan Masaüstü'nü o bilgisayara yükleyin ve “<ph name="BUTTON_NAME" />” düğmesini tıklayın.</translation>
 <translation id="4394049700291259645">Devre dışı bırak</translation>
 <translation id="4405930547258349619">Çekirdek Kitaplığı</translation>
@@ -345,6 +346,7 @@ Bu işlevi etkinleştirmek için "<ph name="BUTTON_NAME" />" düğmesini seçere
 <translation id="8747048596626351634">Oturum kilitlendi veya başlatılamadı. Uzak bilgisayarda ~/.chrome-remote-desktop-session mevcutsa masaüstü ortamı veya pencere yöneticisi gibi uzun süre ön planda çalışan bir işlem başlattığından emin olun.</translation>
 <translation id="8759753423332885148">Daha fazla bilgi edinin.</translation>
 <translation id="8791202241915690908">Chromoting Ana Makine Yükleyicisi'ni indirin</translation>
+<translation id="8804164990146287819">Gizlilik Politikası</translation>
 <translation id="894763922177556086">İyi</translation>
 <translation id="895780780740011433">Windows 7 ve sonraki sürümler için</translation>
 <translation id="897805526397249209">Başka bir bilgisayara uzaktan bağlantıları etkinleştirmek için Chromoting'i o bilgisayara yükleyin ve “<ph name="BUTTON_NAME" />” düğmesini tıklayın.</translation>

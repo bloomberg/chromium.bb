@@ -595,7 +595,6 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
       Hvis denne regelen er angitt som «false» (usant), innhentes ikke informasjon som kan brukes til å identifisere brukere.
 
       Denne regelen gjelder bare når <ph name="CHROME_REPORTING_EXTENSION_NAME" /> er slått på og maskinen er registrert med <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
-<translation id="2126178089984117495">Begrenser modusen for utskrift med PIN-kode. Hvis regelen ikke er angitt, er det ingen begrensninger. Hvis modusen ikke er tilgjengelig, ignoreres denne regelen.</translation>
 <translation id="2127599828444728326">Tillat varslinger på disse nettstedene</translation>
 <translation id="2131902621292742709">Forsinkelse for nedtonet skjerm når enheten kjører på batteristrøm</translation>
 <translation id="2134437727173969994">Tillat låsing av skjermen</translation>
@@ -1975,12 +1974,6 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 <translation id="4983201894483989687">Tillat kjøring av foreldede programtillegg</translation>
 <translation id="4986560318567565414">Banen til Chrome for å bytte fra den alternative nettleseren.</translation>
 <translation id="4988291787868618635">Handling som skal utføres når inaktivitetsforsinkelsen blir overskredet</translation>
-<translation id="5030889661505907084">
-      Hvis regelen er satt til «true» (sann), har skyregelen forrang ved konflikt med plattformregelen.
-      Hvis regelen er satt til «false» (usann) eller ikke er konfigurert, har plattformregelen forrang ved konflikt med skyregelen.
-
-      Denne regelen er bare tilgjengelig som en plattform.
-      </translation>
 <translation id="5034604678285451405">Angi batteriterskelen for strømtoppskift i prosent.
 
           Denne regelen brukes bare hvis DevicePowerPeakShiftEnabled er satt til sann.
@@ -3518,7 +3511,7 @@ MERK: Frem til versjon 45 ble denne regelen bare støttet i kioskmodus.</transla
 <translation id="793134539373873765">Angir om p2p skal brukes for nyttelast av OS-oppdatering. Hvis angitt til «True», kommer enhetene til å dele og forsøke å konsumere oppdateringsnyttelast på LAN, noe som potensielt kan redusere Internett-båndbredden og -trafikken. Hvis oppdateringsnyttelasten ikke er tilgjengelig på LAN, går enheten tilbake til å laste ned fra en oppdateringstjener. Hvis angitt til «False» eller ikke konfigurert, blir ikke p2p brukt.</translation>
 <translation id="7933141401888114454">Slå på oppretting av administrerte brukere</translation>
 <translation id="793473937901685727">Angi sertifikattilgjengeligheten for ARC-apper</translation>
-<translation id="7937491150792971922">Slå sammen regler fra flere kilder for hvilke utvidelser som kan installeres</translation>
+<translation id="7937491150792971922">Slå sammen regler for hvilke utvidelser som kan installeres, fra flere kilder</translation>
 <translation id="7937766917976512374">Tillat eller blokkér videoopptak</translation>
 <translation id="7941975817681987555">Ikke forutsi nettverkshandlinger på noen nettverkstilkoblinger</translation>
 <translation id="7952958573604504839">I M48 er denne regelen avviklet til fordel for <ph name="NETWORK_PREDICTION_OPTIONS_POLICY_NAME" />, og i M54 er den fjernet.
@@ -3677,29 +3670,6 @@ Vi anbefaler å konfigurere regler på Windows via GPO, men tildeling av regler 
 <translation id="8259592978873597235">Hvis denne regelen er satt til «true» (sann) eller ikke er angitt, anses ikke brukerne som inaktive når videoer spiller. Dette hindrer at inaktivitetsforsinkelsen, forsinkelsen for skjermpdemping, forsinkelsen for å slå av skjermen eller skjermlåsforsinkelsen utløses, slik at de tilknyttede handlingene ikke utføres.
 
           Hvis denne regelen er satt til «false» (usann), hindrer ikke videoaktivitet at brukerne anses som inaktive.</translation>
-<translation id="8264653492961233132">Spesifiserer en liste over apper og utvidelser som installeres stille,
-          uten brukerinteraksjon, og som ikke kan avinstalleres eller
-          deaktiveres av brukere. Det er underforstått at alle tillatelser
-          appene/utvidelsene ber om, gis uten brukerinteraksjon. Dette gjelder
-          også eventuelle tillatelser fremtidige versjoner av appen/utvidelsen
-          ber om. Tillatelser gis også for utvidelses-API-ene
-          enterprise.deviceAttributes og enterprise.platformKeys.
-          (Disse to API-ene er ikke tilgjengelig for apper/utvidelser som ikke er
-          administratorinstallert.)
-
-          Denne regelen prioriteres foran eventuelle regler for <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> hvis de er i konflikt med hverandre. Hvis apper eller utvidelser som tidligere var administratorinstallert, blir fjernet fra listen, blir de automatisk avinstallert av <ph name="PRODUCT_NAME" />.
-
-          For Windows-forekomster som ikke er tilknyttet noe <ph name="MS_AD_NAME" />-domene, er administratorinstallasjon begrenset til apper og utvidelser som står oppført i Chrome Nettmarked.
-
-         Vær oppmerksom på at kildekoden for utvidelsene kan endres av brukere via utviklerverktøy (noe som potensielt kan føre til at utvidelsene ikke fungerer). Hvis dette kan bli et problem, bør du angi regelen <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
-
-          Hvert av elementene i listen er en streng som inneholder en utvidelses-ID og eventuelt (valgfritt) en «oppdatering»-nettadresse, atskilt med semikolon (<ph name="SEMICOLON" />). Utvidelses-ID-en er strengen på 32 tegn du for eksempel finner i <ph name="CHROME_EXTENSIONS_LINK" /> når du er i utviklermodus. «Oppdatering»-nettadressen peker til et oppdateringsmanifest i XML-format, som beskrevet her: <ph name="LINK_TO_EXTENSION_DOC1" />. Oppdateringsnettadressen for Chrome Nettmarked brukes som standard (og for øyeblikket er den «https://clients2.google.com/service/update2/crx»). Vær oppmerksom på at «oppdatering»-nettadressen som angis i denne regelen, bare brukes for den første installasjonen. Påfølgende oppdateringer av utvidelsen bruker oppdateringsnettadressen som er beskrevet i utvidelsens manifest. Vær også oppmerksom på at det var uttrykkelig påkrevd å angi «oppdatering»-nettadressen i <ph name="PRODUCT_NAME" />-versjoner opptil og inkludert 67.
-
-          For eksempel installerer <ph name="EXTENSION_POLICY_EXAMPLE" /> appen <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> fra «oppdatering»-nettadressen som er standard for Chrome Nettmarked. Gå til <ph name="LINK_TO_EXTENSION_DOC2" /> for å finne ut mer om å være vert for utvidelser.
-
-          Hvis denne regelen ikke er angitt, blir ingen apper eller utvidelser installert automatisk, og brukere kan avinstallere hvilke som helst apper og utvidelser i <ph name="PRODUCT_NAME" />.
-
-          Vær oppmerksom på at denne regelen ikke gjelder for inkognitomodus.</translation>
 <translation id="8274603902181597201">Visk ut brukerens ecryptfs-hjemmekatalog, og begynn med en ny ext4-kryptert hjemmekatalog.</translation>
 <translation id="8285435910062771358">Fullskjermsforstørrelse aktivert</translation>
 <translation id="8288199156259560552">Slå på Googles posisjonstjeneste for Android</translation>

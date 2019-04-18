@@ -153,6 +153,7 @@ Informace ohledně ochrany soukromí naleznete v zásadách ochrany soukromí sp
 <translation id="4240294130679914010">Nástroj k odinstalaci hostitele funkce Chromoting</translation>
 <translation id="4277463233460010382">Tento počítač je nakonfigurován tak, aby jednomu nebo více klientům umožnil připojení bez zadávání kódu PIN.</translation>
 <translation id="4277736576214464567">Přístupový kód je neplatný. Zkuste to prosím znovu.</translation>
+<translation id="4281844954008187215">Smluvní podmínky</translation>
 <translation id="4361728918881830843">Chcete-li umožnit vzdálené připojení k jinému počítači, nainstalujte do něj Vzdálenou plochu Chrome a poté klikněte na tlačítko <ph name="BUTTON_NAME" />.</translation>
 <translation id="4394049700291259645">Deaktivovat</translation>
 <translation id="4405930547258349619">Základní knihovna</translation>
@@ -345,6 +346,7 @@ Chcete-li tuto funkci aktivovat, kliknutím na tlačítko <ph name="BUTTON_NAME"
 <translation id="8747048596626351634">Relace selhala, nebo se ji nepodařilo spustit. Je-li ve vzdáleném počítači k dispozici návštěvy ~/.chrome-remote-desktop-session, zkontrolujte, zda spouští dlouho běžící proces na popředí, například počítačovou plochu nebo správce oken.</translation>
 <translation id="8759753423332885148">Další informace</translation>
 <translation id="8791202241915690908">Stažení instalačního programu hostitele funkce Chromoting</translation>
+<translation id="8804164990146287819">Zásady ochrany soukromí</translation>
 <translation id="894763922177556086">Dobrá</translation>
 <translation id="895780780740011433">Pro Windows 7 a novější</translation>
 <translation id="897805526397249209">Chcete-li umožnit vzdálené připojení k jinému počítači, nainstalujte do něj aplikaci Chromoting a poté klikněte na tlačítko <ph name="BUTTON_NAME" />.</translation>

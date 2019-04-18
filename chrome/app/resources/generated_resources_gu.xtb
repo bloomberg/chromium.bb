@@ -1627,7 +1627,6 @@
 <translation id="3576324189521867626">સફળતાપૂર્વક ઇન્સ્ટૉલ કરી</translation>
 <translation id="3578594933904494462">આ ટેબનું કન્ટેન્ટ શેર થઈ રહ્યું છે.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt;, તમે માલિકી ધરાવો છો તે જૂથ સાથે &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; પ્રિન્ટર શેર કરવા માગે છે: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. જો તમે સ્વીકારો છો, તો બધા જૂથ સભ્યો પ્રિન્ટર પર છાપવામાં સમર્થ હશે.</translation>
-<translation id="3580923162759633716">પ્રોફાઇલ બનાવવાની સેવા</translation>
 <translation id="3584169441612580296">વાંચો અને તમારા કમ્પ્યુટરમાંથી ફોટો, સંગીત અને અન્ય મીડિયા બદલો</translation>
 <translation id="3587482841069643663">બધા</translation>
 <translation id="358796204584394954">જોડી બનાવવા માટે "<ph name="DEVICE_NAME" />" પર આ કોડ લખો:</translation>
@@ -4213,7 +4212,7 @@ USB ડિવાઇસ</translation>
 <translation id="7671130400130574146">સિસ્ટમ શીર્ષક બાર અને બોર્ડર્સનો ઉપયોગ કરો</translation>
 <translation id="7672520070349703697"><ph name="PAGE_TITLE" />માં <ph name="HUNG_IFRAME_URL" />.</translation>
 <translation id="7676867886086876795">કોઈપણ ટેક્સ્ટ ફીલ્ડમાં શ્રુતલેખનને મંજૂરી આપવા માટે Googleને તમારો અવાજ મોકલો.</translation>
-<translation id="7678280409648629969">તમે છૂપો મોડથી બહાર નીકળો તે પછી સાઇન-ઇન ડેટાને Chromeમાં સ્ટોર કરવામાં આવશે. આ રીતે તમે આ વેબસાઇટ સાથે થોડીવાર પછી ફરી સ્પર્શ IDનો ઉપયોગ કરી શકશો.</translation>
+<translation id="7678280409648629969">તમે 'છૂપો મોડ'થી બહાર નીકળો તે પછી સાઇન-ઇન ડેટાને Chromeમાં સ્ટોર કરવામાં આવશે. આ રીતે તમે આ વેબસાઇટ સાથે થોડીવાર પછી ફરી સ્પર્શ IDનો ઉપયોગ કરી શકશો.</translation>
 <translation id="7681095912841365527">સાઇટ બ્લૂટૂથનો ઉપયોગ કરી શકે</translation>
 <translation id="7683373461016844951">ચાલુ રાખવા માટે, ઓકે ક્લિક કરો, પછી તમારા <ph name="DOMAIN" /> ઇમેઇલ ઍડ્રેસ માટે નવી પ્રોફાઇલ બનાવવા માટે વ્યક્તિને ઉમેરો પર ક્લિક કરો.</translation>
 <translation id="7684212569183643648">તમારા વ્યવસ્થાપક દ્વારા ઇન્સ્ટોલ કરાયું</translation>
@@ -4632,7 +4631,6 @@ USB ડિવાઇસ</translation>
 <translation id="8284279544186306258">તમામ <ph name="WEBSITE_1" /> સાઇટ્સ</translation>
 <translation id="8286036467436129157">સાઇન ઇન કરો</translation>
 <translation id="8286963743045814739">તમે છુપી વિંડોનો ઉપયોગ કરીને ખાનગી રૂપે બ્રાઉઝ કરી શકો છો</translation>
-<translation id="82871696630048499">મેમરી સમાપ્ત થવાને કારણે વેબ પેજ ફરી લોડ થયું હતું.</translation>
 <translation id="8287902281644548111">API કૉલ/URL અનુસાર શોધ કરો</translation>
 <translation id="8288032458496410887"><ph name="APP" />ને અનઇન્સ્ટૉલ કરો...</translation>
 <translation id="8291967909914612644">હોમ પ્રદાતાનો દેશ</translation>

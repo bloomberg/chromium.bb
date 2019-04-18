@@ -594,7 +594,6 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       Când politica este dezactivată, nu se colectează informații care se pot folosi pentru a identifica utilizatorii.
 
       Politica se aplică doar când este activată <ph name="CHROME_REPORTING_EXTENSION_NAME" />, iar dispozitivul este înregistrat cu <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
-<translation id="2126178089984117495">Limitează modul de printare cu PIN. Politica nesetată este tratată ca lipsa oricărei restricții. Dacă modul nu este disponibil, politica este ignorată.</translation>
 <translation id="2127599828444728326">Permiteți notificări pentru aceste site-uri</translation>
 <translation id="2131902621292742709">Interval până la reducerea luminozității ecranului la funcționarea pe baterie</translation>
 <translation id="2134437727173969994">Permite blocarea ecranului</translation>
@@ -1963,12 +1962,6 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="4983201894483989687">Permite rularea pluginurilor învechite</translation>
 <translation id="4986560318567565414">Calea către Chrome pentru comutarea de la browserul secundar.</translation>
 <translation id="4988291787868618635">Măsura care se va lua la atingerea intervalului maxim de inactivitate</translation>
-<translation id="5030889661505907084">
-      Când politica este activată, politica în cloud are prioritate dacă este în conflict cu politica platformei.
-      Când politica este dezactivată sau nu este configurată, politica platformei are prioritate dacă este în conflict cu politica în cloud.
-
-      Politica este disponibilă numai ca platformă.
-      </translation>
 <translation id="5034604678285451405">Setează limita maximă a bateriei pentru modul de alimentare Peak shift (Comutare perioadă de vârf) în procente.
 
           Această politică este folosită numai dacă politica DevicePowerPeakShiftEnabled este activată.
@@ -3637,21 +3630,6 @@ Este recomandat să configurezi politica în Windows prin GPO, cu toate că gest
 <translation id="8259592978873597235">Dacă politica este activată sau nu este configurată, utilizatorul nu este considerat inactiv în timpul redării videoclipului. Astfel, nu se atinge intervalul maxim de inactivitate, intervalul pentru reducerea luminozității ecranului, intervalul pentru oprirea ecranului și intervalul pentru blocarea ecranului și nu se iau măsurile corespunzătoare acestora.
 
           Dacă politica este dezactivată, utilizatorul este considerat inactiv în timpul redării conținutului video.</translation>
-<translation id="8264653492961233132">Specifică o listă de aplicații și extensii instalate în fundal, fără intervenția utilizatorului și care nu pot fi dezinstalate sau dezactivate de acesta. Toate permisiunile solicitate de aplicații/extensii sunt acordate în mod prestabilit, fără intervenția utilizatorului, inclusiv orice permisiune suplimentară solicitată de viitoarele versiuni ale aplicației/extensiei. În plus, permisiunile sunt acordate pentru API-urile extensiei enterprise.deviceAttributes și enterprise.platformKeys. (Aceste două API-uri nu sunt disponibile pentru aplicațiile/extensiile care nu sunt instalate forțat.)
-
-          Această politică are prioritate față de o politică <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> care poate crea conflicte. Dacă o aplicație sau o extensie care a fost instalată forțat anterior este eliminată din listă, aceasta este dezinstalată automat de <ph name="PRODUCT_NAME" />.
-
-          Pentru instanțele Windows neasociate unui domeniu <ph name="MS_AD_NAME" />, instalarea forțată se limitează la aplicațiile și extensiile afișate în Magazinul web Chrome.
-
-          Reține că utilizatorii pot să modifice codul sursă al oricărei extensii cu ajutorul Instrumentelor pentru dezvoltatori (ceea ce poate face extensia nefuncțională). Dacă acest aspect creează probleme, trebuie să se seteze politica <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
-
-          Fiecare element din lista politicii este un șir care include un ID al extensiei și, opțional, o adresă URL de „actualizare”, separate prin punct și virgulă (<ph name="SEMICOLON" />). ID-ul de extensie este un șir alcătuit din 32 de litere găsit, de exemplu, la <ph name="CHROME_EXTENSIONS_LINK" /> în modul pentru dezvoltatori. Adresa URL de „actualizare”, dacă este specificată, trebuie să trimită la un document XML cu manifestul de actualizare, conform descrierii de la <ph name="LINK_TO_EXTENSION_DOC1" />. În mod prestabilit, se folosește adresa URL de actualizare a Magazinului web Chrome (care acum este „https://clients2.google.com/service/update2/crx”). Reține că adresa URL de „actualizare” setată în această politică este folosită numai la instalarea inițială. Actualizările ulterioare ale extensiei vor folosi adresa URL de actualizare indicată în manifestul extensiei. Reține și că specificarea explicită a adresei URL de „actualizare” era obligatorie în versiunile <ph name="PRODUCT_NAME" /> de până la 67, inclusiv.
-
-          De exemplu, <ph name="EXTENSION_POLICY_EXAMPLE" /> instalează aplicația <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> de la adresa URL standard de „actualizare” din Magazinul web Chrome. Pentru mai multe informații despre găzduirea extensiilor, accesează <ph name="LINK_TO_EXTENSION_DOC2" />.
-
-          Dacă politica nu este setată, nicio aplicație sau extensie nu va fi instalată automat, iar utilizatorul poate dezinstala orice aplicație sau extensie din <ph name="PRODUCT_NAME" />.
-
-          Reține că politica nu se aplică modului incognito.</translation>
 <translation id="8274603902181597201">Șterge directorul principal ecryptfs al utilizatorului și începe cu un nou director principal ext4-encrypted.</translation>
 <translation id="8285435910062771358">Lupă ecran complet activată</translation>
 <translation id="8288199156259560552">Activează Serviciul de localizare Google pentru Android</translation>

@@ -611,7 +611,6 @@
       Als dit beleid is ingesteld op 'False', worden er geen gegevens verzameld die kunnen worden gebruikt om gebruikers te identificeren.
 
       Dit beleid is alleen van toepassing wanneer de <ph name="CHROME_REPORTING_EXTENSION_NAME" /> is ingeschakeld en de machine is ingeschreven met <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
-<translation id="2126178089984117495">Beperkt de modus voor afdrukken met pincode. Als er geen beleid is ingesteld, gelden er geen beperkingen. Als de modus niet beschikbaar is, wordt dit beleid genegeerd.</translation>
 <translation id="2127599828444728326">Meldingen op deze sites toestaan</translation>
 <translation id="2131902621292742709">Vertraging van dimmen van scherm wanneer op de batterij wordt gewerkt</translation>
 <translation id="2134437727173969994">Schermvergrendeling toestaan</translation>
@@ -2003,12 +2002,6 @@
 <translation id="4983201894483989687">Verouderde plug-ins toestaan die actief zijn</translation>
 <translation id="4986560318567565414">Pad naar Chrome voor overschakeling vanaf de alternatieve browser.</translation>
 <translation id="4988291787868618635">Actie die wordt ondernomen wanneer de inactieve vertraging wordt bereikt</translation>
-<translation id="5030889661505907084">
-      Als het beleid is ingesteld op 'true', krijgt het cloudbeleid voorrang bij een conflict met het platformbeleid.
-      Als het beleid is ingesteld op 'false' of niet is geconfigureerd, krijgt het platformbeleid voorrang bij een conflict met het cloudbeleid.
-
-      Dit beleid is uitsluitend beschikbaar als platform.
-      </translation>
 <translation id="5034604678285451405">Stel de drempel voor stroompiekverschuiving van de batterij in procenten in.
 
           Dit beleid wordt alleen gebruikt als DevicePowerPeakShiftEnabled is ingesteld op 'true'.
@@ -3713,21 +3706,6 @@ De aanbevolen manier om beleidsregels te configureren op Windows, is via GPO, ma
 <translation id="8259592978873597235">Als dit beleid is ingesteld op 'true' of niet is ingesteld, wordt de gebruiker niet beschouwd als inactief terwijl de video wordt afgespeeld. Hiermee wordt voorkomen dat de inactieve vertraging, vertraging van dimmen van het scherm, vertraging van scherm uitschakelen en vertraging van schermvergrendeling worden bereikt en dat de bijbehorende acties worden ondernomen.
 
           Als dit beleid is ingesteld op 'false', voorkomt videoactiviteit niet dat de gebruiker als inactief wordt beschouwd.</translation>
-<translation id="8264653492961233132">Hiermee wordt een lijst opgegeven met apps en extensies die zonder gebruikersinteractie op de achtergrond worden geïnstalleerd en die niet kunnen worden verwijderd of uitgeschakeld door de gebruiker. Alle machtigingen die worden aangevraagd door de apps/extensies, worden impliciet zonder gebruikersinteractie verleend, inclusief aanvullende machtigingen die worden aangevraagd door toekomstige versies van de app/extensie. Bovendien worden machtigingen verleend voor de API's van de enterprise.deviceAttributes- en enterprise.platformKeys-extensie. (Deze twee API's zijn niet beschikbaar voor apps/extensies die niet gedwongen zijn geïnstalleerd.)
-
-          Dit beleid krijgt voorrang boven een potentieel conflicterend <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />-beleid. Als een app of extensie die eerder gedwongen is geïnstalleerd uit deze lijst wordt verwijderd, wordt de app of extensie automatisch verwijderd door <ph name="PRODUCT_NAME" />.
-
-          Voor Windows-instanties die niet zijn gekoppeld aan een <ph name="MS_AD_NAME" />-domein, is gedwongen installatie beperkt tot apps en extensies die worden vermeld in de Chrome Web Store.
-
-          Houd er rekening mee dat gebruikers de broncode van een extensie kunnen wijzigen via de ontwikkelaarstools (waardoor de extensie mogelijk niet meer functioneert). Als je je hierover zorgen maakt, moet het <ph name="DEVELOPER_TOOLS_POLICY_NAME" />-beleid worden ingesteld.
-
-          Elk lijstitem van het beleid is een tekenreeks die een extensie-ID en optioneel een update-URL bevat, gescheiden door een puntkomma (<ph name="SEMICOLON" />). De extensie-ID is de tekenreeks van 32 letters die bijvoorbeeld op <ph name="CHROME_EXTENSIONS_LINK" /> kan worden gevonden wanneer de ontwikkelaarsmodus actief is. De update-URL, indien opgegeven, moet verwijzen naar een XML-updatedocument voor het manifest, zoals beschreven op <ph name="LINK_TO_EXTENSION_DOC1" />. Standaard wordt de update-URL van de Chrome Web Store gebruikt (momenteel https://clients2.google.com/service/update2/crx). Houd er rekening mee dat de update-URL die in dit beleid is ingesteld, alleen voor de eerste installatie wordt gebruikt. Daaropvolgende updates van de extensie gebruiken de update-URL die in het manifest van de extensie wordt aangegeven. Houd er ook rekening mee dat het expliciet opgeven van de update-URL verplicht was in <ph name="PRODUCT_NAME" />-versies tot en met 67.
-
-          Met <ph name="EXTENSION_POLICY_EXAMPLE" /> wordt de app <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> bijvoorbeeld geïnstalleerd via de standaard update-URL van de Chrome Web Store. Ga naar <ph name="LINK_TO_EXTENSION_DOC2" /> voor meer informatie over het hosten van extensies.
-
-          Als dit beleid niet wordt ingesteld, worden apps en extensies automatisch geïnstalleerd en kan de gebruiker elke app of extensie in <ph name="PRODUCT_NAME" /> verwijderen.
-
-          Houd er rekening mee dat dit beleid niet van toepassing is op de incognitomodus.</translation>
 <translation id="8274603902181597201">De eCryptfs-hoofdmap van de gebruiker wissen en beginnen met een nieuwe hoofdmap die is versleuteld met ext4</translation>
 <translation id="8285435910062771358">Vergrootglas van volledig scherm ingeschakeld</translation>
 <translation id="8288199156259560552">Google-locatieservice voor Android inschakelen</translation>

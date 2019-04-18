@@ -1631,7 +1631,6 @@
 <translation id="3576324189521867626">Uspešno nameščeno</translation>
 <translation id="3578594933904494462">Vsebina tega zavihka je v skupni rabi.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; želi souporabljati tiskalnik &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; s skupino v vaši lasti: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Če sprejmete, bodo lahko tiskalnik uporabljali vsi člani skupine.</translation>
-<translation id="3580923162759633716">Storitev profiliranja</translation>
 <translation id="3584169441612580296">Branje in spreminjanje fotografij, glasbe in drugih predstavnosti v računalniku</translation>
 <translation id="3587482841069643663">Vse</translation>
 <translation id="358796204584394954">Če želite začeti seznanjanje, v napravo »<ph name="DEVICE_NAME" />« vnesite to kodo:</translation>
@@ -3531,7 +3530,7 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="6564072216966459757">Odstranjevanje aplikacij za Linux za napravo <ph name="DEVICE_TYPE" /></translation>
 <translation id="6567688344210276845">Ikone »<ph name="ICON" />« za dejanje strani ni bilo mogoče naložiti.</translation>
 <translation id="6571979863037191371">Prekličite povezavo telefona in Chromebooka. Ne bosta se več samodejno povezala.</translation>
-<translation id="6573998787994398565">Datoteka <ph name="FILE_NAME" /> ni pogosto prenesena in je morda nevarna. Ščiti vas dodatna zaščita.</translation>
+<translation id="6573998787994398565">Datoteka <ph name="FILE_NAME" /> ni pogosto prenesena in je morda nevarna. Varuje vas dodatna zaščita.</translation>
 <translation id="657402800789773160">Znov&amp;a naloži to stran</translation>
 <translation id="6577284282025554716">Prenos preklican: <ph name="FILE_NAME" /></translation>
 <translation id="6578664922716508575">Šifriraj sinhronizirana gesla z uporabniškim imenom in geslom za Google</translation>
@@ -4642,7 +4641,6 @@ Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih r
 <translation id="8284279544186306258">vsa spletna mesta <ph name="WEBSITE_1" /></translation>
 <translation id="8286036467436129157">Prijava</translation>
 <translation id="8286963743045814739">Z oknom brez beleženja zgodovine lahko zasebno brskate</translation>
-<translation id="82871696630048499">Spletna stran se je znova naložila, ker je zmanjkalo pomnilnika.</translation>
 <translation id="8287902281644548111">Iskanje po klicu API-jul/URL-ju</translation>
 <translation id="8288032458496410887">Odstranjevanje aplikacije <ph name="APP" /> …</translation>
 <translation id="8291967909914612644">Država domačega ponudnika</translation>
@@ -5109,7 +5107,7 @@ Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih r
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="9040661932550800571">Želite posodobiti geslo za <ph name="ORIGIN" />?</translation>
 <translation id="9041692268811217999">Dostop do lokalnih datotek v vašem računalniku je onemogočil skrbnik</translation>
-<translation id="9041909613332246191">Datoteka ni pogosto prenesena in je lahko nevarna. Ščiti vas dodatna zaščita.</translation>
+<translation id="9041909613332246191">Datoteka ni pogosto prenesena in je lahko nevarna. Varuje vas dodatna zaščita.</translation>
 <translation id="9042893549633094279">Zasebnost in varnost</translation>
 <translation id="904451693890288097">Vnesite geslo za napravo »<ph name="DEVICE_NAME" />«:</translation>
 <translation id="9044646465488564462">Z omrežjem se ni bilo mogoče povezati: <ph name="DETAILS" /></translation>

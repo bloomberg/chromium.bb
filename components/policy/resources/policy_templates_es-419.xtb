@@ -602,7 +602,6 @@
       Si se configura como falsa, no se recopilará esta información.
 
       Esta política solo es válida si se habilita <ph name="CHROME_REPORTING_EXTENSION_NAME" />, y la máquina está inscrita en <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
-<translation id="2126178089984117495">Restringe el modo de impresión con PIN. Si no se configura la política, no se aplicará ninguna restricción. Si el modo no está disponible, se ignorará esta política.</translation>
 <translation id="2127599828444728326">Permitir notificaciones en estos sitios</translation>
 <translation id="2131902621292742709">Demora de atenuación de pantalla con batería</translation>
 <translation id="2134437727173969994">Permite bloquear la pantalla</translation>
@@ -1955,12 +1954,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="4983201894483989687">Permitir la ejecución de complementos desactualizados</translation>
 <translation id="4986560318567565414">Ruta a Chrome para el cambio desde el navegador alternativo</translation>
 <translation id="4988291787868618635">Acción que se realiza cuando se alcanza la demora de inactividad</translation>
-<translation id="5030889661505907084">
-      Si se configura esta política como verdadera y entra en conflicto con la política de la plataforma, prevalece la política de la nube.
-      Si se configura como falsa o no se configura, y entra en conflicto con la política de la nube, prevalece la política de la plataforma.
-
-      Esta política solo está disponible como una plataforma.
-      </translation>
 <translation id="5034604678285451405">Establece en porcentaje el umbral de la batería para el cambio de pico de consumo de energía.
 
           Se usa esta política solo si se establece DevicePowerPeakShiftEnabled como verdadero.
@@ -3624,29 +3617,6 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="8259592978873597235">Si esta política se configura como verdadera o no se configura, el usuario no se considerará inactivo mientras se reproduce el video. Esto evitará que se alcancen los tiempos de inactividad, atenuación de la pantalla, pantalla apagada y bloqueo de pantalla, y que se tomen las medidas correspondientes.
 
           Si esta política se configura como falsa, la actividad de video no evitará que el usuario se considere inactivo.</translation>
-<translation id="8264653492961233132">Especifica una lista de apps y extensiones que se instalan de forma silenciosa,
-          sin interacción del usuario, y que este no puede desinstalar
-          ni inhabilitar. Todos los permisos que solicitan las apps y extensiones
-          se conceden de forma implícita, sin interacción del usuario, incluso los
-          permisos adicionales que soliciten las apps o extensiones en próximas
-          versiones. Además, los permisos se conceden para las API de las
-          extensiones enterprise.deviceAttributes y enterprise.platformKeys (estas
-          no están disponibles para las apps o extensiones instaladas de manera
-          automática).
-
-          Esta política tiene prioridad por sobre una política de <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> posiblemente conflictiva. Si una app o extensión, instalada de manera automática, se quita de esta lista, <ph name="PRODUCT_NAME" /> la desinstala de forma automática.
-
-          Para las instancias de Windows que no están unidas a un dominio de <ph name="MS_AD_NAME" />, solo se pueden instalar de manera automática las apps y extensiones que aparecen en Chrome Web Store.
-
-          Ten en cuenta que es posible que los usuarios modifiquen el código fuente de cualquier extensión a través de las Herramientas para desarrolladores (y muy probablemente deje de funcionar). Si esta situación te inquieta, establece la política <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
-
-          Cada elemento de la lista de la política es un string que contiene un ID de extensión y una URL de actualización separada por un punto y coma (<ph name="SEMICOLON" />). El ID de extensión es el string de 32 letras que se encuentra, p. ej., en <ph name="CHROME_EXTENSIONS_LINK" /> en el modo de desarrollador. Si se especifica, la URL de actualización debe direccionarte a un documento XML del manifiesto de actualización, como se describe en <ph name="LINK_TO_EXTENSION_DOC1" />. De forma predeterminada, se usa la URL de actualización de Chrome Web Store (actualmente es "https://clients2.google.com/service/update2/crx"). Ten en cuenta que la URL de actualización que se establece en esta política solo se usa para la instalación inicial; las actualizaciones posteriores de la extensión utilizan la URL de actualización que se indica en el manifiesto de la extensión. Ten en cuenta también que el uso de la URL de actualización era explícitamente obligatorio en las versiones de <ph name="PRODUCT_NAME" /> hasta la 67 inclusive.
-
-          Por ejemplo, <ph name="EXTENSION_POLICY_EXAMPLE" /> instala la app de <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> desde la URL de actualización convencional de Chrome Web Store. Para obtener más información sobre las extensiones de host, consulta: <ph name="LINK_TO_EXTENSION_DOC2" />.
-
-          Si no se establece esta política, no se instalan apps ni extensiones de forma automática, y el usuario puede desinstalar cualquier app o extensión en <ph name="PRODUCT_NAME" />.
-
-          Hay que tener en cuenta que esta política no se aplica al modo de navegación incógnito.</translation>
 <translation id="8274603902181597201">Borra el directorio principal de eCryptfs del usuario y crea un nuevo directorio principal ext4 encriptado.</translation>
 <translation id="8285435910062771358">La lupa de pantalla completa está habilitada.</translation>
 <translation id="8288199156259560552">Habilita el servicio de ubicación de Google para Android</translation>

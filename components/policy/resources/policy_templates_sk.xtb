@@ -589,7 +589,6 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
       Keď ho nastavíte na hodnotu false, informácie použiteľné na identifikáciu používateľov sa nezhromažďujú.
 
       Toto pravidlo je účinné iba vtedy, keď povolíte aj rozšírenie <ph name="CHROME_REPORTING_EXTENSION_NAME" /> a zariadenie zaregistrujete prostredníctvom tokenu <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
-<translation id="2126178089984117495">Obmedzí režim tlače s kódom PIN. Ak toto pravidlo nenastavíte, znamená to, že sa nepoužijú žiadne obmedzenia. Ak nie je tento režim k dispozícii, toto pravidlo sa bude ignorovať.</translation>
 <translation id="2127599828444728326">Povoliť upozornenia na týchto webových stránkach</translation>
 <translation id="2131902621292742709">Oneskorenie zníženia jasu obrazovky pri napájaní z batérie</translation>
 <translation id="2134437727173969994">Povoliť uzamykanie obrazovky</translation>
@@ -1989,12 +1988,6 @@ Vzory webových adries v tomto pravidle by nemali byť v konflikte s tými, k
 <translation id="4983201894483989687">Povoliť spúšťanie zastaraných doplnkov</translation>
 <translation id="4986560318567565414">Cesta prepnutia na Chrome v alternatívnom prehliadači</translation>
 <translation id="4988291787868618635">Akcia po určitej dobe nečinnosti</translation>
-<translation id="5030889661505907084">
-      Ak toto pravidlo nastavíte na hodnotu true, pravidlá používania cloudu budú uprednostnené, ak sa dostanú do konfliktu s pravidlami platformy.
-      Ak ho nastavíte na hodnotu false alebo ho nenakonfigurujete, pravidlá platformy budú uprednostnené, ak sa dostanú do konfliktu s pravidlami používania cloudu.
-
-      Toto pravidlo je k dispozícii iba ako platforma.
-      </translation>
 <translation id="5034604678285451405">Nastavenie prahu batérie (v percentách) pre funkciu prepnutia napájania počas špičky.
 
           Toto pravidlo sa použije iba vtedy, ak je pravidlo DevicePowerPeakShiftEnabled nastavené na hodnotu true.
@@ -3702,22 +3695,6 @@ Odporúčaný spôsob nastavenia pravidiel v systéme Windows je prostredníctv
 <translation id="8259592978873597235">Ak toto pravidlo nastavíte na hodnotu true alebo ho nenastavíte, prehrávanie videa sa nebude považovať za nečinnosť používateľa. Zabráni to oneskoreniu režimu nečinnosti, zníženia jasu, vypnutia a uzamknutia obrazovky a nevykonajú sa príslušné akcie.
 
           Ak toto pravidlo nastavíte na hodnotu false, prehrávanie videa sa považuje za nečinnosť.</translation>
-<translation id="8264653492961233132">Umožňuje určiť zoznam aplikácií a rozšírení, ktoré sa inštalujú potichu bez interakcie používateľa a používateľ ich nemôže odinštalovať ani zakázať. Všetky povolenia vyžadované aplikáciami/rozšíreniami sú bezpodmienečne udelené bez interakcie s používateľom, a to vrátane všetkých ďalších povolení vyžiadaných budúcimi verziami daných aplikácií/rozšírení. 
-Ďalej sa udeľujú povolenia pre rozhrania API rozšírení enterprise.deviceAttributes a enterprise.platformKeys. (Tieto dve rozhrania sú k dispozícii iba pre aplikácie/rozšírenia, ktorých inštalácia bola vynútená.)
-
-          Toto pravidlo má prednosť v prípade potenciálneho konfliktu s pravidlom <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />. Ak je z tohto zoznamu odstránená aplikácia alebo rozšírenie, ktorého inštalácia bola v minulosti vynútená, <ph name="PRODUCT_NAME" /> ich automaticky odinštaluje.
-
-          V prípade inštancií systému Windows nepripojených k doméne <ph name="MS_AD_NAME" /> sa vynucuje iba inštalácia aplikácií a rozšírení uvedených v Internetovom obchode Chrome.
-
-          Všimnite si, že zdrojový kód jednotlivých rozšírení je možné pozmeniť pomocou nástrojov pre vývojárov (t. j. potenciálne tým znefunkčniť dané rozšírenie). Ak sa toho obávate, nastavte pravidlo <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
-
-          Každá položka zoznamu je reťazec s identifikátorom rozšírenia a webovou adresou aktualizácie oddelenou bodkočiarkou (<ph name="SEMICOLON" />). Identifikátor rozšírenia je reťazec pozostávajúci z 32 písmen a nájdete ho napríklad v adrese <ph name="CHROME_EXTENSIONS_LINK" />, keď prejdete do režimu pre vývojárov. Ak je určená webová adresa aktualizácie, mala by odkazovať na dokument XML manifestu aktualizácie tak, ako je to uvedené na <ph name="LINK_TO_EXTENSION_DOC1" />. Predvolene sa použije webová adresa aktualizácie z Internetového obchodu Chrome (ktorá je momentálne https://clients2.google.com/service/update2/crx). Upozorňujeme, že webová adresa aktualizácie nastavená v tomto pravidle sa použije iba pri prvej inštalácii. Následné inštalácie rozšírenia používajú webovú adresu aktualizácie uvedenú v manifeste príslušného rozšírenia. Zreteľné uvedenie webovej adresy aktualizácie bolo v prehliadači <ph name="PRODUCT_NAME" /> do verzie 67 (vrátane) povinné.
-
-          <ph name="EXTENSION_POLICY_EXAMPLE" /> napríklad nainštaluje aplikáciu <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> zo štandardnej webovej adresy aktualizácie v Internetovom obchode Chrome. Ďalšie informácie o hostení rozšírení nájdete na <ph name="LINK_TO_EXTENSION_DOC2" />.
-
-          Ak toto pravidlo nenastavíte, nebudú sa automaticky inštalovať žiadne aplikácie ani rozšírenia a používateľ môže odinštalovať ľubovoľnú aplikáciu alebo rozšírenie v prehliadači <ph name="PRODUCT_NAME" />.
-
-          Upozorňujeme, že toto pravidlo neplatí v režime inkognito.</translation>
 <translation id="8274603902181597201">Vymazať domovský adresár pre ecryptfs používateľa a vytvoriť nový adresár šifrovaný pomocou ext4</translation>
 <translation id="8285435910062771358">Lupa v režime na celú obrazovku je povolená</translation>
 <translation id="8288199156259560552">Povoliť službu určovania polohy Google v aplikáciách pre Android</translation>

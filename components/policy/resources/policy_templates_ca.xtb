@@ -533,7 +533,6 @@ Deixar aquesta política sense establir és igual que activar l'opció, amb el f
       Si aquesta política s'estableix en "false", no es recull informació que es pugui utilitzar per identificar els usuaris.
 
       Aquesta política només funciona quan l'extensió <ph name="CHROME_REPORTING_EXTENSION_NAME" /> està activada i l'ordinador està inscrit amb <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
-<translation id="2126178089984117495">Restringeix el mode d'impressió amb PIN. Si la política no s'estableix, no s'aplica cap restricció. Si el mode no està disponible, aquesta política s'ignora.</translation>
 <translation id="2127599828444728326">Permet les notificacions en aquests llocs</translation>
 <translation id="2131902621292742709">Retard d'atenuació de pantalla quan s'utilitza bateria</translation>
 <translation id="2134437727173969994">Permet bloquejar la pantalla</translation>
@@ -1768,12 +1767,6 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="4983201894483989687">Permet que s'executin els connectors que estiguin obsolets</translation>
 <translation id="4986560318567565414">Camí a Chrome per canviar des del navegador alternatiu.</translation>
 <translation id="4988291787868618635">Acció que cal dur a terme quan s'arriba al retard d'inactivitat</translation>
-<translation id="5030889661505907084">
-      Si la política s'estableix en "true", la política per al núvol té prioritat si entra en conflicte amb la política de la plataforma.
-      Si la política s'estableix en "false" o no es configura, la política de la plataforma té prioritat si entra en conflicte amb la política per al núvol.
-
-      Aquesta política només està disponible com una plataforma.
-      </translation>
 <translation id="5034604678285451405">Estableix el percentatge del llindar de bateria en què s'ha d'aplicar el canvi d'alimentació en els pics d'ús.
 
           Aquesta política només es fa servir si DevicePowerPeakShiftEnabled s'estableix en "true".
@@ -3251,29 +3244,6 @@ La finalitat exclusiva d'aquestes polítiques és configurar instàncies de <ph 
 No cal que configuris aquestes opcions manualment. Pots baixar plantilles fàcils d'utilitzar per a Windows, Mac i Linux de la pàgina <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
 
 La manera recomanada de configurar la política a Windows és amb GPO, tot i que encara s'admet proporcionar la política mitjançant el registre per a instàncies de Windows vinculades a un domini de <ph name="MS_AD_NAME" />.</translation>
-<translation id="8264653492961233132">Especifica una llista d'aplicacions i d'extensions que s'instal·len en segon pla,
-          sense la interacció de l'usuari, i que l'usuari no pot
-          desinstal·lar ni desactivar. Tots els permisos que les
-          aplicacions o les extensions sol·liciten es concedeixen de manera implícita, sense cap interacció de l'usuari,
-          inclosos els permisos addicionals que sol·licitin les versions futures de
-          l'aplicació o l'extensió. A més, es concedeixen permisos a les API de les extensions
-          enterprise.deviceAttributes i enterprise.platformKeys.
-          Aquestes dues API no estan disponibles per a les aplicacions ni les extensions que
-          no s'instal·lin a la força.
-
-          Aquesta política preval sobre una política <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> amb què pugui entrar en conflicte. Si se suprimeix d'aquesta llista una aplicació o una extensió que prèviament s'havia instal·lat a la força, <ph name="PRODUCT_NAME" /> la desinstal·larà automàticament.
-
-          En les instàncies de Windows que no formin part d'un domini que pertanyi a <ph name="MS_AD_NAME" />, la instal·lació forçada es limita a les aplicacions i les extensions incloses a Chrome Web Store.
-
-          Tingues en compte que els usuaris poden modificar el codi font de qualsevol extensió amb les Eines per a desenvolupadors (la qual cosa podria provocar problemes de funcionament de l'extensió). Si et preocupa aquesta possibilitat, defineix la política <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
-
-          Cada element de la llista de la política és una cadena que conté un identificador d'extensió i, opcionalment, un URL d'actualització separats per punt i coma (<ph name="SEMICOLON" />). L'identificador d'extensió és la cadena de 32 lletres que, per exemple, es troba a <ph name="CHROME_EXTENSIONS_LINK" /> quan el mode desenvolupador està activat. L'URL d'actualització, si s'especifica, ha de dirigir a un document XML de manifest d'actualització, tal com es descriu a <ph name="LINK_TO_EXTENSION_DOC1" />. De manera predeterminada, s'utilitza l'URL d'actualització de Chrome Web Store, que actualment és "https://clients2.google.com/service/update2/crx"). Tingues en compte que l'URL d'actualització definit en aquesta política només s'utilitza per a la instal·lació inicial; les properes actualitzacions de l'extensió faran servir l'URL d'actualització indicat al fitxer de manifest de l'extensió. Recorda que, fins a la versió 67 (inclosa) de <ph name="PRODUCT_NAME" /> també calia especificar de manera obligatòria i explícita l'URL d'actualització.
-
-          Per exemple, <ph name="EXTENSION_POLICY_EXAMPLE" /> instal·la l'aplicació <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> des de l'URL d'actualització de Chrome Web Store estàndard. Per obtenir més informació sobre com s'allotgen les extensions, consulta: <ph name="LINK_TO_EXTENSION_DOC2" />.
-
-          Si aquesta política es deixa sense establir, no s'instal·larà automàticament cap aplicació ni cap extensió i l'usuari podrà desinstal·lar-ne qualsevol a <ph name="PRODUCT_NAME" />.
-
-          Tingues en compte que aquesta política no s'aplica al mode d'incògnit.</translation>
 <translation id="8274603902181597201">Esborra el directori d'inici eCryptfs de l'usuari i inicia un directori d'inici nou encriptat amb ext4.</translation>
 <translation id="8285435910062771358">Lupa de pantalla completa activada</translation>
 <translation id="8288199156259560552">Activa el servei d'ubicació de Google a Android</translation>

@@ -602,7 +602,6 @@
       Ja šai politikai ir iestatīta vērtība “False”, informācija, kas var tikt izmantota lietotāju identificēšanai, netiek apkopota.
 
       Šī politika ir spēkā tikai tad, ja ir iespējots paplašinājums <ph name="CHROME_REPORTING_EXTENSION_NAME" /> un ierīce ir reģistrēta pakalpojumā <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
-<translation id="2126178089984117495">Ierobežo drukāšanas režīmu ar PIN kodu. Ja politika nav iestatīta, ierobežojumi netiek ņemti vērā. Ja režīms nav pieejams, šī politika tiek ignorēta.</translation>
 <translation id="2127599828444728326">Paziņojumu atļaušana šajās vietnēs</translation>
 <translation id="2131902621292742709">Aizkave līdz ekrāna aptumšošanai, ja ierīce darbojas ar akumulatora jaudu</translation>
 <translation id="2134437727173969994">Atļaut ekrāna bloķēšanu</translation>
@@ -1996,12 +1995,6 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="4983201894483989687">Atļauj palaist novecojušus spraudņus</translation>
 <translation id="4986560318567565414">Ceļš uz pārlūku Chrome, lai pārslēgtos no cita pārlūka.</translation>
 <translation id="4988291787868618635">Darbība, kas ir jāveic, kad ir aizritējis laiks līdz dīkstāvei</translation>
-<translation id="5030889661505907084">
-      Ja šai politikai ir iestatīta vērtība “True” un ja mākoņa politika ir pretrunā ar platformas politiku, mākoņa politikai ir prioritāte.
-      Ja šai politikai ir iestatīta vērtība “False” vai tā nav konfigurēta, un ja platformas politika ir pretrunā ar mākoņa politiku, platformas politikai ir prioritāte.
-
-      Šī politika ir pieejama tikai kā platforma.
-      </translation>
 <translation id="5034604678285451405">Iestatiet akumulatora sliekšņa procentuālo vērtību enerģijas maksimuma pārslēgšanai.
 
           Šī politika tiek izmantota tikai tad, ja politikai DevicePowerPeakShiftEnabled ir iestatīta vērtība “true”.
@@ -3715,26 +3708,6 @@ Operētājsistēmā Windows politikas konfigurēšanai ieteicams izmantot GPO, t
 <translation id="8259592978873597235">Ja šai politikai ir iestatīta vērtība “True” vai ja vērtība nav iestatīta, tiek uzskatīts, ka lietotājs veic kādu darbību video atskaņošanas laikā. Tādējādi tiek novērsta aizkaves laika sasniegšana līdz dīkstāvei, ekrāna aptumšošanai, ekrāna izslēgšanai un ekrāna bloķēšanai, kā arī attiecīgo darbību īstenošana.
 
           Ja šai politikai ir iestatīta vērtība “False”, video atskaņošana nenovērš dīkstāves rašanos.</translation>
-<translation id="8264653492961233132">Norāda sarakstu ar lietotnēm un paplašinājumiem, kas tiek instalēti klusajā režīmā 
-          bez lietotāja iejaukšanās un ko lietotājs nevar atinstalēt vai atspējot. 
-          Visas lietotņu/paplašinājumu pieprasītās atļaujas, tostarp visas konkrētās 
-          lietotnes/paplašinājuma turpmāko versiju pieprasītās papildu atļaujas, tiek            piešķirtas tieši bez lietotāja iejaukšanās.
-          Turklāt atļaujas tiek piešķirtas paplašinājumu saskarnēm API 
-          enterprise.deviceAttributes un enterprise.platformKeys. (Šīs divas saskarnes API nav pieejamas lietotnēm/paplašinājumiem, kas nav instalēti piespiedu kārtā.)
-
-          Šī politika ir prioritāra par iespējami konfliktējošo politiku <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />. Ja lietotne vai paplašinājums, kas iepriekš tika instalēts piespiedu kārtā, tiek noņemts no šī saraksta, to automātiski atinstalē <ph name="PRODUCT_NAME" />.
-
-          Windows datoros, kas nav pievienoti <ph name="MS_AD_NAME" /> domēnam, piespiedu instalēšana attiecas tikai uz lietotnēm un paplašinājumiem, kas norādīti Chrome interneta veikalā.
-
-          Ņemiet vērā, ka jebkura paplašinājuma pirmkodu lietotāji var mainīt izstrādātāja rīkos (potenciāli atveidojot paplašinājumu kā nefunkcionējošu). Ja tas rada problēmas, ir jāiestata politika <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
-
-          Katrs politikas saraksta vienums ir virkne, kas ietver paplašinājuma ID un pēc vēlēšanās atjaunināšanas URL, kuri atdalīti ar semikolu (<ph name="SEMICOLON" />). Paplašinājuma ID ir 32 burtu virkne, kas ir, piemēram, redzama lapā <ph name="CHROME_EXTENSIONS_LINK" /> izstrādātāja režīmā. Atjaunināšanas vietrādim URL (ja tas ir norādīts) ir jānovirza uz atjauninājuma manifesta XML dokumentu, kā norādīts šeit: <ph name="LINK_TO_EXTENSION_DOC1" />. Pēc noklusējuma tiek izmantots Chrome interneta veikala atjaunināšanas URL (šobrīd: "https://clients2.google.com/service/update2/crx"). Ņemiet vērā, ka šajā politikā iestatītais atjaunināšanas URL tiek izmantots tikai sākotnējai instalācijai; nākamajiem paplašinājuma atjauninājumiem tiek izmantots paplašinājuma manifestā norādītais atjaunināšanas URL. Ņemiet vērā, ka atjaunināšanas URL tieša norādīšana bija obligāta visās <ph name="PRODUCT_NAME" /> versijās, kas ir vecākas par versiju 67 (ieskaitot).
-
-          Piemēram, <ph name="EXTENSION_POLICY_EXAMPLE" /> instalē lietotni <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> izmantojot Chrome interneta veikala standarta atjaunināšanas URL. Plašāku informāciju par paplašinājumu mitināšanu skatiet šeit: <ph name="LINK_TO_EXTENSION_DOC2" />.
-
-          Ja šī politika nav iestatīta, neviena lietotne un paplašinājums netiek instalēts automātiski un lietotājs var atinstalēt jebkuru <ph name="PRODUCT_NAME" /> pārlūkā esošu lietotni vai paplašinājumu.
-
-          Ņemiet vērā, ka šī politika neattiecas uz inkognito režīmu.</translation>
 <translation id="8274603902181597201">Notīra lietotāja ecryptfs sākumdirektoriju un sāk ar jaunu ext4-encrypted sākumdirektoriju.</translation>
 <translation id="8285435910062771358">Pilnekrāna režīma lupa ir iespējota</translation>
 <translation id="8288199156259560552">Google atrašanās vietas pakalpojuma iespējošana operētājsistēmai Android</translation>

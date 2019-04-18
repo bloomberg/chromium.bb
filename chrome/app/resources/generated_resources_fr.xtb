@@ -1631,7 +1631,6 @@
 <translation id="3576324189521867626">L'application a bien été installée.</translation>
 <translation id="3578594933904494462">Le contenu de cet onglet est en cours de partage</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; souhaite partager une imprimante &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; avec un groupe que vous gérez : &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Si vous acceptez, tous les membres du groupe seront en mesure d'imprimer sur cette imprimante.</translation>
-<translation id="3580923162759633716">Service de profilage</translation>
 <translation id="3584169441612580296">Accéder aux photos, à la musique et aux autres fichiers multimédias stockés sur votre ordinateur et les modifier</translation>
 <translation id="3587482841069643663">Tous</translation>
 <translation id="358796204584394954">Saisissez ce code sur "<ph name="DEVICE_NAME" />" pour l'associer :</translation>
@@ -4641,7 +4640,6 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8284279544186306258">tous les sites <ph name="WEBSITE_1" /></translation>
 <translation id="8286036467436129157">Connexion</translation>
 <translation id="8286963743045814739">Vous pouvez parcourir le Web en mode privé à l'aide d'une fenêtre de navigation privée</translation>
-<translation id="82871696630048499">La page Web a été actualisée en raison d'une mémoire insuffisante.</translation>
 <translation id="8287902281644548111">Rechercher par appel d'API/URL</translation>
 <translation id="8288032458496410887">Désinstaller <ph name="APP" />…</translation>
 <translation id="8291967909914612644">Pays du fournisseur personnel</translation>

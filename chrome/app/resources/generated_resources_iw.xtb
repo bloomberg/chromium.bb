@@ -443,7 +443,7 @@
 <translation id="1688935057616748272">צריך להזין אות</translation>
 <translation id="168991973552362966">הוספת מדפסת קרובה</translation>
 <translation id="1689945336726856614">העתקת &amp;כתובת אתר</translation>
-<translation id="1692109533452028989">‏Chrome שולח אל Google את הטקסט המוקלד בדפדפן</translation>
+<translation id="1692109533452028989">‏Chrome שולח אל Google את הטקסט שמקלידים בדפדפן</translation>
 <translation id="1692115862433274081">שימוש בחשבון אחר</translation>
 <translation id="1692602667007917253">אופס, משהו השתבש</translation>
 <translation id="1692799361700686467">‏קובצי Cookie מאתרים מרובים מותרים.</translation>
@@ -1628,7 +1628,6 @@
 <translation id="3576324189521867626">הותקן בהצלחה</translation>
 <translation id="3578594933904494462">התוכן בכרטיסייה הזו משותף.</translation>
 <translation id="357886715122934472">‏&lt;strong&gt;‏<ph name="SENDER" />&lt;/strong&gt; רוצה לשתף את המדפסת &lt;strong&gt;‏<ph name="PRINTER_NAME" />&lt;/strong&gt; עם קבוצה בבעלותך: &lt;strong&gt;‏<ph name="GROUP_NAME" />&lt;/strong&gt;. אם תסכים, כל חברי הקבוצה יוכלו להדפיס במדפסת זו.</translation>
-<translation id="3580923162759633716">שירות יצירת פרופילים</translation>
 <translation id="3584169441612580296">לקרוא ולשנות קובצי תמונות, מוזיקה ומדיה מסוגים נוספים מהמחשב שלך</translation>
 <translation id="3587482841069643663">הכל</translation>
 <translation id="358796204584394954">הקלד את הקוד הזה ב-"<ph name="DEVICE_NAME" />" כדי לבצע התאמה:</translation>
@@ -4636,7 +4635,6 @@
 <translation id="8284279544186306258">כל אתרי <ph name="WEBSITE_1" /></translation>
 <translation id="8286036467436129157">כניסה</translation>
 <translation id="8286963743045814739">אפשר לגלוש בפרטיות בעזרת חלון גלישה בסתר</translation>
-<translation id="82871696630048499">לדף האינטרנט הזה נגמר הזיכרון, כך שהוא נטען מחדש.</translation>
 <translation id="8287902281644548111">‏חיפוש לפי קריאה ל-API/כתובת URL</translation>
 <translation id="8288032458496410887">הסרת <ph name="APP" />...</translation>
 <translation id="8291967909914612644">המדינה של הספק הביתי</translation>

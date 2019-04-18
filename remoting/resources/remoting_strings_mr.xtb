@@ -153,6 +153,7 @@
 <translation id="4240294130679914010">Chromoting होस्ट विस्थापनकर्ता</translation>
 <translation id="4277463233460010382">हा कॉंप्युटर पिन एंटर न करता एक किंवा अधिक क्लायंटना कनेक्ट करण्याची अनुमती देण्यासाठी कॉन्फिगर केला आहे.</translation>
 <translation id="4277736576214464567">अॅक्सेस कोड चुकीचे आहे. कृपया पुन्हा प्रयत्न करा.</translation>
+<translation id="4281844954008187215">सेवा अटी</translation>
 <translation id="4361728918881830843">एका वेगळ्या संगणकावर दूरस्थ कनेक्शन सक्षम करण्यासाठी, Chrome रिमोट डेस्कटॉप तेथे इंस्टॉल करा आणि “<ph name="BUTTON_NAME" />” क्लिक करा.</translation>
 <translation id="4394049700291259645">अक्षम करा</translation>
 <translation id="4405930547258349619">कोअर लायब्ररी</translation>
@@ -345,6 +346,7 @@ PC</translation>
 <translation id="8747048596626351634">सेशन क्रॅश झाले किंवा सुरू होऊ शकले नाही. रिमोट काँप्युटरवर ~/.chrome-remote-desktop-session असल्यास, ते डेस्‍कटॉप वातावरण किंवा विंडो व्यवस्थापक यांसारखी दीर्घकाळ चालणारी अग्रभाग प्रक्रिया सुरू करते याची खात्री करा.</translation>
 <translation id="8759753423332885148">अधिक जाणून घ्या.</translation>
 <translation id="8791202241915690908">Chromoting होस्ट इन्स्टॉलर डाउनलोड करा</translation>
+<translation id="8804164990146287819">गोपनीयता धोरण</translation>
 <translation id="894763922177556086">चांगला</translation>
 <translation id="895780780740011433">Windows 7 आणि त्यानंतरच्या आवृत्त्यांसाठी</translation>
 <translation id="897805526397249209">एका वेगळ्या संगणकावर दूरस्थ कनेक्शन सक्षम करण्यासाठी, तेथे Chromoting इंस्टॉल करा आणि “<ph name="BUTTON_NAME" />” क्लिक करा.</translation>

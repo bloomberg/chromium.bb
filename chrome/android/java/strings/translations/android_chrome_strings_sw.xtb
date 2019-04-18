@@ -145,7 +145,7 @@
 <translation id="2018707881002649255">Anwani unazochagua hapa chini zitashirikiwa na tovuti ya <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="2021896219286479412">Vidhibiti vya tovuti vya skrini nzima</translation>
 <translation id="2038563949887743358">Washa Omba Tovuti ya Eneo-kazi</translation>
-<translation id="2041019821020695769">Ili uruhusu Chrome ikutumie arifa, washa arifa pia katika<ph name="BEGIN_LINK" />Mipangilio ya Android<ph name="END_LINK" />.</translation>
+<translation id="2041019821020695769">Ili uruhusu Chrome ikutumie arifa, washa arifa pia katika <ph name="BEGIN_LINK" />Mipangilio ya Android<ph name="END_LINK" />.</translation>
 <translation id="204321170514947529"><ph name="APP_NAME" /> pia ina data katika Chrome</translation>
 <translation id="2045104531052923016">Programu nyingine za GB <ph name="GIGABYTES" /></translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
@@ -194,7 +194,6 @@
 <translation id="2387895666653383613">Upimaji wa maandishi</translation>
 <translation id="2402980924095424747">MB <ph name="MEGABYTES" /></translation>
 <translation id="2410754283952462441">Chagua akaunti</translation>
-<translation id="2414672073755873541">Hakuna maudhui hapa</translation>
 <translation id="2414886740292270097">Giza</translation>
 <translation id="2416359993254398973">Ruhusu Chrome ifikie kamera yako ya tovuti hii.</translation>
 <translation id="2426805022920575512">Chagua akaunti nyingine</translation>
@@ -351,7 +350,6 @@
 <translation id="3600792891314830896">Zima sauti katika tovuti</translation>
 <translation id="3616113530831147358">Sauti</translation>
 <translation id="3620176948598597475">Kuweka upya takwimu hufuta historia ya Kiokoa Data ikiwa ni pamoja na orodha ya tovuti ulizotembelea.</translation>
-<translation id="3630011985153972676">Ruhusu Chrome ikupakulie makala unapotumia muunganisho wa Wi-Fi kwenye mipangilio.</translation>
 <translation id="3632295766818638029">Onyesha nenosiri</translation>
 <translation id="363596933471559332">Ingia katika tovuti kiotomatiki kwa kutumia kitambulisho kilichohifadhiwa. Kipengele kikiwa kimezimwa, utaombwa kuthibitisha kila wakati kabla ya kuingia katika tovuti.</translation>
 <translation id="3658159451045945436">Hatua ya kuweka upya hufuta historia ya uokoaji wa data, ikiwa ni pamoja na orodha ya tovuti unazotembelea.</translation>
@@ -425,7 +423,6 @@ Ili kurekebisha hoja yako ya utafutaji, bonyeza kwa muda mrefu ili ulichague. Il
 <translation id="4195643157523330669">Fungua katika kichupo kipya</translation>
 <translation id="4198423547019359126">Hakuna maeneno ya upakuaji</translation>
 <translation id="4209895695669353772">Washa kipengele cha usawazishaji ili Google ikupendekezee maudhui yanayokufaa</translation>
-<translation id="4225719675976901337">Hakuna maudhui yaliyopatikana</translation>
 <translation id="4226663524361240545">Arifa huenda zitatetemesha kifaa</translation>
 <translation id="423219824432660969">Simba data iliyosawazishwa kwa njia fiche ukitumia nenosiri la Google lililokuwepo <ph name="TIME" /></translation>
 <translation id="4242533952199664413">Fungua mipangilio</translation>

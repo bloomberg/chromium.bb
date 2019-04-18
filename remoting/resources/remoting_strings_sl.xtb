@@ -151,6 +151,7 @@ Za več informacij o zasebnosti si oglejte Googlov pravilnik o zasebnosti (http:
 <translation id="4240294130679914010">Odstranitveni program gostitelja za Oddaljeno povezovanje s Chromom</translation>
 <translation id="4277463233460010382">Ta računalnik je nastavljen tako, da enemu ali več odjemalcem dovoli povezovanje brez vnosa kode PIN.</translation>
 <translation id="4277736576214464567">Koda za dostop je neveljavna. Poskusite znova.</translation>
+<translation id="4281844954008187215">Pogoji storitve</translation>
 <translation id="4361728918881830843">Če želite omogočiti oddaljene povezave z drugim računalnikom, vanj namestite Oddaljeno namizje za Chrome in kliknite »<ph name="BUTTON_NAME" />«.</translation>
 <translation id="4394049700291259645">Onemogoči</translation>
 <translation id="4405930547258349619">Knjižnica jedra</translation>
@@ -330,6 +331,7 @@ PC</translation>
 <translation id="8747048596626351634">Seja se je zrušila ali je ni bilo mogoče začeti. Če je v oddaljenem računalniku seja ~/.chrome-remote-desktop-session, poskrbite, da je v njej zagnan dolgotrajen proces v ospredju, kot je okolje namizja ali upravitelj oken.</translation>
 <translation id="8759753423332885148">Več o tem</translation>
 <translation id="8791202241915690908">Prenos namestitvenega programa za gostitelja za Oddaljeno povezovanje s Chromom</translation>
+<translation id="8804164990146287819">Pravilnik o zasebnosti</translation>
 <translation id="894763922177556086">Dobra</translation>
 <translation id="895780780740011433">Za Windows 7 in novejši</translation>
 <translation id="897805526397249209">Če želite omogočiti oddaljene povezave z drugim računalnikom, vanj namestite Oddaljeno povezovanje s Chromom in kliknite »<ph name="BUTTON_NAME" />«.</translation>

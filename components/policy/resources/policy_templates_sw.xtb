@@ -592,7 +592,6 @@ Sera hii ikiondolewa, chaguomsingi zitatumika kwa mipangilio yote.</translation>
       Sera hii ikiwekwa kuwa Sivyo, maelezo yanayoweza kutumika kutambulisha watumiaji hayakusanywi.
 
       Sera hii inatumika tu wakati umewasha <ph name="CHROME_REPORTING_EXTENSION_NAME" /> na mashine imejumuishwa katika <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
-<translation id="2126178089984117495">Hudhibiti hali ya kuchapisha kwa kutumia PIN. Sera isipowekwa, huchukuliwa kuwa hakuna udhibiti. Ikiwa hali haipatikani, sera hii haitumiki.</translation>
 <translation id="2127599828444728326">Ruhusu arifa katika tovuti hizi</translation>
 <translation id="2131902621292742709">Ufifili wa skrini unachelewa wakati wa kuendesha kwa nishati ya betri</translation>
 <translation id="2134437727173969994">Ruhusu kufunga skrini</translation>
@@ -1975,12 +1974,6 @@ Iwapo sera hii haijawekwa, kiteuzi kikubwa kitazimwa mwanzoni lakini kitawashwa 
 <translation id="4983201894483989687">Ruhusu kuendesha programu jalizi ambazo zimepitwa na wakati.</translation>
 <translation id="4986560318567565414">Njia ya kufikia Chrome kwa ajili ya kubadili kutoka kivinjari mbadala.</translation>
 <translation id="4988291787868618635">Hatua ya kuchukua wakati ucheleweshaji wa kutokuwa na shughuli unapofikiwa</translation>
-<translation id="5030889661505907084">
-      Ikiwa sera imewekwa kuwa ndivyo, sera ya wingu inapewa kipaumbele ikiwa inakinzana na sera ya mfumo.
-      Ikiwa sera imewekwa kuwa sivyo au isipowekwa, sera ya mfumo inapewa kipaumbele ikiwa inakinzana na sera ya wingu.
-
-      Sera hii inapatikana tu kama mfumo.
-      </translation>
 <translation id="5034604678285451405">Weka kipengele kinachopunguza matumizi ya betri kwa kubadilisha mfumo kuendeshwa kwenye nguvu za betri katika asilimia.
 
           Sera hii hutumika tu ikiwa DevicePowerPeakShiftEnabled imewekwa kuwa ndivyo.
@@ -3684,23 +3677,6 @@ Njia inayopendekezwa ya kuweka mipangilio ya sera kwenye Windows ni kupitia GPO,
 <translation id="8259592978873597235">Sera hii ikiwekwa kuwa Ndivyo au isipowekwa, mtumiaji hachukuliwi kuwa hana shughuli video inapocheza. Hii inazuia kufikia ucheleweshaji wa kutokuwa na shughuli, ufifiaji wa mwangaza wa skrini, ucheleweshaji wa kuzimika kwa skrini na ucheleweshaji wa kufunga kwa skrini na hatua zinazofanana zisitekelezwe.
 
           Sera hii ikiwekwa kuwa Sivyo, shughuli za video hazizuii mtumiaji kuchukuliwa kuwa hana shughuli.</translation>
-<translation id="8264653492961233132">Hubainisha orodha ya programu na viendelezi vinavyosakinishwa chinichini, 
-          bila kumhusisha mtumiaji na ambavyo haviwezi kuondolewa au kuzimwa na mtumiaji. Ruhusa zote zinazoombwa na programu au viendelezi zitatolewa kwa njia fiche, bila mtumiaji kuhusishwa, ikijumuisha ruhusa zozote za ziada zinazoombwa na matoleo ya baadaye ya programu au kiendelezi. Zaidi ya hayo, ruhusa za API za viendelezi vya enterprise.deviceAttributes na enterprise.platformKeys extension zinatolewa.
-        (API hizi mbili zinapatikana kwenye programu au viendelezi ambavyo havisakinishwi kwa lazima.)
-
-          Sera hii inapewa kipaumbele ikiwa kuna sera inayoweza kukinzana ya <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />. Ikiwa programu au kiendelezi kilichosakinishwa hapo awali kwa lazima kitaondolewa kwenye orodha hii, kitaondolewa kiotomatiki na <ph name="PRODUCT_NAME" />.
-
-          Katika matukio ya Windows ambayo hayajaunganishwa kwenye kikoa cha <ph name="MS_AD_NAME" />, usakinishaji wa lazima unatumiwa tu na programu na viendelezi vilivyoorodheshwa katika Duka la Chrome kwenye Wavuti.
-
-          Kumbuka kuwa msimbo wa kiendelezi chochote unaweza kubadilishwa na mtumiaji kupitia Zana za Wasanidi Programu (hali hii inaweza kuzuia kiendelezi kufanya kazi vizuri). Ikiwa jambo hili litatokea, sera ya <ph name="DEVELOPER_TOOLS_POLICY_NAME" /> inapaswa kuwekwa.
-
-          Kila kipengee cha orodha ya sera ni kifungu ambacho kinajumuisha kitambulisho cha kiendelezi na URL ya "sasisho" isiyo ya lazima inayotenganishwa kwa nukta mkato (<ph name="SEMICOLON" />). Kitambulisho cha kiendelezi ni kifungu cha herufi 32 kinachopatikana (kwa mfano kwenye <ph name="CHROME_EXTENSIONS_LINK" /> ikiwa katika hali ya msanidi programu. URL ya "sasisho" (kama imebainishwa) inapaswa kuashiria hati ya XML ya faili ya Maelezo ya Sasisho kama ilivyofafanuliwa katika <ph name="LINK_TO_EXTENSION_DOC1" />. Kwa chaguomsingi, URL ya sasisho ya Duka la Chrome kwenye Wavuti inatumika (kwa sasa ni "https://clients2.google.com/service/update2/crx"). Kumbuka kuwa URL ya "sasisho" iliyowekwa kwenye sera hii itatumiwa tu kwenye usanikishaji wa mwanzo; masasisho yanayofuata ya kiendelezi yatatumia URL ya sasisho inayoonyeshwa katika faili ya maelezo ya kiendelezi. Kumbuka pia kubainisha URL ya "sasisho" bayana ni lazima katika matoleo ya <ph name="PRODUCT_NAME" /> na mapya zaidi ikiwa ni pamoja na la 67.
-
-          Kwa mfano, <ph name="EXTENSION_POLICY_EXAMPLE" /> inasakinisha programu ya <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> kutoka URL ya "sasisho" la kawaida la Duka la Chrome kwenye Wavuti. Kwa maelezo zaidi kuhusu jinsi ya kupangisha viendelezi, angalia: <ph name="LINK_TO_EXTENSION_DOC2" />.
-
-          Ikiwa sera hii haijawekwa, hakuna programu au viendelezi vitakavyosakinishwa kiotomatiki na mtumiaji anaweza kuondoa programu au kiendelezi chochote katika <ph name="PRODUCT_NAME" />.
-
-          Kumbuka kwamba sera hii haitumiki katika hali fiche.</translation>
 <translation id="8274603902181597201">Futa saraka ya nyumbani ya ecryptfs ya mtumiaji na uanze kutumia saraka mpya ya nyumbani ya ext4- iliyosimbwa kwa njia fiche.</translation>
 <translation id="8285435910062771358">Kikuza skrini nzima kimewashwa</translation>
 <translation id="8288199156259560552">Washa Huduma ya Mahali ya Android Google</translation>

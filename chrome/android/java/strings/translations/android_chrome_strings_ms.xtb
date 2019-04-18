@@ -194,7 +194,6 @@
 <translation id="2387895666653383613">Penskalaan teks</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
 <translation id="2410754283952462441">Pilih akaun</translation>
-<translation id="2414672073755873541">Tiada kandungan di sini</translation>
 <translation id="2414886740292270097">Gelap</translation>
 <translation id="2416359993254398973">Chrome memerlukan kebenaran untuk mengakses kamera anda bagi tapak ini.</translation>
 <translation id="2426805022920575512">Pilih akaun lain</translation>
@@ -351,7 +350,6 @@
 <translation id="3600792891314830896">Redam tapak yang memainkan bunyi</translation>
 <translation id="3616113530831147358">Audio</translation>
 <translation id="3620176948598597475">Penetapan semula akan memadamkan sejarah Penjimat Data, termasuk senarai tapak yang dilawati.</translation>
-<translation id="3630011985153972676">Benarkan Chrome memuat turun artikel untuk anda apabila menggunakan Wi-Fi di bawah tetapan.</translation>
 <translation id="3632295766818638029">Buka topeng kata laluan</translation>
 <translation id="363596933471559332">Log masuk secara automatik ke tapak web menggunakan bukti kelayakan yang disimpan. Apabila ciri ini dimatikan, anda akan diminta memberikan pengesahan setiap kali sebelum log masuk ke tapak web.</translation>
 <translation id="3658159451045945436">Penetapan semula akan memadamkan sejarah penjimatan data anda, termasuk senarai tapak yang dilawati.</translation>
@@ -425,7 +423,6 @@ Untuk melaraskan istilah carian anda, tekan lama untuk memilih. Untuk memperhalu
 <translation id="4195643157523330669">Buka dalam tab baharu</translation>
 <translation id="4198423547019359126">Tiada lokasi muat turun tersedia</translation>
 <translation id="4209895695669353772">Hidupkan penyegerakan untuk mendapatkan kandungan diperibadikan yang dicadangkan oleh Google</translation>
-<translation id="4225719675976901337">Tiada kandungan ditemui</translation>
 <translation id="4226663524361240545">Pemberitahuan boleh menggetarkan peranti</translation>
 <translation id="423219824432660969">Sulitkan data yang disegerakkan dengan kata laluan Google bermula dari <ph name="TIME" /></translation>
 <translation id="4242533952199664413">Buka tetapan</translation>

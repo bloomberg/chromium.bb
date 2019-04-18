@@ -1631,7 +1631,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="3576324189521867626">S-a instalat</translation>
 <translation id="3578594933904494462">La conținutul acestei file se permite accesul.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; dorește să permită accesul la o imprimantă &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; pentru un grup pe care îl deții: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Dacă accepți, toți membrii grupului vor putea printa la imprimantă.</translation>
-<translation id="3580923162759633716">Serviciul de creare de profiluri</translation>
 <translation id="3584169441612580296">Citește și modifică fotografii, muzică și alte tipuri de conținut media de pe computer</translation>
 <translation id="3587482841069643663">Toate</translation>
 <translation id="358796204584394954">Pentru a conecta, introduceți acest cod pe „<ph name="DEVICE_NAME" />”:</translation>
@@ -4640,7 +4639,6 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="8284279544186306258">toate site-urile <ph name="WEBSITE_1" /></translation>
 <translation id="8286036467436129157">Conectați-vă</translation>
 <translation id="8286963743045814739">Poți naviga privat folosind o fereastră incognito</translation>
-<translation id="82871696630048499">Pagina web a fost reîncărcată pentru că nu a avut suficientă memorie.</translation>
 <translation id="8287902281644548111">Caută după apelarea API-ului/adresa URL</translation>
 <translation id="8288032458496410887">Dezinstalează <ph name="APP" />...</translation>
 <translation id="8291967909914612644">Țara furnizorului local</translation>

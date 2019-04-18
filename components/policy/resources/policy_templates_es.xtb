@@ -606,7 +606,6 @@ Si esta política se establece en True, <ph name="PRODUCT_OS_NAME" /> intentará
       Si se le asigna el valor "False", no se recogerá dicha información.
 
       Esta política solo es efectiva si la extensión <ph name="CHROME_REPORTING_EXTENSION_NAME" /> está habilitada y el equipo está registrado en <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
-<translation id="2126178089984117495">Restringe el modo de impresión con PIN. Si no se asigna ningún valor a esta política, no se aplicará ninguna restricción. Si este modo no está disponible, se ignorará esta política.</translation>
 <translation id="2127599828444728326">Permitir notificaciones en estos sitios</translation>
 <translation id="2131902621292742709">Retraso de atenuado de pantalla cuando el dispositivo funciona con la batería</translation>
 <translation id="2134437727173969994">Permitir que se bloquee la pantalla</translation>
@@ -2007,12 +2006,6 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 <translation id="4983201894483989687">Permitir la ejecución de complementos obsoletos</translation>
 <translation id="4986560318567565414">Ruta a Chrome para el cambio desde el navegador alternativo.</translation>
 <translation id="4988291787868618635">Acción que se realiza al alcanzar el retraso de inactividad</translation>
-<translation id="5030889661505907084">
-      Si se asigna el valor "True" a esta política, la política de la nube prevalecerá si entra en conflicto con la política de la plataforma.
-      Si se le asigna el valor "False" o no se le asigna ninguno, la política de la plataforma prevalecerá si entra en conflicto con la política de la nube.
-
-      Esta política solo está disponible como plataforma.
-      </translation>
 <translation id="5034604678285451405">Establece el umbral del ahorro de batería de Peak Shift en forma de porcentaje.
 
           Esta política solo se utilizará si se le asigna el valor "True" a la política DevicePowerPeakShiftEnabled.
@@ -3734,21 +3727,6 @@ Te recomendamos que utilices GPO para configurar la política en Windows, aunque
 <translation id="8259592978873597235">Si se asigna el valor "True" a esta política o no se le asigna ninguno, no se considerará que el usuario esté inactivo durante la reproducción del vídeo. Esto impide que se alcancen el retraso de inactividad, el retraso de atenuación de pantalla y el retraso de bloqueo de pantalla y que se lleven a cabo las acciones correspondientes.
 
           Si se le asigna el valor "False", la actividad del vídeo no impedirá que se considere al usuario como inactivo.</translation>
-<translation id="8264653492961233132">Especifica una lista de aplicaciones y extensiones que se instalan de forma automática, sin la intervención del usuario y que el usuario no puede inhabilitar ni desinstalar. Los permisos solicitados por las aplicaciones o las extensiones se aceptan de forma implícita, sin la interacción del usuario, incluidos los permisos que soliciten las próximas versiones de la aplicación o extensión. Además, se aceptan los permisos para las API de las extensiones enterprise.deviceAttributes y enterprise.platformKeys. Estas dos API no están disponibles para las aplicaciones o extensiones que no se hayan instalado de manera forzada.
-
-          Esta política prevalece frente a una política <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> que pueda ser conflictiva. Si una aplicación o extensión que se haya instalado anteriormente de manera forzada se elimina de la lista, <ph name="PRODUCT_NAME" /> la desinstalará automáticamente.
-
-          Para las instancias de Windows que no se hayan unido a un dominio de <ph name="MS_AD_NAME" />, la instalación forzada se limitará a las aplicaciones y extensiones disponibles en Chrome Web Store.
-
-          Ten en cuenta que es posible que los usuarios modifiquen el código fuente de las extensiones mediante las herramientas para desarrolladores (lo que puede provocar problemas de funcionamiento). Si te preocupa, configura la política <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
-
-          Cada elemento de la lista de la política es una cadena que contiene un ID de extensión y, opcionalmente, una URL de "actualización" separados por punto y coma (<ph name="SEMICOLON" />). El ID de extensión es la cadena de 32 letras que aparece, por ejemplo, en <ph name="CHROME_EXTENSIONS_LINK" /> cuando está habilitado el modo desarrollador. La URL de "actualización", si se especifica, debe dirigir a un documento XML de un archivo de manifiesto de actualización, como se describe en <ph name="LINK_TO_EXTENSION_DOC1" />. De forma predeterminada, se utiliza la URL de actualización de Chrome Web Store, que actualmente es "https://clients2.google.com/service/update2/crx". Ten en cuenta que la URL de "actualización" definida en esta política solo se usa en la instalación inicial. Las actualizaciones posteriores de la extensión usarán la URL de actualización indicada en el archivo de manifiesto de la extensión. Ten en cuenta también que especificar la URL de "actualización" era obligatorio en las versiones de <ph name="PRODUCT_NAME" /> hasta la 67.
-
-          Por ejemplo, <ph name="EXTENSION_POLICY_EXAMPLE" /> instala la aplicación <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> desde la URL de "actualización" estándar de Chrome Web Store. Para obtener más información sobre cómo alojar extensiones, consulta <ph name="LINK_TO_EXTENSION_DOC2" />.
-
-          Si no se configura esta política, no se instalará ninguna aplicación ni extensión automáticamente y el usuario podrá desinstalar cualquier aplicación o extensión de <ph name="PRODUCT_NAME" />.
-
-          Ten en cuenta que esta política no se aplica al modo de incógnito.</translation>
 <translation id="8274603902181597201">Borrar los eCryptfs del directorio principal del usuario y empezar con un nuevo directorio principal cifrado con ext4.</translation>
 <translation id="8285435910062771358">Lupa de pantalla completa habilitada</translation>
 <translation id="8288199156259560552">Habilitar los servicios de ubicación de Google para aplicaciones de Android</translation>

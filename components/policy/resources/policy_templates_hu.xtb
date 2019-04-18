@@ -604,7 +604,6 @@
       Ha a házirend értéke hamis, akkor nem történik meg a felhasználók azonosítására alkalmas adatok begyűjtése.
 
       A házirend csak bekapcsolt <ph name="CHROME_REPORTING_EXTENSION_NAME" /> mellett és <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> nevű tokent felhasználva érvényesül.</translation>
-<translation id="2126178089984117495">Korlátozza a PIN-kóddal történő nyomtatást. Ha nincs beállítva a házirend, akkor nincs korlátozás erre vonatkozóan. Ha nem áll rendelkezésre ez a nyomtatási mód, a rendszer figyelmen kívül hagyja a házirendet.</translation>
 <translation id="2127599828444728326">Értesítések engedélyezése ezeken a webhelyeken</translation>
 <translation id="2131902621292742709">Képernyő elsötétítésének késleltetése akkumulátorról való működés során</translation>
 <translation id="2134437727173969994">A képernyő zárolásának engedélyezése</translation>
@@ -1965,12 +1964,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="4983201894483989687">Elavult bővítmények futtatásának engedélyezése</translation>
 <translation id="4986560318567565414">A Chrome elérési útvonala a másik böngészőről való átváltáshoz.</translation>
 <translation id="4988291787868618635">A tétlenségi késleltetés elteltével végzendő művelet</translation>
-<translation id="5030889661505907084">
-      Ha a házirend beállítása igaz, ütközés esetén a felhőbeli házirend előnyt élvez az operációs rendszer házirendjével szemben.
-      Ha a házirend hamis értékre van beállítva, vagy beállítatlanul marad, az operációs rendszer házirendje élvez előnyt, amennyiben ütközik a felhőbeli házirenddel.
-
-      Ez a házirend csak platformként áll rendelkezésre.
-      </translation>
 <translation id="5034604678285451405">Az energiaellátás peak shift funkciójára vonatkozó százalékos küszöbérték beállítása.
 
           Ez a házirend csak akkor használatos, ha a DevicePowerPeakShiftEnabled igaz értékre van beállítva.
@@ -3638,29 +3631,6 @@ A házirend konfigurálásának ajánlott módja Windows rendszerben a GPO, noha
 <translation id="8259592978873597235">Ha a házirend értéke igaz, vagy ha nincs beállítva, a rendszer nem tekinti tétlennek a felhasználót videólejátszás közben. Ez meggátolja a tétlenségi, képernyő-elsötétítési, képernyő-kikapcsolási és képernyő-lezárási késleltetés időhatárának elérését, illetve a vonatkozó műveletek végrehajtását.
 
           Ha a házirend beállítása hamis, a videólejátszási tevékenység nem gátolja meg, hogy a rendszer tétlennek tekintse a felhasználót.</translation>
-<translation id="8264653492961233132">Azon alkalmazások és bővítmények listája, melyek telepítése a háttérben,
-          felhasználói beavatkozás nélkül történik, és melyeket a felhasználó
-          nem távolíthat el és tilthat le. A rendszer implicit módon, felhasználói
-          beavatkozás nélkül megadja az alkalmazások/bővítmények által kért
-          összes engedélyt, beleértve az alkalmazás/bővítmény jövőbeli verziói
-          által kért további engedélyeket is. Ezenkívül megkapják az engedélyeket
-          az enterprise.deviceAttributes és az enterprise.platformKeys bővítmény-
-          API-k is. (Ez a két API nem áll rendelkezésre a nem kényszerítve
-          telepített alkalmazások és bővítmények esetében.)
-
-          Ez a házirend elsőbbséget élvez az esetlegesen ütköző <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> házirenddel szemben. Ha egy korábban kényszerítve telepített alkalmazást vagy bővítményt töröl erről a listáról, a <ph name="PRODUCT_NAME" /> automatikusan eltávolítja.
-
-          Azon Windows-példányokon, amelyek nem csatlakoztak valamely <ph name="MS_AD_NAME" />-domainhez, a kényszerített telepítés csak a Chrome Internetes áruházban megtalálható alkalmazások és bővítmények esetében alkalmazható.
-
-          Felhívjuk figyelmét, hogy a felhasználók bármelyik bővítmény forráskódját módosíthatják a fejlesztői eszközök segítségével (és esetleg működésképtelenné tehetik a bővítményt). Ha ez problémát jelent, állítsa be a <ph name="DEVELOPER_TOOLS_POLICY_NAME" /> házirendet.
-
-          A házirend listájában lévő összes elem olyan karakterlánc, amely egy bővítményazonosítót és tetszőlegesen egy pontosvesszővel (<ph name="SEMICOLON" />) elválasztott „frissítési” URL-t tartalmaz. A bővítményazonosító az a 32 betűből álló karakterlánc, amelyet például itt tekinthet meg fejlesztői módban: <ph name="CHROME_EXTENSIONS_LINK" />. Ha megadja a „frissítési” URL-t, annak egy frissítési manifest XML-dokumentumra kell mutatnia, melynek leírását itt találja: <ph name="LINK_TO_EXTENSION_DOC1" />. A böngésző alapértelmezés szerint a Chrome Internetes áruház frissítési URL-jét használja (jelenleg: „https://clients2.google.com/service/update2/crx”). Felhívjuk figyelmét, hogy a jelen házirendben megadott „frissítési” URL csak az első telepítéshez használatos; a bővítmény további frissítései a bővítmény manifest fájljában feltüntetett URL-en keresztül történnek. A „frissítési” URL kifejezett megadása a <ph name="PRODUCT_NAME" /> 67-es verziójáig bezárólag volt kötelező.
-
-          Például a(z) <ph name="EXTENSION_POLICY_EXAMPLE" /> karakterlánc a(z) <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> alkalmazást telepíti a Chrome Internetes áruház általános „frissítési” URL-jéről. A bővítmények tárolásával kapcsolatban itt talál további információt: <ph name="LINK_TO_EXTENSION_DOC2" />.
-
-          Ha a házirend nincs beállítva, akkor a rendszer egyetlen alkalmazást vagy bővítményt sem telepít automatikusan, a felhasználó pedig törölheti a <ph name="PRODUCT_NAME" /> bármely telepített alkalmazását és bővítményét.
-
-          Fontos, hogy ez a házirend nem vonatkozóik az inkognitómódra.</translation>
 <translation id="8274603902181597201">A felhasználó ecryptfs kezdőkönyvtárának törlése és tiszta lappal, ext4 titkosítású kezdőkönyvtárral való kezdés.</translation>
 <translation id="8285435910062771358">Teljes képernyős nagyító bekapcsolása</translation>
 <translation id="8288199156259560552">Engedélyezi az androidos Google Helyszolgáltatásokat</translation>

@@ -194,7 +194,6 @@
 <translation id="2387895666653383613">Skalowanie tekstu</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
 <translation id="2410754283952462441">Wybierz konto</translation>
-<translation id="2414672073755873541">Nic tu nie ma</translation>
 <translation id="2414886740292270097">Ciemny</translation>
 <translation id="2416359993254398973">Chrome potrzebuje uprawnień dostępu do aparatu na tej stronie.</translation>
 <translation id="2426805022920575512">Wybierz inne konto</translation>
@@ -351,7 +350,6 @@
 <translation id="3600792891314830896">Wycisz strony, które odtwarzają dźwięk</translation>
 <translation id="3616113530831147358">Dźwięk</translation>
 <translation id="3620176948598597475">Zresetowanie spowoduje usunięcie historii Oszczędzania danych, w tym listy odwiedzonych stron.</translation>
-<translation id="3630011985153972676">W ustawieniach możesz zezwolić Chrome na pobieranie artykułów dla Ciebie, gdy używasz Wi-Fi.</translation>
 <translation id="3632295766818638029">Pokaż hasło</translation>
 <translation id="363596933471559332">Automatycznie loguj się na stronach, używając zapisanych danych logowania. Gdy ta funkcja jest wyłączona, przed każdym zalogowaniem się zobaczysz prośbę o weryfikację.</translation>
 <translation id="3658159451045945436">Resetowanie usuwa historię oszczędzania danych, w tym listę odwiedzonych stron.</translation>
@@ -425,7 +423,6 @@ Jeśli chcesz dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je
 <translation id="4195643157523330669">Otwórz w nowej karcie</translation>
 <translation id="4198423547019359126">Brak dostępnych miejsc zapisu pobieranych plików</translation>
 <translation id="4209895695669353772">Aby uzyskać dostęp do spersonalizowanej treści proponowanej przez Google, włącz synchronizację</translation>
-<translation id="4225719675976901337">Nic nie znaleziono</translation>
 <translation id="4226663524361240545">Powiadomienia będą sygnalizowane wibracjami</translation>
 <translation id="423219824432660969">Zaszyfruj synchronizowane dane hasłem Google z <ph name="TIME" /></translation>
 <translation id="4242533952199664413">Otwórz ustawienia</translation>

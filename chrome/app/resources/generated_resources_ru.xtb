@@ -1631,7 +1631,6 @@
 <translation id="3576324189521867626">Установлено</translation>
 <translation id="3578594933904494462">К контенту на этой вкладке открыт общий доступ</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; хочет открыть доступ к принтеру &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; для вашей группы &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Если вы примете приглашение, то все участники группы смогут пользоваться этим принтером.</translation>
-<translation id="3580923162759633716">Сервис для профилирования</translation>
 <translation id="3584169441612580296">Доступ к фотографиям, музыке и другим медиафайлам на вашем компьютере, а также их изменение</translation>
 <translation id="3587482841069643663">Все</translation>
 <translation id="358796204584394954">Для подключения введите следующий код на устройстве <ph name="DEVICE_NAME" />:</translation>
@@ -4639,7 +4638,6 @@
 <translation id="8284279544186306258">все сайты <ph name="WEBSITE_1" /></translation>
 <translation id="8286036467436129157">Вход</translation>
 <translation id="8286963743045814739">В режиме инкогнито можно просматривать сайты анонимно</translation>
-<translation id="82871696630048499">Из-за нехватки памяти произошла перезагрузка веб-страницы.</translation>
 <translation id="8287902281644548111">Поиск по URL или запросу к API</translation>
 <translation id="8288032458496410887">Удалить приложение "<ph name="APP" />"...</translation>
 <translation id="8291967909914612644">Страна провайдера</translation>

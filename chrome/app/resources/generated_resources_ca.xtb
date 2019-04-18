@@ -1626,7 +1626,6 @@ Descripció: <ph name="LINUX_DESCRIPTION" /></translation>
 <translation id="3576324189521867626">S'ha instal·lat correctament</translation>
 <translation id="3578594933904494462">El contingut d'aquesta pestanya es comparteix.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; vol compartir una impressora &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; amb un dels vostres grups: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Si accepteu, tots els membres del grup la podran fer servir.</translation>
-<translation id="3580923162759633716">Servei d'anàlisi de perfils</translation>
 <translation id="3584169441612580296">Accedeix a fotos, a música i a altres fitxers multimèdia de l'ordinador i modifica'ls</translation>
 <translation id="3587482841069643663">Tots</translation>
 <translation id="358796204584394954">Escriviu aquest codi a "<ph name="DEVICE_NAME" />" per emparellar-lo:</translation>
@@ -3426,7 +3425,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="641081527798843608">Coincidència d'assumpte</translation>
 <translation id="6412931879992742813">Finestra d'incògnit nova</translation>
 <translation id="6415900369006735853">Connecta't a Internet a través del telèfon</translation>
-<translation id="6416743254476733475">Permet o bloqueja a l'ordinador.</translation>
+<translation id="6416743254476733475">Concedeix o denega els permisos a l'ordinador.</translation>
 <translation id="6417265370957905582">Assistent de Google</translation>
 <translation id="6418160186546245112">S'està tornant a la versió de <ph name="IDS_SHORT_PRODUCT_NAME" /> instal·lada anteriorment.</translation>
 <translation id="6418481728190846787">Retira l'accés a totes les aplicacions permanentment</translation>
@@ -4633,7 +4632,6 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="8284279544186306258">tots els llocs web de <ph name="WEBSITE_1" /></translation>
 <translation id="8286036467436129157">Inicia la sessió</translation>
 <translation id="8286963743045814739">Pots navegar de manera privada utilitzant una finestra d'incògnit</translation>
-<translation id="82871696630048499">La pàgina web s'ha tornat a carregar perquè s'ha quedat sense memòria.</translation>
 <translation id="8287902281644548111">Cerca per crida a l'API o URL</translation>
 <translation id="8288032458496410887">Desinstal·la <ph name="APP" />...</translation>
 <translation id="8291967909914612644">País del proveïdor domèstic</translation>

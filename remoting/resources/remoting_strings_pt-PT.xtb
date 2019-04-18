@@ -153,6 +153,7 @@ Para mais informações acerca da privacidade, consulte a Política de Privacida
 <translation id="4240294130679914010">Desinstalador do Anfitrião do Chromoting</translation>
 <translation id="4277463233460010382">Este computador está configurado para permitir que um ou mais clientes se liguem sem introduzir um PIN.</translation>
 <translation id="4277736576214464567">O código de acesso é inválido. Tente novamente.</translation>
+<translation id="4281844954008187215">Termos de Utilização</translation>
 <translation id="4361728918881830843">Para ativar as ligações remotas a outro computador, instale o Ambiente de Trabalho Remoto do Chrome aí e clique em "<ph name="BUTTON_NAME" />".</translation>
 <translation id="4394049700291259645">Desactivar</translation>
 <translation id="4405930547258349619">Biblioteca Principal</translation>
@@ -345,6 +346,7 @@ Para ativar esta funcionalidade, selecione "<ph name="BUTTON_NAME" />" para apre
 <translation id="8747048596626351634">Falha da sessão ou falha ao iniciar a sessão. Se ~/.chrome-remote-desktop-session existir no computador remoto, certifique-se de que inicia um processo em primeiro plano de longa execução, como um gestor de janelas ou um ambiente de trabalho.</translation>
 <translation id="8759753423332885148">Saiba mais.</translation>
 <translation id="8791202241915690908">Transferir instalador do anfitrião do Chromoting</translation>
+<translation id="8804164990146287819">Política de Privacidade</translation>
 <translation id="894763922177556086">Boa</translation>
 <translation id="895780780740011433">Para Windows 7 e superior</translation>
 <translation id="897805526397249209">Para ativar as ligações remotas a outro computador, instale o Chromoting aí e clique em “<ph name="BUTTON_NAME" />”.</translation>

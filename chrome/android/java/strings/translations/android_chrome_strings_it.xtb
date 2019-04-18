@@ -194,7 +194,6 @@
 <translation id="2387895666653383613">Ridimensionamento testo</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
 <translation id="2410754283952462441">Scegli un account</translation>
-<translation id="2414672073755873541">Nessun contenuto presente</translation>
 <translation id="2414886740292270097">Scuro</translation>
 <translation id="2416359993254398973">Per questo sito Chrome ha bisogno dell'autorizzazione ad accedere alla fotocamera.</translation>
 <translation id="2426805022920575512">Scegli un altro account</translation>
@@ -351,7 +350,6 @@
 <translation id="3600792891314830896">Disattiva l'audio nei siti che riproducono suoni</translation>
 <translation id="3616113530831147358">Audio</translation>
 <translation id="3620176948598597475">La cronologia del Risparmio dati, incluso l'elenco dei siti visitati, verrà eliminata.</translation>
-<translation id="3630011985153972676">Consenti a Chrome di scaricare gli articoli quando è attiva la connessione Wi-Fi.</translation>
 <translation id="3632295766818638029">Visualizza password</translation>
 <translation id="363596933471559332">Accedi automaticamente ai siti web utilizzando credenziali memorizzate. Quando la funzione non è attiva, ti viene chiesta la verifica prima di ogni accesso ai siti web.</translation>
 <translation id="3658159451045945436">La reimpostazione elimina la tua cronologia dei dati risparmiati, incluso l'elenco dei siti web visitati.</translation>
@@ -425,7 +423,6 @@ Per modificare il termine di ricerca, premi a lungo per selezionarlo. Per perfez
 <translation id="4195643157523330669">Apri in un'altra scheda</translation>
 <translation id="4198423547019359126">Nessun percorso di download disponibile</translation>
 <translation id="4209895695669353772">Per ricevere contenuti suggeriti appositamente per te da Google, attiva la sincronizzazione</translation>
-<translation id="4225719675976901337">Nessun contenuto trovato</translation>
 <translation id="4226663524361240545">Le notifiche possono far vibrare il dispositivo</translation>
 <translation id="423219824432660969">Cripta i dati sincronizzati con la password Google a partire dal giorno <ph name="TIME" /></translation>
 <translation id="4242533952199664413">Apri le impostazioni</translation>
@@ -675,7 +672,7 @@ Per cambiare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincroniz
 <translation id="5937580074298050696">Dati risparmiati: <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">Reimposta</translation>
 <translation id="5942872142862698679">Google in uso per la ricerca</translation>
-<translation id="5944669582486359588">Nella modalità Lite, Chrome carica le pagine più rapidamente e utilizza fino al 60 percento di dati in meno. La tecnologia Cloud di Google ottimizza le pagine visitate.</translation>
+<translation id="5944669582486359588">Nella modalità Lite, Chrome carica le pagine più rapidamente e utilizza fino al 60 percento di dati in meno. La tecnologia cloud di Google ottimizza le pagine visitate.</translation>
 <translation id="5952764234151283551">Invia a Google l'URL della pagina a cui stai tentando di accedere</translation>
 <translation id="5956665950594638604">Apri Centro assistenza di Chrome in nuova scheda</translation>
 <translation id="5958275228015807058">Puoi trovare i tuoi file e le tue pagine nella cartella Download</translation>

@@ -153,6 +153,7 @@
 <translation id="4240294130679914010">Chromoting Host Uninstaller</translation>
 <translation id="4277463233460010382">คอมพิวเตอร์เครื่องนี้ได้รับการกำหนดค่าให้อนุญาตไคลเอ็นต์หนึ่งหรือมากกว่าสามารถเชื่อมต่อโดยไม่ต้องป้อน PIN</translation>
 <translation id="4277736576214464567">รหัสการเข้าถึงไม่ถูกต้อง โปรดลองอีกครั้ง</translation>
+<translation id="4281844954008187215">ข้อกำหนดในการให้บริการ</translation>
 <translation id="4361728918881830843">ในการเปิดใช้งานการเชื่อมต่อระยะไกลกับคอมพิวเตอร์เครื่องอื่น ให้ติดตั้ง Chrome Remote Desktop ที่คอมพิวเตอร์ที่ต้องการใช้งานและคลิก "<ph name="BUTTON_NAME" />"</translation>
 <translation id="4394049700291259645">ปิดการใช้งาน</translation>
 <translation id="4405930547258349619">Core Library</translation>
@@ -345,6 +346,7 @@
 <translation id="8747048596626351634">เซสชันขัดข้องหรือเริ่มต้นไม่สำเร็จ หากมี ~/.chrome-remote-desktop-session ในคอมพิวเตอร์ระยะไกล ให้ตรวจดูว่าได้เริ่มกระบวนการพื้นหน้าแบบระยะยาว เช่น สภาพแวดล้อมเดสก์ท็อปหรือตัวจัดการหน้าต่างแล้ว</translation>
 <translation id="8759753423332885148">ดูข้อมูลเพิ่มเติม</translation>
 <translation id="8791202241915690908">ดาวน์โหลด Chromoting Host Installer</translation>
+<translation id="8804164990146287819">นโยบายความเป็นส่วนตัว</translation>
 <translation id="894763922177556086">ดี</translation>
 <translation id="895780780740011433">สำหรับ Windows 7 ขึ้นไป</translation>
 <translation id="897805526397249209">ในการเปิดใช้งานการเชื่อมต่อระยะไกลกับคอมพิวเตอร์เครื่องอื่น ให้ติดตั้ง Chromoting ที่คอมพิวเตอร์ที่ต้องการใช้งานและคลิก "<ph name="BUTTON_NAME" />"</translation>

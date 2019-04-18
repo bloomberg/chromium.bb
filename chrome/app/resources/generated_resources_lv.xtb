@@ -1631,7 +1631,6 @@ Servera ziņojums: <ph name="SERVER_MSG" /></translation>
 <translation id="3576324189521867626">Veiksmīgi instalēta</translation>
 <translation id="3578594933904494462">Šīs cilnes saturs tiek kopīgots.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; vēlas koplietot printeri &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; ar jums piederošo grupu: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Ja pieņemsiet uzaicinājumu, šo printeri varēs izmantot visi grupas dalībnieki.</translation>
-<translation id="3580923162759633716">Profilēšanas pakalpojums</translation>
 <translation id="3584169441612580296">Lasīt fotoattēus, mūziku un citu datorā esošu multivides saturu un mainīt to</translation>
 <translation id="3587482841069643663">Visi</translation>
 <translation id="358796204584394954">Lai izveidotu savienojumu pārī, ierīcē “<ph name="DEVICE_NAME" />” ievadiet šo kodu:</translation>
@@ -3430,7 +3429,7 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="641081527798843608">Temata atbilstība</translation>
 <translation id="6412931879992742813">Jauns inkognito logs</translation>
 <translation id="6415900369006735853">Piekļūstiet internetam, izmantojot tālruni</translation>
-<translation id="6416743254476733475">Atļaujiet vai bloķējiet datorā.</translation>
+<translation id="6416743254476733475">Atļaujiet vai bloķējiet savā datorā.</translation>
 <translation id="6417265370957905582">Google asistents</translation>
 <translation id="6418160186546245112">Notiek iepriekš instalētās <ph name="IDS_SHORT_PRODUCT_NAME" /> versijas atjaunošana</translation>
 <translation id="6418481728190846787">Neatgriezeniski noņemt piekļuvi visām lietotnēm</translation>
@@ -4639,7 +4638,6 @@ Glabājiet atslēgas failu drošā vietā. Tas būs vajadzīgs, lai izveidotu ja
 <translation id="8284279544186306258">visās <ph name="WEBSITE_1" /> vietnēs</translation>
 <translation id="8286036467436129157">Pierakstīties</translation>
 <translation id="8286963743045814739">Varat pārlūkot tīmekli privāti inkognito režīma logā.</translation>
-<translation id="82871696630048499">Tīmekļa lapa tika ielādēta atkārtoti, jo atmiņā nepietika vietas.</translation>
 <translation id="8287902281644548111">Meklēt pēc API izsaukuma/URL</translation>
 <translation id="8288032458496410887">Vai atinstalēt lietotni <ph name="APP" />?</translation>
 <translation id="8291967909914612644">Mājas pakalpojumu sniedzēja valsts</translation>

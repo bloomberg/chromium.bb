@@ -153,6 +153,7 @@ Adatvédelmi információkért tekintse meg a Google adatvédelmi irányelveit (
 <translation id="4240294130679914010">Chromoting gazdagép eltávolítóprogramja</translation>
 <translation id="4277463233460010382">Ez a számítógép úgy van konfigurálva, hogy egy vagy több kliens PIN megadása nélkül csatlakozhasson.</translation>
 <translation id="4277736576214464567">A hozzáférési kód érvénytelen. Kérjük, próbálja újra.</translation>
+<translation id="4281844954008187215">Általános Szerződési Feltételek</translation>
 <translation id="4361728918881830843">Ahhoz, hogy engedélyezhesse a távoli kapcsolatokat egy másik számítógépen, telepítse a gépre a Chrome távoliasztal-szolgáltatást, majd kattintson a következő gombra: „<ph name="BUTTON_NAME" />”.</translation>
 <translation id="4394049700291259645">Kikapcsolás</translation>
 <translation id="4405930547258349619">Alapkönyvtár</translation>
@@ -345,6 +346,7 @@ Ha aktiválni szeretné ezt a funkciót, kattintson a(z) „<ph name="BUTTON_NAM
 <translation id="8747048596626351634">A munkamenet összeomlott vagy nem tudott elindulni. Ha található ~/.chrome-remote-desktop-session munkamenet a távoli számítógépen, győződjön meg arról, hogy hosszú ideig, előtérben futó folyamatot indít el, például asztali környezetet vagy ablakkezelőt.</translation>
 <translation id="8759753423332885148">További információ.</translation>
 <translation id="8791202241915690908">Chromoting gazdagép-telepítő letöltése</translation>
+<translation id="8804164990146287819">Adatvédelmi irányelvek</translation>
 <translation id="894763922177556086">Jó</translation>
 <translation id="895780780740011433">Windows 7 és újabb rendszerhez</translation>
 <translation id="897805526397249209">Ahhoz, hogy engedélyezhesse a távoli kapcsolatokat egy másik számítógépen, telepítse a gépre a Chromoting alkalmazást, majd kattintson a következő gombra: „<ph name="BUTTON_NAME" />”.</translation>

@@ -597,7 +597,6 @@ Se esta configuração for deixada sem definição, os usuários poderão optar 
       Quando esta política for definida como falsa, informações que podem ser usadas para identificar os usuários não serão coletadas.
 
       Esta política só é eficaz quando o <ph name="CHROME_REPORTING_EXTENSION_NAME" /> está ativado e quando a máquina está inscrita na <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
-<translation id="2126178089984117495">Restringe o modo de impressão com PIN. Se esta política não for definida, não haverá restrição. Se o modo não estiver disponível, a política será ignorada.</translation>
 <translation id="2127599828444728326">Permitir notificações nesses sites</translation>
 <translation id="2131902621292742709">Intervalo de escurecimento de tela no funcionamento com energia da bateria</translation>
 <translation id="2134437727173969994">Autorizar bloqueio da tela</translation>
@@ -1953,12 +1952,6 @@ Quando a |IdleAction| não for definida, a ação padrão de suspensão será re
 <translation id="4983201894483989687">Permitir a execução de plug-ins que estão desatualizados</translation>
 <translation id="4986560318567565414">Caminho para mudar do navegador alternativo para o Chrome.</translation>
 <translation id="4988291787868618635">Ação a ser realizada quando o intervalo de inatividade for atingido</translation>
-<translation id="5030889661505907084">
-      Se a política for definida como verdadeira, a política da nuvem terá precedência caso haja conflito com a da plataforma.
-      Se a política for definida como falsa ou não for configurada, a política da plataforma terá precedência caso haja conflito com a política da nuvem.
-
-      Esta política só está disponível como uma plataforma.
-      </translation>
 <translation id="5034604678285451405">Definir o limite de bateria (em porcentagem) para a economia de energia no período de pico.
 
           Esta política será usada apenas se DevicePowerPeakShiftEnabled estiver definida como verdadeira.
@@ -3610,29 +3603,6 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
 <translation id="8259592978873597235">Se esta política for definida como verdadeira ou for deixada sem definição, o usuário não será considerado inativo enquanto o vídeo estiver sendo reproduzido. Isso impede que o intervalo de inatividade, de escurecimento da tela, de desligamento da tela e de bloqueio da tela seja atingido e que as ações correspondentes sejam realizadas.
 
           Se esta política for definida como falsa, a atividade de vídeo não impedirá que o usuário seja considerado inativo.</translation>
-<translation id="8264653492961233132">Especifica uma lista de apps e extensões que são instalados silenciosamente,
-          sem interação do usuário e que não podem ser desinstalados ou 
-          desativados pelo usuário. Todas as permissões solicitadas pelos
-          apps/extensões são concedidas implicitamente, sem interação do usuário,
-          incluindo permissões extras solicitadas por futuras versões do
-          app/extensão. Além disso, são concedidas permissões para as APIs
-          de extensão enterprise.deviceAttributes e enterprise.platformKeys.
-          Essas duas APIs não estão disponíveis para apps/extensões que não
-          tenham sido instalados forçadamente.
-
-          Esta política tem precedência sobre uma política <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> potencialmente conflitante. Se um app ou extensão anteriormente instalado de modo forçado for removido dessa lista, ele será automaticamente desinstalado pelo <ph name="PRODUCT_NAME" />.
-
-          Em instâncias do Windows não vinculadas a um domínio do <ph name="MS_AD_NAME" />, a instalação forçada limita-se a apps e extensões listados na Chrome Web Store.
-
-          Observe que o código-fonte de qualquer extensão pode ser alterado pelos usuários por meio das Ferramentas para Desenvolvedores (possivelmente tornando a extensão defeituosa). Se essa preocupação existir, será preciso definir a política <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
-
-          Cada item da lista da política é uma string que contém um código de extensão e, opcionalmente, um URL de "atualização" separados por ponto e vírgula (<ph name="SEMICOLON" />). O código da extensão é a string de 32 letras encontrada, por exemplo, em <ph name="CHROME_EXTENSIONS_LINK" /> no modo de desenvolvedor. O URL de "atualização", se especificado, precisa apontar para um documento XML de manifesto de atualização, conforme descrito em <ph name="LINK_TO_EXTENSION_DOC1" />. Por padrão, o URL de "atualização" da Chrome Web Store é usado (atualmente, "https://clients2.google.com/service/update2/crx"). Observe que o URL de "atualização" definido nesta política só é usado na instalação inicial. As atualizações subsequentes da extensão empregam o URL de atualização indicado no manifesto da extensão. Observe também que especificar o URL de "atualização" era uma etapa obrigatória nas versões do <ph name="PRODUCT_NAME" /> até a 67.
-
-          Por exemplo, <ph name="EXTENSION_POLICY_EXAMPLE" /> instala o app <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> por meio do URL padrão de "atualização" da Chrome Web Store. Para ver mais informações sobre extensões de hospedagem, consulte: <ph name="LINK_TO_EXTENSION_DOC2" />.
-
-          Se esta política não for definida, nenhum app ou extensão será instalado automaticamente, e o usuário poderá desinstalar apps ou extensões no <ph name="PRODUCT_NAME" />.
-
-          Observe que esta política não se aplica ao modo de navegação anônima.</translation>
 <translation id="8274603902181597201">Faz a limpeza do diretório inicial do ecryptfs do usuário e começa com um novo diretório inicial ext4-encrypted.</translation>
 <translation id="8285435910062771358">Lupa de tela inteira ativada</translation>
 <translation id="8288199156259560552">Ativar o Serviço de Localização do Google para Android</translation>

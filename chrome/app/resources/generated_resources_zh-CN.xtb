@@ -1624,7 +1624,6 @@
 <translation id="3576324189521867626">已成功安装</translation>
 <translation id="3578594933904494462">此标签页的内容正在共享中。</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt;希望与您拥有的以下群组共享打印机&lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt;：&lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;。如果您接受，该群组的所有成员都可以将内容发送到该打印机进行打印。</translation>
-<translation id="3580923162759633716">剖析服务</translation>
 <translation id="3584169441612580296">读取和更改您计算机上的照片、音乐和其他媒体</translation>
 <translation id="3587482841069643663">全部</translation>
 <translation id="358796204584394954">请在“<ph name="DEVICE_NAME" />”上输入以下代码进行配对：</translation>
@@ -4629,7 +4628,6 @@
 <translation id="8284279544186306258">所有<ph name="WEBSITE_1" />网站</translation>
 <translation id="8286036467436129157">登录</translation>
 <translation id="8286963743045814739">无痕式窗口可让您私密地浏览</translation>
-<translation id="82871696630048499">该网页用尽了内存，因此已重新加载。</translation>
 <translation id="8287902281644548111">按 API 调用/网址搜索</translation>
 <translation id="8288032458496410887">卸载<ph name="APP" />…</translation>
 <translation id="8291967909914612644">家用移动网络提供商所属国家/地区</translation>

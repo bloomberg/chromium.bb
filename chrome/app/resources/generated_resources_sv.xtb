@@ -1630,7 +1630,6 @@
 <translation id="3576324189521867626">Appen har installerats</translation>
 <translation id="3578594933904494462">Flikens innehåll delas.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; vill dela skrivaren &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; med en grupp som du äger: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Om du accepterar kan alla medlemmar i gruppen skriva ut till skrivaren.</translation>
-<translation id="3580923162759633716">Profileringstjänst</translation>
 <translation id="3584169441612580296">Läsa och ändra foton, musik och andra media från datorn</translation>
 <translation id="3587482841069643663">Alla</translation>
 <translation id="358796204584394954">Genomför kopplingen genom att skriva den här koden på <ph name="DEVICE_NAME" />:</translation>
@@ -4639,7 +4638,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8284279544186306258">alla <ph name="WEBSITE_1" />-webbplatser</translation>
 <translation id="8286036467436129157">Logga in</translation>
 <translation id="8286963743045814739">Du kan surfa privat med ett inkognitofönster</translation>
-<translation id="82871696630048499">Webbsidan lästes in igen eftersom minnet tog slut.</translation>
 <translation id="8287902281644548111">Sök efter API-anrop/webbadress</translation>
 <translation id="8288032458496410887">Avinstallera <ph name="APP" /> …</translation>
 <translation id="8291967909914612644">Hemleverantörens land</translation>

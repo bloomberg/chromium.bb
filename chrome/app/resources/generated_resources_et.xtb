@@ -1631,7 +1631,6 @@
 <translation id="3576324189521867626">Installimine õnnestus</translation>
 <translation id="3578594933904494462">Selle vahekaardi sisu jagatakse.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; soovib jagada printerit &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; teie rühmaga &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Kui nõustute, saavad printerit kasutada ka kõik rühmaliikmed.</translation>
-<translation id="3580923162759633716">Profiilimisteenus</translation>
 <translation id="3584169441612580296">Arvutis olevate fotode, muusika ja muu meedia lugemine ja muutmine</translation>
 <translation id="3587482841069643663">Kõik</translation>
 <translation id="358796204584394954">Sisestage seadmes „<ph name="DEVICE_NAME" />” sidumiseks see kood:</translation>
@@ -4640,7 +4639,6 @@ Hoidke oma võtmefail kindlas kohas. Teil läheb seda oma laiendi uute versiooni
 <translation id="8284279544186306258">kõik domeeni <ph name="WEBSITE_1" /> saidid</translation>
 <translation id="8286036467436129157">Logi sisse</translation>
 <translation id="8286963743045814739">Inkognito aknas saab privaatselt sirvida</translation>
-<translation id="82871696630048499">Veebileht laaditi uuesti, kuna mälu sai otsa.</translation>
 <translation id="8287902281644548111">API kutsungi/URL-i järgi otsimine</translation>
 <translation id="8288032458496410887">Rakenduse <ph name="APP" /> desinstallimine …</translation>
 <translation id="8291967909914612644">Koduteenuse pakkuja riik</translation>

@@ -194,7 +194,6 @@
 <translation id="2387895666653383613">שינוי גודל טקסט</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
 <translation id="2410754283952462441">בחירת חשבון</translation>
-<translation id="2414672073755873541">אין כאן תוכן</translation>
 <translation id="2414886740292270097">כהה</translation>
 <translation id="2416359993254398973">‏Chrome זקוק להרשאה גישה אל המצלמה בשביל האתר הזה.</translation>
 <translation id="2426805022920575512">בחירת חשבון אחר</translation>
@@ -351,7 +350,6 @@
 <translation id="3600792891314830896">השתקת אתרים שמשמיעים צלילים</translation>
 <translation id="3616113530831147358">אודיו</translation>
 <translation id="3620176948598597475">‏האיפוס מוחק את ההיסטוריה של Data Saver, כולל רשימת האתרים שבהם ביקרת.</translation>
-<translation id="3630011985153972676">‏Chrome יכול להוריד בשבילך מאמרים כשקיים חיבור ל-Wi-Fi. האפשרות הזאת זמינה דרך ההגדרות.</translation>
 <translation id="3632295766818638029">חשוף סיסמה</translation>
 <translation id="363596933471559332">כניסה אוטומטית לאתרים באמצעות פרטי כניסה מאוחסנים. כשתכונה זו כבויה, יהיה עליך לבצע אימות לפני כל כניסה לאתר.</translation>
 <translation id="3658159451045945436">האיפוס גורם למחיקת ההיסטוריה של החיסכון בנתונים, כולל רשימת האתרים שביקרת בהם.</translation>
@@ -425,7 +423,6 @@
 <translation id="4195643157523330669">פתיחה בכרטיסייה חדשה</translation>
 <translation id="4198423547019359126">אין מיקומים זמינים להורדה</translation>
 <translation id="4209895695669353772">‏כדי לקבל מ-Google הצעות לתוכן מותאם אישית, יש להפעיל את הסנכרון</translation>
-<translation id="4225719675976901337">לא נמצא תוכן</translation>
 <translation id="4226663524361240545">רטט של המכשיר אפשרי כשמתקבלת הודעה</translation>
 <translation id="423219824432660969">‏הצפנת נתונים מסונכרנים באמצעות סיסמת Google החל מ-<ph name="TIME" /></translation>
 <translation id="4242533952199664413">פתח את 'הגדרות'</translation>

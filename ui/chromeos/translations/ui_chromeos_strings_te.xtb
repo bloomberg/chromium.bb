@@ -140,7 +140,7 @@
 <translation id="2638942478653899953">Google డిస్క్‌ను చేరుకోవడం సాధ్యపడలేదు. దయచేసి <ph name="BEGIN_LINK" />లాగ్ అవుట్<ph name="END_LINK" /> చేసి, తిరిగి లాగిన్ చేయండి.</translation>
 <translation id="2649120831653069427">రెయిన్‌బోఫిష్</translation>
 <translation id="2661146741306740526">16x9</translation>
-<translation id="2672394958563893062">ఎర్రర్ ఏర్పడింది. మొదటి నుండి పునఃప్రారంభించడానికి క్లిక్ చేయండి.</translation>
+<translation id="2672394958563893062">ఎర్ర‌ర్ ఏర్ప‌డింది. మొదటి నుండి పునఃప్రారంభించడానికి క్లిక్ చేయండి.</translation>
 <translation id="2676946222714718093">ఇందులో ప్లే అవుతోంది</translation>
 <translation id="2735698359135166290">రొమేనియన్ ప్రామాణిక కీబోర్డ్</translation>
 <translation id="2771816809568414714">జున్ను</translation>
@@ -190,6 +190,7 @@
 <translation id="3245321423178950146">తెలియని కళాకారుడు</translation>
 <translation id="3252266817569339921">ఫ్రెంచ్</translation>
 <translation id="3254434849914415189"><ph name="FILE_TYPE" /> ఫైల్‌ల కోసం డిఫాల్ట్ యాప్‌ను ఎంచుకోండి:</translation>
+<translation id="3264582393905923483">సందర్భం</translation>
 <translation id="3280431534455935878">సిద్ధం చేస్తోంది</translation>
 <translation id="3280987981688031357">వినైల్ రికార్డ్</translation>
 <translation id="3296763833017966289">జార్జియన్</translation>
@@ -400,7 +401,7 @@
 <translation id="5691596662111998220">అయ్యో, <ph name="FILE_NAME" /> ఉనికిలో లేదు.</translation>
 <translation id="5700087501958648444">ఆడియో సమాచారం</translation>
 <translation id="5731409020711461763">1 కొత్త ఫోటో</translation>
-<translation id="5752453871435543420">Chrome OS క్లౌడ్ బ్యాకప్</translation>
+<translation id="5752453871435543420">Chrome OS Cloud బ్యాకప్</translation>
 <translation id="5756666464756035725">హంగేరియన్ QWERTY</translation>
 <translation id="5771585441665576801">లిప్యంతరీకరణ (geia → γεια)</translation>
 <translation id="57838592816432529">మ్యూట్ చేయి</translation>
@@ -426,7 +427,7 @@
 <translation id="6012987430370760224">మరాఠీ కీబోర్డ్ (ఫొనెటిక్)</translation>
 <translation id="6019169947004469866">కత్తిరించు</translation>
 <translation id="60357267506638014">చెక్ QWERTY</translation>
-<translation id="604001903249547235">క్లౌడ్ బ్యాకప్</translation>
+<translation id="604001903249547235">Cloud బ్యాకప్</translation>
 <translation id="6040143037577758943">మూసివేయి</translation>
 <translation id="6054173164583630569">ఫ్రెంచ్ కీబోర్డ్</translation>
 <translation id="6074825444536523002">Google ఫారమ్</translation>
@@ -614,7 +615,7 @@
 <translation id="8160015581537295331">స్పానిష్ కీబోర్డ్</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8193175696669055101">పరికరం మోడల్</translation>
-<translation id="8223479393428528563">ఈ ఫైల్‌లను ఆఫ్‌లైన్‌లో ఉపయోగించేందుకు వాటిని సేవ్ చేయడానికి, తిరిగి ఆన్‌లైన్‌లోకి వచ్చి, ఫైల్‌లపై కుడి-క్లిక్ చేసి, <ph name="OFFLINE_CHECKBOX_NAME" /> ఎంపికను ఎంచుకోండి.</translation>
+<translation id="8223479393428528563">ఈ ఫైల్‌లను ఆఫ్‌లైన్‌లో ఉపయోగించేందుకు వాటిని సేవ్ చేయడానికి, తిరిగి ఆన్‌లైన్‌లోకి వచ్చి, ఫైల్‌లపై కుడి-క్లిక్ చేసి, ఆపై <ph name="OFFLINE_CHECKBOX_NAME" /> ఎంపికను ఎంచుకోండి.</translation>
 <translation id="8249296373107784235">రద్దుచేయి</translation>
 <translation id="8261506727792406068">తొలగించు</translation>
 <translation id="8279388322240498158">సొరానీ కుర్డిష్ ఆంగ్ల-ఆధారిత కీబోర్డ్</translation>

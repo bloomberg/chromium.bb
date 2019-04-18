@@ -1628,7 +1628,6 @@
 <translation id="3576324189521867626">Инсталирането бе успешно</translation>
 <translation id="3578594933904494462">Съдържанието на този раздел се споделя.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; иска да сподели принтера &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; с притежавана от вас група: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Ако приемете, всичките й членове ще могат да отпечатват с него.</translation>
-<translation id="3580923162759633716">Услуга за профилиране</translation>
 <translation id="3584169441612580296">Четене и промяна на снимки, музика и друга мултимедия от компютъра ви</translation>
 <translation id="3587482841069643663">Всички</translation>
 <translation id="358796204584394954">За сдвояване въведете този код на <ph name="DEVICE_NAME" />:</translation>
@@ -4640,7 +4639,6 @@
 <translation id="8284279544186306258">всички <ph name="WEBSITE_1" /> сайта</translation>
 <translation id="8286036467436129157">Вход</translation>
 <translation id="8286963743045814739">Можете да сърфирате частно посредством прозорец в режим „инкогнито“</translation>
-<translation id="82871696630048499">Уеб страницата бе презаредена, защото паметта й се изчерпа.</translation>
 <translation id="8287902281644548111">Търсене по извикване на API/по URL адрес</translation>
 <translation id="8288032458496410887">Деинсталиране на <ph name="APP" />...</translation>
 <translation id="8291967909914612644">Държава на собствения доставчик</translation>

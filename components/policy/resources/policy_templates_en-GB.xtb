@@ -612,7 +612,6 @@
       When this policy is set to False, information that can be used to identify users is not gathered.
 
       This policy is only effective when the <ph name="CHROME_REPORTING_EXTENSION_NAME" /> is enabled, and the machine is enrolled with <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
-<translation id="2126178089984117495">Restricts PIN printing mode. Unset policy is treated as no restriction. If the mode is unavailable, this policy is ignored.</translation>
 <translation id="2127599828444728326">Allow notifications on these sites</translation>
 <translation id="2131902621292742709">Screen dim delay when running on battery power</translation>
 <translation id="2134437727173969994">Permit locking the screen</translation>
@@ -2004,12 +2003,6 @@
 <translation id="4983201894483989687">Allow running plug-ins that are outdated</translation>
 <translation id="4986560318567565414">Path to Chrome for switching from the alternative browser.</translation>
 <translation id="4988291787868618635">Action to take when the idle delay is reached</translation>
-<translation id="5030889661505907084">
-      If the policy is set to true, cloud policy takes precedence if it conflicts with platform policy.
-      If the policy is set to false or not configured, platform policy takes precedence if it conflicts with cloud policy.
-
-      This policy is only available as a platform.
-      </translation>
 <translation id="5034604678285451405">Set power peak shift battery threshold in per cent.
 
           This policy is only used if DevicePowerPeakShiftEnabled is set to true.
@@ -3728,29 +3721,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
 <translation id="8259592978873597235">If this policy is set to true or is unset, the user is not considered to be idle while video is playing. This prevents the idle delay, screen dim delay, screen off delay and screen lock delay from being reached, and the corresponding actions from being taken.
 
           If this policy is set to false, video activity does not prevent the user from being considered idle.</translation>
-<translation id="8264653492961233132">Specifies a list of apps and extensions that are installed silently,
-          without user interaction, and which cannot be uninstalled nor
-          disabled by the user. All permissions requested by the
-          apps/extensions are granted implicitly, without user interaction,
-          including any additional permissions requested by future versions of
-          the app/extension. Furthermore, permissions are granted for the
-          enterprise.deviceAttributes and enterprise.platformKeys extension
-          APIs. (These two APIs are not available to apps/extensions that are
-          not force-installed.)
-
-          This policy takes precedence over a potentially conflicting <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> policy. If an app or extension that previously had been force-installed is removed from this list, it is automatically uninstalled by <ph name="PRODUCT_NAME" />.
-
-          For Windows instances that are not joined to a <ph name="MS_AD_NAME" /> domain, forced installation is limited to apps and extensions listed in the Chrome Web Store.
-
-          Note that the source code of any extension may be altered by users via Developer Tools (potentially rendering the extension dysfunctional). If this is a concern, the <ph name="DEVELOPER_TOOLS_POLICY_NAME" /> policy should be set.
-
-          Each list item of the policy is a string that contains an extension ID and, optionally, an 'update' URL separated by a semi-colon (<ph name="SEMICOLON" />). The extension ID is the 32-letter string found e.g. on <ph name="CHROME_EXTENSIONS_LINK" /> when in developer mode. The 'update' URL, if specified, should point to an Update Manifest XML document as described at <ph name="LINK_TO_EXTENSION_DOC1" />. By default, the Chrome Web Store's update URL is used (which currently is 'https://clients2.google.com/service/update2/crx'). Note that the 'update' URL set in this policy is only used for the initial installation; subsequent updates of the extension employ the update URL indicated in the extension's manifest. Note also that specifying the 'update' URL explicitly was mandatory in <ph name="PRODUCT_NAME" /> versions up to and including 67.
-
-          For example, <ph name="EXTENSION_POLICY_EXAMPLE" /> installs the <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> app from the standard Chrome Web Store 'update' URL. For more information about hosting extensions, see: <ph name="LINK_TO_EXTENSION_DOC2" />.
-
-          If this policy is left not set, no apps or extensions are installed automatically and the user can uninstall any app or extension in <ph name="PRODUCT_NAME" />.
-
-          Note that this policy doesn't apply to incognito mode.</translation>
 <translation id="8274603902181597201">Wipe the user’s eCryptfs home directory and start with a fresh ext4-encrypted home directory.</translation>
 <translation id="8285435910062771358">Full-screen magnifier enabled</translation>
 <translation id="8288199156259560552">Enable Android Google Location Service</translation>

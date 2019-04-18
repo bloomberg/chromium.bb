@@ -153,6 +153,7 @@ Các máy tính từ xa có bàn phím không phải tiếng Anh-Mỹ có thể 
 <translation id="4240294130679914010">Trình gỡ cài đặt máy chủ kết nối từ xa trên Chrome</translation>
 <translation id="4277463233460010382">Máy tính này được định cấu hình để cho phép một hoặc nhiều ứng dụng khách kết nối mà không cần nhập mã PIN.</translation>
 <translation id="4277736576214464567">Mã truy cập không hợp lệ. Vui lòng thử lại.</translation>
+<translation id="4281844954008187215">Điều khoản dịch vụ</translation>
 <translation id="4361728918881830843">Để bật kết nối từ xa với một máy tính khác, hãy cài đặt Chrome Remote Desktop trên máy tính đó và nhấp “<ph name="BUTTON_NAME" />”.</translation>
 <translation id="4394049700291259645">Vô hiệu hóa</translation>
 <translation id="4405930547258349619">Thư viện trung tâm</translation>
@@ -345,6 +346,7 @@ PC</translation>
 <translation id="8747048596626351634">Phiên bị lỗi hoặc không bắt đầu được. Nếu đã có ~/.chrome-remote-desktop-session trên máy tính từ xa, hãy đảm bảo rằng phiên này bắt đầu chạy một quy trình ở nền trước trong thời gian dài, chẳng hạn như môi trường máy tính để bàn hoặc trình quản lý cửa sổ.</translation>
 <translation id="8759753423332885148">Tìm hiểu thêm.</translation>
 <translation id="8791202241915690908">Tải xuống trình cài đặt máy chủ kết nối từ xa trên Chrome</translation>
+<translation id="8804164990146287819">Chính sách quyền riêng tư</translation>
 <translation id="894763922177556086">Tốt</translation>
 <translation id="895780780740011433">Dành cho Windows 7 trở lên</translation>
 <translation id="897805526397249209">Để bật kết nối từ xa với một máy tính khác, hãy cài đặt Kết nối từ xa trên Chrome trên máy tính đó và nhấp “<ph name="BUTTON_NAME" />”.</translation>

@@ -589,7 +589,6 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
       Jika kebijakan ini ditetapkan ke False, informasi yang dapat digunakan untuk mengidentifikasi pengguna tidak dikumpulkan.
 
       Kebijakan ini hanya berlaku jika <ph name="CHROME_REPORTING_EXTENSION_NAME" /> diaktifkan, dan mesin didaftarkan ke <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
-<translation id="2126178089984117495">Membatasi mode pencetakan PIN. Kebijakan yang tidak disetel dianggap sebagai tidak ada batasan. Jika mode ini tidak tersedia, kebijakan ini akan diabaikan.</translation>
 <translation id="2127599828444728326">Izinkan pemberitahuan di situs ini</translation>
 <translation id="2131902621292742709">Penundaan peredupan layar saat menggunakan daya baterai</translation>
 <translation id="2134437727173969994">Mengizinkan penguncian layar</translation>
@@ -1945,12 +1944,6 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 <translation id="4983201894483989687">Izinkan menjalankan plugin yang kedaluwarsa</translation>
 <translation id="4986560318567565414">Jalur ke Chrome untuk beralih dari browser alternatif.</translation>
 <translation id="4988291787868618635">Tindakan yang akan diambil saat penundaan waktu menganggur tercapai</translation>
-<translation id="5030889661505907084">
-      Jika kebijakan ini ditetapkan ke True, kebijakan cloud akan lebih diutamakan jika terjadi bentrok dengan kebijakan platform.
-      Jika kebijakan ini ditetapkan ke False atau tidak dikonfigurasi, kebijakan platform akan lebih diutamakan jika terjadi bentrok dengan kebijakan cloud.
-
-      Kebijakan ini hanya tersedia sebagai platform.
-      </translation>
 <translation id="5034604678285451405">Tetapkan ambang batas pergeseran puncak daya baterai dalam persen.
 
           Kebijakan ini hanya digunakan jika DevicePowerPeakShiftEnabled ditetapkan ke True.
@@ -3580,21 +3573,6 @@ Cara yang disarankan untuk mengonfigurasi kebijakan di Windows adalah melalui GP
 <translation id="8259592978873597235">Jika kebijakan ini ditetapkan ke True atau tidak ditetapkan, pengguna tidak dianggap menganggur selama video diputar. Hal ini mencegah tercapainya waktu tunggu penundaan menganggur, penundaan peredupan layar, penundaan penonaktifan layar, dan penundaan penguncian layar, serta mencegah diambilnya tindakan yang terkait.
 
           Jika kebijakan ini ditetapkan ke False, aktivitas video tidak mencegah pengguna untuk dianggap menganggur.</translation>
-<translation id="8264653492961233132">Menentukan daftar aplikasi dan ekstensi yang diinstal secara otomatis, tanpa interaksi pengguna, dan yang tidak dapat di-uninstal atau dinonaktifkan oleh pengguna. Semua izin yang diminta oleh aplikasi/ekstensi diberikan secara implisit, tanpa interaksi pengguna, termasuk izin tambahan apa pun yang diminta oleh versi berikutnya dari aplikasi/ekstensi tersebut. Selain itu, izin diberikan untuk API ekstensi enterprise.deviceAttributes dan enterprise.platformKeys. (Kedua API ini tidak tersedia untuk aplikasi/ekstensi yang tidak diinstal paksa.)
-
-          Kebijakan ini lebih diutamakan daripada kebijakan <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> yang berpotensi bentrok. Jika aplikasi atau ekstensi yang sebelumnya diinstal paksa telah dihapus dari daftar ini, aplikasi/ekstensi tersebut akan otomatis di-uninstal oleh <ph name="PRODUCT_NAME" />.
-
-          Untuk instance Windows yang tidak tergabung dalam domain <ph name="MS_AD_NAME" />, penginstalan paksa dibatasi untuk aplikasi dan ekstensi yang tercantum di Chrome Web Store.
-
-          Perlu diperhatikan bahwa kode sumber untuk ekstensi apa pun dapat diubah oleh pengguna melalui Developer Tools (namun berpotensi membuat ekstensi tidak berfungsi lagi). Jika hal ini menjadi masalah, kebijakan <ph name="DEVELOPER_TOOLS_POLICY_NAME" /> sebaiknya ditetapkan.
-
-          Setiap item daftar kebijakan merupakan string yang memuat ID ekstensi dan, terkadang, URL "update" yang dipisahkan titik koma (<ph name="SEMICOLON" />). ID ekstensi adalah string 32 huruf yang ditemukan misalnya di <ph name="CHROME_EXTENSIONS_LINK" /> saat dalam mode developer. URL "update", jika ditentukan, semestinya mengarah ke dokumen XML Manifes Update seperti yang dijelaskan di <ph name="LINK_TO_EXTENSION_DOC1" />. Secara default, URL update Chrome Web Store digunakan (yang saat ini adalah "https://clients2.google.com/service/update2/crx"). Perhatikan bahwa URL "update" yang ditetapkan dalam kebijakan ini hanya digunakan untuk penginstalan awal; update ekstensi berikutnya akan menggunakan URL update yang ditunjukkan dalam manifes ekstensi. Perhatikan juga bahwa penetapan URL "update" secara eksplisit diwajibkan pada versi <ph name="PRODUCT_NAME" /> hingga dan termasuk 67.
-
-          Misalnya, <ph name="EXTENSION_POLICY_EXAMPLE" /> menginstal aplikasi <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> dari URL "update" Chrome Web Store standar. Untuk mendapatkan informasi selengkapnya tentang ekstensi hosting, lihat: <ph name="LINK_TO_EXTENSION_DOC2" />.
-
-          Jika kebijakan ini tidak ditetapkan, tidak ada aplikasi atau ekstensi yang otomatis diinstal dan pengguna dapat meng-uninstal aplikasi atau ekstensi apa pun di <ph name="PRODUCT_NAME" />.
-
-          Perlu diperhatikan bahwa kebijakan ini tidak berlaku untuk mode penyamaran.</translation>
 <translation id="8274603902181597201">Me-wipe direktori beranda ecryptfs pengguna dan memulai direktori beranda yang dienkripsi ext4.</translation>
 <translation id="8285435910062771358">Lup layar penuh diaktifkan</translation>
 <translation id="8288199156259560552">Mengaktifkan Layanan Lokasi Google Android</translation>

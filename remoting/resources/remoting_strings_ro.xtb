@@ -153,6 +153,7 @@ Pentru informații privind confidențialitatea, accesați Politica de confidenț
 <translation id="4240294130679914010">Program de dezinstalare a gazdei Chromoting</translation>
 <translation id="4277463233460010382">Acest computer este configurat să permită conectarea unuia sau a mai multor clienți fără introducerea unui PIN.</translation>
 <translation id="4277736576214464567">Codul de acces este greșit. Încercați din nou.</translation>
+<translation id="4281844954008187215">Condiții de furnizare a serviciilor</translation>
 <translation id="4361728918881830843">Pentru a activa conexiunile la distanță pentru un alt computer, instalați Desktop la distanță Chrome pe acesta și dați clic pe „<ph name="BUTTON_NAME" />”.</translation>
 <translation id="4394049700291259645">Dezactivează</translation>
 <translation id="4405930547258349619">Biblioteca nucleu</translation>
@@ -345,6 +346,7 @@ Pentru a activa această funcție, selectează „<ph name="BUTTON_NAME" />” p
 <translation id="8747048596626351634">Sesiunea s-a blocat sau nu a pornit. Dacă pe computerul la distanță există ~/.chrome-remote-desktop-session, asigură-te că inițiază un proces în prim-plan de lungă durată, cum ar fi un mediu de desktop sau un manager de ferestre.</translation>
 <translation id="8759753423332885148">Află mai multe.</translation>
 <translation id="8791202241915690908">Descarcă programul de instalare gazdă pentru Chromoting</translation>
+<translation id="8804164990146287819">Politica de confidențialitate</translation>
 <translation id="894763922177556086">Bună</translation>
 <translation id="895780780740011433">Pentru Windows 7 și versiuni ulterioare</translation>
 <translation id="897805526397249209">Pentru a activa conexiunile la distanță pentru un alt computer, instalați Chromoting pe acesta și dați clic pe „<ph name="BUTTON_NAME" />”.</translation>

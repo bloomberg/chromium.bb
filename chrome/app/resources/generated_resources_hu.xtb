@@ -1632,7 +1632,6 @@
 <translation id="3576324189521867626">Sikeresen telepítve</translation>
 <translation id="3578594933904494462">A lap tartalma meg lesz osztva.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; szeretné megosztani a(z) &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; nyomtatót az Ön &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt; nevű csoportjával. Ha elfogadja, a csoport minden tagja tud majd nyomtatni a nyomtatóval.</translation>
-<translation id="3580923162759633716">Profilalkotási szolgáltatás</translation>
 <translation id="3584169441612580296">Fotók, zeneszámok és egyéb médiatartalmak olvasása és módosítása a számítógépről</translation>
 <translation id="3587482841069643663">Mind</translation>
 <translation id="358796204584394954">Írja be ezt a kódot a(z) „<ph name="DEVICE_NAME" />” eszközön a párosításhoz:</translation>
@@ -3432,7 +3431,7 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="641081527798843608">Tárgyegyeztetés</translation>
 <translation id="6412931879992742813">Új inkognitóablak</translation>
 <translation id="6415900369006735853">Internetkapcsolat telefonon keresztül</translation>
-<translation id="6416743254476733475">A számítógépen dönthet az engedélyezésről vagy a letiltásról.</translation>
+<translation id="6416743254476733475">Engedélyezze vagy tiltsa le a számítógépen.</translation>
 <translation id="6417265370957905582">Google Segéd</translation>
 <translation id="6418160186546245112">Visszatérés a(z) <ph name="IDS_SHORT_PRODUCT_NAME" /> korábban telepített verziójához</translation>
 <translation id="6418481728190846787">Az összes alkalmazás hozzáférésének végleges eltávolítása</translation>
@@ -4642,7 +4641,6 @@ A kulcsfájlt tartsa biztonságos helyen. Szüksége lesz rá ahhoz, hogy új ve
 <translation id="8284279544186306258">minden <ph name="WEBSITE_1" /> webhelyen</translation>
 <translation id="8286036467436129157">Bejelentkezés</translation>
 <translation id="8286963743045814739">Privát módban böngészhet, ha inkognitóablakot használ</translation>
-<translation id="82871696630048499">A rendszer újratöltötte a weboldalt, mert elfogyott a memória.</translation>
 <translation id="8287902281644548111">Keresés API-hívás/URL szerint</translation>
 <translation id="8288032458496410887"><ph name="APP" /> eltávolítása…</translation>
 <translation id="8291967909914612644">Otthoni szolgáltató országa</translation>
