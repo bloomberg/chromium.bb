@@ -588,6 +588,14 @@
     "args": ["--enable-blink-features=FractionalMouseEvent"]
   },
   {
+    "prefix": "compositor_threaded_scrollbar_scrolling",
+    "base": "fast/scrolling/scrollbars",
+    "args": ["--enable-features=CompositorThreadedScrollbarScrolling",
+             "--enable-threaded-compositing",
+             "--enable-prefer-compositing-to-lcd-text",
+             "--disable-smooth-scrolling"]
+  },
+  {
     "prefix": "fractional_scrolling_threaded",
     "base": "fast/scrolling",
     "args": ["--enable-blink-features=FractionalScrollOffsets", "--enable-threaded-compositing"]
