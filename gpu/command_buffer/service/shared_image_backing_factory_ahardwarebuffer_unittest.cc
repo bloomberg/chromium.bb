@@ -412,25 +412,17 @@ GlLegacySharedImage::GlLegacySharedImage(
       mailbox_, format, size_, color_space, usage, is_thread_safe);
   EXPECT_TRUE(backing_);
 
-  LOG(ERROR) << "cblume 1";
-
   // Check clearing.
   if (!backing_->IsCleared()) {
     backing_->SetCleared();
     EXPECT_TRUE(backing_->IsCleared());
   }
 
-  LOG(ERROR) << "cblume 2";
-
   // First, validate via a legacy mailbox.
   GLenum expected_target = GL_TEXTURE_2D;
   EXPECT_TRUE(backing_->ProduceLegacyMailbox(mailbox_manager_));
 
-  LOG(ERROR) << "cblume 3";
-
   TextureBase* texture_base = mailbox_manager_->ConsumeTexture(mailbox_);
-
-  LOG(ERROR) << "cblume 4";
 
   // Currently there is no support for passthrough texture on android and hence
   // in AHB backing. So the TextureBase* should be pointing to a Texture object.
@@ -445,17 +437,11 @@ GlLegacySharedImage::GlLegacySharedImage(
   EXPECT_EQ(width, size_.width());
   EXPECT_EQ(height, size_.height());
 
-  LOG(ERROR) << "cblume 5";
-
   shared_image_ =
       shared_image_manager->Register(std::move(backing_), memory_type_tracker);
 
-  LOG(ERROR) << "cblume 6";
-
   auto gl_representation =
       shared_image_representation_factory->ProduceGLTexture(mailbox_);
-
-  LOG(ERROR) << "cblume 7";
 
   EXPECT_TRUE(gl_representation);
   EXPECT_TRUE(gl_representation->GetTexture()->service_id());
