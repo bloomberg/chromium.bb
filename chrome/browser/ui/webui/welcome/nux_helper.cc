@@ -36,7 +36,20 @@
 namespace nux {
 
 bool CanShowGoogleAppModule(const policy::PolicyMap& policies) {
-  // TODO(hcarmona): Will add in followup CL.
+  const base::Value* bookmark_bar_enabled_value =
+      policies.GetValue(policy::key::kBookmarkBarEnabled);
+
+  if (bookmark_bar_enabled_value && !bookmark_bar_enabled_value->GetBool()) {
+    return false;
+  }
+
+  const base::Value* edit_bookmarks_value =
+      policies.GetValue(policy::key::kEditBookmarksEnabled);
+
+  if (edit_bookmarks_value && !edit_bookmarks_value->GetBool()) {
+    return false;
+  }
+
   return true;
 }
 
