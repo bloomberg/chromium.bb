@@ -51,8 +51,13 @@ class MODULES_EXPORT Gamepad final : public ScriptWrappable {
     virtual ~Client() = default;
   };
 
-  explicit Gamepad(Client* client, unsigned index);
+  Gamepad(Client* client,
+          unsigned index,
+          TimeTicks time_origin,
+          TimeTicks time_floor);
   ~Gamepad() override;
+
+  void UpdateFromDeviceState(const device::Gamepad&);
 
   typedef Vector<double> DoubleVector;
 
@@ -65,7 +70,6 @@ class MODULES_EXPORT Gamepad final : public ScriptWrappable {
   void SetConnected(bool val) { connected_ = val; }
 
   DOMHighResTimeStamp timestamp() const { return timestamp_; }
-  void SetTimestamp(DOMHighResTimeStamp val) { timestamp_ = val; }
 
   const String& mapping() const { return mapping_; }
   void SetMapping(const String& val) { mapping_ = val; }
@@ -97,6 +101,8 @@ class MODULES_EXPORT Gamepad final : public ScriptWrappable {
   void Trace(blink::Visitor*) override;
 
  private:
+  void SetTimestamp(const device::Gamepad& device_gamepad);
+
   Member<Client> client_;
 
   // A string identifying the gamepad model.
@@ -142,6 +148,12 @@ class MODULES_EXPORT Gamepad final : public ScriptWrappable {
   // True if the data in |buttons_| has changed since the last time it was
   // accessed.
   bool is_button_data_dirty_;
+
+  // Base time on which all relative timestamps are based.
+  const TimeTicks time_origin_;
+
+  // Minimum value to use for timestamps from the device.
+  const TimeTicks time_floor_;
 };
 
 }  // namespace blink

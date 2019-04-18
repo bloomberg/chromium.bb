@@ -25,11 +25,18 @@
 
 #include "third_party/blink/renderer/modules/gamepad/gamepad.h"
 
+#include "third_party/blink/renderer/core/timing/performance.h"
+#include "third_party/blink/renderer/modules/gamepad/gamepad_comparisons.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_view.h"
+
 #include <algorithm>
 
 namespace blink {
 
-Gamepad::Gamepad(Client* client, unsigned index)
+Gamepad::Gamepad(Client* client,
+                 unsigned index,
+                 TimeTicks time_origin,
+                 TimeTicks time_floor)
     : client_(client),
       index_(index),
       timestamp_(0.0),
@@ -37,9 +44,50 @@ Gamepad::Gamepad(Client* client, unsigned index)
       vibration_actuator_type_(device::GamepadHapticActuatorType::kDualRumble),
       display_id_(0),
       is_axis_data_dirty_(true),
-      is_button_data_dirty_(true) {}
+      is_button_data_dirty_(true),
+      time_origin_(time_origin),
+      time_floor_(time_floor) {
+  DCHECK(!time_origin_.is_null());
+  DCHECK(!time_floor_.is_null());
+  DCHECK_LE(time_origin_, time_floor_);
+}
 
 Gamepad::~Gamepad() = default;
+
+void Gamepad::UpdateFromDeviceState(const device::Gamepad& device_gamepad) {
+  bool newly_connected;
+  GamepadComparisons::HasGamepadConnectionChanged(
+      connected(),                            // Old connected.
+      device_gamepad.connected,               // New connected.
+      id() != StringView(device_gamepad.id),  // ID changed.
+      &newly_connected, nullptr);
+
+  SetConnected(device_gamepad.connected);
+  SetTimestamp(device_gamepad);
+  SetAxes(device_gamepad.axes_length, device_gamepad.axes);
+  SetButtons(device_gamepad.buttons_length, device_gamepad.buttons);
+  // Always called as gamepads require additional steps to determine haptics
+  // capability and thus may provide them when not |newly_connected|. This is
+  // also simpler than logic to conditionally call.
+  SetVibrationActuatorInfo(device_gamepad.vibration_actuator);
+
+  if (device_gamepad.is_xr) {
+    SetPose(device_gamepad.pose);
+    SetHand(device_gamepad.hand);
+  }
+
+  // These fields are not expected to change and will only be written when the
+  // gamepad is newly connected.
+  if (newly_connected) {
+    SetId(device_gamepad.id);
+    SetMapping(device_gamepad.mapping);
+
+    if (device_gamepad.is_xr && device_gamepad.display_id) {
+      // Re-map display ids, since we will hand out at most one VRDisplay.
+      SetDisplayId(1);
+    }
+  }
+}
 
 const Gamepad::DoubleVector& Gamepad::axes() {
   is_axis_data_dirty_ = false;
@@ -120,6 +168,24 @@ void Gamepad::SetHand(const device::GamepadHand& hand) {
       break;
     default:
       NOTREACHED();
+  }
+}
+
+// Convert the raw timestamp from the device to a relative one and apply the
+// floor.
+void Gamepad::SetTimestamp(const device::Gamepad& device_gamepad) {
+  TimeTicks last_updated =
+      TimeTicks() + TimeDelta::FromMicroseconds(device_gamepad.timestamp);
+  if (last_updated < time_floor_)
+    last_updated = time_floor_;
+
+  timestamp_ = Performance::MonotonicTimeToDOMHighResTimeStamp(
+      time_origin_, last_updated, false);
+
+  if (device_gamepad.is_xr) {
+    TimeTicks now = TimeTicks::Now();
+    TRACE_COUNTER1("input", "XR gamepad pose age (ms)",
+                   (now - last_updated).InMilliseconds());
   }
 }
 
