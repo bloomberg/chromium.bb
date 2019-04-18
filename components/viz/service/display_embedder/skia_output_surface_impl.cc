@@ -319,7 +319,8 @@ sk_sp<SkImage> SkiaOutputSurfaceImpl::MakePromiseSkImageFromYUV(
   DCHECK((has_alpha && (metadatas.size() == 3 || metadatas.size() == 4)) ||
          (!has_alpha && (metadatas.size() == 2 || metadatas.size() == 3)));
 
-  bool is_i420 = has_alpha ? metadatas.size() == 4 : metadatas.size() == 3;
+  bool uv_interleaved =
+      has_alpha ? metadatas.size() == 3 : metadatas.size() == 2;
 
   GrBackendFormat formats[4];
   SkYUVAIndex indices[4] = {
@@ -333,12 +334,11 @@ sk_sp<SkImage> SkiaOutputSurfaceImpl::MakePromiseSkImageFromYUV(
       texture_contexts[4] = {nullptr, nullptr, nullptr, nullptr};
 
   std::vector<std::unique_ptr<ImageContext>> image_contexts(metadatas.size());
-  const auto process_planar = [&](size_t i, ResourceFormat resource_format) {
+  const auto process_planar = [&](size_t i) {
     auto metadata = metadatas[i];
     DCHECK(metadata.origin == kTopLeft_GrSurfaceOrigin);
-    metadata.resource_format = resource_format;
     formats[i] = GetGrBackendFormatForTexture(
-        resource_format, metadata.mailbox_holder.texture_target);
+        metadata.resource_format, metadata.mailbox_holder.texture_target);
     yuva_sizes[i].set(metadata.size.width(), metadata.size.height());
     auto& image_context = promise_image_cache_[metadata.resource_id];
     if (!image_context) {
@@ -358,37 +358,37 @@ sk_sp<SkImage> SkiaOutputSurfaceImpl::MakePromiseSkImageFromYUV(
     texture_contexts[i] = image_context.get();
   };
 
-  if (is_i420) {
-    process_planar(0, RED_8);
+  if (uv_interleaved) {
+    process_planar(0);
     indices[SkYUVAIndex::kY_Index].fIndex = 0;
     indices[SkYUVAIndex::kY_Index].fChannel = SkColorChannel::kR;
 
-    process_planar(1, RED_8);
-    indices[SkYUVAIndex::kU_Index].fIndex = 1;
-    indices[SkYUVAIndex::kU_Index].fChannel = SkColorChannel::kR;
-
-    process_planar(2, RED_8);
-    indices[SkYUVAIndex::kV_Index].fIndex = 2;
-    indices[SkYUVAIndex::kV_Index].fChannel = SkColorChannel::kR;
-    if (has_alpha) {
-      process_planar(3, RED_8);
-      indices[SkYUVAIndex::kA_Index].fIndex = 3;
-      indices[SkYUVAIndex::kA_Index].fChannel = SkColorChannel::kR;
-    }
-  } else {
-    process_planar(0, RED_8);
-    indices[SkYUVAIndex::kY_Index].fIndex = 0;
-    indices[SkYUVAIndex::kY_Index].fChannel = SkColorChannel::kR;
-
-    process_planar(1, RG_88);
+    process_planar(1);
     indices[SkYUVAIndex::kU_Index].fIndex = 1;
     indices[SkYUVAIndex::kU_Index].fChannel = SkColorChannel::kR;
 
     indices[SkYUVAIndex::kV_Index].fIndex = 1;
     indices[SkYUVAIndex::kV_Index].fChannel = SkColorChannel::kG;
     if (has_alpha) {
-      process_planar(2, RED_8);
+      process_planar(2);
       indices[SkYUVAIndex::kA_Index].fIndex = 2;
+      indices[SkYUVAIndex::kA_Index].fChannel = SkColorChannel::kR;
+    }
+  } else {
+    process_planar(0);
+    indices[SkYUVAIndex::kY_Index].fIndex = 0;
+    indices[SkYUVAIndex::kY_Index].fChannel = SkColorChannel::kR;
+
+    process_planar(1);
+    indices[SkYUVAIndex::kU_Index].fIndex = 1;
+    indices[SkYUVAIndex::kU_Index].fChannel = SkColorChannel::kR;
+
+    process_planar(2);
+    indices[SkYUVAIndex::kV_Index].fIndex = 2;
+    indices[SkYUVAIndex::kV_Index].fChannel = SkColorChannel::kR;
+    if (has_alpha) {
+      process_planar(3);
+      indices[SkYUVAIndex::kA_Index].fIndex = 3;
       indices[SkYUVAIndex::kA_Index].fChannel = SkColorChannel::kR;
     }
   }
@@ -716,6 +716,9 @@ GrBackendFormat SkiaOutputSurfaceImpl::GetGrBackendFormatForTexture(
     // Convert internal format from GLES2 to platform GL.
     const auto* version_info = impl_on_gpu_->gl_version_info();
     unsigned int texture_storage_format = TextureStorageFormat(resource_format);
+    // Switch to format supported by Skia.
+    if (texture_storage_format == GL_LUMINANCE16F_EXT)
+      texture_storage_format = GL_R16F_EXT;
     return GrBackendFormat::MakeGL(
         gl::GetInternalFormat(version_info, texture_storage_format),
         gl_texture_target);
