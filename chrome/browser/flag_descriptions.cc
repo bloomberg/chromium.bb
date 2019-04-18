@@ -28,9 +28,8 @@ const char kAllowSignedHTTPExchangeCertsWithoutExtensionName[] =
     "Allow Signed HTTP Exchange certificates without extension";
 const char kAllowSignedHTTPExchangeCertsWithoutExtensionDescription[] =
     "Accepts Origin-Signed HTTP Exchanges to be signed with certificates "
-    "that do not have CanSignHttpExchangesDraft extension. Requires "
-    "#enable-signed-http-exchange. Warning: Enabling this may pose a security "
-    "risk.";
+    "that do not have CanSignHttpExchangesDraft extension. Warning: Enabling "
+    "this may pose a security risk.";
 
 const char kAllowStartingServiceManagerOnlyName[] =
     "Allow starting service manager only";
@@ -1786,11 +1785,6 @@ const char kSilentDebuggerExtensionApiDescription[] =
     "Do not show the infobar when an extension attaches to a page via "
     "chrome.debugger API. This is required to debug extension background "
     "pages.";
-
-const char kSignedHTTPExchangeName[] = "Signed HTTP Exchange";
-const char kSignedHTTPExchangeDescription[] =
-    "Enables Origin-Signed HTTP Exchanges support which is still in "
-    "development. Warning: Enabling this may pose a security risk.";
 
 const char kSimplifyHttpsIndicatorName[] = "Simplify HTTPS indicator UI";
 const char kSimplifyHttpsIndicatorDescription[] =
