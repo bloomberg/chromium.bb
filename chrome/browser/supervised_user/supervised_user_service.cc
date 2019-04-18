@@ -478,7 +478,8 @@ void SupervisedUserService::OnCustodianInfoChanged() {
 }
 
 SupervisedUserSettingsService* SupervisedUserService::GetSettingsService() {
-  return SupervisedUserSettingsServiceFactory::GetForProfile(profile_);
+  return SupervisedUserSettingsServiceFactory::GetForKey(
+      profile_->GetProfileKey());
 }
 
 size_t SupervisedUserService::FindEnabledPermissionRequestCreator(

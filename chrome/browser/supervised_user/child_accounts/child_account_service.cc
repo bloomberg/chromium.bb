@@ -157,7 +157,8 @@ bool ChildAccountService::SetActive(bool active) {
 
   if (active_) {
     SupervisedUserSettingsService* settings_service =
-        SupervisedUserSettingsServiceFactory::GetForProfile(profile_);
+        SupervisedUserSettingsServiceFactory::GetForKey(
+            profile_->GetProfileKey());
 
     // In contrast to legacy SUs, child account SUs must sign in.
     settings_service->SetLocalSetting(supervised_users::kSigninAllowed,
@@ -198,7 +199,8 @@ bool ChildAccountService::SetActive(bool active) {
     }
   } else {
     SupervisedUserSettingsService* settings_service =
-        SupervisedUserSettingsServiceFactory::GetForProfile(profile_);
+        SupervisedUserSettingsServiceFactory::GetForKey(
+            profile_->GetProfileKey());
     settings_service->SetLocalSetting(supervised_users::kSigninAllowed,
                                       nullptr);
     settings_service->SetLocalSetting(supervised_users::kCookiesAlwaysAllowed,

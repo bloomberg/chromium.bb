@@ -1876,7 +1876,8 @@ class ExtensionServiceTestSupervised
     SyncChangeList list(1, SyncChange(FROM_HERE, type, sync_data));
 
     SupervisedUserSettingsService* supervised_user_settings_service =
-        SupervisedUserSettingsServiceFactory::GetForProfile(profile());
+        SupervisedUserSettingsServiceFactory::GetForKey(
+            profile()->GetProfileKey());
     supervised_user_settings_service->ProcessSyncChanges(FROM_HERE, list);
   }
 

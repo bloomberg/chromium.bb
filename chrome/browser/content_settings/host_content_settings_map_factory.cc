@@ -97,7 +97,7 @@ scoped_refptr<RefcountedKeyedService>
 #endif // BUILDFLAG(ENABLE_EXTENSIONS)
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   SupervisedUserSettingsService* supervised_service =
-      SupervisedUserSettingsServiceFactory::GetForProfile(profile);
+      SupervisedUserSettingsServiceFactory::GetForKey(profile->GetProfileKey());
   // This may be null in testing.
   if (supervised_service) {
     std::unique_ptr<content_settings::SupervisedProvider> supervised_provider(

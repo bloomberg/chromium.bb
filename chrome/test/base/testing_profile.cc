@@ -409,7 +409,7 @@ void TestingProfile::Init() {
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   if (!IsOffTheRecord()) {
     SupervisedUserSettingsService* settings_service =
-        SupervisedUserSettingsServiceFactory::GetForProfile(this);
+        SupervisedUserSettingsServiceFactory::GetForKey(key_.get());
     TestingPrefStore* store = new TestingPrefStore();
     settings_service->Init(store);
     settings_service->MergeDataAndStartSyncing(
@@ -553,6 +553,7 @@ TestingProfile::~TestingProfile() {
   DependencyManager::PerformInterlockedTwoPhaseShutdown(
       browser_context_dependency_manager_, this, simple_dependency_manager_,
       key_.get());
+  key_.reset();
 
   SimpleKeyMap::GetInstance()->Dissociate(this);
 
@@ -795,7 +796,7 @@ void TestingProfile::CreatePrefServiceForSupervisedUser() {
   DCHECK(!supervised_user_id_.empty());
   sync_preferences::PrefServiceMockFactory factory;
   SupervisedUserSettingsService* supervised_user_settings =
-      SupervisedUserSettingsServiceFactory::GetForProfile(this);
+      SupervisedUserSettingsServiceFactory::GetForKey(GetProfileKey());
   scoped_refptr<PrefStore> supervised_user_prefs =
       base::MakeRefCounted<SupervisedUserPrefStore>(supervised_user_settings);
 
