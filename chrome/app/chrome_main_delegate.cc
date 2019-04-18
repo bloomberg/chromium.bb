@@ -157,6 +157,8 @@
 #endif
 
 #if !defined(CHROME_MULTIPLE_DLL_CHILD)
+#include "chrome/browser/metrics/chrome_feature_list_creator.h"
+#include "chrome/browser/startup_data.h"
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
 #endif
 
@@ -523,21 +525,24 @@ void ChromeMainDelegate::PostEarlyInitialization(bool is_running_tests) {
   chromeos::InitializeDBus();
 #endif
 
-  DCHECK(chrome_feature_list_creator_);
-  chrome_feature_list_creator_->CreateFeatureList();
+  DCHECK(startup_data_);
+  auto* chrome_feature_list_creator =
+      startup_data_->chrome_feature_list_creator();
+  chrome_feature_list_creator->CreateFeatureList();
   PostFieldTrialInitialization();
 
   // Initializes the resource bundle and determines the locale.
   std::string actual_locale =
-      LoadLocalState(chrome_feature_list_creator_.get(), is_running_tests);
-  chrome_feature_list_creator_->SetApplicationLocale(actual_locale);
-  chrome_feature_list_creator_->OverrideCachedUIStrings();
+      LoadLocalState(chrome_feature_list_creator, is_running_tests);
+  chrome_feature_list_creator->SetApplicationLocale(actual_locale);
+  chrome_feature_list_creator->OverrideCachedUIStrings();
 }
 
 bool ChromeMainDelegate::ShouldCreateFeatureList() {
   // Chrome creates the FeatureList, so content should not.
   return false;
 }
+
 #endif
 
 void ChromeMainDelegate::PostFieldTrialInitialization() {
@@ -1122,12 +1127,11 @@ ChromeMainDelegate::CreateContentBrowserClient() {
   return NULL;
 #else
   if (chrome_content_browser_client_ == nullptr) {
-    DCHECK(!chrome_feature_list_creator_);
-    chrome_feature_list_creator_ = std::make_unique<ChromeFeatureListCreator>();
+    DCHECK(!startup_data_);
+    startup_data_ = std::make_unique<StartupData>();
 
     chrome_content_browser_client_ =
-        std::make_unique<ChromeContentBrowserClient>(
-            chrome_feature_list_creator_.get());
+        std::make_unique<ChromeContentBrowserClient>(startup_data_.get());
   }
   return chrome_content_browser_client_.get();
 #endif

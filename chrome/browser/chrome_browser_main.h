@@ -19,7 +19,7 @@
 
 class BrowserProcessImpl;
 class ChromeBrowserMainExtraParts;
-class ChromeFeatureListCreator;
+class StartupData;
 class HeapProfilerController;
 class PrefService;
 class Profile;
@@ -53,7 +53,7 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
 
  protected:
   ChromeBrowserMainParts(const content::MainFunctionParams& parameters,
-                         ChromeFeatureListCreator* chrome_feature_list_creator);
+                         StartupData* startup_data);
 
   // content::BrowserMainParts overrides.
   // These are called in-order by content::BrowserMainLoop.
@@ -204,7 +204,7 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
 
   base::FilePath user_data_dir_;
 
-  ChromeFeatureListCreator* chrome_feature_list_creator_;
+  StartupData* startup_data_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainParts);
 };

@@ -68,6 +68,7 @@
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/webrtc_logging_handler_host.h"
 #include "chrome/browser/metrics/chrome_browser_main_extra_parts_metrics.h"
+#include "chrome/browser/metrics/chrome_feature_list_creator.h"
 #include "chrome/browser/nacl_host/nacl_browser_delegate_impl.h"
 #include "chrome/browser/navigation_predictor/navigation_predictor.h"
 #include "chrome/browser/net/system_network_context_manager.h"
@@ -1087,9 +1088,8 @@ blink::UserAgentMetadata GetUserAgentMetadata() {
 }
 
 ChromeContentBrowserClient::ChromeContentBrowserClient(
-    ChromeFeatureListCreator* chrome_feature_list_creator)
-    : chrome_feature_list_creator_(chrome_feature_list_creator),
-      weak_factory_(this) {
+    StartupData* startup_data)
+    : startup_data_(startup_data), weak_factory_(this) {
 #if BUILDFLAG(ENABLE_PLUGINS)
   for (size_t i = 0; i < base::size(kPredefinedAllowedDevChannelOrigins); ++i)
     allowed_dev_channel_origins_.insert(kPredefinedAllowedDevChannelOrigins[i]);
@@ -1176,27 +1176,21 @@ content::BrowserMainParts* ChromeContentBrowserClient::CreateBrowserMainParts(
   ChromeBrowserMainParts* main_parts;
   // Construct the Main browser parts based on the OS type.
 #if defined(OS_WIN)
-  main_parts =
-      new ChromeBrowserMainPartsWin(parameters, chrome_feature_list_creator_);
+  main_parts = new ChromeBrowserMainPartsWin(parameters, startup_data_);
 #elif defined(OS_MACOSX)
-  main_parts =
-      new ChromeBrowserMainPartsMac(parameters, chrome_feature_list_creator_);
+  main_parts = new ChromeBrowserMainPartsMac(parameters, startup_data_);
 #elif defined(OS_CHROMEOS)
-  main_parts = new chromeos::ChromeBrowserMainPartsChromeos(
-      parameters, chrome_feature_list_creator_);
+  main_parts =
+      new chromeos::ChromeBrowserMainPartsChromeos(parameters, startup_data_);
 #elif defined(OS_LINUX)
-  main_parts =
-      new ChromeBrowserMainPartsLinux(parameters, chrome_feature_list_creator_);
+  main_parts = new ChromeBrowserMainPartsLinux(parameters, startup_data_);
 #elif defined(OS_ANDROID)
-  main_parts = new ChromeBrowserMainPartsAndroid(parameters,
-                                                 chrome_feature_list_creator_);
+  main_parts = new ChromeBrowserMainPartsAndroid(parameters, startup_data_);
 #elif defined(OS_POSIX)
-  main_parts =
-      new ChromeBrowserMainPartsPosix(parameters, chrome_feature_list_creator_);
+  main_parts = new ChromeBrowserMainPartsPosix(parameters, startup_data_);
 #else
   NOTREACHED();
-  main_parts =
-      new ChromeBrowserMainParts(parameters, chrome_feature_list_creator_);
+  main_parts = new ChromeBrowserMainParts(parameters, startup_data_);
 #endif
 
   chrome::AddProfilesExtraParts(main_parts);
@@ -3874,10 +3868,12 @@ void ChromeContentBrowserClient::RegisterIOThreadServiceHandlers(
 void ChromeContentBrowserClient::RegisterOutOfProcessServices(
     OutOfProcessServiceMap* services) {
 #if defined(OS_WIN)
-  if (chrome_feature_list_creator_) {
+  if (startup_data_) {
+    auto* chrome_feature_list_creator =
+        startup_data_->chrome_feature_list_creator();
     // This has to run very early before ServiceManagerContext is created.
     const base::Value* force_network_in_process_value =
-        chrome_feature_list_creator_->browser_policy_connector()
+        chrome_feature_list_creator->browser_policy_connector()
             ->GetPolicyService()
             ->GetPolicies(policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME,
                                                   std::string()))
@@ -5018,8 +5014,8 @@ void ChromeContentBrowserClient::OnNetworkServiceCreated(
     DCHECK(g_browser_process->local_state());
     local_state = g_browser_process->local_state();
   } else {
-    DCHECK(chrome_feature_list_creator_->local_state());
-    local_state = chrome_feature_list_creator_->local_state();
+    DCHECK(startup_data_->chrome_feature_list_creator()->local_state());
+    local_state = startup_data_->chrome_feature_list_creator()->local_state();
   }
 
   if (!data_use_measurement::ChromeDataUseMeasurement::GetInstance())

@@ -523,8 +523,8 @@ class SystemTokenCertDBInitializer {
 
 ChromeBrowserMainPartsChromeos::ChromeBrowserMainPartsChromeos(
     const content::MainFunctionParams& parameters,
-    ChromeFeatureListCreator* chrome_feature_list_creator)
-    : ChromeBrowserMainPartsLinux(parameters, chrome_feature_list_creator) {}
+    StartupData* startup_data)
+    : ChromeBrowserMainPartsLinux(parameters, startup_data) {}
 
 ChromeBrowserMainPartsChromeos::~ChromeBrowserMainPartsChromeos() {
   // To be precise, logout (browser shutdown) is not yet done, but the

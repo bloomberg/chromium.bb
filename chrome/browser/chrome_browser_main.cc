@@ -93,6 +93,7 @@
 #include "chrome/browser/sessions/chrome_serialized_navigation_driver.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/site_isolation/site_isolation_policy.h"
+#include "chrome/browser/startup_data.h"
 #include "chrome/browser/tracing/background_tracing_field_trial.h"
 #include "chrome/browser/tracing/navigation_tracing.h"
 #include "chrome/browser/tracing/trace_event_system_stats_monitor.h"
@@ -617,7 +618,7 @@ std::unique_ptr<ThreadProfiler> CreateAndStartBrowserMainThreadProfiler() {
 
 ChromeBrowserMainParts::ChromeBrowserMainParts(
     const content::MainFunctionParams& parameters,
-    ChromeFeatureListCreator* chrome_feature_list_creator)
+    StartupData* startup_data)
     : parameters_(parameters),
       parsed_command_line_(parameters.command_line),
       result_code_(service_manager::RESULT_CODE_NORMAL_EXIT),
@@ -627,8 +628,8 @@ ChromeBrowserMainParts::ChromeBrowserMainParts(
           !parameters.ui_task),
       profile_(NULL),
       run_message_loop_(true),
-      chrome_feature_list_creator_(chrome_feature_list_creator) {
-  DCHECK(chrome_feature_list_creator_);
+      startup_data_(startup_data) {
+  DCHECK(startup_data_);
   // If we're running tests (ui_task is non-null).
   if (parameters.ui_task)
     browser_defaults::enable_help_app = false;
@@ -655,7 +656,8 @@ void ChromeBrowserMainParts::SetupMetrics() {
   // Now that field trials have been created, initializes metrics recording.
   metrics->InitializeMetricsRecordingState();
 
-  chrome_feature_list_creator_->browser_field_trials()
+  startup_data_->chrome_feature_list_creator()
+      ->browser_field_trials()
       ->RegisterSyntheticTrials();
 }
 
@@ -783,18 +785,20 @@ int ChromeBrowserMainParts::PreEarlyInitialization() {
 
   // Create BrowserProcess in PreEarlyInitialization() so that we can load
   // field trials (and all it depends upon).
-  browser_process_ =
-      std::make_unique<BrowserProcessImpl>(chrome_feature_list_creator_);
+  browser_process_ = std::make_unique<BrowserProcessImpl>(startup_data_);
 
   bool failed_to_load_resource_bundle = false;
   const int load_local_state_result =
       OnLocalStateLoaded(&failed_to_load_resource_bundle);
 
   // Reuses the MetricsServicesManager and GetMetricsServicesManagerClient
-  // instances created in the FeatureListCreator so they won't be created again.
+  // instances created in the FeatureListCreator so they won't be created
+  // again.
+  auto* chrome_feature_list_creator =
+      startup_data_->chrome_feature_list_creator();
   browser_process_->SetMetricsServices(
-      chrome_feature_list_creator_->TakeMetricsServicesManager(),
-      chrome_feature_list_creator_->GetMetricsServicesManagerClient());
+      chrome_feature_list_creator->TakeMetricsServicesManager(),
+      chrome_feature_list_creator->GetMetricsServicesManagerClient());
 
   if (load_local_state_result == chrome::RESULT_CODE_MISSING_DATA &&
       failed_to_load_resource_bundle) {
@@ -902,7 +906,8 @@ int ChromeBrowserMainParts::OnLocalStateLoaded(
   }
 #endif  // defined(OS_WIN)
 
-  std::string locale = chrome_feature_list_creator_->actual_locale();
+  std::string locale =
+      startup_data_->chrome_feature_list_creator()->actual_locale();
   if (locale.empty()) {
     *failed_to_load_resource_bundle = true;
     return chrome::RESULT_CODE_MISSING_DATA;
@@ -928,7 +933,7 @@ int ChromeBrowserMainParts::ApplyFirstRunPrefs() {
   master_prefs_ = std::make_unique<first_run::MasterPrefs>();
 
   std::unique_ptr<installer::MasterPreferences> installer_master_prefs =
-      chrome_feature_list_creator_->TakeMasterPrefs();
+      startup_data_->chrome_feature_list_creator()->TakeMasterPrefs();
   if (!installer_master_prefs)
     return service_manager::RESULT_CODE_NORMAL_EXIT;
 

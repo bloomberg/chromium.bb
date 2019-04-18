@@ -489,9 +489,8 @@ int DoUninstallTasks(bool chrome_still_running) {
 
 ChromeBrowserMainPartsWin::ChromeBrowserMainPartsWin(
     const content::MainFunctionParams& parameters,
-    ChromeFeatureListCreator* chrome_feature_list_creator)
-    : ChromeBrowserMainParts(parameters,
-                             chrome_feature_list_creator) {}
+    StartupData* startup_data)
+    : ChromeBrowserMainParts(parameters, startup_data) {}
 
 ChromeBrowserMainPartsWin::~ChromeBrowserMainPartsWin() {
 }
