@@ -8,6 +8,9 @@ Polymer({
   behaviors: [SettingsBehavior, print_preview_new.InputBehavior],
 
   properties: {
+    /** @type {!print_preview_new.State} */
+    state: Number,
+
     disabled: Boolean,
 
     /** @private {boolean} */
@@ -38,8 +41,10 @@ Polymer({
     },
   },
 
-  observers:
-      ['onSettingsChanged_(settings.pin.value, settings.pinValue.value)'],
+  observers: [
+    'onSettingsChanged_(settings.pin.value, settings.pinValue.value)',
+    'changePinValueSetting_(state)',
+  ],
 
   listeners: {
     'input-change': 'onInputChange_',
@@ -94,11 +99,27 @@ Polymer({
     this.pinEnabled_ = pinEnabled;
     const pinValue = this.getSetting('pinValue');
     this.inputString_ = /** @type {string} */ (pinValue.value);
+    this.resetString();
   },
 
   /** @private */
   onPinChange_: function() {
     this.setSetting('pin', this.$.pin.checked);
+    // We need to set validity of pinValue to true to return to READY state
+    // after unchecking the pin and to check the validity again after checking
+    // the pin.
+    if (!this.$.pin.checked) {
+      this.setSettingValid('pinValue', true);
+    } else {
+      this.changePinValueSetting_();
+    }
+  },
+
+  /**
+   * @private
+   */
+  onInputChanged_: function() {
+    this.changePinValueSetting_();
   },
 
   /**
@@ -106,14 +127,25 @@ Polymer({
    * input.
    * @private
    */
-  onInputChanged_: function() {
+  changePinValueSetting_: function() {
     if (this.settings === undefined) {
+      return;
+    }
+    // If the state is not READY and current pinValue is valid (so it's not the
+    // cause of the error) we need to wait until the state will be READY again.
+    // It's done because we don't permit multiple simultaneous validation errors
+    // in Print Preview and we also don't want to set the value when sticky
+    // settings may not yet have been set.
+    if (this.state != print_preview_new.State.READY &&
+        this.settings.pinValue.valid) {
       return;
     }
     this.inputValid_ = this.computeValid_();
     this.setSettingValid('pinValue', this.inputValid_);
 
-    if (this.inputValid_) {
+    // We allow to save the empty string as sticky setting value to give users
+    // the opportunity to unset their PIN in sticky settings.
+    if (this.inputValid_ || this.inputString_ == '') {
       this.setSetting('pinValue', this.inputString_);
     }
   },
@@ -126,6 +158,7 @@ Polymer({
   computeValid_: function() {
     // Make sure value updates first, in case inputString_ was updated by JS.
     this.$.pinValue.value = this.inputString_;
+    this.$.pinValue.validate();
     return !this.$.pinValue.invalid;
   },
 });

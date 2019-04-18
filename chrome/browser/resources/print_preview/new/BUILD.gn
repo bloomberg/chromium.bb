@@ -161,6 +161,7 @@ if (is_chromeos) {
     deps = [
       ":input_behavior",
       ":settings_behavior",
+      ":state",
     ]
   }
 }
