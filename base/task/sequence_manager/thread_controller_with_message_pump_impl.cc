@@ -349,6 +349,11 @@ TimeDelta ThreadControllerWithMessagePumpImpl::DoWorkImpl(
 
     work_id_provider_->IncrementWorkId();
 
+    // Trace-parsing tools (DevTools, Lighthouse, etc) consume this event
+    // to determine long tasks.
+    // See https://crbug.com/681863 and https://crbug.com/874982
+    TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "RunTask");
+
     {
       // Trace events should finish before we call DidRunTask to ensure that
       // SequenceManager trace events do not interfere with them.

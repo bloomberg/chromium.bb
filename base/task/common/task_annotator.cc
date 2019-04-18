@@ -78,11 +78,6 @@ void TaskAnnotator::RunTask(const char* trace_event_name,
       TRACE_DISABLED_BY_DEFAULT("toplevel.flow"), trace_event_name,
       TRACE_ID_MANGLE(GetTaskTraceID(*pending_task)), TRACE_EVENT_FLAG_FLOW_IN);
 
-  // Trace-parsing tools (DevTools, Lighthouse, etc) consume this event
-  // to determine long tasks.
-  // See https://crbug.com/681863 and https://crbug.com/874982
-  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "RunTask");
-
   // Before running the task, store the task backtrace with the chain of
   // PostTasks that resulted in this call and deliberately alias it to ensure
   // it is on the stack if the task crashes. Be careful not to assume that the
