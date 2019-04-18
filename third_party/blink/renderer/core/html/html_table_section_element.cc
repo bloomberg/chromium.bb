@@ -30,12 +30,12 @@
 #include "third_party/blink/renderer/core/html/html_table_element.h"
 #include "third_party/blink/renderer/core/html/html_table_row_element.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
-inline HTMLTableSectionElement::HTMLTableSectionElement(
-    const QualifiedName& tag_name,
-    Document& document)
+HTMLTableSectionElement::HTMLTableSectionElement(const QualifiedName& tag_name,
+                                                 Document& document)
     : HTMLTablePartElement(tag_name, document) {}
 
 DEFINE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLTableSectionElement)
@@ -62,7 +62,7 @@ HTMLElement* HTMLTableSectionElement::insertRow(
     return nullptr;
   }
 
-  HTMLTableRowElement* row = HTMLTableRowElement::Create(GetDocument());
+  auto* row = MakeGarbageCollected<HTMLTableRowElement>(GetDocument());
   if (num_rows == index || index == -1)
     AppendChild(row, exception_state);
   else

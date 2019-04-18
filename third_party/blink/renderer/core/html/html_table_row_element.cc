@@ -34,12 +34,13 @@
 #include "third_party/blink/renderer/core/html/html_table_section_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
 using namespace html_names;
 
-inline HTMLTableRowElement::HTMLTableRowElement(Document& document)
+HTMLTableRowElement::HTMLTableRowElement(Document& document)
     : HTMLTablePartElement(kTrTag, document) {}
 
 DEFINE_NODE_FACTORY(HTMLTableRowElement)
@@ -102,8 +103,8 @@ HTMLElement* HTMLTableRowElement::insertCell(int index,
     return nullptr;
   }
 
-  HTMLTableCellElement* cell =
-      HTMLTableCellElement::Create(kTdTag, GetDocument());
+  auto* cell =
+      MakeGarbageCollected<HTMLTableCellElement>(kTdTag, GetDocument());
   if (num_cells == index || index == -1)
     AppendChild(cell, exception_state);
   else

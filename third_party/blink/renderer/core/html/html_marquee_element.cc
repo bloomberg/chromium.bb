@@ -47,6 +47,7 @@
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -63,7 +64,8 @@ HTMLMarqueeElement* HTMLMarqueeElement::Create(Document& document) {
 }
 
 void HTMLMarqueeElement::DidAddUserAgentShadowRoot(ShadowRoot& shadow_root) {
-  auto* style = HTMLStyleElement::Create(GetDocument(), CreateElementFlags());
+  auto* style = MakeGarbageCollected<HTMLStyleElement>(GetDocument(),
+                                                       CreateElementFlags());
   style->setTextContent(
       ":host { display: inline-block; overflow: hidden;"
       "text-align: initial; white-space: nowrap; }"
