@@ -31,6 +31,11 @@ TEST(CookieManagerTraitsTest, Roundtrips_CookieInclusionStatus) {
       net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_NOT_ON_PATH,
       net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_SAMESITE_STRICT,
       net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_SAMESITE_LAX,
+      net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_SAMESITE_EXTENDED,
+      net::CanonicalCookie::CookieInclusionStatus::
+          EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX,
+      net::CanonicalCookie::CookieInclusionStatus::
+          EXCLUDE_SAMESITE_NONE_INSECURE,
       net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES,
       net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_FAILURE_TO_STORE,
       net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_NONCOOKIEABLE_SCHEME,

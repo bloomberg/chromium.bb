@@ -5,6 +5,8 @@
 #include "net/cookies/canonical_cookie.h"
 
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
+#include "net/base/features.h"
 #include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_options.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -122,10 +124,12 @@ TEST(CanonicalCookieTest, Create) {
       CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
   cookie = CanonicalCookie::Create(url, "A=2; SameSite=Strict", creation_time,
                                    same_site_options);
-  EXPECT_TRUE(cookie.get());
+  ASSERT_TRUE(cookie.get());
   EXPECT_EQ(CookieSameSite::STRICT_MODE, cookie->SameSite());
   cookie = CanonicalCookie::Create(url, "A=2; SameSite=Lax", creation_time,
                                    same_site_options);
+  ASSERT_TRUE(cookie.get());
+  EXPECT_EQ(CookieSameSite::LAX_MODE, cookie->SameSite());
 
   // Test the creating cookies using specific parameter instead of a cookie
   // string.
@@ -420,6 +424,53 @@ TEST(CanonicalCookieTest, IsOnPath) {
   EXPECT_TRUE(cookie->IsOnPath("/test/sample/bar.html"));
 }
 
+TEST(CanonicalCookieTest, GetEffectiveSameSite) {
+  struct EffectiveSameSiteTestCase {
+    CookieSameSite same_site;
+    CookieSameSite effective_same_site;
+  };
+
+  base::Time creation_time = base::Time::Now();
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndDisableFeature(features::kSameSiteByDefaultCookies);
+
+    const EffectiveSameSiteTestCase test_cases[] = {
+        {CookieSameSite::NO_RESTRICTION, CookieSameSite::NO_RESTRICTION},
+        {CookieSameSite::LAX_MODE, CookieSameSite::LAX_MODE},
+        {CookieSameSite::STRICT_MODE, CookieSameSite::STRICT_MODE},
+        {CookieSameSite::EXTENDED_MODE, CookieSameSite::LAX_MODE},
+        {CookieSameSite::UNSPECIFIED, CookieSameSite::NO_RESTRICTION}};
+
+    for (const auto& test_case : test_cases) {
+      CanonicalCookie cookie("A", "2", "example.test", "/", creation_time,
+                             base::Time(), base::Time(), true /* secure */,
+                             false /* httponly */, test_case.same_site,
+                             COOKIE_PRIORITY_DEFAULT);
+      EXPECT_EQ(test_case.effective_same_site, cookie.GetEffectiveSameSite());
+    }
+  }
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndEnableFeature(features::kSameSiteByDefaultCookies);
+
+    const EffectiveSameSiteTestCase test_cases[] = {
+        {CookieSameSite::NO_RESTRICTION, CookieSameSite::NO_RESTRICTION},
+        {CookieSameSite::LAX_MODE, CookieSameSite::LAX_MODE},
+        {CookieSameSite::STRICT_MODE, CookieSameSite::STRICT_MODE},
+        {CookieSameSite::EXTENDED_MODE, CookieSameSite::LAX_MODE},
+        {CookieSameSite::UNSPECIFIED, CookieSameSite::LAX_MODE}};
+
+    for (const auto& test_case : test_cases) {
+      CanonicalCookie cookie("A", "2", "example.test", "/", creation_time,
+                             base::Time(), base::Time(), true /* secure */,
+                             false /* httponly */, test_case.same_site,
+                             COOKIE_PRIORITY_DEFAULT);
+      EXPECT_EQ(test_case.effective_same_site, cookie.GetEffectiveSameSite());
+    }
+  }
+}
+
 TEST(CanonicalCookieTest, IncludeForRequestURL) {
   GURL url("http://www.example.com");
   base::Time creation_time = base::Time::Now();
@@ -516,6 +567,69 @@ TEST(CanonicalCookieTest, IncludeSameSiteForSameSiteURL) {
       CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
   EXPECT_EQ(cookie->IncludeForRequestURL(url, options),
             CanonicalCookie::CookieInclusionStatus::INCLUDE);
+
+  // TODO(chlily): Use SameSite=None once ParsedCookie supports it.
+  // Cookies without a SameSite attribute are parsed as
+  // CookieSameSite::NO_RESTRICTION, and are included for all URLs.
+  cookie = CanonicalCookie::Create(url, "A=2", creation_time, options);
+  EXPECT_EQ(CookieSameSite::NO_RESTRICTION, cookie->SameSite());
+  options.set_same_site_cookie_context(
+      CookieOptions::SameSiteCookieContext::CROSS_SITE);
+  EXPECT_EQ(cookie->IncludeForRequestURL(url, options),
+            CanonicalCookie::CookieInclusionStatus::INCLUDE);
+  options.set_same_site_cookie_context(
+      CookieOptions::SameSiteCookieContext::SAME_SITE_LAX);
+  EXPECT_EQ(cookie->IncludeForRequestURL(url, options),
+            CanonicalCookie::CookieInclusionStatus::INCLUDE);
+  options.set_same_site_cookie_context(
+      CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
+  EXPECT_EQ(cookie->IncludeForRequestURL(url, options),
+            CanonicalCookie::CookieInclusionStatus::INCLUDE);
+
+  // TODO(chlily): Use Create() once ParsedCookie supports UNSPECIFIED.
+  // Cookies with CookieSameSite::UNSPECIFIED depend on the FeatureList.
+  cookie = std::make_unique<CanonicalCookie>(
+      "A", "2", "example.test", "/", creation_time, base::Time(), base::Time(),
+      false, false, CookieSameSite::UNSPECIFIED, COOKIE_PRIORITY_DEFAULT);
+  EXPECT_EQ(CookieSameSite::UNSPECIFIED, cookie->SameSite());
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndDisableFeature(features::kSameSiteByDefaultCookies);
+
+    // With SameSiteByDefault disabled, the cookie is included for all requests.
+    options.set_same_site_cookie_context(
+        CookieOptions::SameSiteCookieContext::CROSS_SITE);
+    EXPECT_EQ(cookie->IncludeForRequestURL(url, options),
+              CanonicalCookie::CookieInclusionStatus::INCLUDE);
+    options.set_same_site_cookie_context(
+        CookieOptions::SameSiteCookieContext::SAME_SITE_LAX);
+    EXPECT_EQ(cookie->IncludeForRequestURL(url, options),
+              CanonicalCookie::CookieInclusionStatus::INCLUDE);
+    options.set_same_site_cookie_context(
+        CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
+    EXPECT_EQ(cookie->IncludeForRequestURL(url, options),
+              CanonicalCookie::CookieInclusionStatus::INCLUDE);
+  }
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndEnableFeature(features::kSameSiteByDefaultCookies);
+
+    // With SameSiteByDefault enabled, the cookie is included for a URL only if
+    // the options' SameSiteCookieMode is SAME_SITE_STRICT or SAME_SITE_LAX.
+    options.set_same_site_cookie_context(
+        CookieOptions::SameSiteCookieContext::CROSS_SITE);
+    EXPECT_EQ(cookie->IncludeForRequestURL(url, options),
+              CanonicalCookie::CookieInclusionStatus::
+                  EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX);
+    options.set_same_site_cookie_context(
+        CookieOptions::SameSiteCookieContext::SAME_SITE_LAX);
+    EXPECT_EQ(cookie->IncludeForRequestURL(url, options),
+              CanonicalCookie::CookieInclusionStatus::INCLUDE);
+    options.set_same_site_cookie_context(
+        CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
+    EXPECT_EQ(cookie->IncludeForRequestURL(url, options),
+              CanonicalCookie::CookieInclusionStatus::INCLUDE);
+  }
 }
 
 TEST(CanonicalCookieTest, PartialCompare) {
