@@ -351,35 +351,40 @@ bool ScrollbarThemeAura::ShouldSnapBackToDragOrigin(
   return false;
 #endif
 
-  // Constants used to figure the drag rect outside which we should snap the
-  // scrollbar thumb back to its origin. These calculations are based on
-  // observing the behavior of the MSVC8 main window scrollbar + some
-  // guessing/extrapolation.
-  static const int kOffEndMultiplier = 3;
+  // There is a drag rect around the scrollbar outside of which the scrollbar
+  // thumb should snap back to its origin.  This rect is infinitely large in
+  // the scrollbar's scrolling direction and an expansion of the scrollbar's
+  // width or height in the non-scrolling direction.
+
+  // Constants used to figure the how far out in the non-scrolling direction
+  // should trigger the thumb to snap back to its origin.  These calculations
+  // are based on observing the behavior of the MSVC8 main window scrollbar +
+  // some guessing/extrapolation.
   static const int kOffSideMultiplier = 8;
   static const int kDefaultWinScrollbarThickness = 17;
 
-  // Find the rect within which we shouldn't snap, by expanding the track rect
-  // in both dimensions.
-  IntRect no_snap_rect(TrackRect(scrollbar));
+  // As only one axis triggers snapping back, the code below only uses the
+  // thickness of the scrollbar for its calculations.
   bool is_horizontal = scrollbar.Orientation() == kHorizontalScrollbar;
-  int thickness = is_horizontal ? no_snap_rect.Height() : no_snap_rect.Width();
+  int thickness = is_horizontal ? TrackRect(scrollbar).Height()
+                                : TrackRect(scrollbar).Width();
   // Even if the platform's scrollbar is narrower than the default Windows one,
   // we still want to provide at least as much slop area, since a slightly
   // narrower scrollbar doesn't necessarily imply that users will drag
   // straighter.
-  thickness = std::max(thickness, kDefaultWinScrollbarThickness);
-  int width_outset =
-      (is_horizontal ? kOffEndMultiplier : kOffSideMultiplier) * thickness;
-  int height_outset =
-      (is_horizontal ? kOffSideMultiplier : kOffEndMultiplier) * thickness;
-  no_snap_rect.Expand(
-      IntRectOutsets(height_outset, width_outset, height_outset, width_outset));
+  int expansion_amount =
+      kOffSideMultiplier * std::max(thickness, kDefaultWinScrollbarThickness);
+
+  int snap_outside_of_min = -expansion_amount;
+  int snap_outside_of_max = expansion_amount + thickness;
 
   IntPoint mouse_position = scrollbar.ConvertFromRootFrame(
       FlooredIntPoint(event.PositionInRootFrame()));
-  mouse_position.Move(scrollbar.X(), scrollbar.Y());
-  return !no_snap_rect.Contains(mouse_position);
+  int mouse_offset_in_scrollbar =
+      is_horizontal ? mouse_position.Y() : mouse_position.X();
+
+  return (mouse_offset_in_scrollbar < snap_outside_of_min ||
+          mouse_offset_in_scrollbar >= snap_outside_of_max);
 }
 
 bool ScrollbarThemeAura::HasScrollbarButtons(
