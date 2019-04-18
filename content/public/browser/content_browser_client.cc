@@ -397,7 +397,8 @@ std::string ContentBrowserClient::GetWebBluetoothBlocklist() {
   return std::string();
 }
 
-QuotaPermissionContext* ContentBrowserClient::CreateQuotaPermissionContext() {
+scoped_refptr<QuotaPermissionContext>
+ContentBrowserClient::CreateQuotaPermissionContext() {
   return nullptr;
 }
 

@@ -30,6 +30,7 @@
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/overlay_window.h"
 #include "content/public/browser/page_visibility_state.h"
+#include "content/public/browser/quota_permission_context.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/previews_state.h"
@@ -732,7 +733,7 @@ class CONTENT_EXPORT ContentBrowserClient {
       bool* in_memory);
 
   // Create and return a new quota permission context.
-  virtual QuotaPermissionContext* CreateQuotaPermissionContext();
+  virtual scoped_refptr<QuotaPermissionContext> CreateQuotaPermissionContext();
 
   // Allows the embedder to provide settings that determine the amount
   // of disk space that may be used by content facing storage apis like

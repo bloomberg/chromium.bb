@@ -280,8 +280,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
 #if defined(OS_ANDROID)
   bool ShouldUseGmsCoreGeolocationProvider() override;
 #endif
-
-  content::QuotaPermissionContext* CreateQuotaPermissionContext() override;
+  scoped_refptr<content::QuotaPermissionContext> CreateQuotaPermissionContext()
+      override;
   void GetQuotaSettings(
       content::BrowserContext* context,
       content::StoragePartition* partition,
