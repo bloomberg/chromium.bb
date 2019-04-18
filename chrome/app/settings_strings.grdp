@@ -2569,16 +2569,16 @@
     Uses cookies to remember your preferences, even if you don’t visit those pages
   </message>
   <message name="IDS_SETTINGS_SAFEBROWSING_ENABLEPROTECTION" desc="The section title of 'Protects you and your device from dangerous sites'">
-    Safe Browsing
+    Safe Browsing (protects you and your device from dangerous sites)
   </message>
   <message name="IDS_SETTINGS_SAFEBROWSING_ENABLEPROTECTION_DESC" desc="Checkbox label: should Chrome protect user and user's device from dangerous sites">
-    Protects you and your device from dangerous sites
+    Sends URLs of some pages you visit to Google, when your security is at risk
   </message>
   <message name="IDS_SETTINGS_SAFEBROWSING_ENABLE_REPORTING" desc="The section title of the extended safe browsing checkbox to help improve safe browsing">
-    Help improve Safe Browsing
+    Help improve Chrome security
   </message>
   <message name="IDS_SETTINGS_SAFEBROWSING_ENABLE_REPORTING_DESC" desc="Description for extended safe browsing">
-    Sends some system information and page content to Google
+    To detect dangerous apps and sites, Chrome sends URLs of some pages you visit, limited system information, and some page content to Google
   </message>
   <message name="IDS_SETTINGS_SPELLING_PREF" desc="Label for a setting that enhances spell check by sending the text that users type to Google for spelling suggestions.">
     Use enhanced spell check
