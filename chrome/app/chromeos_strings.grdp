@@ -3405,6 +3405,9 @@
   <message name="IDS_CROSTINI_INSTALLER_OFFLINE_ERROR" desc="Text shown in the Crostini installer dialog when there is no internet connection">
     <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> is offline. Connect to the Internet and try again.
   </message>
+  <message name="IDS_CROSTINI_INSTALLER_INSUFFICIENT_DISK" desc="Text shown in the Crostini installer dialog when there is not enough free disk space to complete the installation">
+    Install failed due to lack of storage space. At least <ph name="INSTALL_SIZE">$1<ex>1.3GB</ex></ph> of free space is required. To free up space, delete files from device storage.
+  </message>
   <message name="IDS_CROSTINI_INSTALLER_LOAD_TERMINA_ERROR" desc="Text shown in the Crostini installer dialog when the VM component fails to load">
     Error downloading the virtual machine. Please try again.
   </message>

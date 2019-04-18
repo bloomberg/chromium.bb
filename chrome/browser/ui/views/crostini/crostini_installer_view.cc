@@ -56,6 +56,10 @@ CrostiniInstallerView* g_crostini_installer_view = nullptr;
 // The size of the download for the VM image.
 // TODO(timloh): This is just a placeholder.
 constexpr int kDownloadSizeInBytes = 300 * 1024 * 1024;
+// The minimum feasible size for a VM disk image.
+constexpr int64_t kMinimumDiskSize = 1ll * 1024 * 1024 * 1024;  // 1 GiB
+// Minimum amount of free disk space to install crostini successfully.
+constexpr int kMinimumFreeDiskSpace = kDownloadSizeInBytes + kMinimumDiskSize;
 
 constexpr int kUninitializedDiskSpace = -1;
 
@@ -133,7 +137,7 @@ void CrostiniInstallerView::Show(Profile* profile) {
       true);
 
   base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock()},
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::BindOnce(&base::SysInfo::AmountOfFreeDiskSpace,
                      base::FilePath(kHomeDirectory)),
       base::BindOnce(
@@ -143,6 +147,9 @@ void CrostiniInstallerView::Show(Profile* profile) {
 
 void CrostiniInstallerView::OnAvailableDiskSpace(int64_t bytes) {
   free_disk_space_ = bytes;
+  if (free_disk_space_callback_for_testing_) {
+    std::move(free_disk_space_callback_for_testing_).Run();
+  }
 }
 
 int CrostiniInstallerView::GetDialogButtons() const {
@@ -183,10 +190,25 @@ bool CrostiniInstallerView::ShouldShowWindowTitle() const {
   return false;
 }
 
+void CrostiniInstallerView::PressAccept() {
+  GetDialogClientView()->AcceptWindow();
+}
+
 bool CrostiniInstallerView::Accept() {
   // This dialog can be accepted from State::ERROR. In that case, we're doing a
   // Retry.
   DCHECK(state_ == State::PROMPT || state_ == State::ERROR);
+
+  // Delay starting the install process until we can check if there's enough
+  // disk space.
+  if (free_disk_space_ == kUninitializedDiskSpace) {
+    base::PostDelayedTaskWithTraits(
+        FROM_HERE, {content::BrowserThread::UI},
+        base::BindOnce(&CrostiniInstallerView::PressAccept,
+                       weak_ptr_factory_.GetWeakPtr()),
+        base::TimeDelta::FromMilliseconds(50));
+    return false;
+  }
 
   UpdateState(State::INSTALL_START);
   profile_->GetPrefs()->SetBoolean(crostini::prefs::kCrostiniEnabled, true);
@@ -210,6 +232,19 @@ bool CrostiniInstallerView::Accept() {
     HandleError(l10n_util::GetStringFUTF16(IDS_CROSTINI_INSTALLER_OFFLINE_ERROR,
                                            device_type),
                 SetupResult::kErrorOffline);
+    return false;  // should not close the dialog.
+  }
+
+  // Don't enforce minimum disk size on dev box or trybots because
+  // base::SysInfo::AmountOfFreeDiskSpace returns zero in testing.
+  if (free_disk_space_ < kMinimumFreeDiskSpace &&
+      base::SysInfo::IsRunningOnChromeOS()) {
+    HandleError(l10n_util::GetStringFUTF16(
+                    IDS_CROSTINI_INSTALLER_INSUFFICIENT_DISK,
+                    ui::FormatBytesWithUnits(kMinimumFreeDiskSpace,
+                                             ui::DATA_UNITS_GIBIBYTE,
+                                             /*show_units=*/true)),
+                SetupResult::kErrorInsufficientDiskSpace);
     return false;  // should not close the dialog.
   }
 
@@ -445,6 +480,15 @@ void CrostiniInstallerView::SetCloseCallbackForTesting(
 void CrostiniInstallerView::SetProgressBarCallbackForTesting(
     base::RepeatingCallback<void(double)> callback) {
   progress_bar_callback_for_testing_ = callback;
+}
+
+void CrostiniInstallerView::SetGetFreeDiskSpaceCallbackForTesting(
+    base::OnceClosure quit_closure) {
+  if (free_disk_space_ == kUninitializedDiskSpace) {
+    free_disk_space_callback_for_testing_ = std::move(quit_closure);
+  } else {
+    std::move(free_disk_space_callback_for_testing_).Run();
+  }
 }
 
 CrostiniInstallerView::CrostiniInstallerView(Profile* profile)
