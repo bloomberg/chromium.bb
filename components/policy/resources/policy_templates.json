@@ -15685,6 +15685,51 @@
 
           If this policy is not configured or left unset, the standard battery charge mode will be applied.'''
     },
+    {
+      'name': 'DeviceScheduledUpdateCheck',
+      'device_only': True,
+      'type': 'dict',
+      'schema': {
+        'type': 'object',
+        'properties': {
+          'update_check_time': {
+            'description': '''Time when the update check should happen, interpreted in the device's local time zone.''',
+            '$ref': 'Time'
+          },
+          'frequency': {
+            'description': 'Frequency with which the update check should recur.',
+            'type': 'string',
+            'enum': [
+              'DAILY',
+              'WEEKLY',
+              'MONTHLY'
+            ]
+          },
+          'day_of_week': {
+            'description': '''Day of week when the update check should happen, interpreted in the device's local time zone. Only used when 'frequency' is 'WEEKLY'.''',
+            '$ref': 'WeekDay'
+          },
+          'day_of_month': {
+            'description': '''Day of month [1-31] when the update check should happen, interpreted in the device's local time zone. Only used when 'frequency' is 'MONTHLY'. If this is more than the maximum number of days in a given month then the last day of the month will be chosen.''',
+            'type': 'integer',
+            'minimum': 1,
+            'maximum': 31
+          }
+        },
+        'required': ['update_check_time', 'frequency']
+      },
+      'supported_on': ['chrome_os:75-'],
+      'supported_chrome_os_management': ['google_cloud'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'example_value': {'update_check_time' : {'hour': 23, 'minute': 35}, 'frequency': 'WEEKLY', 'day_of_week': 'MONDAY', 'day_of_month': 11},
+      'tags': [],
+      'id': 556,
+      'caption': '''Set custom schedule to check for updates''',
+      'desc': '''Allows setting a custom schedule to check for updates. This applies to all users, and to all interfaces on the device. Once set, the device will check for updates according to the schedule. The policy must be removed to cancel any more scheduled update checks.'''
+    },
   ],
 
   'messages': {
@@ -15850,5 +15895,5 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   },
   'placeholders': [],
   'deleted_policy_ids': [412],
-  'highest_id_currently_used':  555
+  'highest_id_currently_used':  556
 }
