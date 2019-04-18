@@ -21,6 +21,10 @@ namespace safe_browsing {
 // Features list
 extern const base::Feature kAdSamplerTriggerFeature;
 
+// Controls whether we try to get the SafetyNet ID of the device for use when
+// a SBER user downloads an APK file.
+extern const base::Feature kCaptureSafetyNetId;
+
 extern const base::Feature kCheckByURLLoaderThrottle;
 
 // Controls if safe browsing interstitials are implemented as committed
