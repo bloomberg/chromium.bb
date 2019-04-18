@@ -494,7 +494,6 @@ void HTMLFormElement::ScheduleFormSubmission(FormSubmission* submission) {
   FrameLoadRequest frame_load_request =
       submission->CreateFrameLoadRequest(&GetDocument());
   frame_load_request.SetNavigationPolicy(submission->GetNavigationPolicy());
-  frame_load_request.SetClientRedirect(ClientRedirectPolicy::kClientRedirect);
   frame_load_request.GetResourceRequest().SetHasUserGesture(
       LocalFrame::HasTransientUserActivation(GetDocument().GetFrame()));
   GetDocument().GetFrame()->Navigate(frame_load_request,

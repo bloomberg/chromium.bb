@@ -97,7 +97,7 @@ class ScheduledRedirect final : public ScheduledNavigation {
           mojom::FetchCacheMode::kValidateCache);
       load_type = WebFrameLoadType::kReload;
     }
-    request.SetClientRedirect(ClientRedirectPolicy::kClientRedirect);
+    request.SetClientRedirectReason(GetReason());
     frame->Loader().StartNavigation(request, load_type);
   }
 
@@ -156,7 +156,7 @@ class ScheduledFrameNavigation final : public ScheduledNavigation {
         CreateUserGestureIndicator();
     FrameLoadRequest request(OriginDocument(), ResourceRequest(Url()), "_self",
                              should_check_main_world_content_security_policy_);
-    request.SetClientRedirect(ClientRedirectPolicy::kClientRedirect);
+    request.SetClientRedirectReason(GetReason());
     request.SetInputStartTime(InputTimestamp());
 
     if (blob_url_token_) {
@@ -260,8 +260,10 @@ void NavigationScheduler::ScheduleFrameNavigation(
         EqualIgnoringFragmentIdentifier(frame_->GetDocument()->Url(), url)) {
       FrameLoadRequest request(origin_document, ResourceRequest(url), "_self");
       request.SetInputStartTime(input_timestamp);
-      if (frame_load_type == WebFrameLoadType::kReplaceCurrentItem)
-        request.SetClientRedirect(ClientRedirectPolicy::kClientRedirect);
+      if (frame_load_type == WebFrameLoadType::kReplaceCurrentItem) {
+        request.SetClientRedirectReason(
+            ClientNavigationReason::kFrameNavigation);
+      }
       frame_->Loader().StartNavigation(request, frame_load_type);
       return;
     }
@@ -281,8 +283,6 @@ void NavigationScheduler::NavigateTask() {
   }
 
   ScheduledNavigation* redirect(redirect_.Release());
-  probe::FrameRequestedNavigation(frame_, redirect->Url(),
-                                  redirect->GetReason());
   redirect->Fire(frame_);
   probe::FrameClearedScheduledNavigation(frame_);
 }

@@ -325,16 +325,6 @@ bool LocalFrame::IsLocalRoot() const {
   return Tree().Parent()->IsRemoteFrame();
 }
 
-static ClientNavigationReason ClientNavigationReasonFromRequest(
-    const FrameLoadRequest& request) {
-  if (request.Form()) {
-    if (request.GetResourceRequest().HttpMethod() == http_names::kPOST)
-      return ClientNavigationReason::kFormSubmissionPost;
-    return ClientNavigationReason::kFormSubmissionGet;
-  }
-  return ClientNavigationReason::kFrameNavigation;
-}
-
 void LocalFrame::ScheduleNavigation(Document& origin_document,
                                     const KURL& url,
                                     WebFrameLoadType frame_load_type,
@@ -350,12 +340,8 @@ void LocalFrame::Navigate(const FrameLoadRequest& request,
   if (!navigation_rate_limiter().CanProceed())
     return;
   if (request.ClientRedirect() == ClientRedirectPolicy::kClientRedirect) {
-    ClientNavigationReason reason = ClientNavigationReasonFromRequest(request);
     probe::FrameScheduledNavigation(this, request.GetResourceRequest().Url(),
-                                    0.0, reason);
-    probe::FrameRequestedNavigation(this, request.GetResourceRequest().Url(),
-                                    reason);
-
+                                    0.0, request.ClientRedirectReason());
     if (NavigationScheduler::MustReplaceCurrentItem(this))
       frame_load_type = WebFrameLoadType::kReplaceCurrentItem;
   }
@@ -541,10 +527,8 @@ void LocalFrame::Reload(WebFrameLoadType load_type) {
   FrameLoadRequest request = FrameLoadRequest(
       nullptr, loader_.ResourceRequestForReload(
                    load_type, ClientRedirectPolicy::kClientRedirect));
-  request.SetClientRedirect(ClientRedirectPolicy::kClientRedirect);
+  request.SetClientRedirectReason(ClientNavigationReason::kReload);
   probe::FrameScheduledNavigation(this, request.GetResourceRequest().Url(), 0.0,
-                                  ClientNavigationReason::kReload);
-  probe::FrameRequestedNavigation(this, request.GetResourceRequest().Url(),
                                   ClientNavigationReason::kReload);
   loader_.StartNavigation(request, load_type);
   probe::FrameClearedScheduledNavigation(this);

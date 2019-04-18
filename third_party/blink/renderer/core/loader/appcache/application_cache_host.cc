@@ -160,7 +160,7 @@ void ApplicationCacheHost::SelectCacheWithManifest(const KURL& manifest_url) {
     // being loaded, because "foreign" entries are never picked during
     // navigation. see ApplicationCacheGroup::selectCache()
     FrameLoadRequest request(document, ResourceRequest(document->Url()));
-    request.SetClientRedirect(ClientRedirectPolicy::kClientRedirect);
+    request.SetClientRedirectReason(ClientNavigationReason::kReload);
     frame->Navigate(request, WebFrameLoadType::kReplaceCurrentItem);
   }
 }
