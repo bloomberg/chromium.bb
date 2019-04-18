@@ -59,6 +59,7 @@
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worklet_global_scope.h"
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/json/json_values.h"
 #include "third_party/blink/renderer/platform/loader/fetch/integrity_metadata.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
@@ -1691,6 +1692,8 @@ bool ContentSecurityPolicy::ShouldBypassMainWorld(
   v8::HandleScope handle_scope(isolate);
   v8::Local<v8::Context> v8_context = isolate->GetCurrentContext();
   if (v8_context.IsEmpty())
+    return false;
+  if (!ScriptState::AccessCheck(v8_context))
     return false;
 
   DOMWrapperWorld& world = DOMWrapperWorld::Current(isolate);
