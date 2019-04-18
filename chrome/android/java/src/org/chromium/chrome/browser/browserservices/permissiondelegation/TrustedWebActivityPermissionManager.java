@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.browserservices.permissiondelegation;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.support.annotation.Nullable;
+import android.support.annotation.UiThread;
 import android.text.TextUtils;
 
 import org.chromium.base.ContextUtils;
@@ -31,7 +32,7 @@ import dagger.Lazy;
  * {@link InstalledWebappBridge}.
  *
  * Lifecycle: This is a singleton.
- * Thread safety: Only call methods on a single thread.
+ * Thread safety: Only call methods on the UI thread as this class may call into native.
  * Native: Does not require native.
  */
 @Singleton
@@ -74,6 +75,7 @@ public class TrustedWebActivityPermissionManager {
         return permissions.toArray(new InstalledWebappBridge.Permission[permissions.size()]);
     }
 
+    @UiThread
     void register(Origin origin, String packageName, boolean notificationsEnabled) {
         // TODO(peconn): Only trigger if this is for the first time?
 
@@ -84,15 +86,21 @@ public class TrustedWebActivityPermissionManager {
         // did it the other way around there'd be a small moment in time where the website's
         // notification permission could flicker from SET -> UNSET -> SET. This way we transition
         // straight from the channel's permission to the app's permission.
-        mStore.setStateForOrigin(origin, packageName, appName, notificationsEnabled);
+        boolean stateChanged =
+                mStore.setStateForOrigin(origin, packageName, appName, notificationsEnabled);
 
         NotificationChannelPreserver.deleteChannelIfNeeded(mPermissionPreserver, origin);
+
+        if (stateChanged) InstalledWebappBridge.notifyPermissionsChange();
     }
 
+    @UiThread
     void unregister(Origin origin) {
         mStore.removeOrigin(origin);
 
         NotificationChannelPreserver.restoreChannelIfNeeded(mPermissionPreserver, origin);
+
+        InstalledWebappBridge.notifyPermissionsChange();
     }
 
     /**

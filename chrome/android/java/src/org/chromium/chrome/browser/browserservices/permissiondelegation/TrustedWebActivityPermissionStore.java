@@ -102,15 +102,34 @@ public class TrustedWebActivityPermissionStore {
         }
     }
 
-    /** Sets the notification state for the origin. */
-    void setStateForOrigin(Origin origin, String packageName, String appName, boolean enabled) {
+    /**
+     * Sets the notification state for the origin.
+     * Returns whether {@code true} if state was changed, {@code false} if the provided state was
+     * the same as the state beforehand.
+     */
+    boolean setStateForOrigin(Origin origin, String packageName, String appName, boolean enabled) {
+        boolean modified = !getStoredOrigins().contains(origin.toString());
+
+        if (!modified) {
+            // Don't bother with these extra checks if we have a brand new origin.
+            boolean enabledChanged = enabled !=
+                    mPreferences.getBoolean(createNotificationPermissionKey(origin), false);
+            boolean packageChanged = !packageName.equals(
+                    mPreferences.getString(createPackageNameKey(origin), null));
+            boolean appNameChanged = !appName.equals(
+                    mPreferences.getString(createAppNameKey(origin), null));
+            modified = enabledChanged || packageChanged || appNameChanged;
+        }
+
         addOrigin(origin);
 
-        SharedPreferences.Editor editor = mPreferences.edit();
-        editor.putBoolean(createNotificationPermissionKey(origin), enabled);
-        editor.putString(createPackageNameKey(origin), packageName);
-        editor.putString(createAppNameKey(origin), appName);
-        editor.apply();
+        mPreferences.edit()
+                .putBoolean(createNotificationPermissionKey(origin), enabled)
+                .putString(createPackageNameKey(origin), packageName)
+                .putString(createAppNameKey(origin), appName)
+                .apply();
+
+        return modified;
     }
 
     /** Removes the origin from the store. */
@@ -118,19 +137,19 @@ public class TrustedWebActivityPermissionStore {
         Set<String> origins = getStoredOrigins();
         origins.remove(origin.toString());
 
-        SharedPreferences.Editor editor = mPreferences.edit();
-        editor.putStringSet(KEY_ALL_ORIGINS, origins);
-        editor.remove(createNotificationPermissionKey(origin));
-        editor.remove(createAppNameKey(origin));
-        editor.remove(createPackageNameKey(origin));
-        editor.apply();
+        mPreferences.edit()
+                .putStringSet(KEY_ALL_ORIGINS, origins)
+                .remove(createNotificationPermissionKey(origin))
+                .remove(createAppNameKey(origin))
+                .remove(createPackageNameKey(origin))
+                .apply();
     }
 
     /** Stores the notification state the origin had before the TWA was installed. */
     void setPreTwaNotificationState(Origin origin, boolean enabled) {
-        SharedPreferences.Editor editor = mPreferences.edit();
-        editor.putBoolean(createNotificationPreTwaPermissionKey(origin), enabled);
-        editor.apply();
+        mPreferences.edit()
+                .putBoolean(createNotificationPreTwaPermissionKey(origin), enabled)
+                .apply();
     }
 
     /**
@@ -144,9 +163,7 @@ public class TrustedWebActivityPermissionStore {
 
         boolean enabled = mPreferences.getBoolean(key, false);
 
-        SharedPreferences.Editor editor = mPreferences.edit();
-        editor.remove(key);
-        editor.apply();
+        mPreferences.edit().remove(key).apply();
 
         return enabled;
     }
@@ -154,18 +171,16 @@ public class TrustedWebActivityPermissionStore {
     /** Clears the store, for testing. */
     @VisibleForTesting
     public void clearForTesting() {
-        SharedPreferences.Editor editor = mPreferences.edit();
-        editor.clear();
-        editor.apply();
+        mPreferences.edit().clear().apply();
     }
 
     private void addOrigin(Origin origin) {
         Set<String> origins = getStoredOrigins();
         origins.add(origin.toString());
 
-        SharedPreferences.Editor editor = mPreferences.edit();
-        editor.putStringSet(KEY_ALL_ORIGINS, origins);
-        editor.apply();
+        mPreferences.edit()
+                .putStringSet(KEY_ALL_ORIGINS, origins)
+                .apply();
     }
 
     private String createNotificationPermissionKey(Origin origin) {
