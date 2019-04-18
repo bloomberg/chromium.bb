@@ -57793,6 +57793,14 @@ Full version information for the fingerprint enum values:
   <int value="4" label="Abandoned"/>
 </enum>
 
+<enum name="WebAuthenticationFidoTransport">
+  <int value="0" label="USB HID"/>
+  <int value="1" label="Near Field Communication"/>
+  <int value="2" label="Bluetooth Low Energy"/>
+  <int value="3" label="Cloud-assisted BLE"/>
+  <int value="4" label="Internal"/>
+</enum>
+
 <enum name="WebAuthenticationRelyingPartySecurityCheckFailure">
   <int value="0" label="Opaque or Non-Secure Origin"/>
   <int value="1" label="Relying Party Id Invalid"/>

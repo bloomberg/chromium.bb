@@ -12,6 +12,7 @@
 
 #include "base/bind.h"
 #include "base/feature_list.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/stl_util.h"
 #include "components/device_event_log/device_event_log.h"
 #include "device/fido/authenticator_get_assertion_response.h"
@@ -255,6 +256,12 @@ void GetAssertionRequestHandler::DispatchRequest(
       case FidoAuthenticator::GetAssertionPINDisposition::kNoPIN:
         break;
     }
+  }
+
+  if (authenticator->AuthenticatorTransport()) {
+    base::UmaHistogramEnumeration(
+        "WebAuthentication.GetAssertionRequestTransport",
+        *authenticator->AuthenticatorTransport());
   }
 
   CtapGetAssertionRequest request(request_);
