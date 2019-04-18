@@ -2308,26 +2308,6 @@
             ]
         }
     ],
-    "GwpAsanMallocWindowsLaunch": [
-        {
-            "platforms": [
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "params": {
-                        "MaxAllocations": "30",
-                        "ProcessSamplingProbability": "0.2",
-                        "TotalPages": "100"
-                    },
-                    "enable_features": [
-                        "GwpAsanMalloc"
-                    ]
-                }
-            ]
-        }
-    ],
     "HTTPReallyBadFinal": [
         {
             "platforms": [
