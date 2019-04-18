@@ -67,7 +67,7 @@ public class ChildProcessLauncherIntegrationTest {
                 boolean bindToCaller, boolean bindAsExternalService,
                 Bundle childProcessCommonParameters) {
             super(context, serviceName, bindToCaller, bindAsExternalService,
-                    childProcessCommonParameters);
+                    childProcessCommonParameters, null /* instanceName */);
         }
 
         @Override
