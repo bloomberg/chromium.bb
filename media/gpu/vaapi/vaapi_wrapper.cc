@@ -1125,8 +1125,10 @@ bool VaapiWrapper::GetJpegDecodeSuitableImageFourCC(unsigned int rt_format,
     // The VAAPI mesa state tracker only supports conversion from NV12 to YV12
     // and IYUV (synonym of I420).
     if (rt_format == VA_RT_FORMAT_YUV420) {
-      preferred_fourcc =
-          preferred_fourcc == VA_FOURCC_YV12 ? VA_FOURCC_YV12 : VA_FOURCC_I420;
+      if (preferred_fourcc != VA_FOURCC_I420 &&
+          preferred_fourcc != VA_FOURCC_YV12) {
+        preferred_fourcc = VA_FOURCC_NV12;
+      }
     } else if (rt_format == VA_RT_FORMAT_YUV422) {
       preferred_fourcc = VA_FOURCC('Y', 'U', 'Y', 'V');
     } else {
