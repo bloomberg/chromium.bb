@@ -1159,7 +1159,7 @@ TEST_F(ScriptExecutorTest, ReportNavigationEnd) {
   EXPECT_TRUE(processed_actions_capture[0].navigation_info().ended());
 }
 
-TEST_F(ScriptExecutorTest, ReportNavigationStart) {
+TEST_F(ScriptExecutorTest, ReportUnexpectedNavigationStart) {
   ActionsResponseProto actions_response;
   auto* wait_for_dom = actions_response.add_actions()->mutable_wait_for_dom();
   wait_for_dom->mutable_wait_until()->add_selectors("element");
@@ -1189,6 +1189,169 @@ TEST_F(ScriptExecutorTest, ReportNavigationStart) {
   ASSERT_THAT(processed_actions_capture, SizeIs(1));
   EXPECT_EQ(ACTION_APPLIED, processed_actions_capture[0].status());
   EXPECT_TRUE(processed_actions_capture[0].navigation_info().started());
+  EXPECT_TRUE(processed_actions_capture[0].navigation_info().unexpected());
+}
+
+TEST_F(ScriptExecutorTest, ReportExpectedNavigationStart) {
+  ActionsResponseProto actions_response;
+  actions_response.add_actions()->mutable_expect_navigation();
+  auto* wait_for_dom = actions_response.add_actions()->mutable_wait_for_dom();
+  wait_for_dom->mutable_wait_until()->add_selectors("element");
+
+  EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
+      .WillOnce(RunOnceCallback<5>(true, Serialize(actions_response)));
+  std::vector<ProcessedActionProto> processed_actions_capture;
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _))
+      .WillOnce(DoAll(SaveArg<3>(&processed_actions_capture),
+                      RunOnceCallback<4>(true, "")));
+
+  // As the element doesn't exist, WaitForDom returns and waits for 1s.
+  EXPECT_CALL(mock_web_controller_,
+              OnElementCheck(Eq(Selector({"element"})), _))
+      .WillOnce(RunOnceCallback<1>(false));
+  EXPECT_CALL(executor_callback_, Run(_));
+  executor_->Run(executor_callback_.Get());
+
+  delegate_.UpdateNavigationState(/* navigating= */ true, /* error= */ false);
+
+  // Navigation end forces a re-check, which succeeds
+  EXPECT_CALL(mock_web_controller_,
+              OnElementCheck(Eq(Selector({"element"})), _))
+      .WillRepeatedly(RunOnceCallback<1>(true));
+  delegate_.UpdateNavigationState(/* navigating= */ false, /* error= */ false);
+
+  ASSERT_THAT(processed_actions_capture, SizeIs(2));
+  EXPECT_EQ(ACTION_APPLIED, processed_actions_capture[0].status());
+  EXPECT_EQ(ACTION_APPLIED, processed_actions_capture[0].status());
+  EXPECT_TRUE(processed_actions_capture[1].navigation_info().started());
+  EXPECT_FALSE(processed_actions_capture[1].navigation_info().unexpected());
+}
+
+TEST_F(ScriptExecutorTest, WaitForNavigationWithoutExpectation) {
+  ActionsResponseProto actions_response;
+  actions_response.add_actions()->mutable_wait_for_navigation();
+
+  EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
+      .WillOnce(RunOnceCallback<5>(true, Serialize(actions_response)));
+  std::vector<ProcessedActionProto> processed_actions_capture;
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _))
+      .WillOnce(DoAll(SaveArg<3>(&processed_actions_capture),
+                      RunOnceCallback<4>(true, "")));
+
+  // WaitForNavigation returns immediately
+  EXPECT_CALL(executor_callback_, Run(_));
+  executor_->Run(executor_callback_.Get());
+
+  ASSERT_THAT(processed_actions_capture, SizeIs(1));
+  EXPECT_EQ(INVALID_ACTION, processed_actions_capture[0].status());
+}
+
+TEST_F(ScriptExecutorTest, ExpectNavigation) {
+  ActionsResponseProto actions_response;
+  actions_response.add_actions()->mutable_expect_navigation();
+  actions_response.add_actions()->mutable_wait_for_navigation();
+
+  EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
+      .WillOnce(RunOnceCallback<5>(true, Serialize(actions_response)));
+  std::vector<ProcessedActionProto> processed_actions_capture;
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _))
+      .WillOnce(DoAll(SaveArg<3>(&processed_actions_capture),
+                      RunOnceCallback<4>(true, "")));
+
+  // WaitForNavigation waits for navigation to start after expect_navigation
+  EXPECT_CALL(executor_callback_, Run(_));
+  executor_->Run(executor_callback_.Get());
+
+  delegate_.UpdateNavigationState(/* navigating= */ true, /* error= */ false);
+  delegate_.UpdateNavigationState(/* navigating= */ false, /* error= */ false);
+  ASSERT_THAT(processed_actions_capture, SizeIs(2));
+  EXPECT_EQ(ACTION_APPLIED, processed_actions_capture[0].status());
+  EXPECT_EQ(ACTION_APPLIED, processed_actions_capture[1].status());
+}
+
+TEST_F(ScriptExecutorTest, MultipleWaitForNavigation) {
+  ActionsResponseProto actions_response;
+  actions_response.add_actions()->mutable_expect_navigation();
+  actions_response.add_actions()->mutable_wait_for_navigation();
+  actions_response.add_actions()->mutable_wait_for_navigation();
+  actions_response.add_actions()->mutable_wait_for_navigation();
+
+  EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
+      .WillOnce(RunOnceCallback<5>(true, Serialize(actions_response)));
+  std::vector<ProcessedActionProto> processed_actions_capture;
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _))
+      .WillOnce(DoAll(SaveArg<3>(&processed_actions_capture),
+                      RunOnceCallback<4>(true, "")));
+
+  // The first wait_for_navigation waits for the navigation to happen. After
+  // that, the other wait_for_navigation return immediately.
+  EXPECT_CALL(executor_callback_, Run(_));
+  executor_->Run(executor_callback_.Get());
+
+  delegate_.UpdateNavigationState(/* navigating= */ true, /* error= */ false);
+  delegate_.UpdateNavigationState(/* navigating= */ false, /* error= */ false);
+  ASSERT_THAT(processed_actions_capture, SizeIs(4));
+  EXPECT_EQ(ACTION_APPLIED, processed_actions_capture[0].status());
+  EXPECT_EQ(ACTION_APPLIED, processed_actions_capture[1].status());
+  EXPECT_EQ(ACTION_APPLIED, processed_actions_capture[2].status());
+  EXPECT_EQ(ACTION_APPLIED, processed_actions_capture[3].status());
+}
+
+TEST_F(ScriptExecutorTest, ExpectLaterNavigationIgnoringNavigationInProgress) {
+  ActionsResponseProto actions_response;
+  actions_response.add_actions()->mutable_expect_navigation();
+  actions_response.add_actions()->mutable_wait_for_navigation();
+
+  EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
+      .WillOnce(RunOnceCallback<5>(true, Serialize(actions_response)));
+  std::vector<ProcessedActionProto> processed_actions_capture;
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _))
+      .WillOnce(DoAll(SaveArg<3>(&processed_actions_capture),
+                      RunOnceCallback<4>(true, "")));
+
+  delegate_.UpdateNavigationState(/* navigating= */ true, /* error= */ false);
+
+  // WaitForNavigation waits for navigation to *start* after expect_navigation
+  executor_->Run(executor_callback_.Get());
+
+  // This ends the navigation that was in progress when expect_navigation was
+  // called. wait_for_navigation should not return, since navigation started
+  // after expect_navigation was called.
+  delegate_.UpdateNavigationState(/* navigating= */ false, /* error= */ false);
+
+  // This starts the new navigation.
+  delegate_.UpdateNavigationState(/* navigating= */ true, /* error= */ false);
+
+  // This ends the new navigation. wait_for_navigation returns.
+  EXPECT_CALL(executor_callback_, Run(_));
+  delegate_.UpdateNavigationState(/* navigating= */ false, /* error= */ false);
+
+  ASSERT_THAT(processed_actions_capture, SizeIs(2));
+  EXPECT_EQ(ACTION_APPLIED, processed_actions_capture[0].status());
+  EXPECT_EQ(ACTION_APPLIED, processed_actions_capture[1].status());
+}
+
+TEST_F(ScriptExecutorTest, WaitForNavigationReportsError) {
+  ActionsResponseProto actions_response;
+  actions_response.add_actions()->mutable_expect_navigation();
+  actions_response.add_actions()->mutable_wait_for_navigation();
+
+  EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
+      .WillOnce(RunOnceCallback<5>(true, Serialize(actions_response)));
+  std::vector<ProcessedActionProto> processed_actions_capture;
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _))
+      .WillOnce(DoAll(SaveArg<3>(&processed_actions_capture),
+                      RunOnceCallback<4>(true, "")));
+
+  // WaitForNavigation waits for navigation to start after expect_navigation
+  EXPECT_CALL(executor_callback_, Run(_));
+  executor_->Run(executor_callback_.Get());
+
+  delegate_.UpdateNavigationState(/* navigating= */ true, /* error= */ false);
+  delegate_.UpdateNavigationState(/* navigating= */ false, /* error= */ true);
+  ASSERT_THAT(processed_actions_capture, SizeIs(2));
+  EXPECT_EQ(ACTION_APPLIED, processed_actions_capture[0].status());
+  EXPECT_EQ(NAVIGATION_ERROR, processed_actions_capture[1].status());
 }
 
 }  // namespace

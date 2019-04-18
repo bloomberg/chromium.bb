@@ -100,5 +100,4 @@ void FakeScriptExecutorDelegate::AddListener(Listener* listener) {
 void FakeScriptExecutorDelegate::RemoveListener(Listener* listener) {
   listeners_.erase(listener);
 }
-
 }  // namespace autofill_assistant

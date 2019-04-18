@@ -120,13 +120,40 @@ void ScriptExecutor::Run(RunScriptCallback callback) {
 }
 
 void ScriptExecutor::OnNavigationStateChanged() {
-  if (delegate_->IsNavigatingToNewDocument())
+  if (delegate_->IsNavigatingToNewDocument()) {
     navigation_info_.set_started(true);
-  else
+    navigation_info_.set_unexpected(expected_navigation_step_ !=
+                                    ExpectedNavigationStep::EXPECTED);
+  } else {
     navigation_info_.set_ended(true);
+  }
 
   if (delegate_->HasNavigationError()) {
     navigation_info_.set_has_error(true);
+  }
+
+  switch (expected_navigation_step_) {
+    case ExpectedNavigationStep::UNEXPECTED:
+      break;
+
+    case ExpectedNavigationStep::EXPECTED:
+      if (delegate_->IsNavigatingToNewDocument()) {
+        expected_navigation_step_ = ExpectedNavigationStep::STARTED;
+      }
+      break;
+
+    case ExpectedNavigationStep::STARTED:
+      if (!delegate_->IsNavigatingToNewDocument()) {
+        expected_navigation_step_ = ExpectedNavigationStep::DONE;
+        if (on_expected_navigation_done_)
+          std::move(on_expected_navigation_done_)
+              .Run(!delegate_->HasNavigationError());
+      }
+      break;
+
+    case ExpectedNavigationStep::DONE:
+      // nothing to do
+      break;
   }
 }
 
@@ -353,6 +380,34 @@ void ScriptExecutor::GetOuterHtml(
     base::OnceCallback<void(const ClientStatus&, const std::string&)>
         callback) {
   delegate_->GetWebController()->GetOuterHtml(selector, std::move(callback));
+}
+
+void ScriptExecutor::ExpectNavigation() {
+  expected_navigation_step_ = ExpectedNavigationStep::EXPECTED;
+}
+
+bool ScriptExecutor::ExpectedNavigationHasStarted() {
+  return expected_navigation_step_ != ExpectedNavigationStep::EXPECTED;
+}
+
+bool ScriptExecutor::WaitForNavigation(
+    base::OnceCallback<void(bool)> callback) {
+  switch (expected_navigation_step_) {
+    case ExpectedNavigationStep::UNEXPECTED:
+      return false;
+
+    case ExpectedNavigationStep::DONE:
+      std::move(callback).Run(!delegate_->HasNavigationError());
+      break;
+
+    case ExpectedNavigationStep::EXPECTED:
+    case ExpectedNavigationStep::STARTED:
+      on_expected_navigation_done_ = std::move(callback);
+      break;
+
+      // No default to make compilation fail if not all cases are covered
+  }
+  return true;
 }
 
 void ScriptExecutor::LoadURL(const GURL& url) {

@@ -193,6 +193,25 @@ class ActionDelegate {
       base::OnceCallback<void(const ClientStatus&, const std::string&)>
           callback) = 0;
 
+  // Make the next call to WaitForNavigation to expect a navigation event that
+  // started after this call.
+  virtual void ExpectNavigation() = 0;
+
+  // Returns true if the expected navigation, on which WaitForNavigation() might
+  // be waiting, has started and maybe even ended.
+  virtual bool ExpectedNavigationHasStarted() = 0;
+
+  // Wait for a navigation event to end that started after the last call to
+  // ExpectNavigation().
+  //
+  // If ExpectNavigation() was never called in the script, the function returns
+  // false and never calls the callback.
+  //
+  // The callback is passed true if navigation succeeded. The callback might be
+  // called immediately if navigation has already succeeded.
+  virtual bool WaitForNavigation(
+      base::OnceCallback<void(bool)> on_navigation_done) = 0;
+
   // Load |url| in the current tab. Returns immediately, before the new page has
   // been loaded.
   virtual void LoadURL(const GURL& url) = 0;
