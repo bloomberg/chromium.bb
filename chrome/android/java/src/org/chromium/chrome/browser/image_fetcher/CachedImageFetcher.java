@@ -67,10 +67,12 @@ public class CachedImageFetcher extends ImageFetcher {
             reportEvent(clientName, ImageFetcherEvent.JAVA_DISK_CACHE_HIT);
             mImageFetcherBridge.reportCacheHitTime(clientName, startTimeMillis);
         } else {
-            mImageFetcherBridge.fetchGif(url, clientName, (BaseGifImage gifFromNative) -> {
-                callback.onResult(gifFromNative);
-                mImageFetcherBridge.reportTotalFetchTimeFromNative(clientName, startTimeMillis);
-            });
+            mImageFetcherBridge.fetchGif(
+                    getConfig(), url, clientName, (BaseGifImage gifFromNative) -> {
+                        callback.onResult(gifFromNative);
+                        mImageFetcherBridge.reportTotalFetchTimeFromNative(
+                                clientName, startTimeMillis);
+                    });
         }
     }
 

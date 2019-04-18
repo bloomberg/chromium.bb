@@ -103,10 +103,13 @@ ScopedJavaLocalRef<jstring> ImageFetcherBridge::GetFilePath(
 
 void ImageFetcherBridge::FetchImageData(JNIEnv* j_env,
                                         const JavaRef<jobject>& j_this,
+                                        const jint j_image_fetcher_config,
                                         const JavaRef<jstring>& j_url,
                                         const JavaRef<jstring>& j_client_name,
                                         const JavaRef<jobject>& j_callback) {
   ScopedJavaGlobalRef<jobject> callback(j_callback);
+  ImageFetcherConfig config =
+      static_cast<ImageFetcherConfig>(j_image_fetcher_config);
   std::string url = base::android::ConvertJavaStringToUTF8(j_url);
   std::string client_name =
       base::android::ConvertJavaStringToUTF8(j_client_name);
@@ -118,12 +121,11 @@ void ImageFetcherBridge::FetchImageData(JNIEnv* j_env,
   params.set_skip_transcoding(true);
   // We checked disk in Java, so we can skip it for native.
   params.set_skip_disk_cache_read(true);
-  image_fetcher_service_
-      ->GetImageFetcher(image_fetcher::ImageFetcherConfig::kDiskCacheOnly)
-      ->FetchImageData(GURL(url),
-                       base::BindOnce(&ImageFetcherBridge::OnImageDataFetched,
-                                      weak_ptr_factory_.GetWeakPtr(), callback),
-                       std::move(params));
+  image_fetcher_service_->GetImageFetcher(config)->FetchImageData(
+      GURL(url),
+      base::BindOnce(&ImageFetcherBridge::OnImageDataFetched,
+                     weak_ptr_factory_.GetWeakPtr(), callback),
+      std::move(params));
 }
 
 void ImageFetcherBridge::FetchImage(JNIEnv* j_env,
