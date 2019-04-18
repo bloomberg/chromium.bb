@@ -12,7 +12,6 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/login/mixin_based_in_process_browser_test.h"
-#include "chromeos/tpm/stub_install_attributes.h"
 
 namespace chromeos {
 
@@ -31,16 +30,17 @@ class DeviceStateMixin : public InProcessBrowserTestMixin {
   ~DeviceStateMixin() override;
 
   // InProcessBrowserTestMixin:
-  void SetUpInProcessBrowserTestFixture() override;
+  bool SetUpUserDataDirectory() override;
 
   void SetState(State state);
   void set_domain(const std::string& domain) { domain_ = domain; }
 
  private:
   void SetDeviceState();
+  void WriteInstallAttrFile();
+
   State state_;
   std::string domain_;
-  ScopedStubInstallAttributes install_attributes_;
 
   bool is_setup_ = false;
 
