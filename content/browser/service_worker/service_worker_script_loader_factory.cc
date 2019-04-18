@@ -76,7 +76,8 @@ void ServiceWorkerScriptLoaderFactory::CreateLoaderAndStart(
   //       script.
   //    3) For other cases or if ServiceWorkerImportedScriptsUpdateCheck is not
   //       enabled, serve from network with installing the script
-  //       (use ServiceWorkerNewScriptLoader).
+  //       (use ServiceWorkerNewScriptLoader::CreateForNetworkOnly() to
+  //       create a ServiceWorkerNewScriptLoader).
   //       This is the common case: load the script and install it.
 
   // Case A and C:
@@ -141,7 +142,7 @@ void ServiceWorkerScriptLoaderFactory::CreateLoaderAndStart(
 
   // Case D.3:
   mojo::MakeStrongBinding(
-      std::make_unique<ServiceWorkerNewScriptLoader>(
+      ServiceWorkerNewScriptLoader::CreateForNetworkOnly(
           routing_id, request_id, options, resource_request, std::move(client),
           provider_host_->running_hosted_version(),
           loader_factory_for_new_scripts_, traffic_annotation),

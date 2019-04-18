@@ -138,6 +138,8 @@ class CONTENT_EXPORT ServiceWorkerCacheWriter {
   }
 
  private:
+  friend class ServiceWorkerUpdateCheckTestUtils;
+
   // States for the state machine.
   //
   // The state machine flows roughly like this: if there is no existing cache

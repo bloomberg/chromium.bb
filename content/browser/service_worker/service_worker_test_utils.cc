@@ -10,6 +10,7 @@
 #include "base/barrier_closure.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
+#include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_database.h"
 #include "content/browser/service_worker/service_worker_disk_cache.h"
@@ -524,6 +525,141 @@ void MockServiceWorkerResponseWriter::CompletePendingWrite() {
   DCHECK(write.async);
   expected_writes_.pop();
   std::move(pending_callback_).Run(write.result);
+}
+
+ServiceWorkerUpdateCheckTestUtils::ServiceWorkerUpdateCheckTestUtils() =
+    default;
+ServiceWorkerUpdateCheckTestUtils::~ServiceWorkerUpdateCheckTestUtils() =
+    default;
+
+std::unique_ptr<ServiceWorkerCacheWriter>
+ServiceWorkerUpdateCheckTestUtils::CreatePausedCacheWriter(
+    EmbeddedWorkerTestHelper* worker_test_helper,
+    size_t bytes_compared,
+    const std::string& new_headers,
+    const std::string& diff_data_block,
+    int64_t old_resource_id,
+    int64_t new_resource_id) {
+  auto cache_writer = ServiceWorkerCacheWriter::CreateForComparison(
+      worker_test_helper->context()->storage()->CreateResponseReader(
+          old_resource_id),
+      worker_test_helper->context()->storage()->CreateResponseReader(
+          old_resource_id),
+      worker_test_helper->context()->storage()->CreateResponseWriter(
+          new_resource_id),
+      true /* pause_when_not_identical */);
+  auto info = std::make_unique<net::HttpResponseInfo>();
+  info->request_time = base::Time::Now();
+  info->response_time = base::Time::Now();
+  info->was_cached = false;
+  info->headers = base::MakeRefCounted<net::HttpResponseHeaders>(new_headers);
+  cache_writer->headers_to_write_ =
+      base::MakeRefCounted<HttpResponseInfoIOBuffer>(std::move(info));
+  cache_writer->bytes_compared_ = bytes_compared;
+  cache_writer->data_to_write_ =
+      base::MakeRefCounted<net::WrappedIOBuffer>(diff_data_block.data());
+  cache_writer->len_to_write_ = diff_data_block.length();
+  cache_writer->bytes_written_ = 0;
+  cache_writer->io_pending_ = true;
+  cache_writer->state_ = ServiceWorkerCacheWriter::State::STATE_PAUSING;
+  return cache_writer;
+}
+
+std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker::PausedState>
+ServiceWorkerUpdateCheckTestUtils::CreateUpdateCheckerPausedState(
+    std::unique_ptr<ServiceWorkerCacheWriter> cache_writer,
+    ServiceWorkerNewScriptLoader::NetworkLoaderState network_loader_state,
+    ServiceWorkerNewScriptLoader::WriterState body_writer_state,
+    mojo::ScopedDataPipeConsumerHandle network_consumer) {
+  network::mojom::URLLoaderPtr network_loader;
+  network::mojom::URLLoaderClientPtr network_loader_client;
+  mojo::MakeRequest(&network_loader);
+  network::mojom::URLLoaderClientRequest network_loader_client_request =
+      mojo::MakeRequest(&network_loader_client);
+  return std::make_unique<ServiceWorkerSingleScriptUpdateChecker::PausedState>(
+      std::move(cache_writer), std::move(network_loader),
+      std::move(network_loader_client_request), std::move(network_consumer),
+      network_loader_state, body_writer_state);
+}
+
+void ServiceWorkerUpdateCheckTestUtils::SetComparedScriptInfoForVersion(
+    const GURL& script_url,
+    int64_t resource_id,
+    ServiceWorkerSingleScriptUpdateChecker::Result compare_result,
+    std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker::PausedState>
+        paused_state,
+    ServiceWorkerVersion* version) {
+  std::map<GURL, ServiceWorkerUpdateChecker::ComparedScriptInfo> info_map;
+  info_map[script_url] = ServiceWorkerUpdateChecker::ComparedScriptInfo(
+      resource_id, compare_result, std::move(paused_state));
+  version->set_compared_script_info_map(std::move(info_map));
+}
+
+void ServiceWorkerUpdateCheckTestUtils::
+    CreateAndSetComparedScriptInfoForVersion(
+        const GURL& script_url,
+        size_t bytes_compared,
+        const std::string& new_headers,
+        const std::string& diff_data_block,
+        int64_t old_resource_id,
+        int64_t new_resource_id,
+        EmbeddedWorkerTestHelper* worker_test_helper,
+        ServiceWorkerNewScriptLoader::NetworkLoaderState network_loader_state,
+        ServiceWorkerNewScriptLoader::WriterState body_writer_state,
+        mojo::ScopedDataPipeConsumerHandle network_consumer,
+        ServiceWorkerSingleScriptUpdateChecker::Result compare_result,
+        ServiceWorkerVersion* version) {
+  auto cache_writer = CreatePausedCacheWriter(
+      worker_test_helper, bytes_compared, new_headers, diff_data_block,
+      old_resource_id, new_resource_id);
+  auto paused_state = CreateUpdateCheckerPausedState(
+      std::move(cache_writer), network_loader_state, body_writer_state,
+      std::move(network_consumer));
+  SetComparedScriptInfoForVersion(script_url, old_resource_id, compare_result,
+                                  std::move(paused_state), version);
+}
+
+bool ServiceWorkerUpdateCheckTestUtils::VerifyStoredResponse(
+    int64_t resource_id,
+    ServiceWorkerStorage* storage,
+    const std::string& expected_body) {
+  DCHECK(storage);
+  if (resource_id == kInvalidServiceWorkerResourceId)
+    return false;
+
+  // Verify the response status.
+  size_t response_data_size = 0;
+  {
+    std::unique_ptr<ServiceWorkerResponseReader> reader =
+        storage->CreateResponseReader(resource_id);
+    auto info_buffer = base::MakeRefCounted<HttpResponseInfoIOBuffer>();
+    net::TestCompletionCallback cb;
+    reader->ReadInfo(info_buffer.get(), cb.callback());
+    int rv = cb.WaitForResult();
+    if (rv < 0)
+      return false;
+    EXPECT_LT(0, rv);
+    EXPECT_EQ("OK", info_buffer->http_info->headers->GetStatusText());
+    response_data_size = info_buffer->response_data_size;
+  }
+
+  // Verify the response body.
+  {
+    std::unique_ptr<ServiceWorkerResponseReader> reader =
+        storage->CreateResponseReader(resource_id);
+    auto buffer =
+        base::MakeRefCounted<net::IOBufferWithSize>(response_data_size);
+    net::TestCompletionCallback cb;
+    reader->ReadData(buffer.get(), buffer->size(), cb.callback());
+    int rv = cb.WaitForResult();
+    if (rv < 0)
+      return false;
+    EXPECT_EQ(static_cast<int>(expected_body.size()), rv);
+
+    std::string received_body(buffer->data(), rv);
+    EXPECT_EQ(expected_body, received_body);
+  }
+  return true;
 }
 
 }  // namespace content
