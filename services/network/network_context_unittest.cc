@@ -581,12 +581,13 @@ TEST_F(NetworkContextTest, QuicUserAgentId) {
                                   .quic_user_agent_id);
 }
 
-TEST_F(NetworkContextTest, DataUrlSupportEnabled) {
+TEST_F(NetworkContextTest, DataUrlSupport) {
   mojom::NetworkContextParamsPtr context_params = CreateContextParams();
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(std::move(context_params));
-  EXPECT_TRUE(
-      network_context->url_request_context()->job_factory()->IsHandledProtocol(
+  EXPECT_EQ(
+      base::FeatureList::IsEnabled(features::kNetworkService),
+      !network_context->url_request_context()->job_factory()->IsHandledProtocol(
           url::kDataScheme));
 }
 
