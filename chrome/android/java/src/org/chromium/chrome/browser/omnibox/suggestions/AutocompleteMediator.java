@@ -93,7 +93,7 @@ class AutocompleteMediator
     private final Handler mHandler;
     private final BasicSuggestionProcessor mBasicSuggestionProcessor;
     private EditUrlSuggestionProcessor mEditUrlProcessor;
-    private AnswerSuggestionProcessor mAnswerSuggestionProcessor;
+    private final AnswerSuggestionProcessor mAnswerSuggestionProcessor;
 
     private ToolbarDataProvider mDataProvider;
     private boolean mNativeInitialized;
@@ -155,11 +155,6 @@ class AutocompleteMediator
         mAnswerSuggestionProcessor = new AnswerSuggestionProcessor(mContext, this, textProvider);
         mEditUrlProcessor = new EditUrlSuggestionProcessor(
                 delegate, (suggestion) -> onSelection(suggestion, 0));
-    }
-
-    public void destroy() {
-        mAnswerSuggestionProcessor.destroy();
-        mAnswerSuggestionProcessor = null;
     }
 
     @Override
