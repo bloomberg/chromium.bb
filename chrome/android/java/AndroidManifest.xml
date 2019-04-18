@@ -345,19 +345,30 @@ by a child template that "extends" this file.
         </activity>
 
         {% if notouch_build == "true" %}
-        <activity-alias android:name="org.chromium.chrome.browser.touchless.DinoActivity"
-            android:targetActivity="org.chromium.chrome.browser.touchless.NoTouchActivity"
-            android:icon="@mipmap/dino"
-            ## Proposed brand name, not to be localized.
-            android:label="Dino Run"
+        <activity-alias android:name="com.google.android.apps.chrome.DinoActivity"
+            android:targetActivity="org.chromium.chrome.browser.touchless.DinoActivity"
             android:exported="true">
             <intent-filter android:priority="-1">
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-          </activity-alias>
+        </activity-alias>
+
+        <activity android:name="org.chromium.chrome.browser.touchless.DinoActivity"
+          android:theme="@style/Theme.Chromium.Activity"
+            android:icon="@mipmap/dino"
+            ## Proposed brand name, not to be localized.
+            android:label="Dino Run"
+            android:exported="false"
+            android:persistableMode="persistNever"
+            android:launchMode="singleTask"
+            android:taskAffinity=""
+            android:noHistory="true"
+            {{ self.chrome_activity_common() }}>
+          </activity>
         {% endif %}
+
         <activity android:name="org.chromium.chrome.browser.LauncherShortcutActivity"
             android:theme="@android:style/Theme.NoDisplay"
             android:taskAffinity=""

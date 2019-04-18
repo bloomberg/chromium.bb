@@ -4,6 +4,7 @@
 
 touchless_java_sources = [
   "touchless/java/src/org/chromium/chrome/browser/touchless/ContentSuggestionsViewBinder.java",
+  "touchless/java/src/org/chromium/chrome/browser/touchless/DinoActivity.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/NoTouchActivity.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/OpenLastTabCoordinator.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/OpenLastTabMediator.java",

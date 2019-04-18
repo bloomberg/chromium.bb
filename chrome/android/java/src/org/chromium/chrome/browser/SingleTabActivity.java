@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser;
 
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Pair;
@@ -37,12 +36,6 @@ public abstract class SingleTabActivity extends ChromeActivity {
     private static final int PREWARM_RENDERER_DELAY_MS = 500;
 
     protected static final String BUNDLE_TAB_ID = "tabId";
-
-    @Override
-    protected void onNewIntent(Intent intent) {
-        super.onNewIntent(intent);
-        setIntent(intent);
-    }
 
     @Override
     protected TabModelSelector createTabModelSelector() {

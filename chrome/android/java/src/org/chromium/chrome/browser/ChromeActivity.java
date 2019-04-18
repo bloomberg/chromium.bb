@@ -224,7 +224,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      * The different types of activities extending ChromeActivity.
      */
     @IntDef({ActivityType.BASE, ActivityType.TABBED, ActivityType.CUSTOM_TAB, ActivityType.WEBAPP,
-            ActivityType.NO_TOUCH})
+            ActivityType.NO_TOUCH, ActivityType.DINO})
     @Retention(RetentionPolicy.SOURCE)
     public @interface ActivityType {
         int BASE = 0;
@@ -232,6 +232,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         int CUSTOM_TAB = 2;
         int WEBAPP = 3;
         int NO_TOUCH = 4;
+        int DINO = 5;
     }
 
     /**
