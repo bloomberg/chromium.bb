@@ -89,8 +89,8 @@ def get_swarming_args_from_task(task):
     try:
       cmd = [
         sys.executable, 'isolateserver.py', 'download',
-        '-I',  task['properties']['inputs_ref']['isolatedserver'],
-        '--namespace',  task['properties']['inputs_ref']['namespace'],
+        '-I', task['properties']['inputs_ref']['isolatedserver'],
+        '--namespace', task['properties']['inputs_ref']['namespace'],
         '-f', isolated, name,
       ]
       subprocess.check_call(cmd, cwd=CLIENT_DIR)
@@ -133,8 +133,8 @@ def trigger(swarming, taskid, task, duration, reuse_bot):
     cmd.extend(
         [
           '-s', task['properties']['inputs_ref']['isolated'],
-          '-I',  task['properties']['inputs_ref']['isolatedserver'],
-          '--namespace',  task['properties']['inputs_ref']['namespace'],
+          '-I', task['properties']['inputs_ref']['isolatedserver'],
+          '--namespace', task['properties']['inputs_ref']['namespace'],
         ])
 
   for i in task['properties'].get('env', []):

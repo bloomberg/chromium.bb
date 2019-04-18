@@ -104,7 +104,7 @@ if sys.platform == 'win32':
     chars = 1024
     drive_letter = drive_letter
     p = wintypes.create_unicode_buffer(chars)
-    if 0 == windll.kernel32.QueryDosDeviceW(drive_letter, p, chars):
+    if not windll.kernel32.QueryDosDeviceW(drive_letter, p, chars):
       err = ctypes.GetLastError()
       if err:
         # pylint: disable=undefined-variable
@@ -129,6 +129,7 @@ if sys.platform == 'win32':
       msg = u'GetShortPathName(%s): %s (%d)' % (
             long_path, FormatError(err), err)
       raise WindowsError(err, msg.encode('utf-8'))
+    return None
 
 
   def GetLongPathName(short_path):
@@ -146,6 +147,7 @@ if sys.platform == 'win32':
       msg = u'GetLongPathName(%s): %s (%d)' % (
             short_path, FormatError(err), err)
       raise WindowsError(err, msg.encode('utf-8'))
+    return None
 
 
   def MoveFileEx(oldpath, newpath, flags):
@@ -161,7 +163,7 @@ if sys.platform == 'win32':
 
 
   class DosDriveMap(object):
-    """Maps \Device\HarddiskVolumeN to N: on Windows."""
+    """Maps \\Device\\HarddiskVolumeN to N: on Windows."""
     # Keep one global cache.
     _MAPPING = {}
 
@@ -353,7 +355,7 @@ if sys.platform == 'win32':
   def enable_symlink():
     """Enable SeCreateSymbolicLinkPrivilege for the current token.
 
-    This funciton is only helpful in ONE of the following case:
+    This function is only helpful in ONE of the following case:
     - UAC is disabled, account is admin OR SeCreateSymbolicLinkPrivilege was
       manually granted.
     - UAC is enabled, account is NOT admin AND SeCreateSymbolicLinkPrivilege was
@@ -509,6 +511,7 @@ elif sys.platform == 'darwin':
     for element in fs.listdir(root_path):
       if element.lower() == item:
         return element
+    return None
 
 
   @tools.profile
@@ -903,11 +906,12 @@ def set_read_only(path, read_only):
 
 
 def set_read_only_swallow(path, read_only):
-  """Returns if an OSError exception occured."""
+  """Returns if an OSError exception occurred."""
   try:
     set_read_only(path, read_only)
   except OSError as e:
     return e
+  return None
 
 
 def remove(filepath):
@@ -1013,7 +1017,7 @@ def atomic_replace(path, body):
     else:
       # Flags are MOVEFILE_REPLACE_EXISTING|MOVEFILE_WRITE_THROUGH.
       MoveFileEx(unicode(tmp_name), unicode(path), 0x1|0x8)
-    tmp_name =  None # no need to remove it in 'finally' block anymore
+    tmp_name = None # no need to remove it in 'finally' block anymore
   finally:
     if tmp_name:
       try:
@@ -1180,6 +1184,7 @@ def rmtree(root):
   # use or write to the directory while it is being deleted.
   max_tries = 3
   for i in xrange(max_tries):
+    # pylint: disable=cell-var-from-loop
     # errors is a list of tuple(function, path, excinfo).
     errors = []
     fs.rmtree(root, onerror=lambda *args: errors.append(args))

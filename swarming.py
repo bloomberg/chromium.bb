@@ -724,13 +724,12 @@ def decorate_shard_output(swarming, shard_index, metadata, include_stdout):
         tag_footer2,
         dash_pad,
         ])
-  else:
-    return '\n'.join([
-        dash_pad,
-        tag_header,
-        tag_footer2,
-        dash_pad,
-        ])
+  return '\n'.join([
+      dash_pad,
+      tag_header,
+      tag_footer2,
+      dash_pad,
+      ])
 
 
 def collect(
@@ -1235,7 +1234,7 @@ class TaskOutputStdoutOption(optparse.Option):
         *args,
         choices=self.choices,
         default=['console', 'json'],
-        help=re.sub('\s\s*', ' ', self.__doc__),
+        help=re.sub(r'\s\s*', ' ', self.__doc__),
         **kw)
 
   def convert_value(self, opt, value):
@@ -1595,6 +1594,8 @@ def CMDquery_list(parser, args):
       print '  ' + api['description'].strip()
       if 'resources' in api:
         # Old.
+        # TODO(maruel): Remove.
+        # pylint: disable=too-many-nested-blocks
         for j, (resource_name, resource) in enumerate(
             sorted(api['resources'].iteritems())):
           if j:

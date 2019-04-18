@@ -103,7 +103,7 @@ def main():
     file_set = tree_files(temp_dir)
 
     if options.largest_files:
-      sorted_by_size = sorted(file_set.iteritems(),  key=lambda x: x[1],
+      sorted_by_size = sorted(file_set.iteritems(), key=lambda x: x[1],
                               reverse=True)
       files_to_compress = sorted_by_size[:options.largest_files]
 

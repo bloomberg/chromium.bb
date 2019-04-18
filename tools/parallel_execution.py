@@ -109,6 +109,7 @@ class Runner(object):
           'Failed %s:\n%s' % (step_name, stdout), index=1)
       return (task_name, dimensions, stdout)
     self.progress.update_item('Passed %s' % step_name, index=1)
+    return None, None, None
 
 
 def run_swarming_tasks_parallel(

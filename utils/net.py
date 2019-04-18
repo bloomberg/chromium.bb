@@ -159,7 +159,8 @@ def _fish_out_error_message(maybe_json_blob):
     if isinstance(err, dict):
       return str(err.get('message') or '<no error message>')
   except (ValueError, KeyError, TypeError):
-    return None  # not a JSON we recognize
+    pass
+  return None  # not a JSON we recognize
 
 
 def set_engine_class(engine_cls):
@@ -646,8 +647,7 @@ class HttpRequest(object):
     """Resource URL with url-encoded GET parameters."""
     if not self.params:
       return self.url
-    else:
-      return '%s?%s' % (self.url, urllib.urlencode(self.params))
+    return '%s?%s' % (self.url, urllib.urlencode(self.params))
 
 
 class HttpResponse(object):

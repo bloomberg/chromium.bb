@@ -74,6 +74,7 @@ def trigger_task(
   start = time.time()
 
   logging.info('trigger')
+  # TODO(maruel): Broken.
   manifest = swarming.Manifest(
     isolate_server='http://localhost:1',
     namespace='dummy-isolate',
@@ -100,7 +101,7 @@ def trigger_task(
     return 'failed_trigger'
 
   result = json.loads(response)
-  # Old API uses harcoded config name. New API doesn't have concept of config
+  # Old API uses hardcoded config name. New API doesn't have concept of config
   # name so it uses the task name. Ignore this detail.
   test_keys = []
   for key in result['test_keys']:
@@ -262,7 +263,7 @@ def main():
           if os.path.exists(options.dump):
             os.rename(options.dump, options.dump + '.old')
           with open(options.dump, 'wb') as f:
-            json.dump(results, f, separators=(',',':'))
+            json.dump(results, f, separators=(',', ':'))
       if not options.dump:
         results.sort()
     except KeyboardInterrupt:

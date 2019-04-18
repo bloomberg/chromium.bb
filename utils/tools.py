@@ -295,7 +295,7 @@ def write_json(filepath_or_handle, data, dense):
   If dense is True, the json is packed. Otherwise, it is human readable.
   """
   if dense:
-    kwargs = {'sort_keys': True, 'separators': (',',':')}
+    kwargs = {'sort_keys': True, 'separators': (',', ':')}
   else:
     kwargs = {'sort_keys': True, 'indent': 2}
 

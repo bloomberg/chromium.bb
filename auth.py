@@ -123,9 +123,8 @@ def CMDlogin(parser, args):
   if service.login(True):
     print 'Logged in as \'%s\'.' % service.get_current_identity()
     return 0
-  else:
-    print 'Login failed or canceled.'
-    return 1
+  print 'Login failed or canceled.'
+  return 1
 
 
 @subcommand.usage('[options]')

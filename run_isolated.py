@@ -93,7 +93,7 @@ RUN_TEST_CASES_LOG = 'run_test_cases.log'
 # Use short names for temporary directories. This is driven by Windows, which
 # imposes a relatively short maximum path length of 260 characters, often
 # referred to as MAX_PATH. It is relatively easy to create files with longer
-# path length. A use case is with recursive depedency treesV like npm packages.
+# path length. A use case is with recursive dependency trees like npm packages.
 #
 # It is recommended to start the script with a `root_dir` as short as
 # possible.
@@ -861,6 +861,7 @@ def run_tha_test(data, result_json):
 
   # Marshall into old-style inline output.
   if result['outputs_ref']:
+    # pylint: disable=unsubscriptable-object
     data = {
       'hash': result['outputs_ref']['isolated'],
       'namespace': result['outputs_ref']['namespace'],

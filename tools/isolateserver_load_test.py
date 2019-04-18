@@ -32,6 +32,8 @@ import colorama
 
 # pylint: disable=ungrouped-imports
 import isolateserver
+import isolate_storage
+import isolated_format
 import local_caching
 from utils import graph
 from utils import threading_utils
@@ -137,7 +139,7 @@ def send_and_receive(random_pool, storage, progress, size):
     assert not expected, expected
 
     duration = max(0, time.time() - start)
-  except isolateserver.MappingError as e:
+  except isolated_format.MappingError as e:
     duration = str(e)
   if isinstance(duration, float):
     progress.update_item('', index=1, data=size)
@@ -214,7 +216,9 @@ def main():
 
   columns = [('index', 0), ('data', 0), ('size', options.items)]
   progress = Progress(columns)
-  storage = isolateserver.get_storage(options.isolate_server, options.namespace)
+  server_ref = isolate_storage.ServerRef(
+      options.isolate_server, options.namespace)
+  storage = isolateserver.get_storage(server_ref)
   do_item = functools.partial(
       send_and_receive,
       random_pool,
@@ -251,7 +255,7 @@ def main():
   print_results(results, options.columns, options.buckets)
   if options.dump:
     with open(options.dump, 'w') as f:
-      json.dump(results, f, separators=(',',':'))
+      json.dump(results, f, separators=(',', ':'))
   return 0
 
 

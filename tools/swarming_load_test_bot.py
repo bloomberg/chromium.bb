@@ -327,7 +327,7 @@ def main():
   print_results(results, options.columns, options.buckets)
   if options.dump:
     with open(options.dump, 'w') as f:
-      json.dump(results, f, separators=(',',':'))
+      json.dump(results, f, separators=(',', ':'))
   return 0
 
 
