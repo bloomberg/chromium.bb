@@ -56,6 +56,9 @@ class WMRRuntimeReal(_WMRRuntimeBase):
         logging.warning('Failed to kill WMR in %d seconds',
             self.WMR_SHUTDOWN_TIME_S)
 
+  def GetSandboxSupported(self):
+    return True
+
   def _StartWMR(self):
     # The WMR Portal is a UWP app, so starting it is a bit weird.
     return subprocess.Popen(['explorer.exe', self._GetWMRExecutable()])

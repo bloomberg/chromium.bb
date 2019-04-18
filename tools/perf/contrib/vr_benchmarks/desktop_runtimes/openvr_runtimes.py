@@ -104,12 +104,13 @@ class OpenVRRuntimeMock(_OpenVRRuntimeBase):
   def __init__(self, *args, **kwargs):
     super(OpenVRRuntimeMock, self).__init__(*args, **kwargs)
 
-    # TODO(https://crbug.com/939178): See about making this relative to the
-    # browser executable instead of having to be specified.
-    if not self._finder_options.mock_runtime_directory:
-      raise RuntimeError('--mock-runtime-directory must be specified')
-    self._mock_runtime_directory = os.path.abspath(
-        self._finder_options.mock_runtime_directory)
+    if self._finder_options.mock_runtime_directory:
+      self._mock_runtime_directory = os.path.abspath(
+          self._finder_options.mock_runtime_directory)
+    else:
+      self._mock_runtime_directory = os.path.abspath(os.path.join(
+          self._possible_browser.browser_directory, 'mock_vr_clients'))
+      logging.warning('Using mock directory %s', self._mock_runtime_directory)
 
   def Setup(self):
     # All that's necessary to use the mock OpenVR runtime is to set a few
@@ -131,3 +132,6 @@ class OpenVRRuntimeMock(_OpenVRRuntimeBase):
     # os.environ is limited to this Python process and its subprocesses, so
     # we don't need to clean up anything.
     pass
+
+  def GetSandboxSupported(self):
+    return True

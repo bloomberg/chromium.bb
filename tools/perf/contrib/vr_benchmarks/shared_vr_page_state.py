@@ -209,8 +209,8 @@ class WindowsSharedVrPageState(_SharedVrPageState):
     # whether we're using the real or mock one.
     self._desktop_runtime = self.DESKTOP_RUNTIMES[
         self._finder_options.desktop_runtime][
-            self._finder_options.use_real_runtime](self._finder_options)
-    # Enable the correct feature for the specified runtime.
+            self._finder_options.use_real_runtime](
+                self._finder_options, self._possible_browser)
     self._desktop_runtime.Setup()
 
   def WillRunStory(self, page):
