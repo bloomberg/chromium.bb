@@ -1640,11 +1640,6 @@
           'can_use_on_swarming_builders': False,
         },
       },
-      'profiling_fuzzer': {
-        'swarming': {
-          'can_use_on_swarming_builders': False,
-        },
-      },
       'prtime_fuzzer': {
         'swarming': {
           'can_use_on_swarming_builders': False,
