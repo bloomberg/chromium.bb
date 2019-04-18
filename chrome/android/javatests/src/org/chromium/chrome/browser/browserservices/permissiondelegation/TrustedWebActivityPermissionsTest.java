@@ -25,6 +25,7 @@ import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
 import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.net.test.ServerCertificate;
 
@@ -78,24 +79,29 @@ public class TrustedWebActivityPermissionsTest {
     @Test
     @MediumTest
     public void allowNotifications() throws TimeoutException, InterruptedException {
-        mPermissionManager.register(mOrigin, mPackage, true);
+        TestThreadUtils.runOnUiThreadBlocking(() ->
+                mPermissionManager.register(mOrigin, mPackage, true));
         assertEquals("\"granted\"", getNotificationPermission());
     }
 
     @Test
     @MediumTest
     public void blockNotifications() throws TimeoutException, InterruptedException {
-        mPermissionManager.register(mOrigin, mPackage, false);
+        TestThreadUtils.runOnUiThreadBlocking(() ->
+                mPermissionManager.register(mOrigin, mPackage, false));
         assertEquals("\"denied\"", getNotificationPermission());
     }
 
     @Test
     @MediumTest
     public void unregisterTwa() throws TimeoutException, InterruptedException {
-        mPermissionManager.register(mOrigin, mPackage, true);
+        TestThreadUtils.runOnUiThreadBlocking(() ->
+                mPermissionManager.register(mOrigin, mPackage, true));
         assertEquals("\"granted\"", getNotificationPermission());
 
-        mPermissionManager.unregister(mOrigin);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mPermissionManager.unregister(mOrigin);
+        });
         assertEquals("\"default\"", getNotificationPermission());
     }
 
