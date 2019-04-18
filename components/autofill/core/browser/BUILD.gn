@@ -575,6 +575,7 @@ source_set("unit_tests") {
 
   if (!is_ios && !is_android) {
     sources += [
+      "address_contact_form_label_formatter_unittest.cc",
       "address_email_form_label_formatter_unittest.cc",
       "address_form_label_formatter_unittest.cc",
       "address_phone_form_label_formatter_unittest.cc",

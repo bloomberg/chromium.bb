@@ -76,12 +76,16 @@ FieldTypeGroup LabelFormatter::GetFocusedNonBillingGroup() const {
 std::unique_ptr<LabelFormatter> LabelFormatter::Create(
     const std::string& app_locale,
     ServerFieldType focused_field_type,
-    const std::vector<ServerFieldType>& field_types) {
+    const std::vector<ServerFieldType>& field_types,
+    const std::vector<AutofillProfile*>& profiles) {
   const uint32_t groups = DetermineGroups(field_types);
 
   switch (groups) {
     case kName | kAddress | kEmail | kPhone:
-      return nullptr;
+      return std::make_unique<AddressContactFormLabelFormatter>(
+          app_locale, focused_field_type, groups, field_types,
+          !HaveSamePhoneNumbers(profiles, app_locale),
+          !HaveSameEmailAddresses(profiles, app_locale));
     case kName | kAddress | kPhone:
       return std::make_unique<AddressPhoneFormLabelFormatter>(
           app_locale, focused_field_type, groups, field_types);
