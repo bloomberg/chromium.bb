@@ -325,3 +325,6 @@ QUIC_FLAG(bool,
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_ignore_tlpr_if_sending_ping,
           true)
+
+// If true, non-ASCII QUIC tags are printed as hex instead of integers."
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_print_tag_hex, false)
