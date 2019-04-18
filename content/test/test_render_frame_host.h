@@ -144,6 +144,7 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   // remove this function.
   void PrepareForCommitDeprecatedForNavigationSimulator(
       const net::IPEndPoint& remote_endpoint,
+      bool was_fetched_via_cache,
       bool is_signed_exchange_inner_response,
       net::HttpResponseInfo::ConnectionInfo connection_info,
       base::Optional<net::SSLInfo> ssl_info);
@@ -248,6 +249,7 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   void PrepareForCommitInternal(
       const GURL& redirect_url,
       const net::IPEndPoint& remote_endpoint,
+      bool was_fetched_via_cache,
       bool is_signed_exchange_inner_response,
       net::HttpResponseInfo::ConnectionInfo connection_info,
       base::Optional<net::SSLInfo> ssl_info);

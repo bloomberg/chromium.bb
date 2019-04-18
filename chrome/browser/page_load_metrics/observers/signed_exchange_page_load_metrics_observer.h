@@ -22,6 +22,19 @@ extern const char kHistogramSignedExchangeParseStartToFirstMeaningfulPaint[];
 extern const char kHistogramSignedExchangeDomContentLoaded[];
 extern const char kHistogramSignedExchangeLoad[];
 
+extern const char kHistogramCachedSignedExchangePrefix[];
+extern const char kHistogramCachedSignedExchangeParseStart[];
+extern const char kHistogramCachedSignedExchangeFirstInputDelay[];
+extern const char kHistogramCachedSignedExchangeFirstPaint[];
+extern const char kHistogramCachedSignedExchangeFirstContentfulPaint[];
+extern const char
+    kHistogramCachedSignedExchangeParseStartToFirstContentfulPaint[];
+extern const char kHistogramCachedSignedExchangeFirstMeaningfulPaint[];
+extern const char
+    kHistogramCachedSignedExchangeParseStartToFirstMeaningfulPaint[];
+extern const char kHistogramCachedSignedExchangeDomContentLoaded[];
+extern const char kHistogramCachedSignedExchangeLoad[];
+
 }  // namespace internal
 
 class SignedExchangePageLoadMetricsObserver
@@ -54,6 +67,9 @@ class SignedExchangePageLoadMetricsObserver
       const page_load_metrics::PageLoadExtraInfo& extra_info) override;
 
  private:
+  // True iff the page main resource was served from disk cache.
+  bool was_cached_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(SignedExchangePageLoadMetricsObserver);
 };
 

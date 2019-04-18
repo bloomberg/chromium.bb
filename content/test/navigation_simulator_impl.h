@@ -81,6 +81,7 @@ class NavigationSimulatorImpl : public NavigationSimulator,
   void SetIsFormSubmission(bool is_form_submission) override;
   void SetReferrer(const Referrer& referrer) override;
   void SetSocketAddress(const net::IPEndPoint& remote_endpoint) override;
+  void SetWasFetchedViaCache(bool was_fetched_via_cache) override;
   void SetIsSignedExchangeInnerResponse(
       bool is_signed_exchange_inner_response) override;
   void SetInterfaceProviderRequest(
@@ -249,6 +250,7 @@ class NavigationSimulatorImpl : public NavigationSimulator,
   GURL original_url_;
   GURL navigation_url_;
   net::IPEndPoint remote_endpoint_;
+  bool was_fetched_via_cache_ = false;
   bool is_signed_exchange_inner_response_ = false;
   std::string initial_method_;
   bool is_form_submission_ = false;

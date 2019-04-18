@@ -254,6 +254,9 @@ class NavigationSimulator {
   // commits. They should be specified before calling |Fail| or |Commit|.
   virtual void SetSocketAddress(const net::IPEndPoint& remote_endpoint) = 0;
 
+  // Pretend the navigation response is served from cache.
+  virtual void SetWasFetchedViaCache(bool was_fetched_via_cache) = 0;
+
   // Pretend the navigation is against an inner response of a signed exchange.
   virtual void SetIsSignedExchangeInnerResponse(
       bool is_signed_exchange_inner_response) = 0;
