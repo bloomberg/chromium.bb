@@ -31,8 +31,7 @@ void NigoriModelTypeProcessor::ConnectSync(
   DVLOG(1) << "Successfully connected Encryption Keys";
 
   worker_ = std::move(worker);
-  // TODO(mamir): NudgeForCommitIfNeeded();
-  NOTIMPLEMENTED();
+  NudgeForCommitIfNeeded();
 }
 
 void NigoriModelTypeProcessor::DisconnectSync() {
@@ -180,8 +179,7 @@ void NigoriModelTypeProcessor::Put(std::unique_ptr<EntityData> entity_data) {
   }
 
   entity_->MakeLocalChange(std::move(entity_data));
-  // TODO(mamir): NudgeForCommitIfNeeded();
-  NOTIMPLEMENTED();
+  NudgeForCommitIfNeeded();
 }
 
 NigoriMetadataBatch NigoriModelTypeProcessor::GetMetadata() {
@@ -203,6 +201,24 @@ bool NigoriModelTypeProcessor::IsTrackingMetadata() {
 bool NigoriModelTypeProcessor::IsConnected() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return worker_ != nullptr;
+}
+
+void NigoriModelTypeProcessor::NudgeForCommitIfNeeded() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // Don't bother sending anything if there's no one to send to.
+  if (!IsConnected()) {
+    return;
+  }
+
+  // Don't send anything if the type is not ready to handle commits.
+  if (!model_type_state_.initial_sync_done()) {
+    return;
+  }
+
+  // Nudge worker if there are any entities with local changes.
+  if (entity_->RequiresCommitRequest()) {
+    worker_->NudgeForCommit();
+  }
 }
 
 }  // namespace syncer

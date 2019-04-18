@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "components/sync/base/time.h"
+#include "components/sync/engine/commit_queue.h"
 #include "components/sync/nigori/nigori_sync_bridge.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -44,9 +45,20 @@ class MockNigoriSyncBridge : public NigoriSyncBridge {
   MOCK_METHOD0(ApplyDisableSyncChanges, void());
 };
 
+class MockCommitQueue : public CommitQueue {
+ public:
+  MockCommitQueue() = default;
+  ~MockCommitQueue() = default;
+
+  MOCK_METHOD0(NudgeForCommit, void());
+};
+
 class NigoriModelTypeProcessorTest : public testing::Test {
  public:
-  NigoriModelTypeProcessorTest() = default;
+  NigoriModelTypeProcessorTest() {
+    mock_commit_queue_ = std::make_unique<testing::NiceMock<MockCommitQueue>>();
+    mock_commit_queue_ptr_ = mock_commit_queue_.get();
+  }
 
   void SimulateModelReadyToSyncWithInitialSyncDone() {
     NigoriMetadataBatch nigori_metadata_batch;
@@ -60,14 +72,22 @@ class NigoriModelTypeProcessorTest : public testing::Test {
                                 std::move(nigori_metadata_batch));
   }
 
+  void SimulateConnectSync() {
+    processor_.ConnectSync(std::move(mock_commit_queue_));
+  }
+
   MockNigoriSyncBridge* mock_nigori_sync_bridge() {
     return &mock_nigori_sync_bridge_;
   }
+
+  MockCommitQueue* mock_commit_queue() { return mock_commit_queue_ptr_; }
 
   NigoriModelTypeProcessor* processor() { return &processor_; }
 
  private:
   testing::NiceMock<MockNigoriSyncBridge> mock_nigori_sync_bridge_;
+  std::unique_ptr<testing::NiceMock<MockCommitQueue>> mock_commit_queue_;
+  MockCommitQueue* mock_commit_queue_ptr_;
   NigoriModelTypeProcessor processor_;
 };
 
@@ -145,6 +165,32 @@ TEST_F(NigoriModelTypeProcessorTest, ShouldGetLocalChangesWhenPut) {
       base::BindOnce(&CaptureCommitRequest, &commit_request));
   ASSERT_EQ(1U, commit_request.size());
   EXPECT_EQ(kNigoriNonUniqueName, commit_request[0]->entity->non_unique_name);
+}
+
+TEST_F(NigoriModelTypeProcessorTest,
+       ShouldNudgeForCommitUponConnectSyncIfReadyToSyncAndLocalChanges) {
+  SimulateModelReadyToSyncWithInitialSyncDone();
+
+  auto entity_data = std::make_unique<syncer::EntityData>();
+  entity_data->specifics.mutable_nigori();
+  entity_data->non_unique_name = kNigoriNonUniqueName;
+
+  processor()->Put(std::move(entity_data));
+
+  EXPECT_CALL(*mock_commit_queue(), NudgeForCommit());
+  SimulateConnectSync();
+}
+
+TEST_F(NigoriModelTypeProcessorTest, ShouldNudgeForCommitUponPutIfReadyToSync) {
+  SimulateModelReadyToSyncWithInitialSyncDone();
+  SimulateConnectSync();
+
+  auto entity_data = std::make_unique<syncer::EntityData>();
+  entity_data->specifics.mutable_nigori();
+  entity_data->non_unique_name = kNigoriNonUniqueName;
+
+  EXPECT_CALL(*mock_commit_queue(), NudgeForCommit());
+  processor()->Put(std::move(entity_data));
 }
 
 }  // namespace
