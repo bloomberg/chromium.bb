@@ -73,20 +73,53 @@ class BrowserUIThreadSchedulerTest : public testing::Test {
 };
 
 TEST_F(BrowserUIThreadSchedulerTest, RunAllPendingTasksForTesting) {
-  MockTask task;
-  MockTask nested_task;
-  EXPECT_CALL(task, Run).WillOnce(Invoke([&]() {
-    task_runners_[QueueType::kDefault]->PostTask(FROM_HERE, nested_task.Get());
-    task_runners_[QueueType::kBestEffort]->PostTask(FROM_HERE,
-                                                    nested_task.Get());
+  browser_ui_thread_scheduler_->EnableBestEffortQueues();
+  MockTask task_1;
+  MockTask task_2;
+  EXPECT_CALL(task_1, Run).WillOnce(Invoke([&]() {
+    task_runners_[QueueType::kDefault]->PostTask(FROM_HERE, task_2.Get());
+    task_runners_[QueueType::kBestEffort]->PostTask(FROM_HERE, task_2.Get());
   }));
 
-  task_runners_[QueueType::kDefault]->PostTask(FROM_HERE, task.Get());
+  task_runners_[QueueType::kDefault]->PostTask(FROM_HERE, task_1.Get());
 
   browser_ui_thread_scheduler_->RunAllPendingTasksForTesting();
 
-  Mock::VerifyAndClearExpectations(&task);
-  EXPECT_CALL(nested_task, Run).Times(2);
+  Mock::VerifyAndClearExpectations(&task_1);
+  EXPECT_CALL(task_2, Run).Times(2);
+
+  browser_ui_thread_scheduler_->RunAllPendingTasksForTesting();
+}
+
+TEST_F(BrowserUIThreadSchedulerTest,
+       RunAllPendingTasksForTestingIgnoresBestEffortIfNotEnabled) {
+  MockTask best_effort_task;
+  MockTask default_task;
+
+  task_runners_[QueueType::kBestEffort]->PostTask(FROM_HERE,
+                                                  best_effort_task.Get());
+  task_runners_[QueueType::kDefault]->PostTask(FROM_HERE, default_task.Get());
+
+  EXPECT_CALL(default_task, Run);
+
+  browser_ui_thread_scheduler_->RunAllPendingTasksForTesting();
+}
+
+TEST_F(BrowserUIThreadSchedulerTest,
+       RunAllPendingTasksForTestingRunsBestEffortTasksWhenEnabled) {
+  MockTask task_1;
+  MockTask task_2;
+  MockTask task_3;
+  EXPECT_CALL(task_1, Run).WillOnce(Invoke([&]() {
+    // This task should not run as it is posted after the
+    // RunAllPendingTasksForTesting() call
+    task_runners_[QueueType::kBestEffort]->PostTask(FROM_HERE, task_3.Get());
+    browser_ui_thread_scheduler_->EnableBestEffortQueues();
+  }));
+  EXPECT_CALL(task_2, Run);
+
+  task_runners_[QueueType::kDefault]->PostTask(FROM_HERE, task_1.Get());
+  task_runners_[QueueType::kBestEffort]->PostTask(FROM_HERE, task_2.Get());
 
   browser_ui_thread_scheduler_->RunAllPendingTasksForTesting();
 }

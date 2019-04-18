@@ -347,10 +347,8 @@ scoped_refptr<base::SingleThreadTaskRunner> BrowserTaskExecutor::GetTaskRunner(
 
   switch (traits.priority()) {
     case base::TaskPriority::BEST_EFFORT:
-      // TODO(eseckler): For now, make BEST_EFFORT tasks run after startup. Once
-      // the BrowserUIThreadScheduler is in place, this should be handled by its
-      // policies instead.
-      return GetAfterStartupTaskRunnerForThread(thread_id);
+      return browser_ui_thread_scheduler_->GetTaskRunner(
+          QueueType::kBestEffort);
 
     case base::TaskPriority::USER_VISIBLE:
       return browser_ui_thread_scheduler_->GetTaskRunner(QueueType::kDefault);
@@ -371,6 +369,13 @@ BrowserTaskExecutor::GetProxyTaskRunnerForThread(BrowserThread::ID id) {
 scoped_refptr<base::SingleThreadTaskRunner>
 BrowserTaskExecutor::GetAfterStartupTaskRunnerForThread(BrowserThread::ID id) {
   return GetAfterStartupTaskRunnerForThreadImpl(id);
+}
+
+// static
+void BrowserTaskExecutor::NotifyBrowserStartupCompleted() {
+  DCHECK(g_browser_task_executor);
+  g_browser_task_executor->browser_ui_thread_scheduler_
+      ->EnableBestEffortQueues();
 }
 
 }  // namespace content
