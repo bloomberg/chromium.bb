@@ -33,6 +33,34 @@ public class TabBrowserControlsState implements UserData {
         return tab.getUserDataHost().getUserData(USER_DATA_KEY);
     }
 
+    /**
+     * Returns the current visibility constraints for the display of browser controls.
+     * {@link BrowserControlsState} defines the valid return options.
+     * @param tab Tab whose browser constrol state is looked into.
+     * @return The current visibility constraints.
+     */
+    @BrowserControlsState
+    public static int getConstraints(Tab tab) {
+        if (tab == null || get(tab) == null) return BrowserControlsState.BOTH;
+        return get(tab).getConstraints();
+    }
+
+    /**
+     * Updates the browser controls state for this tab.  As these values are set at the renderer
+     * level, there is potential for this impacting other tabs that might share the same
+     * process.
+     *
+     * @param tab Tab whose browser constrol state is looked into.
+     * @param current The desired current state for the controls.  Pass
+     *         {@link BrowserControlsState#BOTH} to preserve the current position.
+     * @param animate Whether the controls should animate to the specified ending condition or
+     *         should jump immediately.
+     */
+    public static void update(Tab tab, int current, boolean animate) {
+        if (tab == null || get(tab) == null) return;
+        get(tab).update(current, animate);
+    }
+
     /** Constructor */
     private TabBrowserControlsState(Tab tab, BrowserControlsVisibilityDelegate delegate) {
         mTab = tab;
@@ -45,17 +73,7 @@ public class TabBrowserControlsState implements UserData {
         nativeOnDestroyed(mNativeTabBrowserControlsState);
     }
 
-    /**
-     * Updates the browser controls state for this tab.  As these values are set at the renderer
-     * level, there is potential for this impacting other tabs that might share the same
-     * process.
-     *
-     * @param current The desired current state for the controls.  Pass
-     *                {@link BrowserControlsState#BOTH} to preserve the current position.
-     * @param animate Whether the controls should animate to the specified ending condition or
-     *                should jump immediately.
-     */
-    public void update(int current, boolean animate) {
+    private void update(int current, boolean animate) {
         int constraints = getConstraints();
 
         // Do nothing if current and constraints conflict to avoid error in renderer.
@@ -91,12 +109,8 @@ public class TabBrowserControlsState implements UserData {
         return mVisibilityDelegate.canShowBrowserControls();
     }
 
-    /**
-     * @return The current visibility constraints for the display of browser controls.
-     *         {@link BrowserControlsState} defines the valid return options.
-     */
     @BrowserControlsState
-    public int getConstraints() {
+    private int getConstraints() {
         int constraints = BrowserControlsState.BOTH;
         if (!canShow()) {
             constraints = BrowserControlsState.HIDDEN;

@@ -623,8 +623,8 @@ public class WebappActivity extends SingleTabActivity {
                 if (navigation.hasCommitted() && navigation.isInMainFrame()) {
                     // Notify the renderer to permanently hide the top controls since they do
                     // not apply to fullscreen content views.
-                    TabBrowserControlsState browserControls = TabBrowserControlsState.get(tab);
-                    browserControls.update(browserControls.getConstraints(), true);
+                    TabBrowserControlsState.update(
+                            tab, TabBrowserControlsState.getConstraints(tab), true);
 
                     RecordHistogram.recordBooleanHistogram(
                             HISTOGRAM_NAVIGATION_STATUS, !navigation.isErrorPage());

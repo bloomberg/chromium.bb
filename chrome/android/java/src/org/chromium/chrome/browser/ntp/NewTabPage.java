@@ -426,8 +426,7 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
                 ((ViewGroup.MarginLayoutParams) view.getLayoutParams());
         if (layoutParams == null) return;
 
-        final @BrowserControlsState int constraints =
-                TabBrowserControlsState.get(mTab).getConstraints();
+        final @BrowserControlsState int constraints = TabBrowserControlsState.getConstraints(mTab);
         layoutParams.bottomMargin = (constraints != BrowserControlsState.HIDDEN)
                 ? mFullscreenManager.getBottomControlsHeight()
                 : 0;

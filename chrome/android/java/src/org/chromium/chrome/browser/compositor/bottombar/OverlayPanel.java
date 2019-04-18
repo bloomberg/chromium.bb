@@ -501,17 +501,14 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
     /**
      * Updates the browser controls state for the base tab.  As these values are set at the renderer
      * level, there is potential for this impacting other tabs that might share the same
-     * process. See {@link Tab#updateBrowserControlsState(int current, boolean animate)}
+     * process. See {@link BrowserControlsState.update(Tab, tab, int current, boolean animate)}
      * @param current The desired current state for the controls.  Pass
      *                {@link BrowserControlsState#BOTH} to preserve the current position.
      * @param animate Whether the controls should animate to the specified ending condition or
      *                should jump immediately.
      */
     public void updateBrowserControlsState(int current, boolean animate) {
-        Tab currentTab = mActivity.getActivityTab();
-        if (currentTab != null) {
-            TabBrowserControlsState.get(currentTab).update(current, animate);
-        }
+        TabBrowserControlsState.update(mActivity.getActivityTab(), current, animate);
     }
 
     /**

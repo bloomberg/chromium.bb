@@ -112,7 +112,7 @@ public abstract class BasicNativePage
      */
     private void updateMargins() {
         final @BrowserControlsState int constraints = mHost.getActiveTab() != null
-                ? TabBrowserControlsState.get(mHost.getActiveTab()).getConstraints()
+                ? TabBrowserControlsState.getConstraints(mHost.getActiveTab())
                 : BrowserControlsState.SHOWN;
         int topMargin = mFullscreenManager.getTopControlsHeight();
         int bottomMargin = mFullscreenManager.getBottomControlsHeight();
