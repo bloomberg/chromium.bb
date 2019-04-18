@@ -23,8 +23,10 @@ namespace blink {
 class SchedulingAffectingFeaturesTest : public SimTest {
  public:
   PageScheduler* PageScheduler() {
-    return MainFrame().Scheduler()->GetPageScheduler();
+    return MainFrameScheduler()->GetPageScheduler();
   }
+
+  FrameScheduler* MainFrameScheduler() { return MainFrame().Scheduler(); }
 };
 
 TEST_F(SchedulingAffectingFeaturesTest, WebSocketStopsThrottling) {
@@ -33,8 +35,9 @@ TEST_F(SchedulingAffectingFeaturesTest, WebSocketStopsThrottling) {
   LoadURL("https://example.com/");
 
   EXPECT_FALSE(PageScheduler()->OptedOutFromAggressiveThrottlingForTest());
-  EXPECT_THAT(PageScheduler()->GetActiveFeaturesOptingOutFromBackForwardCache(),
-              testing::UnorderedElementsAre());
+  EXPECT_THAT(
+      MainFrameScheduler()->GetActiveFeaturesOptingOutFromBackForwardCache(),
+      testing::UnorderedElementsAre());
 
   main_resource.Complete(
       "(<script>"
@@ -43,14 +46,15 @@ TEST_F(SchedulingAffectingFeaturesTest, WebSocketStopsThrottling) {
 
   EXPECT_TRUE(PageScheduler()->OptedOutFromAggressiveThrottlingForTest());
   EXPECT_THAT(
-      PageScheduler()->GetActiveFeaturesOptingOutFromBackForwardCache(),
+      MainFrameScheduler()->GetActiveFeaturesOptingOutFromBackForwardCache(),
       testing::UnorderedElementsAre(SchedulingPolicy::Feature::kWebSocket));
 
   MainFrame().ExecuteScript(WebString("socket.close();"));
 
   EXPECT_FALSE(PageScheduler()->OptedOutFromAggressiveThrottlingForTest());
-  EXPECT_THAT(PageScheduler()->GetActiveFeaturesOptingOutFromBackForwardCache(),
-              testing::UnorderedElementsAre());
+  EXPECT_THAT(
+      MainFrameScheduler()->GetActiveFeaturesOptingOutFromBackForwardCache(),
+      testing::UnorderedElementsAre());
 }
 
 TEST_F(SchedulingAffectingFeaturesTest, WebRTCStopsThrottling) {
@@ -61,8 +65,9 @@ TEST_F(SchedulingAffectingFeaturesTest, WebRTCStopsThrottling) {
   LoadURL("https://example.com/");
 
   EXPECT_FALSE(PageScheduler()->OptedOutFromAggressiveThrottlingForTest());
-  EXPECT_THAT(PageScheduler()->GetActiveFeaturesOptingOutFromBackForwardCache(),
-              testing::UnorderedElementsAre());
+  EXPECT_THAT(
+      MainFrameScheduler()->GetActiveFeaturesOptingOutFromBackForwardCache(),
+      testing::UnorderedElementsAre());
 
   main_resource.Complete(
       "(<script>"
@@ -71,14 +76,15 @@ TEST_F(SchedulingAffectingFeaturesTest, WebRTCStopsThrottling) {
 
   EXPECT_TRUE(PageScheduler()->OptedOutFromAggressiveThrottlingForTest());
   EXPECT_THAT(
-      PageScheduler()->GetActiveFeaturesOptingOutFromBackForwardCache(),
+      MainFrameScheduler()->GetActiveFeaturesOptingOutFromBackForwardCache(),
       testing::UnorderedElementsAre(SchedulingPolicy::Feature::kWebRTC));
 
   MainFrame().ExecuteScript(WebString("data_channel.close();"));
 
   EXPECT_FALSE(PageScheduler()->OptedOutFromAggressiveThrottlingForTest());
-  EXPECT_THAT(PageScheduler()->GetActiveFeaturesOptingOutFromBackForwardCache(),
-              testing::UnorderedElementsAre());
+  EXPECT_THAT(
+      MainFrameScheduler()->GetActiveFeaturesOptingOutFromBackForwardCache(),
+      testing::UnorderedElementsAre());
 }
 
 TEST_F(SchedulingAffectingFeaturesTest, CacheControl_NoStore) {
@@ -93,14 +99,14 @@ TEST_F(SchedulingAffectingFeaturesTest, CacheControl_NoStore) {
   main_resource.Complete("<img src=image.png>");
 
   EXPECT_THAT(
-      PageScheduler()->GetActiveFeaturesOptingOutFromBackForwardCache(),
+      MainFrameScheduler()->GetActiveFeaturesOptingOutFromBackForwardCache(),
       testing::UnorderedElementsAre(
           SchedulingPolicy::Feature::kMainResourceHasCacheControlNoStore));
 
   image_resource.Complete();
 
   EXPECT_THAT(
-      PageScheduler()->GetActiveFeaturesOptingOutFromBackForwardCache(),
+      MainFrameScheduler()->GetActiveFeaturesOptingOutFromBackForwardCache(),
       testing::UnorderedElementsAre(
           SchedulingPolicy::Feature::kMainResourceHasCacheControlNoStore,
           SchedulingPolicy::Feature::kSubresourceHasCacheControlNoStore));
@@ -117,14 +123,14 @@ TEST_F(SchedulingAffectingFeaturesTest, CacheControl_NoCache) {
   main_resource.Complete("<img src=image.png>");
 
   EXPECT_THAT(
-      PageScheduler()->GetActiveFeaturesOptingOutFromBackForwardCache(),
+      MainFrameScheduler()->GetActiveFeaturesOptingOutFromBackForwardCache(),
       testing::UnorderedElementsAre(
           SchedulingPolicy::Feature::kMainResourceHasCacheControlNoCache));
 
   image_resource.Complete();
 
   EXPECT_THAT(
-      PageScheduler()->GetActiveFeaturesOptingOutFromBackForwardCache(),
+      MainFrameScheduler()->GetActiveFeaturesOptingOutFromBackForwardCache(),
       testing::UnorderedElementsAre(
           SchedulingPolicy::Feature::kMainResourceHasCacheControlNoCache,
           SchedulingPolicy::Feature::kSubresourceHasCacheControlNoCache));
@@ -138,7 +144,7 @@ TEST_F(SchedulingAffectingFeaturesTest, CacheControl_Navigation) {
   main_resource1.Complete();
 
   EXPECT_THAT(
-      PageScheduler()->GetActiveFeaturesOptingOutFromBackForwardCache(),
+      MainFrameScheduler()->GetActiveFeaturesOptingOutFromBackForwardCache(),
       testing::UnorderedElementsAre(
           SchedulingPolicy::Feature::kMainResourceHasCacheControlNoCache,
           SchedulingPolicy::Feature::kMainResourceHasCacheControlNoStore));
@@ -147,8 +153,9 @@ TEST_F(SchedulingAffectingFeaturesTest, CacheControl_Navigation) {
   LoadURL("https://bar.com/");
   main_resource2.Complete();
 
-  EXPECT_THAT(PageScheduler()->GetActiveFeaturesOptingOutFromBackForwardCache(),
-              testing::UnorderedElementsAre());
+  EXPECT_THAT(
+      MainFrameScheduler()->GetActiveFeaturesOptingOutFromBackForwardCache(),
+      testing::UnorderedElementsAre());
 }
 
 TEST_F(SchedulingAffectingFeaturesTest, EventListener_PageShow) {
@@ -159,9 +166,10 @@ TEST_F(SchedulingAffectingFeaturesTest, EventListener_PageShow) {
       " window.addEventListener(\"pageshow\", () => {}); "
       "</script>)");
 
-  EXPECT_THAT(PageScheduler()->GetActiveFeaturesOptingOutFromBackForwardCache(),
-              testing::UnorderedElementsAre(
-                  SchedulingPolicy::Feature::kPageShowEventListener));
+  EXPECT_THAT(
+      MainFrameScheduler()->GetActiveFeaturesOptingOutFromBackForwardCache(),
+      testing::UnorderedElementsAre(
+          SchedulingPolicy::Feature::kPageShowEventListener));
 }
 
 TEST_F(SchedulingAffectingFeaturesTest, EventListener_PageHide) {
@@ -172,9 +180,10 @@ TEST_F(SchedulingAffectingFeaturesTest, EventListener_PageHide) {
       " window.addEventListener(\"pagehide\", () => {}); "
       "</script>)");
 
-  EXPECT_THAT(PageScheduler()->GetActiveFeaturesOptingOutFromBackForwardCache(),
-              testing::UnorderedElementsAre(
-                  SchedulingPolicy::Feature::kPageHideEventListener));
+  EXPECT_THAT(
+      MainFrameScheduler()->GetActiveFeaturesOptingOutFromBackForwardCache(),
+      testing::UnorderedElementsAre(
+          SchedulingPolicy::Feature::kPageHideEventListener));
 }
 
 TEST_F(SchedulingAffectingFeaturesTest, EventListener_BeforeUnload) {
@@ -185,9 +194,10 @@ TEST_F(SchedulingAffectingFeaturesTest, EventListener_BeforeUnload) {
       " window.addEventListener(\"beforeunload\", () => {}); "
       "</script>)");
 
-  EXPECT_THAT(PageScheduler()->GetActiveFeaturesOptingOutFromBackForwardCache(),
-              testing::UnorderedElementsAre(
-                  SchedulingPolicy::Feature::kBeforeUnloadEventListener));
+  EXPECT_THAT(
+      MainFrameScheduler()->GetActiveFeaturesOptingOutFromBackForwardCache(),
+      testing::UnorderedElementsAre(
+          SchedulingPolicy::Feature::kBeforeUnloadEventListener));
 }
 
 TEST_F(SchedulingAffectingFeaturesTest, EventListener_Unload) {
@@ -198,9 +208,10 @@ TEST_F(SchedulingAffectingFeaturesTest, EventListener_Unload) {
       " window.addEventListener(\"unload\", () => {}); "
       "</script>)");
 
-  EXPECT_THAT(PageScheduler()->GetActiveFeaturesOptingOutFromBackForwardCache(),
-              testing::UnorderedElementsAre(
-                  SchedulingPolicy::Feature::kUnloadEventListener));
+  EXPECT_THAT(
+      MainFrameScheduler()->GetActiveFeaturesOptingOutFromBackForwardCache(),
+      testing::UnorderedElementsAre(
+          SchedulingPolicy::Feature::kUnloadEventListener));
 }
 
 TEST_F(SchedulingAffectingFeaturesTest, EventListener_Freeze) {
@@ -211,9 +222,10 @@ TEST_F(SchedulingAffectingFeaturesTest, EventListener_Freeze) {
       " window.addEventListener(\"freeze\", () => {}); "
       "</script>)");
 
-  EXPECT_THAT(PageScheduler()->GetActiveFeaturesOptingOutFromBackForwardCache(),
-              testing::UnorderedElementsAre(
-                  SchedulingPolicy::Feature::kFreezeEventListener));
+  EXPECT_THAT(
+      MainFrameScheduler()->GetActiveFeaturesOptingOutFromBackForwardCache(),
+      testing::UnorderedElementsAre(
+          SchedulingPolicy::Feature::kFreezeEventListener));
 }
 
 TEST_F(SchedulingAffectingFeaturesTest, EventListener_Resume) {
@@ -224,9 +236,10 @@ TEST_F(SchedulingAffectingFeaturesTest, EventListener_Resume) {
       " window.addEventListener(\"resume\", () => {}); "
       "</script>)");
 
-  EXPECT_THAT(PageScheduler()->GetActiveFeaturesOptingOutFromBackForwardCache(),
-              testing::UnorderedElementsAre(
-                  SchedulingPolicy::Feature::kResumeEventListener));
+  EXPECT_THAT(
+      MainFrameScheduler()->GetActiveFeaturesOptingOutFromBackForwardCache(),
+      testing::UnorderedElementsAre(
+          SchedulingPolicy::Feature::kResumeEventListener));
 }
 
 TEST_F(SchedulingAffectingFeaturesTest, Plugins) {
@@ -247,9 +260,10 @@ TEST_F(SchedulingAffectingFeaturesTest, Plugins) {
 
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_THAT(PageScheduler()->GetActiveFeaturesOptingOutFromBackForwardCache(),
-              testing::UnorderedElementsAre(
-                  SchedulingPolicy::Feature::kContainsPlugins));
+  EXPECT_THAT(
+      MainFrameScheduler()->GetActiveFeaturesOptingOutFromBackForwardCache(),
+      testing::UnorderedElementsAre(
+          SchedulingPolicy::Feature::kContainsPlugins));
 }
 
 }  // namespace blink
