@@ -105,7 +105,7 @@ class NGInlineItemsBuilderTest : public NGLayoutTest {
     for (unsigned i = 0; i < items_.size(); i++) {
       const NGInlineItem& item = items_[i];
       EXPECT_EQ(current_offset, item.StartOffset());
-      EXPECT_LT(item.StartOffset(), item.EndOffset());
+      EXPECT_LE(item.StartOffset(), item.EndOffset());
       current_offset = item.EndOffset();
     }
     EXPECT_EQ(current_offset, text_.length());
@@ -340,7 +340,8 @@ TEST_F(NGInlineItemsBuilderTest, CollapseNewlineAfterObject) {
 
 TEST_F(NGInlineItemsBuilderTest, AppendEmptyString) {
   EXPECT_EQ("", TestAppend(""));
-  EXPECT_EQ(0u, items_.size());
+  EXPECT_EQ(1u, items_.size());
+  EXPECT_ITEM_OFFSET(items_[0], NGInlineItem::kText, 0u, 0u);
 }
 
 TEST_F(NGInlineItemsBuilderTest, NewLines) {

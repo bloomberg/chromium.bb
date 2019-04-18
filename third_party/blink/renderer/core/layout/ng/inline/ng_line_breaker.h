@@ -135,6 +135,7 @@ class CORE_EXPORT NGLineBreaker {
                                    const NGInlineItem&,
                                    const ShapeResult&,
                                    NGLineInfo*);
+  void HandleEmptyText(const NGInlineItem& item, NGLineInfo*);
 
   scoped_refptr<ShapeResultView> TruncateLineEndResult(
       const NGLineInfo&,

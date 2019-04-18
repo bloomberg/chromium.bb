@@ -85,6 +85,7 @@ class CORE_EXPORT NGInlineItem {
 
   // If this item is "empty" for the purpose of empty block calculation.
   bool IsEmptyItem() const { return is_empty_item_; }
+  void SetIsEmptyItem(bool value) { is_empty_item_ = value; }
 
   // If this item should create a box fragment. Box fragments can be omitted for
   // optimization if this is false.

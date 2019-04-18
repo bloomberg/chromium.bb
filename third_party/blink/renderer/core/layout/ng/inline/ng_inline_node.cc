@@ -168,7 +168,9 @@ class ItemsBuilderForMarkLineBoxesDirty {
   }
 
   void ClearNeedsLayout(LayoutObject* object) {
-    NGInlineNode::ClearNeedsLayout(object);
+    object->ClearNeedsLayout();
+    object->ClearNeedsCollectInlines();
+    ClearInlineFragment(object);
   }
 
   void UpdateShouldCreateBoxFragment(LayoutInline* object) {
@@ -569,7 +571,7 @@ void NGInlineNode::SegmentFontOrientation(NGInlineNodeData* data) {
   unsigned segment_index = 0;
 
   for (const NGInlineItem& item : items) {
-    if (item.Type() == NGInlineItem::kText &&
+    if (item.Type() == NGInlineItem::kText && item.Length() &&
         item.Style()->GetFont().GetFontDescription().Orientation() ==
             FontOrientation::kVerticalMixed) {
       segment_index = data->segments->AppendMixedFontOrientation(
@@ -639,7 +641,7 @@ void NGInlineNode::ShapeText(NGInlineItemsData* data,
 
   for (unsigned index = 0; index < items->size();) {
     NGInlineItem& start_item = (*items)[index];
-    if (start_item.Type() != NGInlineItem::kText) {
+    if (start_item.Type() != NGInlineItem::kText || !start_item.Length()) {
       index++;
       continue;
     }
@@ -675,6 +677,8 @@ void NGInlineNode::ShapeText(NGInlineItemsData* data,
         break;
       }
       if (item.Type() == NGInlineItem::kText) {
+        if (!item.Length())
+          continue;
         // Shape adjacent items together if the font and direction matches to
         // allow ligatures and kerning to apply.
         // Also run segment properties must match because NGInlineItem gives
@@ -769,7 +773,7 @@ void NGInlineNode::ShapeText(NGInlineItemsData* data,
     unsigned range_index = 0;
     for (; index < end_index; index++) {
       NGInlineItem& item = (*items)[index];
-      if (item.Type() != NGInlineItem::kText)
+      if (item.Type() != NGInlineItem::kText || !item.Length())
         continue;
 
       // We don't use SafeToBreak API here because this is not a line break.
@@ -790,7 +794,7 @@ void NGInlineNode::ShapeText(NGInlineItemsData* data,
 
 #if DCHECK_IS_ON()
   for (const NGInlineItem& item : *items) {
-    if (item.Type() == NGInlineItem::kText) {
+    if (item.Type() == NGInlineItem::kText && item.Length()) {
       DCHECK(item.TextShapeResult());
       DCHECK_EQ(item.TextShapeResult()->StartIndex(), item.StartOffset());
       DCHECK_EQ(item.TextShapeResult()->EndIndex(), item.EndOffset());
@@ -1119,7 +1123,7 @@ static LayoutUnit ComputeContentSize(
     void AddTextUntil(const NGInlineItem* end) {
       DCHECK(end);
       for (; next_item != end; ++next_item) {
-        if (next_item->Type() == NGInlineItem::kText) {
+        if (next_item->Type() == NGInlineItem::kText && next_item->Length()) {
           DCHECK(next_item->TextShapeResult());
           const ShapeResult& shape_result = *next_item->TextShapeResult();
           position += shape_result.SnappedWidth().ClampNegativeToZero();
