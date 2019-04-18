@@ -5939,35 +5939,6 @@
       },
       {
         "args": [
-          "--enable-gpu",
-          "--test-launcher-bot-mode",
-          "--test-launcher-jobs=1",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/vulkan.content_browsertests.filter",
-          "--enable-features=VizDisplayCompositor,UseSkiaRenderer,UiGpuRasterization",
-          "--use-gl=any",
-          "--enable-oop-rasterization",
-          "--enable-vulkan",
-          "--enable-gpu-rasterization",
-          "--force-gpu-rasterization",
-          "--disable-software-compositing-fallback",
-          "--disable-vulkan-fallback-to-gl-for-testing",
-          "--no-xvfb"
-        ],
-        "name": "vulkan_content_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu",
-              "pool": "Chrome-GPU"
-            }
-          ]
-        },
-        "test": "content_browsertests"
-      },
-      {
-        "args": [
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0"
         ],
@@ -6877,35 +6848,6 @@
           ]
         },
         "test": "browser_tests"
-      },
-      {
-        "args": [
-          "--enable-gpu",
-          "--test-launcher-bot-mode",
-          "--test-launcher-jobs=1",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/vulkan.content_browsertests.filter",
-          "--enable-features=VizDisplayCompositor,UseSkiaRenderer,UiGpuRasterization",
-          "--use-gl=any",
-          "--enable-oop-rasterization",
-          "--enable-vulkan",
-          "--enable-gpu-rasterization",
-          "--force-gpu-rasterization",
-          "--disable-software-compositing-fallback",
-          "--disable-vulkan-fallback-to-gl-for-testing",
-          "--no-xvfb"
-        ],
-        "name": "vulkan_content_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "10de:1cb3-410.78",
-              "os": "Ubuntu",
-              "pool": "Chrome-GPU"
-            }
-          ]
-        },
-        "test": "content_browsertests"
       },
       {
         "args": [
@@ -8112,9 +8054,9 @@
           "--enable-oop-rasterization",
           "--enable-vulkan",
           "--enable-gpu-rasterization",
+          "--enable-raster-to-sk-image",
           "--force-gpu-rasterization",
           "--disable-software-compositing-fallback",
-          "--disable-vulkan-fallback-to-gl-for-testing",
           "--no-xvfb"
         ],
         "name": "vulkan_content_browsertests",
@@ -8687,35 +8629,6 @@
           ]
         },
         "test": "browser_tests"
-      },
-      {
-        "args": [
-          "--enable-gpu",
-          "--test-launcher-bot-mode",
-          "--test-launcher-jobs=1",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/vulkan.content_browsertests.filter",
-          "--enable-features=VizDisplayCompositor,UseSkiaRenderer,UiGpuRasterization",
-          "--use-gl=any",
-          "--enable-oop-rasterization",
-          "--enable-vulkan",
-          "--enable-gpu-rasterization",
-          "--force-gpu-rasterization",
-          "--disable-software-compositing-fallback",
-          "--disable-vulkan-fallback-to-gl-for-testing",
-          "--no-xvfb"
-        ],
-        "name": "vulkan_content_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu",
-              "pool": "Chrome-GPU"
-            }
-          ]
-        },
-        "test": "content_browsertests"
       },
       {
         "args": [
@@ -9299,35 +9212,6 @@
           ]
         },
         "test": "browser_tests"
-      },
-      {
-        "args": [
-          "--enable-gpu",
-          "--test-launcher-bot-mode",
-          "--test-launcher-jobs=1",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/vulkan.content_browsertests.filter",
-          "--enable-features=VizDisplayCompositor,UseSkiaRenderer,UiGpuRasterization",
-          "--use-gl=any",
-          "--enable-oop-rasterization",
-          "--enable-vulkan",
-          "--enable-gpu-rasterization",
-          "--force-gpu-rasterization",
-          "--disable-software-compositing-fallback",
-          "--disable-vulkan-fallback-to-gl-for-testing",
-          "--no-xvfb"
-        ],
-        "name": "vulkan_content_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu",
-              "pool": "Chrome-GPU"
-            }
-          ]
-        },
-        "test": "content_browsertests"
       },
       {
         "args": [
@@ -16812,9 +16696,9 @@
           "--enable-oop-rasterization",
           "--enable-vulkan",
           "--enable-gpu-rasterization",
+          "--enable-raster-to-sk-image",
           "--force-gpu-rasterization",
           "--disable-software-compositing-fallback",
-          "--disable-vulkan-fallback-to-gl-for-testing",
           "--no-xvfb"
         ],
         "name": "vulkan_content_browsertests",
@@ -17082,9 +16966,9 @@
           "--enable-oop-rasterization",
           "--enable-vulkan",
           "--enable-gpu-rasterization",
+          "--enable-raster-to-sk-image",
           "--force-gpu-rasterization",
           "--disable-software-compositing-fallback",
-          "--disable-vulkan-fallback-to-gl-for-testing",
           "--no-xvfb"
         ],
         "name": "vulkan_content_browsertests",
