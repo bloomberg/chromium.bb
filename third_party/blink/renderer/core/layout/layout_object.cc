@@ -4151,12 +4151,7 @@ void LayoutObject::SetIsBackgroundAttachmentFixedObject(
 }
 
 LayoutRect LayoutObject::DebugRect() const {
-  LayoutRect rect;
-  LayoutBlock* block = ContainingBlock();
-  if (block)
-    block->AdjustChildDebugRect(rect);
-
-  return rect;
+  return LayoutRect();
 }
 
 void LayoutObject::InvalidateSelectedChildrenOnStyleChange() {

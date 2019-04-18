@@ -6223,13 +6223,7 @@ void LayoutBox::ClearCustomLayoutChild() {
 }
 
 LayoutRect LayoutBox::DebugRect() const {
-  LayoutRect rect = FrameRect();
-
-  LayoutBlock* block = ContainingBlock();
-  if (block)
-    block->AdjustChildDebugRect(rect);
-
-  return rect;
+  return FrameRect();
 }
 
 bool LayoutBox::ComputeShouldClipOverflow() const {
