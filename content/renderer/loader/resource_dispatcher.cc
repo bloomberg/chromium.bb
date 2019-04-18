@@ -281,10 +281,7 @@ void ResourceDispatcher::OnRequestComplete(
   RequestPeer* peer = request_info->peer.get();
 
   if (delegate_) {
-    std::unique_ptr<RequestPeer> new_peer = delegate_->OnRequestComplete(
-        std::move(request_info->peer), status.error_code);
-    DCHECK(new_peer);
-    request_info->peer = std::move(new_peer);
+    delegate_->OnRequestComplete();
   }
 
   network::URLLoaderCompletionStatus renderer_status(status);

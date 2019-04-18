@@ -8,7 +8,6 @@
 #include <string>
 
 #include "content/common/content_export.h"
-#include "content/public/common/resource_type.h"
 
 class GURL;
 
@@ -24,9 +23,7 @@ class CONTENT_EXPORT ResourceDispatcherDelegate {
  public:
   virtual ~ResourceDispatcherDelegate() {}
 
-  virtual std::unique_ptr<RequestPeer> OnRequestComplete(
-      std::unique_ptr<RequestPeer> current_peer,
-      int error_code) = 0;
+  virtual void OnRequestComplete() = 0;
 
   // Note that |url|, |referrer| and |method| are the final values (e.g. after
   // any redirects).

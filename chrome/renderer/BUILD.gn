@@ -100,8 +100,6 @@ jumbo_static_library("renderer") {
     "prerender/prerenderer_client.h",
     "sandbox_status_extension_android.cc",
     "sandbox_status_extension_android.h",
-    "security_filter_peer.cc",
-    "security_filter_peer.h",
     "security_interstitials/security_interstitial_page_controller.cc",
     "security_interstitials/security_interstitial_page_controller.h",
     "supervised_user/supervised_user_error_page_controller.cc",
