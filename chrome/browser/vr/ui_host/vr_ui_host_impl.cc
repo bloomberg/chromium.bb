@@ -116,6 +116,7 @@ void VRUiHostImpl::SetWebXRWebContents(content::WebContents* contents) {
       metrics_helper->SetVRActive(false);
       if (Browser* browser = chrome::FindBrowserWithWebContents(web_contents_))
         browser->GetBubbleManager()->RemoveBubbleManagerObserver(this);
+      DesktopMediaPickerManager::Get()->RemoveObserver(this);
     }
     if (contents) {
       auto* metrics_helper = SessionMetricsHelper::FromWebContents(contents);
@@ -129,6 +130,7 @@ void VRUiHostImpl::SetWebXRWebContents(content::WebContents* contents) {
       metrics_helper->RecordVrStartAction(VrStartAction::kPresentationRequest);
       if (Browser* browser = chrome::FindBrowserWithWebContents(contents))
         browser->GetBubbleManager()->AddBubbleManagerObserver(this);
+      DesktopMediaPickerManager::Get()->AddObserver(this);
     }
   }
 
@@ -220,6 +222,33 @@ void VRUiHostImpl::SetLocationInfoOnUi() {
 }
 
 void VRUiHostImpl::OnBubbleAdded() {
+  ShowExternalNotificationPrompt();
+}
+
+void VRUiHostImpl::OnBubbleRemoved() {
+  RemoveHeadsetNotificationPrompt();
+}
+
+void VRUiHostImpl::OnBubbleNeverShown(BubbleReference bubble) {}
+
+void VRUiHostImpl::OnBubbleClosed(BubbleReference bubble,
+                                  BubbleCloseReason reason) {
+  RemoveHeadsetNotificationPrompt();
+}
+
+void VRUiHostImpl::OnBubbleShown(BubbleReference bubble) {
+  ShowExternalNotificationPrompt();
+}
+
+void VRUiHostImpl::OnDialogOpened() {
+  ShowExternalNotificationPrompt();
+}
+
+void VRUiHostImpl::OnDialogClosed() {
+  RemoveHeadsetNotificationPrompt();
+}
+
+void VRUiHostImpl::ShowExternalNotificationPrompt() {
   if (!ui_rendering_thread_) {
     DVLOG(1) << __func__ << ": no ui_rendering_thread_";
     return;
@@ -244,25 +273,13 @@ void VRUiHostImpl::OnBubbleAdded() {
       kPermissionPromptTimeout);
 }
 
-void VRUiHostImpl::OnBubbleRemoved() {
-  external_prompt_timeout_task_.Cancel();
-  RemoveHeadsetNotificationPrompt();
-}
-
-void VRUiHostImpl::OnBubbleNeverShown(BubbleReference bubble) {}
-
-void VRUiHostImpl::OnBubbleClosed(BubbleReference bubble,
-                                  BubbleCloseReason reason) {
-  OnBubbleRemoved();
-}
-
-void VRUiHostImpl::OnBubbleShown(BubbleReference bubble) {
-  OnBubbleAdded();
-}
-
 void VRUiHostImpl::RemoveHeadsetNotificationPrompt() {
+  if (!external_prompt_timeout_task_.IsCancelled())
+    external_prompt_timeout_task_.Cancel();
+
   if (!is_external_prompt_showing_in_headset_)
     return;
+
   is_external_prompt_showing_in_headset_ = false;
   ui_rendering_thread_->SetVisibleExternalPromptNotification(
       ExternalPromptNotificationType::kPromptNone);

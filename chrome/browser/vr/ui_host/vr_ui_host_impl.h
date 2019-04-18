@@ -10,6 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
+#include "chrome/browser/media/webrtc/desktop_media_picker_manager.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/vr/model/capturing_state_model.h"
 #include "chrome/browser/vr/service/browser_xr_runtime.h"
@@ -27,7 +28,8 @@ class VRBrowserRendererThreadWin;
 class VRUiHostImpl : public VRUiHost,
                      public PermissionRequestManager::Observer,
                      public BrowserXRRuntimeObserver,
-                     public BubbleManager::BubbleManagerObserver {
+                     public BubbleManager::BubbleManagerObserver,
+                     public DesktopMediaPickerManager::DialogObserver {
  public:
   VRUiHostImpl(device::mojom::XRDeviceId device_id,
                device::mojom::XRCompositorHostPtr compositor);
@@ -58,6 +60,12 @@ class VRUiHostImpl : public VRUiHost,
                       BubbleCloseReason reason) override;
   void OnBubbleShown(BubbleReference bubble) override;
 
+  // DesktopMediaPickerManager::DialogObserver
+  // These are dialogs displayed in response to getDisplayMedia()
+  void OnDialogOpened() override;
+  void OnDialogClosed() override;
+
+  void ShowExternalNotificationPrompt();
   void RemoveHeadsetNotificationPrompt();
   void SetLocationInfoOnUi();
 
