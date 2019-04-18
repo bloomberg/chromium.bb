@@ -112,8 +112,10 @@ class AssistantDetailsViewBinder
                 R.dimen.autofill_assistant_details_image_size);
         mImageHeight = context.getResources().getDimensionPixelSize(
                 R.dimen.autofill_assistant_details_image_size);
-        mPulseAnimationStartColor = context.getResources().getColor(R.color.modern_grey_300);
-        mPulseAnimationEndColor = context.getResources().getColor(R.color.modern_grey_200);
+        mPulseAnimationStartColor =
+                context.getResources().getColor(org.chromium.chrome.R.color.modern_grey_300);
+        mPulseAnimationEndColor =
+                context.getResources().getColor(org.chromium.chrome.R.color.modern_grey_200);
         mImageFetcher = ImageFetcherFactory.createImageFetcher(ImageFetcherConfig.DISK_CACHE_ONLY);
     }
 
@@ -303,7 +305,7 @@ class AssistantDetailsViewBinder
         } else if (approvalRequired) {
             // De-emphasized style.
             view.setTextColor(ApiCompatibilityUtils.getColor(
-                    mContext.getResources(), R.color.modern_grey_300));
+                    mContext.getResources(), org.chromium.chrome.R.color.modern_grey_300));
         }
     }
 

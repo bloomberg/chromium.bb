@@ -7,4 +7,5 @@ public_autofill_assistant_java_sources = [
   "//chrome/android/features/autofill_assistant/public/java/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantFacade.java",
   "//chrome/android/features/autofill_assistant/public/java/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantMetrics.java",
   "//chrome/android/features/autofill_assistant/public/java/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantPreferencesUtil.java",
+  "//chrome/android/features/autofill_assistant/public/java/src/org/chromium/chrome/browser/autofill_assistant/DynamicModuleCheck.java",
 ]

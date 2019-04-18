@@ -9,6 +9,8 @@ import("//build/util/process_version.gni")
 import("//build/util/version.gni")
 import("//chrome/android/chrome_common_shared_library.gni")
 import("//chrome/android/chrome_public_apk_tmpl.gni")
+import(
+    "//chrome/android/features/autofill_assistant/autofill_assistant_module_tmpl.gni")
 import("//chrome/android/features/tab_ui/tab_management_java_sources.gni")
 import("//chrome/android/features/tab_ui/tab_ui_module_tmpl.gni")
 import("//chrome/android/features/vr/public_vr_java_sources.gni")
@@ -457,7 +459,6 @@ android_library("chrome_java") {
 java_group("chrome_all_java") {
   deps = [
     ":chrome_java",
-    "//chrome/android/features/autofill_assistant:java",
     "//chrome/android/features/media_router:java",
   ]
 }
@@ -2144,6 +2145,16 @@ template("monochrome_or_trichrome_public_bundle_tmpl") {
     version_name = _version_name
   }
 
+  autofill_assistant_module_tmpl(
+      "${target_name}__autofill_assistant_bundle_module") {
+    manifest_package = manifest_package
+    module_name = "AutofillAssistant" + _bundle_name
+    base_module_target = ":$_base_module_target_name"
+    version_code = _version_code
+    version_name = _version_name
+    uncompress_shared_libraries = true
+  }
+
   android_app_bundle(target_name) {
     bundle_name = _bundle_name
     base_module_target = ":$_base_module_target_name"
@@ -2176,6 +2187,12 @@ template("monochrome_or_trichrome_public_bundle_tmpl") {
         },
       ]
     }
+    extra_modules += [
+      {
+        name = "autofill_assistant"
+        module_target = ":${target_name}__autofill_assistant_bundle_module"
+      },
+    ]
   }
 }
 

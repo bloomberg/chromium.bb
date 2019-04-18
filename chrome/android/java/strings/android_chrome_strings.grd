@@ -4128,6 +4128,14 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       <message name="IDS_TAB_MANAGEMENT_MODULE_TITLE" desc="Text shown when the Tab Management module is referenced in install start, success, failure UI (e.g. in IDS_MODULE_INSTALL_START_TEXT, which will expand to 'Installing Tab management for Chrome…').">
         Tab management
       </message>
+
+
+      <message name="IDS_AUTOFILL_ASSISTANT_MODULE_TITLE"
+  desc="Text shown when the Foo module is referenced in install start, success,
+        failure UI (e.g. in IDS_MODULE_INSTALL_START_TEXT, which will expand to
+        'Installing Assistant for Chrome…').">
+  Google Assistant in Chrome
+      </message>
     </messages>
   </release>
 </grit>
