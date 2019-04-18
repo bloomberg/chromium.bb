@@ -138,7 +138,7 @@ ParsedCookie::ParsedCookie(const std::string& cookie_line)
       same_site_index_(0),
       priority_index_(0) {
   if (cookie_line.size() > kMaxCookieSize) {
-    VLOG(1) << "Not parsing cookie, too large: " << cookie_line.size();
+    DVLOG(1) << "Not parsing cookie, too large: " << cookie_line.size();
     return;
   }
 

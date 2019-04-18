@@ -203,13 +203,14 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::Create(
   ParsedCookie parsed_cookie(cookie_line);
 
   if (!parsed_cookie.IsValid()) {
-    VLOG(net::cookie_util::kVlogSetCookies) << "WARNING: Couldn't parse cookie";
+    DVLOG(net::cookie_util::kVlogSetCookies)
+        << "WARNING: Couldn't parse cookie";
     *status = CookieInclusionStatus::EXCLUDE_FAILURE_TO_STORE;
     return nullptr;
   }
 
   if (options.exclude_httponly() && parsed_cookie.IsHttpOnly()) {
-    VLOG(net::cookie_util::kVlogSetCookies)
+    DVLOG(net::cookie_util::kVlogSetCookies)
         << "Create() is not creating a httponly cookie";
     *status = CookieInclusionStatus::EXCLUDE_HTTP_ONLY;
     return nullptr;
@@ -217,7 +218,7 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::Create(
 
   std::string cookie_domain;
   if (!GetCookieDomain(url, parsed_cookie, &cookie_domain)) {
-    VLOG(net::cookie_util::kVlogSetCookies)
+    DVLOG(net::cookie_util::kVlogSetCookies)
         << "Create() failed to get a cookie domain";
     *status = CookieInclusionStatus::EXCLUDE_INVALID_DOMAIN;
     return nullptr;
@@ -228,7 +229,7 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::Create(
   // URL does not have a secure scheme, the cookie should be thrown away.
   // https://tools.ietf.org/html/draft-ietf-httpbis-cookie-alone
   if (parsed_cookie.IsSecure() && !url.SchemeIsCryptographic()) {
-    VLOG(net::cookie_util::kVlogSetCookies)
+    DVLOG(net::cookie_util::kVlogSetCookies)
         << "Create() is trying to create a secure cookie from an insecure URL";
     *status = CookieInclusionStatus::EXCLUDE_SECURE_ONLY;
     return nullptr;
@@ -250,7 +251,7 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::Create(
   bool is_cookie_valid = IsCookiePrefixValid(prefix, url, parsed_cookie);
   RecordCookiePrefixMetrics(prefix, is_cookie_valid);
   if (!is_cookie_valid) {
-    VLOG(net::cookie_util::kVlogSetCookies)
+    DVLOG(net::cookie_util::kVlogSetCookies)
         << "Create() failed because the cookie violated prefix rules.";
     *status = CookieInclusionStatus::EXCLUDE_INVALID_PREFIX;
     return nullptr;
