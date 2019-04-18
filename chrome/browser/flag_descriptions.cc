@@ -2696,6 +2696,11 @@ const char kNtpCustomizationMenuV2Name[] = "NTP customization menu version 2";
 const char kNtpCustomizationMenuV2Description[] =
     "Use the second version of the NTP customization menu.";
 
+const char kEnableReaderModeName[] = "Enable Reader Mode";
+const char kEnableReaderModeDescription[] =
+    "Allows viewing of simplified web pages by selecting 'Customize and "
+    "control Chrome'>'Distill page'";
+
 const char kEnableWebAuthenticationBleSupportName[] =
     "Web Authentication API BLE support";
 const char kEnableWebAuthenticationBleSupportDescription[] =

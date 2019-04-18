@@ -34300,6 +34300,7 @@ from previous Chrome versions.
   <int value="1226624874" label="Mus:disabled"/>
   <int value="1228115769" label="SiteCharacteristicsDatabase:disabled"/>
   <int value="1229299518" label="SingleTabMode:disabled"/>
+  <int value="1230018793" label="enable-dom-distiller"/>
   <int value="1234601252" label="ForceUseAPDownloadProtection:enabled"/>
   <int value="1235800887" label="V8Ignition:enabled"/>
   <int value="1235940786" label="ChromeHomePersistentIph:enabled"/>

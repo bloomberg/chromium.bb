@@ -1035,6 +1035,11 @@ const FeatureEntry kFeatureEntries[] = {
     {"disable-webrtc-hw-encoding", flag_descriptions::kWebrtcHwEncodingName,
      flag_descriptions::kWebrtcHwEncodingDescription, kOsAndroid | kOsCrOS,
      SINGLE_DISABLE_VALUE_TYPE(switches::kDisableWebRtcHWEncoding)},
+#if !defined(OS_ANDROID)
+    {"enable-reader-mode", flag_descriptions::kEnableReaderModeName,
+     flag_descriptions::kEnableReaderModeDescription, kOsDesktop,
+     SINGLE_VALUE_TYPE(switches::kEnableDomDistiller)},
+#endif  // !defined(OS_ANDROID)
     {"enable-webrtc-hw-h264-encoding",
      flag_descriptions::kWebrtcHwH264EncodingName,
      flag_descriptions::kWebrtcHwH264EncodingDescription, kOsAndroid | kOsCrOS,
