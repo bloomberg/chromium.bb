@@ -455,7 +455,7 @@ void ProfileSyncService::StartUpSlowEngineComponents() {
 
   params.extensions_activity = sync_client_->GetExtensionsActivity();
   params.event_handler = GetJsEventHandler();
-  params.service_url = sync_service_url();
+  params.service_url = sync_service_url_;
   params.sync_user_agent = MakeUserAgentForSync(channel_);
   params.http_factory_getter = MakeHttpPostProviderFactoryGetter();
   params.authenticated_account_id = GetAuthenticatedAccountInfo().account_id;
@@ -1174,7 +1174,7 @@ bool ProfileSyncService::IsSignedIn() const {
   return !GetAuthenticatedAccountInfo().account_id.empty();
 }
 
-base::Time ProfileSyncService::GetLastSyncedTime() const {
+base::Time ProfileSyncService::GetLastSyncedTimeForDebugging() const {
   return sync_prefs_.GetLastSyncedTime();
 }
 
@@ -1365,7 +1365,7 @@ UserShare* ProfileSyncService::GetUserShare() const {
   return nullptr;
 }
 
-SyncCycleSnapshot ProfileSyncService::GetLastCycleSnapshot() const {
+SyncCycleSnapshot ProfileSyncService::GetLastCycleSnapshotForDebugging() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return last_snapshot_;
 }
@@ -1657,7 +1657,7 @@ void GetAllNodesRequestHelper::OnReceivedNodesForType(
 
 }  // namespace
 
-void ProfileSyncService::GetAllNodes(
+void ProfileSyncService::GetAllNodesForDebugging(
     const base::Callback<void(std::unique_ptr<base::ListValue>)>& callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -1903,17 +1903,19 @@ void ProfileSyncService::RecordMemoryUsageHistograms() {
   }
 }
 
-const GURL& ProfileSyncService::sync_service_url() const {
+const GURL& ProfileSyncService::GetSyncServiceUrlForDebugging() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return sync_service_url_;
 }
 
-std::string ProfileSyncService::unrecoverable_error_message() const {
+std::string ProfileSyncService::GetUnrecoverableErrorMessageForDebugging()
+    const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return unrecoverable_error_message_;
 }
 
-base::Location ProfileSyncService::unrecoverable_error_location() const {
+base::Location ProfileSyncService::GetUnrecoverableErrorLocationForDebugging()
+    const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return unrecoverable_error_location_;
 }

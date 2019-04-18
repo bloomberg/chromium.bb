@@ -334,7 +334,7 @@ void ProfileSyncServiceAndroid::GetAllNodes(
 
   base::Callback<void(std::unique_ptr<base::ListValue>)> native_callback =
       base::Bind(&NativeGetAllNodesCallback, java_callback);
-  sync_service_->GetAllNodes(native_callback);
+  sync_service_->GetAllNodesForDebugging(native_callback);
 }
 
 jint ProfileSyncServiceAndroid::GetAuthError(JNIEnv* env,
@@ -460,7 +460,7 @@ ProfileSyncServiceAndroid::GetSyncEnterCustomPassphraseBodyText(
 jlong ProfileSyncServiceAndroid::GetLastSyncedTimeForTest(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
-  base::Time last_sync_time = sync_service_->GetLastSyncedTime();
+  base::Time last_sync_time = sync_service_->GetLastSyncedTimeForDebugging();
   return static_cast<jlong>(
       (last_sync_time - base::Time::UnixEpoch()).InMicroseconds());
 }

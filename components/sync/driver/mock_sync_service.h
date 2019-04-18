@@ -65,12 +65,13 @@ class MockSyncService : public SyncService {
   MOCK_CONST_METHOD0(GetSyncTokenStatus, SyncTokenStatus());
   MOCK_CONST_METHOD1(QueryDetailedSyncStatusForDebugging,
                      bool(SyncStatus* result));
-  MOCK_CONST_METHOD0(GetLastSyncedTime, base::Time());
-  MOCK_CONST_METHOD0(GetLastCycleSnapshot, SyncCycleSnapshot());
+  MOCK_CONST_METHOD0(GetLastSyncedTimeForDebugging, base::Time());
+  MOCK_CONST_METHOD0(GetLastCycleSnapshotForDebugging, SyncCycleSnapshot());
   MOCK_METHOD0(GetTypeStatusMapForDebugging, std::unique_ptr<base::Value>());
-  MOCK_CONST_METHOD0(sync_service_url, const GURL&());
-  MOCK_CONST_METHOD0(unrecoverable_error_message, std::string());
-  MOCK_CONST_METHOD0(unrecoverable_error_location, base::Location());
+  MOCK_CONST_METHOD0(GetSyncServiceUrlForDebugging, const GURL&());
+  MOCK_CONST_METHOD0(GetUnrecoverableErrorMessageForDebugging, std::string());
+  MOCK_CONST_METHOD0(GetUnrecoverableErrorLocationForDebugging,
+                     base::Location());
   MOCK_METHOD1(AddProtocolEventObserver, void(ProtocolEventObserver* observer));
   MOCK_METHOD1(RemoveProtocolEventObserver,
                void(ProtocolEventObserver* observer));
@@ -78,7 +79,7 @@ class MockSyncService : public SyncService {
   MOCK_METHOD1(RemoveTypeDebugInfoObserver,
                void(TypeDebugInfoObserver* observer));
   MOCK_METHOD0(GetJsController, base::WeakPtr<JsController>());
-  MOCK_METHOD1(GetAllNodes,
+  MOCK_METHOD1(GetAllNodesForDebugging,
                void(const base::Callback<
                     void(std::unique_ptr<base::ListValue>)>& callback));
 

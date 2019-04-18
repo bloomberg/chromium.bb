@@ -65,8 +65,9 @@ class TestSyncService : public syncer::FakeSyncService {
     return js_controller_.AsWeakPtr();
   }
 
-  void GetAllNodes(const base::Callback<void(std::unique_ptr<base::ListValue>)>&
-                       callback) override {
+  void GetAllNodesForDebugging(
+      const base::Callback<void(std::unique_ptr<base::ListValue>)>& callback)
+      override {
     get_all_nodes_callback_ = std::move(callback);
   }
 

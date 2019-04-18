@@ -128,7 +128,8 @@ class WaitForNextWalletUpdateChecker : public StatusChangeChecker,
   bool IsExitConditionSatisfied() override {
     // GetLastCycleSnapshot() returns by value, so make sure to capture it for
     // iterator use.
-    const syncer::SyncCycleSnapshot snap = service_->GetLastCycleSnapshot();
+    const syncer::SyncCycleSnapshot snap =
+        service_->GetLastCycleSnapshotForDebugging();
     const syncer::ProgressMarkerMap& progress_markers =
         snap.download_progress_markers();
     auto marker_it = progress_markers.find(syncer::AUTOFILL_WALLET_DATA);
@@ -152,7 +153,8 @@ class WaitForNextWalletUpdateChecker : public StatusChangeChecker,
       const syncer::ProfileSyncService* service) {
     // GetLastCycleSnapshot() returns by value, so make sure to capture it for
     // iterator use.
-    const syncer::SyncCycleSnapshot snap = service->GetLastCycleSnapshot();
+    const syncer::SyncCycleSnapshot snap =
+        service->GetLastCycleSnapshotForDebugging();
     const syncer::ProgressMarkerMap& progress_markers =
         snap.download_progress_markers();
     auto marker_it = progress_markers.find(syncer::AUTOFILL_WALLET_DATA);

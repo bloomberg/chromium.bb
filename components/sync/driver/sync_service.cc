@@ -17,7 +17,9 @@ SyncSetupInProgressHandle::~SyncSetupInProgressHandle() {
 }
 
 bool SyncService::HasCompletedSyncCycle() const {
-  return GetLastCycleSnapshot().is_initialized();
+  // Stats on the last Sync cycle are only available in internal "for debugging"
+  // information. Better to access that here than making clients do it.
+  return GetLastCycleSnapshotForDebugging().is_initialized();
 }
 
 bool SyncService::IsSyncFeatureEnabled() const {

@@ -379,6 +379,8 @@ class SyncService : public KeyedService {
 
   // Returns the state of the access token and token request, for display in
   // internals UI.
+  // TODO(crbug.com/953272): This method should also be marked as "ForDebugging"
+  // but it's currently still used by non-debugging UKM code.
   virtual SyncTokenStatus GetSyncTokenStatus() const = 0;
 
   // Initializes a struct of status indicators with data from the engine.
@@ -387,10 +389,10 @@ class SyncService : public KeyedService {
   virtual bool QueryDetailedSyncStatusForDebugging(
       SyncStatus* result) const = 0;
 
-  virtual base::Time GetLastSyncedTime() const = 0;
+  virtual base::Time GetLastSyncedTimeForDebugging() const = 0;
 
   // Returns some statistics on the most-recently completed sync cycle.
-  virtual SyncCycleSnapshot GetLastCycleSnapshot() const = 0;
+  virtual SyncCycleSnapshot GetLastCycleSnapshotForDebugging() const = 0;
 
   // Returns a ListValue indicating the status of all registered types.
   //
@@ -405,10 +407,10 @@ class SyncService : public KeyedService {
   // it easier to iterate over its elements when constructing that page.
   virtual std::unique_ptr<base::Value> GetTypeStatusMapForDebugging() = 0;
 
-  virtual const GURL& sync_service_url() const = 0;
+  virtual const GURL& GetSyncServiceUrlForDebugging() const = 0;
 
-  virtual std::string unrecoverable_error_message() const = 0;
-  virtual base::Location unrecoverable_error_location() const = 0;
+  virtual std::string GetUnrecoverableErrorMessageForDebugging() const = 0;
+  virtual base::Location GetUnrecoverableErrorLocationForDebugging() const = 0;
 
   virtual void AddProtocolEventObserver(ProtocolEventObserver* observer) = 0;
   virtual void RemoveProtocolEventObserver(ProtocolEventObserver* observer) = 0;
@@ -424,7 +426,7 @@ class SyncService : public KeyedService {
   // These requests can live a long time and return when you least expect it.
   // For safety, the callback should be bound to some sort of WeakPtr<> or
   // scoped_refptr<>.
-  virtual void GetAllNodes(
+  virtual void GetAllNodesForDebugging(
       const base::Callback<void(std::unique_ptr<base::ListValue>)>&
           callback) = 0;
 

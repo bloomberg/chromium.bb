@@ -30,7 +30,8 @@ bool UpdatedProgressMarkerChecker::IsExitConditionSatisfied() {
     return false;
   }
 
-  const syncer::SyncCycleSnapshot& snap = service()->GetLastCycleSnapshot();
+  const syncer::SyncCycleSnapshot& snap =
+      service()->GetLastCycleSnapshotForDebugging();
   // Assuming the lack of ongoing remote changes, the progress marker can be
   // considered updated when:
   // 1. Progress markers are non-empty (which discards the default value for
@@ -63,7 +64,8 @@ void UpdatedProgressMarkerChecker::OnSyncCycleCompleted(
   }
 
   // Override |has_unsynced_items_| with the result of the sync cycle.
-  const syncer::SyncCycleSnapshot& snap = service()->GetLastCycleSnapshot();
+  const syncer::SyncCycleSnapshot& snap =
+      service()->GetLastCycleSnapshotForDebugging();
   has_unsynced_items_ = snap.has_remaining_local_changes();
   CheckExitCondition();
 }

@@ -22,7 +22,8 @@ P2PSyncRefresher::~P2PSyncRefresher() {
 }
 
 void P2PSyncRefresher::OnSyncCycleCompleted(syncer::SyncService* sync) {
-  const syncer::SyncCycleSnapshot& snap = sync_service_->GetLastCycleSnapshot();
+  const syncer::SyncCycleSnapshot& snap =
+      sync_service_->GetLastCycleSnapshotForDebugging();
   bool is_notifiable_commit =
       (snap.model_neutral_state().num_successful_commits > 0);
   if (is_notifiable_commit) {

@@ -560,7 +560,7 @@ bool ProfileSyncServiceHarness::DisableSyncForAllDatatypes() {
 SyncCycleSnapshot ProfileSyncServiceHarness::GetLastCycleSnapshot() const {
   DCHECK(service() != nullptr) << "Sync service has not yet been set up.";
   if (service()->IsSyncFeatureActive()) {
-    return service()->GetLastCycleSnapshot();
+    return service()->GetLastCycleSnapshotForDebugging();
   }
   return SyncCycleSnapshot();
 }
