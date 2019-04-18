@@ -39,7 +39,6 @@
 #include "third_party/blink/renderer/core/dom/events/scoped_event_queue.h"
 #include "third_party/blink/renderer/core/dom/node_lists_node_data.h"
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
-#include "third_party/blink/renderer/core/events/current_input_event.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -498,8 +497,6 @@ void HTMLFormElement::ScheduleFormSubmission(FormSubmission* submission) {
   frame_load_request.SetClientRedirect(ClientRedirectPolicy::kClientRedirect);
   frame_load_request.GetResourceRequest().SetHasUserGesture(
       LocalFrame::HasTransientUserActivation(GetDocument().GetFrame()));
-  if (const WebInputEvent* input_event = CurrentInputEvent::Get())
-    frame_load_request.SetInputStartTime(input_event->TimeStamp());
   GetDocument().GetFrame()->Navigate(frame_load_request,
                                      WebFrameLoadType::kStandard);
 }

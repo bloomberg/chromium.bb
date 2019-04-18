@@ -40,7 +40,6 @@
 #include "third_party/blink/public/platform/web_url_response.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/renderer/core/events/application_cache_error_event.h"
-#include "third_party/blink/renderer/core/events/current_input_event.h"
 #include "third_party/blink/renderer/core/events/progress_event.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/frame/hosts_using_features.h"
@@ -162,8 +161,6 @@ void ApplicationCacheHost::SelectCacheWithManifest(const KURL& manifest_url) {
     // navigation. see ApplicationCacheGroup::selectCache()
     FrameLoadRequest request(document, ResourceRequest(document->Url()));
     request.SetClientRedirect(ClientRedirectPolicy::kClientRedirect);
-    if (const WebInputEvent* input_event = CurrentInputEvent::Get())
-      request.SetInputStartTime(input_event->TimeStamp());
     frame->Navigate(request, WebFrameLoadType::kReplaceCurrentItem);
   }
 }
