@@ -128,11 +128,13 @@ TEST_F(AccessibilityObjectModelTest, AOMPropertiesCanBeCleared) {
   button->accessibleNode()->setDisabled(false, false);
   GetDocument().View()->UpdateLifecycleToLayoutClean();
 
-  // Assert that the AX object was affected by AOM properties.
+  // Assert that AOM properties affect the AXObject, barring boolean properties
+  // which are among the first to be decoupled.
+  // TODO(meredithl): remove reflection of string properties for AOM.
   axButton = cache->GetOrCreate(button);
   EXPECT_EQ(ax::mojom::Role::kRadioButton, axButton->RoleValue());
   EXPECT_EQ("Radio", axButton->GetName(name_from, &name_objects));
-  EXPECT_EQ(axButton->Restriction(), kRestrictionNone);
+  EXPECT_EQ(axButton->Restriction(), kRestrictionDisabled);
 
   // Null the AOM properties.
   button->accessibleNode()->setRole(g_null_atom);
