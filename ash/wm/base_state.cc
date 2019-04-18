@@ -150,12 +150,16 @@ void BaseState::UpdateMinimizedState(
     // Save the previous show state when it is not minimized so that we can
     // correctly restore it after exiting the minimized mode.
     if (!IsMinimizedWindowStateType(previous_state_type)) {
-      window->SetProperty(
-          aura::client::kPreMinimizedShowStateKey,
-          ToWindowShowState(
-              previous_state_type == mojom::WindowStateType::PIP
-                  ? window->GetProperty(ash::kPrePipWindowStateTypeKey)
-                  : previous_state_type));
+      // We must not save PIP to |kPreMinimizedShowStateKey|.
+      if (previous_state_type != mojom::WindowStateType::PIP)
+        window->SetProperty(aura::client::kPreMinimizedShowStateKey,
+                            ToWindowShowState(previous_state_type));
+      // We must not save MINIMIZED to |kPreMinimizedShowStateKey|.
+      else if (window->GetProperty(ash::kPrePipWindowStateTypeKey) !=
+               mojom::WindowStateType::MINIMIZED)
+        window->SetProperty(aura::client::kPreMinimizedShowStateKey,
+                            ToWindowShowState(window->GetProperty(
+                                ash::kPrePipWindowStateTypeKey)));
     }
     // Count minimizing a PIP window as dismissing it. Android apps in PIP mode
     // don't exit when they are dismissed, they just go back to being a regular
