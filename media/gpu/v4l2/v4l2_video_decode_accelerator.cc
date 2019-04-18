@@ -261,53 +261,13 @@ void V4L2VideoDecodeAccelerator::InitializeTask(const Config& config,
   DCHECK_EQ(decoder_state_, kInitialized);
   TRACE_EVENT0("media,gpu", "V4L2VDA::InitializeTask");
 
-  // Assume failure for now.
-  *result = false;
-
-  input_format_fourcc_ =
-      V4L2Device::VideoCodecProfileToV4L2PixFmt(video_profile_, false);
-
-  if (!device_->Open(V4L2Device::Type::kDecoder, input_format_fourcc_)) {
-    VLOGF(1) << "Failed to open device for profile: " << config.profile
-             << " fourcc: " << FourccToString(input_format_fourcc_);
-    done->Signal();
-    return;
-  }
-
-  // Capabilities check.
-  struct v4l2_capability caps;
-  const __u32 kCapsRequired = V4L2_CAP_VIDEO_M2M_MPLANE | V4L2_CAP_STREAMING;
-  IOCTL_OR_ERROR_RETURN(VIDIOC_QUERYCAP, &caps);
-  if ((caps.capabilities & kCapsRequired) != kCapsRequired) {
-    VLOGF(1) << "ioctl() failed: VIDIOC_QUERYCAP"
-             << ", caps check failed: 0x" << std::hex << caps.capabilities;
-    done->Signal();
-    return;
-  }
-
-  output_mode_ = config.output_mode;
-
-  input_queue_ = device_->GetQueue(V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE);
-  if (!input_queue_) {
-    done->Signal();
-    return;
-  }
-
-  output_queue_ = device_->GetQueue(V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE);
-  if (!output_queue_) {
-    done->Signal();
-    return;
-  }
-
-  if (!SetupFormats()) {
-    done->Signal();
-    return;
-  }
-
-  // We have confirmed that |config| is supported, tell the good news to the
-  // client.
-  *result = true;
+  // The client can keep going as soon as the configuration is checked.
+  *result = CheckConfig(config);
   done->Signal();
+
+  // No need to keep going is configuration is not supported.
+  if (*result == false)
+    return;
 
   if (video_profile_ >= H264PROFILE_MIN && video_profile_ <= H264PROFILE_MAX) {
     decoder_h264_parser_.reset(new H264Parser());
@@ -329,8 +289,47 @@ void V4L2VideoDecodeAccelerator::InitializeTask(const Config& config,
 
   decoder_cmd_supported_ = IsDecoderCmdSupported();
 
-  if (!StartDevicePoll())
-    return;
+  StartDevicePoll();
+}
+
+bool V4L2VideoDecodeAccelerator::CheckConfig(const Config& config) {
+  DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
+
+  input_format_fourcc_ =
+      V4L2Device::VideoCodecProfileToV4L2PixFmt(video_profile_, false);
+
+  if (!device_->Open(V4L2Device::Type::kDecoder, input_format_fourcc_)) {
+    VLOGF(1) << "Failed to open device for profile: " << config.profile
+             << " fourcc: " << FourccToString(input_format_fourcc_);
+    return false;
+  }
+
+  // Capabilities check.
+  struct v4l2_capability caps;
+  const __u32 kCapsRequired = V4L2_CAP_VIDEO_M2M_MPLANE | V4L2_CAP_STREAMING;
+  IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_QUERYCAP, &caps);
+  if ((caps.capabilities & kCapsRequired) != kCapsRequired) {
+    VLOGF(1) << "ioctl() failed: VIDIOC_QUERYCAP"
+             << ", caps check failed: 0x" << std::hex << caps.capabilities;
+    return false;
+  }
+
+  output_mode_ = config.output_mode;
+
+  input_queue_ = device_->GetQueue(V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE);
+  if (!input_queue_)
+    return false;
+
+  output_queue_ = device_->GetQueue(V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE);
+  if (!output_queue_)
+    return false;
+
+  if (!SetupFormats())
+    return false;
+
+  // We have confirmed that |config| is supported, tell the good news to the
+  // client.
+  return true;
 }
 
 void V4L2VideoDecodeAccelerator::Decode(
