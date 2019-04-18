@@ -173,7 +173,9 @@ void PrefixSelector::SetCompositionFromExistingText(
     const gfx::Range& range,
     const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) {}
 void PrefixSelector::SetActiveCompositionForAccessibility(
-    const gfx::Range& range) {}
+    const gfx::Range& range,
+    const base::string16& active_composition_text,
+    bool is_composition_committed) {}
 #endif
 
 void PrefixSelector::OnTextInput(const base::string16& text) {

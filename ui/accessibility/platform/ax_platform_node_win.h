@@ -1006,8 +1006,11 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   using RuntimeIdArray = std::array<int, 2>;
   void GetRuntimeIdArray(RuntimeIdArray& runtime_id);
 
-  // Notifies accessibility about active composition.
-  void OnActiveComposition(const gfx::Range& range);
+  // Updates the active composition range and fires UIA text edit event about
+  // composition (active or committed)
+  void OnActiveComposition(const gfx::Range& range,
+                           const base::string16& active_composition_text,
+                           bool is_composition_committed);
   // Returns true if there is an active composition
   bool HasActiveComposition() const;
   // Returns the start/end offsets of the active composition
@@ -1240,6 +1243,12 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
 
   PatternProviderFactoryMethod GetPatternProviderFactoryMethod(
       PATTERNID pattern_id);
+
+  // Fires UIA text edit event about composition (active or committed)
+  void FireUiaTextEditTextChangedEvent(
+      const gfx::Range& range,
+      const base::string16& active_composition_text,
+      bool is_composition_committed);
 
   // Start and end offsets of an active composition
   gfx::Range active_composition_range_;

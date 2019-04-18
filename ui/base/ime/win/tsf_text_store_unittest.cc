@@ -68,7 +68,8 @@ class MockTextInputClient : public TextInputClient {
   MOCK_CONST_METHOD0(GetClientSourceForMetrics, ukm::SourceId());
   MOCK_METHOD2(SetCompositionFromExistingText,
                void(const gfx::Range&, const std::vector<ui::ImeTextSpan>&));
-  MOCK_METHOD1(SetActiveCompositionForAccessibility, void(const gfx::Range&));
+  MOCK_METHOD3(SetActiveCompositionForAccessibility,
+               void(const gfx::Range&, const base::string16&, bool));
 };
 
 class MockInputMethodDelegate : public internal::InputMethodDelegate {
@@ -1648,6 +1649,88 @@ TEST_F(TSFTextStoreTest, KeyEventTest) {
   result = kInvalidResult;
   EXPECT_EQ(S_OK, text_store_->RequestLock(TS_LF_READWRITE, &result));
   EXPECT_EQ(S_OK, result);
+  EXPECT_EQ(S_OK, text_store_->RequestLock(TS_LF_READWRITE, &result));
+  EXPECT_EQ(S_OK, result);
+}
+
+// Below test covers the notification sent to accessibility about the
+// composition
+class AccessibilityEventTestCallback : public TSFTextStoreTestCallback {
+ public:
+  explicit AccessibilityEventTestCallback(TSFTextStore* text_store)
+      : TSFTextStoreTestCallback(text_store) {}
+
+  HRESULT LockGranted1(DWORD flags) {
+    SetTextTest(0, 0, L"a", S_OK);
+
+    GetTextTest(0, -1, L"a", 1);
+
+    SetSelectionTest(0, 1, S_OK);
+
+    text_spans()->clear();
+    ImeTextSpan text_span;
+    text_span.start_offset = 0;
+    text_span.end_offset = 1;
+    text_span.underline_color = SK_ColorBLACK;
+    text_span.thickness = ImeTextSpan::Thickness::kThin;
+    text_span.background_color = SK_ColorTRANSPARENT;
+    text_spans()->push_back(text_span);
+    *edit_flag() = true;
+    *composition_start() = 0;
+    composition_range()->set_start(0);
+    composition_range()->set_end(1);
+    *has_composition_range() = true;
+
+    return S_OK;
+  }
+
+  void SetCompositionText1(const ui::CompositionText& composition) {
+    EXPECT_EQ(L"a", composition.text);
+    EXPECT_EQ(0u, composition.selection.start());
+    EXPECT_EQ(1u, composition.selection.end());
+    ASSERT_EQ(1u, composition.ime_text_spans.size());
+    EXPECT_EQ(SK_ColorBLACK, composition.ime_text_spans[0].underline_color);
+    EXPECT_EQ(SK_ColorTRANSPARENT,
+              composition.ime_text_spans[0].background_color);
+    EXPECT_EQ(0u, composition.ime_text_spans[0].start_offset);
+    EXPECT_EQ(1u, composition.ime_text_spans[0].end_offset);
+    EXPECT_EQ(ImeTextSpan::Thickness::kThin,
+              composition.ime_text_spans[0].thickness);
+    SetHasCompositionText(true);
+  }
+
+  void SetActiveCompositionForAccessibility1(
+      const gfx::Range& range,
+      const base::string16& active_composition_text,
+      bool committed_composition) {
+    EXPECT_EQ(L"a", active_composition_text);
+    EXPECT_EQ(0u, range.start());
+    EXPECT_EQ(1u, range.end());
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(AccessibilityEventTestCallback);
+};
+
+TEST_F(TSFTextStoreTest, AccessibilityEventTest) {
+  AccessibilityEventTestCallback callback(text_store_.get());
+  EXPECT_CALL(text_input_client_, SetCompositionText(_))
+      .WillOnce(Invoke(&callback,
+                       &AccessibilityEventTestCallback::SetCompositionText1));
+
+  EXPECT_CALL(text_input_client_, SetActiveCompositionForAccessibility(_, _, _))
+      .WillOnce(Invoke(&callback, &AccessibilityEventTestCallback::
+                                      SetActiveCompositionForAccessibility1));
+
+  EXPECT_CALL(*sink_, OnLockGranted(_))
+      .WillOnce(
+          Invoke(&callback, &AccessibilityEventTestCallback::LockGranted1));
+
+  ON_CALL(text_input_client_, HasCompositionText())
+      .WillByDefault(
+          Invoke(&callback, &TSFTextStoreTestCallback::HasCompositionText));
+
+  HRESULT result = kInvalidResult;
   EXPECT_EQ(S_OK, text_store_->RequestLock(TS_LF_READWRITE, &result));
   EXPECT_EQ(S_OK, result);
 }

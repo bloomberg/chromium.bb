@@ -1766,7 +1766,10 @@ void Textfield::SetCompositionFromExistingText(
 
 // TODO(https://crbug.com/952355): Implement this method once TSF supports reconversion
 // features on native text fields.
-void Textfield::SetActiveCompositionForAccessibility(const gfx::Range& range) {}
+void Textfield::SetActiveCompositionForAccessibility(
+    const gfx::Range& range,
+    const base::string16& active_composition_text,
+    bool is_composition_committed) {}
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////

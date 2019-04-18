@@ -1591,7 +1591,9 @@ void RenderWidgetHostViewAura::SetCompositionFromExistingText(
 }
 
 void RenderWidgetHostViewAura::SetActiveCompositionForAccessibility(
-    const gfx::Range& range) {
+    const gfx::Range& range,
+    const base::string16& active_composition_text,
+    bool is_composition_committed) {
   BrowserAccessibilityManager* manager =
       host()->GetRootBrowserAccessibilityManager();
   if (manager) {
@@ -1600,7 +1602,8 @@ void RenderWidgetHostViewAura::SetActiveCompositionForAccessibility(
             manager->GetFocus()->GetNativeViewAccessible()));
     if (focus_node) {
       // Notify accessibility object about this composition
-      focus_node->OnActiveComposition(range);
+      focus_node->OnActiveComposition(range, active_composition_text,
+                                      is_composition_committed);
     }
   }
 }
