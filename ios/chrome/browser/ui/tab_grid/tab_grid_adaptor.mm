@@ -8,6 +8,7 @@
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/main/view_controller_swapping.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_paging.h"
+#import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/web/public/navigation_manager.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -42,20 +43,14 @@
 }
 
 - (Tab*)dismissWithNewTabAnimationToModel:(TabModel*)targetModel
-                                  withURL:(const GURL&)URL
-                               virtualURL:(const GURL&)virtualURL
-                                  atIndex:(NSUInteger)position
-                               transition:(ui::PageTransition)transition {
+                        withUrlLoadParams:(const UrlLoadParams&)urlLoadParams
+                                  atIndex:(NSUInteger)position {
   NSUInteger tabIndex = position;
   if (position > targetModel.count)
     tabIndex = targetModel.count;
 
-  web::NavigationManager::WebLoadParams loadParams(URL);
-  loadParams.transition_type = transition;
-  loadParams.virtual_url = virtualURL;
-
   // Create the new tab.
-  Tab* tab = [targetModel insertTabWithLoadParams:loadParams
+  Tab* tab = [targetModel insertTabWithLoadParams:urlLoadParams.web_params
                                            opener:nil
                                       openedByDOM:NO
                                           atIndex:tabIndex

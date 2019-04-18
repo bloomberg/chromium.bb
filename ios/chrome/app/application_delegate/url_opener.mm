@@ -12,6 +12,7 @@
 #import "ios/chrome/app/application_delegate/tab_opening.h"
 #include "ios/chrome/app/startup/chrome_app_startup_parameters.h"
 #import "ios/chrome/browser/chrome_url_util.h"
+#import "ios/chrome/browser/url_loading/url_loading_params.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -78,15 +79,14 @@ const char* const kUMAMobileSessionStartFromAppsHistogram =
       } else {
         URL = [params externalURL];
       }
+      UrlLoadParams urlLoadParams = UrlLoadParams::InNewTab(URL, virtualURL);
       [tabOpener
           dismissModalsAndOpenSelectedTabInMode:[params launchInIncognito]
                                                     ? ApplicationMode::INCOGNITO
                                                     : ApplicationMode::NORMAL
-                                        withURL:URL
-                                     virtualURL:virtualURL
+                              withUrlLoadParams:urlLoadParams
                                  dismissOmnibox:[params postOpeningAction] !=
                                                 FOCUS_OMNIBOX
-                                     transition:ui::PAGE_TRANSITION_LINK
                                      completion:tabOpenedCompletion];
       return YES;
     }

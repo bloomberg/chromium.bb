@@ -16,6 +16,7 @@
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/main/tab_switcher.h"
+#import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_usage_enabler/web_state_list_web_usage_enabler.h"
 #import "ios/chrome/browser/web_state_list/web_usage_enabler/web_state_list_web_usage_enabler_factory.h"
@@ -52,12 +53,11 @@ void OpenNewTab() {
       // The TabGrid is currently presented.
     TabModel* tabModel =
         GetMainController().interfaceProvider.mainInterface.tabModel;
+    UrlLoadParams params = UrlLoadParams::InNewTab(GURL(kChromeUINewTabURL));
     [GetMainController().tabSwitcher
         dismissWithNewTabAnimationToModel:tabModel
-                                  withURL:GURL(kChromeUINewTabURL)
-                               virtualURL:GURL::EmptyGURL()
-                                  atIndex:NSNotFound
-                               transition:ui::PAGE_TRANSITION_TYPED];
+                        withUrlLoadParams:params
+                                  atIndex:NSNotFound];
   }
 }
 
@@ -73,12 +73,11 @@ void OpenNewIncognitoTab() {
       // The TabGrid is currently presented.
     TabModel* tabModel =
         GetMainController().interfaceProvider.incognitoInterface.tabModel;
+    UrlLoadParams params = UrlLoadParams::InNewTab(GURL(kChromeUINewTabURL));
     [GetMainController().tabSwitcher
         dismissWithNewTabAnimationToModel:tabModel
-                                  withURL:GURL(kChromeUINewTabURL)
-                               virtualURL:GURL::EmptyGURL()
-                                  atIndex:NSNotFound
-                               transition:ui::PAGE_TRANSITION_TYPED];
+                        withUrlLoadParams:params
+                                  atIndex:NSNotFound];
   }
 }
 

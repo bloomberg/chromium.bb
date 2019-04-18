@@ -30,6 +30,7 @@
 #import "ios/chrome/browser/tabs/tab_model_observer.h"
 #import "ios/chrome/browser/u2f/u2f_tab_helper.h"
 #import "ios/chrome/browser/ui/main/test/stub_browser_interface_provider.h"
+#import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
 #import "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
@@ -384,8 +385,8 @@ TEST_F(UserActivityHandlerTest, ContinueUserActivityForeground) {
                              startupInformation:startupInformationMock];
 
   // Test.
-  EXPECT_EQ(gurl, tabOpener.url);
-  EXPECT_TRUE(tabOpener.virtualURL.is_empty());
+  EXPECT_EQ(gurl, tabOpener.urlLoadParams.web_params.url);
+  EXPECT_TRUE(tabOpener.urlLoadParams.web_params.virtual_url.is_empty());
   EXPECT_TRUE(result);
 }
 
@@ -413,7 +414,7 @@ TEST_F(UserActivityHandlerTest, ContinueUserActivityBrowsingWeb) {
                              startupInformation:fakeStartupInformation];
 
   GURL newTabURL(kChromeUINewTabURL);
-  EXPECT_EQ(newTabURL, [tabOpener url]);
+  EXPECT_EQ(newTabURL, tabOpener.urlLoadParams.web_params.url);
   // AppStartupParameters default to opening pages in non-Incognito mode.
   EXPECT_EQ(ApplicationMode::NORMAL, [tabOpener applicationMode]);
   EXPECT_TRUE(result);
@@ -521,8 +522,8 @@ TEST_F(UserActivityHandlerTest, HandleStartupParamsWithExternalFile) {
   // External file:// URL will be loaded by WebState, which expects complete
   // file:// URL. chrome:// URL is expected to be displayed in the omnibox,
   // and omnibox shows virtual URL.
-  EXPECT_EQ(completeURL, tabOpener.url);
-  EXPECT_EQ(externalURL, tabOpener.virtualURL);
+  EXPECT_EQ(completeURL, tabOpener.urlLoadParams.web_params.url);
+  EXPECT_EQ(externalURL, tabOpener.urlLoadParams.web_params.virtual_url);
   EXPECT_EQ(ApplicationMode::INCOGNITO, [tabOpener applicationMode]);
 }
 
@@ -556,8 +557,8 @@ TEST_F(UserActivityHandlerTest, HandleStartupParamsNonU2F) {
 
   // Tests.
   EXPECT_OCMOCK_VERIFY(startupInformationMock);
-  EXPECT_EQ(gurl, tabOpener.url);
-  EXPECT_TRUE(tabOpener.virtualURL.is_empty());
+  EXPECT_EQ(gurl, tabOpener.urlLoadParams.web_params.url);
+  EXPECT_TRUE(tabOpener.urlLoadParams.web_params.virtual_url.is_empty());
   EXPECT_EQ(ApplicationMode::INCOGNITO, [tabOpener applicationMode]);
 }
 
@@ -600,8 +601,8 @@ TEST_F(UserActivityHandlerTest, HandleStartupParamsU2F) {
   // Tests.
   EXPECT_OCMOCK_VERIFY(startupInformationMock);
   EXPECT_EQ(gurl, [tabMock U2FTabHelper] -> url());
-  EXPECT_TRUE(tabOpener.url.is_empty());
-  EXPECT_TRUE(tabOpener.virtualURL.is_empty());
+  EXPECT_TRUE(tabOpener.urlLoadParams.web_params.url.is_empty());
+  EXPECT_TRUE(tabOpener.urlLoadParams.web_params.virtual_url.is_empty());
 }
 
 // Tests that performActionForShortcutItem set startupParameters accordingly to

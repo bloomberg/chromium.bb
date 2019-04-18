@@ -14,6 +14,7 @@
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/main/test/stub_browser_interface.h"
 #import "ios/chrome/browser/ui/main/test/stub_browser_interface_provider.h"
+#import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/test/base/scoped_block_swizzler.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
@@ -174,12 +175,15 @@ TEST_F(URLOpenerTest, HandleOpenURL) {
               // External file:// URL will be loaded by WebState, which expects
               // complete // file:// URL. chrome:// URL is expected to be
               // displayed in the omnibox, and omnibox shows virtual URL.
-              EXPECT_EQ([params completeURL], [tabOpener url]);
-              EXPECT_EQ([params externalURL], [tabOpener virtualURL]);
+              EXPECT_EQ([params completeURL],
+                        tabOpener.urlLoadParams.web_params.url);
+              EXPECT_EQ([params externalURL],
+                        tabOpener.urlLoadParams.web_params.virtual_url);
             } else {
               // External chromium-x-callback:// URL will be loaded by
               // WebState, which expects externalURL URL.
-              EXPECT_EQ([params externalURL], [tabOpener url]);
+              EXPECT_EQ([params externalURL],
+                        tabOpener.urlLoadParams.web_params.url);
             }
             tabOpener.completionBlock();
             EXPECT_EQ(nil, startupInformation.startupParameters);

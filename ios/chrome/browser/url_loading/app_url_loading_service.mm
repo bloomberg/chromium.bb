@@ -29,14 +29,13 @@ void AppUrlLoadingService::LoadUrlInNewTab(const UrlLoadParams& params) {
 
   if (params.web_params.url.is_valid()) {
     UrlLoadParams saved_params = params;
+    saved_params.web_params.transition_type = ui::PAGE_TRANSITION_TYPED;
 
     if (params.from_chrome) {
       [delegate_
           dismissModalDialogsWithCompletion:^{
             [delegate_ openSelectedTabInMode:ApplicationMode::NORMAL
-                                     withURL:saved_params.web_params.url
-                                  virtualURL:saved_params.web_params.virtual_url
-                                  transition:ui::PAGE_TRANSITION_TYPED
+                           withUrlLoadParams:saved_params
                                   completion:nil];
           }
                              dismissOmnibox:YES];
