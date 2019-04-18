@@ -81,6 +81,10 @@ class CallStackProfileBuilder : public base::ProfileBuilder {
   static void SetParentProfileCollectorForChildProcess(
       metrics::mojom::CallStackProfileCollectorPtr browser_interface);
 
+  // Returns the process-global metadata recorder instance used for tracking
+  // sampling profiler metadata.
+  static MetadataRecorder& GetStackSamplingProfilerMetadataRecorder();
+
  protected:
   // Test seam.
   virtual void PassProfilesToMetricsProvider(SampledProfile sampled_profile);

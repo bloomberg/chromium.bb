@@ -200,6 +200,13 @@ void CallStackProfileBuilder::SetParentProfileCollectorForChildProcess(
       std::move(browser_interface));
 }
 
+// static
+MetadataRecorder&
+CallStackProfileBuilder::GetStackSamplingProfilerMetadataRecorder() {
+  static base::NoDestructor<MetadataRecorder> instance;
+  return *instance;
+}
+
 void CallStackProfileBuilder::PassProfilesToMetricsProvider(
     SampledProfile sampled_profile) {
   if (sampled_profile.process() == BROWSER_PROCESS) {
