@@ -13,7 +13,15 @@ const FONT_SIZE_RANGE = [
 
 /** @type {!Array<number>} */
 const MINIMUM_FONT_SIZE_RANGE =
-    [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 20, 22, 24];
+    [0, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 20, 22, 24];
+
+/**
+ * @param {!Array<number>} ticks
+ * @return {!Array<!cr_slider.SliderTick>}
+ */
+function ticksWithLabels(ticks) {
+  return ticks.map(x => ({label: `${x}`, value: x}));
+}
 
 /**
  * 'settings-appearance-fonts-page' is the settings page containing appearance
@@ -41,22 +49,22 @@ Polymer({
 
     /**
      * Common font sizes.
-     * @private {!Array<number>}
+     * @private {!Array<!cr_slider.SliderTick>}
      */
     fontSizeRange_: {
       readOnly: true,
       type: Array,
-      value: FONT_SIZE_RANGE,
+      value: ticksWithLabels(FONT_SIZE_RANGE),
     },
 
     /**
      * Reasonable, minimum font sizes.
-     * @private {!Array<number>}
+     * @private {!Array<!cr_slider.SliderTick>}
      */
     minimumFontSizeRange_: {
       readOnly: true,
       type: Array,
-      value: MINIMUM_FONT_SIZE_RANGE,
+      value: ticksWithLabels(MINIMUM_FONT_SIZE_RANGE),
     },
 
     /**
