@@ -22,6 +22,8 @@ class NotificationSchedulerImpl : public NotificationScheduler {
 
  private:
   // NotificationScheduler implementation.
+  void Init(InitCallback init_callback) override { NOTIMPLEMENTED(); }
+
   void Schedule(
       std::unique_ptr<NotificationParams> notification_params) override {
     NOTIMPLEMENTED();

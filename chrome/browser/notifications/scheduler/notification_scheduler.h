@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/callback.h"
 #include "base/macros.h"
 
 namespace notifications {
@@ -18,11 +19,15 @@ struct NotificationParams;
 // glues all the subsystems together for notification scheduling system.
 class NotificationScheduler {
  public:
+  using InitCallback = base::OnceCallback<void(bool)>;
   static std::unique_ptr<NotificationScheduler> Create(
       std::unique_ptr<NotificationSchedulerContext> context);
 
   NotificationScheduler();
   virtual ~NotificationScheduler();
+
+  // Initializes the scheduler.
+  virtual void Init(InitCallback init_callback) = 0;
 
   // Schedules a notification to show in the future. Throttling logic may apply
   // based on |notification_params|.
