@@ -1064,6 +1064,24 @@
             ]
         }
     ],
+    "AutofillUseImprovedLabelDisambiguation": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "AutofillUseImprovedLabelDisambiguation"
+                    ]
+                }
+            ]
+        }
+    ],
     "AutomaticTabDiscarding": [
         {
             "platforms": [
