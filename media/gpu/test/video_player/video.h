@@ -40,6 +40,8 @@ class Video {
   VideoCodec Codec() const;
   // Get the video's codec profile.
   VideoCodecProfile Profile() const;
+  // Get the video frame rate.
+  uint32_t FrameRate() const;
   // Get the number of frames in the video.
   uint32_t NumFrames() const;
   // Get the number of fragments in the video.
@@ -92,6 +94,7 @@ class Video {
 
   VideoCodecProfile profile_ = VIDEO_CODEC_PROFILE_UNKNOWN;
   VideoCodec codec_ = kUnknownVideoCodec;
+  uint32_t frame_rate_ = 0;
   uint32_t num_frames_ = 0;
   uint32_t num_fragments_ = 0;
   gfx::Size resolution_;
