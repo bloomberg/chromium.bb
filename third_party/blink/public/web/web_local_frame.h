@@ -764,6 +764,9 @@ class WebLocalFrame : public WebFrame {
 
   virtual void SetLifecycleState(mojom::FrameLifecycleState state) = 0;
 
+  virtual void WasHidden() = 0;
+  virtual void WasShown() = 0;
+
  protected:
   explicit WebLocalFrame(WebTreeScopeType scope) : WebFrame(scope) {}
 

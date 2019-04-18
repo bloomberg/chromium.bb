@@ -266,6 +266,11 @@ void LocalFrame::CreateView(const IntSize& viewport_size,
 
   frame_view->UpdateBaseBackgroundColorRecursively(background_color);
 
+  if (auto* client = Client()) {
+    client->VisibilityChanged(
+        blink::mojom::FrameVisibility::kRenderedInViewport);
+  }
+
   if (is_local_root)
     frame_view->SetParentVisible(true);
 
@@ -1365,6 +1370,24 @@ WebPluginContainerImpl* LocalFrame::GetWebPluginContainer(Node* node) const {
   return nullptr;
 }
 
+void LocalFrame::WasHidden() {
+  remote_viewport_intersection_ = IntRect();
+  occlusion_state_ = FrameOcclusionState::kPossiblyOccluded;
+  // An iframe may get a "was hidden" notification before it has been attached
+  // to the frame tree; in that case, skip running IntersectionObserver.
+  if (!Owner() || IsProvisional() || !GetDocument() ||
+      !GetDocument()->IsActive()) {
+    return;
+  }
+  if (LocalFrameView* frame_view = View())
+    frame_view->ForceUpdateViewportIntersections();
+}
+
+void LocalFrame::WasShown() {
+  if (LocalFrameView* frame_view = View())
+    frame_view->ScheduleAnimation();
+}
+
 void LocalFrame::SetViewportIntersectionFromParent(
     const IntRect& viewport_intersection,
     FrameOcclusionState occlusion_state) {
@@ -1372,9 +1395,9 @@ void LocalFrame::SetViewportIntersectionFromParent(
       occlusion_state_ != occlusion_state) {
     remote_viewport_intersection_ = viewport_intersection;
     occlusion_state_ = occlusion_state;
-    if (View()) {
-      View()->SetIntersectionObservationState(LocalFrameView::kRequired);
-      View()->ScheduleAnimation();
+    if (LocalFrameView* frame_view = View()) {
+      frame_view->SetIntersectionObservationState(LocalFrameView::kRequired);
+      frame_view->ScheduleAnimation();
     }
   }
 }
