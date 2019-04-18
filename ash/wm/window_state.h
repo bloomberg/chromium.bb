@@ -423,9 +423,13 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
       const gfx::Rect& bounds,
       gfx::Tween::Type animation_type = gfx::Tween::EASE_OUT);
 
-  // Update PIP related state, such as next window animation type, upon
-  // state change.
-  void UpdatePipState(mojom::WindowStateType old_window_state_type);
+  // Called before the state change and update PIP related state, such as next
+  // window animation type, upon state change.
+  void OnPrePipStateChange(mojom::WindowStateType old_window_state_type);
+
+  // Called after the state change and update PIP related state, such as next
+  // window animation type, upon state change.
+  void OnPostPipStateChange(mojom::WindowStateType old_window_state_type);
 
   // Update the PIP bounds if necessary. This may need to happen when the
   // display work area changes, or if system ui regions like the virtual

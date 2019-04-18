@@ -551,7 +551,7 @@ WindowState::WindowState(aura::Window* window)
       ignore_property_change_(false),
       current_state_(new DefaultState(ToWindowStateType(GetShowState()))) {
   window_->AddObserver(this);
-  UpdatePipState(mojom::WindowStateType::DEFAULT);
+  OnPrePipStateChange(mojom::WindowStateType::DEFAULT);
 }
 
 bool WindowState::GetAlwaysOnTop() const {
@@ -624,13 +624,24 @@ void WindowState::NotifyPreStateTypeChange(
     mojom::WindowStateType old_window_state_type) {
   for (auto& observer : observer_list_)
     observer.OnPreWindowStateTypeChange(this, old_window_state_type);
-  UpdatePipState(old_window_state_type);
+  OnPrePipStateChange(old_window_state_type);
 }
 
 void WindowState::NotifyPostStateTypeChange(
     mojom::WindowStateType old_window_state_type) {
   for (auto& observer : observer_list_)
     observer.OnPostWindowStateTypeChange(this, old_window_state_type);
+  OnPostPipStateChange(old_window_state_type);
+}
+
+void WindowState::OnPostPipStateChange(
+    mojom::WindowStateType old_window_state_type) {
+  if (old_window_state_type == mojom::WindowStateType::PIP) {
+    // The animation type may be FADE_OUT_SLIDE_IN at this point, which we don't
+    // want it to be anymore if the window is not PIP anymore.
+    ::wm::SetWindowVisibilityAnimationType(
+        window_, ::wm::WINDOW_VISIBILITY_ANIMATION_TYPE_DEFAULT);
+  }
 }
 
 void WindowState::SetBoundsDirect(const gfx::Rect& bounds) {
@@ -709,7 +720,8 @@ void WindowState::SetBoundsDirectCrossFade(const gfx::Rect& new_bounds,
   CrossFadeAnimation(window_, std::move(old_layer_owner), animation_type);
 }
 
-void WindowState::UpdatePipState(mojom::WindowStateType old_window_state_type) {
+void WindowState::OnPrePipStateChange(
+    mojom::WindowStateType old_window_state_type) {
   auto* widget = views::Widget::GetWidgetForNativeWindow(window());
   if (IsPip()) {
     // widget may not exit in some unit tests.
