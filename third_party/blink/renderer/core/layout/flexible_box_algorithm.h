@@ -69,8 +69,11 @@ class FlexItem {
   DISALLOW_NEW();
 
  public:
-  // flex_base_content_size does not include border/scrollbar/padding.
-  // min_max_sizes is the min and max size in the main axis direction.
+  // Parameters:
+  // - |flex_base_content_size| does not include border/scrollbar/padding.
+  // - |min_max_sizes| is the resolved min and max size properties in the
+  //   main axis direction (not intrinsic widths). It does not include
+  //   border/scrollbar/padding.
   FlexItem(LayoutBox*,
            LayoutUnit flex_base_content_size,
            MinMaxSize min_max_sizes,

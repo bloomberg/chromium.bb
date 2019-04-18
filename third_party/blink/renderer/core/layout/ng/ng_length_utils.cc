@@ -1122,7 +1122,8 @@ NGLogicalSize CalculateReplacedChildPercentageSize(
   // fixed size constraint.
   if (is_table_cell_in_layout_phase && has_resolvable_block_size) {
     border_box_size.block_size = ComputeBlockSizeForFragmentInternal(
-        space, node.Style(), border_padding, NGSizeIndefinite);
+        space, node.Style(), border_padding,
+        /* content_size */ NGSizeIndefinite);
   }
 
   NGLogicalSize child_percentage_size =
