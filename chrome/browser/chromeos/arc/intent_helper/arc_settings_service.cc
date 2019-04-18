@@ -205,6 +205,10 @@ class ArcSettingsServiceImpl
   std::unique_ptr<ChromeZoomLevelPrefs::DefaultZoomLevelSubscription>
       default_zoom_level_subscription_;
 
+  // Name of the default network. Used to keep track of whether the default
+  // network has changed.
+  std::string default_network_name_;
+
   DISALLOW_COPY_AND_ASSIGN(ArcSettingsServiceImpl);
 };
 
@@ -277,8 +281,17 @@ void ArcSettingsServiceImpl::DefaultNetworkChanged(
   // kProxy pref has more priority than the default network update.
   // If a default network is changed to the network with ONC policy with proxy
   // settings, it should be translated here.
-  if (network && !IsPrefProxyConfigApplied())
-    SyncProxySettings();
+  if (!network || IsPrefProxyConfigApplied())
+    return;
+
+  // This function is called when the default network changes or when any of its
+  // properties change. Only trigger a proxy settings sync to ARC when the
+  // default network changes.
+  if (default_network_name_ == network->name())
+    return;
+  default_network_name_ = network->name();
+
+  SyncProxySettings();
 }
 
 bool ArcSettingsServiceImpl::IsPrefProxyConfigApplied() const {
