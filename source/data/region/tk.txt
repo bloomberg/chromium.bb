@@ -306,7 +306,6 @@ tk{
         CG{"Kongo (Respublika)"}
         CI{"Şirmaýy kenar"}
         CZ{"Çeh Respublikasy"}
-        FK{"Folklend (Malwina) adalary"}
         TL{"Gündogar Timor"}
     }
     Version{"2.1.49.82"}

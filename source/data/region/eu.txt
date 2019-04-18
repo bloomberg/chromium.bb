@@ -304,7 +304,6 @@ eu{
         CG{"Kongoko Errepublika"}
         CI{"CI"}
         CZ{"Txekiar Errepublika"}
-        FK{"Falklandak (Malvinak)"}
         TL{"TL"}
     }
     Version{"2.1.49.82"}

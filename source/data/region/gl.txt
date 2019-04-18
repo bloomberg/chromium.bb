@@ -305,7 +305,6 @@ gl{
         CG{"Congo (RC)"}
         CI{"CI"}
         CZ{"República Checa"}
-        FK{"Illas Malvinas (Falkland)"}
         SZ{"Suacilandia"}
         TL{"TL"}
     }

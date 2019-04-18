@@ -80,7 +80,6 @@ pt_PT{
         CG{"República do Congo"}
         CI{"Costa do Marfim"}
         CZ{"República Checa"}
-        FK{"Ilhas Falkland (Malvinas)"}
     }
     Version{"2.1.49.82"}
 }

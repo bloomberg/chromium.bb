@@ -305,7 +305,6 @@ uz{
         CG{"Kongo (Respublika)"}
         CI{"Fil suyagi qirg‘og‘i"}
         CZ{"Chexiya Respublikasi"}
-        FK{"Folklend (Malvin) orollari"}
         TL{"Sharqiy Timor"}
     }
     Version{"2.1.49.82"}

@@ -307,7 +307,6 @@ ga{
         CG{"an Congó (Poblacht)"}
         CI{"Côte d’Ivoire"}
         CZ{"Poblacht na Seice"}
-        FK{"Oileáin Fháclainne (Islas Malvinas)"}
         SZ{"Ríocht na Suasalainne"}
         TL{"TL"}
     }

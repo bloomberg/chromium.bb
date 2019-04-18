@@ -1,5 +1,5 @@
 diff --git a/source/data/curr/ru.txt b/source/data/curr/ru.txt
-index 6aa13956..8ace567c 100644
+index 1c42b240..6e808ae3 100644
 --- a/source/data/curr/ru.txt
 +++ b/source/data/curr/ru.txt
 @@ -923,7 +923,7 @@ ru{
@@ -20,7 +20,7 @@ index 6aa13956..8ace567c 100644
      CurrencyPlurals{
          ADP{
 diff --git a/source/data/curr/uk.txt b/source/data/curr/uk.txt
-index dbc8a252..850311d4 100644
+index 08b6c403..c666873e 100644
 --- a/source/data/curr/uk.txt
 +++ b/source/data/curr/uk.txt
 @@ -923,7 +923,7 @@ uk{
@@ -41,7 +41,7 @@ index dbc8a252..850311d4 100644
      CurrencyPlurals{
          ADP{
 diff --git a/source/data/locales/ar.txt b/source/data/locales/ar.txt
-index e741197e..671933ee 100644
+index 4c1d7aaa..46762092 100644
 --- a/source/data/locales/ar.txt
 +++ b/source/data/locales/ar.txt
 @@ -36,8 +36,7 @@ ar{
@@ -55,7 +55,7 @@ index e741197e..671933ee 100644
              miscPatterns{
                  approximately{"~{0}"}
 diff --git a/source/data/locales/hi.txt b/source/data/locales/hi.txt
-index cd8268f0..60a5dd7b 100644
+index eb271d23..efd8246a 100644
 --- a/source/data/locales/hi.txt
 +++ b/source/data/locales/hi.txt
 @@ -626,14 +626,14 @@ hi{
@@ -190,7 +190,7 @@ index 9b863e99..755d96dc 100644
      }
      Version{"2.1.48.17"}
 diff --git a/source/data/region/am.txt b/source/data/region/am.txt
-index 22e64702..d6e07bc9 100644
+index 4a3e367d..70bf5d37 100644
 --- a/source/data/region/am.txt
 +++ b/source/data/region/am.txt
 @@ -110,7 +110,7 @@ am{
@@ -244,11 +244,11 @@ index 22e64702..d6e07bc9 100644
          CI{"አይቮሪኮስት"}
          CZ{"ቼክ ሪፑብሊክ"}
 -        FK{"ፎክላንድ ደሴቶች (ኢስላስ ማልቪናስ)"}
-         MK{"መቄዶንያ (የቀድሞ የዩጎስላቭ መቄዶንያ ሪፐብሊክ)"}
          SZ{"ስዋዚላንድ"}
          TL{"ምስራቅ ቲሞር"}
+     }
 diff --git a/source/data/region/ar.txt b/source/data/region/ar.txt
-index fd6ff31e..f6122dd7 100644
+index b3efbc2a..f226a60a 100644
 --- a/source/data/region/ar.txt
 +++ b/source/data/region/ar.txt
 @@ -110,7 +110,7 @@ ar{
@@ -302,9 +302,9 @@ index fd6ff31e..f6122dd7 100644
          CI{"كوت ديفوار"}
          CZ{"جمهورية التشيك"}
 -        FK{"جزر فوكلاند - جزر مالفيناس"}
-         MK{"مقدونيا- جمهورية مقدونيا اليوغسلافية السابقة"}
          TL{"تيمور الشرقية"}
      }
+     Version{"2.1.49.82"}
 diff --git a/source/data/region/ar_SA.txt b/source/data/region/ar_SA.txt
 index 8b0b0535..ac60fb57 100644
 --- a/source/data/region/ar_SA.txt
@@ -441,7 +441,7 @@ index f4f22c71..c788e82e 100644
          TL{"Timor Este"}
      }
 diff --git a/source/data/region/az.txt b/source/data/region/az.txt
-index ad72b42d..c15f8353 100644
+index 1cfe490a..e97e5fc1 100644
 --- a/source/data/region/az.txt
 +++ b/source/data/region/az.txt
 @@ -110,7 +110,7 @@ az{
@@ -495,9 +495,9 @@ index ad72b42d..c15f8353 100644
          CI{"Fil Dişi Sahili"}
          CZ{"Çex Respublikası"}
 -        FK{"Folklend adaları (Malvin adaları)"}
-         MK{"Makedoniya (KYRM)"}
          SZ{"Svazilend"}
          TL{"Doğu Timor"}
+     }
 diff --git a/source/data/region/az_Cyrl.txt b/source/data/region/az_Cyrl.txt
 index aa2a8d87..df762c89 100644
 --- a/source/data/region/az_Cyrl.txt
@@ -546,7 +546,7 @@ index aa2a8d87..df762c89 100644
      }
      Version{"2.1.47.82"}
 diff --git a/source/data/region/be.txt b/source/data/region/be.txt
-index 49e7dad8..fc027bd3 100644
+index d317bd4b..afd7ab44 100644
 --- a/source/data/region/be.txt
 +++ b/source/data/region/be.txt
 @@ -110,7 +110,7 @@ be{
@@ -600,9 +600,9 @@ index 49e7dad8..fc027bd3 100644
          CI{"Бераг Слановай Косці"}
          CZ{"Чэшская Рэспубліка"}
 -        FK{"Фалклендскія (Мальвінскія) астравы"}
-         MK{"Македонія (БЮРМ)"}
          SZ{"Каралеўства Свазіленд"}
          TL{"Усходні Тымор"}
+     }
 diff --git a/source/data/region/bg.txt b/source/data/region/bg.txt
 index bed72a6b..412d1bbc 100644
 --- a/source/data/region/bg.txt
@@ -777,7 +777,7 @@ index 789eec2d..d91c6f8a 100644
          TL{"Timor ar Reter"}
      }
 diff --git a/source/data/region/bs.txt b/source/data/region/bs.txt
-index e2f62f3b..91191d2a 100644
+index c3b3f46a..e2f2c8c4 100644
 --- a/source/data/region/bs.txt
 +++ b/source/data/region/bs.txt
 @@ -110,7 +110,7 @@ bs{
@@ -831,11 +831,11 @@ index e2f62f3b..91191d2a 100644
          CI{"Obala Bjelokosti"}
          CZ{"Češka Republika"}
 -        FK{"Folklandska (Malvinska) ostrva"}
-         MK{"Makedonija (BJR)"}
          SZ{"Svazi"}
          TL{"TL"}
+     }
 diff --git a/source/data/region/bs_Cyrl.txt b/source/data/region/bs_Cyrl.txt
-index 5e07c12b..b3103bbf 100644
+index 131713ba..75552b34 100644
 --- a/source/data/region/bs_Cyrl.txt
 +++ b/source/data/region/bs_Cyrl.txt
 @@ -110,7 +110,7 @@ bs_Cyrl{
@@ -879,9 +879,9 @@ index 5e07c12b..b3103bbf 100644
          CI{"Обала Бјелокости"}
          CZ{"Чешка Република"}
 -        FK{"Фокландска (Малвинска) острва"}
-         MK{"Македонија (БЈР)"}
      }
-     Version{"2.1.48.17"}
+     Version{"2.1.49.82"}
+ }
 diff --git a/source/data/region/ca.txt b/source/data/region/ca.txt
 index 9a43604e..9b6340fb 100644
 --- a/source/data/region/ca.txt
@@ -1062,7 +1062,7 @@ index d78dbdf4..b76cb80d 100644
      }
      Version{"2.1.47.82"}
 diff --git a/source/data/region/chr.txt b/source/data/region/chr.txt
-index 590347cd..c513068a 100644
+index 12f9400c..9b3f36ea 100644
 --- a/source/data/region/chr.txt
 +++ b/source/data/region/chr.txt
 @@ -110,7 +110,7 @@ chr{
@@ -1116,9 +1116,9 @@ index 590347cd..c513068a 100644
          CI{"ᎤᏁᎬ ᎪᎳ ᎠᎹᏳᎶᏗ"}
          CZ{"ᏤᎩ ᏍᎦᏚᎩ"}
 -        FK{"ᏩᎩ ᏚᎦᏚᏛᎢ (ᎢᏍᎳᏍ ᎹᎸᏫᎾᏍ)"}
-         MK{"ᎹᏎᏙᏂᏯ (FYROM)"}
          SZ{"ᎠᏂᏍᏩᏏᎢ"}
          TL{"ᏗᎧᎸᎬᎢ ᏘᎼᎵ"}
+     }
 diff --git a/source/data/region/ckb.txt b/source/data/region/ckb.txt
 index a096a143..1a20111e 100644
 --- a/source/data/region/ckb.txt
@@ -1201,7 +1201,7 @@ index 4053ab34..5f0758bb 100644
      Version{"2.1.48.44"}
  }
 diff --git a/source/data/region/cy.txt b/source/data/region/cy.txt
-index 0f572f4c..7f9f7ede 100644
+index 6093e0c0..304f0fd2 100644
 --- a/source/data/region/cy.txt
 +++ b/source/data/region/cy.txt
 @@ -110,7 +110,7 @@ cy{
@@ -1255,11 +1255,11 @@ index 0f572f4c..7f9f7ede 100644
          CI{"Arfordir Ifori"}
          CZ{"Gweriniaeth Tsiec"}
 -        FK{"Ynysoedd y Falkland (Ynysoedd y Malfinas)"}
-         MK{"Macedonia (CWIM)"}
          SZ{"Gwlad Swazi"}
          TL{"Dwyrain Timor"}
+     }
 diff --git a/source/data/region/da.txt b/source/data/region/da.txt
-index 12f6f102..84ef6ff2 100644
+index fccd5ba4..00a3017c 100644
 --- a/source/data/region/da.txt
 +++ b/source/data/region/da.txt
 @@ -110,7 +110,7 @@ da{
@@ -1313,9 +1313,9 @@ index 12f6f102..84ef6ff2 100644
          CG{"Republikken Congo"}
          CZ{"Den Tjekkiske Republik"}
 -        FK{"Falklandsøerne (Islas Malvinas)"}
-         MK{"Den tidligere jugoslaviske republik Makedonien"}
          SZ{"Swaziland"}
          TL{"Østtimor"}
+     }
 diff --git a/source/data/region/de.txt b/source/data/region/de.txt
 index f8d4af70..f19d0e03 100644
 --- a/source/data/region/de.txt
@@ -1526,7 +1526,7 @@ index 988610d5..15a4b85e 100644
          TL{"Ɣedzeƒe Timɔ nutome"}
      }
 diff --git a/source/data/region/el.txt b/source/data/region/el.txt
-index 21772b96..05bd4f7f 100644
+index fea60953..024d85fa 100644
 --- a/source/data/region/el.txt
 +++ b/source/data/region/el.txt
 @@ -110,7 +110,7 @@ el{
@@ -1582,7 +1582,7 @@ index 21772b96..05bd4f7f 100644
 -        FK{"Νήσοι Φόκλαντ (Νήσοι Μαλβίνας)"}
          TL{"Ανατολικό Τιμόρ"}
      }
-     Version{"2.1.49.26"}
+     Version{"2.1.49.82"}
 diff --git a/source/data/region/en.txt b/source/data/region/en.txt
 index 307abf18..0c1347ee 100644
 --- a/source/data/region/en.txt
@@ -1643,7 +1643,7 @@ index 307abf18..0c1347ee 100644
          TL{"East Timor"}
      }
 diff --git a/source/data/region/es.txt b/source/data/region/es.txt
-index 48ac68fe..4eacfbe3 100644
+index f8c2e920..83f30f6d 100644
 --- a/source/data/region/es.txt
 +++ b/source/data/region/es.txt
 @@ -110,7 +110,7 @@ es{
@@ -1697,9 +1697,9 @@ index 48ac68fe..4eacfbe3 100644
          CI{"Costa de Marfil"}
          CZ{"República Checa"}
 -        FK{"Islas Malvinas (Islas Falkland)"}
-         MK{"Macedonia (ERYM)"}
          SZ{"Suazilandia"}
          TL{"Timor Oriental"}
+     }
 diff --git a/source/data/region/et.txt b/source/data/region/et.txt
 index 60faf278..37eaeeb4 100644
 --- a/source/data/region/et.txt
@@ -1759,7 +1759,7 @@ index 60faf278..37eaeeb4 100644
          TL{"Timor-Leste"}
      }
 diff --git a/source/data/region/eu.txt b/source/data/region/eu.txt
-index b1bf127b..879bca70 100644
+index 3c48f834..da1cbd0a 100644
 --- a/source/data/region/eu.txt
 +++ b/source/data/region/eu.txt
 @@ -110,7 +110,7 @@ eu{
@@ -1813,11 +1813,11 @@ index b1bf127b..879bca70 100644
          CI{"CI"}
          CZ{"Txekiar Errepublika"}
 -        FK{"Falklandak (Malvinak)"}
-         MK{"Mazedoniako Jugoslaviar Errepublika Ohia"}
          TL{"TL"}
      }
+     Version{"2.1.49.82"}
 diff --git a/source/data/region/fa.txt b/source/data/region/fa.txt
-index a90dcba7..a5aec037 100644
+index c3f94e6b..cdbdb56b 100644
 --- a/source/data/region/fa.txt
 +++ b/source/data/region/fa.txt
 @@ -110,7 +110,7 @@ fa{
@@ -1956,7 +1956,7 @@ index 2b1270bc..aaeca7d7 100644
      }
      Version{"2.1.48.42"}
 diff --git a/source/data/region/fil.txt b/source/data/region/fil.txt
-index fc495650..9accbbc0 100644
+index 542e52bc..d346ef20 100644
 --- a/source/data/region/fil.txt
 +++ b/source/data/region/fil.txt
 @@ -110,7 +110,7 @@ fil{
@@ -2010,9 +2010,9 @@ index fc495650..9accbbc0 100644
          CI{"Ivory Coast"}
          CZ{"Czech Republic"}
 -        FK{"Falkland Islands (Islas Malvinas)"}
-         MK{"Macedonia (FYROM)"}
          TL{"East Timor"}
      }
+     Version{"2.1.49.82"}
 diff --git a/source/data/region/fo.txt b/source/data/region/fo.txt
 index 69a8aaf0..37402f2c 100644
 --- a/source/data/region/fo.txt
@@ -2068,7 +2068,7 @@ index 69a8aaf0..37402f2c 100644
      }
      Version{"2.1.48.9"}
 diff --git a/source/data/region/fr.txt b/source/data/region/fr.txt
-index 1854acaf..c9c912f8 100644
+index 71a98710..c3e0e4ca 100644
 --- a/source/data/region/fr.txt
 +++ b/source/data/region/fr.txt
 @@ -110,7 +110,7 @@ fr{
@@ -2122,9 +2122,9 @@ index 1854acaf..c9c912f8 100644
          CI{"​​République de Côte d’Ivoire"}
          CZ{"République tchèque"}
 -        FK{"Îles Falkland"}
-         MK{"Macédoine (ARYM)"}
          SZ{"Swaziland"}
          TL{"Timor-Oriental"}
+     }
 diff --git a/source/data/region/fr_CA.txt b/source/data/region/fr_CA.txt
 index 89fe8bc2..fb5c413e 100644
 --- a/source/data/region/fr_CA.txt
@@ -2249,7 +2249,7 @@ index ea64e55b..ab6fead5 100644
      }
      Version{"2.1.47.82"}
 diff --git a/source/data/region/ga.txt b/source/data/region/ga.txt
-index 8ed0ff24..e856b8ec 100644
+index a691d0cd..b8cf8e19 100644
 --- a/source/data/region/ga.txt
 +++ b/source/data/region/ga.txt
 @@ -110,7 +110,7 @@ ga{
@@ -2303,11 +2303,11 @@ index 8ed0ff24..e856b8ec 100644
          CI{"Côte d’Ivoire"}
          CZ{"Poblacht na Seice"}
 -        FK{"Oileáin Fháclainne (Islas Malvinas)"}
-         MK{"an Mhacadóin (PIIM)"}
          SZ{"Ríocht na Suasalainne"}
          TL{"TL"}
+     }
 diff --git a/source/data/region/gd.txt b/source/data/region/gd.txt
-index 426bddc4..962be495 100644
+index 6f4de3c4..7fd53e2d 100644
 --- a/source/data/region/gd.txt
 +++ b/source/data/region/gd.txt
 @@ -110,7 +110,7 @@ gd{
@@ -2361,11 +2361,11 @@ index 426bddc4..962be495 100644
          CI{"An Costa Ìbhri"}
          CZ{"Poblachd na Seice"}
 -        FK{"Na h-Eileanan Fàclannach (Islas Malvinas)"}
-         MK{"A’ Mhasadon (FYROM)"}
          TL{"Tìomor an Ear"}
      }
+     Version{"2.1.49.82"}
 diff --git a/source/data/region/gl.txt b/source/data/region/gl.txt
-index 97c940d5..64f46acf 100644
+index fcf92ba5..5c556c6f 100644
 --- a/source/data/region/gl.txt
 +++ b/source/data/region/gl.txt
 @@ -110,7 +110,7 @@ gl{
@@ -2419,9 +2419,9 @@ index 97c940d5..64f46acf 100644
          CI{"CI"}
          CZ{"República Checa"}
 -        FK{"Illas Malvinas (Falkland)"}
-         MK{"Macedonia (ARIM)"}
          SZ{"Suacilandia"}
          TL{"TL"}
+     }
 diff --git a/source/data/region/gsw.txt b/source/data/region/gsw.txt
 index 7d0eba63..4623d8ca 100644
 --- a/source/data/region/gsw.txt
@@ -2572,7 +2572,7 @@ index 22ef05d9..24338c70 100644
          TL{"מזרח טימור"}
      }
 diff --git a/source/data/region/hi.txt b/source/data/region/hi.txt
-index 54da81f9..755d91fe 100644
+index 5e5a31d3..333f108a 100644
 --- a/source/data/region/hi.txt
 +++ b/source/data/region/hi.txt
 @@ -110,7 +110,7 @@ hi{
@@ -2803,7 +2803,7 @@ index ec449737..de217e41 100644
      }
      Version{"2.1.48.42"}
 diff --git a/source/data/region/hy.txt b/source/data/region/hy.txt
-index b7c3a402..d8b714e8 100644
+index 643ecb81..e5da0b31 100644
 --- a/source/data/region/hy.txt
 +++ b/source/data/region/hy.txt
 @@ -110,7 +110,7 @@ hy{
@@ -2857,9 +2857,9 @@ index b7c3a402..d8b714e8 100644
          CI{"Փղոսկրի Ափ"}
          CZ{"Չեխիայի Հանրապետություն"}
 -        FK{"Ֆոլքլենդյան (Մալվինյան) կղզիներ"}
-         MK{"Մակեդոնիա (ՄՆՀՀ)"}
          SZ{"Սվազիլենդ"}
          TL{"Արևելյան Թիմոր"}
+     }
 diff --git a/source/data/region/id.txt b/source/data/region/id.txt
 index 061ff79e..ddc86c54 100644
 --- a/source/data/region/id.txt
@@ -2919,7 +2919,7 @@ index 061ff79e..ddc86c54 100644
          TL{"TL"}
      }
 diff --git a/source/data/region/is.txt b/source/data/region/is.txt
-index 96275c7d..2e82eb15 100644
+index e8ee8507..6f16ccf8 100644
 --- a/source/data/region/is.txt
 +++ b/source/data/region/is.txt
 @@ -110,7 +110,7 @@ is{
@@ -2972,9 +2972,9 @@ index 96275c7d..2e82eb15 100644
          CD{"Kongó (Lýðstjórnarlýðveldið)"}
          CG{"Kongó (Lýðveldið)"}
 -        FK{"Falklandseyjar (Malvinas)"}
-         MK{"Makedónía (Fyrrverandi lýðveldi Júgóslavíu)"}
          TL{"Austur-Tímor"}
      }
+     Version{"2.1.49.82"}
 diff --git a/source/data/region/it.txt b/source/data/region/it.txt
 index 3dff8f05..62da0610 100644
 --- a/source/data/region/it.txt
@@ -3034,7 +3034,7 @@ index 3dff8f05..62da0610 100644
      }
      Version{"2.1.48.42"}
 diff --git a/source/data/region/ja.txt b/source/data/region/ja.txt
-index 01b5ac69..f64143a2 100644
+index 542beebb..1b216552 100644
 --- a/source/data/region/ja.txt
 +++ b/source/data/region/ja.txt
 @@ -110,7 +110,7 @@ ja{
@@ -3245,7 +3245,7 @@ index be193242..732a24f2 100644
      }
      Version{"2.1.48.9"}
 diff --git a/source/data/region/kk.txt b/source/data/region/kk.txt
-index 46e11051..7e538c19 100644
+index 8ffac6a9..c2378793 100644
 --- a/source/data/region/kk.txt
 +++ b/source/data/region/kk.txt
 @@ -110,7 +110,7 @@ kk{
@@ -3299,11 +3299,11 @@ index 46e11051..7e538c19 100644
          CG{"Конго Республикасы"}
          CZ{"Чех Республикасы"}
 -        FK{"Фолкленд аралдары (Мальвин аралдары)"}
-         MK{"Македония Республикасы"}
          TL{"Шығыс Тимор"}
      }
+     Version{"2.1.49.82"}
 diff --git a/source/data/region/km.txt b/source/data/region/km.txt
-index b3ec3581..5c7d9a91 100644
+index 6501cc5a..12f4e645 100644
 --- a/source/data/region/km.txt
 +++ b/source/data/region/km.txt
 @@ -110,7 +110,7 @@ km{
@@ -3357,9 +3357,9 @@ index b3ec3581..5c7d9a91 100644
          CI{"អាយវ៉ូរី ខូសថ៍"}
          CZ{"សាធារណរដ្ឋឆេក"}
 -        FK{"កោះ​ហ្វក់ឡែន (Islas Malvinas)"}
-         MK{"ម៉ាសេដ្វាន (អតីត​សាធារណរដ្ឋ​យូហ្គោស្លាវី)"}
          TL{"ទីម័រ​ខាង​កើត"}
      }
+     Version{"2.1.49.82"}
 diff --git a/source/data/region/kn.txt b/source/data/region/kn.txt
 index 9f550c1c..3b7355d4 100644
 --- a/source/data/region/kn.txt
@@ -3419,7 +3419,7 @@ index 9f550c1c..3b7355d4 100644
          SZ{"ಸ್ವಾಜಿಲ್ಯಾಂಡ್‌"}
          TL{"ಪೂರ್ವ ಟಿಮೋರ್"}
 diff --git a/source/data/region/ko.txt b/source/data/region/ko.txt
-index 14b429e4..56f5e211 100644
+index 0e059016..dfcd2a66 100644
 --- a/source/data/region/ko.txt
 +++ b/source/data/region/ko.txt
 @@ -110,7 +110,7 @@ ko{
@@ -3473,11 +3473,11 @@ index 14b429e4..56f5e211 100644
          CI{"아이보리 코스트"}
          CZ{"체코 공화국"}
 -        FK{"포클랜드 제도(말비나스 군도)"}
-         MK{"마케도니아(FYROM)"}
          SZ{"스와질란드"}
          TL{"티모르레스테"}
+     }
 diff --git a/source/data/region/kok.txt b/source/data/region/kok.txt
-index e1861c80..ea5eca8d 100644
+index f2d4bd40..dff02597 100644
 --- a/source/data/region/kok.txt
 +++ b/source/data/region/kok.txt
 @@ -110,7 +110,7 @@ kok{
@@ -3531,9 +3531,9 @@ index e1861c80..ea5eca8d 100644
          CI{"आयवोरी कोस्ट"}
          CZ{"चेक लोकसत्ताक"}
 -        FK{"फ़ॉकलैंड आइलैंड्स (इलास मालविनास)"}
-         MK{"मॅसिडोनिया (FYROM)"}
          TL{"ईस्ट तिमूर"}
      }
+     Version{"2.1.49.82"}
 diff --git a/source/data/region/ksh.txt b/source/data/region/ksh.txt
 index c78bdcbc..7996b7ef 100644
 --- a/source/data/region/ksh.txt
@@ -3619,7 +3619,7 @@ index f7805373..a9d3576c 100644
          TL{"Tîmora Rojhilat"}
      }
 diff --git a/source/data/region/ky.txt b/source/data/region/ky.txt
-index fb048c00..77dedb44 100644
+index 2cb8c526..b44bc44b 100644
 --- a/source/data/region/ky.txt
 +++ b/source/data/region/ky.txt
 @@ -110,7 +110,7 @@ ky{
@@ -3673,11 +3673,11 @@ index fb048c00..77dedb44 100644
          CI{"Пил сөөктүү жээк"}
          CZ{"Чех Республикасы"}
 -        FK{"Фолкленд (Мальвина) аралдары"}
-         MK{"Македония (Мур. Югосл.)"}
          SZ{"SZ"}
          TL{"Чыгыш Тимор"}
+     }
 diff --git a/source/data/region/lb.txt b/source/data/region/lb.txt
-index fedf95e4..ef91944f 100644
+index 9197e822..997c82d6 100644
 --- a/source/data/region/lb.txt
 +++ b/source/data/region/lb.txt
 @@ -131,7 +131,7 @@ lb{
@@ -4173,7 +4173,7 @@ index d7995916..6d13e5f4 100644
      }
      Version{"2.1.49.2"}
 diff --git a/source/data/region/mt.txt b/source/data/region/mt.txt
-index 9e1e0a19..5f1cc7bf 100644
+index 887c58a8..9d63d8b7 100644
 --- a/source/data/region/mt.txt
 +++ b/source/data/region/mt.txt
 @@ -106,7 +106,7 @@ mt{
@@ -4232,11 +4232,11 @@ index 9e1e0a19..5f1cc7bf 100644
          CG{"ir-Repubblika tal-Kongo"}
          CZ{"Ir-Repubblika Ċeka"}
 -        FK{"Il-Gżejjer Falkland (il-Gżejjer Malvinas)"}
-         MK{"l-Eks Repubblika Jugoslava tal-Maċedonia"}
          TL{"Timor tal-Lvant"}
      }
+     Version{"2.1.49.82"}
 diff --git a/source/data/region/my.txt b/source/data/region/my.txt
-index 2c148276..de8aa7bf 100644
+index e5cb3adb..56318a26 100644
 --- a/source/data/region/my.txt
 +++ b/source/data/region/my.txt
 @@ -110,7 +110,7 @@ my{
@@ -4290,9 +4290,9 @@ index 2c148276..de8aa7bf 100644
          CI{"အိုင်ဗရီကို့စ်"}
          CZ{"ချက် ပြည်ထောင်စု"}
 -        FK{"ဖော့ကလန် ကျွန်းစု (အီလားစ် မောလ်ဗီနာစ်)"}
-         MK{"မက်ဆီဒိုးနီးယား (ယခင် ယူဂိုစလားဗီးယား မက်ဆီဒိုးနီးယားပြည်ထောင်စု)"}
      }
-     Version{"2.1.48.36"}
+     Version{"2.1.49.82"}
+ }
 diff --git a/source/data/region/mzn.txt b/source/data/region/mzn.txt
 index ff561adb..fbd97362 100644
 --- a/source/data/region/mzn.txt
@@ -4409,7 +4409,7 @@ index 8ac64c4d..b54606a9 100644
      }
      Version{"2.1.48.42"}
 diff --git a/source/data/region/ne.txt b/source/data/region/ne.txt
-index 99df3014..686e544a 100644
+index c1ffcb84..355743cd 100644
 --- a/source/data/region/ne.txt
 +++ b/source/data/region/ne.txt
 @@ -110,7 +110,7 @@ ne{
@@ -4463,11 +4463,11 @@ index 99df3014..686e544a 100644
          CI{"आइभोरी कोस्ट"}
          CZ{"चेक गणतन्त्र"}
 -        FK{"फक्ल्याण्ड टापुहरू (इज्लास माल्भिनास)"}
-         MK{"म्यासेडोनिया (फाइरम)"}
          SZ{"SZ"}
          TL{"पृर्वी टीमोर"}
+     }
 diff --git a/source/data/region/nl.txt b/source/data/region/nl.txt
-index 3e53ee24..987fe6fb 100644
+index 4c4935a6..028a307f 100644
 --- a/source/data/region/nl.txt
 +++ b/source/data/region/nl.txt
 @@ -110,7 +110,7 @@ nl{
@@ -4525,7 +4525,7 @@ index 3e53ee24..987fe6fb 100644
          TL{"Democratische Republiek Oost-Timor"}
      }
 diff --git a/source/data/region/nn.txt b/source/data/region/nn.txt
-index 47c834c0..ec256728 100644
+index 09139a10..bbfab679 100644
 --- a/source/data/region/nn.txt
 +++ b/source/data/region/nn.txt
 @@ -109,7 +109,7 @@ nn{
@@ -4577,11 +4577,11 @@ index 47c834c0..ec256728 100644
          CD{"Den demokratiske republikken Kongo"}
          CG{"Republikken Kongo"}
 -        FK{"Falklandsøyane (Islas Malvinas)"}
-         MK{"Den tidlegare jugoslaviske republikken Makedonia"}
          TL{"Aust-Timor"}
      }
+     Version{"2.1.49.82"}
 diff --git a/source/data/region/or.txt b/source/data/region/or.txt
-index c29a2257..03e8f5bd 100644
+index 0ade60d2..91f58fd4 100644
 --- a/source/data/region/or.txt
 +++ b/source/data/region/or.txt
 @@ -110,7 +110,7 @@ or{
@@ -4635,9 +4635,9 @@ index c29a2257..03e8f5bd 100644
          CI{"ଆଇଭରୀ କୋଷ୍ଟ"}
          CZ{"ଚେକ୍‌ ସାଧାରଣତନ୍ତ୍ର"}
 -        FK{"ଫକଲ୍ୟାଣ୍ଡ ଦ୍ୱୀପପୁଞ୍ଜ (ଇସଲାସ୍‌ ମାଲଭିନାସ୍‌)"}
-         MK{"ମାସେଡୋନିଆ (ଏଫ୍‌‌ୱାଇଆର୍‌‌ଓଏମ୍)"}
          SZ{"ସ୍ୱାଜିଲ୍ୟାଣ୍ଡ"}
          TL{"ପୂର୍ବ ତିମୋର୍‌"}
+     }
 diff --git a/source/data/region/pa.txt b/source/data/region/pa.txt
 index 1016ac4f..b01c1ac2 100644
 --- a/source/data/region/pa.txt
@@ -4755,7 +4755,7 @@ index fbf3850f..cf7de194 100644
          TL{"Timor-Leste"}
      }
 diff --git a/source/data/region/ps.txt b/source/data/region/ps.txt
-index 1d09d37f..fa4dc5d3 100644
+index b0d556a2..d62aece4 100644
 --- a/source/data/region/ps.txt
 +++ b/source/data/region/ps.txt
 @@ -110,7 +110,7 @@ ps{
@@ -4809,9 +4809,9 @@ index 1d09d37f..fa4dc5d3 100644
          CI{"ایوري ساحل"}
          CZ{"جمهوريه چيک"}
 -        FK{"فاکلينډ ټاپوګان (آيزلز مالويناس)"}
-         MK{"مقدونیه (FYROM)"}
          SZ{"سوازيلېنډ"}
          TL{"ختيځ تيمور"}
+     }
 diff --git a/source/data/region/pt.txt b/source/data/region/pt.txt
 index 5e331af4..f6190b39 100644
 --- a/source/data/region/pt.txt
@@ -4871,7 +4871,7 @@ index 5e331af4..f6190b39 100644
      }
      Version{"2.1.48.42"}
 diff --git a/source/data/region/pt_PT.txt b/source/data/region/pt_PT.txt
-index 1b77e3fd..330ae4c2 100644
+index d9a325d0..04de5b9b 100644
 --- a/source/data/region/pt_PT.txt
 +++ b/source/data/region/pt_PT.txt
 @@ -29,7 +29,7 @@ pt_PT{
@@ -4888,11 +4888,11 @@ index 1b77e3fd..330ae4c2 100644
          CI{"Costa do Marfim"}
          CZ{"República Checa"}
 -        FK{"Ilhas Falkland (Malvinas)"}
-         MK{"Macedónia (ARJM)"}
      }
-     Version{"2.1.47.89"}
+     Version{"2.1.49.82"}
+ }
 diff --git a/source/data/region/ro.txt b/source/data/region/ro.txt
-index ba78c02d..06805bfa 100644
+index d0cf9f45..5300f61d 100644
 --- a/source/data/region/ro.txt
 +++ b/source/data/region/ro.txt
 @@ -110,7 +110,7 @@ ro{
@@ -4946,11 +4946,11 @@ index ba78c02d..06805bfa 100644
          CI{"Coasta de Fildeș"}
          CZ{"Republica Cehă"}
 -        FK{"Insulele Falkland (Insulele Malvine)"}
-         MK{"Republica Macedonia (FRIM)"}
          SZ{"Swaziland"}
          TL{"Timorul de Est"}
+     }
 diff --git a/source/data/region/ru.txt b/source/data/region/ru.txt
-index c1286dd2..3f2af98c 100644
+index 38d8af21..3178441a 100644
 --- a/source/data/region/ru.txt
 +++ b/source/data/region/ru.txt
 @@ -110,7 +110,7 @@ ru{
@@ -5008,7 +5008,7 @@ index c1286dd2..3f2af98c 100644
          TL{"Тимор-Лесте"}
      }
 diff --git a/source/data/region/sd.txt b/source/data/region/sd.txt
-index 7ce84683..1ac2617e 100644
+index a4f44e13..d0e167c3 100644
 --- a/source/data/region/sd.txt
 +++ b/source/data/region/sd.txt
 @@ -110,7 +110,7 @@ sd{
@@ -5280,7 +5280,7 @@ index 17ff0e15..f8b365de 100644
      }
      Version{"2.1.47.82"}
 diff --git a/source/data/region/so.txt b/source/data/region/so.txt
-index 3c66d430..ab311bf6 100644
+index 4e26c912..067b1184 100644
 --- a/source/data/region/so.txt
 +++ b/source/data/region/so.txt
 @@ -110,7 +110,7 @@ so{
@@ -5316,9 +5316,9 @@ index 3c66d430..ab311bf6 100644
          CI{"Aayforikoost"}
          CZ{"Jamhuuriyadda Jek"}
 -        FK{"Jasiiradaha Fookland"}
-         MK{"Masedooniya (FYROM)"}
          SZ{"Iswaasilaan"}
          TL{"Timoor Bari"}
+     }
 diff --git a/source/data/region/sq.txt b/source/data/region/sq.txt
 index d30eec72..bd7a0b60 100644
 --- a/source/data/region/sq.txt
@@ -5378,7 +5378,7 @@ index d30eec72..bd7a0b60 100644
          TL{"Timori Lindor"}
      }
 diff --git a/source/data/region/sr.txt b/source/data/region/sr.txt
-index 69536bf7..4d055a4d 100644
+index 7cc38d50..d194c7fe 100644
 --- a/source/data/region/sr.txt
 +++ b/source/data/region/sr.txt
 @@ -110,7 +110,7 @@ sr{
@@ -5434,9 +5434,9 @@ index 69536bf7..4d055a4d 100644
 -        FK{"Фокландска (Малвинска) острва"}
          TL{"Источни Тимор"}
      }
-     Version{"2.1.48.42"}
+     Version{"2.1.49.82"}
 diff --git a/source/data/region/sr_Latn.txt b/source/data/region/sr_Latn.txt
-index cb896624..034e4e4a 100644
+index 6a31152a..285acf3e 100644
 --- a/source/data/region/sr_Latn.txt
 +++ b/source/data/region/sr_Latn.txt
 @@ -111,7 +111,7 @@ sr_Latn{
@@ -5492,7 +5492,7 @@ index cb896624..034e4e4a 100644
 -        FK{"Foklandska (Malvinska) ostrva"}
          TL{"Istočni Timor"}
      }
-     Version{"2.1.48.77"}
+     Version{"2.1.49.82"}
 diff --git a/source/data/region/sv.txt b/source/data/region/sv.txt
 index 9e0c13c2..30afa562 100644
 --- a/source/data/region/sv.txt
@@ -5714,7 +5714,7 @@ index 53470612..b4761e76 100644
          SZ{"SZ"}
          TL{"తూర్పు టిమోర్"}
 diff --git a/source/data/region/tg.txt b/source/data/region/tg.txt
-index 8f943684..2f9f5936 100644
+index 04497f18..03a62ce1 100644
 --- a/source/data/region/tg.txt
 +++ b/source/data/region/tg.txt
 @@ -93,7 +93,7 @@ tg{
@@ -5745,7 +5745,7 @@ index 8f943684..2f9f5936 100644
      }
      Countries%variant{
 diff --git a/source/data/region/th.txt b/source/data/region/th.txt
-index b6bed983..24d7c11e 100644
+index 44ff35cb..a7247317 100644
 --- a/source/data/region/th.txt
 +++ b/source/data/region/th.txt
 @@ -110,7 +110,7 @@ th{
@@ -5803,7 +5803,7 @@ index b6bed983..24d7c11e 100644
          TL{"ติมอร์ตะวันออก"}
      }
 diff --git a/source/data/region/ti.txt b/source/data/region/ti.txt
-index 734a2760..2b708808 100644
+index 80e60af8..fbbe89c4 100644
 --- a/source/data/region/ti.txt
 +++ b/source/data/region/ti.txt
 @@ -154,7 +154,7 @@ ti{
@@ -5835,7 +5835,7 @@ index 734a2760..2b708808 100644
      }
      Countries%variant{
 diff --git a/source/data/region/tk.txt b/source/data/region/tk.txt
-index 1990c7a1..715656c0 100644
+index 974209f9..1f78b3d2 100644
 --- a/source/data/region/tk.txt
 +++ b/source/data/region/tk.txt
 @@ -110,7 +110,7 @@ tk{
@@ -5889,9 +5889,9 @@ index 1990c7a1..715656c0 100644
          CI{"Şirmaýy kenar"}
          CZ{"Çeh Respublikasy"}
 -        FK{"Folklend (Malwina) adalary"}
-         MK{"Makedoniýa (ÖÝR)"}
          TL{"Gündogar Timor"}
      }
+     Version{"2.1.49.82"}
 diff --git a/source/data/region/to.txt b/source/data/region/to.txt
 index 2ef4a9a0..dd032adb 100644
 --- a/source/data/region/to.txt
@@ -5992,7 +5992,7 @@ index 387a51ba..01d726a2 100644
          TL{"Doğu Timor"}
      }
 diff --git a/source/data/region/tt.txt b/source/data/region/tt.txt
-index 7a7f6760..2933362e 100644
+index dda7bea9..30cd1eec 100644
 --- a/source/data/region/tt.txt
 +++ b/source/data/region/tt.txt
 @@ -92,7 +92,7 @@ tt{
@@ -6004,8 +6004,8 @@ index 7a7f6760..2933362e 100644
          HM{"Херд утравы һәм Макдональд утраулары"}
          HN{"Гондурас"}
          HR{"Хорватия"}
-@@ -142,7 +142,7 @@ tt{
-         MH{"Маршалл утраулары"}
+@@ -143,7 +143,7 @@ tt{
+         MK{"Төньяк Македония"}
          ML{"Мали"}
          MN{"Монголия"}
 -        MO{"Макао Махсус Идарәле Төбәге"}
@@ -6013,7 +6013,7 @@ index 7a7f6760..2933362e 100644
          MP{"Төньяк Мариана утраулары"}
          MQ{"Мартиника"}
          MR{"Мавритания"}
-@@ -244,10 +244,6 @@ tt{
+@@ -245,10 +245,6 @@ tt{
          ZW{"Зимбабве"}
          ZZ{"билгесез төбәк"}
      }
@@ -6023,9 +6023,9 @@ index 7a7f6760..2933362e 100644
 -    }
      Countries%variant{
          CD{"Конго (КДР)"}
-         MK{"Македония (Македония Элекке Югославия Республикасы)"}
+     }
 diff --git a/source/data/region/ug.txt b/source/data/region/ug.txt
-index 6ac4478c..3b82dc67 100644
+index 0a4a3164..7658758d 100644
 --- a/source/data/region/ug.txt
 +++ b/source/data/region/ug.txt
 @@ -108,7 +108,7 @@ ug{
@@ -6064,25 +6064,8 @@ index 6ac4478c..3b82dc67 100644
          PT{"پورتۇگالىيە"}
          PW{"پالائۇ"}
          PY{"پاراگۋاي"}
-@@ -294,16 +294,12 @@ ug{
-     }
-     Countries%short{
-         GB{"ئەنگلىيە"}
--        HK{"شياڭگاڭ"}
--        MO{"ئاۋمېن"}
--        PS{"پەلەستىن"}
-         US{"ئا ق ش"}
-     }
-     Countries%variant{
-         CD{"كونگو (ك د ج)"}
-         CG{"كونگو (جۇمھۇرىيىتى)"}
-         CI{"پىل چىشى قىرغىقى"}
--        FK{"فالكلاند ئاراللىرى (ئىسلاس مالۋىناس)"}
-         MK{"ماكېدونىيە (سابىق يۇگوسلاۋىيە ماكېدونىيە جۇمھۇرىيىتى)"}
-     }
-     Version{"2.1.47.82"}
 diff --git a/source/data/region/uk.txt b/source/data/region/uk.txt
-index d9428a5c..59c26117 100644
+index 16573c87..015074c5 100644
 --- a/source/data/region/uk.txt
 +++ b/source/data/region/uk.txt
 @@ -110,7 +110,7 @@ uk{
@@ -6140,7 +6123,7 @@ index d9428a5c..59c26117 100644
          SZ{"Свазіленд"}
          TL{"Східний Тимор"}
 diff --git a/source/data/region/ur.txt b/source/data/region/ur.txt
-index 2c633716..8dda7f22 100644
+index 9e6b3698..c56f724e 100644
 --- a/source/data/region/ur.txt
 +++ b/source/data/region/ur.txt
 @@ -110,7 +110,7 @@ ur{
@@ -6194,9 +6177,9 @@ index 2c633716..8dda7f22 100644
          CI{"آئیوری کوسٹ"}
          CZ{"چیک جمہوریہ"}
 -        FK{"فاکلینڈ جزائر (مالویناس)"}
-         MK{"مقدونیہ (FYROM)"}
          SZ{"سوازی لینڈ"}
          TL{"مشرقی تیمور"}
+     }
 diff --git a/source/data/region/ur_IN.txt b/source/data/region/ur_IN.txt
 index f41edf63..f2914869 100644
 --- a/source/data/region/ur_IN.txt
@@ -6220,7 +6203,7 @@ index f41edf63..f2914869 100644
      Version{"2.1.47.71"}
  }
 diff --git a/source/data/region/uz.txt b/source/data/region/uz.txt
-index 51e05526..00f0f4b6 100644
+index 60672c0a..e188ba4e 100644
 --- a/source/data/region/uz.txt
 +++ b/source/data/region/uz.txt
 @@ -110,7 +110,7 @@ uz{
@@ -6274,11 +6257,11 @@ index 51e05526..00f0f4b6 100644
          CI{"Fil suyagi qirg‘og‘i"}
          CZ{"Chexiya Respublikasi"}
 -        FK{"Folklend (Malvin) orollari"}
-         MK{"Makedoniya (SYRM)"}
          TL{"Sharqiy Timor"}
      }
+     Version{"2.1.49.82"}
 diff --git a/source/data/region/uz_Cyrl.txt b/source/data/region/uz_Cyrl.txt
-index dbfe62ad..292bcaad 100644
+index 6760867f..7fa49624 100644
 --- a/source/data/region/uz_Cyrl.txt
 +++ b/source/data/region/uz_Cyrl.txt
 @@ -109,7 +109,7 @@ uz_Cyrl{
@@ -6332,9 +6315,9 @@ index dbfe62ad..292bcaad 100644
          CI{"Фил Суяги Қирғоғи"}
          CZ{"Чехия Республикаси"}
 -        FK{"Фолкленд (Малвин) ороллари"}
-         MK{"Македония (МСЮР)"}
          TL{"Шарқий Тимор"}
      }
+     Version{"2.1.49.82"}
 diff --git a/source/data/region/vai.txt b/source/data/region/vai.txt
 index c75e5d9d..e7dd0342 100644
 --- a/source/data/region/vai.txt
@@ -6357,7 +6340,7 @@ index c75e5d9d..e7dd0342 100644
      Version{"2.1.47.82"}
  }
 diff --git a/source/data/region/vi.txt b/source/data/region/vi.txt
-index c098363a..f046d1bb 100644
+index 6d71b4c2..b77fb646 100644
 --- a/source/data/region/vi.txt
 +++ b/source/data/region/vi.txt
 @@ -110,7 +110,7 @@ vi{
@@ -6413,7 +6396,7 @@ index c098363a..f046d1bb 100644
 -        FK{"Quần đảo Falkland (Islas Malvinas)"}
          TL{"Đông Timor"}
      }
-     Version{"2.1.48.42"}
+     Version{"2.1.49.82"}
 diff --git a/source/data/region/wae.txt b/source/data/region/wae.txt
 index 983c8906..de8f729b 100644
 --- a/source/data/region/wae.txt
@@ -6462,7 +6445,7 @@ index 983c8906..de8f729b 100644
          TL{"Wešttimor"}
      }
 diff --git a/source/data/region/wo.txt b/source/data/region/wo.txt
-index 8b1909ab..9712802b 100644
+index e62f39cb..237dab43 100644
 --- a/source/data/region/wo.txt
 +++ b/source/data/region/wo.txt
 @@ -92,6 +92,7 @@ wo{
@@ -6493,7 +6476,7 @@ index 8b1909ab..9712802b 100644
          CD{"Kongo (R K D)"}
          CG{"Réewum Kongo"}
 diff --git a/source/data/region/yue.txt b/source/data/region/yue.txt
-index ab555201..a11e7738 100644
+index 301c2611..31f9019b 100644
 --- a/source/data/region/yue.txt
 +++ b/source/data/region/yue.txt
 @@ -110,7 +110,7 @@ yue{
@@ -6547,10 +6530,10 @@ index ab555201..a11e7738 100644
          CZ{"捷克共和國"}
 -        FK{"福克蘭群島 (馬爾維納斯群島)"}
      }
-     Version{"2.1.48.42"}
+     Version{"2.1.49.82"}
  }
 diff --git a/source/data/region/yue_Hans.txt b/source/data/region/yue_Hans.txt
-index a201dfa4..bd398b1e 100644
+index 413ddaf0..a327dcd6 100644
 --- a/source/data/region/yue_Hans.txt
 +++ b/source/data/region/yue_Hans.txt
 @@ -111,7 +111,7 @@ yue_Hans{
@@ -6604,10 +6587,10 @@ index a201dfa4..bd398b1e 100644
          CZ{"捷克共和国"}
 -        FK{"福克兰群岛 (马尔维纳斯群岛)"}
      }
-     Version{"2.1.48.80"}
+     Version{"2.1.49.82"}
  }
 diff --git a/source/data/region/zh.txt b/source/data/region/zh.txt
-index 434f9e15..039b7b76 100644
+index e88a52a7..f49ad69a 100644
 --- a/source/data/region/zh.txt
 +++ b/source/data/region/zh.txt
 @@ -110,7 +110,7 @@ zh{
@@ -6663,9 +6646,9 @@ index 434f9e15..039b7b76 100644
 -        FK{"福克兰群岛（马尔维纳斯群岛）"}
          TL{"TL"}
      }
-     Version{"2.1.48.42"}
+     Version{"2.1.49.82"}
 diff --git a/source/data/region/zh_Hant.txt b/source/data/region/zh_Hant.txt
-index 2c31a1d6..9f38ec50 100644
+index b2c18996..880b0246 100644
 --- a/source/data/region/zh_Hant.txt
 +++ b/source/data/region/zh_Hant.txt
 @@ -111,7 +111,7 @@ zh_Hant{
@@ -6720,7 +6703,7 @@ index 2c31a1d6..9f38ec50 100644
          CZ{"捷克共和國"}
 -        FK{"福克蘭群島（馬爾維納斯群島）"}
      }
-     Version{"2.1.48.42"}
+     Version{"2.1.49.82"}
  }
 diff --git a/source/data/region/zu.txt b/source/data/region/zu.txt
 index bb8d090e..b405d301 100644
@@ -6781,7 +6764,7 @@ index bb8d090e..b405d301 100644
          SZ{"SZ"}
          TL{"i-East Timor"}
 diff --git a/source/data/zone/ko.txt b/source/data/zone/ko.txt
-index f2a7cd65..721803b7 100644
+index 015344c3..5fe0bba8 100644
 --- a/source/data/zone/ko.txt
 +++ b/source/data/zone/ko.txt
 @@ -1644,9 +1644,9 @@ ko{

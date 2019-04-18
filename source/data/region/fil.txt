@@ -307,7 +307,6 @@ fil{
         CG{"Congo (Republika)"}
         CI{"Ivory Coast"}
         CZ{"Czech Republic"}
-        FK{"Falkland Islands (Islas Malvinas)"}
         TL{"East Timor"}
     }
     Version{"2.1.49.82"}

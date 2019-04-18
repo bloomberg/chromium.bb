@@ -306,7 +306,6 @@ so{
         CG{"Jamhuuriyadda Kongo"}
         CI{"Aayforikoost"}
         CZ{"Jamhuuriyadda Jek"}
-        FK{"Jasiiradaha Fookland"}
         SZ{"Iswaasilaan"}
         TL{"Timoor Bari"}
     }

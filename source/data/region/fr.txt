@@ -307,7 +307,6 @@ fr{
         CG{"République du Congo"}
         CI{"​​République de Côte d’Ivoire"}
         CZ{"République tchèque"}
-        FK{"Îles Falkland"}
         SZ{"Swaziland"}
         TL{"Timor-Oriental"}
     }

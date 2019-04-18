@@ -305,7 +305,6 @@ bs{
         CG{"Republika Kongo"}
         CI{"Obala Bjelokosti"}
         CZ{"Češka Republika"}
-        FK{"Folklandska (Malvinska) ostrva"}
         SZ{"Svazi"}
         TL{"TL"}
     }

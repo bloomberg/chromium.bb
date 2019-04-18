@@ -307,7 +307,6 @@ ro{
         CG{"Congo (Republica)"}
         CI{"Coasta de Fildeș"}
         CZ{"Republica Cehă"}
-        FK{"Insulele Falkland (Insulele Malvine)"}
         SZ{"Swaziland"}
         TL{"Timorul de Est"}
     }

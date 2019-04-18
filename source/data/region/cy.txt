@@ -307,7 +307,6 @@ cy{
         CG{"Y Congo (Gweriniaeth)"}
         CI{"Arfordir Ifori"}
         CZ{"Gweriniaeth Tsiec"}
-        FK{"Ynysoedd y Falkland (Ynysoedd y Malfinas)"}
         SZ{"Gwlad Swazi"}
         TL{"Dwyrain Timor"}
     }

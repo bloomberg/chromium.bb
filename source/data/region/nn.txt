@@ -296,15 +296,11 @@ nn{
     }
     Countries%short{
         GB{"Storbritannia"}
-        HK{"Hongkong"}
-        MO{"Macao"}
-        PS{"Palestina"}
         US{"USA"}
     }
     Countries%variant{
         CD{"Den demokratiske republikken Kongo"}
         CG{"Republikken Kongo"}
-        FK{"Falklandsøyane (Islas Malvinas)"}
         TL{"Aust-Timor"}
     }
     Version{"2.1.49.82"}
