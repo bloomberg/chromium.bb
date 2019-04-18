@@ -5,6 +5,7 @@
 #include "components/gwp_asan/client/gwp_asan.h"
 
 #include <algorithm>
+#include <cmath>
 #include <limits>
 
 #include "base/debug/crash_logging.h"
@@ -35,7 +36,8 @@ constexpr int kDefaultTotalPages = 2048;
 constexpr int kDefaultTotalPages = kDefaultMaxMetadata * 2;
 #endif
 
-constexpr int kDefaultAllocationSamplingFrequency = 1000;
+constexpr int kDefaultAllocationSamplingMultiplier = 1000;
+constexpr int kDefaultAllocationSamplingRange = 64;
 constexpr double kDefaultProcessSamplingProbability = 0.2;
 constexpr int kDefaultProcessSamplingBoost = 4;
 
@@ -50,9 +52,15 @@ const base::FeatureParam<int> kMaxMetadataParam{&kGwpAsan, "MaxMetadata",
 const base::FeatureParam<int> kTotalPagesParam{&kGwpAsan, "TotalPages",
                                                kDefaultTotalPages};
 
-const base::FeatureParam<int> kAllocationSamplingParam{
-    &kGwpAsan, "AllocationSamplingFrequency",
-    kDefaultAllocationSamplingFrequency};
+// The allocation sampling frequency is calculated using the formula:
+// multiplier * range**rand
+// where rand is a random real number in the range [0,1).
+const base::FeatureParam<int> kAllocationSamplingMultiplierParam{
+    &kGwpAsan, "AllocationSamplingMultiplier",
+    kDefaultAllocationSamplingMultiplier};
+
+const base::FeatureParam<int> kAllocationSamplingRangeParam{
+    &kGwpAsan, "AllocationSamplingRange", kDefaultAllocationSamplingRange};
 
 const base::FeatureParam<double> kProcessSamplingParam{
     &kGwpAsan, "ProcessSamplingProbability",
@@ -99,6 +107,32 @@ bool SampleProcess(bool is_canary_dev, bool is_browser_process) {
   return (base::RandDouble() < process_sampling_probability);
 }
 
+// Returns the allocation sampling frequency, or 0 on error.
+size_t AllocationSamplingFrequency() {
+  int multiplier = kAllocationSamplingMultiplierParam.Get();
+  if (multiplier < 1) {
+    DLOG(ERROR) << "GWP-ASan AllocationSamplingMultiplier is out-of-range: "
+                << multiplier;
+    return 0;
+  }
+
+  int range = kAllocationSamplingRangeParam.Get();
+  if (range < 1) {
+    DLOG(ERROR) << "GWP-ASan AllocationSamplingRange is out-of-range: "
+                << range;
+    return 0;
+  }
+
+  base::CheckedNumeric<size_t> frequency = multiplier;
+  frequency *= std::pow(range, base::RandDouble());
+  if (!frequency.IsValid()) {
+    DLOG(ERROR) << "Out-of-range multiply " << multiplier << " " << range;
+    return 0;
+  }
+
+  return frequency.ValueOrDie();
+}
+
 bool EnableForMalloc(bool is_canary_dev, bool is_browser_process) {
   if (!base::FeatureList::IsEnabled(kGwpAsan))
     return false;
@@ -131,12 +165,9 @@ bool EnableForMalloc(bool is_canary_dev, bool is_browser_process) {
     return false;
   }
 
-  int alloc_sampling_freq = kAllocationSamplingParam.Get();
-  if (alloc_sampling_freq < 1) {
-    DLOG(ERROR) << "GWP-ASan AllocationSamplingFrequency is out-of-range: "
-                << alloc_sampling_freq;
+  size_t alloc_sampling_freq = AllocationSamplingFrequency();
+  if (!alloc_sampling_freq)
     return false;
-  }
 
   if (!SampleProcess(is_canary_dev, is_browser_process))
     return false;
