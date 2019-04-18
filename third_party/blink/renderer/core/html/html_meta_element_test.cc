@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/frame/viewport_data.h"
 #include "third_party/blink/renderer/core/html/html_head_element.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
@@ -39,7 +40,7 @@ class HTMLMetaElementTest : public PageTestBase {
  protected:
   HTMLMetaElement* CreateSupportedColorSchemesMeta(
       const AtomicString& content) {
-    HTMLMetaElement* meta = HTMLMetaElement::Create(GetDocument());
+    auto* meta = MakeGarbageCollected<HTMLMetaElement>(GetDocument());
     meta->setAttribute(html_names::kNameAttr, "supported-color-schemes");
     meta->setAttribute(html_names::kContentAttr, content);
     return meta;

@@ -65,6 +65,7 @@
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_text.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -941,7 +942,7 @@ void ReplaceSelectionCommand::MergeEndIfNeeded(EditingState* editing_state) {
   // To avoid this, we add a placeholder node before the start of the paragraph.
   if (EndOfParagraph(start_of_paragraph_to_move).DeepEquivalent() ==
       destination.DeepEquivalent()) {
-    HTMLBRElement* placeholder = HTMLBRElement::Create(GetDocument());
+    auto* placeholder = MakeGarbageCollected<HTMLBRElement>(GetDocument());
     InsertNodeBefore(placeholder,
                      start_of_paragraph_to_move.DeepEquivalent().AnchorNode(),
                      editing_state);
@@ -1418,7 +1419,7 @@ void ReplaceSelectionCommand::DoApply(EditingState* editing_state) {
       (unsigned)insertion_pos.ComputeEditingOffset() <
           enclosing_block_of_insertion_pos->NodeIndex() &&
       !IsStartOfParagraph(start_of_inserted_content)) {
-    InsertNodeAt(HTMLBRElement::Create(GetDocument()),
+    InsertNodeAt(MakeGarbageCollected<HTMLBRElement>(GetDocument()),
                  start_of_inserted_content.DeepEquivalent(), editing_state);
     if (editing_state->IsAborted())
       return;
@@ -1513,7 +1514,7 @@ void ReplaceSelectionCommand::DoApply(EditingState* editing_state) {
     if (should_merge_end_ &&
         destination_node != EnclosingInline(destination_node) &&
         EnclosingInline(destination_node)->nextSibling()) {
-      InsertNodeBefore(HTMLBRElement::Create(GetDocument()),
+      InsertNodeBefore(MakeGarbageCollected<HTMLBRElement>(GetDocument()),
                        inserted_nodes.RefNode(), editing_state);
       if (editing_state->IsAborted())
         return;
@@ -1530,7 +1531,7 @@ void ReplaceSelectionCommand::DoApply(EditingState* editing_state) {
     VisiblePosition end_of_inserted_content = PositionAtEndOfInsertedContent();
     if (StartOfParagraph(end_of_inserted_content).DeepEquivalent() ==
         start_of_paragraph_to_move_position.GetPosition()) {
-      InsertNodeAt(HTMLBRElement::Create(GetDocument()),
+      InsertNodeAt(MakeGarbageCollected<HTMLBRElement>(GetDocument()),
                    end_of_inserted_content.DeepEquivalent(), editing_state);
       if (editing_state->IsAborted())
         return;
@@ -1599,7 +1600,8 @@ void ReplaceSelectionCommand::DoApply(EditingState* editing_state) {
         Element* enclosing_block_element = EnclosingBlock(
             end_of_inserted_content.DeepEquivalent().AnchorNode());
         if (IsListItem(enclosing_block_element)) {
-          HTMLLIElement* new_list_item = HTMLLIElement::Create(GetDocument());
+          auto* new_list_item =
+              MakeGarbageCollected<HTMLLIElement>(GetDocument());
           InsertNodeAfter(new_list_item, enclosing_block_element,
                           editing_state);
           if (editing_state->IsAborted())

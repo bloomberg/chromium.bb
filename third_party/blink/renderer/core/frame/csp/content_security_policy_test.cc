@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/html/html_script_element.h"
 #include "third_party/blink/renderer/core/testing/null_execution_context.h"
 #include "third_party/blink/renderer/platform/crypto.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/loader/fetch/integrity_metadata.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
@@ -728,8 +729,8 @@ TEST_F(ContentSecurityPolicyTest, NonceInline) {
                                     << "`, Nonce: `" << test.nonce << "`");
 
     unsigned expected_reports = test.allowed ? 0u : 1u;
-    auto* element =
-        HTMLScriptElement::Create(*document, CreateElementFlags::ByParser());
+    auto* element = MakeGarbageCollected<HTMLScriptElement>(
+        *document, CreateElementFlags::ByParser());
 
     // Enforce 'script-src'
     Persistent<ContentSecurityPolicy> policy =
@@ -1523,8 +1524,8 @@ TEST_F(ContentSecurityPolicyTest, EmptyCSPIsNoOp) {
   String context_url;
   String nonce;
   OrdinalNumber ordinal_number;
-  Element* element =
-      HTMLScriptElement::Create(*document, CreateElementFlags::ByParser());
+  auto* element = MakeGarbageCollected<HTMLScriptElement>(
+      *document, CreateElementFlags::ByParser());
 
   EXPECT_TRUE(csp->Headers().IsEmpty());
   EXPECT_TRUE(csp->AllowInline(ContentSecurityPolicy::InlineType::kNavigation,

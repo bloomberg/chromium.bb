@@ -43,7 +43,7 @@ namespace blink {
 
 using namespace html_names;
 
-inline HTMLMetaElement::HTMLMetaElement(Document& document)
+HTMLMetaElement::HTMLMetaElement(Document& document)
     : HTMLElement(kMetaTag, document) {}
 
 DEFINE_NODE_FACTORY(HTMLMetaElement)

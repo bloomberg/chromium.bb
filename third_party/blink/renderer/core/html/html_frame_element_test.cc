@@ -6,6 +6,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -20,7 +21,7 @@ TEST_F(HTMLFrameElementTest, DefaultContainerPolicy) {
   document->SetURL(document_url);
   document->UpdateSecurityOrigin(SecurityOrigin::Create(document_url));
 
-  HTMLFrameElement* frame_element = HTMLFrameElement::Create(*document);
+  auto* frame_element = MakeGarbageCollected<HTMLFrameElement>(*document);
 
   frame_element->setAttribute(html_names::kSrcAttr, "http://example.net/");
   frame_element->UpdateContainerPolicyForTests();

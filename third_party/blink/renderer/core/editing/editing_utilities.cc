@@ -74,6 +74,7 @@
 #include "third_party/blink/renderer/core/layout/layout_table_cell.h"
 #include "third_party/blink/renderer/core/svg/svg_image_element.h"
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -1257,7 +1258,7 @@ HTMLElement* CreateDefaultParagraphElement(Document& document) {
     case EditorParagraphSeparator::kIsDiv:
       return HTMLDivElement::Create(document);
     case EditorParagraphSeparator::kIsP:
-      return HTMLParagraphElement::Create(document);
+      return MakeGarbageCollected<HTMLParagraphElement>(document);
   }
 
   NOTREACHED();
