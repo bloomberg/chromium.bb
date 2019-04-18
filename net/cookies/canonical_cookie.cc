@@ -46,11 +46,13 @@
 
 #include <utility>
 
+#include "base/feature_list.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "net/base/features.h"
 #include "net/base/url_util.h"
 #include "net/cookies/cookie_util.h"
 #include "net/cookies/parsed_cookie.h"
@@ -366,6 +368,23 @@ bool CanonicalCookie::IsDomainMatch(const std::string& host) const {
   return cookie_util::IsDomainMatch(domain_, host);
 }
 
+CookieSameSite CanonicalCookie::GetEffectiveSameSite() const {
+  // If a cookie does not have a SameSite attribute, the effective SameSite
+  // mode depends on the SameSiteByDefaultCookies setting.
+  if (SameSite() == CookieSameSite::UNSPECIFIED) {
+    if (base::FeatureList::IsEnabled(features::kSameSiteByDefaultCookies))
+      return CookieSameSite::LAX_MODE;
+    return CookieSameSite::NO_RESTRICTION;
+  }
+
+  // TODO(crbug.com/953995): Implement extended mode once first-party sets are
+  // available.
+  if (SameSite() == CookieSameSite::EXTENDED_MODE)
+    return CookieSameSite::LAX_MODE;
+
+  return SameSite();
+}
+
 CanonicalCookie::CookieInclusionStatus CanonicalCookie::IncludeForRequestURL(
     const GURL& url,
     const CookieOptions& options) const {
@@ -384,7 +403,7 @@ CanonicalCookie::CookieInclusionStatus CanonicalCookie::IncludeForRequestURL(
   if (!IsOnPath(url.path()))
     return CanonicalCookie::CookieInclusionStatus::EXCLUDE_NOT_ON_PATH;
   // Don't include same-site cookies for cross-site requests.
-  switch (SameSite()) {
+  switch (GetEffectiveSameSite()) {
     case CookieSameSite::STRICT_MODE:
       if (options.same_site_cookie_context() <
           CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT) {
@@ -394,7 +413,11 @@ CanonicalCookie::CookieInclusionStatus CanonicalCookie::IncludeForRequestURL(
     case CookieSameSite::LAX_MODE:
       if (options.same_site_cookie_context() <
           CookieOptions::SameSiteCookieContext::SAME_SITE_LAX) {
-        return CanonicalCookie::CookieInclusionStatus::EXCLUDE_SAMESITE_LAX;
+        return (SameSite() == CookieSameSite::UNSPECIFIED)
+                   ? CanonicalCookie::CookieInclusionStatus::
+                         EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX
+                   : CanonicalCookie::CookieInclusionStatus::
+                         EXCLUDE_SAMESITE_LAX;
       }
       break;
     default:
@@ -442,6 +465,8 @@ bool CanonicalCookie::FullCompare(const CanonicalCookie& other) const {
 
   if (IsHttpOnly() != other.IsHttpOnly())
     return IsHttpOnly();
+
+  // TODO(chlily): This should also compare the SameSite attribute.
 
   return Priority() < other.Priority();
 }

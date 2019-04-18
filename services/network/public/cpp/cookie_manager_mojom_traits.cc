@@ -101,6 +101,16 @@ EnumTraits<network::mojom::CookieInclusionStatus,
       return network::mojom::CookieInclusionStatus::EXCLUDE_SAMESITE_STRICT;
     case net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_SAMESITE_LAX:
       return network::mojom::CookieInclusionStatus::EXCLUDE_SAMESITE_LAX;
+    case net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_SAMESITE_EXTENDED:
+      return network::mojom::CookieInclusionStatus::EXCLUDE_SAMESITE_EXTENDED;
+    case net::CanonicalCookie::CookieInclusionStatus::
+        EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX:
+      return network::mojom::CookieInclusionStatus::
+          EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX;
+    case net::CanonicalCookie::CookieInclusionStatus::
+        EXCLUDE_SAMESITE_NONE_INSECURE:
+      return network::mojom::CookieInclusionStatus::
+          EXCLUDE_SAMESITE_NONE_INSECURE;
     case net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES:
       return network::mojom::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES;
 
@@ -157,6 +167,19 @@ bool EnumTraits<network::mojom::CookieInclusionStatus,
     case network::mojom::CookieInclusionStatus::EXCLUDE_SAMESITE_LAX:
       *output =
           net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_SAMESITE_LAX;
+      return true;
+    case network::mojom::CookieInclusionStatus::EXCLUDE_SAMESITE_EXTENDED:
+      *output = net::CanonicalCookie::CookieInclusionStatus::
+          EXCLUDE_SAMESITE_EXTENDED;
+      return true;
+    case network::mojom::CookieInclusionStatus::
+        EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX:
+      *output = net::CanonicalCookie::CookieInclusionStatus::
+          EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX;
+      return true;
+    case network::mojom::CookieInclusionStatus::EXCLUDE_SAMESITE_NONE_INSECURE:
+      *output = net::CanonicalCookie::CookieInclusionStatus::
+          EXCLUDE_SAMESITE_NONE_INSECURE;
       return true;
     case network::mojom::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES:
       *output =

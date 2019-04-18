@@ -44,6 +44,13 @@ NET_EXPORT extern const base::Feature kPostQuantumCECPQ2;
 NET_EXPORT
 extern const base::Feature kNetUnusedIdleSocketTimeout;
 
+// When enabled, makes cookies without a SameSite attribute behave like
+// SameSite=Lax cookies by default, and requires SameSite=None to be specified
+// in order to make cookies available in a third-party context. When disabled,
+// the default behavior for cookies without a SameSite attribute specified is no
+// restriction, i.e., available in a third-party context.
+NET_EXPORT extern const base::Feature kSameSiteByDefaultCookies;
+
 }  // namespace features
 }  // namespace net
 

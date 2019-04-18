@@ -1166,9 +1166,10 @@ CookieMonster::CookieMap::iterator CookieMonster::InternalInsertCookie(
   auto inserted = cookies_.insert(CookieMap::value_type(key, std::move(cc)));
 
   // See InitializeHistograms() for details.
-  int32_t type_sample = cc_ptr->SameSite() != CookieSameSite::NO_RESTRICTION
-                            ? 1 << COOKIE_TYPE_SAME_SITE
-                            : 0;
+  int32_t type_sample =
+      cc_ptr->GetEffectiveSameSite() != CookieSameSite::NO_RESTRICTION
+          ? 1 << COOKIE_TYPE_SAME_SITE
+          : 0;
   type_sample |= cc_ptr->IsHttpOnly() ? 1 << COOKIE_TYPE_HTTPONLY : 0;
   type_sample |= cc_ptr->IsSecure() ? 1 << COOKIE_TYPE_SECURE : 0;
   histogram_cookie_type_->Add(type_sample);
