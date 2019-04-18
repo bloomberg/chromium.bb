@@ -9,6 +9,7 @@
 #include "base/containers/flat_set.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/trace_event/memory_dump_request_args.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -479,6 +480,8 @@ ProcessMemoryMetricsEmitter::ProcessMemoryMetricsEmitter(
     : pid_scope_(pid_scope) {}
 
 void ProcessMemoryMetricsEmitter::FetchAndEmitProcessMemoryMetrics() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   MarkServiceRequestsInProgress();
 
   // The callback keeps this object alive until the callback is invoked.
@@ -498,8 +501,20 @@ void ProcessMemoryMetricsEmitter::FetchAndEmitProcessMemoryMetrics() {
   // The callback keeps this object alive until the callback is invoked.
   performance_manager::PerformanceManager* performance_manager =
       performance_manager::PerformanceManager::GetInstance();
-  auto callback2 =
-      base::BindOnce(&ProcessMemoryMetricsEmitter::ReceivedProcessInfos, this);
+
+  // Use a lambda adapter to post the results back to this sequence.
+  GetProcessToPageInfoMapCallback callback2 = base::BindOnce(
+      [](scoped_refptr<base::SequencedTaskRunner> task_runner,
+         scoped_refptr<ProcessMemoryMetricsEmitter> pmme,
+         std::vector<ProcessInfo> process_infos) -> void {
+        task_runner->PostTask(
+            FROM_HERE,
+            base::BindOnce(&ProcessMemoryMetricsEmitter::ReceivedProcessInfos,
+                           pmme, std::move(process_infos)));
+      },
+      base::SequencedTaskRunnerHandle::Get(),
+      scoped_refptr<ProcessMemoryMetricsEmitter>(this));
+
   performance_manager->CallOnGraph(
       FROM_HERE,
       base::BindOnce(&ProcessMemoryMetricsEmitter::GetProcessToPageInfoMap,
@@ -507,6 +522,8 @@ void ProcessMemoryMetricsEmitter::FetchAndEmitProcessMemoryMetrics() {
 }
 
 void ProcessMemoryMetricsEmitter::MarkServiceRequestsInProgress() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   memory_dump_in_progress_ = true;
   get_process_urls_in_progress_ = true;
 }
@@ -516,6 +533,8 @@ ProcessMemoryMetricsEmitter::~ProcessMemoryMetricsEmitter() {}
 void ProcessMemoryMetricsEmitter::ReceivedMemoryDump(
     bool success,
     std::unique_ptr<GlobalMemoryDump> dump) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   memory_dump_in_progress_ = false;
   if (!success)
     return;
@@ -525,6 +544,8 @@ void ProcessMemoryMetricsEmitter::ReceivedMemoryDump(
 
 void ProcessMemoryMetricsEmitter::ReceivedProcessInfos(
     std::vector<ProcessInfo> process_infos) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   get_process_urls_in_progress_ = false;
   process_infos_.clear();
   process_infos_.reserve(process_infos.size());
@@ -538,10 +559,14 @@ void ProcessMemoryMetricsEmitter::ReceivedProcessInfos(
 }
 
 ukm::UkmRecorder* ProcessMemoryMetricsEmitter::GetUkmRecorder() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   return ukm::UkmRecorder::Get();
 }
 
 int ProcessMemoryMetricsEmitter::GetNumberOfExtensions(base::ProcessId pid) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   int number_of_extensions = 0;
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   // Retrieve the renderer process host for the given pid.
@@ -585,6 +610,8 @@ int ProcessMemoryMetricsEmitter::GetNumberOfExtensions(base::ProcessId pid) {
 base::Optional<base::TimeDelta> ProcessMemoryMetricsEmitter::GetProcessUptime(
     const base::Time& now,
     base::ProcessId pid) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   auto process_info = process_infos_.find(pid);
   if (process_info != process_infos_.end()) {
     if (!process_info->second.launch_time.is_null())
@@ -594,6 +621,8 @@ base::Optional<base::TimeDelta> ProcessMemoryMetricsEmitter::GetProcessUptime(
 }
 
 void ProcessMemoryMetricsEmitter::CollateResults() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   if (memory_dump_in_progress_ || get_process_urls_in_progress_)
     return;
   if (!global_dump_)
