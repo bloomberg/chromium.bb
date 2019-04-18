@@ -418,20 +418,19 @@ base::string16 PluginVmLauncherView::GetDownloadProgressMessage(
   base::Optional<double> fraction_complete =
       GetFractionComplete(bytes_downloaded, content_length);
 
-  base::string16 bytes_downloaded_str =
-      ui::FormatBytesWithUnits(bytes_downloaded, ui::DATA_UNITS_GIBIBYTE,
-                               /*show_units=*/true);
-
   // If download size isn't known |fraction_complete| should be empty.
   if (fraction_complete.has_value()) {
     return l10n_util::GetStringFUTF16(
-        IDS_PLUGIN_VM_LAUNCHER_DOWNLOAD_PROGRESS_MESSAGE, bytes_downloaded_str,
+        IDS_PLUGIN_VM_LAUNCHER_DOWNLOAD_PROGRESS_MESSAGE,
+        ui::FormatBytesWithUnits(bytes_downloaded, ui::DATA_UNITS_GIBIBYTE,
+                                 /*show_units=*/false),
         ui::FormatBytesWithUnits(content_length, ui::DATA_UNITS_GIBIBYTE,
                                  /*show_units=*/true));
   } else {
     return l10n_util::GetStringFUTF16(
         IDS_PLUGIN_VM_LAUNCHER_DOWNLOAD_PROGRESS_WITHOUT_DOWNLOAD_SIZE_MESSAGE,
-        bytes_downloaded_str);
+        ui::FormatBytesWithUnits(bytes_downloaded, ui::DATA_UNITS_GIBIBYTE,
+                                 /*show_units=*/true));
   }
 }
 
