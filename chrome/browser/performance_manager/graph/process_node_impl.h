@@ -46,7 +46,6 @@ class ProcessNodeImpl
   // resource_coordinator::mojom::ProcessCoordinationUnit implementation.
   void SetExpectedTaskQueueingDuration(base::TimeDelta duration) override;
   void SetMainThreadTaskLoadIsLow(bool main_thread_task_load_is_low) override;
-  void OnRendererIsBloated() override;
 
   // CPU usage is expressed as the average percentage of cores occupied over the
   // last measurement interval. One core fully occupied would be 100, while two

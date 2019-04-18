@@ -69,10 +69,4 @@ interface ProcessCoordinationUnit {
   // Property signals.
   SetExpectedTaskQueueingDuration(mojo_base.mojom.TimeDelta duration);
   SetMainThreadTaskLoadIsLow(bool main_thread_task_load_is_low);
-
-  // Event signals.
-
-  // Fired when one of the renderer heaps is about to exceed its limit.
-  // If nothing is done, then the renderer is likely to crash with OOM.
-  OnRendererIsBloated();
 };

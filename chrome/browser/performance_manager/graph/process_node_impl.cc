@@ -69,12 +69,6 @@ void ProcessNodeImpl::SetProcess(base::Process process,
   SetProcessImpl(std::move(process), pid, launch_time);
 }
 
-void ProcessNodeImpl::OnRendererIsBloated() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  for (auto& observer : observers())
-    observer.OnRendererIsBloated(this);
-}
-
 const base::flat_set<FrameNodeImpl*>& ProcessNodeImpl::GetFrameNodes() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return frame_nodes_;

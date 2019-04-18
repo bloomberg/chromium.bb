@@ -22,12 +22,6 @@ void PageSignalReceiver::NotifyPageAlmostIdle(
                            &PageSignalObserver::OnPageAlmostIdle);
 }
 
-void PageSignalReceiver::NotifyRendererIsBloated(
-    const PageNavigationIdentity& page_navigation_id) {
-  NotifyObserversIfKnownCu(page_navigation_id,
-                           &PageSignalObserver::OnRendererIsBloated);
-}
-
 void PageSignalReceiver::SetExpectedTaskQueueingDuration(
     const PageNavigationIdentity& page_navigation_id,
     base::TimeDelta duration) {

@@ -70,8 +70,6 @@ jumbo_split_static_library("ui") {
     "autofill/popup_controller_common.h",
     "autofill/popup_view_common.cc",
     "autofill/popup_view_common.h",
-    "bloated_renderer/bloated_renderer_tab_helper.cc",
-    "bloated_renderer/bloated_renderer_tab_helper.h",
     "blocked_content/blocked_window_params.cc",
     "blocked_content/blocked_window_params.h",
     "blocked_content/list_item_position.cc",

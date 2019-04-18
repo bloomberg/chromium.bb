@@ -5317,10 +5317,6 @@ the Bookmarks menu.">
         Stop plugin
       </message>
 
-      <message name="IDS_BROWSER_BLOATED_RENDERER_INFOBAR" desc="The text of the infobar notifying the user that the page ran out of memory">
-        The web page was reloaded because it ran out of memory.
-      </message>
-
       <!-- Passwords and Exceptions Dialog -->
       <message name="IDS_PASSWORDS_AUTO_SIGNIN_TITLE" desc="Title for 'Auto sign-in' checkbox in the password dialog">
         Auto sign-in
