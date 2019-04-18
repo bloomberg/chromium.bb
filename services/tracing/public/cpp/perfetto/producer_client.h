@@ -149,6 +149,7 @@ class COMPONENT_EXPORT(TRACING_CPP) ProducerClient
   void NotifyDataSourceStarted(perfetto::DataSourceInstanceID) override;
   void ActivateTriggers(const std::vector<std::string>&) override;
   size_t shared_buffer_page_size_kb() const override;
+  perfetto::SharedMemoryArbiter* GetInProcessShmemArbiter() override;
 
   static void ResetTaskRunnerForTesting();
 

@@ -296,6 +296,11 @@ size_t ProducerClient::shared_buffer_page_size_kb() const {
   return 0;
 }
 
+perfetto::SharedMemoryArbiter* ProducerClient::GetInProcessShmemArbiter() {
+  NOTREACHED();
+  return nullptr;
+}
+
 void ProducerClient::NotifyFlushComplete(perfetto::FlushRequestID id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (pending_replies_for_latest_flush_.first != id) {
