@@ -53,9 +53,13 @@ class WallpaperView : public views::View, public views::ContextMenuController {
   int repaint_blur_;
   float repaint_opacity_;
 
+  // A cached downsampled image of the wallpaper image. It will help wallpaper
+  // blur/brightness animations be more performant.
+  base::Optional<gfx::ImageSkia> small_image_;
+
   // A event handler that handles taps and closes overview if we are in that
   // mode.
-  // TODO: See if we can move this logic into ash/wm/overview.
+  // TODO(sammiequon): Move this logic into ash/wm/overview.
   std::unique_ptr<PreEventDispatchHandler> pre_dispatch_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(WallpaperView);
