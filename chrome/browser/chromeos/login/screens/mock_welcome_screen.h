@@ -22,7 +22,7 @@ class MockWelcomeScreen : public WelcomeScreen {
 
   MOCK_METHOD0(Show, void());
   MOCK_METHOD0(Hide, void());
-  MOCK_METHOD2(SetConfiguration, void(base::Value* configuration, bool notify));
+  MOCK_METHOD1(SetConfiguration, void(base::Value* configuration));
 
   void ExitScreen();
 

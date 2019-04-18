@@ -416,11 +416,11 @@ class WizardController : public BaseScreenDelegate {
   base::Closure on_timezone_resolved_for_testing_;
 
   // Configuration (dictionary) for automating OOBE screens.
-  base::Value oobe_configuration_;
+  base::Value oobe_configuration_{base::Value::Type::DICTIONARY};
 
   BaseScreen* hid_screen_ = nullptr;
 
-  base::WeakPtrFactory<WizardController> weak_factory_;
+  base::WeakPtrFactory<WizardController> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WizardController);
 };

@@ -12,16 +12,12 @@ BaseScreen::BaseScreen(OobeScreen screen_id) : screen_id_(screen_id) {}
 
 BaseScreen::~BaseScreen() {}
 
-void BaseScreen::OnConfigurationChanged() {}
-
 void BaseScreen::OnUserAction(const std::string& action_id) {
   LOG(WARNING) << "Unhandled user action: action_id=" << action_id;
 }
 
-void BaseScreen::SetConfiguration(base::Value* configuration, bool notify) {
+void BaseScreen::SetConfiguration(base::Value* configuration) {
   configuration_ = configuration;
-  if (notify)
-    OnConfigurationChanged();
 }
 
 }  // namespace chromeos
