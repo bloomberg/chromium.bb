@@ -551,7 +551,7 @@ ProfileImpl::ProfileImpl(
   SupervisedUserSettingsService* supervised_user_settings = nullptr;
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   supervised_user_settings =
-      SupervisedUserSettingsServiceFactory::GetForProfile(this);
+      SupervisedUserSettingsServiceFactory::GetForKey(key_.get());
   supervised_user_settings->Init(path_, io_task_runner_.get(),
                                  create_mode == CREATE_MODE_SYNCHRONOUS);
 #endif

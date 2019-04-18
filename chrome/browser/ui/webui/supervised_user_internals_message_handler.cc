@@ -242,10 +242,11 @@ void SupervisedUserInternalsMessageHandler::SendBasicInfo() {
 
   // Trigger retrieval of the user settings
   SupervisedUserSettingsService* settings_service =
-      SupervisedUserSettingsServiceFactory::GetForProfile(profile);
-  user_settings_subscription_ = settings_service->Subscribe(base::Bind(
-        &SupervisedUserInternalsMessageHandler::SendSupervisedUserSettings,
-        weak_factory_.GetWeakPtr()));
+      SupervisedUserSettingsServiceFactory::GetForKey(profile->GetProfileKey());
+  user_settings_subscription_ =
+      settings_service->SubscribeForSettingsChange(base::Bind(
+          &SupervisedUserInternalsMessageHandler::SendSupervisedUserSettings,
+          weak_factory_.GetWeakPtr()));
 }
 
 void SupervisedUserInternalsMessageHandler::SendSupervisedUserSettings(

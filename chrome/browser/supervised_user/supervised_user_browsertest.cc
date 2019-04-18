@@ -238,7 +238,8 @@ class SupervisedUserBlockModeTest : public SupervisedUserTest {
 
     Profile* profile = browser()->profile();
     SupervisedUserSettingsService* supervised_user_settings_service =
-        SupervisedUserSettingsServiceFactory::GetForProfile(profile);
+        SupervisedUserSettingsServiceFactory::GetForKey(
+            profile->GetProfileKey());
     supervised_user_settings_service->SetLocalSetting(
         supervised_users::kContentPackDefaultFilteringBehavior,
         std::make_unique<base::Value>(SupervisedUserURLFilter::BLOCK));
@@ -372,8 +373,8 @@ IN_PROC_BROWSER_TEST_P(SupervisedUserTest, BlockNewTabAfterLoading) {
     InterstitialPageObserver interstitial_observer(tab, run_loop.QuitClosure());
 
     SupervisedUserSettingsService* supervised_user_settings_service =
-        SupervisedUserSettingsServiceFactory::GetForProfile(
-            browser()->profile());
+        SupervisedUserSettingsServiceFactory::GetForKey(
+            browser()->profile()->GetProfileKey());
     supervised_user_settings_service->SetLocalSetting(
         supervised_users::kContentPackDefaultFilteringBehavior,
         std::make_unique<base::Value>(SupervisedUserURLFilter::BLOCK));
@@ -421,7 +422,8 @@ IN_PROC_BROWSER_TEST_P(SupervisedUserTest, DontShowInterstitialTwice) {
 
   // Block the current URL.
   SupervisedUserSettingsService* supervised_user_settings_service =
-      SupervisedUserSettingsServiceFactory::GetForProfile(browser()->profile());
+      SupervisedUserSettingsServiceFactory::GetForKey(
+          browser()->profile()->GetProfileKey());
   base::RunLoop run_loop;
   InterstitialPageObserver interstitial_observer(tab, run_loop.QuitClosure());
   supervised_user_settings_service->SetLocalSetting(
@@ -483,8 +485,8 @@ IN_PROC_BROWSER_TEST_P(SupervisedUserBlockModeTest, HistoryVisitRecorded) {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
   dict->SetKey(allowed_url.host(), base::Value(true));
   SupervisedUserSettingsService* supervised_user_settings_service =
-      SupervisedUserSettingsServiceFactory::GetForProfile(
-          browser()->profile());
+      SupervisedUserSettingsServiceFactory::GetForKey(
+          browser()->profile()->GetProfileKey());
   supervised_user_settings_service->SetLocalSetting(
       supervised_users::kContentPackManualBehaviorHosts, std::move(dict));
   EXPECT_EQ(SupervisedUserURLFilter::ALLOW,
@@ -553,8 +555,8 @@ IN_PROC_BROWSER_TEST_P(SupervisedUserTest, GoBackOnDontProceed) {
   auto dict = std::make_unique<base::DictionaryValue>();
   dict->SetKey(test_url.host(), base::Value(false));
   SupervisedUserSettingsService* supervised_user_settings_service =
-      SupervisedUserSettingsServiceFactory::GetForProfile(
-          browser()->profile());
+      SupervisedUserSettingsServiceFactory::GetForKey(
+          browser()->profile()->GetProfileKey());
   auto message_loop_runner = base::MakeRefCounted<content::MessageLoopRunner>();
   InterstitialPageObserver interstitial_observer(
       web_contents, message_loop_runner->QuitClosure());
@@ -597,7 +599,8 @@ IN_PROC_BROWSER_TEST_P(SupervisedUserTest, ClosingBlockedTabDoesNotCrash) {
   auto dict = std::make_unique<base::DictionaryValue>();
   dict->SetKey(test_url.host(), base::Value(false));
   SupervisedUserSettingsService* supervised_user_settings_service =
-      SupervisedUserSettingsServiceFactory::GetForProfile(browser()->profile());
+      SupervisedUserSettingsServiceFactory::GetForKey(
+          browser()->profile()->GetProfileKey());
   auto message_loop_runner = base::MakeRefCounted<content::MessageLoopRunner>();
   InterstitialPageObserver interstitial_observer(
       web_contents, message_loop_runner->QuitClosure());
@@ -636,8 +639,8 @@ IN_PROC_BROWSER_TEST_P(SupervisedUserTest, BlockThenUnblock) {
   auto dict = std::make_unique<base::DictionaryValue>();
   dict->SetKey(test_url.host(), base::Value(false));
   SupervisedUserSettingsService* supervised_user_settings_service =
-      SupervisedUserSettingsServiceFactory::GetForProfile(
-          browser()->profile());
+      SupervisedUserSettingsServiceFactory::GetForKey(
+          browser()->profile()->GetProfileKey());
   // TODO(carlosil): Remove this run_loop once Committed interstitials are the
   // only code path.
   base::RunLoop run_loop;
@@ -692,8 +695,8 @@ IN_PROC_BROWSER_TEST_P(SupervisedUserBlockModeTest, Unblock) {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
   dict->SetKey(test_url.host(), base::Value(true));
   SupervisedUserSettingsService* supervised_user_settings_service =
-      SupervisedUserSettingsServiceFactory::GetForProfile(
-          browser()->profile());
+      SupervisedUserSettingsServiceFactory::GetForKey(
+          browser()->profile()->GetProfileKey());
   supervised_user_settings_service->SetLocalSetting(
       supervised_users::kContentPackManualBehaviorHosts, std::move(dict));
 

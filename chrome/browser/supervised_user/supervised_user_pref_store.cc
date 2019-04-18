@@ -22,7 +22,6 @@
 #include "components/ntp_snippets/pref_names.h"
 #include "components/prefs/pref_value_map.h"
 #include "components/signin/core/browser/signin_pref_names.h"
-#include "content/public/browser/notification_source.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/contextual_suggestions/contextual_suggestions_prefs.h"
@@ -76,19 +75,19 @@ SupervisedUserSettingsPrefMappingEntry kSupervisedUserSettingsPrefMapping[] = {
 
 SupervisedUserPrefStore::SupervisedUserPrefStore(
     SupervisedUserSettingsService* supervised_user_settings_service) {
-  user_settings_subscription_ = supervised_user_settings_service->Subscribe(
-      base::Bind(&SupervisedUserPrefStore::OnNewSettingsAvailable,
-                 base::Unretained(this)));
+  user_settings_subscription_ =
+      supervised_user_settings_service->SubscribeForSettingsChange(
+          base::Bind(&SupervisedUserPrefStore::OnNewSettingsAvailable,
+                     base::Unretained(this)));
 
-  // Should only be nullptr in unit tests
-  // TODO(peconn): Remove this once SupervisedUserPrefStore is (partially at
-  // least) a KeyedService. The user_settings_subscription_ must be reset or
-  // destroyed before the SupervisedUserSettingsService is.
-  if (supervised_user_settings_service->GetProfile()) {
-    unsubscriber_registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
-        content::Source<Profile>(
-          supervised_user_settings_service->GetProfile()));
-  }
+  // The SupervisedUserSettingsService must be created before the PrefStore, and
+  // it will notify the PrefStore to unsubscribe both subscriptions when it is
+  // shut down.
+  shutdown_subscription_ =
+      supervised_user_settings_service->SubscribeForShutdown(
+          base::BindRepeating(
+              &SupervisedUserPrefStore::OnSettingsServiceShutdown,
+              base::Unretained(this)));
 }
 
 bool SupervisedUserPrefStore::GetValue(const std::string& key,
@@ -190,11 +189,7 @@ void SupervisedUserPrefStore::OnNewSettingsAvailable(
   }
 }
 
-// Callback to unsubscribe from the supervised user settings service.
-void SupervisedUserPrefStore::Observe(
-    int type,
-    const content::NotificationSource& src,
-    const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_PROFILE_DESTROYED, type);
+void SupervisedUserPrefStore::OnSettingsServiceShutdown() {
   user_settings_subscription_.reset();
+  shutdown_subscription_.reset();
 }

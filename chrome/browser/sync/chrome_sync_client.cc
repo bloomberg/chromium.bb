@@ -577,8 +577,9 @@ ChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
     }
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
     case syncer::SUPERVISED_USER_SETTINGS:
-      return SupervisedUserSettingsServiceFactory::GetForProfile(profile_)->
-          AsWeakPtr();
+      return SupervisedUserSettingsServiceFactory::GetForKey(
+                 profile_->GetProfileKey())
+          ->AsWeakPtr();
     case syncer::SUPERVISED_USER_WHITELISTS: {
       SupervisedUserService* supervised_user_service =
           SupervisedUserServiceFactory::GetForProfile(profile_);

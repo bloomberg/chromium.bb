@@ -58,7 +58,8 @@ class SupervisedUserNavigationThrottleTest
   void BlockHost(const std::string& host) {
     Profile* profile = browser()->profile();
     SupervisedUserSettingsService* settings_service =
-        SupervisedUserSettingsServiceFactory::GetForProfile(profile);
+        SupervisedUserSettingsServiceFactory::GetForKey(
+            profile->GetProfileKey());
     auto dict = std::make_unique<base::DictionaryValue>();
     dict->SetKey(host, base::Value(false));
     settings_service->SetLocalSetting(
@@ -130,7 +131,7 @@ IN_PROC_BROWSER_TEST_P(SupervisedUserNavigationThrottleTest,
                        NoNavigationObserverBlock) {
   Profile* profile = browser()->profile();
   SupervisedUserSettingsService* supervised_user_settings_service =
-      SupervisedUserSettingsServiceFactory::GetForProfile(profile);
+      SupervisedUserSettingsServiceFactory::GetForKey(profile->GetProfileKey());
   supervised_user_settings_service->SetLocalSetting(
       supervised_users::kContentPackDefaultFilteringBehavior,
       std::unique_ptr<base::Value>(
