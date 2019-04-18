@@ -97,6 +97,7 @@ void PasswordGenerationControllerImpl::OnGenerationElementLostFocus() {
   if (manual_filling_controller_ && generation_element_data_) {
     manual_filling_controller_->OnAutomaticGenerationStatusChanged(false);
   }
+  target_frame_driver_ = nullptr;
   generation_element_data_.reset();
 }
 
@@ -116,15 +117,17 @@ void PasswordGenerationControllerImpl::OnGenerationRequested() {
         ->ReportSpecPriorityForGeneratedPassword(generation_element_data_->form,
                                                  spec_priority);
   }
-  dialog_view_->Show(password);
+  dialog_view_->Show(password, std::move(target_frame_driver_));
+  target_frame_driver_ = nullptr;
 }
 
 void PasswordGenerationControllerImpl::GeneratedPasswordAccepted(
-    const base::string16& password) {
-  if (!target_frame_driver_)
+    const base::string16& password,
+    base::WeakPtr<password_manager::PasswordManagerDriver> driver) {
+  if (!driver)
     return;
   RecordGenerationDialogDismissal(true);
-  target_frame_driver_->GeneratedPasswordAccepted(password);
+  driver->GeneratedPasswordAccepted(password);
   dialog_view_.reset();
 }
 

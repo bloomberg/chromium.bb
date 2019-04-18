@@ -69,7 +69,10 @@ class PasswordGenerationController {
   virtual void OnGenerationRequested() = 0;
 
   // Called from the modal dialog if the user accepted the generated password.
-  virtual void GeneratedPasswordAccepted(const base::string16& password) = 0;
+  // |driver| is used to communicate the message back to the renderer.
+  virtual void GeneratedPasswordAccepted(
+      const base::string16& password,
+      base::WeakPtr<password_manager::PasswordManagerDriver> driver) = 0;
 
   // Called from the modal dialog if the user rejected the generated password.
   virtual void GeneratedPasswordRejected() = 0;

@@ -53,7 +53,9 @@ class MockPasswordGenerationController : public PasswordGenerationController {
            const base::WeakPtr<password_manager::PasswordManagerDriver>&));
   MOCK_METHOD0(OnGenerationElementLostFocus, void());
   MOCK_METHOD0(OnGenerationRequested, void());
-  MOCK_METHOD1(GeneratedPasswordAccepted, void(const base::string16&));
+  MOCK_METHOD2(GeneratedPasswordAccepted,
+               void(const base::string16&,
+                    base::WeakPtr<password_manager::PasswordManagerDriver>));
   MOCK_METHOD0(GeneratedPasswordRejected, void());
   MOCK_CONST_METHOD0(top_level_native_window, gfx::NativeWindow());
 };

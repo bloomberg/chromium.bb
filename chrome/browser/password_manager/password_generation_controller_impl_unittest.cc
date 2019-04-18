@@ -39,6 +39,7 @@ class MockPasswordManagerDriver
 
   MOCK_METHOD0(GetPasswordGenerationHelper,
                password_manager::PasswordGenerationFrameHelper*());
+  MOCK_METHOD1(GeneratedPasswordAccepted, void(const base::string16&));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockPasswordManagerDriver);
@@ -68,7 +69,9 @@ class MockPasswordGenerationDialogView
  public:
   MockPasswordGenerationDialogView() = default;
 
-  MOCK_METHOD1(Show, void(base::string16&));
+  MOCK_METHOD2(Show,
+               void(base::string16&,
+                    base::WeakPtr<password_manager::PasswordManagerDriver>));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockPasswordGenerationDialogView);
@@ -100,6 +103,10 @@ PasswordGenerationUIData GetTestGenerationUIData2() {
   data.max_length = 10;
 
   return data;
+}
+
+MATCHER_P(PointsToSameAddress, expected, "") {
+  return arg.get() == expected;
 }
 
 }  // namespace
@@ -236,7 +243,9 @@ TEST_F(PasswordGenerationControllerTest,
               GeneratePassword(_, form_signature, field_signature,
                                uint32_t(new_ui_data.max_length), _))
       .WillOnce(Return(generated_password));
-  EXPECT_CALL(*raw_dialog_view, Show(generated_password));
+  EXPECT_CALL(*raw_dialog_view,
+              Show(generated_password,
+                   PointsToSameAddress(mock_password_manager_driver_.get())));
   controller()->OnGenerationRequested();
 }
 
@@ -262,8 +271,30 @@ TEST_F(PasswordGenerationControllerTest, RecordsGeneratedPasswordAccepted) {
   base::HistogramTester histogram_tester;
 
   controller()->OnGenerationRequested();
-  controller()->GeneratedPasswordAccepted(test_password);
+  controller()->GeneratedPasswordAccepted(
+      test_password, mock_password_manager_driver_->AsWeakPtr());
 
   histogram_tester.ExpectUniqueSample(
       "KeyboardAccessory.GeneratedPasswordDialog", true, 1);
+}
+
+TEST_F(PasswordGenerationControllerTest,
+       RelaysGenerationAcceptedToCorrectDriver) {
+  base::string16 test_password = ASCIIToUTF16("t3stp@ssw0rd");
+
+  InitializeGeneration(test_password);
+
+  controller()->OnGenerationRequested();
+
+  MockPasswordManagerDriver wrong_driver;
+  EXPECT_CALL(mock_manual_filling_controller_,
+              OnAutomaticGenerationStatusChanged(true));
+  controller()->OnAutomaticGenerationAvailable(GetTestGenerationUIData2(),
+                                               wrong_driver.AsWeakPtr());
+
+  EXPECT_CALL(*mock_password_manager_driver_,
+              GeneratedPasswordAccepted(test_password));
+  EXPECT_CALL(wrong_driver, GeneratedPasswordAccepted(_)).Times(0);
+  controller()->GeneratedPasswordAccepted(
+      test_password, mock_password_manager_driver_->AsWeakPtr());
 }
