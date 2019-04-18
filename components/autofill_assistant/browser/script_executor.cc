@@ -322,9 +322,11 @@ void ScriptExecutor::SetFieldValue(
     const Selector& selector,
     const std::string& value,
     bool simulate_key_presses,
+    int key_press_delay_in_millisecond,
     base::OnceCallback<void(const ClientStatus&)> callback) {
   delegate_->GetWebController()->SetFieldValue(
-      selector, value, simulate_key_presses, std::move(callback));
+      selector, value, simulate_key_presses, key_press_delay_in_millisecond,
+      std::move(callback));
 }
 
 void ScriptExecutor::SetAttribute(
@@ -339,9 +341,11 @@ void ScriptExecutor::SetAttribute(
 void ScriptExecutor::SendKeyboardInput(
     const Selector& selector,
     const std::vector<UChar32>& codepoints,
+    int key_press_delay_in_millisecond,
     base::OnceCallback<void(const ClientStatus&)> callback) {
-  delegate_->GetWebController()->SendKeyboardInput(selector, codepoints,
-                                                   std::move(callback));
+  delegate_->GetWebController()->SendKeyboardInput(
+      selector, codepoints, key_press_delay_in_millisecond,
+      std::move(callback));
 }
 
 void ScriptExecutor::GetOuterHtml(
