@@ -133,6 +133,8 @@ static void set_good_speed_feature_framesize_dependent(
       sf->simple_motion_search_split = 2;
     } else {
       sf->use_square_partition_only_threshold = BLOCK_32X32;
+
+      sf->simple_motion_search_split = 1;
     }
 
     if (!is_720p_or_larger) {
