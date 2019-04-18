@@ -33,6 +33,7 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
+#include "third_party/blink/renderer/core/core_initializer.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -80,6 +81,8 @@ DummyPageHolder::DummyPageHolder(
   frame_->SetView(LocalFrameView::Create(*frame_, initial_view_size));
   frame_->View()->GetPage()->GetVisualViewport().SetSize(initial_view_size);
   frame_->Init();
+
+  CoreInitializer::GetInstance().ProvideModulesToPage(GetPage(), nullptr);
 }
 
 DummyPageHolder::~DummyPageHolder() {
