@@ -34,6 +34,13 @@ static void CreateCdm(
   client->CreateCdm(key_system, security_origin, cdm_config, std::move(result));
 }
 
+// static
+WebContentDecryptionModuleAccessImpl*
+WebContentDecryptionModuleAccessImpl::From(
+    blink::WebContentDecryptionModuleAccess* cdm_access) {
+  return static_cast<WebContentDecryptionModuleAccessImpl*>(cdm_access);
+}
+
 std::unique_ptr<WebContentDecryptionModuleAccessImpl>
 WebContentDecryptionModuleAccessImpl::Create(
     const blink::WebString& key_system,
@@ -83,6 +90,10 @@ void WebContentDecryptionModuleAccessImpl::CreateContentDecryptionModule(
       FROM_HERE,
       base::BindOnce(&CreateCdm, client_, key_system_, security_origin_,
                      cdm_config_, base::Passed(&result_copy)));
+}
+
+const CdmConfig& WebContentDecryptionModuleAccessImpl::GetCdmConfig() const {
+  return cdm_config_;
 }
 
 }  // namespace media

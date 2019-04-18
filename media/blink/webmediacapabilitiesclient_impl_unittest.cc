@@ -86,6 +86,7 @@ TEST(WebMediaCapabilitiesClientImplTest, RunCallbackEvenIfMojoDisconnects) {
   EXPECT_CALL(*query_callbacks, OnError());
 
   media_capabilities_client_impl.DecodingInfo(kFakeMediaConfiguration,
+                                              nullptr, /* cdm_access */
                                               std::move(query_callbacks));
 
   base::RunLoop().RunUntilIdle();
