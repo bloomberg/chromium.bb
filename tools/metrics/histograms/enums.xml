@@ -16602,6 +16602,7 @@ Called by update_net_error_codes.py.-->
   <int value="553" label="DeviceUsbPowerShareEnabled"/>
   <int value="554" label="PolicyListMultipleSourceMergeList"/>
   <int value="555" label="SamlPasswordExpirationAdvanceWarningDays"/>
+  <int value="556" label="DeviceScheduledUpdateCheck"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">

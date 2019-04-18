@@ -4169,6 +4169,11 @@
   "DeviceSamlLoginAuthenticationType": {
   },
 
+  "DeviceScheduledUpdateCheck": {
+     "os": ["chromeos"],
+     "test_policy": { "DeviceScheduledUpdateCheck": {"update_check_time" : {"hour": 23, "minute": 35}, "frequency": "WEEKLY", "day_of_week": "MONDAY" }}
+   },
+
   "ChromeCleanupEnabled": {
     "os": ["win"],
     "test_policy": { "ChromeCleanupEnabled": true },
