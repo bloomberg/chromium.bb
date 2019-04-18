@@ -148,10 +148,10 @@ class FrameScheduler : public FrameOrWorkerScheduler {
   virtual std::unique_ptr<blink::mojom::blink::PauseSubresourceLoadingHandle>
   GetPauseSubresourceLoadingHandle() = 0;
 
-  // Returns the list of active features which currently opt out this frame
-  // from back-forward cache.
+  // Returns the list of active features which currently tracked by the
+  // scheduler for back-forward cache metrics.
   virtual WTF::HashSet<SchedulingPolicy::Feature>
-  GetActiveFeaturesOptingOutFromBackForwardCache() = 0;
+  GetActiveFeaturesTrackedForBackForwardCacheMetrics() = 0;
 
   // TODO(altimin): Move FrameScheduler object to oilpan.
   virtual base::WeakPtr<FrameScheduler> GetWeakPtr() = 0;

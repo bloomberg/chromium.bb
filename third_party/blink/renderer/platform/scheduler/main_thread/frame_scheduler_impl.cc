@@ -633,14 +633,14 @@ void FrameSchedulerImpl::ResetForNavigation() {
 void FrameSchedulerImpl::OnStartedUsingFeature(
     SchedulingPolicy::Feature feature,
     const SchedulingPolicy& policy) {
-  uint64_t old_mask = GetActiveFeaturesOptingOutFromBackForwardCacheMask();
+  uint64_t old_mask = GetActiveFeaturesTrackedForBackForwardCacheMetricsMask();
 
   if (policy.disable_aggressive_throttling)
     OnAddedAggressiveThrottlingOptOut();
   if (policy.disable_back_forward_cache)
     OnAddedBackForwardCacheOptOut(feature);
 
-  uint64_t new_mask = GetActiveFeaturesOptingOutFromBackForwardCacheMask();
+  uint64_t new_mask = GetActiveFeaturesTrackedForBackForwardCacheMetricsMask();
 
   if (old_mask != new_mask)
     NotifyDelegateAboutFeaturesAfterCurrentTask();
@@ -649,14 +649,14 @@ void FrameSchedulerImpl::OnStartedUsingFeature(
 void FrameSchedulerImpl::OnStoppedUsingFeature(
     SchedulingPolicy::Feature feature,
     const SchedulingPolicy& policy) {
-  uint64_t old_mask = GetActiveFeaturesOptingOutFromBackForwardCacheMask();
+  uint64_t old_mask = GetActiveFeaturesTrackedForBackForwardCacheMetricsMask();
 
   if (policy.disable_aggressive_throttling)
     OnRemovedAggressiveThrottlingOptOut();
   if (policy.disable_back_forward_cache)
     OnRemovedBackForwardCacheOptOut(feature);
 
-  uint64_t new_mask = GetActiveFeaturesOptingOutFromBackForwardCacheMask();
+  uint64_t new_mask = GetActiveFeaturesTrackedForBackForwardCacheMetricsMask();
 
   if (old_mask != new_mask)
     NotifyDelegateAboutFeaturesAfterCurrentTask();
@@ -677,7 +677,7 @@ void FrameSchedulerImpl::NotifyDelegateAboutFeaturesAfterCurrentTask() {
 void FrameSchedulerImpl::ReportFeaturesToDelegate() {
   DCHECK(delegate_);
   feature_report_scheduled_ = false;
-  uint64_t mask = GetActiveFeaturesOptingOutFromBackForwardCacheMask();
+  uint64_t mask = GetActiveFeaturesTrackedForBackForwardCacheMetricsMask();
   if (mask == last_uploaded_active_features_)
     return;
   last_uploaded_active_features_ = mask;
@@ -1072,7 +1072,7 @@ void FrameSchedulerImpl::AddTaskTime(base::TimeDelta time) {
 }
 
 WTF::HashSet<SchedulingPolicy::Feature>
-FrameSchedulerImpl::GetActiveFeaturesOptingOutFromBackForwardCache() {
+FrameSchedulerImpl::GetActiveFeaturesTrackedForBackForwardCacheMetrics() {
   WTF::HashSet<SchedulingPolicy::Feature> result;
   for (const auto& it : back_forward_cache_opt_out_counts_)
     result.insert(it.first);
@@ -1080,7 +1080,8 @@ FrameSchedulerImpl::GetActiveFeaturesOptingOutFromBackForwardCache() {
 }
 
 uint64_t
-FrameSchedulerImpl::GetActiveFeaturesOptingOutFromBackForwardCacheMask() const {
+FrameSchedulerImpl::GetActiveFeaturesTrackedForBackForwardCacheMetricsMask()
+    const {
   auto result = back_forward_cache_opt_outs_.to_ullong();
   static_assert(static_cast<size_t>(SchedulingPolicy::Feature::kCount) <=
                     sizeof(result) * 8,

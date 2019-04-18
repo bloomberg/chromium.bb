@@ -163,10 +163,10 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
   static void InitializeTaskTypeQueueTraitsMap(
       FrameTaskTypeToQueueTraitsArray&);
 
-  // Returns the list of active features which currently opt out this frame
-  // from back-forward cache.
+  // Returns the list of active features which currently tracked by the
+  // scheduler for back-forward cache metrics.
   WTF::HashSet<SchedulingPolicy::Feature>
-  GetActiveFeaturesOptingOutFromBackForwardCache() override;
+  GetActiveFeaturesTrackedForBackForwardCacheMetrics() override;
 
   // Notifies the delegate about the change in the set of active features.
   // The scheduler calls this function when needed after each task finishes,
@@ -261,9 +261,9 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
   // Reset the state which should not persist across navigations.
   void ResetForNavigation();
 
-  // Same as GetActiveFeaturesOptingOutFromBackForwardCache, but returns
+  // Same as GetActiveFeaturesTrackedForBackForwardCacheMetrics, but returns
   // a mask instead of a set.
-  uint64_t GetActiveFeaturesOptingOutFromBackForwardCacheMask() const;
+  uint64_t GetActiveFeaturesTrackedForBackForwardCacheMetricsMask() const;
 
   base::WeakPtr<FrameOrWorkerScheduler> GetDocumentBoundWeakPtr() override;
 

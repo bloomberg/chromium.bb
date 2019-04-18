@@ -195,7 +195,7 @@ PluginDocument::PluginDocument(const DocumentInit& initializer,
   if (GetScheduler()) {
     GetScheduler()->RegisterStickyFeature(
         SchedulingPolicy::Feature::kContainsPlugins,
-        {SchedulingPolicy::DisableBackForwardCache()});
+        {SchedulingPolicy::RecordMetricsForBackForwardCache()});
   }
 }
 
