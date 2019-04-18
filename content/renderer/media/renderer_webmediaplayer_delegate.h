@@ -87,7 +87,7 @@ class CONTENT_EXPORT RendererWebMediaPlayerDelegate
   friend class RendererWebMediaPlayerDelegateTest;
 
  private:
-  void OnMediaDelegatePause(int player_id);
+  void OnMediaDelegatePause(int player_id, bool triggered_by_user);
   void OnMediaDelegatePlay(int player_id);
   void OnMediaDelegateMuted(int player_id, bool muted);
   void OnMediaDelegateSeekForward(int player_id, base::TimeDelta seek_time);

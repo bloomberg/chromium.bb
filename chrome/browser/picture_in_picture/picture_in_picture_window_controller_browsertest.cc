@@ -527,6 +527,46 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
                 .WaitAndGetTitle());
 }
 
+// Tests that when closing a Picture-in-Picture window, the video element
+// no longer in Picture-in-Picture can't enter Picture-in-Picture right away.
+IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
+                       CloseWindowCantEnterPictureInPictureAgain) {
+  GURL test_page_url = ui_test_utils::GetTestUrl(
+      base::FilePath(base::FilePath::kCurrentDirectory),
+      base::FilePath(
+          FILE_PATH_LITERAL("media/picture-in-picture/window-size.html")));
+  ui_test_utils::NavigateToURL(browser(), test_page_url);
+
+  content::WebContents* active_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(active_web_contents);
+
+  SetUpWindowController(active_web_contents);
+
+  bool result = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      active_web_contents, "enterPictureInPicture();", &result));
+  EXPECT_TRUE(result);
+
+  EXPECT_TRUE(content::ExecuteScriptWithoutUserGesture(
+      active_web_contents, "tryToEnterPictureInPictureAfterLeaving();"));
+
+  bool in_picture_in_picture = false;
+  EXPECT_TRUE(content::ExecuteScriptWithoutUserGestureAndExtractBool(
+      active_web_contents, "isInPictureInPicture();", &in_picture_in_picture));
+  EXPECT_TRUE(in_picture_in_picture);
+
+  ASSERT_TRUE(window_controller());
+  window_controller()->Close(true /* should_pause_video */,
+                             true /* should_reset_pip_player */);
+
+  base::string16 expected_title =
+      base::ASCIIToUTF16("failed to enter Picture-in-Picture after leaving");
+  EXPECT_EQ(expected_title,
+            content::TitleWatcher(active_web_contents, expected_title)
+                .WaitAndGetTitle());
+}
+
 // Tests that when closing a Picture-in-Picture window from the Web API, the
 // video element is not paused.
 IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
