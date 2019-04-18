@@ -600,7 +600,6 @@ Jeśli pozostanie ona nieskonfigurowana, użytkownik może sam zdecydować, czy 
       Gdy zasada ma wartość fałsz, informacje, na podstawie których można zidentyfikować użytkowników, nie są zbierane.
 
       Ta zasada jest stosowana tylko wtedy, gdy włączone jest <ph name="CHROME_REPORTING_EXTENSION_NAME" />, a komputer jest zarejestrowany w <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
-<translation id="2126178089984117495">Ogranicza tryb drukowania z kodem PIN. Zasada nieskonfigurowana jest traktowana jako brak ograniczeń. Jeśli tryb jest niedostępny, zasada jest ignorowana.</translation>
 <translation id="2127599828444728326">Zezwalaj na powiadomienia w tych witrynach.</translation>
 <translation id="2131902621292742709">Opóźnienie przyciemnienia ekranu przy zasilaniu z baterii</translation>
 <translation id="2134437727173969994">Zezwól na blokowanie ekranu</translation>
@@ -1963,12 +1962,6 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 <translation id="4983201894483989687">Zezwalaj na uruchamianie nieaktualnych wtyczek</translation>
 <translation id="4986560318567565414">Ścieżka Chrome służąca do przełączania z alternatywnej przeglądarki.</translation>
 <translation id="4988291787868618635">Działanie, jakie ma zostać wykonane po osiągnięciu opóźnienia bezczynności</translation>
-<translation id="5030889661505907084">
-      Po wybraniu dla tej zasady wartości Prawda zasady dotyczące chmury mają pierwszeństwo przed zasadami dotyczącymi platformy, gdy z nimi kolidują.
-      Jeśli ta zasada ma wartość Fałsz lub nie jest skonfigurowana, zasady dotyczące platformy mają pierwszeństwo przed zasadami dotyczącymi chmury, gdy z nimi kolidują.
-
-      Ta zasada jest dostępna tylko jako zasada dotycząca platformy.
-      </translation>
 <translation id="5034604678285451405">Ustaw procentowy próg naładowania baterii dla zasady Czas największego zużycia energii.
 
           Ta zasada jest używana tylko wtedy, gdy zasada DevicePowerPeakShiftEnabled ma wartość Prawda.
@@ -3616,29 +3609,6 @@ Zalecamy skonfigurowanie zasady w systemie Windows przy użyciu obiektu zasad gr
 <translation id="8259592978873597235">Jeśli ta zasada ma wartość Prawda lub nie jest skonfigurowana, brak aktywności użytkownika podczas odtwarzania filmów nie jest brany pod uwagę. Nie pozwala to na przejście w stan bezczynności, przyciemnienia, wyłączenia i zablokowania ekranu oraz wykonanie działań związanych z tym stanem.
 
           Jeśli ta zasada ma wartość Fałsz, aktywność związana z oglądanie filmów nie wyklucza określenia użytkownika jako bezczynnego.</translation>
-<translation id="8264653492961233132">Określa listę aplikacji i rozszerzeń, które zostaną zainstalowane dyskretnie, bez interakcji
-          z użytkownikiem, a użytkownik nie będzie mógł ich odinstalować
-          ani wyłączyć. Aplikacje/rozszerzenia bez interakcji z użytkownikiem
-          otrzymają wszystkie uprawnienia, o które proszą, w tym wszelkie
-          dodatkowe uprawnienia, o które będą prosić przyszłe ich wersje.
-          Otrzymają też uprawnienia do interfejsów API dla rozszerzeń
-          enterprise.deviceAttributes i enterprise.platformKeys. (Te dwa
-          interfejsy API nie są dostępne dla aplikacji/rozszerzeń, których
-          instalacja nie jest wymuszana).
-
-          Ta zasada ma pierwszeństwo przed potencjalnie powodującą konflikt zasadą <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />. Jeśli z tej listy zostaną usunięte aplikacja lub rozszerzenie, których instalacja została wymuszona wcześniej, <ph name="PRODUCT_NAME" /> automatycznie je odinstaluje.
-
-          W przypadku systemów Windows niepodłączonych do domeny <ph name="MS_AD_NAME" /> wymuszona instalacja jest ograniczona do aplikacji i rozszerzeń dostępnych w Chrome Web Store.
-
-          Pamiętaj, że kod źródłowy każdego rozszerzenia można zmodyfikować za pomocą Narzędzi dla programistów (potencjalnie zakłócając jego działanie). Jeśli jest to problemem, ustaw zasadę <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
-
-          Każdy element na liście tej zasady jest ciągiem zawierającym identyfikator rozszerzenia i opcjonalnie URL „aktualizacji” oddzielone średnikiem (<ph name="SEMICOLON" />). Identyfikator rozszerzenia to ciąg 32 znaków, który znajdziesz np. na <ph name="CHROME_EXTENSIONS_LINK" /> w trybie programisty. URL „aktualizacji” powinien wskazywać plik manifestu aktualizacji w postaci dokumentu XML, zgodnie z opisem w dokumencie <ph name="LINK_TO_EXTENSION_DOC1" />. Domyślnie używany jest URL aktualizacji Chrome Web Store (obecnie to „https://clients2.google.com/service/update2/crx”). Uwaga: URL „aktualizacji” ustawiony przez tę zasadę jest używany tylko podczas pierwszej instalacji. Późniejsze aktualizacje rozszerzenia korzystają z adresu URL aktualizacji wskazanego w pliku manifestu. Pamiętaj też, że podanie adresu URL „aktualizacji” było obowiązkowe w <ph name="PRODUCT_NAME" /> do wersji 67 włącznie.
-
-          Na przykład <ph name="EXTENSION_POLICY_EXAMPLE" /> instaluje aplikację <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> ze standardowego adresu URL „aktualizacji” Chrome Web Store. Więcej informacji o hostowaniu rozszerzeń znajdziesz na <ph name="LINK_TO_EXTENSION_DOC2" />.
-
-          Jeśli ta zasada nie jest ustawiona, aplikacje ani rozszerzenia nie są instalowane automatycznie, a użytkownik może odinstalować dowolne z nich w <ph name="PRODUCT_NAME" />.
-
-          Uwaga: ta zasada nie jest stosowana do trybu incognito.</translation>
 <translation id="8274603902181597201">Wyczyść katalog główny użytkownika zabezpieczony szyfrowaniem ecryptfs i zacznij korzystać z nowego katalogu głównego zaszyfrowanego przy użyciu ext4.</translation>
 <translation id="8285435910062771358">Lupa pełnoekranowa włączona</translation>
 <translation id="8288199156259560552">Włącz usługę lokalizacyjną Google na Androida</translation>

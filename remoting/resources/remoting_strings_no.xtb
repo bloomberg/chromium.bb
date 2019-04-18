@@ -153,6 +153,7 @@ Du kan finne informasjon om personvern i Googles personvernregler (http://goo.gl
 <translation id="4240294130679914010">Avinstalleringsprogram for Chromoting-vert</translation>
 <translation id="4277463233460010382">Denne datamaskinen er konfigurer for å la én eller flere klienter koble til uten å skrive inn noen PIN-kode.</translation>
 <translation id="4277736576214464567">Tilgangskoden er ugyldig. Prøv på nytt.</translation>
+<translation id="4281844954008187215">Vilkår for bruk</translation>
 <translation id="4361728918881830843">For å muliggjøre ekstern tilkobling til en annen datamaskin må du installere Chrome Eksternt skrivebord på maskinen, og klikke på «<ph name="BUTTON_NAME" />».</translation>
 <translation id="4394049700291259645">Slå av</translation>
 <translation id="4405930547258349619">Core-bibliotek</translation>
@@ -345,6 +346,7 @@ For å slå på denne funksjonaliteten, velg «<ph name="BUTTON_NAME" />» for �
 <translation id="8747048596626351634">Økten kræsjet eller kunne ikke starte. Hvis ~/.chrome-remote-desktop-session eksisterer på den eksterne datamaskinen, må du sørge for at den starter en prosess i forgrunnen som kjører lenge – for eksempel et skrivebordsmiljø eller en vindusbehandler.</translation>
 <translation id="8759753423332885148">Finn ut mer</translation>
 <translation id="8791202241915690908">Last ned installasjonsprogrammet for Chromoting-verten</translation>
+<translation id="8804164990146287819">Personvernregler</translation>
 <translation id="894763922177556086">God</translation>
 <translation id="895780780740011433">For Windows 7 og nyere</translation>
 <translation id="897805526397249209">For å aktivere eksterne tilkoblinger til en annen datamaskin, må du installere Chromoting på maskinen, og klikke på «<ph name="BUTTON_NAME" />».</translation>

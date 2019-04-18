@@ -153,6 +153,7 @@
 <translation id="4240294130679914010">Приложение Chromoting Host Uninstaller</translation>
 <translation id="4277463233460010382">Некоторые клиенты могут подключаться к этому компьютеру без PIN-кода.</translation>
 <translation id="4277736576214464567">Код доступа недействителен. Повторите попытку.</translation>
+<translation id="4281844954008187215">Условия использования</translation>
 <translation id="4361728918881830843">Чтобы разрешить удаленные подключения на другом компьютере, установите на него Удаленный рабочий стол Chrome и нажмите кнопку "<ph name="BUTTON_NAME" />".</translation>
 <translation id="4394049700291259645">Отключить</translation>
 <translation id="4405930547258349619">Библиотека ядра</translation>
@@ -345,6 +346,7 @@
 <translation id="8747048596626351634">Сбой сеанса или ошибка при его начале. Если сеанс ~/.chrome-remote-desktop-session начат на удаленном компьютере, убедитесь, что в нем запускается долгосрочный приоритетный процесс, например среда рабочего стола или диспетчер окон.</translation>
 <translation id="8759753423332885148">Подробнее…</translation>
 <translation id="8791202241915690908">Установка хоста для Пульта Chrome</translation>
+<translation id="8804164990146287819">Политика конфиденциальности</translation>
 <translation id="894763922177556086">высокое</translation>
 <translation id="895780780740011433">Для Windows 7 и более поздних версий</translation>
 <translation id="897805526397249209">Чтобы разрешить удаленные подключения на другом компьютере, установите на него Пульт Chrome и нажмите кнопку "<ph name="BUTTON_NAME" />".</translation>

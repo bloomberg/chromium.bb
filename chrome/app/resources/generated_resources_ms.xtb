@@ -92,7 +92,7 @@
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">Edit enjin carian</translation>
 <translation id="1134009406053225289">Buka dalam tetingkap inkognito</translation>
-<translation id="1136712381129578788">Kunci keselamatan dikunci kerana PIN yang salah dimasukkan terlalu banyak kali. Untuk membuka kunci, cabut dan masukkannya semula.</translation>
+<translation id="1136712381129578788">Kunci keselamatan dikunci kerana PIN yang salah dimasukkan terlalu banyak kali. Untuk membuka kunci, cabut dan masukkan kunci keselamatan semula.</translation>
 <translation id="1137673463384776352">Buka pautan dalam <ph name="APP" /></translation>
 <translation id="1140351953533677694">Akses peranti Bluetooth dan Bersiri anda</translation>
 <translation id="1140610710803014750">Log masuk dan hidupkan penyegerakan untuk mendapatkan penanda halaman pada semua peranti anda.</translation>
@@ -1632,7 +1632,6 @@
 <translation id="3576324189521867626">Berjaya dipasang</translation>
 <translation id="3578594933904494462">Kandungan tab ini sedang dikongsi.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; ingin berkongsi pencetak &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; dengan kumpulan yang anda miliki: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Jika anda terima, semua ahli kumpulan boleh menggunakan pencetak tersebut.</translation>
-<translation id="3580923162759633716">Perkhidmatan Pemprofilan</translation>
 <translation id="3584169441612580296">Baca dan ubah foto, muzik dan media lain daripada komputer anda</translation>
 <translation id="3587482841069643663">Semua</translation>
 <translation id="358796204584394954">Taip kod ini pada "<ph name="DEVICE_NAME" />" untuk digandingkan:</translation>
@@ -3251,7 +3250,7 @@
 <translation id="6122095009389448667">Teruskan menyekat tapak ini daripada melihat papan keratan</translation>
 <translation id="6122875415561139701">Pengendalian tulis tidak dibenarkan pada: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="6124650939968185064">Sambungan berikut bergantung kepada sambungan ini:</translation>
-<translation id="6124698108608891449">Tapak ini memerlukan lebih banyak kebenaran.</translation>
+<translation id="6124698108608891449">Tapak ini memerlukan kebenaran lagi.</translation>
 <translation id="6125479973208104919">Malangnya, anda perlu menambahkan akaun pada <ph name="DEVICE_TYPE" /> ini sekali lagi.</translation>
 <translation id="6129691635767514872">Data yang dipilih telah dialih keluar daripada Chrome dan peranti yang disegerakkan. Akaun Google anda mungkin mempunyai sejarah penyemakan imbas dalam bentuk lain seperti carian dan aktiviti daripada perkhidmatan Google yang lain di <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="6129938384427316298">Komen Sijil Netscape</translation>
@@ -3927,7 +3926,7 @@
 <translation id="720715819012336933">{NUM_PAGES,plural, =1{Keluar daripada halaman}other{Keluar daripada halaman}}</translation>
 <translation id="7207631048330366454">Cari apl</translation>
 <translation id="7210499381659830293">Pencetak sambungan</translation>
-<translation id="7212097698621322584">Masukkan PIN semasa anda untuk menukarnya. Jika anda tidak tahu PIN anda, anda perlu menetapkan semula kunci keselamatan itu, kemudian buat PIN baharu.</translation>
+<translation id="7212097698621322584">Masukkan PIN semasa anda untuk menukar PIN. Jika anda tidak tahu PIN anda, anda perlu menetapkan semula kunci keselamatan, kemudian buat PIN baharu.</translation>
 <translation id="721467499098558573">Tekan dan tahan butang pada kunci keselamatan anda selama sekurang-kurangnya 5 saat</translation>
 <translation id="7216409898977639127">Penyedia selular</translation>
 <translation id="7216595297012131718">Susun bahasa berdasarkan pilihan anda</translation>
@@ -4641,7 +4640,6 @@ Simpan fail kunci anda di tempat selamat. Anda akan memerlukannya untuk mencipta
 <translation id="8284279544186306258">semua tapak <ph name="WEBSITE_1" /></translation>
 <translation id="8286036467436129157">Log Masuk</translation>
 <translation id="8286963743045814739">Anda boleh menyemak imbas secara tertutup menggunakan tetingkap inkognito</translation>
-<translation id="82871696630048499">Halaman web telah dimuat semula kerana kehabisan memori.</translation>
 <translation id="8287902281644548111">Cari menggunakan panggilan API/URL</translation>
 <translation id="8288032458496410887">Nyahpasang <ph name="APP" />...</translation>
 <translation id="8291967909914612644">Negara pembekal tempatan</translation>

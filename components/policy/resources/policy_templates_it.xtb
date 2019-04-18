@@ -584,7 +584,6 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
       Se questa norma viene impostata su False, non vengono raccolte le informazioni che possono essere usate per identificare gli utenti.
 
       Questa norma viene applicata soltanto se viene attivata l'estensione <ph name="CHROME_REPORTING_EXTENSION_NAME" /> e il computer viene registrato con la norma <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
-<translation id="2126178089984117495">Consente di limitare la modalità di stampa PIN. Se la norma non viene impostata non vengono applicate limitazioni. Se la modalità non è disponibile, questa norma viene ignorata.</translation>
 <translation id="2127599828444728326">Consenti notifiche su questi siti</translation>
 <translation id="2131902621292742709">Ritardo oscuramento schermo in caso di utilizzo della batteria</translation>
 <translation id="2134437727173969994">Consenti blocco dello schermo</translation>
@@ -1926,12 +1925,6 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="4983201894483989687">Consenti esecuzione dei plug-in obsoleti</translation>
 <translation id="4986560318567565414">Percorso a Chrome per cambiare il browser alternativo.</translation>
 <translation id="4988291787868618635">Azione da compiere a raggiungimento ritardo inattività</translation>
-<translation id="5030889661505907084">
-      Se la norma è impostata su true, in caso di conflitto la norma relativa alla cloud prevale sulla norma relativa alla piattaforma.
-      Se la norma è impostata su false o non è configurata, in caso di conflitto la norma relativa alla piattaforma prevale sulla norma relativa alla cloud.
-
-      Questa norma è disponibile solo per piattaforma.
-      </translation>
 <translation id="5034604678285451405">Imposta un valore percentuale per il limite di consumo della batteria per la variazione dei picchi energetici.
 
           Questa norma viene utilizzata solo se l'opzione DevicePowerPeakShiftEnabled è impostata su true.
@@ -3575,29 +3568,6 @@ Su Windows è consigliabile configurare le norme tramite Criteri di gruppo, anch
 <translation id="8259592978873597235">Se questa norma è impostata su True o non viene impostata, l'utente non verrà considerato inattivo durante la riproduzione del video. In questo modo si impedisce il ritardo di inattività, il ritardo nell'attenuazione dello schermo, il ritardo nello spegnimento dello schermo e il ritardo nel blocco dello schermo e l'esecuzione delle azioni corrispondenti.
 
           Se questa norma è impostata su False, l'attività del video non impedisce all'utente di essere considerato inattivo.</translation>
-<translation id="8264653492961233132">Consente di specificare un elenco di app ed estensioni che vengono installate automaticamente,
-          senza l'interazione dell'utente, e che non possono essere disinstallate né
-          disattivate dall'utente. Tutte le autorizzazioni richieste dalle 
-          app/estensioni vengono concesse implicitamente, senza interazione dell'utente,
-          comprese le eventuali autorizzazioni aggiuntive richieste dalle future versioni delle 
-          app/estensioni. Inoltre, le autorizzazioni sono concesse
-          per le API delle estensioni enterprise.deviceAttributes ed enterprise.platformKeys.
-          (Queste due API non sono disponibili per le app/estensioni
-          prive di installazione forzata).
-
-          Questa norma ha precedenza su una norma <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> potenzialmente in conflitto. Se un'app o un'estensione con installazione forzata viene rimossa da questo elenco, tale app o estensione viene disinstallata automaticamente da <ph name="PRODUCT_NAME" />.
-
-          Per le istanze di Windows che non fanno parte di un dominio <ph name="MS_AD_NAME" />, l'installazione forzata è limitata alle app e alle estensioni elencate nel Chrome Web Store.
-
-          Tieni presente che il codice sorgente delle estensioni può essere modificato dagli utenti tramite Strumenti per sviluppatori (causando potenzialmente il malfunzionamento dell'estensione). Per evitare un problema di questo tipo, è consigliabile impostare la norma <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
-
-          Ogni voce della norma è una stringa contenente un ID estensione e un URL di "aggiornamento" separati da punto e virgola (<ph name="SEMICOLON" />). L'ID estensione è la stringa di 32 lettere che si trova, ad esempio, all'indirizzo <ph name="CHROME_EXTENSIONS_LINK" /> quando è attivata la modalità sviluppatore. L'URL di "aggiornamento", se specificato, deve indirizzare a un documento XML Manifest di aggiornamento, come descritto all'indirizzo <ph name="LINK_TO_EXTENSION_DOC1" />. Per impostazione predefinita, viene utilizzato l'URL di aggiornamento del Chrome Web Store (che attualmente è "https://clients2.google.com/service/update2/crx"). Nota che l'URL di "aggiornamento" impostato in questa norma viene utilizzato esclusivamente per l'installazione iniziale; per i successivi aggiornamenti dell'estensione viene utilizzato l'URL di aggiornamento indicato nel file manifest dell'estensione. Inoltre, specificare l'URL di "aggiornamento" in modo esplicito era obbligatorio nelle versioni di <ph name="PRODUCT_NAME" /> fino alla 67 inclusa.
-
-          Ad esempio, <ph name="EXTENSION_POLICY_EXAMPLE" /> installa l'app <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> dall'URL di "aggiornamento" del Chrome Web Store standard. Informazioni sulle estensioni in hosting sono disponibili all'indirizzo <ph name="LINK_TO_EXTENSION_DOC2" />.
-
-          Se questa norma non è impostata, le app e le estensioni non vengono installate automaticamente e l'utente può disinstallare qualsiasi app o estensione in <ph name="PRODUCT_NAME" />.
-
-          Tieni presente che questa norma non si applica alla modalità di navigazione in incognito.</translation>
 <translation id="8274603902181597201">Cancella la home directory ecryptfs dell'utente e inizia con una nuova home directory criptata tramite ext4</translation>
 <translation id="8285435910062771358">Ingrandimento a schermo intero attivo</translation>
 <translation id="8288199156259560552">Attiva il servizio di geolocalizzazione di Google per Android</translation>

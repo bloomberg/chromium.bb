@@ -614,7 +614,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
       이 정책이 False로 설정되어 있으면 사용자를 식별하는 데 사용할 수 있는 정보가 수집되지 않습니다.
 
       이 정책은 <ph name="CHROME_REPORTING_EXTENSION_NAME" />이(가) 사용 설정되어 있고 기기가 <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />에 등록되어 있는 경우에만 적용됩니다.</translation>
-<translation id="2126178089984117495">PIN 인쇄 모드를 제한합니다. 정책이 설정되어 있지 않으면 제한이 없는 것으로 간주됩니다. 이 모드를 사용할 수 없는 경우 이 정책은 무시됩니다.</translation>
 <translation id="2127599828444728326">이 사이트에서 알림 허용</translation>
 <translation id="2131902621292742709">배터리 전원으로 실행할 때 화면 어둡게 하기 지연</translation>
 <translation id="2134437727173969994">화면 잠금 허용</translation>
@@ -2013,12 +2012,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 <translation id="4983201894483989687">오래된 플러그인 실행 허용</translation>
 <translation id="4986560318567565414">다른 브라우저에서 Chrome으로 전환하기 위한 경로입니다.</translation>
 <translation id="4988291787868618635">유휴 지연 시간에 도달하면 수행할 작업</translation>
-<translation id="5030889661505907084">
-      이 정책을 true로 설정하면 클라우드 정책이 플랫폼 정책과 충돌할 때 클라우드 정책이 우선 적용됩니다.
-      이 정책을 false로 설정하거나 설정하지 않으면, 클라우드 정책이 플랫폼 정책과 충돌할 때 플랫폼 정책이 우선 적용됩니다.
-
-      이 정책은 플랫폼으로만 사용 가능합니다.
-      </translation>
 <translation id="5034604678285451405">전력 피크 시프트 배터리 임계값을 퍼센트로 설정합니다.
 
           이 정책은 DevicePowerPeakShiftEnabled가 True로 설정된 경우에만 사용됩니다.
@@ -3744,28 +3737,6 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
 <translation id="8259592978873597235">이 정책이 True로 설정되어 있거나 설정되어 있지 않으면 동영상이 재생되는 동안 사용자가 유휴 상태인 것으로 간주되지 않습니다. 이로 인해 유휴 지연 시간, 화면 어둡게 하기 지연 시간 및 화면 잠금 지연 시간에 도달하거나 해당 작업이 실행되지 않습니다.
 
           이 정책이 False로 설정되어 있으면 동영상 활동이 있어도 사용자가 유휴 상태인 것으로 간주됩니다.</translation>
-<translation id="8264653492961233132">사용자가 개입하지 않아도 자동으로 설치되고 사용자가 삭제하거나
-          사용 중지할 수 없는 앱 및 확장 프로그램의 목록을 지정합니다.
-          앱/확장 프로그램의 향후 버전에서 요청하는 추가 권한을 포함하여
-          앱/확장 프로그램에서 요청하는 모든 권한은 사용자의 개입 없이
-          암묵적으로 허용됩니다. 또한 enterprise.deviceAttributes
-          및 enterprise.platformKeys 확장 프로그램 API에 권한이 부여됩니다
-          (이 두 API는 강제 설치되지 않은 앱/확장 프로그램에는
-          사용할 수 없음).
-
-          이 정책은 잠재적으로 충돌할 수 있는 <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> 정책보다 우선합니다. 이전에 강제 설치된 앱 또는 확장 프로그램이 목록에서 삭제되면 <ph name="PRODUCT_NAME" />에 의해 자동으로 제거됩니다.
-
-         <ph name="MS_AD_NAME" /> 도메인에 가입되지 않은 Windows 인스턴스는 Chrome 웹 스토어에 포함된 앱/확장 프로그램으로만 강제 설치가 제한됩니다.
-
-          확장 프로그램의 소스 코드는 사용자가 개발자 도구를 통해 변경할 수 있습니다(확장 프로그램의 오작동을 야기할 수 있음). 이 부분이 걱정된다면 <ph name="DEVELOPER_TOOLS_POLICY_NAME" /> 정책을 설정해야 합니다.
-
-          정책의 각 항목은 확장 프로그램 ID 및 선택적으로 ‘업데이트’ URL을 세미콜론(<ph name="SEMICOLON" />)으로 구분해 놓은 문자열입니다. 확장 프로그램 ID는 개발자 모드일 때 <ph name="CHROME_EXTENSIONS_LINK" />에서 확인되는 것과 같은 32자의 문자열입니다. ‘업데이트’ URL은 지정된 경우 <ph name="LINK_TO_EXTENSION_DOC1" />에서 설명한 것처럼 업데이트 매니페스트 XML 문서로 연결되어야 합니다. 기본적으로 Chrome 웹 스토어의 업데이트 URL(현재 ‘https://clients2.google.com/service/update2/crx’)이 사용됩니다. 이 정책에서 설정된 ‘업데이트’ URL은 초기 설치용으로만 사용되며, 이후 확장 프로그램의 업데이트는 확장 프로그램의 매니페스트에 있는 업데이트 URL을 사용합니다. 또한 ‘업데이트’ URL을 명시적으로 지정하는 것은 <ph name="PRODUCT_NAME" /> 버전 67 이상에서 필수입니다.
-
-          예를 들어 <ph name="EXTENSION_POLICY_EXAMPLE" />은(는) 표준 Chrome 웹 스토어 ‘업데이트’ URL에서 <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> 앱을 설치합니다. 확장 프로그램 호스팅에 관한 정보는 <ph name="LINK_TO_EXTENSION_DOC2" /> 페이지를 참조하세요.
-
-          이 정책이 설정되지 않으면 어떠한 앱 또는 확장 프로그램도 자동 설치되지 않고 사용자는 <ph name="PRODUCT_NAME" />의 모든 앱 또는 확장 프로그램을 제거할 수 있습니다.
-
-          이 정책은 시크릿 모드에는 적용되지 않습니다.</translation>
 <translation id="8274603902181597201">사용자의 ecryptfs 홈 디렉토리를 삭제하고 ext4로 암호화된 새 홈 디렉토리로 시작합니다.</translation>
 <translation id="8285435910062771358">전체화면 돋보기 사용</translation>
 <translation id="8288199156259560552">Android Google 위치 서비스 사용</translation>

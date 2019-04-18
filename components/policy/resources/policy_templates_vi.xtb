@@ -609,7 +609,6 @@
       Khi đặt chính sách này thành False, thông tin có thể dùng để nhận dạng người dùng sẽ không được thu thập.
 
       Chính sách này chỉ có hiệu lực khi <ph name="CHROME_REPORTING_EXTENSION_NAME" /> ở trạng thái bật và bạn đã đăng ký máy với <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
-<translation id="2126178089984117495">Hạn chế chế độ in mã PIN. Khi bạn không đặt chính sách này, tức là không có hạn chế. Nếu không có chế độ này, thì chính sách này sẽ bị bỏ qua.</translation>
 <translation id="2127599828444728326">Cho phép thông báo trên các trang web này</translation>
 <translation id="2131902621292742709">Độ trễ mờ màn hình khi chạy trên nguồn pin</translation>
 <translation id="2134437727173969994">Cho phép khóa màn hình</translation>
@@ -2003,12 +2002,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="4983201894483989687">Cho phép chạy các plugin đã lỗi thời</translation>
 <translation id="4986560318567565414">Đường dẫn tới Chrome để chuyển từ trình duyệt thay thế.</translation>
 <translation id="4988291787868618635">Hành động cần thực hiện khi đạt tới độ trễ khi không sử dụng</translation>
-<translation id="5030889661505907084">
-      Nếu bạn đặt chính sách này thành true, chính sách đám mây sẽ được ưu tiên trong trường hợp xung đột với chính sách nền tảng.
-      Nếu bạn đặt chính sách này thành false hoặc không định cấu hình chính sách này, thì chính sách nền tảng sẽ được ưu tiên trong trường hợp xung đột với chính sách đám mây.
-
-      Chính sách này chỉ có ở dạng chính sách nền tảng.
-      </translation>
 <translation id="5034604678285451405">Đặt ngưỡng pin cho chế độ chuyển đổi điện năng cao điểm theo phần trăm.
 
           Chính sách này chỉ được dùng nếu bạn đặt DevicePowerPeakShiftEnabled thành true.
@@ -3723,29 +3716,6 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
 <translation id="8259592978873597235">Nếu bạn không đặt chính sách này hoặc đặt thành True, người dùng sẽ không được xem là không sử dụng khi video đang phát. Điều này ngăn đạt tới thời gian chờ khi không sử dụng, thời gian chờ làm mờ màn hình, thời gian chờ tắt màn hình cũng như thời gian chờ khóa màn hình và việc thực hiện các hành động tương ứng.
 
           Nếu bạn đặt chính sách này thành False, hoạt động video sẽ không ngăn việc người dùng được xem là không sử dụng.</translation>
-<translation id="8264653492961233132">Chỉ định danh sách ứng dụng và tiện ích được cài đặt tự động mà không
-          có sự tương tác của người dùng, và ứng dụng mà tiện ích mà người dùng không thể gỡ cài
-          đặt hoặc vô hiệu hóa. Tất cả các quyền do ứng dụng/tiện ích
-          yêu cầu được cấp trực tiếp mà không có sự tương tác của người
-          dùng, kể cả mọi quyền bổ sung mà các phiên bản trong tương lai
-          của ứng dụng/tiện ích đó yêu cầu. Ngoài ra, các quyền được cấp
-          cho các API tiện ích enterprise.deviceAttributes và 
-          enterprise.platformKeys.(Không sử dụng được hai API này cho các
-          ứng dụng/tiện ích không buộc cài đặt.)
-
-          Chính sách này được ưu tiên hơn trong trường hợp xung đột với chính sách <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />. Nếu một ứng dụng hoặc tiện ích mà trước đây bị buộc cài đặt hiện đã bị xóa khỏi danh sách này, thì <ph name="PRODUCT_NAME" /> sẽ tự động gỡ cài đặt ứng dụng hoặc tiện ích đó.
-
-          Đối với các phiên bản Windows không tham gia miền <ph name="MS_AD_NAME" />, thì việc buộc cài đặt sẽ bị giới hạn ở các ứng dụng và tiện ích trong Cửa hàng Chrome trực tuyến.
-
-          Lưu ý rằng người dùng có thể thay đổi mã nguồn của bất cứ tiện ích nào thông qua Công cụ dành cho nhà phát triển (điều này có thể khiến tiện ích hoạt động không chính xác). Nếu bạn lo ngại về điều này thì cần phải đặt chính sách <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
-
-          Mỗi mục danh sách của chính sách là một chuỗi có chứa một ID tiện ích và một URL "cập nhật" (không bắt buộc) phân tách bằng dấu chấm phẩy (<ph name="SEMICOLON" />). ID tiện ích là một chuỗi gồm 32 chữ cái, chẳng hạn như trên <ph name="CHROME_EXTENSIONS_LINK" /> khi ở chế độ nhà phát triển. URL "cập nhật", nếu được chỉ định, phải trỏ tới tài liệu XML của tệp kê khai cập nhật như được mô tả tại <ph name="LINK_TO_EXTENSION_DOC1" />. Theo mặc định, URL cập nhật của Cửa hàng Chrome trực tuyến sẽ được sử dụng (hiện là "https://clients2.google.com/service/update2/crx"). Lưu ý rằng URL "cập nhật" được đặt trong chính sách này chỉ dùng cho lần cài đặt ban đầu; các lần cập nhật tiện ích tiếp theo sẽ sử dụng URL cập nhật nêu trong tệp kê khai của tiện ích. Ngoài ra, xin lưu ý rằng việc chỉ định URL "cập nhật" một cách rõ ràng là bắt buộc trong các phiên bản <ph name="PRODUCT_NAME" /> bao gồm cả phiên bản 67.
-
-          Ví dụ: <ph name="EXTENSION_POLICY_EXAMPLE" /> cài đặt ứng dụng <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> từ URL "cập nhật" tiêu chuẩn của Cửa hàng Chrome trực tuyến. Để biết thêm thông tin về việc lưu trữ tiện ích, hãy xem: <ph name="LINK_TO_EXTENSION_DOC2" />.
-
-          Nếu không đặt chính sách này, thì sẽ không có ứng dụng hoặc tiện ích nào được tự động cài đặt và người dùng có thể gỡ cài đặt mọi ứng dụng hoặc tiện ích trong <ph name="PRODUCT_NAME" />.
-
-          Lưu ý rằng chính sách này không áp dụng cho chế độ ẩn danh.</translation>
 <translation id="8274603902181597201">Xóa thư mục chính ecryptf của người dùng và bắt đầu bằng một thư mục chính mới được mã hóa ext4.</translation>
 <translation id="8285435910062771358">Đã bật kính lúp toàn màn hình</translation>
 <translation id="8288199156259560552">Bật Dịch vụ vị trí của Google trên thiết bị Android</translation>

@@ -618,7 +618,6 @@ loendist, desinstallib rakendus <ph name="PRODUCT_NAME" /> selle automaatselt.
       Kui reegel on seatud väärtusele Väär, ei koguta teavet, mille alusel saab kasutajaid tuvastada.
 
       Reegel kehtib ainult juhul, kui <ph name="CHROME_REPORTING_EXTENSION_NAME" /> on lubatud ja seade on reeglis <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> registreeritud.</translation>
-<translation id="2126178089984117495">Piirab PIN-koodi printimise režiimi. Määramata reeglit tõlgendatakse piirangu puudumisena. Reeglit eiratakse, kui režiim ei ole saadaval.</translation>
 <translation id="2127599828444728326">Luba märguanded nendel saitidel</translation>
 <translation id="2131902621292742709">Ekraani hämardamise viiteaeg akutoite kasutamisel</translation>
 <translation id="2134437727173969994">Keela ekraani lukustamine</translation>
@@ -2013,12 +2012,6 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli SitePerPr
 <translation id="4983201894483989687">Luba vananenud pistikprogrammide käitamine</translation>
 <translation id="4986560318567565414">Chrome'i tee alternatiivselt brauserilt üleminemiseks.</translation>
 <translation id="4988291787868618635">Tehtav toiming, kui möödub jõudeoleku viiteaeg</translation>
-<translation id="5030889661505907084">
-      Kui reegel on seatud väärtusele Tõene, alistavad pilvereeglid konflikti puhul platvormireeglid.
-      Kui reegli väärtuseks on määratud Väär või see jäetakse määramata, alistavad platvormireeglid konflikti puhul pilvereeglid.
-
-      Reegel on saadaval ainult platvormina.
-      </translation>
 <translation id="5034604678285451405">Aku läve määramine protsentides elektrikasutuse nihutamisele tarbimise tippajast.
 
           Seda reeglit kasutatakse vaid siis, kui atribuudi DevicePowerPeakShiftEnabled väärtuseks on määratud Tõene.
@@ -3744,26 +3737,6 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
 <translation id="8259592978873597235">Kui reegel määratakse väärtusele Tõene või jäetakse määramata, ei peeta kasutajat video esitamise ajal tegevusetuks. Nii ei jõuta jõudeoleku viiteajani, ekraani hämardamise viiteajani, ekraani väljalülitamise viiteajani ega ekraani lukustamise viiteajani ning vastavaid toiminguid ei tehta.
 
           Kui reegel määratakse väärtusele Väär, ei mõjuta videotoimingud kasutaja tegevusetuse määramist.</translation>
-<translation id="8264653492961233132">Määrab loendi rakendustest ja laiendustest, mis installitakse vaikimisi
-          ning kasutajaga suhtlemata ja mida kasutaja ei saa desinstallida
-          ega keelata. Kõik rakenduste/laienduste taotletud
-          load antakse vaikimisi ning kasutajaga suhtlemata
-          (sh kõik lisaload, mida rakenduse/laienduse tulevased versioonid
-          taotlevad). Load antakse ka laienduste API-dele enterprise.deviceAttributes
-          ja enterprise.platformKeys. (Need kaks API-t pole saadaval
-          rakendustele/laiendustele, mis pole sundinstallitud.)
-
-          See reegel seatakse ettepoole potentsiaalselt konfliktsest reeglist <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />. Kui rakendus või laiendus, mis varem sundinstalliti, sellest loendist eemaldatakse, siis desinstallib rakendus <ph name="PRODUCT_NAME" /> selle automaatselt.
-
-          Windowsi eksemplaride puhul, mis ei ole ühendatud domeeniga <ph name="MS_AD_NAME" />, saab sundinstallida vaid Chrome’i veebipoes olevaid rakendusi ja laiendusi.
-
-          Pange tähele, et arendaja tööriistadega saavad kasutajad muuta iga laienduse lähtekoodi (mis võib põhjustada laienduse väärtalitlust). Kui see on probleem, tuleb määrata reegel <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
-
-          Reegli iga loendiüksus on string, mis sisaldab laienduse ID-d ja „värskenduse” URL-i, mis on eraldatud semikooloniga (<ph name="SEMICOLON" />). Laienduse ID on 32-täheline string, mis kuvatakse näiteks arendajarežiimis aadressil <ph name="CHROME_EXTENSIONS_LINK" />. „Värskenduse” URL peab viitama XML-dokumendi värskendusmanifestile, nagu on kirjeldatud jaotises <ph name="LINK_TO_EXTENSION_DOC1" />. Vaikimisi kasutatakse Chrome'i veebipoe värskenduse URL-i (praegu „https://clients2.google.com/service/update2crx”). Pange tähele, et reeglis määratud „värskenduse” URL-i kasutatakse vaid algsel installimisel ja laienduse tulevased värskendused kasutavad laienduse manifestis märgitud värskenduse URL-i. Samuti pange tähele, et selgesõnalise „värskenduse” URL-i määramine oli kuni rakenduse <ph name="PRODUCT_NAME" /> 67. versioonini kohustuslik.
-
-          Näiteks reegel <ph name="EXTENSION_POLICY_EXAMPLE" /> installib rakenduse <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> standardselt Chrome’i veebipoe „värskenduse” URL-ilt. Lisateavet hostimise laienduste kohta leiate siit: <ph name="LINK_TO_EXTENSION_DOC2" />.
-
-          Kui see reegel jäetakse määramata, ei installita automaatselt mitte ühtegi rakendust ega laiendust ja kasutaja saab iga rakenduse või laienduse desinstallida rakenduses <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8274603902181597201">Kasutaja süsteemi eCryptfs juurkataloogi tühjendamine ja uue ext4-krüpteeringuga juurkataloogiga alustamine.</translation>
 <translation id="8285435910062771358">Täisekraani luup on lubatud</translation>
 <translation id="8288199156259560552">Androidi Google'i asukohateenuse lubamine</translation>

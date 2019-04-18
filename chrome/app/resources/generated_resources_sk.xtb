@@ -446,7 +446,7 @@
 <translation id="1688935057616748272">Napíšte písmeno</translation>
 <translation id="168991973552362966">Pridanie tlačiarne v blízkosti</translation>
 <translation id="1689945336726856614">Kopírovať &amp;webovú adresu</translation>
-<translation id="1692109533452028989">Chrome odosiela vami napísaný text Googlu</translation>
+<translation id="1692109533452028989">Chrome odosiela vami napísaný text v prehiadači Googlu</translation>
 <translation id="1692115862433274081">Použiť iný účet</translation>
 <translation id="1692602667007917253">Hops, niečo sa pokazilo</translation>
 <translation id="1692799361700686467">Boli povolené súbory cookie z viacerých webových stránok.</translation>
@@ -1629,7 +1629,6 @@
 <translation id="3576324189521867626">Úspešne nainštalovaná</translation>
 <translation id="3578594933904494462">Obsah tejto karty sa zdieľa.</translation>
 <translation id="357886715122934472">Používateľ &lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; chce zdieľať tlačiareň &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; so skupinou, ktorú vlastníte: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Ak žiadosť prijmete, tlačiareň budú môcť využívať všetci členovia skupiny.</translation>
-<translation id="3580923162759633716">Profilovacia služba</translation>
 <translation id="3584169441612580296">Čítať a meniť fotky, hudbu a ďalšie médiá z tohto počítača</translation>
 <translation id="3587482841069643663">Všetko</translation>
 <translation id="358796204584394954">Na zariadení „<ph name="DEVICE_NAME" />“ zadajte tento kód:</translation>
@@ -3948,7 +3947,7 @@
 <translation id="7241443820034350811">Ak váš bezpečnostný kľúč nie je uvedený, stlačte tlačidlo na kľúči aspoň na päť sekúnd.</translation>
 <translation id="7243632151880336635">Vymazať a odhlásiť sa</translation>
 <translation id="7245628041916450754"><ph name="WIDTH" /> x <ph name="HEIGHT" /></translation>
-<translation id="7246230585855757313">Bezpečnostný kľúč znova vložte a skúste to znova</translation>
+<translation id="7246230585855757313">Bezpečnostný kľúč opäť vložte a skúste to znova</translation>
 <translation id="7246947237293279874">Proxy server FTP</translation>
 <translation id="725109152065019550">Je nám ľúto, správca vo vašom účte zakázal používanie externých ukladacích priestorov.</translation>
 <translation id="7251346854160851420">Predvolená tapeta</translation>
@@ -4637,7 +4636,6 @@ Súbor kľúča uložte na bezpečné miesto. Budete ho potrebovať na vytvoreni
 <translation id="8284279544186306258">všetky weby <ph name="WEBSITE_1" /></translation>
 <translation id="8286036467436129157">Prihlásenie</translation>
 <translation id="8286963743045814739">Prehliadať v súkromí môžete v okne inkognito</translation>
-<translation id="82871696630048499">Webová stránka sa načítala znova, pretože nebolo k dispozícii dosť pamäte.</translation>
 <translation id="8287902281644548111">Hľadajte podľa volania rozhrania API alebo webovej adresy</translation>
 <translation id="8288032458496410887">Odinštalovať aplikáciu <ph name="APP" />…</translation>
 <translation id="8291967909914612644">Krajina poskytovateľa domácej siete</translation>

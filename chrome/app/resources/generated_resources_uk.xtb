@@ -1631,7 +1631,6 @@
 <translation id="3576324189521867626">Установлено</translation>
 <translation id="3578594933904494462">До вмісту цієї вкладки надано доступ.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; хоче надати групі &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;, якою ви керуєте, доступ до принтера &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt;. Якщо ви приймете це запрошення, усі учасники групи зможуть користуватися цим принтером.</translation>
-<translation id="3580923162759633716">Служба профілювання</translation>
 <translation id="3584169441612580296">Читати й змінювати фотографії, музику та інші медіафайли на комп’ютері</translation>
 <translation id="3587482841069643663">Все</translation>
 <translation id="358796204584394954">Введіть цей код на пристрої <ph name="DEVICE_NAME" />, щоб підключити:</translation>
@@ -3149,7 +3148,7 @@
 <translation id="5973605538625120605">Змінити PIN-код</translation>
 <translation id="5975792506968920132">Відсоток заряду акумулятора</translation>
 <translation id="5976160379964388480">Інші</translation>
-<translation id="5978277834170881274">&amp;Використовувати основну технологію перевірки орфографії</translation>
+<translation id="5978277834170881274">&amp;Використовувати базову перевірку орфографії</translation>
 <translation id="5979421442488174909">&amp;Перекласти такою мовою: <ph name="LANGUAGE" /></translation>
 <translation id="5979469435153841984">Щоб створити закладку сторінки, натисніть значок зірочки в адресному рядку</translation>
 <translation id="5984222099446776634">Нещодавно відвідані</translation>
@@ -4215,7 +4214,7 @@
 <translation id="7671130400130574146">Використовувати системні границі та рядок заголовка</translation>
 <translation id="7672520070349703697"><ph name="HUNG_IFRAME_URL" />, на сторінці <ph name="PAGE_TITLE" />.</translation>
 <translation id="7676867886086876795">Надішліть зразок свого голосу в Google, щоб дозволити диктування в будь-якому текстовому полі.</translation>
-<translation id="7678280409648629969">Дані для входу зберігатимуться в Chrome, після виходу з режиму анонімного перегляду. Так ви зможете знову скористатися Touch ID на цьому веб-сайті.</translation>
+<translation id="7678280409648629969">Дані для входу зберігатимуться в Chrome після виходу з режиму анонімного перегляду. Так ви зможете знову скористатися Touch ID на цьому веб-сайті.</translation>
 <translation id="7681095912841365527">Сайт може використовувати Bluetooth</translation>
 <translation id="7683373461016844951">Натисніть OK і виберіть "Додати користувача", щоб створити новий профіль для своєї електронної адреси <ph name="DOMAIN" />.</translation>
 <translation id="7684212569183643648">Установив адміністратор</translation>
@@ -4640,7 +4639,6 @@
 <translation id="8284279544186306258">усі сайти <ph name="WEBSITE_1" /></translation>
 <translation id="8286036467436129157">Вхід</translation>
 <translation id="8286963743045814739">Ви можете переглядати веб-сторінки конфіденційно в режимі анонімного перегляду</translation>
-<translation id="82871696630048499">Веб-сторінку оновлено, оскільки недостатньо пам’яті.</translation>
 <translation id="8287902281644548111">Шукати за викликом API чи URL-адресою</translation>
 <translation id="8288032458496410887">Видалити додаток <ph name="APP" />…</translation>
 <translation id="8291967909914612644">Країна локального постачальника</translation>

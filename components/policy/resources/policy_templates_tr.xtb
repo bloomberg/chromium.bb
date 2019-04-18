@@ -604,7 +604,6 @@
       Bu politika False (Yanlış) değerine ayarlanırsa kullanıcıları tanımlamak için kullanılabilecek bilgiler toplanmaz.
 
       Bu politika yalnızca <ph name="CHROME_REPORTING_EXTENSION_NAME" /> etkinleştirildiğinde ve makine <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> politikasına kayıtlı olduğunda geçerli olur.</translation>
-<translation id="2126178089984117495">PIN ile yazdırma modunu kısıtlar. Politika ayarlanmazsa herhangi bir kısıtlama uygulanmaz. Mod kullanılamıyorsa bu politika yoksayılır.</translation>
 <translation id="2127599828444728326">Bu sitelerde bildirimlere izin ver</translation>
 <translation id="2131902621292742709">Pil gücüyle çalışırken ekran karartma gecikmesi</translation>
 <translation id="2134437727173969994">Ekranı kilitlemeye izin ver</translation>
@@ -1995,12 +1994,6 @@ politikayı geçersiz kılamaz.
 <translation id="4983201894483989687">Eski eklentilerin çalıştırılmasına izin ver</translation>
 <translation id="4986560318567565414">Alternatif tarayıcıdan Chrome'a geçiş yapma yolu.</translation>
 <translation id="4988291787868618635">Boşta kalma gecikme süresine ulaşıldığında uygulanacak işlem</translation>
-<translation id="5030889661505907084">
-      Bu politika true (doğru) değerine ayarlanırsa, platform politikasıyla çelişmesi halinde bulut politikası öncelikli olur.
-      Bu politika false (yanlış) değerine ayarlanırsa veya yapılandırılmazsa, bulut politikasıyla çelişmesi halinde platform politikası öncelikli olur.
-
-      Bu politika yalnızca platform olarak kullanılabilir.
-      </translation>
 <translation id="5034604678285451405">Güç tüketimi en üst düzeydeyken pil kullanımına geçme eşiği yüzdesini ayarlar.
 
           Bu politika sadece DevicePowerPeakShiftEnabled, true (doğru) değerine ayarlanırsa kullanılır.
@@ -3708,28 +3701,6 @@ Windows'da politika yapılandırmak için önerilen yol GPO kullanmaktır. Ancak
 <translation id="8259592978873597235">Bu politika True (Doğru) değerine ayarlanırsa veya ayarlanmadan bırakılırsa, video oynatılırken kullanıcı boşta sayılmaz. Böylece hiçbir zaman boşta kalma gecikmesi, ekran karartma gecikmesi, ekran kapatma gecikmesi ve ekran kilitleme gecikmesi süreleri dolmaz ve ilgili işlemler uygulanmaz.
 
           Bu politika False (Yanlış) değerine ayarlanırsa, video etkinliği, kullanıcının boşta olarak algılanmasını önlemez.</translation>
-<translation id="8264653492961233132">Kullanıcı müdahalesi olmadan, sessiz şekilde yüklenecek ve
-          kullanıcı tarafından kaldırılamayacak uygulamaların ve uzantıların
-          listesini belirler. Uygulamalar/uzantılar tarafından istenen tüm
-          izinler ve uygulamanın/uzantının gelecekteki sürümleri tarafından
-          istenecek diğer izinler kullanıcı etkileşimi olmadan, örtülü olarak verilir.
-          Ayrıca, enterprise.deviceAttributes ve enterprise.platformKeys uzantı
-          API'leri için izinler verilir. (Bu iki API zorunlu olarak yüklenmemiş
-          uygulamalar/uzantılar tarafından kullanılamaz.)
-
-          Bu politika, kendisiyle çakışabilecek bir <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> politikasına göre önceliklidir. Daha önce zorunlu olarak yüklenmiş bir uygulama veya uzantı bu listeden kaldırılırsa <ph name="PRODUCT_NAME" /> tarafından da yüklemesi otomatik olarak kaldırılır.
-
-          <ph name="MS_AD_NAME" /> alan adına katılmamış Windows örnekleri için, zorunlu olarak yüklenen uygulamalar ve uzantılar yalnızca Chrome Web Mağazası'nda listelenenlerle sınırlıdır.
-
-          Bir uzantının kaynak kodunun kullanıcılar tarafından Geliştirici Araçları kullanılarak (uzantının işlevselliğini devre dışı bırakabilecek şekilde) değiştirilebileceğini unutmayın. Böyle bir endişe olması durumunda <ph name="DEVELOPER_TOOLS_POLICY_NAME" /> politikası ayarlanmalıdır.
-
-          Politikaya ait her liste öğesi, noktalı virgülle (<ph name="SEMICOLON" />) ayrılmış bir uzantı kimliği ve isteğe bağlı bir "güncelleme" URL'si içeren bir dizedir. Uzantı kimliği, örneğin geliştirici modundayken <ph name="CHROME_EXTENSIONS_LINK" /> bağlantısında bulunabilen 32 harfli bir dizedir. "Güncelleme" URL'si (belirtilmişse) <ph name="LINK_TO_EXTENSION_DOC1" /> dokümanında açıklandığı gibi bir Güncelleme Manifest XML dokümanına işaret etmelidir. Varsayılan olarak Chrome Web Mağazası'nın güncelleme URL'si kullanılır (şu anda "https://clients2.google.com/service/update2/crx" şeklindedir). Bu politikada ayarlanan "güncelleme" URL'sinin sadece ilk yükleme için kullanıldığına, uzantının sonraki güncellemelerinde ise uzantının manifest dosyasında belirtilen güncelleme URL'sinin kullanıldığına dikkat edin. "Güncelleme" URL'sinin açıkça belirtilmesinin <ph name="PRODUCT_NAME" /> ürününün 67. ve önceki sürümlerinde zorunlu olduğunu da unutmayın.
-
-          Örneğin, <ph name="EXTENSION_POLICY_EXAMPLE" />, standart Chrome Web Mağazası "güncelleme" URL'sinden <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> uygulamasını yükler. Uzantıların barındırılması hakkında daha fazla bilgi için <ph name="LINK_TO_EXTENSION_DOC2" /> adresine bakın.
-
-          Bu politika ayarlanmadan bırakılırsa, hiçbir uygulama veya uzantı otomatik olarak yüklenmez ve kullanıcı <ph name="PRODUCT_NAME" /> ürünündeki uygulama veya uzantıların yüklemesini kaldırabilir.
-
-          Bu politikanın gizli mod için geçerli olmadığını unutmayın.</translation>
 <translation id="8274603902181597201">Kullanıcının ecryptfs ana dizinini sil ve yeni bir ext4-encrypted ana diziniyle başla.</translation>
 <translation id="8285435910062771358">Tam ekran büyüteci etkin</translation>
 <translation id="8288199156259560552">Android Google Konum Hizmetini Etkinleştir</translation>

@@ -608,7 +608,6 @@
       Quando esta política está definida como falsa, não são recolhidas informações que podem identificar utilizadores.
 
       A presente política apenas entra em vigor quando a <ph name="CHROME_REPORTING_EXTENSION_NAME" /> está ativada e a máquina está associada à <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
-<translation id="2126178089984117495">Restringe o modo de impressão com PIN. Uma política não definida é considerada uma não restrição. Se o modo não estiver disponível, esta política é ignorada.</translation>
 <translation id="2127599828444728326">Permitir notificações nestes Web sites</translation>
 <translation id="2131902621292742709">Atraso do escurecimento do ecrã quando o dispositivo está a utilizar a energia da bateria</translation>
 <translation id="2134437727173969994">Permitir o bloqueio do ecrã</translation>
@@ -1972,12 +1971,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="4983201894483989687">Permitir a execução de plug-ins desatualizados</translation>
 <translation id="4986560318567565414">Caminho para o Chrome para mudar do navegador alternativo.</translation>
 <translation id="4988291787868618635">Ação a realizar quando o atraso de inatividade for alcançado</translation>
-<translation id="5030889661505907084">
-      Se a política estiver definida como Verdadeira, a política da nuvem tem prioridade em caso de conflito com a política da plataforma.
-      Se a política estiver definida como Falsa ou não estiver configurada, a política da plataforma tem prioridade em caso de conflito com a política da nuvem.
-
-      Esta política só está disponível como plataforma.
-      </translation>
 <translation id="5034604678285451405">Defina o limiar da bateria de desvio de picos de energia em percentagem.
 
           Esta política só é utilizada se DevicePowerPeakShiftEnabled estiver definida como verdadeira.
@@ -3634,29 +3627,6 @@ A forma recomendada para configurar a política no Windows é através do GPO, e
 <translation id="8259592978873597235">Se esta política estiver definida como Verdadeira ou não estiver definida, o utilizador não é considerado inativo enquanto o vídeo está a ser reproduzido. Deste modo, o atraso de inatividade, o atraso de escurecimento do ecrã, o atraso para desligar o ecrã e o atraso do bloqueio do ecrã não são alcançados e as ações correspondentes não são realizadas.
 
           Se esta política estiver definida como Falsa, a atividade do vídeo não impede que o utilizador seja considerado inativo.</translation>
-<translation id="8264653492961233132">Especifica uma lista de aplicações e de extensões que são instaladas silenciosamente,
-          sem a interação do utilizador e que não podem ser desinstaladas nem
-          desativadas pelo utilizador. Todas as autorizações solicitadas pelas
-          aplicações/extensões são fornecidas implicitamente, sem interação do utilizador,
-          incluindo autorizações adicionais solicitadas por versões futuras da
-          aplicação/extensão. Além disso, as autorizações são fornecidas às
-          APIs de extensão enterprise.deviceAttributes e enterprise.platformKeys 
-          (estas duas APIs não estão disponíveis para aplicações/extensões cuja
-          instalação não é forçada).
-
-          Esta política tem precedência sobre uma política <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> potencialmente conflituosa. Se uma aplicação ou extensão previamente instalada de forma forçada for eliminada desta lista, é automaticamente desinstalada pelo <ph name="PRODUCT_NAME" />.
-
-          Em instâncias do Windows que não fazem parte de um domínio <ph name="MS_AD_NAME" />, a instalação forçada está limitada a aplicações e extensões apresentadas na Web Store do Chrome.
-
-          Tenha em atenção que o código-fonte de qualquer extensão pode ser alterado pelos utilizadores através das Ferramentas para programadores (o que pode resultar no funcionamento incorreto da extensão). Se pretender evitar esta situação, defina a política <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
-
-          Cada item de lista da política é uma string que contém um ID de extensão e, opcionalmente, um URL de "atualização" separado por ponto e vírgula (<ph name="SEMICOLON" />). O ID da extensão é a string de 32 letras encontrada, por exemplo, em <ph name="CHROME_EXTENSIONS_LINK" /> no modo de programador. O URL de "atualização", se especificado, deve apontar para um documento XML de Atualização do manifesto conforme descrito em <ph name="LINK_TO_EXTENSION_DOC1" />. Por predefinição, utiliza-se o URL de atualização da Web Store do Chrome (que, atualmente, é "https://clients2.google.com/service/update2/crx"). Tenha em atenção que o URL de "atualização" definido nesta política apenas é utilizado para a instalação inicial e as atualizações subsequentes da extensão utilizam o URL de atualização indicado no manifesto da extensão. Tenha também em atenção que era obrigatório especificar explicitamente o URL de "atualização" até à versão 67 do <ph name="PRODUCT_NAME" />, inclusive.
-
-          Por exemplo, a <ph name="EXTENSION_POLICY_EXAMPLE" /> instala a aplicação <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> a partir do URL de "atualização" padrão da Web Store do Chrome. Para obter mais informações sobre o alojamento de extensões, consulte: <ph name="LINK_TO_EXTENSION_DOC2" />.
-
-          Se esta política não estiver definida, não é efetuada a instalação automática de aplicações ou de extensões e o utilizador pode desinstalar qualquer aplicação ou extensão no <ph name="PRODUCT_NAME" />.
-
-          Tenha em consideração que esta política não se aplica ao modo de navegação anónima.</translation>
 <translation id="8274603902181597201">Limpe o diretório principal de ecryptfs do utilizador e comece com um diretório principal novo com encriptação ext4.</translation>
 <translation id="8285435910062771358">Lupa em ecrã inteiro ativada</translation>
 <translation id="8288199156259560552">Ativar os serviços de localização da Google para aplicações para Android</translation>

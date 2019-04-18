@@ -1620,7 +1620,6 @@
 <translation id="3576324189521867626">सफलतापूर्वक इंस्टॉल हो गया है</translation>
 <translation id="3578594933904494462">इस टैब की सामग्री को शेयर किया जा रहा है.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; आपके स्‍वामित्‍व वाले समूह: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt; से &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; प्रिंटर शेयर करना चाहता है. अगर आप स्‍वीकार करते हैं, तो समूह के सभी सदस्‍य प्रिंटर से प्रिंट कर पाएंगे.</translation>
-<translation id="3580923162759633716">किसी की प्रोफ़ाइल बनाने वाली सेवा</translation>
 <translation id="3584169441612580296">अपने कंप्यूटर से फ़ोटो, संगीत और अन्य मीडिया एक्सेस करें और उन्हें बदलें</translation>
 <translation id="3587482841069643663">सभी</translation>
 <translation id="358796204584394954">इन्हें युग्मित करने के लिए इस कोड को "<ph name="DEVICE_NAME" />" पर लिखें:</translation>
@@ -1979,7 +1978,7 @@
 <translation id="4090947011087001172"><ph name="SITE" /> की 'साइट अनुमतियां' रीसेट करें?</translation>
 <translation id="4091434297613116013">कागज़ की पत्रक</translation>
 <translation id="4093955363990068916">स्थानीय फ़ाइल:</translation>
-<translation id="4095264805865317199">सेल्युलर एक्टिवेशन यूज़र इंटरफ़ेस (यूआई) खोलें</translation>
+<translation id="4095264805865317199">'सेल्युलर एक्टिवेशन यूज़र इंटरफ़ेस (यूआई)' खोलें</translation>
 <translation id="4095507791297118304">प्राथमिक प्रदर्शन</translation>
 <translation id="409579654357498729">क्लाउड प्रिंट में जोड़ें</translation>
 <translation id="4096508467498758490">डेवलपर मोड एक्सटेंशन को बंद करें</translation>
@@ -2693,7 +2692,7 @@
 <translation id="5305688511332277257">कुछ भी इंस्टॉल नहीं है</translation>
 <translation id="5307030433605830021">स्रोत काम नहीं करता है</translation>
 <translation id="5308380583665731573">कनेक्ट करें</translation>
-<translation id="5310281978693206542">अपने डिवाइस पर लिंक भेजना</translation>
+<translation id="5310281978693206542">अपने डिवाइस पर लिंक भेजें</translation>
 <translation id="5311304534597152726">इसके रूप में प्रवेश हो रहा है</translation>
 <translation id="5315873049536339193">पहचान</translation>
 <translation id="5317780077021120954">सेव करें</translation>
@@ -3184,7 +3183,7 @@
 <translation id="6057381398996433816">इस साइट को आपके डिवाइस के गति या रोशनी के सेंसर का इस्तेमाल करने से ब्लॉक कर दिया गया है.</translation>
 <translation id="6059652578941944813">प्रमाणपत्र पदानुक्रम</translation>
 <translation id="6059925163896151826">USB डिवाइस</translation>
-<translation id="6061882183774845124">अपने डिवाइस पर लिंक भेजना</translation>
+<translation id="6061882183774845124">अपने डिवाइस पर लिंक भेजें</translation>
 <translation id="6064217302520318294">स्क्रीन लॉक</translation>
 <translation id="6065289257230303064">प्रमाणपत्र विषय निर्देशिका विशेषताएं</translation>
 <translation id="6069671174561668781">वॉलपेपर सेट करें</translation>
@@ -4184,7 +4183,7 @@
 <translation id="7671130400130574146">सिस्टम शीर्षक बार और बॉर्डर का उपयोग करें</translation>
 <translation id="7672520070349703697"><ph name="HUNG_IFRAME_URL" />, <ph name="PAGE_TITLE" /> में.</translation>
 <translation id="7676867886086876795">किसी भी लेख फ़ील्ड में बोलकर टाइप करने की सुविधा देने के लिए आपकी आवाज़ Google को भेजी जाती है.</translation>
-<translation id="7678280409648629969">जब आप 'गुप्त मोड' से बाहर निकल जाएंगे, तब साइन-इन का डेटा Chrome में सेव किया जाएगा. इससे आप बाद में इस वेबसाइट में 'टच आईडी' का इस्तेमाल कर पाएंगे.</translation>
+<translation id="7678280409648629969">जब आप 'गुप्त मोड' से बाहर निकल जाएंगे तब साइन-इन का डेटा Chrome में सेव किया जाएगा. इससे आप बाद में इस वेबसाइट में 'टच आईडी' का इस्तेमाल कर पाएंगे.</translation>
 <translation id="7681095912841365527">साइट ब्लूटूथ का इस्तेमाल कर सकती है</translation>
 <translation id="7683373461016844951">जारी रखने के लिए, ठीक पर क्लिक करें, फिर व्‍यक्ति जोड़ें पर क्लिक करें, ताकि आप अपने <ph name="DOMAIN" /> ईमेल पते के लिए नई प्रोफ़ाइल बना सकें.</translation>
 <translation id="7684212569183643648">आपके नियंत्रक द्वारा इंस्‍टॉल किया गया</translation>
@@ -4608,7 +4607,6 @@
 <translation id="8284279544186306258">सभी <ph name="WEBSITE_1" /> साइटें</translation>
 <translation id="8286036467436129157">साइन इन करें</translation>
 <translation id="8286963743045814739">आप गुप्त विंडो का उपयोग करके निजी रूप से ब्राउज़ कर सकते हैं</translation>
-<translation id="82871696630048499">वेब पेज दोबारा लोड किया गया क्योंकि उसके लिए ज़रूरी मेमोरी नहीं बची थी.</translation>
 <translation id="8287902281644548111">एपीआई कॉल/यूआरएल के हिसाब से खोजें</translation>
 <translation id="8288032458496410887"><ph name="APP" /> ऐप्लिकेशन अनइंस्टॉल करें...</translation>
 <translation id="8291967909914612644">होम प्रदाता देश</translation>

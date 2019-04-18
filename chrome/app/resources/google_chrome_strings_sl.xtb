@@ -42,7 +42,7 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="1773601347087397504">Pomoč pri uporabi sistema Chrome OS</translation>
 <translation id="1795405610103747296">Namestite Chrome v telefonu. V telefon bomo poslali SMS: <ph name="PHONE_NUMBER" /></translation>
 <translation id="1812689907177901597">Če to izklopite, se lahko prijavite na Googlovih spletnih mestih, kot je Gmail, ne da bi se morali prijaviti v Chrome</translation>
-<translation id="1815759068706561639">Datoteka <ph name="FILE_NAME" /> je nevarna, zato jo je Chrome blokiral. Ščiti vas dodatna zaščita.</translation>
+<translation id="1815759068706561639">Datoteka <ph name="FILE_NAME" /> je nevarna, zato jo je Chrome blokiral. Varuje vas dodatna zaščita.</translation>
 <translation id="1860536484129686729">Chrome potrebuje dovoljenje za dostop do fotoaparata za to spletno mesto</translation>
 <translation id="1873233029667955273">Google Chrome ni privzeti brskalnik</translation>
 <translation id="1874309113135274312">Google Chrome Beta (mDNS-In)</translation>
@@ -68,7 +68,7 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="2429317896000329049">Google Chrome ni mogel sinhronizirati podatkov, ker sinhronizacija ni na voljo za vašo domeno.</translation>
 <translation id="2467438592969358367">Google Chrome želi izvoziti gesla. Če želite omogočiti to, vnesite geslo za Windows.</translation>
 <translation id="2485422356828889247">Odstranjevanje</translation>
-<translation id="2521856951867783208">Ta datoteka je morda nevarna, zato jo je Chrome blokiral. Ščiti vas dodatna zaščita.</translation>
+<translation id="2521856951867783208">Ta datoteka je morda nevarna, zato jo je Chrome blokiral. Varuje vas dodatna zaščita.</translation>
 <translation id="2534507159460261402">Google Pay (kopirano v Chrome)</translation>
 <translation id="2535429035253759792">Skrbnik prosi, da za uveljavitev te posodobitve znova zaženete Chrome</translation>
 <translation id="2580411288591421699">Ni mogoče namestiti različice Google Chroma, enake tisti, ki se trenutno izvaja. Zaprite Google Chrome in poskusite znova.</translation>
@@ -105,7 +105,7 @@ Nadaljnja navodila preberite v e-poštnem sporočilu, ki ste ga prejeli na <ph n
 <translation id="3451115285585441894">Dodajanje v Chrome ...</translation>
 <translation id="345171907106878721">Dodajte se v Chrome</translation>
 <translation id="3479552764303398839">Ne zdaj</translation>
-<translation id="3481286511616257896">Datoteka <ph name="FILE_NAME" /> je morda nevarna, zato jo je Chrome blokiral. Ščiti vas dodatna zaščita.</translation>
+<translation id="3481286511616257896">Datoteka <ph name="FILE_NAME" /> je morda nevarna, zato jo je Chrome blokiral. Varuje vas dodatna zaščita.</translation>
 <translation id="34857402635545079">Počisti tudi podatke iz Chroma (<ph name="URL" />)</translation>
 <translation id="3503306920980160878">Chrome potrebuje dostop do vaše lokacije, da jo bo lahko delil s tem spletnim mestom</translation>
 <translation id="3576528680708590453">Skrbnik sistema je Google Chrome nastavil tako, da za dostop do <ph name="TARGET_URL_HOSTNAME" /> odpre drug brskalnik.</translation>
@@ -230,14 +230,14 @@ Google Chrome ne more obnoviti vaših nastavitev.</translation>
 <translation id="7459554271817304652">Nastavite sinhronizacijo, da prilagojene funkcije brskalnika shranite v spletu in do njih v Google Chromu dostopate v katerem koli računalniku.</translation>
 <translation id="7473136999113284234">Chrome se samodejno posodablja, zato boste vedno imeli najnovejšo različico.</translation>
 <translation id="7486227612705979895">Chrome bo dostopal do Googla Drive zaradi ponujanja predlogov v naslovni vrstici</translation>
-<translation id="748945194546522577">Ta datoteka je nevarna, zato jo je Chrome blokiral. Ščiti vas dodatna zaščita.</translation>
+<translation id="748945194546522577">Ta datoteka je nevarna, zato jo je Chrome blokiral. Varuje vas dodatna zaščita.</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7552219221109926349">Prikaži OS Chrome v tem jeziku</translation>
 <translation id="7561940363513215021">{0,plural, =1{Chrome se bo znova zagnal čez 1 minuto}one{Chrome se bo znova zagnal čez # minuto}two{Chrome se bo znova zagnal čez # minuti}few{Chrome se bo znova zagnal čez # minute}other{Chrome se bo znova zagnal čez # minut}}</translation>
 <translation id="7589360514048265910">Ta računalnik ne bo več prejemal posodobitev za Google Chrome, ker sistem Mac OS X 10.9 ni več podprt.</translation>
 <translation id="7592736734348559088">Google Chrome ni mogel sinhronizirati podatkov, ker so podatki za prijavo v račun zastareli.</translation>
 <translation id="7626032353295482388">Dobrodošli v Chromu</translation>
-<translation id="7636297873481318396">Ta datoteka je nevarna, zato jo je Chrome blokiral. Ščiti vas dodatna zaščita.</translation>
+<translation id="7636297873481318396">Ta datoteka je nevarna, zato jo je Chrome blokiral. Varuje vas dodatna zaščita.</translation>
 <translation id="7641148173327520642">Skrbnik sistema je Google Chrome nastavil tako, da za dostop do <ph name="TARGET_URL_HOSTNAME" /> odpre brskalnik <ph name="ALTERNATIVE_BROWSER_NAME" />.</translation>
 <translation id="7651907282515937834">Logotip za Chrome Enterprise</translation>
 <translation id="7747138024166251722">Namestitvenemu programu ni uspelo ustvariti začasnega imenika. Preverite, ali je na disku dovolj prostora in ali imate dovoljenje za namestitev programske opreme.</translation>

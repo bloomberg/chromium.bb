@@ -92,7 +92,7 @@
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">Edit mesin telusur</translation>
 <translation id="1134009406053225289">Buka di jendela penyamaran</translation>
-<translation id="1136712381129578788">Kunci keamanan dikunci karena Anda terlalu sering memasukkan PIN yang salah. Untuk membukanya, hapus PIN lalu masukkan kembali.</translation>
+<translation id="1136712381129578788">Kunci keamanan dikunci karena Anda terlalu sering memasukkan PIN yang salah. Untuk membukanya, lepaskan kunci keamanan dan pasang kembali.</translation>
 <translation id="1137673463384776352">Buka link di <ph name="APP" /></translation>
 <translation id="1140351953533677694">Mengakses perangkat Seri dan Bluetooth Anda</translation>
 <translation id="1140610710803014750">Agar bookmark tersedia di semua perangkat Anda, login dan aktifkan sinkronisasi.</translation>
@@ -1504,7 +1504,7 @@
 <translation id="3382200254148930874">Menghentikan pengawasan...</translation>
 <translation id="3385092118218578224"><ph name="DISPLAY_ZOOM" />%</translation>
 <translation id="338583716107319301">Pemisah</translation>
-<translation id="3387614642886316601">Gunakan pemeriksaan ejaan yang disempurnakan</translation>
+<translation id="3387614642886316601">Gunakan fitur periksa ejaan yang disempurnakan</translation>
 <translation id="3389312115541230716">Klik kanan ikon <ph name="SMALL_PRODUCT_LOGO" /> di bilah tugas</translation>
 <translation id="3393352139658145068">Aktifkan Asisten saat seseorang mengatakan “Ok Google”. Untuk menghemat baterai, “Ok Google” hanya akan menyala saat perangkat terhubung ke sumber listrik.</translation>
 <translation id="3396800784455899911">Dengan mengklik tombol "Setuju dan lanjutkan", Anda menyetujui pemrosesan yang dijelaskan di atas terkait layanan Google ini.</translation>
@@ -1629,7 +1629,6 @@
 <translation id="3576324189521867626">Berhasil dipasang</translation>
 <translation id="3578594933904494462">Konten tab ini sedang dibagikan.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; ingin membagikan printer &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; dengan grup yang Anda miliki: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Jika Anda menerima, semua anggota grup akan dapat mencetak pada printer tersebut.</translation>
-<translation id="3580923162759633716">Layanan Profiling</translation>
 <translation id="3584169441612580296">Membaca dan mengubah foto, musik, serta media lain dari komputer Anda</translation>
 <translation id="3587482841069643663">Semua</translation>
 <translation id="358796204584394954">Ketik kode ini di "<ph name="DEVICE_NAME" />" untuk menyandingkan:</translation>
@@ -1976,7 +1975,7 @@
 <translation id="407520071244661467">Skala</translation>
 <translation id="4075639477629295004">Tidak dapat mentransmisikan <ph name="FILE_NAME" />.</translation>
 <translation id="4077917118009885966">Iklan diblokir di situs ini</translation>
-<translation id="4079140982534148664">Gunakan Pemeriksaan Ejaan yang Disempurnakan</translation>
+<translation id="4079140982534148664">Gunakan fitur Periksa Ejaan yang Disempurnakan</translation>
 <translation id="4081242589061676262">Tidak dapat mentransmisikan file.</translation>
 <translation id="4084682180776658562">Bookmark</translation>
 <translation id="4084835346725913160">Tutup <ph name="TAB_NAME" /></translation>
@@ -3147,7 +3146,7 @@
 <translation id="5973605538625120605">Ubah PIN</translation>
 <translation id="5975792506968920132">Persentase Pengisian Daya Baterai</translation>
 <translation id="5976160379964388480">Yang Lain</translation>
-<translation id="5978277834170881274">&amp;Gunakan pemeriksaan ejaan dasar</translation>
+<translation id="5978277834170881274">&amp;Gunakan fitur periksa ejaan dasar</translation>
 <translation id="5979421442488174909">&amp;Terjemahkan ke <ph name="LANGUAGE" /></translation>
 <translation id="5979469435153841984">Untuk mem-bookmark halaman, klik ikon bintang di kolom URL</translation>
 <translation id="5984222099446776634">Barusan Dikunjungi</translation>
@@ -3782,7 +3781,7 @@
 <translation id="6985607387932385770">Printer</translation>
 <translation id="6990778048354947307">Tema Gelap</translation>
 <translation id="6991665348624301627">Pilih tujuan</translation>
-<translation id="6992554835374084304">Aktifkan pemeriksaan ejaan yang disempurnakan</translation>
+<translation id="6992554835374084304">Aktifkan fitur periksa ejaan yang disempurnakan</translation>
 <translation id="6997642619627518301"><ph name="NAME_PH" /> - Log Aktivitas</translation>
 <translation id="6997707937646349884">Di perangkat Anda:</translation>
 <translation id="6998793565256476099">Daftarkan perangkat untuk konferensi video</translation>
@@ -4098,7 +4097,7 @@
 <translation id="748138892655239008">Kendala Dasar Sertifikat</translation>
 <translation id="7487067081878637334">Teknologi</translation>
 <translation id="7487099628810939106">Penundaan sebelum klik:</translation>
-<translation id="7487141338393529395">Aktifkan Pemeriksaan Ejaan yang Disempurnakan</translation>
+<translation id="7487141338393529395">Aktifkan fitur Periksa Ejaan yang Disempurnakan</translation>
 <translation id="7487969577036436319">Tidak ada komponen yang dipasang</translation>
 <translation id="7489355918927585587">{COUNT,plural, =0{&amp;Buka semua}=1{&amp;Buka bookmark}other{&amp;Buka semua (#)}}</translation>
 <translation id="749028671485790643">Orang <ph name="VALUE" /></translation>
@@ -4638,7 +4637,6 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="8284279544186306258">semua situs <ph name="WEBSITE_1" /></translation>
 <translation id="8286036467436129157">Login</translation>
 <translation id="8286963743045814739">Anda dapat melakukan browsing rahasia menggunakan jendela samaran</translation>
-<translation id="82871696630048499">Halaman dimuat ulang karena kehabisan memori.</translation>
 <translation id="8287902281644548111">Telusuri berdasarkan panggilan API/URL</translation>
 <translation id="8288032458496410887">Uninstal <ph name="APP" />...</translation>
 <translation id="8291967909914612644">Negara penyedia rumah</translation>

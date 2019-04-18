@@ -153,6 +153,7 @@ Voor meer informatie over privacy bekijk je het Privacybeleid van Google (http:/
 <translation id="4240294130679914010">Verwijderprogramma voor Chromoting-host</translation>
 <translation id="4277463233460010382">Deze computer is geconfigureerd om een of meer clients toestemming te geven verbinding te maken zonder een pincode op te geven.</translation>
 <translation id="4277736576214464567">De toegangscode is ongeldig. Probeer het opnieuw.</translation>
+<translation id="4281844954008187215">Servicevoorwaarden</translation>
 <translation id="4361728918881830843">Als je externe verbindingen met een andere computer mogelijk wilt maken, installeer je Chrome Remote Desktop op die computer en klik je op '<ph name="BUTTON_NAME" />'.</translation>
 <translation id="4394049700291259645">Uitschakelen</translation>
 <translation id="4405930547258349619">Basisbibliotheek</translation>
@@ -345,6 +346,7 @@ Als je deze functionaliteit wilt inschakelen, selecteer je '<ph name="BUTTON_NAM
 <translation id="8747048596626351634">De sessie is gecrasht of kan niet worden gestart. Als ~/.chrome-remote-desktop-session bestaat op de externe computer, moet je ervoor zorgen dat hiermee een langdurig voorgrondproces wordt gestart, zoals een bureaubladomgeving of vensterbeheer.</translation>
 <translation id="8759753423332885148">Meer informatie.</translation>
 <translation id="8791202241915690908">Installatieprogramma voor Chromoting-host downloaden</translation>
+<translation id="8804164990146287819">Privacybeleid</translation>
 <translation id="894763922177556086">Goed</translation>
 <translation id="895780780740011433">Voor Windows 7 en hoger</translation>
 <translation id="897805526397249209">Als je externe verbindingen met een andere computer mogelijk wilt maken, installeer je Chromoting en klik je op '<ph name="BUTTON_NAME" />'.</translation>

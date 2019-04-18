@@ -1629,7 +1629,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="3576324189521867626">Se ha instalado correctamente</translation>
 <translation id="3578594933904494462">Se está compartiendo el contenido de esta pestaña.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; quiere compartir una impresora &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; con un grupo que te pertenece: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Si aceptas, todos los miembros del grupo podrán utilizar esa impresora para imprimir.</translation>
-<translation id="3580923162759633716">Servicio de elaboración de perfiles</translation>
 <translation id="3584169441612580296">Leer y modificar fotos, música y otros archivos multimedia de tu ordenador</translation>
 <translation id="3587482841069643663">Todo</translation>
 <translation id="358796204584394954">Escribe este código en el dispositivo <ph name="DEVICE_NAME" /> para vincularlo:</translation>
@@ -3427,7 +3426,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="641081527798843608">Coincidencia de asunto</translation>
 <translation id="6412931879992742813">Nueva ventana de incógnito</translation>
 <translation id="6415900369006735853">Conéctate a Internet a través de tu teléfono</translation>
-<translation id="6416743254476733475">Permitir o bloquear en tu ordenador.</translation>
+<translation id="6416743254476733475">Acéptalos o bloquéalos en el ordenador.</translation>
 <translation id="6417265370957905582">Asistente de Google</translation>
 <translation id="6418160186546245112">Restaurando versión de <ph name="IDS_SHORT_PRODUCT_NAME" /> instalada previamente</translation>
 <translation id="6418481728190846787">Eliminar el acceso de todas las aplicaciones de forma permanente</translation>
@@ -4637,7 +4636,6 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8284279544186306258">todos los sitios de <ph name="WEBSITE_1" /></translation>
 <translation id="8286036467436129157">Iniciar sesión</translation>
 <translation id="8286963743045814739">Puedes navegar en privado con una ventana de incógnito</translation>
-<translation id="82871696630048499">La página web se ha vuelto a cargar porque se ha quedado sin memoria.</translation>
 <translation id="8287902281644548111">Buscar por llamada a la API o URL</translation>
 <translation id="8288032458496410887">Desinstalar <ph name="APP" />...</translation>
 <translation id="8291967909914612644">País del proveedor inicial</translation>

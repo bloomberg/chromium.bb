@@ -153,6 +153,7 @@
 <translation id="4240294130679914010">‏מסיר ההתקנה של מארח Chromoting</translation>
 <translation id="4277463233460010382">‏מחשב זה מוגדר לאפשר ללקוח אחד או יותר להתחבר מבלי להזין PIN.</translation>
 <translation id="4277736576214464567">קוד הגישה אינו חוקי. נסה שוב.</translation>
+<translation id="4281844954008187215">תנאי שירות</translation>
 <translation id="4361728918881830843">‏כדי להפעיל חיבורים מרחוק למחשב אחר, יש להתקין את Chrome Remote Desktop במחשב האחר וללחוץ על '<ph name="BUTTON_NAME" />'.</translation>
 <translation id="4394049700291259645">השבת</translation>
 <translation id="4405930547258349619">ספריית ליבה</translation>
@@ -345,6 +346,7 @@ Desktop
 <translation id="8747048596626351634">‏ההפעלה קרסה או שלא התחילה. אם ‎~/.chrome-remote-desktop-session קיים במחשב המרוחק, יש לוודא שהוא מפעיל תהליך ארוך טווח בחזית. לדוגמה: סביבת המחשב או מנהל החלונות.</translation>
 <translation id="8759753423332885148">למידע נוסף</translation>
 <translation id="8791202241915690908">‏הורד את מנהל ההתקנה של מארח Chromoting</translation>
+<translation id="8804164990146287819">מדיניות פרטיות</translation>
 <translation id="894763922177556086">איכות טובה</translation>
 <translation id="895780780740011433">‏ל-Windows מגירסה 7 ואילך</translation>
 <translation id="897805526397249209">‏כדי להפעיל חיבורים מרוחקים למחשב אחר, התקן את Chromoting במחשב האחר ולחץ על '<ph name="BUTTON_NAME" />'.</translation>

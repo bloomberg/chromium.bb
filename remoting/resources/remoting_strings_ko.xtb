@@ -153,6 +153,7 @@
 <translation id="4240294130679914010">Chromoting 호스트 제거 프로그램</translation>
 <translation id="4277463233460010382">이 컴퓨터는 한 개 이상의 클라이언트가 PIN을 입력하지 않고도 연결할 수 있도록 구성되었습니다.</translation>
 <translation id="4277736576214464567">액세스 코드가 잘못되었습니다. 다시 시도해 주세요.</translation>
+<translation id="4281844954008187215">서비스 약관</translation>
 <translation id="4361728918881830843">다른 컴퓨터에 원격 연결을 사용하려면 Chrome 원격 데스크톱을 설치하고 '<ph name="BUTTON_NAME" />' 버튼을 클릭하세요.</translation>
 <translation id="4394049700291259645">사용 중지</translation>
 <translation id="4405930547258349619">핵심 라이브러리</translation>
@@ -345,6 +346,7 @@ PC</translation>
 <translation id="8747048596626351634">세션이 다운되었거나 시작되지 못했습니다. 원격 컴퓨터에 ~/.chrome-remote-desktop-session이 있는 경우, 세션에서 데스크톱 환경이나 창 관리자와 같이 오랫동안 실행되는 포그라운드 프로세스가 시작되어야 합니다.</translation>
 <translation id="8759753423332885148">자세히 알아보기</translation>
 <translation id="8791202241915690908">Chromoting 호스트 설치 프로그램 다운로드</translation>
+<translation id="8804164990146287819">개인정보처리방침</translation>
 <translation id="894763922177556086">좋음</translation>
 <translation id="895780780740011433">Windows 7 이상용</translation>
 <translation id="897805526397249209">다른 컴퓨터에 원격 연결을 사용하려면 그 컴퓨터에 Chromoting을 설치하고 '<ph name="BUTTON_NAME" />' 버튼을 클릭하세요.</translation>

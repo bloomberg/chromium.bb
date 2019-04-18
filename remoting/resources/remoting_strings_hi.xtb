@@ -153,6 +153,7 @@
 <translation id="4240294130679914010">Chromoting होस्ट अनइंस्टॉलर</translation>
 <translation id="4277463233460010382">इस कंप्यूटर को PIN डाले बिना एक या इससे ज़्यादा क्लाइंट से कनेक्ट करने देने के लिए कॉन्फ़िगर किया गया है.</translation>
 <translation id="4277736576214464567">एक्सेस कोड गलत है. कृपया फिर से कोशिश करें.</translation>
+<translation id="4281844954008187215">सेवा की शर्तें</translation>
 <translation id="4361728918881830843">किसी भिन्न कंप्यूटर के लिए दूरस्थ कनेक्शन सक्षम करने के लिए, वहां Chrome दूरस्थ डेस्कटॉप इंस्टॉल करें और “<ph name="BUTTON_NAME" />” क्लिक करें.</translation>
 <translation id="4394049700291259645">बंद करें</translation>
 <translation id="4405930547258349619">मुख्य लाइब्रेरी</translation>
@@ -345,6 +346,7 @@
 <translation id="8747048596626351634">सत्र बंद हो गया या शुरू नहीं हो पाया. अगर दूरस्थ कंप्यूटर पर ~/.chrome-remote-desktop-session मौजूद है, तो पक्का करें कि यह डेस्कटॉप परिवेश या विंडो प्रबंधक जैसी देर तक चलने वाली फ़ोरग्राउंड प्रक्रिया चालू कर देता है.</translation>
 <translation id="8759753423332885148">ज़्यादा जानें.</translation>
 <translation id="8791202241915690908">Chromoting होस्ट इंस्टॉलर डाउनलोड करें</translation>
+<translation id="8804164990146287819">निजता नीति</translation>
 <translation id="894763922177556086">अच्छा</translation>
 <translation id="895780780740011433">Windows 7 और बाद वाले वर्शन</translation>
 <translation id="897805526397249209">किसी भिन्न कंप्यूटर के लिए दूरस्थ कनेक्शन सक्षम करने के लिए, वहां Chromoting इंस्टॉल करें और “<ph name="BUTTON_NAME" />” क्लिक करें.</translation>

@@ -1631,7 +1631,6 @@
 <translation id="3576324189521867626">यशस्वीरित्या इंस्टॉल केला</translation>
 <translation id="3578594933904494462">या टॅबची सामग्री शेअर केली जात आहे.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; आपल्‍या मालकीच्या गटासह &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; प्रिंटर शेअर करू इच्‍छितो: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. तुम्ही स्‍वीकार केल्यास, सर्व गट सदस्य प्रिंटरवर प्रिंट करण्‍यास सक्षम असतील.</translation>
-<translation id="3580923162759633716">प्रोफायलिंग सेवा</translation>
 <translation id="3584169441612580296">आपल्या संगणकावरील फोटो, संगीत आणि अन्य मीडिया वाचा आणि बदला</translation>
 <translation id="3587482841069643663">सर्व</translation>
 <translation id="358796204584394954">जोडण्यासाठी "<ph name="DEVICE_NAME" />" वर हा कोड टाइप करा:</translation>
@@ -1742,7 +1741,7 @@
 <translation id="3729506734996624908">अनुमती असलेल्या साइट</translation>
 <translation id="3731997362820527097">तुमची सिक्युरिटी की निवडा</translation>
 <translation id="3732078975418297900">रेषा <ph name="ERROR_LINE" /> वर एरर</translation>
-<translation id="3732530910372558017">पिन सर्वात अधिक ६३ वर्णांचा असायला हवा</translation>
+<translation id="3732530910372558017">पिन जास्तीत जास्त ६३ वर्णांचा असायला हवा</translation>
 <translation id="3733127536501031542">स्टेप-अप सह SSL सर्व्हर</translation>
 <translation id="3735740477244556633">यानुसार क्रमाने लावा</translation>
 <translation id="3737274407993947948">Linux इंस्टॉल करताना एरर...</translation>
@@ -4638,7 +4637,6 @@
 <translation id="8284279544186306258">सर्व <ph name="WEBSITE_1" /> साइट</translation>
 <translation id="8286036467436129157">साइन इन</translation>
 <translation id="8286963743045814739">तुम्ही गुप्त विंडो वापरून खाजगीरीत्या ब्राउझ करू शकता</translation>
-<translation id="82871696630048499">वेब पेज रीलोड करण्यात आले कारण त्याची मेमरी संपली.</translation>
 <translation id="8287902281644548111">API कॉल/URL नुसार शोधा</translation>
 <translation id="8288032458496410887"><ph name="APP" /> अनइंस्टॉल करा...</translation>
 <translation id="8291967909914612644">मुख्यपृष्ठ प्रदाता देश</translation>

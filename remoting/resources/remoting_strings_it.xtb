@@ -153,6 +153,7 @@ Per informazioni sulla privacy, leggi le Norme sulla privacy di Google (http://g
 <translation id="4240294130679914010">Programma di disinstallazione host Chromoting</translation>
 <translation id="4277463233460010382">Questo computer è configurato per consentire la connessione di uno o più client senza l'inserimento di un codice PIN.</translation>
 <translation id="4277736576214464567">Il codice di accesso non è valido. Riprova.</translation>
+<translation id="4281844954008187215">Termini di servizio</translation>
 <translation id="4361728918881830843">Per attivare le connessioni remote su un altro computer, installa Chrome Remote Desktop sul computer e fai clic su "<ph name="BUTTON_NAME" />".</translation>
 <translation id="4394049700291259645">Disabilita</translation>
 <translation id="4405930547258349619">Core Library</translation>
@@ -345,6 +346,7 @@ Per attivare questa funzionalità, seleziona "<ph name="BUTTON_NAME" />" per vis
 <translation id="8747048596626351634">La sessione si è arrestata in modo anomalo o non si è avviata. Se sul computer remoto esiste la sessione ~/.chrome-remote-desktop-session, assicurati che avvii un processo in primo piano con esecuzione prolungata come un ambiente desktop o gestione finestre.</translation>
 <translation id="8759753423332885148">Ulteriori informazioni.</translation>
 <translation id="8791202241915690908">Scarica il programma di installazione di Chromoting Host</translation>
+<translation id="8804164990146287819">Norme sulla privacy</translation>
 <translation id="894763922177556086">Buona</translation>
 <translation id="895780780740011433">Per Windows 7 e versioni successive</translation>
 <translation id="897805526397249209">Per attivare connessioni remote su un altro computer, installa Chromoting sul computer e fai clic su "<ph name="BUTTON_NAME" />".</translation>

@@ -613,7 +613,6 @@
       Kapag nakatakda ang patakarang ito sa False, hindi kukuha ng impormasyong magagamit sa pagkilala ng mga user.
 
       May bisa lang ang patakarang ito kapag naka-enable ang <ph name="CHROME_REPORTING_EXTENSION_NAME" />, at naka-enroll sa <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> ang machine.</translation>
-<translation id="2126178089984117495">Naghihigpit sa PIN printing mode. Itinuturing na walang paghihigpit kung hindi nakatakda ang patakaran. Kung hindi available ang mode, babalewalain ang patakarang ito.</translation>
 <translation id="2127599828444728326">Payagan ang mga notification sa mga site na ito</translation>
 <translation id="2131902621292742709">Delay ng pag-dim ng screen kapag tumatakbo gamit ang power ng baterya</translation>
 <translation id="2134437727173969994">Payagan ang pagla-lock ng screen</translation>
@@ -2011,12 +2010,6 @@
 <translation id="4983201894483989687">Payagan ang pagpapatakbo ng mga plugin na wala na sa panahon</translation>
 <translation id="4986560318567565414">Path sa Chrome para sa paglipat mula sa alternatibong browser.</translation>
 <translation id="4988291787868618635">Pagkilos na gagawin kapag naabot ang idle delay</translation>
-<translation id="5030889661505907084">
-      Kung itatakda sa true ang patakaran, mangingibabaw ang patakaran ng cloud kung sumasalungat ito sa patakaran ng platform.
-      Kung itatakda sa false o hindi iko-configure ang patakaran, mangingibabaw ang patakaran ng platform kung sumasalungat ito sa patakaran ng cloud.
-
-      Available lang ang patakarang ito bilang platform.
-      </translation>
 <translation id="5034604678285451405">Itakda ang limitasyon ng baterya ng power peak shift sa porsyento.
 
           Ginagamit lang ang patakarang ito kung nakatakda sa true ang DevicePowerPeakShiftEnabled.
@@ -3743,29 +3736,6 @@ Ang inirerekomendang paraan upang mag-configure ng patakaran sa Windows ay sa pa
 <translation id="8259592978873597235">Kung itatakda ang patakarang ito sa True o kung hindi ito itatakda, hindi ituturing na idle ang user habang nagpe-play ang video. Pinipigilan nitong maabot ang delay bago mag-idle, delay bago mag-dim ang screen, delay bago mag-off ang screen, at delay bago mag-lock ang screen at maisagawa ang mga kaukulang pagkilos.
 
           Kung itatakda ang patakarang ito sa False, hindi mapipigilan ng aktibidad sa video na ituring na idle ang user.</translation>
-<translation id="8264653492961233132">Tumutukoy ng listahan ng mga app at extension na na-install nang hindi napapansin,
-          nang walang pakikipag-ugnayan sa user, at hindi maa-uninstall o 
-          madi-disable ng user. Ang lahat ng pahintulot
-          na hiniling ng mga app/extension ay ibinibigay nang hindi hayagan, nang walang pakikipag-ugnayan sa user,
-          kabilang ang anumang karagdagang pahintulot na hiniling ng mga bersyon sa
-          hinaharap ng app/extension. Bukod pa rito, ibinibigay ang mga pahintulot para sa
-          enterprise.deviceAttributes at enterprise.platformKeys na extension
-          API. (Hindi available ang dalawang API na ito sa mga app/extension na
-          hindi sapilitang na-install.)
-
-          Mangingibabaw ang patakarang ito sa posibleng salungat na patakarang <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />. Kung may inalis na app o extension sa listahang ito na kamakailang sapilitang na-install, awtomatiko itong ia-uninstall ng <ph name="PRODUCT_NAME" />.
-
-          Para sa mga sitwasyon ng Windows na hindi kasali sa isang <ph name="MS_AD_NAME" /> na domain, para lang sa mga app at extension na nakalista sa Chrome Web Store ang sapilitang pag-install.
-
-          Tandaang maaaring mabago ng mga user ang source code ng anumang extension sa pamamagitan ng Mga Tool ng Developer (na maaaring humantong sa maling paggana ng extension). Kung isa itong alalahanin, dapat itakda ang patakarang <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
-
-          Ang bawat item sa listahan ng patakaran ay isang string na may extension ID at, bilang opsyon, isang URL ng "update" na hinihiwalay ng semicolon (<ph name="SEMICOLON" />). Ang extension ID ay ang 32 titik na string na makikita halimbawa sa <ph name="CHROME_EXTENSIONS_LINK" /> kapag nasa developer mode. Dapat ay nakadirekta ang URL ng "update," kung tutukuyin, sa isang dokumentong Update Manifest XML gaya ng nakasaad sa <ph name="LINK_TO_EXTENSION_DOC1" />. Bilang default, ginagamit ang URL ng update ng Chrome Web Store (na kasalukuyang "https://clients2.google.com/service/update2/crx"). Tandaang ginagamit lang ang nakatakdang URL ng "update" sa patakarang ito para sa paunang pag-install; gagamitin ng mga susunod na pag-update ng extension ang URL ng update na nakasaad sa manifest ng extension. Tandaan ding mandatoryo ang hayagang pagtukoy sa URL ng "update" sa mga bersyon ng <ph name="PRODUCT_NAME" /> hanggang sa at kabilang ang 67.
-
-          Halimbawa, ini-install ng <ph name="EXTENSION_POLICY_EXAMPLE" /> ang <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> app mula sa karaniwang URL ng "update" ng Chrome Web Store. Para sa higit pang impormasyon tungkol sa pag-host ng mga extension, tingnan ang: <ph name="LINK_TO_EXTENSION_DOC2" />.
-
-          Kung hahayaang hindi nakatakda ang patakarang ito, walang app o extension ang awtomatikong ii-install at makakapag-uninstall ng anumang app o extension ang user sa <ph name="PRODUCT_NAME" />.
-
-          Tandaang hindi nalalapat sa incognito mode ang patakarang ito.</translation>
 <translation id="8274603902181597201">Nagwa-wipe sa ecryptfs na home directory ng user at nagsisimula gamit ang isang bagong ext4-encrypted na home directory.</translation>
 <translation id="8285435910062771358">Naka-enable ang magnifier na full-screen</translation>
 <translation id="8288199156259560552">I-enable ang Serbisyo sa Lokasyon ng Google sa Android</translation>

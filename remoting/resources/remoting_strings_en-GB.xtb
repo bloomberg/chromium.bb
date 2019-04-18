@@ -153,6 +153,7 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
 <translation id="4240294130679914010">Chromoting Host Uninstaller</translation>
 <translation id="4277463233460010382">This computer is configured to allow one or more clients to connect without entering a PIN.</translation>
 <translation id="4277736576214464567">The access code is invalid. Please try again.</translation>
+<translation id="4281844954008187215">Terms of Service</translation>
 <translation id="4361728918881830843">To enable remote connections to a different computer, install Chrome Remote Desktop there and click “<ph name="BUTTON_NAME" />”.</translation>
 <translation id="4394049700291259645">Disable</translation>
 <translation id="4405930547258349619">Core Library</translation>
@@ -345,6 +346,7 @@ To enable this functionality, select '<ph name="BUTTON_NAME" />' to display the 
 <translation id="8747048596626351634">Session crashed or failed to start. If ~/.chrome-remote-desktop-session exists on the remote computer, make sure that it starts a long-running foreground process such as a desktop environment or window manager.</translation>
 <translation id="8759753423332885148">Learn more.</translation>
 <translation id="8791202241915690908">Download Chromoting Host Installer</translation>
+<translation id="8804164990146287819">Privacy Policy</translation>
 <translation id="894763922177556086">Good</translation>
 <translation id="895780780740011433">For Windows 7 and above</translation>
 <translation id="897805526397249209">To enable remote connections to a different computer, install Chromoting there and click “<ph name="BUTTON_NAME" />”.</translation>

@@ -153,6 +153,7 @@ Per obtenir informació sobre la privadesa, vegeu la Política de privadesa de G
 <translation id="4240294130679914010">Programa de desinstal·lació de Chromoting Host</translation>
 <translation id="4277463233460010382">La configuració d'aquest ordinador permet que un o més clients es connectin sense introduir cap PIN.</translation>
 <translation id="4277736576214464567">El codi d'accés no és vàlid. Torneu-ho a provar.</translation>
+<translation id="4281844954008187215">Termes i condicions</translation>
 <translation id="4361728918881830843">Per activar les connexions remotes a un altre ordinador, instal·leu-hi l'escriptori remot de Chrome i feu clic a <ph name="BUTTON_NAME" />.</translation>
 <translation id="4394049700291259645">Desactiva</translation>
 <translation id="4405930547258349619">Biblioteca principal</translation>
@@ -345,6 +346,7 @@ Si vols activar aquesta funcionalitat, selecciona <ph name="BUTTON_NAME" /> per 
 <translation id="8747048596626351634">La sessió s'ha bloquejat o no s'ha pogut iniciar. Si s'ha introduït ~/.chrome-remote-desktop-session a l'ordinador remot, comprova que s'iniciï un procés llarg en primer pla, com ara un entorn d'escriptori o un gestor de finestres.</translation>
 <translation id="8759753423332885148">Més informació</translation>
 <translation id="8791202241915690908">Baixeu l'instal·lador de l'amfitrió de Chromoting</translation>
+<translation id="8804164990146287819">Política de privadesa</translation>
 <translation id="894763922177556086">Bona</translation>
 <translation id="895780780740011433">Per a Windows 7 i versions posteriors</translation>
 <translation id="897805526397249209">Per activar les connexions remotes a un altre ordinador, instal·leu-hi Chromoting i feu clic a <ph name="BUTTON_NAME" />.</translation>

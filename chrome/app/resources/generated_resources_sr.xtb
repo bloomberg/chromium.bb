@@ -1627,7 +1627,6 @@
 <translation id="3576324189521867626">Инсталирано је</translation>
 <translation id="3578594933904494462">Садржај ове картице се дели.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; жели да дели штампач &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; са групом чији сте власник: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Ако прихватите, сви чланови групе ће моћи да штампају помоћу штампача.</translation>
-<translation id="3580923162759633716">Услуга профилисања</translation>
 <translation id="3584169441612580296">Читање слика, музике и других медија са рачунара и мењање тих медија</translation>
 <translation id="3587482841069643663">Све</translation>
 <translation id="358796204584394954">Унесите овај кôд на „<ph name="DEVICE_NAME" />“ да бисте обавили упаривање:</translation>
@@ -3248,7 +3247,7 @@
 <translation id="6122095009389448667">Настави да блокираш увид у привремену меморију овом сајту</translation>
 <translation id="6122875415561139701">Операција писања није дозвољена на: „<ph name="DEVICE_NAME" />“.</translation>
 <translation id="6124650939968185064">Следећи додаци зависе од овог додатка:</translation>
-<translation id="6124698108608891449">Овај сајт захтева још дозвола.</translation>
+<translation id="6124698108608891449">Овај сајт тражи још дозвола.</translation>
 <translation id="6125479973208104919">Нажалост, треба поново да додате налог на овај <ph name="DEVICE_TYPE" />.</translation>
 <translation id="6129691635767514872">Изабрани подаци су уклоњени из Chrome-а и са синхронизованих уређаја. Google налог можда има друге облике историје прегледања, попут претрага и активности на другим Google услугама на <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="6129938384427316298">Коментар Netscape сертификата</translation>
@@ -4638,7 +4637,6 @@
 <translation id="8284279544186306258">сви <ph name="WEBSITE_1" /> сајтови</translation>
 <translation id="8286036467436129157">Пријави ме</translation>
 <translation id="8286963743045814739">Можете да прегледате приватно у прозору без архивирања</translation>
-<translation id="82871696630048499">Веб-страница се поново учитала зато што јој је понестало меморије.</translation>
 <translation id="8287902281644548111">Претражите према API позиву/URL-у</translation>
 <translation id="8288032458496410887">Деинсталирај: <ph name="APP" />...</translation>
 <translation id="8291967909914612644">Земља добављача за Home</translation>

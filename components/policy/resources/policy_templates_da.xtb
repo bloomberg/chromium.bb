@@ -591,7 +591,6 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
       Når denne politik er angivet som Falsk, indhentes der ikke oplysninger, der kan bruges til at identificere brugere.
 
       Denne politik gælder kun, når <ph name="CHROME_REPORTING_EXTENSION_NAME" /> er aktiveret, og maskinen er tilmeldt <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
-<translation id="2126178089984117495">Begrænser tilstanden for udskrivning med pinkode En politik uden konfiguration behandles som ingen begrænsning. Hvis tilstanden ikke er tilgængelig, ignoreres politikken.</translation>
 <translation id="2127599828444728326">Tillad notifikationer på disse websites</translation>
 <translation id="2131902621292742709">Skærmnedtoningsforsinkelse, når batteriet bruges</translation>
 <translation id="2134437727173969994">Tillad låsning af skærmen</translation>
@@ -1952,12 +1951,6 @@ Mens selve politikken understøttes på ovenstående platforme, kan den funktion
 <translation id="4983201894483989687">Tillad, at der køres forældede plugins</translation>
 <translation id="4986560318567565414">Sti til Chrome ved skift fra den alternative browser.</translation>
 <translation id="4988291787868618635">Påkrævet handling for inaktivitetsforsinkelse</translation>
-<translation id="5030889661505907084">
-      Hvis politikken er angivet som sand, har cloudpolitikken forrang, hvis den er i uoverensstemmelse med platformspolitikken.
-      Hvis politikken er angivet som falsk eller ikke er konfigureret, har platformspolitikken forrang, hvis den er i uoverensstemmelse med cloudpolitikken.
-
-      Denne politik er kun tilgængelig som en platform.
-      </translation>
 <translation id="5034604678285451405">Konfigurer den procentvise batterigrænse for ændringen ved strømspidsbelastning.
 
           Denne politik bruges kun, hvis DevicePowerPeakShiftEnabled er angivet som sand.
@@ -3614,29 +3607,6 @@ Den anbefalede fremgangsmåde til konfiguration af politikker i Windows er via G
 <translation id="8259592978873597235">Hvis denne politik er angivet som sand eller ikke er konfigureret, anses brugeren ikke for at være inaktiv, mens videoen afspilles. Dette forhindrer, at inaktivitetsforsinkelse, nedtoningsforsinkelse og skærmlåsforsinkelse bliver nået, og at de tilsvarende handlinger udføres.
 
           Hvis denne politik er angivet som falsk, forhindrer videoaktivitet ikke brugeren i at blive anset som inaktiv.</translation>
-<translation id="8264653492961233132">Angiver en liste over apps og udvidelser, der installeres uovervåget.
-          Dette foregår i baggrunden uden brugerinteraktion, og hverken apps eller udvidelser kan
-          afinstalleres af brugeren. Alle tilladelser, som apps/udvidelser
-          anmoder om, gives implicit uden brugerinteraktion, herunder
-          eventuelle ekstra tilladelser, der anmodes om af fremtidige
-          versioner af appen/udvidelsen. Derudover gives der tilladelser til
-          udvidelses-API'erne enterprise.deviceAttributes og enterprise.platformKeys.
-          (Disse to API'er er ikke tilgængelige for apps/udvidelser, der ikke
-          tvangsinstalleres).
-
-          Denne politik prioriteres, hvis der skulle opstå en konflikt med en <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />-politik. Hvis en app eller udvidelse, som tidligere er tvangsinstalleret, fjernes fra denne liste, afinstalleres den automatisk af <ph name="PRODUCT_NAME" />.
-
-          I forbindelse med Windows-forekomster, som ikke er knyttet til et <ph name="MS_AD_NAME" />-domæne, er gennemtvunget installation begrænset til apps og udvidelser, som fås i Chrome Webshop.
-
-          Bemærk, at kildekoden i alle udvidelser kan ændres af brugere via Udviklerværktøjer (hvilket kan medføre, at udvidelsen ikke fungerer). Hvis du vil undgå dette, skal politikken <ph name="DEVELOPER_TOOLS_POLICY_NAME" /> angives.
-
-          Hvert listepunkt i politikken er en streng, som indeholder et udvidelses-id og en "opdateringswebadresse" adskilt af et semikolon (<ph name="SEMICOLON" />). Udvidelses-id'et er den streng på 32 bogstaver, som f.eks. kan findes på <ph name="CHROME_EXTENSIONS_LINK" />, når udviklertilstanden bruges. "Opdateringswebadressen" skal pege på et XML-dokument med et opdateringsmanifest som beskrevet på <ph name="LINK_TO_EXTENSION_DOC1" />. Bemærk, at "opdateringswebadressen", der angives i denne politik, kun bruges til den første installation. Efterfølgende opdateringer af udvidelsen anvender den opdateringswebadresse, som er angivet i udvidelsens manifest. Bemærk også, at det var påkrævet eksplicit at angive "opdateringswebadressen" i <ph name="PRODUCT_NAME" />-versioner op til og med 67.
-
-          <ph name="EXTENSION_POLICY_EXAMPLE" /> installerer f.eks. appen <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> fra "standardopdateringswebadressen" fra Chrome Webshop. Du kan få flere oplysninger om hosting af udvidelser her: <ph name="LINK_TO_EXTENSION_DOC2" />.
-
-          Hvis denne politik ikke angives, installeres ingen apps eller udvidelser automatisk, og brugeren kan afinstallere alle apps og udvidelser i <ph name="PRODUCT_NAME" />.
-
-          Bemærk, at denne politik ikke gælder for inkognitotilstand.</translation>
 <translation id="8274603902181597201">Slet brugerens eCryptfs-hovedmapper, og start med en frisk ext4-krypteret hovedmappe.</translation>
 <translation id="8285435910062771358">Lup i fuld skærm er aktiveret</translation>
 <translation id="8288199156259560552">Aktivér Googles placeringstjeneste til Android</translation>

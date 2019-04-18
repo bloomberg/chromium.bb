@@ -1628,7 +1628,6 @@
 <translation id="3576324189521867626">Se instaló correctamente</translation>
 <translation id="3578594933904494462">Se está compartiendo el contenido de esta pestaña.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; quiere compartir una impresora &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; con un grupo del cual eres propietario: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Si aceptas, todos los miembros del grupo podrán usar esa impresora para imprimir.</translation>
-<translation id="3580923162759633716">Servicio de análisis de perfiles</translation>
 <translation id="3584169441612580296">Leer y cambiar fotos, música y otro contenido multimedia desde tu computadora</translation>
 <translation id="3587482841069643663">Todos</translation>
 <translation id="358796204584394954">Escribe este código en el dispositivo "<ph name="DEVICE_NAME" />" para sincronizar:</translation>
@@ -3427,7 +3426,7 @@
 <translation id="641081527798843608">Coincidencia de asunto</translation>
 <translation id="6412931879992742813">Nueva ventana de incógnito</translation>
 <translation id="6415900369006735853">Conéctate a Internet a través de tu teléfono</translation>
-<translation id="6416743254476733475">Permitir o bloquear en tu computadora</translation>
+<translation id="6416743254476733475">Habilítalos o bloquéalos en tu computadora.</translation>
 <translation id="6417265370957905582">Asistente de Google</translation>
 <translation id="6418160186546245112">Revirtiendo a la versión de <ph name="IDS_SHORT_PRODUCT_NAME" /> instalada previamente</translation>
 <translation id="6418481728190846787">Eliminar el acceso a todas las apps de forma permanente</translation>
@@ -4637,7 +4636,6 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8284279544186306258">todos los sitios de <ph name="WEBSITE_1" /></translation>
 <translation id="8286036467436129157">Iniciar sesión</translation>
 <translation id="8286963743045814739">Puedes navegar de forma privada con una ventana de incógnito</translation>
-<translation id="82871696630048499">Se volvió a cargar la página web porque se quedó sin memoria.</translation>
 <translation id="8287902281644548111">Busca por URL o llamada a la API</translation>
 <translation id="8288032458496410887">Desinstalar <ph name="APP" />…</translation>
 <translation id="8291967909914612644">País del proveedor de origen</translation>

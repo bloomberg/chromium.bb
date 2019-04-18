@@ -119,7 +119,7 @@
 <translation id="1891331835972267886"><ph name="APP_NAME" />Chrome এ খুলবে। চালিয়ে যাওয়ার অর্থ আপনি Chrome এর <ph name="BEGIN_LINK1" />পরিষেবার শর্তাবলী<ph name="END_LINK1" />  এবং <ph name="BEGIN_LINK2" />গোপনীয়তা বিজ্ঞপ্তি<ph name="END_LINK2" />র সাথে সম্মত হচ্ছেন।</translation>
 <translation id="1919345977826869612">বিজ্ঞাপন</translation>
 <translation id="1919950603503897840">পরিচিতিগুলি বেছে নিন</translation>
-<translation id="1922076542920281912">Chrome যাতে আপনার লোকেশন অ্যাক্সেস করতে পারে তার জন্য <ph name="BEGIN_LINK" />Android সেটিংসে<ph name="END_LINK" /> গিয়ে লোকেশন চালু করুন।</translation>
+<translation id="1922076542920281912">Chrome যাতে আপনার লোকেশন অ্যাক্সেস করতে পারে তার জন্য <ph name="BEGIN_LINK" />Android সেটিংস<ph name="END_LINK" />-এ গিয়ে লোকেশন চালু করুন।</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="19288952978244135">Chrome আবার খুলুন।</translation>
 <translation id="1933845786846280168">নির্বাচিত ট্যাবগুলি</translation>
@@ -145,7 +145,7 @@
 <translation id="2018707881002649255">আপনার বেছে নেওয়া নিচের পরিচিতি <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> ওয়েবসাইটে শেয়ার করা হবে।</translation>
 <translation id="2021896219286479412">পূর্ণ স্ক্রিন সাইট নিয়ন্ত্রণ</translation>
 <translation id="2038563949887743358">ডেস্কটপ সাইটের অনুরোধ চালু করুন</translation>
-<translation id="2041019821020695769">Chrome যাতে আপনাকে বিজ্ঞপ্তি পাঠাতে পারে তার জন্য আপনি <ph name="BEGIN_LINK" />Android সেটিংসে<ph name="END_LINK" /> গিয়ে বিজ্ঞপ্তি চালু করুন।</translation>
+<translation id="2041019821020695769">Chrome যাতে আপনাকে বিজ্ঞপ্তি পাঠাতে পারে তার জন্য আপনি <ph name="BEGIN_LINK" />Android সেটিংস<ph name="END_LINK" />-এ গিয়ে বিজ্ঞপ্তি চালু করুন।</translation>
 <translation id="204321170514947529"><ph name="APP_NAME" /> অ্যাপের ডেটা Chrome ব্রাউজারেও আছে</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB অন্যান্য অ্যাপ্লিকেশান</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
@@ -194,7 +194,6 @@
 <translation id="2387895666653383613">পাঠ্য স্কেলিং</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> এমবি</translation>
 <translation id="2410754283952462441">একটি অ্যাকাউন্ট বেছে নিন</translation>
-<translation id="2414672073755873541">এখানে কোনও কন্টেন্ট নেই</translation>
 <translation id="2414886740292270097">অন্ধকার</translation>
 <translation id="2416359993254398973">এই সাইটটির জন্য Chrome কে আপনার ক্যামেরায় অ্যাক্সেস দিতে হবে।</translation>
 <translation id="2426805022920575512">অন্য একটি অ্যাকাউন্ট বেছে নিন</translation>
@@ -351,7 +350,6 @@
 <translation id="3600792891314830896">সাউন্ড প্লে করা হয় যে সাইটগুলিতে সেগুলি মিউট করুন</translation>
 <translation id="3616113530831147358">অডিও</translation>
 <translation id="3620176948598597475">রিসেট করলে আপনার ঘুরে দেখা সাইটগুলির তালিকা সহ ডেটা সেভারের ইতিহাস মুছে যাবে।</translation>
-<translation id="3630011985153972676">সেটিংসের অধীনে ওয়াই-ফাই চালু থাকাকালীন Chrome-কে আপনার জন্য নিবন্ধগুলি ডাউনলোড করার অনুমতি দিন।</translation>
 <translation id="3632295766818638029">পাসওয়ার্ড উম্মোচন করুন</translation>
 <translation id="363596933471559332">সঞ্চিত ক্রেডেনশিয়াল ব্যবহার করে ওয়েবসাইটগুলিতে অটোমেটিক সাইন-ইন। যখন বৈশিষ্ট্যটি বন্ধ করা থাকে, তখন প্রতিবারই একটি ওয়েবসাইটে সাইন-ইন করার সময় আপনাকে যাচাইকরণের জন্য বলা হবে।</translation>
 <translation id="3658159451045945436">রিসেট করলে আপনার ঘুরে দেখা সাইট সহ আপনার ডেটা সেভিংয়ের ইতিহাস মুছে দেয়।</translation>
@@ -361,7 +359,7 @@
 <translation id="3712575778697986964">ডেটা সেভার রিসেট করবেন?</translation>
 <translation id="3714981814255182093">খুঁজুন দণ্ডটি খুলুন</translation>
 <translation id="3716182511346448902">এই পৃষ্ঠাটি খুব বেশি মেমরি ব্যবহার করছে তাই Chrome এটি বিরত রেখেছে।</translation>
-<translation id="3730075448226062617">Chrome যাতে আপনার মাইক্রোফোন অ্যাক্সেস করতে পারে তার জন্য <ph name="BEGIN_LINK" />Android সেটিংসে<ph name="END_LINK" /> গিয়ে মাইক্রোফোন চালু করুন।</translation>
+<translation id="3730075448226062617">Chrome যাতে আপনার মাইক্রোফোন অ্যাক্সেস করতে পারে তার জন্য <ph name="BEGIN_LINK" />Android সেটিংস<ph name="END_LINK" />-এ গিয়ে মাইক্রোফোন চালু করুন।</translation>
 <translation id="3739899004075612870"><ph name="PRODUCT_NAME" /> এ বুকমার্ক করা হয়েছে</translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> MB অন্যান্য অ্যাপ্লিকেশান</translation>
 <translation id="3744111561329211289">পটভূমি সিঙ্ক</translation>
@@ -427,7 +425,6 @@
 <translation id="4195643157523330669">নতুন ট্যাবে খুলুন</translation>
 <translation id="4198423547019359126">ডাউনলোড করার জন্য লোকেশন উপলভ্য নেই</translation>
 <translation id="4209895695669353772">Google-এর প্রস্তাবিত ব্যক্তিগতকৃত কন্টেন্ট পেতে সিঙ্ক বিকল্প চালু করুন</translation>
-<translation id="4225719675976901337">কোনও কন্টেন্ট খুঁজে পাওয়া যায়নি</translation>
 <translation id="4226663524361240545">বিজ্ঞপ্তি আসলে ডিভাইস ভাইব্রেট হতে পারে</translation>
 <translation id="423219824432660969">Google পাসওয়ার্ড দিয়ে <ph name="TIME" />-এ সিঙ্ক করা ডেটা এনক্রিপ্ট করুন</translation>
 <translation id="4242533952199664413">সেটিংস খুলুন</translation>
@@ -708,7 +705,7 @@
 <translation id="618993374665929060">পুরো স্ক্রিনে 'এর মত আরও' খোলা আছে</translation>
 <translation id="6192333916571137726">ফাইল ডাউনলোড করুন</translation>
 <translation id="6192792657125177640">ব্যতিক্রমগুলি</translation>
-<translation id="6194112207524046168">Chrome যাতে আপনার ক্যামেরা অ্যাক্সেস করতে পারে তার জন্য <ph name="BEGIN_LINK" />Android সেটিংসে<ph name="END_LINK" /> গিয়ে ক্যামেরা চালু করুন।</translation>
+<translation id="6194112207524046168">Chrome যাতে আপনার ক্যামেরা অ্যাক্সেস করতে পারে তার জন্য <ph name="BEGIN_LINK" />Android সেটিংস<ph name="END_LINK" />-এ গিয়ে ক্যামেরা চালু করুন।</translation>
 <translation id="6196640612572343990">তৃতীয় পক্ষের কুকিজ অবরুদ্ধ করুন</translation>
 <translation id="6206551242102657620">কানেকশনটি নিরাপদ। সাইট তথ্য</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> না?</translation>

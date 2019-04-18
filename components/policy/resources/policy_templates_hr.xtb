@@ -594,7 +594,6 @@
       Ako se pravilo postavi na False, ne prikupljaju se informacije koje se mogu upotrijebiti za identifikaciju korisnika.
 
       To se pravilo primjenjuje samo kada je omogućeno pravilo <ph name="CHROME_REPORTING_EXTENSION_NAME" />, a računalo je prijavljeno tokenom <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
-<translation id="2126178089984117495">Ograničava način ispisa s PIN-om. Ako se pravilo ne postavi, smatra se da nema ograničenja. Pravilo se zanemaruje ako način nije dostupan.</translation>
 <translation id="2127599828444728326">Dopuštanje obavijesti na ovim web-lokacijama</translation>
 <translation id="2131902621292742709">Odgoda zatamnjivanja zaslona za vrijeme baterijskog napajanja</translation>
 <translation id="2134437727173969994">Dopusti zaključavanje zaslona</translation>
@@ -1958,12 +1957,6 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
 <translation id="4983201894483989687">Dopusti pokretanje dodataka koji su zastarjeli</translation>
 <translation id="4986560318567565414">Put do Chromea za prebacivanje iz zamjenskog preglednika.</translation>
 <translation id="4988291787868618635">Radnja koja će se izvršiti kada nastupi odgoda neaktivnosti</translation>
-<translation id="5030889661505907084">
-      Ako se pravilo postavi na true, pravilo oblaka imat će prednost u slučaju sukoba s pravilom platforme.
-      Ako se pravilo postavi na false ili se ne konfigurira, pravilo platforme imat će prednost ako je u sukobu pravilom oblaka.
-
-      To je pravilo dostupno samo kao platforma.
-      </translation>
 <translation id="5034604678285451405">Postavite prag baterije (u postocima) za prebacivanje napajanja radi uštede energije.
 
           Ovo pravilo koristi se samo ako se DevicePowerPeakShiftEnabled postavi na true.
@@ -3624,29 +3617,6 @@ Za sustav Windows preporučuje se konfiguriranje pravila putem GPO-a, iako se pr
 <translation id="8259592978873597235">Ako se pravilo postavi na true ili se ne postavi, korisnik se ne smatra neaktivnim tijekom reprodukcije videozapisa. Time se sprječava odgoda neaktivnosti te zatamnjivanja, isključivanja i zaključavanja zaslona, kao i izvršavanje odgovarajućih radnji.
 
           Ako se pravilo postavi na false, korisnik se može smatrati neaktivnim bez obzira na aktivnost videozapisa.</translation>
-<translation id="8264653492961233132">Određuje popis aplikacija i proširenja koja se instaliraju u pozadini,
-          bez interakcije s korisnikom, i koje korisnik ne može deinstalirati
-          niti onemogućiti. Sva dopuštenja koja aplikacije/proširenja
-          zahtijevaju dodjeljuju se implicitno, bez interakcije s korisnikom,
-          uključujući sva dodatna dopuštenja koja bi buduće verzije
-          aplikacije/proširenja mogle tražiti. Osim toga, dopuštenja se dodjeljuju
-          za API-je proširenja enterprise.deviceAttributes i enterprise.platformKeys. 
-          (Ta dva API-ja nisu dostupna aplikacijama/proširenjima koji nisu
-          prisilno instalirani.)
-
-          To pravilo ima prednost pred pravilom <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> s kojim potencijalno može biti u sukobu. Ako se s popisa ukloni aplikacija ili proširenje koje su prethodno bili prisilno instalirani, <ph name="PRODUCT_NAME" /> automatski će ih deinstalirati.
-
-          Za instance Windowsa koje nisu pridružene domeni <ph name="MS_AD_NAME" /> prisilna instalacija ograničena je na aplikacije i proširenja navedene u Chrome web-trgovini.
-
-          Korisnici mogu izmijeniti izvorni kôd proširenja pomoću Alata za razvojne programere (zbog čega proširenje može prestati funkcionirati). Ako to predstavlja problem, postavite pravilo <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
-
-          Svaka stavka pravila niz je koji sadrži ID proširenja i URL za "ažuriranje" odvojene točkom sa zarezom (<ph name="SEMICOLON" />). ID proširenja niz je od 32 slova koji se primjerice može pronaći na <ph name="CHROME_EXTENSIONS_LINK" /> u načinu rada razvojnog programera. URL za "ažuriranje", ako se navede, treba usmjeravati na XML dokument manifesta ažuriranja kako je opisano u dokumentu <ph name="LINK_TO_EXTENSION_DOC1" />. Prema zadanim postavkama, upotrebljava se URL za ažuriranje Chrome web-trgovine (koji je trenutačno "https://clients2.google.com/service/update2/crx"). URL za "ažuriranje" postavljen u ovom pravilu upotrebljava se samo za prvo instaliranje, dok će se za daljnja ažuriranja proširenja upotrebljavati URL ažuriranja naveden u manifestu proširenja. Napominjemo i da je eksplicitno navođenje URL-a za "ažuriranje" bilo obavezno u verzijama preglednika <ph name="PRODUCT_NAME" /> zaključno s verzijom 67.
-
-          Na primjer, <ph name="EXTENSION_POLICY_EXAMPLE" /> instalira aplikaciju <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> sa standardnog URL-a za "ažuriranje" Chrome web-trgovine. Više informacija o hostingu proširenja potražite ovdje: <ph name="LINK_TO_EXTENSION_DOC2" />.
-
-          Ako se to pravilo ne postavi, aplikacije ili proširenja neće se instalirati automatski i korisnik može deinstalirati bilo koju aplikaciju ili proširenje u pregledniku <ph name="PRODUCT_NAME" />.
-
-          To se pravilo ne primjenjuje u anonimnom načinu.</translation>
 <translation id="8274603902181597201">Briše početni direktorij korisnika za ecryptfs i započinje novi ext4-šifrirani početni direktorij.</translation>
 <translation id="8285435910062771358">Omogućeno je povećalo cijelog zaslona</translation>
 <translation id="8288199156259560552">Omogući Googleovu uslugu lokacije na Androidu</translation>

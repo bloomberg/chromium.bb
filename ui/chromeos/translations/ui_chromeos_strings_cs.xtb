@@ -190,6 +190,7 @@
 <translation id="3245321423178950146">Neznámý interpret</translation>
 <translation id="3252266817569339921">francouzština</translation>
 <translation id="3254434849914415189">Vyberte pro soubory <ph name="FILE_TYPE" /> výchozí aplikaci:</translation>
+<translation id="3264582393905923483">Kontext</translation>
 <translation id="3280431534455935878">Příprava</translation>
 <translation id="3280987981688031357">Gramofonová deska</translation>
 <translation id="3296763833017966289">gruzínština</translation>
@@ -524,7 +525,7 @@
 <translation id="7339898014177206373">Nové okno</translation>
 <translation id="7348749398828259943">Americká mezinárodní klávesnice s rozložením Workman</translation>
 <translation id="7359359531237882347">Kopírování <ph name="NUMBER_OF_ITEMS" /> položek...</translation>
-<translation id="7379734276381389090">S nástrojem Plugin VM byl nasdílen tento počet složek: <ph name="NUMBER_OF_ITEMS" /></translation>
+<translation id="7379734276381389090">S nástrojem Plugin VM byly sdíleny složky, celkem <ph name="NUMBER_OF_ITEMS" /></translation>
 <translation id="7389722738210761877">Thajská klávesnice (TIS 820-2531)</translation>
 <translation id="7396038720194014279">Hindská klávesnice (fonetická)</translation>
 <translation id="7417453074306512035">Etiopská klávesnice</translation>
@@ -587,7 +588,7 @@
 <translation id="7969525169268594403">slovinština</translation>
 <translation id="7982283708762922719">Výška</translation>
 <translation id="7987485481246785146">Kurdská klávesnice (sorání) s arabským rozložením</translation>
-<translation id="7990715602172183602">1 položka byla nasdílena s nástrojem Plugin VM</translation>
+<translation id="7990715602172183602">S nástrojem Plugin VM byla sdílena 1 složka</translation>
 <translation id="799547531016638432">Odebrat zástupce</translation>
 <translation id="799923393800005025">Může zobrazit</translation>
 <translation id="8008366997883261463">Jack Russell teriér</translation>
