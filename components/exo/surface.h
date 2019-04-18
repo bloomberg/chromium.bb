@@ -53,6 +53,9 @@ class PropertyHelper;
 // Counter-clockwise rotations.
 enum class Transform { NORMAL, ROTATE_90, ROTATE_180, ROTATE_270 };
 
+// A property key to store the surface Id set by the client.
+extern const ui::ClassProperty<int32_t>* const kClientSurfaceIdKey;
+
 // This class represents a rectangular area that is displayed on the screen.
 // It has a location, size and pixel contents.
 class Surface final : public ui::PropertyHandler {

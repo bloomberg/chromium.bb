@@ -67,9 +67,6 @@ DEFINE_UI_CLASS_PROPERTY_KEY(Surface*, kSurfaceKey, nullptr)
 // stylus input events.
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kStylusOnlyKey, false)
 
-// Surface Id set by the client.
-DEFINE_UI_CLASS_PROPERTY_KEY(int32_t, kClientSurfaceIdKey, 0)
-
 // Helper function that returns an iterator to the first entry in |list|
 // with |key|.
 template <typename T, typename U>
@@ -225,6 +222,8 @@ const std::string& GetApplicationId(aura::Window* window) {
 }
 
 }  // namespace
+
+DEFINE_UI_CLASS_PROPERTY_KEY(int32_t, kClientSurfaceIdKey, 0)
 
 ////////////////////////////////////////////////////////////////////////////////
 // Surface, public:
