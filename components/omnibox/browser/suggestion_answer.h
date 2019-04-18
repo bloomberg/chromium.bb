@@ -244,6 +244,10 @@ class SuggestionAnswer {
   // For new answers, replace old answer text types with appropriate new types.
   void InterpretTextTypes();
 
+  // Logs which answer type was used (if any) at the time a user used the
+  // omnibox to go somewhere.
+  static void LogAnswerUsed(const base::Optional<SuggestionAnswer>& answer);
+
 #ifdef OS_ANDROID
   base::android::ScopedJavaLocalRef<jobject> CreateJavaObject() const;
 #endif

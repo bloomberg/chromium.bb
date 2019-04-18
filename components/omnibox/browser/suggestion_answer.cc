@@ -10,6 +10,7 @@
 
 #include "base/feature_list.h"
 #include "base/i18n/rtl.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -354,6 +355,18 @@ void SuggestionAnswer::InterpretTextTypes() {
   // Any old styles not replaced above will get these by default.
   first_line_.SetTextStyles(0, TextStyle::NORMAL_DIM);
   second_line_.SetTextStyles(0, TextStyle::NORMAL);
+}
+
+// static
+void SuggestionAnswer::LogAnswerUsed(
+    const base::Optional<SuggestionAnswer>& answer) {
+  auto answer_type = SuggestionAnswer::ANSWER_TYPE_INVALID;
+  if (answer) {
+    answer_type = static_cast<SuggestionAnswer::AnswerType>(answer->type());
+  }
+  UMA_HISTOGRAM_ENUMERATION("Omnibox.SuggestionUsed.AnswerInSuggest",
+                            answer_type,
+                            SuggestionAnswer::ANSWER_TYPE_TOTAL_COUNT);
 }
 
 #ifdef OS_ANDROID
