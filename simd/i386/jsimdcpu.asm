@@ -51,14 +51,14 @@ EXTN(jpeg_simd_cpu_support):
     xor         eax, edx
     jz          near .return            ; CPUID is not supported
 
-    ; Check maximum supported CPUID leaf
+    ; Check whether CPUID leaf 07H is supported
+    ; (leaf 07H is used to check for AVX2 instruction support)
     xor         eax, eax
     cpuid
     test        eax, eax
     jz          near .return
-    cmp         eax, 7                  ; Skip AVX2 check if its leaf
-                                        ; is not supported
-    jl          short .no_avx2
+    cmp         eax, 7
+    jl          short .no_avx2          ; Maximum leaf < 07H
 
     ; Check for AVX2 instruction support
     mov         eax, 7
@@ -87,7 +87,7 @@ EXTN(jpeg_simd_cpu_support):
     or          edi, JSIMD_AVX2
 .no_avx2:
 
-    ; Check CPUID leaf 1 for MMX, SSE, and SSE2 support
+    ; Check CPUID leaf 01H for MMX, SSE, and SSE2 support
     xor         eax, eax
     inc         eax
     cpuid
