@@ -285,6 +285,7 @@ source_set("chromeos") {
     "//chrome/browser/extensions",
     "//chrome/browser/apps/platform_apps/api",
     "//chrome/browser/web_applications",
+    "//chrome/browser/web_applications/components",
   ]
 
   sources = [

@@ -33,8 +33,6 @@ source_set("web_applications") {
     "web_app_registrar.h",
     "web_app_tab_helper.cc",
     "web_app_tab_helper.h",
-    "web_app_utils.cc",
-    "web_app_utils.h",
   ]
 
   deps = [

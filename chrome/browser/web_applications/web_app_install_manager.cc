@@ -10,8 +10,8 @@
 #include "base/callback.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
+#include "chrome/browser/web_applications/components/web_app_utils.h"
 #include "chrome/browser/web_applications/web_app_install_task.h"
-#include "chrome/browser/web_applications/web_app_utils.h"
 #include "chrome/common/web_application_info.h"
 #include "content/public/browser/web_contents.h"
 
