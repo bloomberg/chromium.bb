@@ -163,3 +163,47 @@ function findFolderNode(rootNode, id) {
     });
   }
 }
+
+/**
+ * Returns simple equivalents to chrome.test.* APIs for simple porting of
+ * ExtensionAPITests.
+ * @return {Object}
+ */
+function simulateChromeExtensionAPITest() {
+  let promises = [];
+  function pass(callback) {
+    let resolve;
+    assertEquals(undefined, chrome.runtime.lastError);
+    promises.push(new Promise(r => {
+      resolve = r;
+    }));
+    return function() {
+      callback.apply(null, arguments);
+      resolve();
+    };
+  }
+
+  function fail(message) {
+    let resolve;
+    promises.push(new Promise(r => {
+      resolve = r;
+    }));
+    return function() {
+      assertEquals(message, chrome.runtime.lastError.message);
+      chrome.runtime.lastError = undefined;
+      resolve();
+    };
+  }
+
+  async function runTests(tests) {
+    for (const test of tests) {
+      test();
+      await Promise.all(promises);
+    }
+  }
+  return {
+    pass,
+    fail,
+    runTests,
+  };
+}
