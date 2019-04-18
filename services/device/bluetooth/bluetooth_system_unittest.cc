@@ -566,71 +566,71 @@ class DEVICE_BLUETOOTH_EXPORT TestBluetoothDeviceClient
   }
 
   void Connect(const dbus::ObjectPath& object_path,
-               const base::Closure& callback,
-               const ErrorCallback& error_callback) override {
+               base::OnceClosure callback,
+               ErrorCallback error_callback) override {
     NOTIMPLEMENTED();
   }
 
   void Disconnect(const dbus::ObjectPath& object_path,
-                  const base::Closure& callback,
-                  const ErrorCallback& error_callback) override {
+                  base::OnceClosure callback,
+                  ErrorCallback error_callback) override {
     NOTIMPLEMENTED();
   }
 
   void ConnectProfile(const dbus::ObjectPath& object_path,
                       const std::string& uuid,
-                      const base::Closure& callback,
-                      const ErrorCallback& error_callback) override {
+                      base::OnceClosure callback,
+                      ErrorCallback error_callback) override {
     NOTIMPLEMENTED();
   }
 
   void DisconnectProfile(const dbus::ObjectPath& object_path,
                          const std::string& uuid,
-                         const base::Closure& callback,
-                         const ErrorCallback& error_callback) override {
+                         base::OnceClosure callback,
+                         ErrorCallback error_callback) override {
     NOTIMPLEMENTED();
   }
 
   void Pair(const dbus::ObjectPath& object_path,
-            const base::Closure& callback,
-            const ErrorCallback& error_callback) override {
+            base::OnceClosure callback,
+            ErrorCallback error_callback) override {
     NOTIMPLEMENTED();
   }
 
   void CancelPairing(const dbus::ObjectPath& object_path,
-                     const base::Closure& callback,
-                     const ErrorCallback& error_callback) override {
+                     base::OnceClosure callback,
+                     ErrorCallback error_callback) override {
     NOTIMPLEMENTED();
   }
 
   void GetConnInfo(const dbus::ObjectPath& object_path,
-                   const ConnInfoCallback& callback,
-                   const ErrorCallback& error_callback) override {
+                   ConnInfoCallback callback,
+                   ErrorCallback error_callback) override {
     NOTIMPLEMENTED();
   }
 
   void SetLEConnectionParameters(const dbus::ObjectPath& object_path,
                                  const ConnectionParameters& conn_params,
-                                 const base::Closure& callback,
-                                 const ErrorCallback& error_callback) override {
+                                 base::OnceClosure callback,
+                                 ErrorCallback error_callback) override {
     NOTIMPLEMENTED();
   }
 
   void GetServiceRecords(const dbus::ObjectPath& object_path,
-                         const ServiceRecordsCallback& callback,
-                         const ErrorCallback& error_callback) override {
+                         ServiceRecordsCallback callback,
+                         ErrorCallback error_callback) override {
     NOTIMPLEMENTED();
   }
 
   void ExecuteWrite(const dbus::ObjectPath& object_path,
-                    const base::Closure& callback,
-                    const ErrorCallback& error_callback) override {
+                    base::OnceClosure callback,
+                    ErrorCallback error_callback) override {
     NOTIMPLEMENTED();
   }
 
   void AbortWrite(const dbus::ObjectPath& object_path,
-                  const base::Closure& callback,
-                  const ErrorCallback& error_callback) override {
+                  base::OnceClosure callback,
+                  ErrorCallback error_callback) override {
     NOTIMPLEMENTED();
   }
 
