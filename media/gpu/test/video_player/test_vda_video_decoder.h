@@ -10,6 +10,7 @@
 #include <memory>
 #include <string>
 
+#include "base/containers/mru_cache.h"
 #include "base/macros.h"
 #include "base/sequence_checker.h"
 #include "media/base/video_decoder.h"
@@ -94,8 +95,10 @@ class TestVDAVideoDecoder : public media::VideoDecoder,
 
   // Map of video frames the decoder uses as output, keyed on picture buffer id.
   std::map<int32_t, scoped_refptr<VideoFrame>> video_frames_;
-  // Map of video frame decoded callbacks, keyed on picture buffer id.
+  // Map of video frame decoded callbacks, keyed on bitstream buffer id.
   std::map<int32_t, DecodeCB> decode_cbs_;
+  // Records the time at which each bitstream buffer decode operation started.
+  base::MRUCache<int32_t, base::TimeDelta> decode_start_timestamps_;
 
   int32_t next_bitstream_buffer_id_ = 0;
   int32_t next_picture_buffer_id_ = 0;

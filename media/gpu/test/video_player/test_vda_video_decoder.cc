@@ -27,6 +27,11 @@
 namespace media {
 namespace test {
 
+namespace {
+// Size of the timestamp cache, needs to be large enough for frame-reordering.
+constexpr size_t kTimestampCacheSize = 128;
+}  // namespace
+
 TestVDAVideoDecoder::TestVDAVideoDecoder(
     AllocationMode allocation_mode,
     const gfx::ColorSpace& target_color_space,
@@ -36,6 +41,7 @@ TestVDAVideoDecoder::TestVDAVideoDecoder(
                        : VideoDecodeAccelerator::Config::OutputMode::IMPORT),
       target_color_space_(target_color_space),
       frame_renderer_(frame_renderer),
+      decode_start_timestamps_(kTimestampCacheSize),
       weak_this_factory_(this) {
   DETACH_FROM_SEQUENCE(vda_wrapper_sequence_checker_);
 
@@ -136,6 +142,13 @@ void TestVDAVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
 
   int32_t bitstream_buffer_id = GetNextBitstreamBufferId();
   decode_cbs_[bitstream_buffer_id] = decode_cb;
+
+  // Record picture buffer decode start time. A cache is used because not each
+  // bitstream buffer decode will result in a call to PictureReady(). Pictures
+  // can be delivered in a different order than the decode operations, so we
+  // don't know when it's safe to purge old decode timestamps. Instead we use
+  // a cache with a large enough size to account for frame reordering.
+  decode_start_timestamps_.Put(bitstream_buffer_id, buffer->timestamp());
 
   decoder_->Decode(std::move(buffer), bitstream_buffer_id);
 }
@@ -241,6 +254,12 @@ void TestVDAVideoDecoder::PictureReady(const Picture& picture) {
   auto it = video_frames_.find(picture.picture_buffer_id());
   LOG_ASSERT(it != video_frames_.end());
   scoped_refptr<VideoFrame> video_frame = it->second;
+
+  // Look up the time at which the decode started.
+  auto timestamp_it =
+      decode_start_timestamps_.Peek(picture.bitstream_buffer_id());
+  ASSERT_NE(timestamp_it, decode_start_timestamps_.end());
+  video_frame->set_timestamp(timestamp_it->second);
 
   // When using import mode, we wrap the video frame in another video frame that
   // calls ReusePictureBufferTask() upon destruction. When the renderer and
