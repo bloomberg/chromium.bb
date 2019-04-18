@@ -19,18 +19,20 @@
     Settings
   </message>
 
-  <!-- Subtitle of the page -->
+  <!-- Subtitles of the Chrome OS version of the management page -->
  <if expr="chromeos">
     <message name="IDS_MANAGEMENT_SUBTITLE_MANAGED" desc="Title of chrome://management page, shows when device is managed by unknown organization">
       Your <ph name="DEVICE_NAME">$1<ex>Chromebook</ex></ph> is managed
     </message>
     <message name="IDS_MANAGEMENT_SUBTITLE_MANAGED_BY" desc="Title of chrome://management page, shows when device managed by known organization">
-      <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> managed by <ph name="ENROLLMENT_DOMAIN">$2<ex>example.com</ex></ph>
+      Your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> is managed by <ph name="ENROLLMENT_DOMAIN">$2<ex>example.com</ex></ph>
     </message>
     <message name="IDS_MANAGEMENT_NOT_MANAGED_SUBTITLE" desc="Message indicating that the device is not managed">
       Your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> is not managed
     </message>
   </if>
+
+  <!-- Subtitles of the browser version of the management page -->
   <if expr="not chromeos">
       <message name="IDS_MANAGEMENT_SUBTITLE" desc="Title of chrome://management page, which shows the administrator's capabilities in a managed environment">
       Your browser is managed
@@ -143,6 +145,7 @@
     </message>
   </if>
 
+  <!-- Strings related to extension reporting section of the management page -->
   <message name="IDS_MANAGEMENT_EXTENSION_REPORTING" desc="Title of the force installed extensions section of the page">
     Extensions
   </message>
@@ -159,6 +162,7 @@
     Permissions
   </message>
 
+  <!-- Strings related to browser reporting section of the management page -->
   <message name="IDS_MANAGEMENT_BROWSER_REPORTING" desc="Title of the types of browser reporting section of the page">
     Browser
   </message>
