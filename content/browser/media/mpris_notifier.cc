@@ -7,7 +7,6 @@
 #include <memory>
 #include <utility>
 
-#include "base/strings/utf_string_conversions.h"
 #include "services/media_session/public/mojom/constants.mojom.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -66,7 +65,15 @@ void MprisNotifier::MediaSessionInfoChanged(
 
 void MprisNotifier::MediaSessionMetadataChanged(
     const base::Optional<media_session::MediaMetadata>& metadata) {
-  // TODO(https://crbug.com/952410): Set metadata on |service_|.
+  if (metadata.has_value()) {
+    service_->SetTitle(metadata->title);
+    service_->SetArtist(metadata->artist);
+    service_->SetAlbum(metadata->album);
+  } else {
+    service_->SetTitle(base::string16());
+    service_->SetArtist(base::string16());
+    service_->SetAlbum(base::string16());
+  }
 }
 
 }  // namespace content

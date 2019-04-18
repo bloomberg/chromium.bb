@@ -74,4 +74,12 @@ TEST_F(MprisNotifierTest, ProperlyUpdatesPlaybackState) {
   SimulateStopped();
 }
 
+TEST_F(MprisNotifierTest, ProperlyUpdatesMetadata) {
+  EXPECT_CALL(mock_mpris_service(), SetTitle(base::ASCIIToUTF16("Foo")));
+
+  media_session::MediaMetadata metadata;
+  metadata.title = base::ASCIIToUTF16("Foo");
+  notifier().MediaSessionMetadataChanged(metadata);
+}
+
 }  // namespace content
