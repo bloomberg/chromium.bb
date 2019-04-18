@@ -74,7 +74,6 @@ bool GpuMemoryBufferSupport::IsNativeGpuMemoryBufferConfigurationSupported(
     case gfx::BufferUsage::SCANOUT:
     case gfx::BufferUsage::SCANOUT_CPU_READ_WRITE:
     case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE:
-    case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT:
       return format == gfx::BufferFormat::BGRA_8888 ||
              format == gfx::BufferFormat::RGBA_8888 ||
              format == gfx::BufferFormat::BGRX_8888 ||
@@ -102,7 +101,6 @@ bool GpuMemoryBufferSupport::IsNativeGpuMemoryBufferConfigurationSupported(
              format == gfx::BufferFormat::BGR_565;
     case gfx::BufferUsage::SCANOUT_CPU_READ_WRITE:
     case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE:
-    case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT:
     case gfx::BufferUsage::SCANOUT_VDA_WRITE:
     case gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE:
     case gfx::BufferUsage::CAMERA_AND_CPU_READ_WRITE:
@@ -123,7 +121,6 @@ bool GpuMemoryBufferSupport::IsNativeGpuMemoryBufferConfigurationSupported(
              format == gfx::BufferFormat::RGBX_8888;
     case gfx::BufferUsage::SCANOUT_CPU_READ_WRITE:
     case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE:
-    case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT:
     case gfx::BufferUsage::SCANOUT_VDA_WRITE:
     case gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE:
     case gfx::BufferUsage::CAMERA_AND_CPU_READ_WRITE:

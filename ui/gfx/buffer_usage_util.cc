@@ -22,8 +22,6 @@ const char* BufferUsageToString(BufferUsage usage) {
       return "SCANOUT_VDA_WRITE";
     case BufferUsage::GPU_READ_CPU_READ_WRITE:
       return "GPU_READ_CPU_READ_WRITE";
-    case BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT:
-      return "GPU_READ_CPU_READ_WRITE_PERSISTENT";
   }
   return "Invalid Usage";
 }

@@ -66,7 +66,6 @@ bool GbmPixmapWayland::InitializeBuffer(gfx::Size size,
       flags = GBM_BO_USE_SCANOUT;
       break;
     case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE:
-    case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT:
       flags = GBM_BO_USE_LINEAR;
       break;
     default:
