@@ -62,7 +62,6 @@
 #include "third_party/blink/renderer/core/editing/serializers/serialization.h"
 #include "third_party/blink/renderer/core/editing/spellcheck/spell_checker.h"
 #include "third_party/blink/renderer/core/editing/suggestion/text_suggestion_controller.h"
-#include "third_party/blink/renderer/core/events/current_input_event.h"
 #include "third_party/blink/renderer/core/exported/web_plugin_container_impl.h"
 #include "third_party/blink/renderer/core/frame/ad_tracker.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
@@ -543,8 +542,6 @@ void LocalFrame::Reload(WebFrameLoadType load_type) {
       nullptr, loader_.ResourceRequestForReload(
                    load_type, ClientRedirectPolicy::kClientRedirect));
   request.SetClientRedirect(ClientRedirectPolicy::kClientRedirect);
-  if (const WebInputEvent* input_event = CurrentInputEvent::Get())
-    request.SetInputStartTime(input_event->TimeStamp());
   probe::FrameScheduledNavigation(this, request.GetResourceRequest().Url(), 0.0,
                                   ClientNavigationReason::kReload);
   probe::FrameRequestedNavigation(this, request.GetResourceRequest().Url(),

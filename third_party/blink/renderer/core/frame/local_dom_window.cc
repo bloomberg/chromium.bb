@@ -60,7 +60,6 @@
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/editing/editor.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
-#include "third_party/blink/renderer/core/events/current_input_event.h"
 #include "third_party/blink/renderer/core/events/hash_change_event.h"
 #include "third_party/blink/renderer/core/events/message_event.h"
 #include "third_party/blink/renderer/core/events/page_transition_event.h"
@@ -1499,9 +1498,6 @@ DOMWindow* LocalDOMWindow::open(v8::Isolate* isolate,
   frame_request.GetResourceRequest().SetHasUserGesture(
       LocalFrame::HasTransientUserActivation(GetFrame()));
   GetFrame()->MaybeLogAdClickNavigation();
-
-  if (const WebInputEvent* input_event = CurrentInputEvent::Get())
-    frame_request.SetInputStartTime(input_event->TimeStamp());
 
   FrameTree::FindResult result =
       GetFrame()->Tree().FindOrCreateFrameForNavigation(frame_request);
