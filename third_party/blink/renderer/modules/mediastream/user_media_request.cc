@@ -444,12 +444,6 @@ UserMediaRequest::UserMediaRequest(ExecutionContext* context,
     UseCounter::Count(context,
                       WebFeature::kUserMediaDisableHardwareNoiseSuppression);
   }
-  if (RuntimeEnabledFeatures::ExperimentalHardwareEchoCancellationEnabled(
-          context)) {
-    UseCounter::Count(
-        context,
-        WebFeature::kUserMediaEnableExperimentalHardwareEchoCancellation);
-  }
 }
 
 UserMediaRequest::~UserMediaRequest() = default;

@@ -347,7 +347,6 @@ MediaTrackCapabilities* MediaStreamTrack::getCapabilities() const {
     Vector<String> echo_cancellation_type;
     for (String value : platform_capabilities.echo_cancellation_type)
       echo_cancellation_type.push_back(value);
-    capabilities->setEchoCancellationType(echo_cancellation_type);
     // Sample size.
     if (platform_capabilities.sample_size.size() == 2) {
       LongRange* sample_size = LongRange::Create();
@@ -509,11 +508,6 @@ MediaTrackSettings* MediaStreamTrack::getSettings() const {
     settings->setAutoGainControl(*platform_settings.auto_gain_control);
   if (platform_settings.noise_supression)
     settings->setNoiseSuppression(*platform_settings.noise_supression);
-  if (RuntimeEnabledFeatures::ExperimentalHardwareEchoCancellationEnabled(
-          GetExecutionContext()) &&
-      !platform_settings.echo_cancellation_type.IsNull()) {
-    settings->setEchoCancellationType(platform_settings.echo_cancellation_type);
-  }
 
   if (platform_settings.HasSampleRate())
     settings->setSampleRate(platform_settings.sample_rate);

@@ -21,7 +21,6 @@ dictionary MediaTrackSettings {
     long channelCount;
     DOMString deviceId;
     DOMString groupId;
-    [RuntimeEnabled=ExperimentalHardwareEchoCancellation] DOMString echoCancellationType;
     // Media Capture Depth Stream Extensions
     // https://w3c.github.io/mediacapture-depth/#mediatracksettings-dictionary
     // TODO(riju): videoKind attribute should be declared as partial
