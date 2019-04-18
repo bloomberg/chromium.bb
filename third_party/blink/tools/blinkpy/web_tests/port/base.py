@@ -174,6 +174,9 @@ class Port(object):
 
     FLAG_EXPECTATIONS_PREFIX = 'FlagExpectations'
 
+    # The following is used for concetenating WebDriver test names.
+    WEBDRIVER_SUBTEST_SEPARATOR = '>>'
+
     # The following two constants must match. When adding a new WPT root, also
     # remember to add an alias rule to third_party/wpt/wpt.config.json.
     # WPT_DIRS maps WPT roots on the file system to URL prefixes on wptserve.
@@ -1776,6 +1779,8 @@ class Port(object):
                 raise TestRunException(exit_codes.SYS_DEPS_EXIT_STATUS, message)
         return result
 
+    def add_webdriver_subtest_suffix(self, test_name, subtest_name):
+        return test_name + self.WEBDRIVER_SUBTEST_SEPARATOR + subtest_name
 
 
 class VirtualTestSuite(object):
