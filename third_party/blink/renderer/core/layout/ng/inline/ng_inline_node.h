@@ -105,13 +105,6 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
     object->SetFirstInlineFragment(nullptr);
   }
 
-  // A helper function for NGInlineItemsBuilder.
-  static void ClearNeedsLayout(LayoutObject* object) {
-    object->ClearNeedsLayout();
-    object->ClearNeedsCollectInlines();
-    ClearInlineFragment(object);
-  }
-
  protected:
   bool IsPrepareLayoutFinished() const;
 

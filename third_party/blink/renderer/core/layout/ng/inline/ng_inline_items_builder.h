@@ -195,6 +195,7 @@ class NGInlineItemsBuilderTemplate {
   void AppendTextItem(NGInlineItem::NGInlineItemType type,
                       const StringView,
                       LayoutText* layout_object);
+  void AppendEmptyTextItem(LayoutText* layout_object);
 
   void AppendGeneratedBreakOpportunity(LayoutObject*);
 

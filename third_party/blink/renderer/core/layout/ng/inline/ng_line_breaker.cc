@@ -149,6 +149,12 @@ bool IsStickyImage(const NGInlineItem& candidate,
   return true;
 }
 
+inline void ClearNeedsLayout(const NGInlineItem& item) {
+  LayoutObject* layout_object = item.GetLayoutObject();
+  if (layout_object->NeedsLayout())
+    layout_object->ClearNeedsLayout();
+}
+
 }  // namespace
 
 NGLineBreaker::NGLineBreaker(NGInlineNode node,
@@ -377,7 +383,10 @@ void NGLineBreaker::BreakLine(
     // They (or part of them) may also overhang the available width.
     const NGInlineItem& item = items[item_index_];
     if (item.Type() == NGInlineItem::kText) {
-      HandleText(item, line_info);
+      if (item.Length())
+        HandleText(item, line_info);
+      else
+        HandleEmptyText(item, line_info);
 #if DCHECK_IS_ON()
       if (!item_results->IsEmpty())
         item_results->back().CheckConsistency(true);
@@ -490,6 +499,7 @@ void NGLineBreaker::HandleText(const NGInlineItem& item,
       // NGInlineItemBuilder.
       ++offset_;
       if (offset_ == item.EndOffset()) {
+        ClearNeedsLayout(item);
         MoveToNextOf(item);
         return;
       }
@@ -758,6 +768,14 @@ bool NGLineBreaker::HandleTextForFastMinContent(NGInlineItemResult* item_result,
   return true;
 }
 
+void NGLineBreaker::HandleEmptyText(const NGInlineItem& item,
+                                    NGLineInfo* line_info) {
+  // Fully collapsed text is not needed for line breaking/layout, but it may
+  // have |SelfNeedsLayout()| set. Mark it was laid out.
+  ClearNeedsLayout(item);
+  MoveToNextOf(item);
+}
+
 // Re-shape the specified range of |NGInlineItem|.
 scoped_refptr<ShapeResult> NGLineBreaker::ShapeText(const NGInlineItem& item,
                                                     unsigned start,
@@ -892,6 +910,7 @@ void NGLineBreaker::HandleTrailingSpaces(const NGInlineItem& item,
     state_ = LineBreakState::kDone;
     return;
   }
+  ClearNeedsLayout(item);
   item_index_++;
   state_ = LineBreakState::kTrailing;
 }
@@ -915,6 +934,7 @@ void NGLineBreaker::RemoveTrailingCollapsibleSpace(NGLineInfo* line_info) {
     item_result->inline_size = item_result->shape_result->SnappedWidth();
     position_ += item_result->inline_size;
   } else {
+    ClearNeedsLayout(*item_result->item);
     line_info->MutableResults()->erase(item_result);
   }
   trailing_collapsible_space_.reset();

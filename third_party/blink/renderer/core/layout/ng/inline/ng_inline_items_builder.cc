@@ -246,6 +246,20 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::AppendTextItem(
   is_empty_inline_ = false;  // text item is not empty.
 }
 
+// Empty text items are not needed for the layout purposes, but all LayoutObject
+// must be captured in NGInlineItemsData to maintain states of LayoutObject in
+// this inline formatting context.
+template <typename OffsetMappingBuilder>
+void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::AppendEmptyTextItem(
+    LayoutText* layout_object) {
+  DCHECK(layout_object);
+  unsigned offset = text_.length();
+  AppendItem(items_, NGInlineItem::kText, offset, offset, layout_object);
+  NGInlineItem& item = items_->back();
+  item.SetEndCollapseType(NGInlineItem::kOpaqueToCollapsing);
+  item.SetIsEmptyItem(true);
+}
+
 // Same as AppendBreakOpportunity, but mark the item as IsGenerated().
 template <typename OffsetMappingBuilder>
 void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::
@@ -265,6 +279,10 @@ bool NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::AppendTextReusing(
     LayoutText* layout_text) {
   DCHECK(layout_text);
   const NGInlineItems& items = layout_text->InlineItems();
+  const NGInlineItem& old_item0 = items.front();
+  if (!old_item0.Length())
+    return false;
+
   // Don't reuse existing items if they might be affected by whitespace
   // collapsing.
   // TODO(layout-dev): This could likely be optimized further.
@@ -272,9 +290,7 @@ bool NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::AppendTextReusing(
   const ComputedStyle& new_style = layout_text->StyleRef();
   bool collapse_spaces = new_style.CollapseWhiteSpace();
   if (NGInlineItem* last_item = LastItemToCollapseWith(items_)) {
-    const NGInlineItem& old_item0 = items.front();
     if (collapse_spaces) {
-      DCHECK_GT(old_item0.Length(), 0u);
       switch (last_item->EndCollapseType()) {
         case NGInlineItem::kCollapsible:
           // If the original string starts with a collapsible space, it may be
@@ -320,8 +336,6 @@ bool NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::AppendTextReusing(
   } else if (collapse_spaces) {
     // If the original string starts with a collapsible space, it may be
     // collapsed because it is now a leading collapsible space.
-    const NGInlineItem& old_item0 = items.front();
-    DCHECK_GT(old_item0.Length(), 0u);
     if (original_string[old_item0.StartOffset()] == kSpaceCharacter)
       return false;
   }
@@ -395,8 +409,11 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::AppendText(
     const String& string,
     LayoutText* layout_object) {
   DCHECK(layout_object);
-  if (string.IsEmpty())
+
+  if (string.IsEmpty()) {
+    AppendEmptyTextItem(layout_object);
     return;
+  }
   text_.ReserveCapacity(string.length());
 
   typename OffsetMappingBuilder::SourceNodeScope scope(&mapping_builder_,
@@ -592,14 +609,18 @@ void NGInlineItemsBuilderTemplate<
     }
   }
 
-  if (text_.length() > start_offset) {
-    AppendItem(items_, NGInlineItem::kText, start_offset, text_.length(),
-               layout_object);
-    NGInlineItem& item = items_->back();
-    item.SetEndCollapseType(end_collapse, space_run_has_newline);
-    DCHECK(!item.IsEmptyItem());
-    is_empty_inline_ = false;  // text item is not empty.
+  DCHECK_GE(text_.length(), start_offset);
+  if (UNLIKELY(text_.length() == start_offset)) {
+    AppendEmptyTextItem(layout_object);
+    return;
   }
+
+  AppendItem(items_, NGInlineItem::kText, start_offset, text_.length(),
+             layout_object);
+  NGInlineItem& item = items_->back();
+  item.SetEndCollapseType(end_collapse, space_run_has_newline);
+  DCHECK(!item.IsEmptyItem());
+  is_empty_inline_ = false;  // text item is not empty.
 }
 
 // Even when without whitespace collapsing, control characters (newlines and
@@ -836,29 +857,15 @@ void NGInlineItemsBuilderTemplate<
   text_.erase(space_offset);
   mapping_builder_.CollapseTrailingSpace(space_offset);
 
-  // Remove the item if the item has only one space that we're removing.
-  if (item->Length() == 1) {
-    DCHECK_EQ(item->StartOffset(), space_offset);
-    wtf_size_t index =
-        static_cast<wtf_size_t>(std::distance(items_->begin(), item));
-    items_->EraseAt(index);
-    for (BoxInfo& box : boxes_) {
-      if (box.item_index >= index)
-        --box.item_index;
-    }
-    if (index == items_->size())
-      return;
-    // Re-compute |item| because |EraseAt| may have reallocated the buffer.
-    item = &(*items_)[index];
-  } else {
-    item->SetEndOffset(item->EndOffset() - 1);
-    item->SetEndCollapseType(NGInlineItem::kCollapsed);
-    item++;
-  }
+  // Keep the item even if the length became zero. This is not needed for
+  // the layout purposes, but needed to maintain LayoutObject states. See
+  // |AddEmptyTextItem()|.
+  item->SetEndOffset(item->EndOffset() - 1);
+  item->SetEndCollapseType(NGInlineItem::kCollapsed);
 
   // Trailing spaces can be removed across non-character items.
   // Adjust their offsets if after the removed index.
-  for (; item != items_->end(); item++) {
+  for (item++; item != items_->end(); item++) {
     item->SetOffset(item->StartOffset() - 1, item->EndOffset() - 1);
   }
 }
@@ -1071,7 +1078,11 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::ClearInlineFragment(
 template <typename OffsetMappingBuilder>
 void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::ClearNeedsLayout(
     LayoutObject* object) {
-  NGInlineNode::ClearNeedsLayout(object);
+  // |CollectInlines()| for the pre-layout does not |ClearNeedsLayout|. It is
+  // done during the actual layout because re-layout may not require
+  // |CollectInlines()|.
+  object->ClearNeedsCollectInlines();
+  ClearInlineFragment(object);
 
   // Reset previous items if they cannot be reused to prevent stale items
   // for subsequent layouts. Items that can be reused have already been
