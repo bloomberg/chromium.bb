@@ -83,7 +83,7 @@ public class NotificationIntentInterceptor {
                     int actionType = intent.getIntExtra(
                             EXTRA_ACTION_TYPE, NotificationUmaTracker.ActionType.UNKNOWN);
                     NotificationUmaTracker.getInstance().onNotificationActionClick(
-                            actionType, createTime);
+                            actionType, notificationType, createTime);
                     break;
             }
 
