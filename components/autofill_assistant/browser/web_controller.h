@@ -121,6 +121,7 @@ class WebController {
       const Selector& selector,
       const std::string& value,
       bool simulate_key_presses,
+      int key_press_delay_in_millisecond,
       base::OnceCallback<void(const ClientStatus&)> callback);
 
   // Set the |value| of the |attribute| of the element given by |selector|.
@@ -131,11 +132,13 @@ class WebController {
       base::OnceCallback<void(const ClientStatus&)> callback);
 
   // Sets the keyboard focus to |selector| and inputs |codepoints|, one
-  // character at a time.
+  // character at a time. Key presses will have a delay of |delay_in_milli|
+  // between them.
   // Returns the result through |callback|.
   virtual void SendKeyboardInput(
       const Selector& selector,
       const std::vector<UChar32>& codepoints,
+      int delay_in_milli,
       base::OnceCallback<void(const ClientStatus&)> callback);
 
   // Return the outerHTML of |selector|.
@@ -345,19 +348,24 @@ class WebController {
   void OnClearFieldForSendKeyboardInput(
       const Selector& selector,
       const std::vector<UChar32>& codepoints,
+      int key_press_delay_in_millisecond,
       base::OnceCallback<void(const ClientStatus&)> callback,
       const ClientStatus& status);
   void OnClickElementForSendKeyboardInput(
       const std::vector<UChar32>& codepoints,
+      int delay_in_milli,
       base::OnceCallback<void(const ClientStatus&)> callback,
       const ClientStatus& click_status);
   void DispatchKeyboardTextDownEvent(
       const std::vector<UChar32>& codepoints,
       size_t index,
+      bool delay,
+      int delay_in_milli,
       base::OnceCallback<void(const ClientStatus&)> callback);
   void DispatchKeyboardTextUpEvent(
       const std::vector<UChar32>& codepoints,
       size_t index,
+      int delay_in_milli,
       base::OnceCallback<void(const ClientStatus&)> callback);
   void OnFindElementForSetAttribute(
       const std::vector<std::string>& attribute,
@@ -370,6 +378,7 @@ class WebController {
   void OnFindElementForSendKeyboardInput(
       const Selector& selector,
       const std::vector<UChar32>& codepoints,
+      int delay_in_milli,
       base::OnceCallback<void(const ClientStatus&)> callback,
       const ClientStatus& status,
       std::unique_ptr<FindElementResult> element_result);

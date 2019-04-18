@@ -144,6 +144,7 @@ class ScriptExecutor : public ActionDelegate,
       const Selector& selector,
       const std::string& value,
       bool simulate_key_presses,
+      int key_press_delay_in_millisecond,
       base::OnceCallback<void(const ClientStatus&)> callback) override;
   void SetAttribute(
       const Selector& selector,
@@ -153,6 +154,7 @@ class ScriptExecutor : public ActionDelegate,
   void SendKeyboardInput(
       const Selector& selector,
       const std::vector<UChar32>& codepoints,
+      int key_press_delay_in_millisecond,
       base::OnceCallback<void(const ClientStatus&)> callback) override;
   void GetOuterHtml(
       const Selector& selector,

@@ -332,7 +332,7 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
     base::RunLoop run_loop;
     ClientStatus result;
     web_controller_->SetFieldValue(
-        selector, value, simulate_key_presses,
+        selector, value, simulate_key_presses, 0,
         base::BindOnce(&WebControllerBrowserTest::OnSetFieldValue,
                        base::Unretained(this), run_loop.QuitClosure(),
                        &result));
@@ -348,16 +348,22 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
   }
 
   ClientStatus SendKeyboardInput(const Selector& selector,
-                                 const std::vector<UChar32>& codepoints) {
+                                 const std::vector<UChar32>& codepoints,
+                                 int delay_in_milli) {
     base::RunLoop run_loop;
     ClientStatus result;
     web_controller_->SendKeyboardInput(
-        selector, codepoints,
+        selector, codepoints, delay_in_milli,
         base::BindOnce(&WebControllerBrowserTest::OnSendKeyboardInput,
                        base::Unretained(this), run_loop.QuitClosure(),
                        &result));
     run_loop.Run();
     return result;
+  }
+
+  ClientStatus SendKeyboardInput(const Selector& selector,
+                                 const std::vector<UChar32>& codepoints) {
+    return SendKeyboardInput(selector, codepoints, -1);
   }
 
   void OnSendKeyboardInput(const base::Closure& done_callback,
@@ -925,6 +931,25 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
   selectors.emplace_back(a_selector);
   EXPECT_EQ(ACTION_APPLIED,
             SendKeyboardInput(a_selector, input).proto_status());
+  GetFieldsValue(selectors, {expected_output});
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
+                       SendKeyboardInputSetsKeyPropertyWithTimeout) {
+  // Sends input keys to a field where JS will intercept KeyDown and
+  // at index 3 it will set a timeout whick inserts an space after the
+  // timeout. If key press delay is enabled, it should handle this
+  // correctly.
+  auto input = UTF8ToUnicode("012345");
+  std::string expected_output = "012 345";
+
+  std::vector<Selector> selectors;
+  Selector a_selector;
+  a_selector.selectors.emplace_back("#input_js_event_with_timeout");
+  selectors.emplace_back(a_selector);
+  EXPECT_EQ(ACTION_APPLIED,
+            SendKeyboardInput(a_selector, input, /*delay_in_milli*/ 100)
+                .proto_status());
   GetFieldsValue(selectors, {expected_output});
 }
 
