@@ -321,6 +321,9 @@ ChromeContentRendererClient::~ChromeContentRendererClient() = default;
 void ChromeContentRendererClient::RenderThreadStarted() {
   RenderThread* thread = RenderThread::Get();
 
+  main_thread_profiler_->AddAuxUnwinder(std::make_unique<V8Unwinder>(
+      v8::Isolate::GetCurrent()->GetUnwindState()));
+
   thread->SetRendererProcessType(
       IsStandaloneContentExtensionProcess()
           ? blink::scheduler::WebRendererProcessType::kExtensionRenderer
