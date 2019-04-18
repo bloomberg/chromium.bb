@@ -109,6 +109,40 @@ cr.define('settings_main_page', function() {
           });
     });
 
+    function showManagedHeader() {
+      return settingsMain.showManagedHeader_(
+          settingsMain.inSearchMode_, settingsMain.showingSubpage_);
+    }
+
+    test('managed header hides when searching', function() {
+      Polymer.dom.flush();
+
+      assertTrue(showManagedHeader());
+
+      searchManager.setMatchesFound(false);
+      return settingsMain.searchContents('Query1')
+          .then(() => {
+            assertFalse(showManagedHeader());
+
+            searchManager.setMatchesFound(true);
+            return settingsMain.searchContents('Query2');
+          })
+          .then(() => {
+            assertFalse(showManagedHeader());
+          });
+    });
+
+    test('managed header hides when showing subpage', function() {
+      Polymer.dom.flush();
+
+      assertTrue(showManagedHeader());
+
+      const basicPage = settingsMain.$$('settings-basic-page');
+      basicPage.fire('subpage-expand', {});
+
+      assertFalse(showManagedHeader());
+    });
+
     /** @return {!HTMLElement} */
     function getToggleContainer() {
       const page = settingsMain.$$('settings-basic-page');
