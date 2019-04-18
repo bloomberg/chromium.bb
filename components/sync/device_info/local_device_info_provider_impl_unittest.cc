@@ -28,7 +28,8 @@ class LocalDeviceInfoProviderImplTest : public testing::Test {
     provider_ = std::make_unique<LocalDeviceInfoProviderImpl>(
         version_info::Channel::UNKNOWN,
         version_info::GetVersionStringWithModifier("UNKNOWN"),
-        signin_scoped_device_id_callback_.Get());
+        signin_scoped_device_id_callback_.Get(),
+        send_tab_to_self_receiving_enabled_callback_.Get());
   }
 
   void TearDown() override {
@@ -45,6 +46,9 @@ class LocalDeviceInfoProviderImplTest : public testing::Test {
   testing::NiceMock<base::MockCallback<
       LocalDeviceInfoProviderImpl::SigninScopedDeviceIdCallback>>
       signin_scoped_device_id_callback_;
+  testing::NiceMock<base::MockCallback<
+      LocalDeviceInfoProviderImpl::SendTabToSelfReceivingEnabledCallback>>
+      send_tab_to_self_receiving_enabled_callback_;
   std::unique_ptr<LocalDeviceInfoProviderImpl> provider_;
 };
 
@@ -75,6 +79,24 @@ TEST_F(LocalDeviceInfoProviderImplTest, GetSigninScopedDeviceId) {
   ASSERT_THAT(provider_->GetLocalDeviceInfo(), NotNull());
   EXPECT_EQ(kSigninScopedDeviceId,
             provider_->GetLocalDeviceInfo()->signin_scoped_device_id());
+}
+
+TEST_F(LocalDeviceInfoProviderImplTest, SendTabToSelfReceivingEnabled) {
+  ON_CALL(send_tab_to_self_receiving_enabled_callback_, Run())
+      .WillByDefault(Return(true));
+
+  InitializeProvider();
+
+  ASSERT_THAT(provider_->GetLocalDeviceInfo(), NotNull());
+  EXPECT_TRUE(
+      provider_->GetLocalDeviceInfo()->send_tab_to_self_receiving_enabled());
+
+  ON_CALL(send_tab_to_self_receiving_enabled_callback_, Run())
+      .WillByDefault(Return(false));
+
+  ASSERT_THAT(provider_->GetLocalDeviceInfo(), NotNull());
+  EXPECT_FALSE(
+      provider_->GetLocalDeviceInfo()->send_tab_to_self_receiving_enabled());
 }
 
 }  // namespace

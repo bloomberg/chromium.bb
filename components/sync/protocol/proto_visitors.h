@@ -335,6 +335,11 @@ VISIT_PROTO_FIELDS(const sync_pb::DeviceInfoSpecifics& proto) {
   VISIT(chrome_version);
   VISIT(signin_scoped_device_id);
   VISIT(last_updated_timestamp);
+  VISIT(feature_fields);
+}
+
+VISIT_PROTO_FIELDS(const sync_pb::FeatureSpecificFields& proto) {
+  VISIT(send_tab_to_self_receiving_enabled);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::DictionarySpecifics& proto) {

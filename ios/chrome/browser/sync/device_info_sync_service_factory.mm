@@ -10,6 +10,7 @@
 #include "base/memory/singleton.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
+#include "components/send_tab_to_self/features.h"
 #include "components/signin/core/browser/device_id_helper.h"
 #include "components/sync/device_info/device_info_sync_service_impl.h"
 #include "components/sync/device_info/local_device_info_provider_impl.h"
@@ -77,7 +78,11 @@ DeviceInfoSyncServiceFactory::BuildServiceInstanceFor(
           ::GetChannel(), ::GetVersionString(),
           /*signin_scoped_device_id_callback=*/
           base::BindRepeating(&signin::GetSigninScopedDeviceId,
-                              browser_state->GetPrefs()));
+                              browser_state->GetPrefs()),
+          /*send_tab_to_self_receiving_enabled_callback=*/
+          base::BindRepeating(
+              &send_tab_to_self::IsReceivingEnabledByUserOnThisDevice,
+              browser_state->GetPrefs()));
 
   return std::make_unique<syncer::DeviceInfoSyncServiceImpl>(
       ModelTypeStoreServiceFactory::GetForBrowserState(browser_state)

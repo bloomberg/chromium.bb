@@ -5,6 +5,7 @@
 #include "components/sync/device_info/local_device_info_provider_impl.h"
 
 #include "base/bind.h"
+#include "components/sync/base/sync_prefs.h"
 #include "components/sync/device_info/local_device_info_util.h"
 #include "components/sync/driver/sync_util.h"
 
@@ -13,12 +14,17 @@ namespace syncer {
 LocalDeviceInfoProviderImpl::LocalDeviceInfoProviderImpl(
     version_info::Channel channel,
     const std::string& version,
-    const SigninScopedDeviceIdCallback& signin_scoped_device_id_callback)
+    const SigninScopedDeviceIdCallback& signin_scoped_device_id_callback,
+    const SendTabToSelfReceivingEnabledCallback&
+        send_tab_to_self_receiving_enabled_callback)
     : channel_(channel),
       version_(version),
       signin_scoped_device_id_callback_(signin_scoped_device_id_callback),
+      send_tab_to_self_receiving_enabled_callback_(
+          send_tab_to_self_receiving_enabled_callback),
       weak_factory_(this) {
   DCHECK(signin_scoped_device_id_callback_);
+  DCHECK(send_tab_to_self_receiving_enabled_callback_);
 }
 
 LocalDeviceInfoProviderImpl::~LocalDeviceInfoProviderImpl() {
@@ -32,6 +38,13 @@ version_info::Channel LocalDeviceInfoProviderImpl::GetChannel() const {
 
 const DeviceInfo* LocalDeviceInfoProviderImpl::GetLocalDeviceInfo() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  bool send_tab_to_self_receiving_enabled =
+      send_tab_to_self_receiving_enabled_callback_.Run();
+  if (local_device_info_) {
+    local_device_info_->set_send_tab_to_self_receiving_enabled(
+        send_tab_to_self_receiving_enabled);
+  }
   return local_device_info_.get();
 }
 
@@ -50,7 +63,8 @@ void LocalDeviceInfoProviderImpl::Initialize(const std::string& cache_guid,
 
   local_device_info_ = std::make_unique<DeviceInfo>(
       cache_guid, session_name, version_, MakeUserAgentForSync(channel_),
-      GetLocalDeviceType(), signin_scoped_device_id_callback_.Run());
+      GetLocalDeviceType(), signin_scoped_device_id_callback_.Run(),
+      send_tab_to_self_receiving_enabled_callback_.Run());
 
   // Notify observers.
   callback_list_.Notify();
