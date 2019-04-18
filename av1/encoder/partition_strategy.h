@@ -75,7 +75,7 @@ void av1_firstpass_simple_motion_search_early_term(AV1_COMP *const cpi,
                                                    int *do_square_split);
 
 // Get the features for selecting the max and min partition size. Currently this
-// performs simple_motion_search on 16X16 subblocks of the currnet superblock,
+// performs simple_motion_search on 16X16 subblocks of the current superblock,
 // and then extract the statistics of sse and motion vectors as features.
 void av1_get_max_min_partition_features(AV1_COMP *const cpi, MACROBLOCK *x,
                                         int mi_row, int mi_col,

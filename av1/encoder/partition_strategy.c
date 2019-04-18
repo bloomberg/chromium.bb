@@ -102,9 +102,6 @@ static int simple_motion_search_get_best_ref(
     int mi_col, BLOCK_SIZE bsize, const int *const refs, int num_refs,
     int use_subpixel, int save_mv_code, unsigned int *best_sse,
     unsigned int *best_var) {
-  // TODO(chiyotsai@google.com): The calculation of variance currently uses
-  // bsize, so we might take area outside of the image into account. We need to
-  // modify the SIMD functions to fix this later.
   const AV1_COMMON *const cm = &cpi->common;
   int best_ref = -1;
 
@@ -160,19 +157,21 @@ static int simple_motion_search_get_best_ref(
   return best_ref;
 }
 
-// Performs fullpixel simple_motion_search with LAST_FRAME and ALTREF_FRAME on
-// each subblock and extract the variance and sse of residues. Then store the
-// var and sse from each partition subblock to features. The DC qindex is also
-// stored in features.
-// Here features is assumed to be a length 19 array.
-// After this function is called, we will store the following to features:
-// features[0:17] = var and sse from subblocks
-// features[18] = DC q_index
+// Collects features using simple_motion_search and store them in features. The
+// features are also cached in PC_TREE. By default, the features collected are
+// the sse and var from the subblocks flagged by features_to_get. Furthermore,
+// if features is not NULL, then 7 more features are appended to the end of
+// features:
+//  - log(1.0 + dc_q ** 2)
+//  - whether an above macroblock exists
+//  - width of above macroblock
+//  - height of above macroblock
+//  - whether a left marcoblock exists
+//  - width of left macroblock
+//  - height of left macroblock
 static void simple_motion_search_prune_part_features(
     AV1_COMP *const cpi, MACROBLOCK *x, PC_TREE *pc_tree, int mi_row,
     int mi_col, BLOCK_SIZE bsize, float *features, int features_to_get) {
-  // TODO(chiyotsai@google.com): Cache the result of the motion search from the
-  // larger bsize.
   const int w_mi = mi_size_wide[bsize];
   const int h_mi = mi_size_high[bsize];
   assert(mi_size_wide[bsize] == mi_size_high[bsize]);

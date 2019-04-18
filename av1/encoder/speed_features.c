@@ -155,9 +155,6 @@ static void set_good_speed_feature_framesize_dependent(
     } else if (is_480p_or_larger) {
       sf->use_square_partition_only_threshold = BLOCK_32X32;
     } else {
-      // TODO(chiyotsai@google.com): Setting the threshold to BLOCK_16X16 incurs
-      // a large loss (about 0.584%). Try increasing the threshold on boosted
-      // frame and see if it improves the performance.
       sf->use_square_partition_only_threshold = BLOCK_32X32;
     }
 
