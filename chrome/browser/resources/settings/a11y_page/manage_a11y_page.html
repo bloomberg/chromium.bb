@@ -160,6 +160,13 @@
           disabled="[[!prefs.settings.a11y.autoclick.value]]">
       </settings-dropdown-menu>
     </div>
+    <div class="sub-item">
+      <settings-toggle-button class="continuation sub-item"
+        hidden$="[[!prefs.settings.a11y.autoclick.value]]"
+        pref="{{prefs.settings.a11y.autoclick_stabilize_position}}"
+        label="$i18n{autoclickStabilizeCursorPosition}">
+      </settings-toggle-button>
+    </div>
     <template is="dom-if" if="[[showExperimentalAutoclick_]]">
       <div class="sub-item">
         <settings-toggle-button class="continuation sub-item"

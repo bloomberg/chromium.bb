@@ -57,6 +57,10 @@ const char kAccessibilityAutoclickEventType[] =
 // another event type action, or whether it should stay as the other event type.
 const char kAccessibilityAutoclickRevertToLeftClick[] =
     "settings.a11y.autoclick_revert_to_left_click";
+// Whether Autoclick should stabilize the cursor movement before a click occurs
+// or not.
+const char kAccessibilityAutoclickStabilizePosition[] =
+    "settings.a11y.autoclick_stabilize_position";
 // The default threshold of mouse movement, measured in DIP, that will initiate
 // a new autoclick.
 const char kAccessibilityAutoclickMovementThreshold[] =

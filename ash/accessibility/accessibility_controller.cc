@@ -266,6 +266,8 @@ void AccessibilityController::RegisterProfilePrefs(PrefRegistrySimple* registry,
                                   static_cast<int>(kDefaultAutoclickEventType));
     registry->RegisterBooleanPref(
         prefs::kAccessibilityAutoclickRevertToLeftClick, true);
+    registry->RegisterBooleanPref(
+        prefs::kAccessibilityAutoclickStabilizePosition, false);
     registry->RegisterIntegerPref(
         prefs::kAccessibilityAutoclickMovementThreshold,
         kDefaultAutoclickMovementThreshold);
@@ -320,6 +322,8 @@ void AccessibilityController::RegisterProfilePrefs(PrefRegistrySimple* registry,
   registry->RegisterForeignPref(prefs::kAccessibilityAutoclickEventType);
   registry->RegisterForeignPref(
       prefs::kAccessibilityAutoclickRevertToLeftClick);
+  registry->RegisterForeignPref(
+      prefs::kAccessibilityAutoclickStabilizePosition);
   registry->RegisterForeignPref(
       prefs::kAccessibilityAutoclickMovementThreshold);
   registry->RegisterForeignPref(prefs::kAccessibilityAutoclickMenuPosition);
@@ -830,6 +834,11 @@ void AccessibilityController::ObservePrefs(PrefService* prefs) {
           &AccessibilityController::UpdateAutoclickRevertToLeftClickFromPref,
           base::Unretained(this)));
   pref_change_registrar_->Add(
+      prefs::kAccessibilityAutoclickStabilizePosition,
+      base::BindRepeating(
+          &AccessibilityController::UpdateAutoclickStabilizePositionFromPref,
+          base::Unretained(this)));
+  pref_change_registrar_->Add(
       prefs::kAccessibilityAutoclickMovementThreshold,
       base::BindRepeating(
           &AccessibilityController::UpdateAutoclickMovementThresholdFromPref,
@@ -902,6 +911,7 @@ void AccessibilityController::ObservePrefs(PrefService* prefs) {
   UpdateAutoclickDelayFromPref();
   UpdateAutoclickEventTypeFromPref();
   UpdateAutoclickRevertToLeftClickFromPref();
+  UpdateAutoclickStabilizePositionFromPref();
   UpdateAutoclickMovementThresholdFromPref();
   UpdateAutoclickMenuPositionFromPref();
   UpdateCaretHighlightFromPref();
@@ -973,6 +983,15 @@ void AccessibilityController::UpdateAutoclickRevertToLeftClickFromPref() {
 
   Shell::Get()->autoclick_controller()->set_revert_to_left_click(
       revert_to_left_click);
+}
+
+void AccessibilityController::UpdateAutoclickStabilizePositionFromPref() {
+  DCHECK(active_user_prefs_);
+  bool stabilize_position = active_user_prefs_->GetBoolean(
+      prefs::kAccessibilityAutoclickStabilizePosition);
+
+  Shell::Get()->autoclick_controller()->set_stabilize_click_position(
+      stabilize_position);
 }
 
 void AccessibilityController::UpdateAutoclickMovementThresholdFromPref() {

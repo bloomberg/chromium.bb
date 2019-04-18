@@ -223,6 +223,8 @@ void AddA11yStrings(content::WebUIDataSource* html_source) {
     {"delayBeforeClickLong", IDS_SETTINGS_DELAY_BEFORE_CLICK_LONG},
     {"delayBeforeClickVeryLong", IDS_SETTINGS_DELAY_BEFORE_CLICK_VERY_LONG},
     {"autoclickRevertToLeftClick", IDS_SETTINGS_AUTOCLICK_REVERT_TO_LEFT_CLICK},
+    {"autoclickStabilizeCursorPosition",
+     IDS_SETTINGS_AUTOCLICK_STABILIZE_CURSOR_POSITION},
     {"autoclickMovementThresholdLabel",
      IDS_SETTINGS_AUTOCLICK_MOVEMENT_THRESHOLD_LABEL},
     {"autoclickMovementThresholdExtraSmall",
