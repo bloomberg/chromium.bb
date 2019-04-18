@@ -196,6 +196,13 @@ class StatusMediator {
     }
 
     /**
+     * @param incognitoBadgeVisible Whether or not the incognito badge is visible.
+     */
+    void setIncognitoBadgeVisibility(boolean incognitoBadgeVisible) {
+        mModel.set(StatusProperties.INCOGNITO_BADGE_VISIBLE, incognitoBadgeVisible);
+    }
+
+    /**
      * Specify minimum width of the verbose status text field.
      */
     void setVerboseStatusTextMinWidth(int width) {

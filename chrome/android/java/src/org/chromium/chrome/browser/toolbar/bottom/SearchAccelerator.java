@@ -16,21 +16,27 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ThemeColorProvider;
 import org.chromium.chrome.browser.ThemeColorProvider.ThemeColorObserver;
 import org.chromium.chrome.browser.ThemeColorProvider.TintObserver;
+import org.chromium.chrome.browser.toolbar.IncognitoStateProvider;
+import org.chromium.chrome.browser.toolbar.IncognitoStateProvider.IncognitoStateObserver;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.ui.widget.ChromeImageButton;
 
 /**
  * The search accelerator.
  */
-class SearchAccelerator extends ChromeImageButton implements ThemeColorObserver, TintObserver {
-    /** A provider that notifies components when the theme color changes.*/
-    private ThemeColorProvider mThemeColorProvider;
-
+class SearchAccelerator extends ChromeImageButton
+        implements ThemeColorObserver, TintObserver, IncognitoStateObserver {
     /** The gray pill background behind the search icon. */
     private final Drawable mBackground;
 
     /** The {@link Resources} used to compute the background color. */
     private final Resources mResources;
+
+    /** A provider that notifies components when the theme color changes.*/
+    private ThemeColorProvider mThemeColorProvider;
+
+    /** A provider that notifies when incognito mode is entered or exited. */
+    private IncognitoStateProvider mIncognitoStateProvider;
 
     public SearchAccelerator(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -48,23 +54,45 @@ class SearchAccelerator extends ChromeImageButton implements ThemeColorObserver,
         mThemeColorProvider.addTintObserver(this);
     }
 
+    void setIncognitoStateProvider(IncognitoStateProvider provider) {
+        mIncognitoStateProvider = provider;
+        mIncognitoStateProvider.addIncognitoStateObserverAndTrigger(this);
+    }
+
     void destroy() {
         if (mThemeColorProvider != null) {
             mThemeColorProvider.removeThemeColorObserver(this);
             mThemeColorProvider.removeTintObserver(this);
             mThemeColorProvider = null;
         }
+
+        if (mIncognitoStateProvider != null) {
+            mIncognitoStateProvider.removeObserver(this);
+            mIncognitoStateProvider = null;
+        }
     }
 
     @Override
     public void onThemeColorChanged(int color, boolean shouldAnimate) {
-        mBackground.setColorFilter(
-                ColorUtils.getTextBoxColorForToolbarBackground(mResources, false, color),
-                PorterDuff.Mode.SRC_IN);
+        updateBackground();
     }
 
     @Override
     public void onTintChanged(ColorStateList tint, boolean useLight) {
         ApiCompatibilityUtils.setImageTintList(this, tint);
+    }
+
+    @Override
+    public void onIncognitoStateChanged(boolean isIncognito) {
+        updateBackground();
+    }
+
+    private void updateBackground() {
+        if (mThemeColorProvider == null || mIncognitoStateProvider == null) return;
+
+        mBackground.setColorFilter(ColorUtils.getTextBoxColorForToolbarBackground(mResources, false,
+                                           mThemeColorProvider.getThemeColor(),
+                                           mIncognitoStateProvider.isIncognitoSelected()),
+                PorterDuff.Mode.SRC_IN);
     }
 }

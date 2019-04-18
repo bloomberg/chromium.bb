@@ -134,10 +134,21 @@ public class ColorUtils {
      *                                that this should be false if the returned text box color is
      *                                not used in an NTP.
      * @param color The color of the toolbar background.
+     * @param isIncognito Whether or not the color is used for incognito mode.
      * @return The base color for the textbox given a toolbar background color.
      */
     public static int getTextBoxColorForToolbarBackground(
-            Resources res, boolean isLocationBarShownInNtp, int color) {
+            Resources res, boolean isLocationBarShownInNtp, int color, boolean isIncognito) {
+        // Text box color on default toolbar background in incognito mode is a pre-defined
+        // color. We calculate the equivalent opaque color from the pre-defined translucent color.
+        if (isIncognito) {
+            final int overlayColor = ApiCompatibilityUtils.getColor(
+                    res, R.color.toolbar_text_box_background_incognito);
+            final float overlayColorAlpha = Color.alpha(overlayColor) / 255f;
+            final int overlayColorOpaque = overlayColor & 0xFF000000;
+            return getColorWithOverlay(color, overlayColorOpaque, overlayColorAlpha);
+        }
+
         // NTP should have no visible text box in the toolbar, so just return the NTP
         // background color.
         if (isLocationBarShownInNtp) return getPrimaryBackgroundColor(res, false);

@@ -653,8 +653,8 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
 
         boolean needsUpdate = layoutTab.initFromHost(TabThemeColorHelper.getBackgroundColor(tab),
                 shouldStall(tab), canUseLiveTexture, ColorUtils.getToolbarSceneLayerBackground(tab),
-                ColorUtils.getTextBoxColorForToolbarBackground(
-                        mContext.getResources(), isLocationBarShownInNtp, themeColor),
+                ColorUtils.getTextBoxColorForToolbarBackground(mContext.getResources(),
+                        isLocationBarShownInNtp, themeColor, tab.isIncognito()),
                 ColorUtils.getTextBoxAlphaForToolbarBackground(tab));
         if (needsUpdate) requestUpdate();
 
