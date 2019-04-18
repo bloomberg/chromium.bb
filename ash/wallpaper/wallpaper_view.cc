@@ -258,6 +258,23 @@ void WallpaperView::DrawWallpaper(const gfx::ImageSkia& wallpaper,
                                   const gfx::Rect& dst,
                                   const cc::PaintFlags& flags,
                                   gfx::Canvas* canvas) {
+  // The amount we downsample the original image by before applying filters to
+  // improve performance.
+  constexpr float quality = 0.3f;
+  gfx::Rect quality_adjusted_rect = gfx::ScaleToEnclosingRect(dst, quality);
+  // Draw the wallpaper to a cached image the first time it is drawn or if the
+  // size has changed.
+  if (!small_image_ || small_image_->size() != quality_adjusted_rect.size()) {
+    gfx::Canvas small_canvas(quality_adjusted_rect.size(),
+                             /*image_scale=*/1.f,
+                             /*is_opaque=*/false);
+    small_canvas.DrawImageInt(wallpaper, src.x(), src.y(), src.width(),
+                              src.height(), 0, 0, quality_adjusted_rect.width(),
+                              quality_adjusted_rect.height(), true);
+    small_image_ = base::make_optional(
+        gfx::ImageSkia::CreateFrom1xBitmap(small_canvas.GetBitmap()));
+  }
+
   if (repaint_blur_ == 0 && repaint_opacity_ == 1.f) {
     canvas->DrawImageInt(wallpaper, src.x(), src.y(), src.width(), src.height(),
                          dst.x(), dst.y(), dst.width(), dst.height(),
@@ -265,12 +282,7 @@ void WallpaperView::DrawWallpaper(const gfx::ImageSkia& wallpaper,
     return;
   }
 
-  // The amount we downsample the original image by before applying filters to
-  // improve performance.
-  constexpr float quality = 0.3f;
   float blur = repaint_blur_ * quality;
-  gfx::Rect quality_adjusted_rect = gfx::ScaleToEnclosingRect(dst, quality);
-
   // Create the blur and brightness filter to apply to the downsampled image.
   cc::PaintFlags filter_flags;
   cc::FilterOperations operations;
@@ -282,29 +294,26 @@ void WallpaperView::DrawWallpaper(const gfx::ImageSkia& wallpaper,
       operations, gfx::SizeF(dst.size()), gfx::Vector2dF());
   filter_flags.setImageFilter(filter);
 
-  gfx::Canvas downsampled_canvas(quality_adjusted_rect.size(),
-                                 /*image_scale=*/1.f,
-                                 /*is_opaque=*/false);
-  downsampled_canvas.sk_canvas()->saveLayer(nullptr, &filter_flags);
-  downsampled_canvas.DrawImageInt(
-      wallpaper, src.x(), src.y(), src.width(), src.height(), 0, 0,
-      quality_adjusted_rect.width(), quality_adjusted_rect.height(), true);
-  downsampled_canvas.sk_canvas()->restore();
+  gfx::Canvas filtered_canvas(small_image_->size(),
+                              /*image_scale=*/1.f,
+                              /*is_opaque=*/false);
+  filtered_canvas.sk_canvas()->saveLayer(nullptr, &filter_flags);
+  filtered_canvas.DrawImageInt(
+      *small_image_, 0, 0, small_image_->width(), small_image_->height(), 0, 0,
+      small_image_->width(), small_image_->height(), true);
+  filtered_canvas.sk_canvas()->restore();
 
   // Draw the downsampled and filtered image onto |canvas|. Draw a inseted
   // version of the image to avoid drawing a blackish border caused by the blur
   // filter. This is what we do on the login screen as well.
-  // TODO(sammiequon): Investigate if we can cache the small image and apply
-  // additional blur and opacity when painting or maybe store the small image
-  // with blur and color then transform.
   gfx::ImageSkia filtered_wallpaper =
-      gfx::ImageSkia::CreateFrom1xBitmap(downsampled_canvas.GetBitmap());
+      gfx::ImageSkia::CreateFrom1xBitmap(filtered_canvas.GetBitmap());
   canvas->DrawImageInt(filtered_wallpaper, blur, blur,
-                       quality_adjusted_rect.width() - 2 * blur,
-                       quality_adjusted_rect.height() - 2 * blur, dst.x(),
-                       dst.y(), dst.width(), dst.height(),
+                       small_image_->width() - 2 * blur,
+                       small_image_->height() - 2 * blur, dst.x(), dst.y(),
+                       dst.width(), dst.height(),
                        /*filter=*/true, flags);
-}  // namespace ash
+}
 
 views::Widget* CreateWallpaperWidget(aura::Window* root_window,
                                      int container_id,
