@@ -421,18 +421,32 @@ void DevToolsSession::SendMessageFromChildSession(const std::string& session_id,
                                                   const std::string& message) {
   if (child_sessions_.find(session_id) == child_sessions_.end())
     return;
-  std::string patched;
-  bool patched_ok;
-  if (client_->UsesBinaryProtocol()) {
-    patched_ok = protocol::AppendStringValueToMapBinary(message, kSessionId,
+  if (!EnableInternalDevToolsBinaryProtocol()) {
+    std::string patched;
+    bool patched_ok;
+    if (client_->UsesBinaryProtocol()) {
+      patched_ok = protocol::AppendStringValueToMapBinary(message, kSessionId,
+                                                          session_id, &patched);
+    } else {
+      patched_ok = protocol::AppendStringValueToMapJSON(message, kSessionId,
                                                         session_id, &patched);
-  } else {
-    patched_ok = protocol::AppendStringValueToMapJSON(message, kSessionId,
-                                                      session_id, &patched);
+    }
+    if (!patched_ok)
+      return;
+    client_->DispatchProtocolMessage(agent_host_, patched);
+    // |this| may be deleted at this point.
+    return;
   }
+  DCHECK(IsCBORMessage(SpanFrom(message)));
+  std::string patched;
+  bool patched_ok = protocol::AppendStringValueToMapBinary(
+      message, kSessionId, session_id, &patched);
   if (!patched_ok)
     return;
-  client_->DispatchProtocolMessage(agent_host_, patched);
+  client_->DispatchProtocolMessage(agent_host_,
+                                   client_->UsesBinaryProtocol()
+                                       ? patched
+                                       : ConvertCBORToJSON(SpanFrom(patched)));
   // |this| may be deleted at this point.
 }
 
