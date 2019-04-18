@@ -54,8 +54,8 @@ bool CanShowGoogleAppModule(const policy::PolicyMap& policies) {
 }
 
 bool CanShowNTPBackgroundModule(const policy::PolicyMap& policies) {
-  // TODO(hcarmona): Will add in followup CL.
-  return true;
+  // We shouldn't show this module if any policy is set that overrides the NTP.
+  return !policies.GetValue(policy::key::kNewTabPageLocation);
 }
 
 bool CanShowSetDefaultModule(const policy::PolicyMap& policies) {
