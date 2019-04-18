@@ -63,22 +63,40 @@ class ConfigSkewTest(cros_test_lib.TestCase):
         return config
     return None
 
+  def _get_new_config_children(self, name):
+    config = self._get_new_config(name)
+    return config.orchestrator.children
+
   def _get_old_config(self, name):
     return self.old_configs[name]
+
+  def _get_old_config_slaves(self, name):
+    config = self.old_configs[name]
+    return config.slave_configs
 
   def _to_utf8(self, strings):
     return [string.decode("UTF-8") for string in strings]
 
   @cros_test_lib.ConfigSkewTest()
   def testPostsubmitBuildTargets(self):
-    master_postsubmit_config = self._get_old_config("master-postsubmit")
-    postsubmit_orchestrator_config = self._get_new_config(
-        "postsubmit-orchestrator")
-
     master_postsubmit_children = self._to_utf8(
-        master_postsubmit_config.slave_configs)
+        self._get_old_config_slaves("master-postsubmit"))
     postsubmit_orchestrator_children = (
-        postsubmit_orchestrator_config.orchestrator.children)
+        self._get_new_config_children("postsubmit-orchestrator"))
 
     self.assertItemsEqual(postsubmit_orchestrator_children,
                           master_postsubmit_children)
+
+  @cros_test_lib.ConfigSkewTest()
+  def testPostsubmitBuildTargetsCriticality(self):
+    for child_name in self._get_new_config_children("postsubmit-orchestrator"):
+      new_config = self._get_new_config(child_name)
+      old_config = self._get_old_config(child_name)
+      # old_config doesn't exist is caught in another test, don't report here.
+      new_critical = new_config.general.critical.value
+      old_critical = old_config.important
+      if old_config:
+        self.assertEquals(
+            new_critical, old_critical,
+            "%s new (%s) and old (%s) configs did not match on criticality."
+            % (child_name, new_critical, old_critical))
