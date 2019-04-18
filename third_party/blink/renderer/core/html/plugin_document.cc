@@ -44,6 +44,7 @@
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/scheduler/public/scheduling_policy.h"
 
 namespace blink {
 
@@ -191,6 +192,11 @@ PluginDocument::PluginDocument(const DocumentInit& initializer,
       background_color_(background_color) {
   SetCompatibilityMode(kQuirksMode);
   LockCompatibilityMode();
+  if (GetScheduler()) {
+    GetScheduler()->RegisterStickyFeature(
+        SchedulingPolicy::Feature::kContainsPlugins,
+        {SchedulingPolicy::DisableBackForwardCache()});
+  }
 }
 
 DocumentParser* PluginDocument::CreateParser() {

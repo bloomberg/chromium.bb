@@ -31,7 +31,9 @@ struct PLATFORM_EXPORT SchedulingPolicy {
     kFreezeEventListener = 10,
     kResumeEventListener = 11,
 
-    kCount = 12
+    kContainsPlugins = 12,
+
+    kCount = 13
   };
 
   // Sticky features can't be unregistered and remain active for the rest
