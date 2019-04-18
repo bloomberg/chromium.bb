@@ -46,7 +46,7 @@ class PortalInterceptorForTesting final
   static PortalInterceptorForTesting* From(content::Portal* portal);
 
   void Activate(blink::TransferableMessage data,
-                base::OnceCallback<void()> callback) override {
+                ActivateCallback callback) override {
     portal_activated_ = true;
 
     if (run_loop_) {

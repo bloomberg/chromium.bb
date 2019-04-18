@@ -648,7 +648,8 @@ class CONTENT_EXPORT RenderFrameImpl
       JavaScriptExecuteRequestInIsolatedWorldCallback callback) override;
   void OnPortalActivated(const base::UnguessableToken& portal_token,
                          blink::mojom::PortalAssociatedPtrInfo portal,
-                         blink::TransferableMessage data) override;
+                         blink::TransferableMessage data,
+                         OnPortalActivatedCallback callback) override;
 
   // mojom::FullscreenVideoElementHandler implementation:
   void RequestFullscreenVideoElement() override;

@@ -56,7 +56,7 @@ class CONTENT_EXPORT Portal : public blink::mojom::Portal,
   // blink::mojom::Portal implementation.
   void Navigate(const GURL& url) override;
   void Activate(blink::TransferableMessage data,
-                base::OnceCallback<void()> callback) override;
+                ActivateCallback callback) override;
   void PostMessage(const blink::TransferableMessage message,
                    const base::Optional<url::Origin>& target_origin) override;
 

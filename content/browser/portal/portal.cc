@@ -131,7 +131,7 @@ void Portal::Navigate(const GURL& url) {
 }
 
 void Portal::Activate(blink::TransferableMessage data,
-                      base::OnceCallback<void()> callback) {
+                      ActivateCallback callback) {
   WebContentsImpl* outer_contents = static_cast<WebContentsImpl*>(
       WebContents::FromRenderFrameHost(owner_render_frame_host_));
 
@@ -163,8 +163,8 @@ void Portal::Activate(blink::TransferableMessage data,
   portal->SetPortalContents(std::move(predecessor_web_contents));
 
   portal_contents_impl_->GetMainFrame()->OnPortalActivated(
-      portal->portal_token_, portal_ptr.PassInterface(), std::move(data));
-  std::move(callback).Run();
+      portal->portal_token_, portal_ptr.PassInterface(), std::move(data),
+      std::move(callback));
 }
 
 void Portal::PostMessage(blink::TransferableMessage message,

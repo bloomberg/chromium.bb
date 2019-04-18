@@ -23,11 +23,13 @@ PortalActivateEvent* PortalActivateEvent::Create(
     const base::UnguessableToken& predecessor_portal_token,
     mojom::blink::PortalAssociatedPtr predecessor_portal_ptr,
     scoped_refptr<SerializedScriptValue> data,
-    MessagePortArray* ports) {
+    MessagePortArray* ports,
+    OnPortalActivatedCallback callback) {
   return MakeGarbageCollected<PortalActivateEvent>(
       frame->GetDocument(), predecessor_portal_token,
       std::move(predecessor_portal_ptr),
-      SerializedScriptValue::Unpack(std::move(data)), ports);
+      SerializedScriptValue::Unpack(std::move(data)), ports,
+      std::move(callback));
 }
 
 PortalActivateEvent* PortalActivateEvent::Create(
@@ -41,7 +43,8 @@ PortalActivateEvent::PortalActivateEvent(
     const base::UnguessableToken& predecessor_portal_token,
     mojom::blink::PortalAssociatedPtr predecessor_portal_ptr,
     UnpackedSerializedScriptValue* data,
-    MessagePortArray* ports)
+    MessagePortArray* ports,
+    OnPortalActivatedCallback callback)
     : Event(event_type_names::kPortalactivate,
             Bubbles::kNo,
             Cancelable::kNo,
@@ -50,7 +53,8 @@ PortalActivateEvent::PortalActivateEvent(
       predecessor_portal_token_(predecessor_portal_token),
       predecessor_portal_ptr_(std::move(predecessor_portal_ptr)),
       data_(data),
-      ports_(ports) {}
+      ports_(ports),
+      on_portal_activated_callback_(std::move(callback)) {}
 
 PortalActivateEvent::PortalActivateEvent(const AtomicString& type,
                                          const PortalActivateEventInit* init)
@@ -120,7 +124,15 @@ HTMLPortalElement* PortalActivateEvent::adoptPredecessor(
   HTMLPortalElement* portal = MakeGarbageCollected<HTMLPortalElement>(
       *document_, predecessor_portal_token_,
       std::move(predecessor_portal_ptr_));
+  std::move(on_portal_activated_callback_).Run(true);
   return portal;
+}
+
+void PortalActivateEvent::DetachPortalIfNotAdopted() {
+  if (predecessor_portal_ptr_) {
+    std::move(on_portal_activated_callback_).Run(false);
+    predecessor_portal_ptr_.reset();
+  }
 }
 
 }  // namespace blink

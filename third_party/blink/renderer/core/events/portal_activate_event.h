@@ -26,6 +26,7 @@ class LocalFrame;
 class PortalActivateEventInit;
 class ScriptState;
 class ScriptValue;
+using OnPortalActivatedCallback = base::OnceCallback<void(bool)>;
 
 class CORE_EXPORT PortalActivateEvent : public Event {
   DEFINE_WRAPPERTYPEINFO();
@@ -37,7 +38,8 @@ class CORE_EXPORT PortalActivateEvent : public Event {
       const base::UnguessableToken& predecessor_portal_token,
       mojom::blink::PortalAssociatedPtr predecessor_portal_ptr,
       scoped_refptr<SerializedScriptValue> data,
-      MessagePortArray* ports);
+      MessagePortArray* ports,
+      OnPortalActivatedCallback callback);
 
   // Web-exposed and called directly by authors.
   static PortalActivateEvent* Create(const AtomicString& type,
@@ -47,7 +49,8 @@ class CORE_EXPORT PortalActivateEvent : public Event {
                       const base::UnguessableToken& predecessor_portal_token,
                       mojom::blink::PortalAssociatedPtr predecessor_portal_ptr,
                       UnpackedSerializedScriptValue* data,
-                      MessagePortArray*);
+                      MessagePortArray*,
+                      OnPortalActivatedCallback callback);
   PortalActivateEvent(const AtomicString& type, const PortalActivateEventInit*);
 
   ~PortalActivateEvent() override;
@@ -60,6 +63,8 @@ class CORE_EXPORT PortalActivateEvent : public Event {
   // IDL implementation.
   ScriptValue data(ScriptState*);
   HTMLPortalElement* adoptPredecessor(ExceptionState& exception_state);
+
+  void DetachPortalIfNotAdopted();
 
  private:
   Member<Document> document_;
@@ -77,6 +82,7 @@ class CORE_EXPORT PortalActivateEvent : public Event {
   // |data_from_init_|.
   HeapHashMap<WeakMember<ScriptState>, TraceWrapperV8Reference<v8::Value>>
       v8_data_;
+  OnPortalActivatedCallback on_portal_activated_callback_;
 };
 
 }  // namespace blink

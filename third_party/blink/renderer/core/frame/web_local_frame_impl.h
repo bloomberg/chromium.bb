@@ -306,7 +306,8 @@ class CORE_EXPORT WebLocalFrameImpl final
                                 const WebMediaPlayerAction&) override;
   void OnPortalActivated(const base::UnguessableToken& portal_token,
                          mojo::ScopedInterfaceEndpointHandle portal_pipe,
-                         TransferableMessage data) override;
+                         TransferableMessage data,
+                         OnPortalActivatedCallback callback) override;
   void ForwardMessageToPortalHost(
       TransferableMessage message,
       const WebSecurityOrigin& source_origin,

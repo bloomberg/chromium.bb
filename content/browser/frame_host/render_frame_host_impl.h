@@ -869,7 +869,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // PortalActivateEvent.
   void OnPortalActivated(const base::UnguessableToken& portal_token,
                          blink::mojom::PortalAssociatedPtrInfo portal,
-                         blink::TransferableMessage data);
+                         blink::TransferableMessage data,
+                         base::OnceCallback<void(bool)> callback);
 
   // Called on the main frame of a page embedded in a Portal to forward a
   // message to the PortalHost object in the frame.
