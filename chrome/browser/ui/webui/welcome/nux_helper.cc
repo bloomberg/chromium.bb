@@ -5,19 +5,28 @@
 #include "chrome/browser/ui/webui/welcome/nux_helper.h"
 
 #include <string>
+#include <vector>
 
 #include "base/feature_list.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/strings/string_split.h"
+#include "base/strings/string_tokenizer.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
+#include "chrome/browser/policy/browser_signin_policy_handler.h"
+#include "chrome/browser/policy/profile_policy_connector.h"
+#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/ntp_features.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/webui/welcome/nux/constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "components/policy/core/common/policy_map.h"
+#include "components/policy/core/common/policy_service.h"
+#include "components/policy/policy_constants.h"
 #include "components/prefs/pref_service.h"
 
 #if defined(OS_MACOSX)
@@ -25,6 +34,37 @@
 #endif  // defined(OS_MACOSX)
 
 namespace nux {
+
+bool CanShowGoogleAppModule(const policy::PolicyMap& policies) {
+  // TODO(hcarmona): Will add in followup CL.
+  return true;
+}
+
+bool CanShowNTPBackgroundModule(const policy::PolicyMap& policies) {
+  // TODO(hcarmona): Will add in followup CL.
+  return true;
+}
+
+bool CanShowSetDefaultModule(const policy::PolicyMap& policies) {
+  // TODO(hcarmona): Will add in followup CL.
+  return true;
+}
+
+bool CanShowSigninModule(const policy::PolicyMap& policies) {
+  const base::Value* browser_signin_value =
+      policies.GetValue(policy::key::kBrowserSignin);
+
+  if (!browser_signin_value)
+    return true;
+
+  int int_browser_signin_value;
+  bool success = browser_signin_value->GetAsInteger(&int_browser_signin_value);
+  DCHECK(success);
+
+  return static_cast<policy::BrowserSigninMode>(int_browser_signin_value) !=
+         policy::BrowserSigninMode::kDisabled;
+}
+
 // This feature flag is used to force the feature to be turned on for non-win
 // and non-branded builds, like with tests or development on other platforms.
 const base::Feature kNuxOnboardingForceEnabled = {
@@ -117,27 +157,70 @@ bool IsNuxOnboardingEnabled(Profile* profile) {
   return false;
 }
 
+const policy::PolicyMap& GetPoliciesFromProfile(Profile* profile) {
+  policy::ProfilePolicyConnector* profile_connector =
+      policy::ProfilePolicyConnectorFactory::GetForBrowserContext(profile);
+  DCHECK(profile_connector);
+  return profile_connector->policy_service()->GetPolicies(
+      policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME, std::string()));
+}
+
+std::vector<std::string> GetAvailableModules(
+    const policy::PolicyMap& policies) {
+  std::vector<std::string> available_modules;
+
+  if (CanShowGoogleAppModule(policies))
+    available_modules.push_back("nux-google-apps");
+  if (CanShowNTPBackgroundModule(policies))
+    available_modules.push_back("nux-ntp-background");
+  if (CanShowSetDefaultModule(policies))
+    available_modules.push_back("nux-set-as-default");
+  if (CanShowSigninModule(policies))
+    available_modules.push_back("signin-view");
+
+  return available_modules;
+}
+
+std::string FilterModules(const std::string& requested_modules,
+                          const std::vector<std::string>& available_modules) {
+  std::vector<std::string> requested_list = base::SplitString(
+      requested_modules, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  std::vector<std::string> filtered_modules;
+
+  std::copy_if(requested_list.begin(), requested_list.end(),
+               std::back_inserter(filtered_modules),
+               [available_modules](std::string module) {
+                 return !module.empty() &&
+                        base::ContainsValue(available_modules, module);
+               });
+
+  return base::JoinString(filtered_modules, ",");
+}
+
 base::DictionaryValue GetNuxOnboardingModules(Profile* profile) {
   // This function should not be called when nux onboarding feature is not on.
   DCHECK(nux::IsNuxOnboardingEnabled(profile));
 
-  base::DictionaryValue modules;
+  std::string new_user_modules = kDefaultNewUserModules;
+  std::string returning_user_modules = kDefaultReturningUserModules;
 
   if (base::FeatureList::IsEnabled(nux::kNuxOnboardingForceEnabled)) {
-    modules.SetString("new-user",
-                      kNuxOnboardingForceEnabledNewUserModules.Get());
-    modules.SetString("returning-user",
-                      kNuxOnboardingForceEnabledReturningUserModules.Get());
+    new_user_modules = kNuxOnboardingForceEnabledNewUserModules.Get();
+    returning_user_modules =
+        kNuxOnboardingForceEnabledReturningUserModules.Get();
   } else if (CanExperimentWithVariations(profile)) {
-    modules.SetString("new-user", kNuxOnboardingNewUserModules.Get());
-    modules.SetString("returning-user",
-                      kNuxOnboardingReturningUserModules.Get());
-  } else {
-    // Default behavior w/o checking feature flag.
-    modules.SetString("new-user", kDefaultNewUserModules);
-    modules.SetString("returning-user", kDefaultReturningUserModules);
+    new_user_modules = kNuxOnboardingNewUserModules.Get();
+    returning_user_modules = kNuxOnboardingReturningUserModules.Get();
   }
 
+  const policy::PolicyMap& policies = GetPoliciesFromProfile(profile);
+  std::vector<std::string> available_modules = GetAvailableModules(policies);
+
+  base::DictionaryValue modules;
+  modules.SetString("new-user",
+                    FilterModules(new_user_modules, available_modules));
+  modules.SetString("returning-user",
+                    FilterModules(returning_user_modules, available_modules));
   return modules;
 }
 }  // namespace nux

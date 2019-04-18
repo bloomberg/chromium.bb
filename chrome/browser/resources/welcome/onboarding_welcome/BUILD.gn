@@ -26,6 +26,7 @@ js_library("landing_view") {
     ":landing_view_proxy",
     ":navigation_behavior",
     ":welcome_browser_proxy",
+    "//ui/webui/resources/js:load_time_data",
   ]
 }
 

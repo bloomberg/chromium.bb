@@ -28,6 +28,7 @@
 #include "chrome/grit/onboarding_welcome_resources.h"
 #include "chrome/grit/onboarding_welcome_resources_map.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/core/browser/signin_pref_names.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/url_util.h"
@@ -211,6 +212,8 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
                            nux::GetNuxOnboardingModules(profile)
                                .FindKey("returning-user")
                                ->GetString());
+    html_source->AddBoolean("signinAllowed", profile->GetPrefs()->GetBoolean(
+                                                 prefs::kSigninAllowed));
     html_source->SetRequestFilter(
         base::BindRepeating(&ShouldHandleRequestCallback,
                             weak_ptr_factory_.GetWeakPtr()),
