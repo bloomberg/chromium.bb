@@ -169,6 +169,7 @@ class ActionDelegate {
       const Selector& selector,
       const std::string& value,
       bool simulate_key_presses,
+      int key_press_delay_in_millisecond,
       base::OnceCallback<void(const ClientStatus&)> callback) = 0;
 
   // Set the |value| of the |attribute| of the element given by |selector|.
@@ -183,6 +184,7 @@ class ActionDelegate {
   virtual void SendKeyboardInput(
       const Selector& selector,
       const std::vector<UChar32>& codepoints,
+      int key_press_delay_in_millisecond,
       base::OnceCallback<void(const ClientStatus&)> callback) = 0;
 
   // Return the outerHTML of an element given by |selector|.
