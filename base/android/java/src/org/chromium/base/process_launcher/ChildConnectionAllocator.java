@@ -45,7 +45,7 @@ public class ChildConnectionAllocator {
         }
     }
 
-    // Delay between the call to freeConnection and the connection actually beeing   freed.
+    // Delay between the call to freeConnection and the connection actually beeing freed.
     private static final long FREE_CONNECTION_DELAY_MILLIS = 1;
 
     // The handler of the thread on which all interations should happen.
@@ -225,7 +225,7 @@ public class ChildConnectionAllocator {
         return connection;
     }
 
-    /** Frees a connection and notifies listeners. */
+    /** Free connection allocated by this allocator. */
     private void free(ChildProcessConnection connection) {
         assert isRunningOnLauncherThread();
 
