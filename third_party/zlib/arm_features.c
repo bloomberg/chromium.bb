@@ -7,14 +7,14 @@
 
 #include "arm_features.h"
 #include "zutil.h"
+#include <stdint.h>
 
 int ZLIB_INTERNAL arm_cpu_enable_crc32 = 0;
 int ZLIB_INTERNAL arm_cpu_enable_pmull = 0;
 
-#if !defined(_MSC_VER)
-
+#if defined(ARMV8_OS_ANDROID) || defined(ARMV8_OS_LINUX) || defined(ARMV8_OS_FUCHSIA)
 #include <pthread.h>
-#include <stdint.h>
+#endif
 
 #if defined(ARMV8_OS_ANDROID)
 #include <cpu-features.h>
@@ -25,18 +25,33 @@ int ZLIB_INTERNAL arm_cpu_enable_pmull = 0;
 #include <zircon/features.h>
 #include <zircon/syscalls.h>
 #include <zircon/types.h>
+#elif defined(ARMV8_OS_WINDOWS)
+#include <windows.h>
 #else
 #error arm_features.c ARM feature detection in not defined for your platform
 #endif
 
-static pthread_once_t cpu_check_inited_once = PTHREAD_ONCE_INIT;
-
 static void _arm_check_features(void);
 
+#if defined(ARMV8_OS_ANDROID) || defined(ARMV8_OS_LINUX) || defined(ARMV8_OS_FUCHSIA)
+static pthread_once_t cpu_check_inited_once = PTHREAD_ONCE_INIT;
 void ZLIB_INTERNAL arm_check_features(void)
 {
     pthread_once(&cpu_check_inited_once, _arm_check_features);
 }
+#elif defined(ARMV8_OS_WINDOWS)
+static INIT_ONCE cpu_check_inited_once = INIT_ONCE_STATIC_INIT;
+static BOOL CALLBACK _arm_check_features_forwarder(PINIT_ONCE once, PVOID param, PVOID* context)
+{
+    _arm_check_features();
+    return TRUE;
+}
+void ZLIB_INTERNAL arm_check_features(void)
+{
+    InitOnceExecuteOnce(&cpu_check_inited_once, _arm_check_features_forwarder,
+                        NULL, NULL);
+}
+#endif
 
 /*
  * See http://bit.ly/2CcoEsr for run-time detection of ARM features and also
@@ -68,36 +83,8 @@ static void _arm_check_features(void)
         return;  /* Report nothing if ASIMD(NEON) is missing */
     arm_cpu_enable_crc32 = !!(features & ZX_ARM64_FEATURE_ISA_CRC32);
     arm_cpu_enable_pmull = !!(features & ZX_ARM64_FEATURE_ISA_PMULL);
+#elif defined(ARMV8_OS_WINDOWS)
+    arm_cpu_enable_crc32 = IsProcessorFeaturePresent(PF_ARM_V8_CRC32_INSTRUCTIONS_AVAILABLE);
+    arm_cpu_enable_pmull = IsProcessorFeaturePresent(PF_ARM_V8_CRYPTO_INSTRUCTIONS_AVAILABLE);
 #endif
 }
-
-#else /* _MSC_VER */
-
-#include <windows.h>
-
-static INIT_ONCE cpu_check_inited_once = INIT_ONCE_STATIC_INIT;
-
-static BOOL CALLBACK _arm_check_features(PINIT_ONCE once,
-                                         PVOID param,
-                                         PVOID *context);
-
-void ZLIB_INTERNAL arm_check_features(void)
-{
-    InitOnceExecuteOnce(&cpu_check_inited_once, _arm_check_features,
-                        NULL, NULL);
-}
-
-static BOOL CALLBACK _arm_check_features(PINIT_ONCE once,
-                                         PVOID param,
-                                         PVOID *context)
-{
-    if (IsProcessorFeaturePresent(PF_ARM_V8_CRC32_INSTRUCTIONS_AVAILABLE))
-        arm_cpu_enable_crc32 = 1;
-
-    if (IsProcessorFeaturePresent(PF_ARM_V8_CRYPTO_INSTRUCTIONS_AVAILABLE))
-        arm_cpu_enable_pmull = 1;
-
-    return TRUE;
-}
-
-#endif /* _MSC_VER */
