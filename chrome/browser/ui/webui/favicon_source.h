@@ -12,7 +12,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "components/favicon/core/favicon_service.h"
-#include "components/favicon_base/favicon_request_metrics.h"
 #include "content/public/browser/url_data_source.h"
 #include "ui/gfx/favicon_size.h"
 
@@ -79,8 +78,7 @@ class FaviconSource : public content::URLDataSource {
     IconRequest(const content::URLDataSource::GotDataCallback& cb,
                 const GURL& path,
                 int size,
-                float scale,
-                favicon::FaviconRequestOrigin origin);
+                float scale);
     IconRequest(const IconRequest& other);
     ~IconRequest();
 
@@ -88,7 +86,6 @@ class FaviconSource : public content::URLDataSource {
     GURL request_path;
     int size_in_dip;
     float device_scale_factor;
-    favicon::FaviconRequestOrigin icon_request_origin;
   };
 
   // Called when the favicon data is missing to perform additional checks to
