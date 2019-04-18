@@ -53,6 +53,10 @@ class NigoriModelTypeProcessor : public ModelTypeProcessor,
 
  private:
   bool IsTrackingMetadata();
+
+  // Returns true if the handshake with sync thread is complete.
+  bool IsConnected() const;
+
   // The bridge owns this processor instance so the pointer should never become
   // invalid.
   NigoriSyncBridge* bridge_;
@@ -69,6 +73,12 @@ class NigoriModelTypeProcessor : public ModelTypeProcessor,
   base::Optional<ModelError> model_error_;
 
   std::unique_ptr<ProcessorEntity> entity_;
+
+  // Reference to the CommitQueue.
+  //
+  // The interface hides the posting of tasks across threads as well as the
+  // CommitQueue's implementation.  Both of these features are useful in tests.
+  std::unique_ptr<CommitQueue> worker_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

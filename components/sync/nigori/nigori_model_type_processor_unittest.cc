@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 
+#include "base/bind.h"
 #include "components/sync/base/time.h"
 #include "components/sync/nigori/nigori_sync_bridge.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -20,6 +21,11 @@ using testing::Eq;
 using testing::Ne;
 
 const char kNigoriNonUniqueName[] = "nigori";
+
+void CaptureCommitRequest(CommitRequestDataList* dst,
+                          CommitRequestDataList&& src) {
+  *dst = std::move(src);
+}
 
 class MockNigoriSyncBridge : public NigoriSyncBridge {
  public:
@@ -49,6 +55,7 @@ class NigoriModelTypeProcessorTest : public testing::Test {
     nigori_metadata_batch.entity_metadata->set_creation_time(
         TimeToProtoTime(base::Time::Now()));
     nigori_metadata_batch.entity_metadata->set_sequence_number(0);
+    nigori_metadata_batch.entity_metadata->set_acked_sequence_number(0);
     processor_.ModelReadyToSync(mock_nigori_sync_bridge(),
                                 std::move(nigori_metadata_batch));
   }
@@ -113,6 +120,31 @@ TEST_F(NigoriModelTypeProcessorTest, ShouldIncrementSequenceNumberWhenPut) {
 
   EXPECT_THAT(entity_metadata2->sequence_number(),
               Eq(entity_metadata1->sequence_number() + 1));
+}
+
+TEST_F(NigoriModelTypeProcessorTest, ShouldGetEmptyLocalChanges) {
+  SimulateModelReadyToSyncWithInitialSyncDone();
+  CommitRequestDataList commit_request;
+  processor()->GetLocalChanges(
+      /*max_entries=*/10,
+      base::BindOnce(&CaptureCommitRequest, &commit_request));
+  EXPECT_EQ(0U, commit_request.size());
+}
+
+TEST_F(NigoriModelTypeProcessorTest, ShouldGetLocalChangesWhenPut) {
+  SimulateModelReadyToSyncWithInitialSyncDone();
+
+  auto entity_data = std::make_unique<syncer::EntityData>();
+  entity_data->specifics.mutable_nigori();
+  entity_data->non_unique_name = kNigoriNonUniqueName;
+
+  processor()->Put(std::move(entity_data));
+  CommitRequestDataList commit_request;
+  processor()->GetLocalChanges(
+      /*max_entries=*/10,
+      base::BindOnce(&CaptureCommitRequest, &commit_request));
+  ASSERT_EQ(1U, commit_request.size());
+  EXPECT_EQ(kNigoriNonUniqueName, commit_request[0]->entity->non_unique_name);
 }
 
 }  // namespace

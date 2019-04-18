@@ -7,6 +7,7 @@
 #include "components/sync/base/time.h"
 #include "components/sync/engine/commit_queue.h"
 #include "components/sync/model_impl/processor_entity.h"
+#include "components/sync/nigori/nigori_sync_bridge.h"
 
 namespace syncer {
 
@@ -27,11 +28,23 @@ NigoriModelTypeProcessor::~NigoriModelTypeProcessor() {
 void NigoriModelTypeProcessor::ConnectSync(
     std::unique_ptr<CommitQueue> worker) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DVLOG(1) << "Successfully connected Encryption Keys";
+
+  worker_ = std::move(worker);
+  // TODO(mamir): NudgeForCommitIfNeeded();
   NOTIMPLEMENTED();
 }
 
 void NigoriModelTypeProcessor::DisconnectSync() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(IsConnected());
+
+  DVLOG(1) << "Disconnecting sync for Encryption Keys";
+  // TODO(mamir): weak_ptr_factory_for_worker_.InvalidateWeakPtrs();
+  worker_.reset();
+  if (entity_) {
+    entity_->ClearTransientSyncState();
+  }
   NOTIMPLEMENTED();
 }
 
@@ -39,7 +52,29 @@ void NigoriModelTypeProcessor::GetLocalChanges(
     size_t max_entries,
     GetLocalChangesCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  NOTIMPLEMENTED();
+  DCHECK_GT(max_entries, 0U);
+  DCHECK(!model_error_);
+  DCHECK(entity_);
+
+  // No local changes to commit.
+  if (!entity_->RequiresCommitRequest()) {
+    std::move(callback).Run(CommitRequestDataList());
+    return;
+  }
+
+  if (entity_->RequiresCommitData()) {
+    // SetCommitData will update EntityData's fields with values from
+    // metadata.
+    entity_->SetCommitData(bridge_->GetData());
+  }
+
+  auto commit_request_data = std::make_unique<CommitRequestData>();
+  entity_->InitializeCommitRequestData(commit_request_data.get());
+
+  CommitRequestDataList commit_request_data_list;
+  commit_request_data_list.push_back(std::move(commit_request_data));
+
+  std::move(callback).Run(std::move(commit_request_data_list));
 }
 
 void NigoriModelTypeProcessor::OnCommitCompleted(
@@ -156,6 +191,11 @@ NigoriMetadataBatch NigoriModelTypeProcessor::GetMetadata() {
 
 bool NigoriModelTypeProcessor::IsTrackingMetadata() {
   return model_type_state_.initial_sync_done();
+}
+
+bool NigoriModelTypeProcessor::IsConnected() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return worker_ != nullptr;
 }
 
 }  // namespace syncer
