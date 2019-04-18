@@ -12488,12 +12488,11 @@
       'id': 381,
       'caption': '''<ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> cloud policy overrides Platform policy.''',
       'tags': [],
-      'future': True,
       'desc': '''
-      If the policy is set to true, cloud  policy takes precedence if it conflicts with platform policy.
+      If the policy is set to true, cloud policy takes precedence if it conflicts with platform policy.
       If the policy is set to false or not configured, platform policy takes precedence if it conflicts with cloud policy.
 
-      This policy is only available as a platform.
+      This policy is only available as a mandatory machine platform policy and it only affects machine scope cloud policies.
       ''',
     },
     {
