@@ -120,10 +120,13 @@ class UrlRequestTest : public ::testing::TestWithParam<bool> {
 
     // Add upload data provider and set content type required for upload.
     if (test_upload_data_provider != nullptr) {
+      test_upload_data_provider->set_url_request(request);
       upload_data_provider =
           test_upload_data_provider->CreateUploadDataProvider();
       Cronet_UrlRequestParams_upload_data_provider_set(request_params,
                                                        upload_data_provider);
+      Cronet_UrlRequestParams_upload_data_provider_executor_set(
+          request_params, test_upload_data_provider->executor());
       Cronet_HttpHeaderPtr header = Cronet_HttpHeader_Create();
       Cronet_HttpHeader_name_set(header, "Content-Type");
       Cronet_HttpHeader_value_set(header, "Useless/string");
@@ -739,6 +742,78 @@ TEST_P(UrlRequestTest, UploadFailsWithoutInitializingStream) {
   EXPECT_EQ(nullptr, callback->response_info_);
   EXPECT_EQ("", callback->response_as_string_);
   EXPECT_TRUE(callback->on_error_called_);
+}
+
+TEST_P(UrlRequestTest, UploadCancelReadSync) {
+  auto callback = std::make_unique<TestUrlRequestCallback>(GetParam());
+  const std::string url = cronet::TestServer::GetEchoRequestBodyURL();
+  TestUploadDataProvider data_provider(TestUploadDataProvider::ASYNC,
+                                       callback->GetExecutor());
+  data_provider.AddRead("One");
+  data_provider.AddRead("Two");
+  data_provider.AddRead("Three");
+  data_provider.SetReadCancel(1, TestUploadDataProvider::CANCEL_SYNC);
+  data_provider.SetReadFailure(1, TestUploadDataProvider::CALLBACK_ASYNC);
+
+  callback = StartAndWaitForComplete(url, std::move(callback), std::string(),
+                                     &data_provider);
+  data_provider.AssertClosed();
+
+  EXPECT_EQ(11, data_provider.GetUploadedLength());
+  EXPECT_EQ(2, data_provider.num_read_calls());
+  EXPECT_TRUE(callback->on_canceled_called_);
+}
+
+TEST_P(UrlRequestTest, UploadCancelReadAsync) {
+  auto callback = std::make_unique<TestUrlRequestCallback>(GetParam());
+  const std::string url = cronet::TestServer::GetEchoRequestBodyURL();
+  TestUploadDataProvider data_provider(TestUploadDataProvider::ASYNC,
+                                       callback->GetExecutor());
+  data_provider.AddRead("One");
+  data_provider.AddRead("Two");
+  data_provider.AddRead("Three");
+  data_provider.SetReadCancel(2, TestUploadDataProvider::CANCEL_ASYNC);
+
+  callback = StartAndWaitForComplete(url, std::move(callback), std::string(),
+                                     &data_provider);
+  data_provider.AssertClosed();
+
+  EXPECT_EQ(11, data_provider.GetUploadedLength());
+  EXPECT_EQ(3, data_provider.num_read_calls());
+  EXPECT_TRUE(callback->on_canceled_called_);
+}
+
+TEST_P(UrlRequestTest, UploadCancelRewindSync) {
+  auto callback = std::make_unique<TestUrlRequestCallback>(GetParam());
+  const std::string url = cronet::TestServer::GetRedirectToEchoBodyURL();
+  TestUploadDataProvider data_provider(TestUploadDataProvider::ASYNC,
+                                       callback->GetExecutor());
+  data_provider.SetRewindCancel(TestUploadDataProvider::CANCEL_SYNC);
+  data_provider.SetRewindFailure(TestUploadDataProvider::CALLBACK_ASYNC);
+  data_provider.AddRead("Test");
+  callback = StartAndWaitForComplete(url, std::move(callback), std::string(),
+                                     &data_provider);
+  data_provider.AssertClosed();
+  EXPECT_EQ(4, data_provider.GetUploadedLength());
+  EXPECT_EQ(1, data_provider.num_read_calls());
+  EXPECT_EQ(1, data_provider.num_rewind_calls());
+  EXPECT_TRUE(callback->on_canceled_called_);
+}
+
+TEST_P(UrlRequestTest, UploadCancelRewindAsync) {
+  auto callback = std::make_unique<TestUrlRequestCallback>(GetParam());
+  const std::string url = cronet::TestServer::GetRedirectToEchoBodyURL();
+  TestUploadDataProvider data_provider(TestUploadDataProvider::ASYNC,
+                                       callback->GetExecutor());
+  data_provider.SetRewindCancel(TestUploadDataProvider::CANCEL_ASYNC);
+  data_provider.AddRead("Test");
+  callback = StartAndWaitForComplete(url, std::move(callback), std::string(),
+                                     &data_provider);
+  data_provider.AssertClosed();
+  EXPECT_EQ(4, data_provider.GetUploadedLength());
+  EXPECT_EQ(1, data_provider.num_read_calls());
+  EXPECT_EQ(1, data_provider.num_rewind_calls());
+  EXPECT_TRUE(callback->on_canceled_called_);
 }
 
 TEST_P(UrlRequestTest, SimpleRequest) {
