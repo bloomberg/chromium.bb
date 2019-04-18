@@ -761,16 +761,24 @@ AppListControllerImpl::CalculateStateAfterShelfDrag(
   return ash::mojom::AppListViewState::kClosed;
 }
 
-void AppListControllerImpl::SetStateTransitionAnimationCallback(
-    StateTransitionAnimationCallback callback) {
-  state_transition_animation_callback_ = std::move(callback);
-}
-
 void AppListControllerImpl::SetAppListModelForTest(
     std::unique_ptr<app_list::AppListModel> model) {
   model_->RemoveObserver(this);
   model_ = std::move(model);
   model_->AddObserver(this);
+}
+
+void AppListControllerImpl::SetStateTransitionAnimationCallback(
+    StateTransitionAnimationCallback callback) {
+  state_transition_animation_callback_ = std::move(callback);
+}
+
+void AppListControllerImpl::RecordShelfAppLaunched(
+    base::Optional<mojom::AppListViewState> recorded_app_list_view_state) {
+  app_list::RecordAppListAppLaunched(
+      mojom::AppListLaunchedFrom::kLaunchedFromShelf,
+      recorded_app_list_view_state.value_or(GetAppListViewState()),
+      IsTabletMode(), presenter_.home_launcher_shown());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -808,6 +816,18 @@ void AppListControllerImpl::OpenSearchResult(
   app_list::SearchResult* result = search_model_.FindSearchResult(result_id);
   if (!result)
     return;
+
+  if (launch_type == mojom::AppListLaunchType::kAppSearchResult) {
+    switch (launched_from) {
+      case mojom::AppListLaunchedFrom::kLaunchedFromSearchBox:
+      case mojom::AppListLaunchedFrom::kLaunchedFromSuggestionChip:
+        RecordAppLaunched(launched_from);
+        break;
+      case mojom::AppListLaunchedFrom::kLaunchedFromGrid:
+      case mojom::AppListLaunchedFrom::kLaunchedFromShelf:
+        break;
+    }
+  }
 
   UMA_HISTOGRAM_ENUMERATION(app_list::kSearchResultOpenDisplayTypeHistogram,
                             result->display_type(),
@@ -884,7 +904,13 @@ void AppListControllerImpl::GetSearchResultContextMenuModel(
 void AppListControllerImpl::SearchResultContextMenuItemSelected(
     const std::string& result_id,
     int command_id,
-    int event_flags) {
+    int event_flags,
+    mojom::AppListLaunchType launch_type) {
+  if (launch_type == mojom::AppListLaunchType::kAppSearchResult &&
+      app_list::IsCommandIdAnAppLaunch(command_id)) {
+    RecordAppLaunched(mojom::AppListLaunchedFrom::kLaunchedFromSearchBox);
+  }
+
   if (client_) {
     client_->SearchResultContextMenuItemSelected(result_id, command_id,
                                                  event_flags);
@@ -904,7 +930,8 @@ void AppListControllerImpl::ViewShown(int64_t display_id) {
 
 void AppListControllerImpl::ViewClosing() {
   if (presenter_.GetView()->search_box_view()->is_search_box_active()) {
-    LogSearchAbandonHistogram();
+    // Close the search box if it is open when the app list is closing.
+    presenter_.HandleCloseOpenSearchBox();
 
     // Close the virtual keyboard before the app list view is dismissed.
     // Otherwise if the browser is behind the app list view, after the latter is
@@ -932,8 +959,12 @@ void AppListControllerImpl::GetWallpaperProminentColors(
   Shell::Get()->wallpaper_controller()->GetWallpaperColors(std::move(callback));
 }
 
-void AppListControllerImpl::ActivateItem(const std::string& id,
-                                         int event_flags) {
+void AppListControllerImpl::ActivateItem(
+    const std::string& id,
+    int event_flags,
+    mojom::AppListLaunchedFrom launched_from) {
+  RecordAppLaunched(launched_from);
+
   if (client_)
     client_->ActivateItem(profile_id_, id, event_flags);
 
@@ -947,9 +978,14 @@ void AppListControllerImpl::GetContextMenuModel(
     client_->GetContextMenuModel(profile_id_, id, std::move(callback));
 }
 
-void AppListControllerImpl::ContextMenuItemSelected(const std::string& id,
-                                                    int command_id,
-                                                    int event_flags) {
+void AppListControllerImpl::ContextMenuItemSelected(
+    const std::string& id,
+    int command_id,
+    int event_flags,
+    mojom::AppListLaunchedFrom launched_from) {
+  if (app_list::IsCommandIdAnAppLaunch(command_id))
+    RecordAppLaunched(launched_from);
+
   if (client_)
     client_->ContextMenuItemSelected(profile_id_, id, command_id, event_flags);
 }
@@ -1040,6 +1076,13 @@ void AppListControllerImpl::OnStateTransitionAnimationCompleted(
     ash::mojom::AppListViewState state) {
   if (!state_transition_animation_callback_.is_null())
     state_transition_animation_callback_.Run(state);
+}
+
+void AppListControllerImpl::RecordAppLaunched(
+    mojom::AppListLaunchedFrom launched_from) {
+  app_list::RecordAppListAppLaunched(launched_from, GetAppListViewState(),
+                                     IsTabletMode(),
+                                     presenter_.home_launcher_shown());
 }
 
 void AppListControllerImpl::AddObserver(AppListControllerObserver* observer) {

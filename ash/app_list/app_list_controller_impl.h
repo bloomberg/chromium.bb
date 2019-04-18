@@ -174,20 +174,26 @@ class ASH_EXPORT AppListControllerImpl
   void GetSearchResultContextMenuModel(
       const std::string& result_id,
       GetContextMenuModelCallback callback) override;
-  void SearchResultContextMenuItemSelected(const std::string& result_id,
-                                           int command_id,
-                                           int event_flags) override;
+  void SearchResultContextMenuItemSelected(
+      const std::string& result_id,
+      int command_id,
+      int event_flags,
+      mojom::AppListLaunchType launch_type) override;
   void ViewShown(int64_t display_id) override;
   void ViewClosing() override;
   void ViewClosed() override;
   void GetWallpaperProminentColors(
       GetWallpaperProminentColorsCallback callback) override;
-  void ActivateItem(const std::string& id, int event_flags) override;
+  void ActivateItem(const std::string& id,
+                    int event_flags,
+                    mojom::AppListLaunchedFrom launched_from) override;
   void GetContextMenuModel(const std::string& id,
                            GetContextMenuModelCallback callback) override;
-  void ContextMenuItemSelected(const std::string& id,
-                               int command_id,
-                               int event_flags) override;
+  void ContextMenuItemSelected(
+      const std::string& id,
+      int command_id,
+      int event_flags,
+      mojom::AppListLaunchedFrom launched_from) override;
   void ShowWallpaperContextMenu(const gfx::Point& onscreen_location,
                                 ui::MenuSourceType source_type) override;
   bool ProcessHomeLauncherGesture(ui::GestureEvent* event,
@@ -294,6 +300,9 @@ class ASH_EXPORT AppListControllerImpl
   void SetStateTransitionAnimationCallback(
       StateTransitionAnimationCallback callback);
 
+  void RecordShelfAppLaunched(
+      base::Optional<mojom::AppListViewState> recorded_app_list_view_state);
+
  private:
   syncer::StringOrdinal GetOemFolderPos();
   std::unique_ptr<app_list::AppListItem> CreateAppListItem(
@@ -318,6 +327,9 @@ class ASH_EXPORT AppListControllerImpl
 
   // Shuts down the AppListControllerImpl, removing itself as an observer.
   void Shutdown();
+
+  // Record the app launch for AppListAppLaunchedV2 metric.
+  void RecordAppLaunched(mojom::AppListLaunchedFrom launched_from);
 
   base::string16 last_raw_query_;
 

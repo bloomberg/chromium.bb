@@ -163,7 +163,7 @@ bool AppListPresenterImpl::HandleCloseOpenFolder() {
 }
 
 bool AppListPresenterImpl::HandleCloseOpenSearchBox() {
-  return is_visible_ && view_ && view_->HandleCloseOpenSearchBox();
+  return view_ && view_->HandleCloseOpenSearchBox();
 }
 
 ash::ShelfAction AppListPresenterImpl::ToggleAppList(
@@ -379,6 +379,16 @@ void AppListPresenterImpl::OnWindowFocused(aura::Window* gained_focus,
                                            aura::Window* lost_focus) {
   if (view_ && is_visible_) {
     aura::Window* applist_window = view_->GetWidget()->GetNativeView();
+
+    if (delegate_->IsTabletMode()) {
+      if (applist_window->Contains(lost_focus)) {
+        home_launcher_shown_ = false;
+        HandleCloseOpenSearchBox();
+      } else if (applist_window->Contains(gained_focus)) {
+        home_launcher_shown_ = true;
+      }
+    }
+
     aura::Window* applist_container = applist_window->parent();
     if (applist_container->Contains(lost_focus) &&
         (!gained_focus || !applist_container->Contains(gained_focus)) &&

@@ -8,12 +8,14 @@
 #include <utility>
 #include <vector>
 
+#include "ash/app_list/app_list_metrics.h"
 #include "ash/app_list/app_list_view_delegate.h"
 #include "ash/app_list/model/app_list_folder_item.h"
 #include "ash/app_list/model/app_list_item.h"
 #include "ash/app_list/views/apps_grid_view.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
+#include "ash/public/interfaces/app_list.mojom.h"
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
@@ -508,8 +510,9 @@ void AppListItemView::ShowContextMenuForViewImpl(
 
 void AppListItemView::ExecuteCommand(int command_id, int event_flags) {
   if (item_weak_) {
-    delegate_->ContextMenuItemSelected(item_weak_->id(), command_id,
-                                       event_flags);
+    delegate_->ContextMenuItemSelected(
+        item_weak_->id(), command_id, event_flags,
+        ash::mojom::AppListLaunchedFrom::kLaunchedFromGrid);
   }
 }
 

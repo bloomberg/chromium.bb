@@ -2042,6 +2042,13 @@ Unknown properties are collapsed to zero. -->
   <int value="3" label="Camera"/>
 </enum>
 
+<enum name="AppListLaunchedFrom">
+  <int value="1" label="Launched From Grid"/>
+  <int value="2" label="Launched From SuggestionChip"/>
+  <int value="3" label="Launched From Shelf"/>
+  <int value="4" label="Launched From SearchBox"/>
+</enum>
+
 <enum name="AppListOmniboxResult">
   <int value="0" label="QUERY_SUGGESTION"/>
   <int value="1" label="ZERO_STATE_SUGEESTION"/>

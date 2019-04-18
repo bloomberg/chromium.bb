@@ -243,10 +243,6 @@ void AppListPresenterDelegateImpl::ProcessLocatedEvent(
     if (status_window && status_window->Contains(target))
       auto_hide_lock.emplace(shelf);
 
-    // Since event happened outside the app list, close the open search box if
-    // it is open.
-    presenter_->HandleCloseOpenSearchBox();
-
     // Keep app list opened if event happened in the shelf area.
     if (!shelf_window || !shelf_window->Contains(target))
       presenter_->Dismiss(event->time_stamp());

@@ -6,6 +6,8 @@
 #define ASH_APP_LIST_APP_LIST_METRICS_H_
 
 #include "ash/app_list/app_list_export.h"
+#include "ash/public/interfaces/app_list.mojom.h"
+#include "ash/public/interfaces/app_list_view.mojom.h"
 
 namespace app_list {
 
@@ -22,14 +24,6 @@ constexpr char kAppListShowInputLatencyHistogram[] =
 // representation time of the dismissed launcher UI.
 constexpr char kAppListHideInputLatencyHistogram[] =
     "Apps.AppListHide.InputLatency";
-
-// The UMA histogram that logs usage of suggested and regular apps.
-constexpr char kAppListAppLaunched[] = "Apps.AppListAppLaunched";
-
-// The UMA histogram that logs usage of suggested and regular apps while the
-// fullscreen launcher is enabled.
-constexpr char kAppListAppLaunchedFullscreen[] =
-    "Apps.AppListAppLaunchedFullscreen";
 
 // The UMA histogram that logs different ways to move an app in app list's apps
 // grid.
@@ -239,6 +233,14 @@ APP_LIST_EXPORT void RecordSearchLaunchIndexAndQueryLength(
     SearchResultLaunchLocation launch_location,
     int query_length,
     int suggestion_index);
+
+APP_LIST_EXPORT void RecordAppListAppLaunched(
+    ash::mojom::AppListLaunchedFrom launched_from,
+    ash::mojom::AppListViewState app_list_state,
+    bool is_tablet_mode,
+    bool home_launcher_shown);
+
+APP_LIST_EXPORT bool IsCommandIdAnAppLaunch(int command_id);
 
 }  // namespace app_list
 
