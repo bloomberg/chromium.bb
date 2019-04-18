@@ -51,6 +51,8 @@ const char kInstallReplacementWebAppAlreadyInstalledError[] =
     "Web app is already installed.";
 const char kInstallReplacementWebAppInvalidWebAppError[] =
     "Web app is not a valid installable web app.";
+const char kInstallReplacementWebAppInvalidContextError[] =
+    "Web apps can't be installed in the current user profile.";
 const char kGestureNeededForInstallReplacementWebAppError[] =
     "chrome.management.installWebApp requires a user gesture.";
 
