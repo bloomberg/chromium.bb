@@ -62,6 +62,14 @@ typedef bool (*BreakpadFilterCallback)(int exception_type,
                                        mach_port_t crashing_thread,
                                        void *context);
 
+// Optional user-defined function that will be called after a network upload
+// of a crash report.
+// |report_id| will be the id returned by the server, or "ERR" if an error
+// occurred.
+// |error| will contain the error, or nil if no error occured.
+typedef void (*BreakpadUploadCompletionCallback)(NSString *report_id,
+                                                 NSError *error);
+
 // Create a new BreakpadRef object and install it as an exception
 // handler.  The |parameters| will typically be the contents of your
 // bundle's Info.plist.
@@ -210,8 +218,10 @@ void BreakpadUploadNextReport(BreakpadRef ref);
 
 // Upload next report to the server.
 // |server_parameters| is additional server parameters to send.
-void BreakpadUploadNextReportWithParameters(BreakpadRef ref,
-                                            NSDictionary *server_parameters);
+void BreakpadUploadNextReportWithParameters(
+    BreakpadRef ref,
+    NSDictionary *server_parameters,
+    BreakpadUploadCompletionCallback callback);
 
 // Upload a report to the server.
 // |server_parameters| is additional server parameters to send.
@@ -219,7 +229,8 @@ void BreakpadUploadNextReportWithParameters(BreakpadRef ref,
 void BreakpadUploadReportWithParametersAndConfiguration(
     BreakpadRef ref,
     NSDictionary *server_parameters,
-    NSDictionary *configuration);
+    NSDictionary *configuration,
+    BreakpadUploadCompletionCallback callback);
 
 // Handles the network response of a breakpad upload. This function is needed if
 // the actual upload is done by the Breakpad client.
