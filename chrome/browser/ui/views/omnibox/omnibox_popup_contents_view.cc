@@ -439,10 +439,10 @@ size_t OmniboxPopupContentsView::GetIndexForPoint(const gfx::Point& point) {
   if (!HitTestPoint(point))
     return OmniboxPopupModel::kNoMatch;
 
-  int nb_match = model_->result().size();
-  DCHECK(nb_match <= child_count());
-  for (int i = 0; i < nb_match; ++i) {
-    views::View* child = child_at(i);
+  size_t nb_match = model_->result().size();
+  DCHECK_LE(nb_match, size_t{child_count()});
+  for (size_t i = 0; i < nb_match; ++i) {
+    views::View* child = child_at(int{i});
     gfx::Point point_in_child_coords(point);
     View::ConvertPointToTarget(this, child, &point_in_child_coords);
     if (child->visible() && child->HitTestPoint(point_in_child_coords))
