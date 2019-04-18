@@ -67,6 +67,9 @@ void QueryStorageUsageAndQuotaCallback(ScriptPromiseResolver* resolver,
   if (usage_breakdown->serviceWorker) {
     details->setServiceWorkerRegistrations(usage_breakdown->serviceWorker);
   }
+  if (usage_breakdown->fileSystem) {
+    details->setFileSystem(usage_breakdown->fileSystem);
+  }
 
   estimate->setUsageDetails(details);
 
