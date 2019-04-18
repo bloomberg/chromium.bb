@@ -8,6 +8,7 @@ import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
+import android.text.format.DateUtils;
 
 import org.chromium.base.CommandLine;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -51,6 +52,8 @@ public class UpdateConfigs {
             "inline_update_install_failed";
 
     private static final String UPDATE_FLOW_PARAM_NAME = "flow";
+
+    private static final long DEFAULT_UPDATE_NOTIFICATION_INTERVAL = 3 * DateUtils.WEEK_IN_MILLIS;
 
     /** Possible update flow configurations. */
     @IntDef({UpdateFlowConfiguration.NEVER_SHOW, UpdateFlowConfiguration.INTENT_ONLY,
@@ -185,6 +188,21 @@ public class UpdateConfigs {
      */
     public static String getMockMarketUrl() {
         return getStringParamValue(ChromeSwitches.MARKET_URL_FOR_TESTING);
+    }
+
+    /**
+     * @return A time interval for scheduling update notification. Unit: mills.
+     */
+    public static long getUpdateNotificationInterval() {
+        return DEFAULT_UPDATE_NOTIFICATION_INTERVAL;
+    }
+
+    /**
+     * @return true if update notification is enabled, false if disabled.
+     */
+    public static boolean isUpdateNotificationEnabled() {
+        // TODO(hesen): Add Finch Config.
+        return false;
     }
 
     /**

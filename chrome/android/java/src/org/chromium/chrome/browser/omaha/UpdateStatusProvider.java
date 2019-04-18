@@ -53,13 +53,15 @@ public class UpdateStatusProvider implements ActivityStateListener {
      * Possible sources of user interaction regarding updates.
      * Treat this as append only as it is used by UMA.
      */
-    @IntDef({UpdateInteractionSource.FROM_MENU, UpdateInteractionSource.FROM_INFOBAR})
+    @IntDef({UpdateInteractionSource.FROM_MENU, UpdateInteractionSource.FROM_INFOBAR,
+            UpdateInteractionSource.FROM_NOTIFICATION})
     @Retention(RetentionPolicy.SOURCE)
     public @interface UpdateInteractionSource {
         int FROM_MENU = 0;
         int FROM_INFOBAR = 1;
+        int FROM_NOTIFICATION = 2;
 
-        int NUM_ENTRIES = 2;
+        int NUM_ENTRIES = 3;
     }
 
     /**

@@ -55784,6 +55784,7 @@ Full version information for the fingerprint enum values:
 <enum name="UpdateInteractionSource">
   <int value="0" label="From Menu"/>
   <int value="1" label="From Infobar"/>
+  <int value="2" label="From Notification"/>
 </enum>
 
 <enum name="UpdatePasswordSubmissionEvent">
