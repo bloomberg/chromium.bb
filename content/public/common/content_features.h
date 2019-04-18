@@ -107,6 +107,7 @@ CONTENT_EXPORT extern const base::Feature
     kSignedExchangeReportingForDistributors;
 CONTENT_EXPORT extern const base::Feature kSignedExchangeSubresourcePrefetch;
 CONTENT_EXPORT extern const base::Feature kSignedHTTPExchange;
+CONTENT_EXPORT extern const base::Feature kSignedHTTPExchangePingValidity;
 CONTENT_EXPORT extern const base::Feature kSkipBrowserTouchFilter;
 CONTENT_EXPORT extern const char kSkipBrowserTouchFilterTypeParamName[];
 CONTENT_EXPORT extern const char

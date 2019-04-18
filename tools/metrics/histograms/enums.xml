@@ -50699,6 +50699,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="8" label="Unsupported certificate type"/>
 </enum>
 
+<enum name="SignedExchangeValidityPingResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="Failure"/>
+  <int value="2" label="Unexpected redirect"/>
+</enum>
+
 <enum name="SigninAccessPoint">
   <int value="0" label="Start page"/>
   <int value="1" label="NTP Link"/>
