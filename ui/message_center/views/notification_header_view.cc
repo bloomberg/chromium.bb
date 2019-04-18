@@ -41,6 +41,8 @@ constexpr gfx::Insets kHeaderSpacing(0, 2, 0, 2);
 // The padding outer the header and the control buttons.
 constexpr gfx::Insets kHeaderOuterPadding(2, 2, 0, 2);
 
+constexpr int kInnerHeaderHeight = kHeaderHeight - kHeaderOuterPadding.height();
+
 // Default paddings of the views of texts. Adjusted on Windows.
 // Top: 9px = 11px (from the mock) - 2px (outer padding).
 // Buttom: 6px from the mock.
@@ -146,8 +148,6 @@ gfx::Insets CalculateTopPadding(int font_list_height) {
 
 NotificationHeaderView::NotificationHeaderView(views::ButtonListener* listener)
     : views::Button(listener) {
-  const int kInnerHeaderHeight = kHeaderHeight - kHeaderOuterPadding.height();
-
   const views::FlexSpecification kAppNameFlex =
       views::FlexSpecification::ForSizeRule(
           views::MinimumFlexSizeRule::kScaleToZero,
@@ -179,69 +179,47 @@ NotificationHeaderView::NotificationHeaderView(views::ButtonListener* listener)
   const int font_list_height = font_list.GetHeight();
   gfx::Insets text_view_padding(CalculateTopPadding(font_list_height));
 
+  auto create_label = [&font_list, font_list_height, text_view_padding]() {
+    auto* label = new views::Label();
+    label->SetFontList(font_list);
+    label->SetLineHeight(font_list_height);
+    label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    label->SetBorder(views::CreateEmptyBorder(text_view_padding));
+    DCHECK_EQ(kInnerHeaderHeight, label->GetPreferredSize().height());
+    return label;
+  };
+
   // App name view
-  app_name_view_ = new views::Label(base::string16());
+  app_name_view_ = create_label();
   // Explicitly disable multiline to support proper text elision for URLs.
   app_name_view_->SetMultiLine(false);
-  app_name_view_->SetFontList(font_list);
-  app_name_view_->SetLineHeight(font_list_height);
-  app_name_view_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  app_name_view_->SetEnabledColor(accent_color_);
-  app_name_view_->SetBorder(views::CreateEmptyBorder(text_view_padding));
-  DCHECK_EQ(kInnerHeaderHeight, app_name_view_->GetPreferredSize().height());
   AddChildView(app_name_view_);
   layout->SetFlexForView(app_name_view_, kAppNameFlex);
 
   // Summary text divider
-  summary_text_divider_ =
-      new views::Label(base::WideToUTF16(kNotificationHeaderDivider));
-  summary_text_divider_->SetFontList(font_list);
-  summary_text_divider_->SetLineHeight(font_list_height);
-  summary_text_divider_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  summary_text_divider_->SetBorder(views::CreateEmptyBorder(text_view_padding));
-  summary_text_divider_->SetEnabledColor(accent_color_);
+  summary_text_divider_ = create_label();
+  summary_text_divider_->SetText(base::WideToUTF16(kNotificationHeaderDivider));
   summary_text_divider_->SetVisible(false);
-  DCHECK_EQ(kInnerHeaderHeight,
-            summary_text_divider_->GetPreferredSize().height());
   AddChildView(summary_text_divider_);
 
   // Summary text view
-  summary_text_view_ = new views::Label(base::string16());
-  summary_text_view_->SetFontList(font_list);
-  summary_text_view_->SetLineHeight(font_list_height);
-  summary_text_view_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  summary_text_view_->SetBorder(views::CreateEmptyBorder(text_view_padding));
-  summary_text_view_->SetEnabledColor(accent_color_);
+  summary_text_view_ = create_label();
   summary_text_view_->SetVisible(false);
-  DCHECK_EQ(kInnerHeaderHeight,
-            summary_text_view_->GetPreferredSize().height());
   AddChildView(summary_text_view_);
 
   // Timestamp divider
-  timestamp_divider_ =
-      new views::Label(base::WideToUTF16(kNotificationHeaderDivider));
-  timestamp_divider_->SetFontList(font_list);
-  timestamp_divider_->SetLineHeight(font_list_height);
-  timestamp_divider_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  timestamp_divider_->SetBorder(views::CreateEmptyBorder(text_view_padding));
+  timestamp_divider_ = create_label();
+  timestamp_divider_->SetText(base::WideToUTF16(kNotificationHeaderDivider));
   timestamp_divider_->SetVisible(false);
-  DCHECK_EQ(kInnerHeaderHeight,
-            timestamp_divider_->GetPreferredSize().height());
   AddChildView(timestamp_divider_);
 
   // Timestamp view
-  timestamp_view_ = new views::Label();
-  timestamp_view_->SetFontList(font_list);
-  timestamp_view_->SetLineHeight(font_list_height);
-  timestamp_view_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  timestamp_view_->SetBorder(views::CreateEmptyBorder(text_view_padding));
+  timestamp_view_ = create_label();
   timestamp_view_->SetVisible(false);
-  DCHECK_EQ(kInnerHeaderHeight, timestamp_view_->GetPreferredSize().height());
   AddChildView(timestamp_view_);
 
   // Expand button view
   expand_button_ = new ExpandButton();
-  SetExpanded(is_expanded_);
   expand_button_->SetBorder(views::CreateEmptyBorder(kExpandIconViewPadding));
   expand_button_->SetVerticalAlignment(views::ImageView::LEADING);
   expand_button_->SetHorizontalAlignment(views::ImageView::LEADING);
@@ -255,6 +233,7 @@ NotificationHeaderView::NotificationHeaderView(views::ButtonListener* listener)
   AddChildView(spacer);
   layout->SetFlexForView(spacer, kSpacerFlex);
 
+  SetAccentColor(accent_color_);
   SetPreferredSize(gfx::Size(kNotificationWidth, kHeaderHeight));
 }
 
