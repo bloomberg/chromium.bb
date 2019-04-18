@@ -319,6 +319,10 @@
             $i18n{spellCheckLanguagesListTitle}
           </div>
           <div class="list-frame vertical-list spell-check-languages">
+            <div class="settings-box-text"
+                hidden="[[spellCheckLanguages_.length]]">
+              $i18n{spellCheckLanguagesListEmpty}
+            </div>
             <template is="dom-repeat" items="[[spellCheckLanguages_]]">
               <div class="list-item">
                 <div class="start name-with-error-list"
