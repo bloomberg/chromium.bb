@@ -78,7 +78,6 @@ html[dir=rtl] #edit-bg {
 
 .ep-enhanced #edit-bg-icon {
   background-color: rgb(var(--GB600-rgb));
-  margin-inline-start: 12px;
 }
 
 html[darkmode=true] .ep-enhanced #edit-bg-icon {
@@ -86,20 +85,26 @@ html[darkmode=true] .ep-enhanced #edit-bg-icon {
 }
 
 #edit-bg-text {
-  display: none;
-  user-select: none;
-}
-
-.ep-enhanced #edit-bg-text {
   color: rgb(var(--GB600-rgb));
-  display: inline;
+  display: none;
   font-size: 14px;
   padding-inline-end: 12px;
   padding-inline-start: 8px;
+  user-select: none;
 }
 
 html[darkmode=true] .ep-enhanced #edit-bg-text {
   color: rgb(var(--GB300-rgb));
+}
+
+@media (min-width: 550px) {
+  .ep-enhanced #edit-bg-icon {
+    margin-inline-start: 12px;
+  }
+
+  .ep-enhanced #edit-bg-text {
+    display: inline;
+  }
 }
 
 #edit-bg-dialog::backdrop {
