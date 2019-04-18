@@ -1420,7 +1420,7 @@ def PreCqBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.no_vmtest_builder,
       boards=[],
       builder_class_name='test_builders.ChromiteTestsBuilder',
-      description='Run the chromite network unittests.',
+      description='Run the chromite unittests.',
   )
 
 
@@ -4029,7 +4029,8 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       debug=True,
       prebuilts=constants.PUBLIC,
       build_timeout=18 * 60 * 60,
-      description='Rebuild the SDK using previously built SDK for bootstrapping',
+      description='Rebuild the SDK using previously built SDK for '
+                  'bootstrapping',
       doc='https://dev.chromium.org/chromium-os/build/builder-overview#'
           'TOC-Continuous',
       schedule='with 30m interval',
