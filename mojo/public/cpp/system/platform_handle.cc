@@ -33,6 +33,8 @@ base::PlatformFile PlatformFileFromPlatformHandleValue(uint64_t value) {
 #endif
 }
 
+}  // namespace
+
 ScopedSharedBufferHandle WrapPlatformSharedMemoryRegion(
     base::subtle::PlatformSharedMemoryRegion region) {
   if (!region.IsValid())
@@ -176,8 +178,6 @@ base::subtle::PlatformSharedMemoryRegion UnwrapPlatformSharedMemoryRegion(
       std::move(region_handle), mode, size,
       base::UnguessableToken::Deserialize(mojo_guid.high, mojo_guid.low));
 }
-
-}  // namespace
 
 ScopedHandle WrapPlatformHandle(PlatformHandle handle) {
   MojoPlatformHandle platform_handle;
