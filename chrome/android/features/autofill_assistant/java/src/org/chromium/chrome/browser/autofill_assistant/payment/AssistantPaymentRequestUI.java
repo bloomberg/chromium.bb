@@ -231,10 +231,12 @@ public class AssistantPaymentRequestUI
                 (LinearLayout) mRequestView.findViewById(R.id.payment_container_layout);
         mShippingAddressSection = new AssistantPaymentRequestSection(
                 mActivity, mActivity.getString(mShippingStrings.getAddressLabel()), this);
-        mContactDetailsSection = new AssistantPaymentRequestSection(
-                mActivity, mActivity.getString(R.string.payments_contact_details_label), this);
-        mPaymentMethodSection = new AssistantPaymentRequestSection(
-                mActivity, mActivity.getString(R.string.payments_method_of_payment_label), this);
+        mContactDetailsSection = new AssistantPaymentRequestSection(mActivity,
+                mActivity.getString(org.chromium.chrome.R.string.payments_contact_details_label),
+                this);
+        mPaymentMethodSection = new AssistantPaymentRequestSection(mActivity,
+                mActivity.getString(org.chromium.chrome.R.string.payments_method_of_payment_label),
+                this);
 
         // Display the summary of the selected address in multiple lines on bottom sheet.
         mShippingAddressSection.setDisplaySummaryInSingleLineInNormalMode(false);

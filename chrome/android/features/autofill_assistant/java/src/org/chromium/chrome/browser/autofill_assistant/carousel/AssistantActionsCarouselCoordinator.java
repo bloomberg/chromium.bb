@@ -96,8 +96,9 @@ public class AssistantActionsCarouselCoordinator implements AssistantCarouselCoo
         static CustomViewHolder create(ViewGroup parent, int viewType) {
             // Wrap the chip inside a rectangular FrameLayout with white background.
             FrameLayout frameLayout = new FrameLayout(parent.getContext());
-            frameLayout.setBackgroundColor(ApiCompatibilityUtils.getColor(
-                    parent.getContext().getResources(), R.color.sheet_bg_color));
+            frameLayout.setBackgroundColor(
+                    ApiCompatibilityUtils.getColor(parent.getContext().getResources(),
+                            org.chromium.chrome.R.color.sheet_bg_color));
             frameLayout.setLayoutParams(new ViewGroup.LayoutParams(
                     ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
             AssistantChipViewHolder delegateViewHolder =

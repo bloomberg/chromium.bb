@@ -86,7 +86,7 @@ public class AutofillAssistantFacade {
 
         // Early exit if autofill assistant should not be triggered.
         if (!canStart(activity.getInitialIntent())
-                && AutofillAssistantPreferencesUtil.getShowOnboarding()) {
+                && !AutofillAssistantPreferencesUtil.getShowOnboarding()) {
             return;
         }
 
