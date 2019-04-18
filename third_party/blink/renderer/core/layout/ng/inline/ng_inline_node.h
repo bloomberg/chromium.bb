@@ -46,8 +46,9 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
       const NGBreakToken*,
       NGInlineChildLayoutContext* context);
 
-  // Prepare to reuse fragments. Returns false if reuse is not possible.
-  bool PrepareReuseFragments(const NGConstraintSpace&);
+  // Find the container of reusable line boxes. Returns nullptr if there are no
+  // reusable line boxes.
+  const NGPaintFragment* ReusableLineBoxContainer(const NGConstraintSpace&);
 
   // Computes the value of min-content and max-content for this anonymous block
   // box. min-content is the inline size when lines wrap at every break

@@ -2553,10 +2553,6 @@ void LayoutBlockFlow::AddLayoutOverflowFromFloats() {
   }
 }
 
-bool LayoutBlockFlow::AreCachedLinesValidFor(const NGConstraintSpace&) const {
-  return false;
-}
-
 void LayoutBlockFlow::SetPaintFragment(
     const NGBlockBreakToken*,
     scoped_refptr<const NGPhysicalFragment>) {}
