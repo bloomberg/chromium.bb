@@ -689,6 +689,23 @@ TEST_P(SimpleURLLoaderTest, BasicRequest) {
   }
 }
 
+// Test that SimpleURLLoader handles data URLs, which don't have headers.
+TEST_P(SimpleURLLoaderTest, DataURL) {
+  std::unique_ptr<SimpleLoaderTestHelper> test_helper =
+      CreateHelperForURL(GURL("data:text/plain,foo"));
+  test_helper->StartSimpleLoaderAndWait(url_loader_factory_.get());
+
+  EXPECT_EQ(net::OK, test_helper->simple_url_loader()->NetError());
+  ASSERT_TRUE(test_helper->simple_url_loader()->ResponseInfo());
+  EXPECT_FALSE(test_helper->simple_url_loader()->ResponseInfo()->headers);
+
+  if (GetParam() != SimpleLoaderTestHelper::DownloadType::HEADERS_ONLY) {
+    ASSERT_TRUE(test_helper->response_body());
+    EXPECT_EQ("foo", *test_helper->response_body());
+    EXPECT_EQ(3, test_helper->simple_url_loader()->GetContentSize());
+  }
+}
+
 // Make sure the class works when the size of the encoded and decoded bodies are
 // different.
 TEST_P(SimpleURLLoaderTest, GzipBody) {
@@ -2798,7 +2815,7 @@ class SimpleURLLoaderFileTest : public SimpleURLLoaderTestBase,
 TEST_F(SimpleURLLoaderFileTest, OverwriteFile) {
   std::string junk_data(100, '!');
   std::unique_ptr<SimpleLoaderTestHelper> test_helper =
-      CreateHelperForURL(test_server_.GetURL("/echo"));
+      CreateHelperForURL(GURL("data:text/plain,foo"));
   {
     base::ScopedAllowBlockingForTesting allow_blocking;
     ASSERT_EQ(static_cast<int>(junk_data.size()),
@@ -2812,13 +2829,13 @@ TEST_F(SimpleURLLoaderFileTest, OverwriteFile) {
   EXPECT_EQ(net::OK, test_helper->simple_url_loader()->NetError());
   ASSERT_TRUE(test_helper->simple_url_loader()->ResponseInfo());
   ASSERT_TRUE(test_helper->response_body());
-  EXPECT_EQ("Echo", *test_helper->response_body());
+  EXPECT_EQ("foo", *test_helper->response_body());
 }
 
 // Make sure that file creation errors are handled correctly.
 TEST_F(SimpleURLLoaderFileTest, FileCreateError) {
   std::unique_ptr<SimpleLoaderTestHelper> test_helper =
-      CreateHelperForURL(test_server_.GetURL("/echo"));
+      CreateHelperForURL(GURL("data:text/plain,foo"));
   {
     base::ScopedAllowBlockingForTesting allow_blocking;
     ASSERT_TRUE(base::CreateDirectory(test_helper->dest_path()));
