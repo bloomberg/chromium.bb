@@ -750,8 +750,7 @@ class KioskTest : public OobeBaseTest {
 
     // Configure network should bring up lock screen for owner.
     OobeScreenWaiter lock_screen_waiter(OobeScreen::SCREEN_ACCOUNT_PICKER);
-    static_cast<AppLaunchSplashScreenView::Delegate*>(GetAppLaunchController())
-        ->OnConfigureNetwork();
+    GetAppLaunchController()->OnConfigureNetwork();
     lock_screen_waiter.Wait();
 
     // There should be only one owner pod on this screen.
