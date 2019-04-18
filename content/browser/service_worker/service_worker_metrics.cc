@@ -732,9 +732,9 @@ void ServiceWorkerMetrics::RecordNavigationPreloadResponse(
     ResourceType resource_type) {
   DCHECK_GE(worker_start.ToInternalValue(), 0);
   DCHECK_GE(response_start.ToInternalValue(), 0);
-  DCHECK(resource_type == RESOURCE_TYPE_MAIN_FRAME ||
-         resource_type == RESOURCE_TYPE_SUB_FRAME);
-  const bool is_main_frame = (resource_type == RESOURCE_TYPE_MAIN_FRAME);
+  DCHECK(resource_type == ResourceType::kMainFrame ||
+         resource_type == ResourceType::kSubFrame);
+  const bool is_main_frame = (resource_type == ResourceType::kMainFrame);
   // TODO(falken): Log sub-frame navigations also.
   if (!is_main_frame) {
     return;

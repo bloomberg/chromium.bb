@@ -260,7 +260,7 @@ void UkmPageLoadMetricsObserver::OnLoadedResource(
   if (was_hidden_)
     return;
   if (extra_request_complete_info.resource_type ==
-      content::RESOURCE_TYPE_MAIN_FRAME) {
+      content::ResourceType::kMainFrame) {
     DCHECK(!main_frame_timing_.has_value());
     main_frame_timing_ = *extra_request_complete_info.load_timing_info;
   }

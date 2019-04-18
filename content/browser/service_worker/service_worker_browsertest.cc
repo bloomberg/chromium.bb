@@ -947,7 +947,7 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
     version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
     GURL url = embedded_test_server()->GetURL(path);
-    ResourceType resource_type = RESOURCE_TYPE_MAIN_FRAME;
+    ResourceType resource_type = ResourceType::kMainFrame;
     base::OnceClosure prepare_callback = CreatePrepareReceiver(prepare_result);
     ServiceWorkerFetchDispatcher::FetchCallback fetch_callback =
         CreateResponseReceiver(std::move(done), blob_context_.get(), result);

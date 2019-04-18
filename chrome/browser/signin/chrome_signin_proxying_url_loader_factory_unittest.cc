@@ -140,7 +140,7 @@ TEST_F(ChromeSigninProxyingURLLoaderFactoryTest, ModifyHeaders) {
   auto request = std::make_unique<network::ResourceRequest>();
   request->url = kTestURL;
   request->referrer = kTestReferrer;
-  request->resource_type = static_cast<int>(content::RESOURCE_TYPE_MAIN_FRAME);
+  request->resource_type = static_cast<int>(content::ResourceType::kMainFrame);
   request->is_main_frame = true;
   request->headers.SetHeader("X-Request-1", "Foo");
 
@@ -160,7 +160,7 @@ TEST_F(ChromeSigninProxyingURLLoaderFactoryTest, ModifyHeaders) {
           Invoke([&](ChromeRequestAdapter* adapter, const GURL& redirect_url) {
             EXPECT_EQ(kTestURL, adapter->GetUrl());
             EXPECT_TRUE(adapter->IsMainRequestContext(nullptr /* io_data */));
-            EXPECT_EQ(content::RESOURCE_TYPE_MAIN_FRAME,
+            EXPECT_EQ(content::ResourceType::kMainFrame,
                       adapter->GetResourceType());
             EXPECT_EQ(GURL("https://chrome.com"), adapter->GetReferrerOrigin());
 
@@ -178,7 +178,7 @@ TEST_F(ChromeSigninProxyingURLLoaderFactoryTest, ModifyHeaders) {
       .WillOnce(
           Invoke([&](ChromeRequestAdapter* adapter, const GURL& redirect_url) {
             EXPECT_TRUE(adapter->IsMainRequestContext(nullptr));
-            EXPECT_EQ(content::RESOURCE_TYPE_MAIN_FRAME,
+            EXPECT_EQ(content::ResourceType::kMainFrame,
                       adapter->GetResourceType());
 
             // Changes to the URL and referrer take effect after the redirect

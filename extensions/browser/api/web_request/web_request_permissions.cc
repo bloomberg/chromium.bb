@@ -255,19 +255,19 @@ bool WebRequestPermissions::HideRequest(
   if (is_request_from_browser) {
     // Hide all non-navigation requests made by the browser. crbug.com/884932.
     if (!request.is_browser_side_navigation &&
-        request.type != content::RESOURCE_TYPE_NAVIGATION_PRELOAD) {
+        request.type != content::ResourceType::kNavigationPreload) {
       return true;
     }
 
-    DCHECK(request.type == content::RESOURCE_TYPE_MAIN_FRAME ||
-           request.type == content::RESOURCE_TYPE_SUB_FRAME ||
-           request.type == content::RESOURCE_TYPE_NAVIGATION_PRELOAD);
+    DCHECK(request.type == content::ResourceType::kMainFrame ||
+           request.type == content::ResourceType::kSubFrame ||
+           request.type == content::ResourceType::kNavigationPreload);
 
     // Hide sub-frame requests to clientsX.google.com.
     // TODO(crbug.com/890006): Determine if the code here can be cleaned up
     // since browser initiated non-navigation requests are now hidden from
     // extensions.
-    if (request.type != content::RESOURCE_TYPE_MAIN_FRAME &&
+    if (request.type != content::ResourceType::kMainFrame &&
         IsSensitiveGoogleClientUrl(request)) {
       return true;
     }

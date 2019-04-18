@@ -99,7 +99,7 @@ void PopulateResourceResponse(
   response->head.effective_connection_type =
       net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
 
-  if (info->GetResourceType() == RESOURCE_TYPE_MAIN_FRAME) {
+  if (info->GetResourceType() == ResourceType::kMainFrame) {
     DCHECK(info->IsMainFrame());
     net::NetworkQualityEstimator* estimator =
         request->context()->network_quality_estimator();

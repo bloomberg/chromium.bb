@@ -871,7 +871,7 @@ void ChromeContentBrowserClientExtensionsPart::
   // Log that CORB would have blocked in a meaningful way a request that was
   // initiated by a content script.
   UMA_HISTOGRAM_ENUMERATION("SiteIsolation.XSD.Browser.Allowed.ContentScript",
-                            resource_type, content::RESOURCE_TYPE_LAST_TYPE);
+                            resource_type);
   rappor::SampleString(rappor::GetDefaultService(),
                        "Extensions.CrossOriginFetchFromContentScript2",
                        rappor::UMA_RAPPOR_TYPE, extension_id);

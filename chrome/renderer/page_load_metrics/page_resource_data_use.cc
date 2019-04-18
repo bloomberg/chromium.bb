@@ -17,7 +17,7 @@ namespace {
 // Returns true when the image is a placeholder for lazy load or client LoFi.
 bool IsPartialImageRequest(content::ResourceType resource_type,
                            content::PreviewsState previews_state) {
-  if (resource_type != content::RESOURCE_TYPE_IMAGE)
+  if (resource_type != content::ResourceType::kImage)
     return false;
   return (previews_state & content::PreviewsTypes::CLIENT_LOFI_ON) ||
          (previews_state & content::PreviewsTypes::LAZY_IMAGE_LOAD_DEFERRED);
@@ -26,7 +26,7 @@ bool IsPartialImageRequest(content::ResourceType resource_type,
 // Returns true if this resource was previously fetched as a placeholder.
 bool IsImageAutoReload(content::ResourceType resource_type,
                        content::PreviewsState previews_state) {
-  if (resource_type != content::RESOURCE_TYPE_IMAGE)
+  if (resource_type != content::ResourceType::kImage)
     return false;
   return (previews_state & content::PreviewsTypes::CLIENT_LOFI_AUTO_RELOAD) ||
          (previews_state & content::PreviewsTypes::LAZY_IMAGE_AUTO_RELOAD);
@@ -110,8 +110,8 @@ void PageResourceDataUse::DidStartResponse(
   was_fetched_via_cache_ = response_head.was_fetched_via_cache;
   is_secure_scheme_ = response_url.SchemeIsCryptographic();
   is_primary_frame_resource_ =
-      resource_type == content::RESOURCE_TYPE_MAIN_FRAME ||
-      resource_type == content::RESOURCE_TYPE_SUB_FRAME;
+      resource_type == content::ResourceType::kMainFrame ||
+      resource_type == content::ResourceType::kSubFrame;
   origin_ = url::Origin::Create(response_url);
 }
 

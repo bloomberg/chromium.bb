@@ -71,7 +71,7 @@ TEST(ChromeSigninURLLoaderThrottleTest, Intercept) {
           Invoke([&](ChromeRequestAdapter* adapter, const GURL& redirect_url) {
             EXPECT_EQ(kTestURL, adapter->GetUrl());
             EXPECT_TRUE(adapter->IsMainRequestContext(nullptr /* io_data */));
-            EXPECT_EQ(content::RESOURCE_TYPE_MAIN_FRAME,
+            EXPECT_EQ(content::ResourceType::kMainFrame,
                       adapter->GetResourceType());
             EXPECT_EQ(GURL("https://chrome.com"), adapter->GetReferrerOrigin());
 
@@ -90,7 +90,7 @@ TEST(ChromeSigninURLLoaderThrottleTest, Intercept) {
   network::ResourceRequest request;
   request.url = kTestURL;
   request.referrer = kTestReferrer;
-  request.resource_type = static_cast<int>(content::RESOURCE_TYPE_MAIN_FRAME);
+  request.resource_type = static_cast<int>(content::ResourceType::kMainFrame);
   request.headers.SetHeader("X-Request-1", "Foo");
   bool defer = false;
   throttle->WillStartRequest(&request, &defer);
@@ -136,7 +136,7 @@ TEST(ChromeSigninURLLoaderThrottleTest, Intercept) {
       .WillOnce(
           Invoke([&](ChromeRequestAdapter* adapter, const GURL& redirect_url) {
             EXPECT_TRUE(adapter->IsMainRequestContext(nullptr));
-            EXPECT_EQ(content::RESOURCE_TYPE_MAIN_FRAME,
+            EXPECT_EQ(content::ResourceType::kMainFrame,
                       adapter->GetResourceType());
 
             // Changes to the URL and referrer take effect after the redirect
@@ -238,12 +238,12 @@ TEST(ChromeSigninURLLoaderThrottleTest, InterceptSubFrame) {
       .Times(2)
       .WillRepeatedly([](ChromeRequestAdapter* adapter,
                          const GURL& redirect_url) {
-        EXPECT_EQ(content::RESOURCE_TYPE_SUB_FRAME, adapter->GetResourceType());
+        EXPECT_EQ(content::ResourceType::kSubFrame, adapter->GetResourceType());
       });
 
   network::ResourceRequest request;
   request.url = GURL("https://google.com");
-  request.resource_type = static_cast<int>(content::RESOURCE_TYPE_SUB_FRAME);
+  request.resource_type = static_cast<int>(content::ResourceType::kSubFrame);
 
   bool defer = false;
   throttle->WillStartRequest(&request, &defer);

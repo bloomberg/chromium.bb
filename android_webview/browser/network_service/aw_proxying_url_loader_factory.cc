@@ -498,7 +498,8 @@ void InterceptedRequest::OnReceiveResponse(
                        std::move(error_info)));
   }
 
-  if (request_.resource_type == content::RESOURCE_TYPE_MAIN_FRAME) {
+  if (request_.resource_type ==
+      static_cast<int>(content::ResourceType::kMainFrame)) {
     // Check for x-auto-login-header
     HeaderData header_data;
     std::string header_string;

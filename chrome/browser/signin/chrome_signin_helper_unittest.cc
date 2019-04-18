@@ -75,8 +75,8 @@ class ChromeSigninHelperTest : public testing::Test {
         TRAFFIC_ANNOTATION_FOR_TESTS);
     content::ResourceRequestInfo::AllocateForTesting(
         request_.get(),
-        is_main_frame ? content::RESOURCE_TYPE_MAIN_FRAME
-                      : content::RESOURCE_TYPE_SUB_FRAME,
+        is_main_frame ? content::ResourceType::kMainFrame
+                      : content::ResourceType::kSubFrame,
         nullptr, -1, -1, -1, true, content::ResourceInterceptPolicy::kAllowNone,
         true, content::PREVIEWS_OFF, nullptr);
     net::URLRequestFilter::GetInstance()->AddUrlInterceptor(

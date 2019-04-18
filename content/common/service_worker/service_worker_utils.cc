@@ -48,9 +48,9 @@ bool PathContainsDisallowedCharacter(const GURL& url) {
 bool ServiceWorkerUtils::IsMainResourceType(ResourceType type) {
   // When PlzDedicatedWorker is enabled, a dedicated worker script is considered
   // to be a main resource.
-  if (type == RESOURCE_TYPE_WORKER)
+  if (type == ResourceType::kWorker)
     return blink::features::IsPlzDedicatedWorkerEnabled();
-  return IsResourceTypeFrame(type) || type == RESOURCE_TYPE_SHARED_WORKER;
+  return IsResourceTypeFrame(type) || type == ResourceType::kSharedWorker;
 }
 
 // static

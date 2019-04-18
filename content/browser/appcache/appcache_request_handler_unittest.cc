@@ -310,7 +310,7 @@ class AppCacheRequestHandlerTest
                        base::Unretained(this)));
 
     EXPECT_TRUE(CreateRequestAndHandler(GURL("http://blah"), host_,
-                                        RESOURCE_TYPE_MAIN_FRAME));
+                                        ResourceType::kMainFrame));
     EXPECT_TRUE(handler_.get());
 
     SetAppCacheJob(handler_->MaybeLoadResource(nullptr));
@@ -351,7 +351,7 @@ class AppCacheRequestHandlerTest
                        base::Unretained(this)));
 
     EXPECT_TRUE(CreateRequestAndHandler(GURL("http://blah"), host_,
-                                        RESOURCE_TYPE_MAIN_FRAME));
+                                        ResourceType::kMainFrame));
     EXPECT_TRUE(handler_.get());
 
     mock_storage()->SimulateFindMainResource(
@@ -393,7 +393,7 @@ class AppCacheRequestHandlerTest
         base::Unretained(this)));
 
     EXPECT_TRUE(CreateRequestAndHandler(GURL("http://blah"), host_,
-                                        RESOURCE_TYPE_MAIN_FRAME));
+                                        ResourceType::kMainFrame));
     EXPECT_TRUE(handler_.get());
 
     mock_storage()->SimulateFindMainResource(
@@ -487,7 +487,7 @@ class AppCacheRequestHandlerTest
         base::Unretained(this)));
 
     EXPECT_TRUE(CreateRequestAndHandler(GURL("http://blah/fallback-override"),
-                                        host_, RESOURCE_TYPE_MAIN_FRAME));
+                                        host_, ResourceType::kMainFrame));
     EXPECT_TRUE(handler_.get());
 
     mock_storage()->SimulateFindMainResource(
@@ -547,7 +547,7 @@ class AppCacheRequestHandlerTest
 
   void SubResource_Miss_WithNoCacheSelected() {
     EXPECT_TRUE(CreateRequestAndHandler(GURL("http://blah/"), host_,
-                                        RESOURCE_TYPE_SUB_RESOURCE));
+                                        ResourceType::kSubResource));
     // We avoid creating handler when possible, sub-resource requests are not
     // subject to retrieval from an appcache when there's no associated cache.
     EXPECT_FALSE(handler_.get());
@@ -563,7 +563,7 @@ class AppCacheRequestHandlerTest
     host_->AssociateCompleteCache(MakeNewCache());
 
     EXPECT_TRUE(CreateRequestAndHandler(GURL("http://blah/"), host_,
-                                        RESOURCE_TYPE_SUB_RESOURCE));
+                                        ResourceType::kSubResource));
     EXPECT_TRUE(handler_.get());
 
     SetAppCacheJob(handler_->MaybeLoadResource(nullptr));
@@ -588,7 +588,7 @@ class AppCacheRequestHandlerTest
     host_->set_preferred_manifest_url(cache->owning_group()->manifest_url());
 
     EXPECT_TRUE(CreateRequestAndHandler(GURL("http://blah/"), host_,
-                                        RESOURCE_TYPE_SUB_RESOURCE));
+                                        ResourceType::kSubResource));
     EXPECT_TRUE(handler_.get());
     SetAppCacheJob(handler_->MaybeLoadResource(nullptr));
     EXPECT_TRUE(job());
@@ -616,7 +616,7 @@ class AppCacheRequestHandlerTest
         AppCacheEntry(AppCacheEntry::EXPLICIT, 1), AppCacheEntry(), false);
 
     EXPECT_TRUE(CreateRequestAndHandler(GURL("http://blah/"), host_,
-                                        RESOURCE_TYPE_SUB_RESOURCE));
+                                        ResourceType::kSubResource));
     EXPECT_TRUE(handler_.get());
     SetAppCacheJob(handler_->MaybeLoadResource(nullptr));
     EXPECT_TRUE(job());
@@ -642,7 +642,7 @@ class AppCacheRequestHandlerTest
         AppCacheEntry(), AppCacheEntry(AppCacheEntry::EXPLICIT, 1), false);
 
     EXPECT_TRUE(CreateRequestAndHandler(GURL("http://blah/"), host_,
-                                        RESOURCE_TYPE_SUB_RESOURCE));
+                                        ResourceType::kSubResource));
     EXPECT_TRUE(handler_.get());
     SetAppCacheJob(handler_->MaybeLoadResource(nullptr));
     EXPECT_FALSE(job());
@@ -669,7 +669,7 @@ class AppCacheRequestHandlerTest
         AppCacheEntry(), AppCacheEntry(AppCacheEntry::EXPLICIT, 1), false);
 
     EXPECT_TRUE(CreateRequestAndHandler(GURL("http://blah/"), host_,
-                                        RESOURCE_TYPE_SUB_RESOURCE));
+                                        ResourceType::kSubResource));
     EXPECT_TRUE(handler_.get());
     SetAppCacheJob(handler_->MaybeLoadResource(nullptr));
     EXPECT_FALSE(job());
@@ -697,7 +697,7 @@ class AppCacheRequestHandlerTest
                                             true);
 
     EXPECT_TRUE(CreateRequestAndHandler(GURL("http://blah/"), host_,
-                                        RESOURCE_TYPE_SUB_RESOURCE));
+                                        ResourceType::kSubResource));
     EXPECT_TRUE(handler_.get());
     SetAppCacheJob(handler_->MaybeLoadResource(nullptr));
     EXPECT_FALSE(job());
@@ -720,7 +720,7 @@ class AppCacheRequestHandlerTest
         AppCacheEntry(AppCacheEntry::EXPLICIT, 1), AppCacheEntry(), false);
 
     EXPECT_TRUE(CreateRequestAndHandler(GURL("http://blah/"), host_,
-                                        RESOURCE_TYPE_SUB_RESOURCE));
+                                        ResourceType::kSubResource));
     EXPECT_TRUE(handler_.get());
 
     backend_impl_->UnregisterHost(1);
@@ -741,7 +741,7 @@ class AppCacheRequestHandlerTest
     host_->pending_selected_cache_id_ = 1;
 
     EXPECT_TRUE(CreateRequestAndHandler(GURL("http://blah/"), host_,
-                                        RESOURCE_TYPE_SUB_RESOURCE));
+                                        ResourceType::kSubResource));
     EXPECT_TRUE(handler_.get());
 
     SetAppCacheJob(handler_->MaybeLoadResource(nullptr));
@@ -771,7 +771,7 @@ class AppCacheRequestHandlerTest
         AppCacheEntry(AppCacheEntry::EXPLICIT, 1), AppCacheEntry(), false);
 
     EXPECT_TRUE(CreateRequestAndHandler(GURL("http://blah/"), host_,
-                                        RESOURCE_TYPE_SUB_RESOURCE));
+                                        ResourceType::kSubResource));
     EXPECT_TRUE(handler_.get());
     SetAppCacheJob(handler_->MaybeLoadResource(nullptr));
     EXPECT_TRUE(job());
@@ -799,7 +799,7 @@ class AppCacheRequestHandlerTest
     host_->pending_selected_cache_id_ = 1;
 
     EXPECT_TRUE(CreateRequestAndHandler(GURL("ftp://blah/"), host_,
-                                        RESOURCE_TYPE_SUB_RESOURCE));
+                                        ResourceType::kSubResource));
     EXPECT_TRUE(handler_.get());  // we could redirect to http (conceivably)
 
     EXPECT_FALSE(handler_->MaybeLoadResource(nullptr));
@@ -814,7 +814,7 @@ class AppCacheRequestHandlerTest
 
   void CanceledRequest() {
     EXPECT_TRUE(CreateRequestAndHandler(GURL("http://blah/"), host_,
-                                        RESOURCE_TYPE_MAIN_FRAME));
+                                        ResourceType::kMainFrame));
     EXPECT_TRUE(handler_.get());
 
     SetAppCacheJob(handler_->MaybeLoadResource(nullptr));
@@ -850,7 +850,7 @@ class AppCacheRequestHandlerTest
                        base::Unretained(this)));
 
     EXPECT_TRUE(CreateRequestAndHandler(GURL("http://blah/"), host_,
-                                        RESOURCE_TYPE_MAIN_FRAME));
+                                        ResourceType::kMainFrame));
     EXPECT_TRUE(handler_.get());
 
     mock_policy_->can_load_return_value_ = false;

@@ -104,7 +104,7 @@ class ContentLoFiDeciderTest : public testing::Test {
                                      content::PreviewsState previews_state) {
     content::ResourceRequestInfo::AllocateForTesting(
         request, resource_type, nullptr, -1, -1, -1,
-        resource_type == content::RESOURCE_TYPE_MAIN_FRAME,
+        resource_type == content::ResourceType::kMainFrame,
         content::ResourceInterceptPolicy::kAllowNone,
         false,  // is_async
         previews_state,
@@ -119,8 +119,8 @@ class ContentLoFiDeciderTest : public testing::Test {
                                &delegate_, TRAFFIC_ANNOTATION_FOR_TESTS);
     AllocateRequestInfoForTesting(
         request.get(),
-        (is_main_frame ? content::RESOURCE_TYPE_MAIN_FRAME
-                       : content::RESOURCE_TYPE_SUB_FRAME),
+        (is_main_frame ? content::ResourceType::kMainFrame
+                       : content::ResourceType::kSubFrame),
         previews_state);
     return request;
   }
@@ -256,12 +256,12 @@ TEST_F(ContentLoFiDeciderTest, MaybeSetAcceptTransformNoAcceptForHttps) {
 
   // Verify no accept header for HTTPS.
   std::unique_ptr<net::URLRequest> request =
-      CreateRequestByType(content::RESOURCE_TYPE_MAIN_FRAME, true /* https */,
+      CreateRequestByType(content::ResourceType::kMainFrame, true /* https */,
                           both_previews_enabled);
   VerifyAcceptTransformHeader(*request, false /* lite-page */,
                               false /* empty-image */);
 
-  request = CreateRequestByType(content::RESOURCE_TYPE_IMAGE, true /* https */,
+  request = CreateRequestByType(content::ResourceType::kImage, true /* https */,
                                 both_previews_enabled);
   VerifyAcceptTransformHeader(*request, false /* lite-page */,
                               false /* empty-image */);
@@ -296,26 +296,26 @@ TEST_F(ContentLoFiDeciderTest, MaybeSetAcceptTransformHeaderAcceptEmptyImage) {
 
   // Verify accepting empty-image per resource type.
   std::unique_ptr<net::URLRequest> request = CreateRequestByType(
-      content::RESOURCE_TYPE_MAIN_FRAME, false /* https */, lofi_enabled);
+      content::ResourceType::kMainFrame, false /* https */, lofi_enabled);
   VerifyAcceptTransformHeader(*request, false /* lite-page */,
                               false /* empty-image */);
 
-  request = CreateRequestByType(content::RESOURCE_TYPE_IMAGE, false /* https */,
-                                lofi_enabled);
-  VerifyAcceptTransformHeader(*request, false /* lite-page */,
-                              true /* empty-image */);
-
-  request = CreateRequestByType(content::RESOURCE_TYPE_FAVICON,
+  request = CreateRequestByType(content::ResourceType::kImage,
                                 false /* https */, lofi_enabled);
   VerifyAcceptTransformHeader(*request, false /* lite-page */,
                               true /* empty-image */);
 
-  request = CreateRequestByType(content::RESOURCE_TYPE_SCRIPT,
+  request = CreateRequestByType(content::ResourceType::kFavicon,
+                                false /* https */, lofi_enabled);
+  VerifyAcceptTransformHeader(*request, false /* lite-page */,
+                              true /* empty-image */);
+
+  request = CreateRequestByType(content::ResourceType::kScript,
                                 false /* https */, lofi_enabled);
   VerifyAcceptTransformHeader(*request, false /* lite-page */,
                               false /* empty-image */);
 
-  request = CreateRequestByType(content::RESOURCE_TYPE_STYLESHEET,
+  request = CreateRequestByType(content::ResourceType::kStylesheet,
                                 false /* https */, lofi_enabled);
   VerifyAcceptTransformHeader(*request, false /* lite-page */,
                               false /* empty-image */);
@@ -328,24 +328,24 @@ TEST_F(ContentLoFiDeciderTest, AcceptTransformPerResourceType) {
 
   const struct {
     content::ResourceType resource_type;
-  } tests[] = {{content::RESOURCE_TYPE_MAIN_FRAME},
-               {content::RESOURCE_TYPE_SUB_FRAME},
-               {content::RESOURCE_TYPE_STYLESHEET},
-               {content::RESOURCE_TYPE_SCRIPT},
-               {content::RESOURCE_TYPE_IMAGE},
-               {content::RESOURCE_TYPE_FONT_RESOURCE},
-               {content::RESOURCE_TYPE_SUB_RESOURCE},
-               {content::RESOURCE_TYPE_OBJECT},
-               {content::RESOURCE_TYPE_MEDIA},
-               {content::RESOURCE_TYPE_WORKER},
-               {content::RESOURCE_TYPE_SHARED_WORKER},
-               {content::RESOURCE_TYPE_PREFETCH},
-               {content::RESOURCE_TYPE_FAVICON},
-               {content::RESOURCE_TYPE_XHR},
-               {content::RESOURCE_TYPE_PING},
-               {content::RESOURCE_TYPE_SERVICE_WORKER},
-               {content::RESOURCE_TYPE_CSP_REPORT},
-               {content::RESOURCE_TYPE_PLUGIN_RESOURCE}};
+  } tests[] = {{content::ResourceType::kMainFrame},
+               {content::ResourceType::kSubFrame},
+               {content::ResourceType::kStylesheet},
+               {content::ResourceType::kScript},
+               {content::ResourceType::kImage},
+               {content::ResourceType::kFontResource},
+               {content::ResourceType::kSubResource},
+               {content::ResourceType::kObject},
+               {content::ResourceType::kMedia},
+               {content::ResourceType::kWorker},
+               {content::ResourceType::kSharedWorker},
+               {content::ResourceType::kPrefetch},
+               {content::ResourceType::kFavicon},
+               {content::ResourceType::kXhr},
+               {content::ResourceType::kPing},
+               {content::ResourceType::kServiceWorker},
+               {content::ResourceType::kCspReport},
+               {content::ResourceType::kPluginResource}};
 
   for (size_t i = 0; i < base::size(tests); ++i) {
     std::unique_ptr<net::URLRequest> request = CreateRequestByType(
@@ -355,14 +355,14 @@ TEST_F(ContentLoFiDeciderTest, AcceptTransformPerResourceType) {
     NotifyBeforeSendHeaders(&headers, request.get(), true);
 
     bool is_main_frame =
-        tests[i].resource_type == content::RESOURCE_TYPE_MAIN_FRAME;
+        tests[i].resource_type == content::ResourceType::kMainFrame;
     bool is_lofi_resource_type =
-        !(tests[i].resource_type == content::RESOURCE_TYPE_MAIN_FRAME ||
-          tests[i].resource_type == content::RESOURCE_TYPE_STYLESHEET ||
-          tests[i].resource_type == content::RESOURCE_TYPE_SCRIPT ||
-          tests[i].resource_type == content::RESOURCE_TYPE_FONT_RESOURCE ||
-          tests[i].resource_type == content::RESOURCE_TYPE_MEDIA ||
-          tests[i].resource_type == content::RESOURCE_TYPE_CSP_REPORT);
+        !(tests[i].resource_type == content::ResourceType::kMainFrame ||
+          tests[i].resource_type == content::ResourceType::kStylesheet ||
+          tests[i].resource_type == content::ResourceType::kScript ||
+          tests[i].resource_type == content::ResourceType::kFontResource ||
+          tests[i].resource_type == content::ResourceType::kMedia ||
+          tests[i].resource_type == content::ResourceType::kCspReport);
 
     VerifyLitePageHeader(is_main_frame, headers);
     VerifyLoFiHeader(is_lofi_resource_type, headers);
@@ -390,7 +390,7 @@ TEST_F(ContentLoFiDeciderTest, ProxyIsNotDataReductionProxy) {
 TEST_F(ContentLoFiDeciderTest, VideoDirectiveNotOverridden) {
   // Verify the directive gets added even when LoFi is triggered.
   std::unique_ptr<net::URLRequest> request =
-      CreateRequestByType(content::RESOURCE_TYPE_MEDIA, false, true);
+      CreateRequestByType(content::ResourceType::kMedia, false, true);
   net::HttpRequestHeaders headers;
   NotifyBeforeSendHeaders(&headers, request.get(), true);
   VerifyVideoHeader(true, headers);
@@ -398,7 +398,7 @@ TEST_F(ContentLoFiDeciderTest, VideoDirectiveNotOverridden) {
 
 TEST_F(ContentLoFiDeciderTest, VideoDirectiveNotAdded) {
   std::unique_ptr<net::URLRequest> request =
-      CreateRequestByType(content::RESOURCE_TYPE_MEDIA, false, true);
+      CreateRequestByType(content::ResourceType::kMedia, false, true);
   net::HttpRequestHeaders headers;
   // Verify the header isn't there when the data reduction proxy is disabled.
   NotifyBeforeSendHeaders(&headers, request.get(), false);
@@ -408,7 +408,7 @@ TEST_F(ContentLoFiDeciderTest, VideoDirectiveNotAdded) {
 TEST_F(ContentLoFiDeciderTest, VideoDirectiveDoesNotOverride) {
   // Verify the directive gets added even when LoFi is triggered.
   std::unique_ptr<net::URLRequest> request =
-      CreateRequestByType(content::RESOURCE_TYPE_MEDIA, false, true);
+      CreateRequestByType(content::ResourceType::kMedia, false, true);
   net::HttpRequestHeaders headers;
   headers.SetHeader(chrome_proxy_accept_transform_header(), "empty-image");
   NotifyBeforeSendHeaders(&headers, request.get(), true);
@@ -437,7 +437,7 @@ TEST_F(ContentLoFiDeciderTest, NoTransformDoesNotAddHeader) {
 
 TEST_F(ContentLoFiDeciderTest, RequestIsClientSideLoFiMainFrameTest) {
   std::unique_ptr<net::URLRequest> request = CreateRequestByType(
-      content::RESOURCE_TYPE_MAIN_FRAME, true, content::CLIENT_LOFI_ON);
+      content::ResourceType::kMainFrame, true, content::CLIENT_LOFI_ON);
   std::unique_ptr<data_reduction_proxy::ContentLoFiDecider> lofi_decider(
       new data_reduction_proxy::ContentLoFiDecider());
   EXPECT_FALSE(lofi_decider->IsClientLoFiImageRequest(*request));
@@ -445,7 +445,7 @@ TEST_F(ContentLoFiDeciderTest, RequestIsClientSideLoFiMainFrameTest) {
 
 TEST_F(ContentLoFiDeciderTest, RequestIsNotClientSideLoFiImageTest) {
   std::unique_ptr<net::URLRequest> request = CreateRequestByType(
-      content::RESOURCE_TYPE_IMAGE, true, content::PREVIEWS_NO_TRANSFORM);
+      content::ResourceType::kImage, true, content::PREVIEWS_NO_TRANSFORM);
   std::unique_ptr<data_reduction_proxy::ContentLoFiDecider> lofi_decider(
       new data_reduction_proxy::ContentLoFiDecider());
   EXPECT_FALSE(lofi_decider->IsClientLoFiImageRequest(*request));
@@ -453,7 +453,7 @@ TEST_F(ContentLoFiDeciderTest, RequestIsNotClientSideLoFiImageTest) {
 
 TEST_F(ContentLoFiDeciderTest, RequestIsClientSideLoFiImageTest) {
   std::unique_ptr<net::URLRequest> request = CreateRequestByType(
-      content::RESOURCE_TYPE_IMAGE, true, content::CLIENT_LOFI_ON);
+      content::ResourceType::kImage, true, content::CLIENT_LOFI_ON);
   std::unique_ptr<data_reduction_proxy::ContentLoFiDecider> lofi_decider(
       new data_reduction_proxy::ContentLoFiDecider());
   EXPECT_TRUE(lofi_decider->IsClientLoFiImageRequest(*request));
@@ -464,26 +464,26 @@ TEST_F(ContentLoFiDeciderTest, RequestIsClientLoFiAutoReload) {
   // CLIENT_LOFI_AUTO_RELOAD bit set.
 
   EXPECT_TRUE(ContentLoFiDecider().IsClientLoFiAutoReloadRequest(
-      *CreateRequestByType(content::RESOURCE_TYPE_IMAGE, false,
+      *CreateRequestByType(content::ResourceType::kImage, false,
                            content::CLIENT_LOFI_AUTO_RELOAD)));
 
   EXPECT_TRUE(
       ContentLoFiDecider().IsClientLoFiAutoReloadRequest(*CreateRequestByType(
-          content::RESOURCE_TYPE_IMAGE, true,
+          content::ResourceType::kImage, true,
           content::CLIENT_LOFI_AUTO_RELOAD | content::PREVIEWS_NO_TRANSFORM)));
 
   EXPECT_TRUE(ContentLoFiDecider().IsClientLoFiAutoReloadRequest(
-      *CreateRequestByType(content::RESOURCE_TYPE_MAIN_FRAME, true,
+      *CreateRequestByType(content::ResourceType::kMainFrame, true,
                            content::CLIENT_LOFI_AUTO_RELOAD)));
 
   EXPECT_TRUE(ContentLoFiDecider().IsClientLoFiAutoReloadRequest(
-      *CreateRequestByType(content::RESOURCE_TYPE_SCRIPT, true,
+      *CreateRequestByType(content::ResourceType::kScript, true,
                            content::CLIENT_LOFI_AUTO_RELOAD)));
 
   // IsClientLoFiAutoReloadRequest() should return false for any request without
   // the CLIENT_LOFI_AUTO_RELOAD bit set.
   EXPECT_FALSE(ContentLoFiDecider().IsClientLoFiAutoReloadRequest(
-      *CreateRequestByType(content::RESOURCE_TYPE_IMAGE, false,
+      *CreateRequestByType(content::ResourceType::kImage, false,
                            content::PREVIEWS_NO_TRANSFORM)));
 }
 

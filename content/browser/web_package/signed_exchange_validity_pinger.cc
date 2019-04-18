@@ -87,7 +87,8 @@ void SignedExchangeValidityPinger::Start(
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = validity_url;
   resource_request->method = "HEAD";
-  resource_request->resource_type = RESOURCE_TYPE_SUB_RESOURCE;
+  resource_request->resource_type =
+      static_cast<int>(ResourceType::kSubResource);
   // Set empty origin as the initiator and attach no cookies.
   resource_request->request_initiator = url::Origin();
   resource_request->allow_credentials = false;

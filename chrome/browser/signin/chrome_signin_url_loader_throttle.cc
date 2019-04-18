@@ -98,7 +98,7 @@ class URLLoaderThrottle::ThrottleResponseAdapter : public ResponseAdapter {
 
   bool IsMainFrame() const override {
     return throttle_->request_resource_type_ ==
-           content::RESOURCE_TYPE_MAIN_FRAME;
+           content::ResourceType::kMainFrame;
   }
 
   GURL GetOrigin() const override {

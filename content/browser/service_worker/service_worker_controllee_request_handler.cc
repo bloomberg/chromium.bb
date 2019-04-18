@@ -442,7 +442,7 @@ void ServiceWorkerControlleeRequestHandler::
             ServiceWorkerVersion::FetchHandlerExistence::UNKNOWN);
   ServiceWorkerMetrics::CountControlledPageLoad(
       active_version->site_for_uma(), stripped_url_,
-      resource_type_ == RESOURCE_TYPE_MAIN_FRAME);
+      resource_type_ == ResourceType::kMainFrame);
 
   if (IsResourceTypeFrame(resource_type_))
     provider_host_->AddServiceWorkerToUpdate(active_version);

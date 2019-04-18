@@ -69,7 +69,7 @@ class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
     ServiceWorkerNavigationLoader* MaybeCreateLoader() {
       network::ResourceRequest resource_request;
       resource_request.url = request_->url();
-      resource_request.resource_type = resource_type_;
+      resource_request.resource_type = static_cast<int>(resource_type_);
       resource_request.headers = request()->extra_request_headers();
       handler_->MaybeCreateLoader(resource_request, nullptr,
                                   base::DoNothing(), base::DoNothing());
@@ -180,7 +180,7 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, DisallowServiceWorker) {
 
   // Conduct a main resource load.
   ServiceWorkerRequestTestResources test_resources(
-      this, GURL("https://host/scope/doc"), RESOURCE_TYPE_MAIN_FRAME);
+      this, GURL("https://host/scope/doc"), ResourceType::kMainFrame);
   ServiceWorkerNavigationLoader* loader = test_resources.MaybeCreateLoader();
   ASSERT_TRUE(loader);
 
@@ -211,7 +211,7 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, InsecureContext) {
 
   // Conduct a main resource load.
   ServiceWorkerRequestTestResources test_resources(
-      this, GURL("https://host/scope/doc"), RESOURCE_TYPE_MAIN_FRAME);
+      this, GURL("https://host/scope/doc"), ResourceType::kMainFrame);
   ServiceWorkerNavigationLoader* loader = test_resources.MaybeCreateLoader();
   ASSERT_TRUE(loader);
 
@@ -238,7 +238,7 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, ActivateWaitingVersion) {
 
   // Conduct a main resource load.
   ServiceWorkerRequestTestResources test_resources(
-      this, GURL("https://host/scope/doc"), RESOURCE_TYPE_MAIN_FRAME);
+      this, GURL("https://host/scope/doc"), ResourceType::kMainFrame);
   ServiceWorkerNavigationLoader* loader = test_resources.MaybeCreateLoader();
   ASSERT_TRUE(loader);
 
@@ -267,7 +267,7 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, InstallingRegistration) {
 
   // Conduct a main resource load.
   ServiceWorkerRequestTestResources test_resources(
-      this, GURL("https://host/scope/doc"), RESOURCE_TYPE_MAIN_FRAME);
+      this, GURL("https://host/scope/doc"), ResourceType::kMainFrame);
   ServiceWorkerNavigationLoader* job = test_resources.MaybeCreateLoader();
 
   base::RunLoop().RunUntilIdle();
@@ -298,7 +298,7 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, DeletedProviderHost) {
 
   // Conduct a main resource load.
   ServiceWorkerRequestTestResources test_resources(
-      this, GURL("https://host/scope/doc"), RESOURCE_TYPE_MAIN_FRAME);
+      this, GURL("https://host/scope/doc"), ResourceType::kMainFrame);
   ServiceWorkerNavigationLoader* loader = test_resources.MaybeCreateLoader();
   ASSERT_TRUE(loader);
 
@@ -327,7 +327,7 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, FallbackWithOfflineHeader) {
   registration_ = NULL;
 
   ServiceWorkerRequestTestResources test_resources(
-      this, GURL("https://host/scope/doc"), RESOURCE_TYPE_MAIN_FRAME);
+      this, GURL("https://host/scope/doc"), ResourceType::kMainFrame);
   // Sets an offline header to indicate force loading offline page.
   test_resources.request()->SetExtraRequestHeaderByName(
       "X-Chrome-offline", "reason=download", true);
@@ -348,7 +348,7 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, FallbackWithNoOfflineHeader) {
   registration_ = NULL;
 
   ServiceWorkerRequestTestResources test_resources(
-      this, GURL("https://host/scope/doc"), RESOURCE_TYPE_MAIN_FRAME);
+      this, GURL("https://host/scope/doc"), ResourceType::kMainFrame);
   // Empty offline header value should not cause fallback.
   test_resources.request()->SetExtraRequestHeaderByName("X-Chrome-offline", "",
                                                         true);

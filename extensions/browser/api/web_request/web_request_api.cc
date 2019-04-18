@@ -1975,7 +1975,7 @@ void ExtensionWebRequestEventRouter::UpdateExtraHeadersListenerOnUI(
 
 bool ExtensionWebRequestEventRouter::IsPageLoad(
     const WebRequestInfo& request) const {
-  return request.type == content::RESOURCE_TYPE_MAIN_FRAME;
+  return request.type == content::ResourceType::kMainFrame;
 }
 
 void ExtensionWebRequestEventRouter::NotifyPageLoad() {

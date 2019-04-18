@@ -187,7 +187,7 @@ void PageLoadMetricsObserverTester::SimulateLoadedResource(
 void PageLoadMetricsObserverTester::SimulateLoadedResource(
     const ExtraRequestCompleteInfo& info,
     const content::GlobalRequestID& request_id) {
-  if (info.resource_type == content::RESOURCE_TYPE_MAIN_FRAME) {
+  if (info.resource_type == content::ResourceType::kMainFrame) {
     ASSERT_NE(content::GlobalRequestID(), request_id)
         << "Main frame resources must have a GlobalRequestID.";
   }
@@ -195,8 +195,8 @@ void PageLoadMetricsObserverTester::SimulateLoadedResource(
   // For consistency with browser-side navigation, we provide a null RFH for
   // main frame and sub frame resources.
   content::RenderFrameHost* render_frame_host_or_null =
-      (info.resource_type == content::RESOURCE_TYPE_MAIN_FRAME ||
-       info.resource_type == content::RESOURCE_TYPE_SUB_FRAME)
+      (info.resource_type == content::ResourceType::kMainFrame ||
+       info.resource_type == content::ResourceType::kSubFrame)
           ? nullptr
           : web_contents()->GetMainFrame();
 

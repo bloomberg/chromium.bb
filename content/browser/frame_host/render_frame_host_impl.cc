@@ -3947,7 +3947,7 @@ void RenderFrameHostImpl::ResourceLoadComplete(
   if (main_frame_request_ids_.first == resource_load_info->request_id) {
     global_request_id = main_frame_request_ids_.second;
   } else if (resource_load_info->resource_type ==
-             content::RESOURCE_TYPE_MAIN_FRAME) {
+             content::ResourceType::kMainFrame) {
     // The load complete message for the main resource arrived before
     // |DidCommitProvisionalLoad()|. We save the load info so
     // |ResourceLoadComplete()| can be called later in

@@ -145,7 +145,7 @@ void NotifyResourceResponseReceived(
     const network::ResourceResponseHead& response_head,
     PreviewsState previews_state) {
   if (response_head.network_accessed) {
-    if (resource_load_info->resource_type == RESOURCE_TYPE_MAIN_FRAME) {
+    if (resource_load_info->resource_type == ResourceType::kMainFrame) {
       UMA_HISTOGRAM_ENUMERATION("Net.ConnectionInfo.MainFrame",
                                 response_head.connection_info,
                                 net::HttpResponseInfo::NUM_OF_CONNECTION_INFOS);

@@ -32,7 +32,7 @@ IPC_ENUM_TRAITS_MAX_VALUE(content::InputEventAckState,
 IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::RequestContextType,
                           blink::mojom::RequestContextType::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(content::ResourceType,
-                          content::RESOURCE_TYPE_LAST_TYPE - 1)
+                          content::ResourceType::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebContentSecurityPolicySource,
                           blink::kWebContentSecurityPolicySourceLast)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::ContentSecurityPolicyType,

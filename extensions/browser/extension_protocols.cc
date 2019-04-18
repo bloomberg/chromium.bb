@@ -406,7 +406,7 @@ bool AllowExtensionResourceLoad(const GURL& url,
                                 bool extension_enabled_in_incognito,
                                 const ExtensionSet& extensions,
                                 const ProcessMap& process_map) {
-  const bool is_main_frame = resource_type == content::RESOURCE_TYPE_MAIN_FRAME;
+  const bool is_main_frame = resource_type == content::ResourceType::kMainFrame;
   if (is_incognito &&
       !ExtensionCanLoadInIncognito(is_main_frame, extension,
                                    extension_enabled_in_incognito)) {

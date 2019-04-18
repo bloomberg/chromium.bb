@@ -154,18 +154,17 @@ void SafeBrowsingUrlCheckerImpl::OnCheckBrowseUrlResult(
 
   if (load_flags_ & net::LOAD_PREFETCH) {
     // Destroy the prefetch with FINAL_STATUS_SAFEBROSWING.
-    if (resource_type_ == content::RESOURCE_TYPE_MAIN_FRAME) {
+    if (resource_type_ == content::ResourceType::kMainFrame) {
       url_checker_delegate_->MaybeDestroyPrerenderContents(
           web_contents_getter_);
     }
     UMA_HISTOGRAM_ENUMERATION("SB2.ResourceTypes2.UnsafePrefetchCanceled",
-                              resource_type_, content::RESOURCE_TYPE_LAST_TYPE);
+                              resource_type_);
     BlockAndProcessUrls(false);
     return;
   }
 
-  UMA_HISTOGRAM_ENUMERATION("SB2.ResourceTypes2.Unsafe", resource_type_,
-                            content::RESOURCE_TYPE_LAST_TYPE);
+  UMA_HISTOGRAM_ENUMERATION("SB2.ResourceTypes2.Unsafe", resource_type_);
 
   security_interstitials::UnsafeResource resource;
   resource.url = url;
@@ -175,8 +174,8 @@ void SafeBrowsingUrlCheckerImpl::OnCheckBrowseUrlResult(
     for (size_t i = 1; i < urls_.size(); ++i)
       resource.redirect_urls.push_back(urls_[i].url);
   }
-  resource.is_subresource = resource_type_ != content::RESOURCE_TYPE_MAIN_FRAME;
-  resource.is_subframe = resource_type_ == content::RESOURCE_TYPE_SUB_FRAME;
+  resource.is_subresource = resource_type_ != content::ResourceType::kMainFrame;
+  resource.is_subframe = resource_type_ == content::ResourceType::kSubFrame;
   resource.threat_type = threat_type;
   resource.threat_metadata = metadata;
   resource.callback =
@@ -190,7 +189,7 @@ void SafeBrowsingUrlCheckerImpl::OnCheckBrowseUrlResult(
   state_ = STATE_DISPLAYING_BLOCKING_PAGE;
   url_checker_delegate_->StartDisplayingBlockingPageHelper(
       resource, urls_[next_index_].method, headers_,
-      resource_type_ == content::RESOURCE_TYPE_MAIN_FRAME, has_user_gesture_);
+      resource_type_ == content::ResourceType::kMainFrame, has_user_gesture_);
 }
 
 void SafeBrowsingUrlCheckerImpl::OnCheckUrlTimeout() {
@@ -238,8 +237,7 @@ void SafeBrowsingUrlCheckerImpl::ProcessUrls() {
       // TODO(vakh): Consider changing this metric to
       // SafeBrowsing.V4ResourceType to be consistent with the other PVer4
       // metrics.
-      UMA_HISTOGRAM_ENUMERATION("SB2.ResourceTypes2.Skipped", resource_type_,
-                                content::RESOURCE_TYPE_LAST_TYPE);
+      UMA_HISTOGRAM_ENUMERATION("SB2.ResourceTypes2.Skipped", resource_type_);
 
       if (!RunNextCallback(true, false))
         return;
@@ -249,8 +247,7 @@ void SafeBrowsingUrlCheckerImpl::ProcessUrls() {
 
     // TODO(vakh): Consider changing this metric to SafeBrowsing.V4ResourceType
     // to be consistent with the other PVer4 metrics.
-    UMA_HISTOGRAM_ENUMERATION("SB2.ResourceTypes2.Checked", resource_type_,
-                              content::RESOURCE_TYPE_LAST_TYPE);
+    UMA_HISTOGRAM_ENUMERATION("SB2.ResourceTypes2.Checked", resource_type_);
 
     SBThreatType threat_type = CheckWebUIUrls(url);
     if (threat_type != safe_browsing::SB_THREAT_TYPE_SAFE) {

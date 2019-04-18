@@ -451,7 +451,7 @@ void NetworkServiceClient::OnAuthRequired(
   }
 
   bool is_request_for_main_frame =
-      static_cast<ResourceType>(resource_type) == RESOURCE_TYPE_MAIN_FRAME;
+      static_cast<ResourceType>(resource_type) == ResourceType::kMainFrame;
   new LoginHandlerDelegate(std::move(auth_challenge_responder),
                            std::move(web_contents_getter), auth_info,
                            is_request_for_main_frame, process_id, routing_id,

@@ -57,9 +57,9 @@ void ResourceRequestInfo::AllocateForTesting(
     bool is_async,
     PreviewsState previews_state,
     std::unique_ptr<NavigationUIData> navigation_ui_data) {
-  // Make sure RESOURCE_TYPE_MAIN_FRAME is declared as being fetched as part of
+  // Make sure ResourceType::kMainFrame is declared as being fetched as part of
   // the main frame.
-  DCHECK(resource_type != RESOURCE_TYPE_MAIN_FRAME || is_main_frame);
+  DCHECK(resource_type != ResourceType::kMainFrame || is_main_frame);
 
   ResourceRequestInfoImpl* info = new ResourceRequestInfoImpl(
       ResourceRequesterInfo::CreateForRendererTesting(

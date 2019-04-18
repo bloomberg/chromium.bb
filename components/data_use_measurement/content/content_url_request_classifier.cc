@@ -50,8 +50,7 @@ DataUseUserData::DataUseContentType ContentURLRequestClassifier::GetContentType(
   std::string mime_type;
   if (response_headers.GetMimeType(&mime_type)) {
     if (mime_type == "text/html" && request_info &&
-        request_info->GetResourceType() ==
-            content::ResourceType::RESOURCE_TYPE_MAIN_FRAME) {
+        request_info->GetResourceType() == content::ResourceType::kMainFrame) {
       return DataUseUserData::MAIN_FRAME_HTML;
     }
     if (mime_type == "text/html")
@@ -139,8 +138,8 @@ bool ContentURLRequestClassifier::IsFavIconRequest(
     const net::URLRequest& request) const {
   content::ResourceRequestInfo* request_info =
       content::ResourceRequestInfo::ForRequest(&request);
-  return request_info && request_info->GetResourceType() ==
-                             content::ResourceType::RESOURCE_TYPE_FAVICON;
+  return request_info &&
+         request_info->GetResourceType() == content::ResourceType::kFavicon;
 }
 
 }  // namespace data_use_measurement

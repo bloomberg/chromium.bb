@@ -45,7 +45,7 @@ class WebSocketFactory::Delegate final : public WebSocket::Delegate {
     NetworkService* network_service = factory_->context_->network_service();
     // See content::ResourceType defined in
     // content/public/common/resource_type.h. This is
-    // RESOURCE_TYPE_SUB_RESOURCE.
+    // ResourceType::kSubResource.
     constexpr int resource_type = 6;
     // We need to provide a request ID which we don't have. Provide an
     // invalid ID.

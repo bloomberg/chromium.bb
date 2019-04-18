@@ -243,7 +243,7 @@ PageLoadTracker* MetricsWebContentsObserver::GetTrackerOrNullForRequest(
     content::RenderFrameHost* render_frame_host_or_null,
     content::ResourceType resource_type,
     base::TimeTicks creation_time) {
-  if (resource_type == content::RESOURCE_TYPE_MAIN_FRAME) {
+  if (resource_type == content::ResourceType::kMainFrame) {
     DCHECK(request_id != content::GlobalRequestID());
     // The main frame request can complete either before or after commit, so we
     // look at both provisional loads and the committed load to find a
@@ -272,7 +272,7 @@ PageLoadTracker* MetricsWebContentsObserver::GetTrackerOrNullForRequest(
     // TODO(bmcquade): consider tracking GlobalRequestIDs for sub-frame
     // navigations in each PageLoadTracker, and performing a lookup for
     // sub-frames similar to the main-frame lookup above.
-    if (resource_type == content::RESOURCE_TYPE_SUB_FRAME)
+    if (resource_type == content::ResourceType::kSubFrame)
       return committed_load_.get();
 
     // This was originally a DCHECK but it fails when the document load happened

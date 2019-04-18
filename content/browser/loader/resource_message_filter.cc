@@ -123,7 +123,7 @@ void ResourceMessageFilter::CreateLoaderAndStart(
     return;
   }
 
-  if (url_request.resource_type == RESOURCE_TYPE_PREFETCH &&
+  if (url_request.resource_type == static_cast<int>(ResourceType::kPrefetch) &&
       prefetch_url_loader_service_) {
     prefetch_url_loader_service_->CreateLoaderAndStart(
         std::move(request), routing_id, request_id, options, url_request,

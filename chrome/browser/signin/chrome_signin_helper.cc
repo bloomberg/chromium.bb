@@ -142,10 +142,10 @@ void DestroyLockWrapperAfterDelay(
 bool ShouldBlockReconcilorForRequest(ChromeRequestAdapter* request) {
   content::ResourceType resource_type = request->GetResourceType();
 
-  if (resource_type == content::RESOURCE_TYPE_MAIN_FRAME)
+  if (resource_type == content::ResourceType::kMainFrame)
     return true;
 
-  return (resource_type == content::RESOURCE_TYPE_XHR) &&
+  return (resource_type == content::ResourceType::kXhr) &&
          gaia::IsGaiaSignonRealm(request->GetReferrerOrigin());
 }
 
@@ -472,7 +472,7 @@ ResponseAdapter::GetWebContentsGetter() const {
 
 bool ResponseAdapter::IsMainFrame() const {
   auto* info = content::ResourceRequestInfo::ForRequest(request_);
-  return info && (info->GetResourceType() == content::RESOURCE_TYPE_MAIN_FRAME);
+  return info && (info->GetResourceType() == content::ResourceType::kMainFrame);
 }
 
 GURL ResponseAdapter::GetOrigin() const {

@@ -490,7 +490,7 @@ void ResourceDispatcherHostImpl::CancelRequestsForContext(
          loader->GetRequestInfo()->detachable_handler()->is_detached()) ||
         loader->GetRequestInfo()->requester_info()->IsBrowserSideNavigation() ||
         loader->GetRequestInfo()->GetResourceType() ==
-            RESOURCE_TYPE_SERVICE_WORKER);
+            ResourceType::kServiceWorker);
   }
 #endif
 
@@ -595,7 +595,7 @@ std::unique_ptr<LoginDelegate> ResourceDispatcherHostImpl::CreateLoginDelegate(
       ResourceRequestInfoImpl::ForRequest(request);
   DCHECK(resource_request_info);
   bool is_request_for_main_frame =
-      resource_request_info->GetResourceType() == RESOURCE_TYPE_MAIN_FRAME;
+      resource_request_info->GetResourceType() == ResourceType::kMainFrame;
   GlobalRequestID request_id = resource_request_info->GetGlobalRequestID();
 
   GURL url = request->url();
@@ -918,7 +918,7 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
       &request_context);
 
   // All PREFETCH requests should be GETs, but be defensive about it.
-  if (request_data.resource_type == RESOURCE_TYPE_PREFETCH &&
+  if (request_data.resource_type == static_cast<int>(ResourceType::kPrefetch) &&
       request_data.method != "GET") {
     AbortRequestBeforeItStarts(requester_info->filter(), request_id,
                                std::move(url_loader_client));
@@ -1121,7 +1121,7 @@ ResourceDispatcherHostImpl::CreateResourceHandler(
           url_loader_options);
 
   // Prefetches outlive their child process.
-  if (request_data.resource_type == RESOURCE_TYPE_PREFETCH) {
+  if (request_data.resource_type == static_cast<int>(ResourceType::kPrefetch)) {
     auto detachable_handler = std::make_unique<DetachableResourceHandler>(
         request,
         base::TimeDelta::FromMilliseconds(kDefaultDetachableCancelDelayMs),
@@ -1239,7 +1239,7 @@ ResourceRequestInfoImpl* ResourceDispatcherHostImpl::CreateRequestInfo(
       MakeRequestID(), render_frame_route_id,
       false,  // is_main_frame
       {},     // fetch_window_id
-      RESOURCE_TYPE_SUB_RESOURCE, ui::PAGE_TRANSITION_LINK,
+      ResourceType::kSubResource, ui::PAGE_TRANSITION_LINK,
       download,  // is_download
       false,     // is_stream
       download ? ResourceInterceptPolicy::kAllowAll
@@ -1496,8 +1496,8 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
   DCHECK(url_loader_client.is_bound());
   DCHECK(url_loader_request.is_pending());
 
-  ResourceType resource_type = info.is_main_frame ?
-      RESOURCE_TYPE_MAIN_FRAME : RESOURCE_TYPE_SUB_FRAME;
+  ResourceType resource_type =
+      info.is_main_frame ? ResourceType::kMainFrame : ResourceType::kSubFrame;
 
   // Do not allow browser plugin guests to navigate to non-web URLs, since they
   // cannot swap processes or grant bindings. Do not check external protocols
@@ -1880,7 +1880,7 @@ bool ResourceDispatcherHostImpl::DoNotPromptForLogin(
     ResourceType resource_type,
     const GURL& url,
     const GURL& site_for_cookies) {
-  if (resource_type == RESOURCE_TYPE_IMAGE &&
+  if (resource_type == ResourceType::kImage &&
       HTTP_AUTH_RELATION_BLOCKED_CROSS ==
           HttpAuthRelationTypeOf(url, site_for_cookies)) {
     return true;

@@ -347,7 +347,7 @@ void DataReductionProxyMetricsObserverBase::OnLoadedResource(
   }
 
   if (extra_request_complete_info.resource_type ==
-      content::RESOURCE_TYPE_MAIN_FRAME) {
+      content::ResourceType::kMainFrame) {
     main_frame_fetch_start_ =
         extra_request_complete_info.load_timing_info->request_start;
   }

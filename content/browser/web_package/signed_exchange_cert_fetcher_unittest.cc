@@ -262,7 +262,7 @@ TEST_F(SignedExchangeCertFetcherTest, Simple) {
   ASSERT_TRUE(mock_loader_factory_.client_ptr());
   ASSERT_TRUE(mock_loader_factory_.url_request());
   EXPECT_EQ(url_, mock_loader_factory_.url_request()->url);
-  EXPECT_EQ(RESOURCE_TYPE_SUB_RESOURCE,
+  EXPECT_EQ(static_cast<int>(ResourceType::kSubResource),
             mock_loader_factory_.url_request()->resource_type);
   EXPECT_EQ(net::LOAD_DO_NOT_SEND_AUTH_DATA | net::LOAD_DO_NOT_SAVE_COOKIES |
                 net::LOAD_DO_NOT_SEND_COOKIES,
@@ -320,7 +320,7 @@ TEST_F(SignedExchangeCertFetcherTest, ForceFetchAndFail) {
 
   ASSERT_TRUE(mock_loader_factory_.url_request());
   EXPECT_EQ(url_, mock_loader_factory_.url_request()->url);
-  EXPECT_EQ(RESOURCE_TYPE_SUB_RESOURCE,
+  EXPECT_EQ(static_cast<int>(ResourceType::kSubResource),
             mock_loader_factory_.url_request()->resource_type);
   EXPECT_EQ(net::LOAD_DO_NOT_SEND_AUTH_DATA | net::LOAD_DO_NOT_SAVE_COOKIES |
                 net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DISABLE_CACHE |

@@ -59,10 +59,12 @@ void WorkerScriptLoaderFactory::CreateLoaderAndStart(
   // When NetworkService is not enabled, this function is called from the
   // renderer process, so use ReportBadMessage() instead of DCHECK().
   if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    // Handle only the main script. Import scripts (RESOURCE_TYPE_SCRIPT)
+    // Handle only the main script. Import scripts (ResourceType::kScript)
     // should go to the network loader or controller.
-    if (resource_request.resource_type != RESOURCE_TYPE_WORKER &&
-        resource_request.resource_type != RESOURCE_TYPE_SHARED_WORKER) {
+    if (resource_request.resource_type !=
+            static_cast<int>(ResourceType::kWorker) &&
+        resource_request.resource_type !=
+            static_cast<int>(ResourceType::kSharedWorker)) {
       mojo::ReportBadMessage(
           "WorkerScriptLoaderFactory should only get requests for worker "
           "scripts");
@@ -74,8 +76,10 @@ void WorkerScriptLoaderFactory::CreateLoaderAndStart(
       return;
     }
   }
-  DCHECK(resource_request.resource_type == RESOURCE_TYPE_WORKER ||
-         resource_request.resource_type == RESOURCE_TYPE_SHARED_WORKER)
+  DCHECK(resource_request.resource_type ==
+             static_cast<int>(ResourceType::kWorker) ||
+         resource_request.resource_type ==
+             static_cast<int>(ResourceType::kSharedWorker))
       << resource_request.resource_type;
   DCHECK(!script_loader_);
 

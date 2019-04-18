@@ -164,7 +164,7 @@ void AppendComponentUpdaterThrottles(
   if (!cus)
     return;
   // Check for PNaCl pexe request.
-  if (resource_type == content::RESOURCE_TYPE_OBJECT) {
+  if (resource_type == content::ResourceType::kObject) {
     const net::HttpRequestHeaders& headers = request->extra_request_headers();
     std::string accept_headers;
     if (headers.GetHeader("Accept", &accept_headers)) {
@@ -188,11 +188,11 @@ void AppendComponentUpdaterThrottles(
 offline_pages::ResourceLoadingObserver::ResourceDataType
 ConvertResourceTypeToResourceDataType(content::ResourceType type) {
   switch (type) {
-    case content::RESOURCE_TYPE_STYLESHEET:
+    case content::ResourceType::kStylesheet:
       return offline_pages::ResourceLoadingObserver::ResourceDataType::TEXT_CSS;
-    case content::RESOURCE_TYPE_IMAGE:
+    case content::ResourceType::kImage:
       return offline_pages::ResourceLoadingObserver::ResourceDataType::IMAGE;
-    case content::RESOURCE_TYPE_XHR:
+    case content::ResourceType::kXhr:
       return offline_pages::ResourceLoadingObserver::ResourceDataType::XHR;
     default:
       return offline_pages::ResourceLoadingObserver::ResourceDataType::OTHER;
@@ -376,9 +376,8 @@ void ChromeResourceDispatcherHostDelegate::DownloadStarting(
   // If this isn't a new request, the standard resource throttles have already
   // been added, so no need to add them again.
   if (is_new_request) {
-    AppendStandardResourceThrottles(request,
-                                    resource_context,
-                                    content::RESOURCE_TYPE_MAIN_FRAME,
+    AppendStandardResourceThrottles(request, resource_context,
+                                    content::ResourceType::kMainFrame,
                                     throttles);
 #if defined(OS_ANDROID)
     // On Android, forward text/html downloads to OfflinePages backend.
@@ -455,7 +454,7 @@ void ChromeResourceDispatcherHostDelegate::OnStreamCreated(
   ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
   auto ix = stream_target_info_.find(request);
   CHECK(ix != stream_target_info_.end());
-  bool embedded = info->GetResourceType() != content::RESOURCE_TYPE_MAIN_FRAME;
+  bool embedded = info->GetResourceType() != content::ResourceType::kMainFrame;
   base::PostTaskWithTraits(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(

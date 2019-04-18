@@ -221,15 +221,13 @@ class DelegatingURLLoaderClient final : public network::mojom::URLLoaderClient {
 using EventType = ServiceWorkerMetrics::EventType;
 EventType ResourceTypeToEventType(ResourceType resource_type) {
   switch (resource_type) {
-    case RESOURCE_TYPE_MAIN_FRAME:
+    case ResourceType::kMainFrame:
       return EventType::FETCH_MAIN_FRAME;
-    case RESOURCE_TYPE_SUB_FRAME:
+    case ResourceType::kSubFrame:
       return EventType::FETCH_SUB_FRAME;
-    case RESOURCE_TYPE_SHARED_WORKER:
+    case ResourceType::kSharedWorker:
       return EventType::FETCH_SHARED_WORKER;
-    case RESOURCE_TYPE_SERVICE_WORKER:
-    case RESOURCE_TYPE_LAST_TYPE:
-      NOTREACHED() << resource_type;
+    case ResourceType::kServiceWorker:
       return EventType::FETCH_SUB_RESOURCE;
     default:
       return EventType::FETCH_SUB_RESOURCE;
@@ -654,8 +652,8 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
     scoped_refptr<ServiceWorkerContextWrapper> context_wrapper,
     const WebContentsGetter& web_contents_getter,
     base::OnceClosure on_response) {
-  if (resource_type_ != RESOURCE_TYPE_MAIN_FRAME &&
-      resource_type_ != RESOURCE_TYPE_SUB_FRAME) {
+  if (resource_type_ != ResourceType::kMainFrame &&
+      resource_type_ != ResourceType::kSubFrame) {
     return false;
   }
   if (!version_->navigation_preload_state().enabled)
@@ -665,7 +663,8 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
     return false;
 
   network::ResourceRequest resource_request(original_request);
-  resource_request.resource_type = RESOURCE_TYPE_NAVIGATION_PRELOAD;
+  resource_request.resource_type =
+      static_cast<int>(ResourceType::kNavigationPreload);
   resource_request.skip_service_worker = true;
   resource_request.do_not_prompt_for_login = true;
 

@@ -207,7 +207,7 @@ void SharedWorkerServiceImpl::CreateWorker(
 
   WorkerScriptFetchInitiator::Start(
       process_id, weak_host->instance()->url(),
-      weak_host->instance()->constructor_origin(), RESOURCE_TYPE_SHARED_WORKER,
+      weak_host->instance()->constructor_origin(), ResourceType::kSharedWorker,
       service_worker_context_, appcache_handle_core,
       std::move(blob_url_loader_factory), storage_partition_,
       base::BindOnce(&SharedWorkerServiceImpl::DidCreateScriptLoader,

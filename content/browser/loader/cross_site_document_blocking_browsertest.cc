@@ -198,11 +198,13 @@ void InspectHistograms(
 
   // Determine if the bucket for the resource type (XHR) was incremented.
   if (0 != (expectations & kShouldBeBlocked) && !is_restricted_uma_expected) {
-    EXPECT_THAT(histograms.GetAllSamples(base + ".Blocked"),
-                testing::ElementsAre(base::Bucket(resource_type, 1)))
+    EXPECT_THAT(
+        histograms.GetAllSamples(base + ".Blocked"),
+        testing::ElementsAre(base::Bucket(static_cast<int>(resource_type), 1)))
         << "The wrong Blocked bucket was incremented.";
-    EXPECT_THAT(histograms.GetAllSamples(base + ".Blocked." + bucket),
-                testing::ElementsAre(base::Bucket(resource_type, 1)))
+    EXPECT_THAT(
+        histograms.GetAllSamples(base + ".Blocked." + bucket),
+        testing::ElementsAre(base::Bucket(static_cast<int>(resource_type), 1)))
         << "The wrong Blocked bucket was incremented.";
   }
 
@@ -519,7 +521,7 @@ class CrossSiteDocumentBlockingTestBase : public ContentBrowserTest {
     interceptor.WaitForRequestCompletion();
 
     // Verify...
-    InspectHistograms(histograms, expectations, resource, RESOURCE_TYPE_IMAGE);
+    InspectHistograms(histograms, expectations, resource, ResourceType::kImage);
     interceptor.Verify(expectations);
   }
 
@@ -680,7 +682,7 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, BlockFetches) {
     // Verify results of the fetch.
     EXPECT_FALSE(was_blocked);
     InspectHistograms(histograms, kShouldBeAllowedWithoutSniffing, resource,
-                      RESOURCE_TYPE_XHR);
+                      ResourceType::kXhr);
   }
 }
 
@@ -874,7 +876,7 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, SharedWorker) {
   // Verify that the response completed successfully, was blocked and was logged
   // as having initially a non-empty body.
   InspectHistograms(histograms, kShouldBeBlockedWithoutSniffing, "nosniff.json",
-                    RESOURCE_TYPE_XHR);
+                    ResourceType::kXhr);
 }
 #endif  // !defined(OS_ANDROID)
 
@@ -942,7 +944,7 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest,
     // Verify...
     bool special_request_initiator_origin_lock_check_for_appcache = true;
     InspectHistograms(histograms, kShouldBeBlockedWithoutSniffing,
-                      "nosniff.json", RESOURCE_TYPE_IMAGE,
+                      "nosniff.json", ResourceType::kImage,
                       special_request_initiator_origin_lock_check_for_appcache);
     interceptor.Verify(kShouldBeBlockedWithoutSniffing);
   }
@@ -1112,7 +1114,7 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, PrefetchIsNotImpacted) {
                                          &answer));
   EXPECT_EQ(123, answer);
   InspectHistograms(histograms, kShouldBeBlockedWithoutSniffing, "x.html",
-                    RESOURCE_TYPE_PREFETCH);
+                    ResourceType::kPrefetch);
 
   // Finish the HTTP response - this should store the response in the cache.
   response.Done();
@@ -1536,7 +1538,7 @@ IN_PROC_BROWSER_TEST_F(CrossSiteDocumentBlockingServiceWorkerTest,
   // Verify that CORB blocked the response from the network (from
   // |cross_origin_https_server_|) to the service worker.
   InspectHistograms(histograms, kShouldBeBlockedWithoutSniffing, "network.txt",
-                    RESOURCE_TYPE_XHR);
+                    ResourceType::kXhr);
 
   // Verify that the service worker replied with an expected error.
   // Replying with an error means that CORB is only active once (for the
