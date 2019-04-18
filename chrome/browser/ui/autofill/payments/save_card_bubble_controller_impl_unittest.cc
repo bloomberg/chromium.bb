@@ -93,8 +93,8 @@ class SaveCardBubbleControllerImplTest : public BrowserWithTestWindowTest {
             prefs::PREVIOUS_SAVE_CREDIT_CARD_PROMPT_USER_DECISION_NONE);
   }
 
-  BrowserWindow* CreateBrowserWindow() override {
-    return new SaveCardBubbleTestBrowserWindow();
+  std::unique_ptr<BrowserWindow> CreateBrowserWindow() override {
+    return std::make_unique<SaveCardBubbleTestBrowserWindow>();
   }
 
   void SetLegalMessage(

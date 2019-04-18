@@ -298,8 +298,8 @@ class BrowserCommandControllerFullscreenTest
   Browser* GetBrowser() { return BrowserWithTestWindowTest::browser(); }
 
   // BrowserWithTestWindowTest overrides:
-  BrowserWindow* CreateBrowserWindow() override {
-    return new FullscreenTestBrowserWindow(this);
+  std::unique_ptr<BrowserWindow> CreateBrowserWindow() override {
+    return std::make_unique<FullscreenTestBrowserWindow>(this);
   }
 
  private:

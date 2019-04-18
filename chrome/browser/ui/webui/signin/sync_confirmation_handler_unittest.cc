@@ -129,8 +129,8 @@ class SyncConfirmationHandlerTest : public BrowserWithTestWindowTest,
     return identity_test_env_adaptor_->identity_test_env();
   }
 
-  BrowserWindow* CreateBrowserWindow() override {
-    return new DialogTestBrowserWindow;
+  std::unique_ptr<BrowserWindow> CreateBrowserWindow() override {
+    return std::make_unique<DialogTestBrowserWindow>();
   }
 
   TestingProfile::TestingFactories GetTestingFactories() override {
