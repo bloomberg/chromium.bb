@@ -11,8 +11,6 @@
 #include <utility>
 
 #include "base/containers/circular_deque.h"
-#include "base/debug/alias.h"
-#include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -646,8 +644,6 @@ class DCLayerTree::SwapChainPresenter {
   Microsoft::WRL::ComPtr<IDXGIDecodeSwapChain> decode_swap_chain_;
   Microsoft::WRL::ComPtr<IUnknown> decode_surface_;
 
-  Microsoft::WRL::ComPtr<ID3D11Query> video_processor_blt_query_;
-
   DISALLOW_COPY_AND_ASSIGN(SwapChainPresenter);
 };
 
@@ -850,16 +846,7 @@ bool DCLayerTree::SwapChainPresenter::UploadVideoImages(
 
   Microsoft::WRL::ComPtr<ID3D11DeviceContext> context;
   d3d11_device_->GetImmediateContext(&context);
-  // TODO(crbug.com/890227): Temporary CHECK for debugging.
-  CHECK(context);
-
-  static crash_reporter::CrashKeyString<2> in_use_key("dynamic-texture-in-use");
-  if (video_processor_blt_query_) {
-    BOOL result = FALSE;
-    HRESULT hr = context->GetData(video_processor_blt_query_.Get(), &result,
-                                  sizeof(BOOL), D3D11_ASYNC_GETDATA_DONOTFLUSH);
-    in_use_key.Set(SUCCEEDED(hr) && result ? "0" : "1");
-  }
+  DCHECK(context);
 
   D3D11_MAPPED_SUBRESOURCE mapped_resource;
   HRESULT hr = context->Map(staging_texture_.Get(), 0, D3D11_MAP_WRITE_DISCARD,
@@ -1150,27 +1137,6 @@ bool DCLayerTree::SwapChainPresenter::PresentToDecodeSwapChain(
       DLOG(ERROR) << "CreateDecodeSwapChainForCompositionSurfaceHandle failed "
                      "with error 0x"
                   << std::hex << hr;
-      // TODO(sunnyps): Temporary for debugging decode swap chain failures.
-      base::debug::Alias(&hr);
-      D3D11_TEXTURE2D_DESC texture_desc = {};
-      base::debug::Alias(&texture_desc);
-      image_dxgi->texture()->GetDesc(&texture_desc);
-      static crash_reporter::CrashKeyString<32> texture_size_key(
-          "texture-size");
-      texture_size_key.Set(
-          gfx::Size(texture_desc.Width, texture_desc.Height).ToString());
-      static crash_reporter::CrashKeyString<16> texture_array_size_key(
-          "texture-array-size");
-      texture_array_size_key.Set(
-          base::StringPrintf("%d", texture_desc.ArraySize));
-      static crash_reporter::CrashKeyString<16> texture_bind_flags_key(
-          "texture-bind-flags");
-      texture_bind_flags_key.Set(
-          base::StringPrintf("%#x", texture_desc.BindFlags));
-      static crash_reporter::CrashKeyString<16> texture_usage_key(
-          "texture-usage-key");
-      texture_usage_key.Set(base::StringPrintf("%#x", texture_desc.Usage));
-      base::debug::DumpWithoutCrashing();
       return false;
     }
     DCHECK(decode_swap_chain_);
@@ -1583,20 +1549,6 @@ bool DCLayerTree::SwapChainPresenter::VideoProcessorBlt(
       DLOG(ERROR) << "VideoProcessorBlt failed with error 0x" << std::hex << hr;
       return false;
     }
-
-    // TODO(crbug.com/890227): Temporary query for debugging.
-    D3D11_QUERY_DESC query_desc = {};
-    query_desc.Query = D3D11_QUERY_EVENT;
-    query_desc.MiscFlags = 0;
-    hr = d3d11_device_->CreateQuery(&query_desc, &video_processor_blt_query_);
-    if (SUCCEEDED(hr)) {
-      Microsoft::WRL::ComPtr<ID3D11DeviceContext> context;
-      d3d11_device_->GetImmediateContext(&context);
-      DCHECK(context);
-      context->End(video_processor_blt_query_.Get());
-    } else {
-      DLOG(ERROR) << "CreateQuery failed with error 0x" << std::hex << hr;
-    }
   }
 
   return true;
@@ -1739,16 +1691,6 @@ bool DCLayerTree::SwapChainPresenter::ReallocateSwapChain(
       DLOG(ERROR) << "Failed to create BGRA swap chain of size "
                   << swap_chain_size.ToString() << " with error 0x" << std::hex
                   << hr;
-
-      // TODO(magchen): Temporary for debugging underlay swap chain failures.
-      bool supports_scaled_overlays = g_supports_scaled_overlays;
-      gfx::Size overlay_monitor_size = g_overlay_monitor_size;
-      base::debug::Alias(&hr);
-      base::debug::Alias(&supports_scaled_overlays);
-      base::debug::Alias(&overlay_monitor_size);
-      base::debug::Alias(&swap_chain_size);
-      base::debug::Alias(&z_order);
-      base::debug::DumpWithoutCrashing();
       return false;
     }
   }
