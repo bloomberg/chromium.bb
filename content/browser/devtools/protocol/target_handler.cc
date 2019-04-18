@@ -334,6 +334,8 @@ class TargetHandler::Session : public DevToolsAgentHostClient {
   }
 
   bool UsesBinaryProtocol() override {
+    if (flatten_protocol_)
+      return handler_->root_session_->UsesBinaryProtocol();
     auto* client = handler_->root_session_->client();
     return client->UsesBinaryProtocol();
   }
