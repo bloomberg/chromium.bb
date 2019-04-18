@@ -2387,6 +2387,8 @@ void MainThreadSchedulerImpl::OnTaskCompleted(
   if (main_thread_only().nested_runloop)
     return;
 
+  DispatchOnTaskCompletionCallbacks();
+
   if (queue) {
     task_queue_throttler()->OnTaskRunTimeReported(
         queue, task_timing.start_time(), task_timing.end_time());
@@ -2671,6 +2673,19 @@ void MainThreadSchedulerImpl::SetShouldPrioritizeCompositing(
 void MainThreadSchedulerImpl::SetHasSafepoint() {
   DCHECK(WTF::IsMainThread());
   main_thread_only().has_safepoint = true;
+}
+
+void MainThreadSchedulerImpl::ExecuteAfterCurrentTask(
+    base::OnceClosure on_completion_task) {
+  main_thread_only().on_task_completion_callbacks.push_back(
+      std::move(on_completion_task));
+}
+
+void MainThreadSchedulerImpl::DispatchOnTaskCompletionCallbacks() {
+  for (auto& closure : main_thread_only().on_task_completion_callbacks) {
+    std::move(closure).Run();
+  }
+  main_thread_only().on_task_completion_callbacks.clear();
 }
 
 // static

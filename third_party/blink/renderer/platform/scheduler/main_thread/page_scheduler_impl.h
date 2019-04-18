@@ -75,8 +75,6 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
       int max_task_starvation_count) override;
   void AudioStateChanged(bool is_audio_playing) override;
   bool IsAudioPlaying() const override;
-  WTF::HashSet<SchedulingPolicy::Feature>
-  GetActiveFeaturesOptingOutFromBackForwardCache() const override;
   bool IsExemptFromBudgetBasedThrottling() const override;
   bool OptedOutFromAggressiveThrottlingForTest() const override;
   bool RequestBeginMainFrameNotExpected(bool new_state) override;

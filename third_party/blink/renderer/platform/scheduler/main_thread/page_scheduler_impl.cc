@@ -425,18 +425,6 @@ void PageSchedulerImpl::OnAudioSilent() {
   }
 }
 
-WTF::HashSet<SchedulingPolicy::Feature>
-PageSchedulerImpl::GetActiveFeaturesOptingOutFromBackForwardCache() const {
-  WTF::HashSet<SchedulingPolicy::Feature> result;
-  for (FrameSchedulerImpl* frame_scheduler : frame_schedulers_) {
-    for (SchedulingPolicy::Feature feature :
-         frame_scheduler->GetActiveFeaturesOptingOutFromBackForwardCache()) {
-      result.insert(feature);
-    }
-  }
-  return result;
-}
-
 bool PageSchedulerImpl::IsExemptFromBudgetBasedThrottling() const {
   return opted_out_from_aggressive_throttling_;
 }

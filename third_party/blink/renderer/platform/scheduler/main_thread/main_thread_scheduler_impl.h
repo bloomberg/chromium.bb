@@ -47,6 +47,7 @@
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/rail_mode_observer.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace base {
 namespace trace_event {
@@ -384,6 +385,11 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
 
   void SetShouldPrioritizeCompositing(bool should_prioritize_compositing);
 
+  // Allow places in the scheduler to do some work after the current task.
+  // The primary use case here is batching – to allow updates to be processed
+  // only once per task.
+  void ExecuteAfterCurrentTask(base::OnceClosure on_completion_task);
+
   base::WeakPtr<MainThreadSchedulerImpl> GetWeakPtr();
 
  protected:
@@ -708,6 +714,10 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
 
   void ShutdownAllQueues();
 
+  // Dispatch the callbacks which requested to be executed after the current
+  // task.
+  void DispatchOnTaskCompletionCallbacks();
+
   // Indicates that scheduler has been shutdown.
   // It should be accessed only on the main thread, but couldn't be a member
   // of MainThreadOnly struct because last might be destructed before we
@@ -870,6 +880,9 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
 
     // True if a task has a safepoint.
     bool has_safepoint;
+
+    // List of callbacks to execute after the current task.
+    WTF::Vector<base::OnceClosure> on_task_completion_callbacks;
   };
 
   struct AnyThread {

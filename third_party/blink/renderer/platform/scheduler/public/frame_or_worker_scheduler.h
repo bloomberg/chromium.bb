@@ -129,6 +129,8 @@ class PLATFORM_EXPORT FrameOrWorkerScheduler {
   virtual void OnStoppedUsingFeature(SchedulingPolicy::Feature feature,
                                      const SchedulingPolicy& policy) = 0;
 
+  virtual base::WeakPtr<FrameOrWorkerScheduler> GetDocumentBoundWeakPtr();
+
   base::WeakPtr<FrameOrWorkerScheduler> GetWeakPtr();
 
  private:

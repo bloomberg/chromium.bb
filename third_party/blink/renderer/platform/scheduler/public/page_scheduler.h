@@ -135,12 +135,6 @@ class PLATFORM_EXPORT PageScheduler {
   // (e.g. due to a page maintaining an active connection).
   virtual bool IsExemptFromBudgetBasedThrottling() const = 0;
 
-  // Returns a set of features which at the moment prevent page from going into
-  // back-forward cache. If this list is empty, the page is eligible for
-  // back-forward cache.
-  virtual WTF::HashSet<SchedulingPolicy::Feature>
-  GetActiveFeaturesOptingOutFromBackForwardCache() const = 0;
-
   virtual bool OptedOutFromAggressiveThrottlingForTest() const = 0;
 
   // Returns true if the request has been succcessfully relayed to the

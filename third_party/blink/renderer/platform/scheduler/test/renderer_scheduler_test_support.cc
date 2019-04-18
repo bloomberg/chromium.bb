@@ -90,6 +90,10 @@ class SimpleFrameScheduler : public FrameScheduler {
                              const SchedulingPolicy& policy) override {}
   void OnStoppedUsingFeature(SchedulingPolicy::Feature feature,
                              const SchedulingPolicy& policy) override {}
+  WTF::HashSet<SchedulingPolicy::Feature>
+  GetActiveFeaturesOptingOutFromBackForwardCache() override {
+    return WTF::HashSet<SchedulingPolicy::Feature>();
+  }
   base::WeakPtr<FrameScheduler> GetWeakPtr() override { return nullptr; }
 
  private:
@@ -131,10 +135,6 @@ class SimplePageScheduler : public PageScheduler {
     return false;
   }
   bool RequestBeginMainFrameNotExpected(bool) override { return false; }
-  WTF::HashSet<SchedulingPolicy::Feature>
-  GetActiveFeaturesOptingOutFromBackForwardCache() const override {
-    return WTF::HashSet<SchedulingPolicy::Feature>();
-  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SimplePageScheduler);

@@ -219,6 +219,7 @@ FrameSchedulerImpl::FrameSchedulerImpl(
           this,
           &tracing_controller_,
           KeepActiveStateToString),
+      document_bound_weak_factory_(this),
       weak_factory_(this) {
   frame_task_queue_controller_.reset(
       new FrameTaskQueueController(main_thread_scheduler_, this, this));
@@ -622,17 +623,11 @@ WebScopedVirtualTimePauser FrameSchedulerImpl::CreateWebScopedVirtualTimePauser(
 }
 
 void FrameSchedulerImpl::ResetForNavigation() {
-  // Reset "sticky" features when the frame navigates.
-  for (auto it = back_forward_cache_opt_out_counts_.begin();
-       it != back_forward_cache_opt_out_counts_.end();) {
-    if (SchedulingPolicy::IsFeatureSticky(it->first)) {
-      it = back_forward_cache_opt_out_counts_.erase(it);
-    } else {
-      ++it;
-    }
-  }
-  opted_out_from_back_forward_cache_ =
-      !back_forward_cache_opt_out_counts_.empty();
+  document_bound_weak_factory_.InvalidateWeakPtrs();
+
+  back_forward_cache_opt_out_counts_.clear();
+  back_forward_cache_opt_outs_.reset();
+  last_uploaded_active_features_ = 0;
 }
 
 void FrameSchedulerImpl::OnStartedUsingFeature(
@@ -647,10 +642,8 @@ void FrameSchedulerImpl::OnStartedUsingFeature(
 
   uint64_t new_mask = GetActiveFeaturesOptingOutFromBackForwardCacheMask();
 
-  if (old_mask != new_mask && delegate_) {
-    // TODO(altimin): Support subframes as well.
-    delegate_->UpdateActiveSchedulerTrackedFeatures(new_mask);
-  }
+  if (old_mask != new_mask)
+    NotifyDelegateAboutFeaturesAfterCurrentTask();
 }
 
 void FrameSchedulerImpl::OnStoppedUsingFeature(
@@ -665,10 +658,30 @@ void FrameSchedulerImpl::OnStoppedUsingFeature(
 
   uint64_t new_mask = GetActiveFeaturesOptingOutFromBackForwardCacheMask();
 
-  if (old_mask != new_mask && delegate_) {
-    // TODO(altimin): Support subframes as well.
-    delegate_->UpdateActiveSchedulerTrackedFeatures(new_mask);
-  }
+  if (old_mask != new_mask)
+    NotifyDelegateAboutFeaturesAfterCurrentTask();
+}
+
+void FrameSchedulerImpl::NotifyDelegateAboutFeaturesAfterCurrentTask() {
+  if (!delegate_)
+    return;
+  if (feature_report_scheduled_)
+    return;
+  feature_report_scheduled_ = true;
+
+  main_thread_scheduler_->ExecuteAfterCurrentTask(
+      base::BindOnce(&FrameSchedulerImpl::ReportFeaturesToDelegate,
+                     document_bound_weak_factory_.GetWeakPtr()));
+}
+
+void FrameSchedulerImpl::ReportFeaturesToDelegate() {
+  DCHECK(delegate_);
+  feature_report_scheduled_ = false;
+  uint64_t mask = GetActiveFeaturesOptingOutFromBackForwardCacheMask();
+  if (mask == last_uploaded_active_features_)
+    return;
+  last_uploaded_active_features_ = mask;
+  delegate_->UpdateActiveSchedulerTrackedFeatures(mask);
 }
 
 base::WeakPtr<FrameScheduler> FrameSchedulerImpl::GetWeakPtr() {
@@ -695,6 +708,7 @@ void FrameSchedulerImpl::OnRemovedAggressiveThrottlingOptOut() {
 void FrameSchedulerImpl::OnAddedBackForwardCacheOptOut(
     SchedulingPolicy::Feature feature) {
   ++back_forward_cache_opt_out_counts_[feature];
+  back_forward_cache_opt_outs_.set(static_cast<size_t>(feature));
   opted_out_from_back_forward_cache_ = true;
 }
 
@@ -704,6 +718,7 @@ void FrameSchedulerImpl::OnRemovedBackForwardCacheOptOut(
   auto it = back_forward_cache_opt_out_counts_.find(feature);
   if (it->second == 1) {
     back_forward_cache_opt_out_counts_.erase(it);
+    back_forward_cache_opt_outs_.reset(static_cast<size_t>(feature));
   } else {
     --it->second;
   }
@@ -1066,10 +1081,17 @@ FrameSchedulerImpl::GetActiveFeaturesOptingOutFromBackForwardCache() {
 
 uint64_t
 FrameSchedulerImpl::GetActiveFeaturesOptingOutFromBackForwardCacheMask() const {
-  uint64_t mask = 0;
-  for (const auto& it : back_forward_cache_opt_out_counts_)
-    mask |= (1 << static_cast<int>(it.first));
-  return mask;
+  auto result = back_forward_cache_opt_outs_.to_ullong();
+  static_assert(static_cast<size_t>(SchedulingPolicy::Feature::kCount) <=
+                    sizeof(result) * 8,
+                "Number of the features should allow a bitmask to fit into "
+                "64-bit integer");
+  return result;
+}
+
+base::WeakPtr<FrameOrWorkerScheduler>
+FrameSchedulerImpl::GetDocumentBoundWeakPtr() {
+  return document_bound_weak_factory_.GetWeakPtr();
 }
 
 // static

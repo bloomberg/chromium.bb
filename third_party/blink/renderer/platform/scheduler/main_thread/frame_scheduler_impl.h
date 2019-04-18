@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_MAIN_THREAD_FRAME_SCHEDULER_IMPL_H_
 
 #include <array>
+#include <bitset>
 #include <memory>
 #include <utility>
 
@@ -162,8 +163,19 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
   static void InitializeTaskTypeQueueTraitsMap(
       FrameTaskTypeToQueueTraitsArray&);
 
+  // Returns the list of active features which currently opt out this frame
+  // from back-forward cache.
   WTF::HashSet<SchedulingPolicy::Feature>
-  GetActiveFeaturesOptingOutFromBackForwardCache();
+  GetActiveFeaturesOptingOutFromBackForwardCache() override;
+
+  // Notifies the delegate about the change in the set of active features.
+  // The scheduler calls this function when needed after each task finishes,
+  // grouping multiple OnStartedUsingFeature/OnStoppedUsingFeature into
+  // one call to the delegate (which is generally expected to upload them to
+  // the browser process).
+  // No calls will be issued to the delegate if the set of features didn't
+  // change since the previous call.
+  void ReportFeaturesToDelegate();
 
  protected:
   FrameSchedulerImpl(MainThreadSchedulerImpl* main_thread_scheduler,
@@ -253,6 +265,10 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
   // a mask instead of a set.
   uint64_t GetActiveFeaturesOptingOutFromBackForwardCacheMask() const;
 
+  base::WeakPtr<FrameOrWorkerScheduler> GetDocumentBoundWeakPtr() override;
+
+  void NotifyDelegateAboutFeaturesAfterCurrentTask();
+
   // Create QueueTraits for the default (non-finch) task queues.
   static MainThreadTaskQueue::QueueTraits ThrottleableTaskQueueTraits();
   static MainThreadTaskQueue::QueueTraits DeferrableTaskQueueTraits();
@@ -301,8 +317,14 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
   size_t subresource_loading_pause_count_;
   base::flat_map<SchedulingPolicy::Feature, int>
       back_forward_cache_opt_out_counts_;
+  std::bitset<static_cast<size_t>(SchedulingPolicy::Feature::kCount)>
+      back_forward_cache_opt_outs_;
   TraceableState<bool, TracingCategoryName::kInfo>
       opted_out_from_back_forward_cache_;
+  // The last set of features passed to
+  // Delegate::UpdateActiveSchedulerTrackedFeatures.
+  uint64_t last_uploaded_active_features_ = 0;
+  bool feature_report_scheduled_ = false;
 
   // These are the states of the Page.
   // They should be accessed via GetPageScheduler()->SetPageState().
@@ -312,6 +334,10 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
       page_visibility_for_tracing_;
   TraceableState<bool, TracingCategoryName::kInfo>
       page_keep_active_for_tracing_;
+
+  // TODO(altimin): Remove after we have have 1:1 relationship between frames
+  // and documents.
+  base::WeakPtrFactory<FrameSchedulerImpl> document_bound_weak_factory_;
 
   base::WeakPtrFactory<FrameSchedulerImpl> weak_factory_;
 

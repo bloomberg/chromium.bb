@@ -78,10 +78,6 @@ class FakePageScheduler final : public PageScheduler {
   bool RequestBeginMainFrameNotExpected(bool new_state) override {
     return false;
   }
-  WTF::HashSet<SchedulingPolicy::Feature>
-  GetActiveFeaturesOptingOutFromBackForwardCache() const override {
-    return WTF::HashSet<SchedulingPolicy::Feature>();
-  }
 
  private:
   bool is_audio_playing_;
