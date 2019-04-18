@@ -4955,6 +4955,23 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
         if (web::features::StorePendingItemInContext() && context->GetItem()) {
           self.navigationManagerImpl->SetPendingItem(context->ReleaseItem());
         }
+      } else if (web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
+                 item->error_retry_state_machine().state() ==
+                     web::ErrorRetryState::kNoNavigationError) {
+        // Offline pages can leave the WKBackForwardList current item as a
+        // placeholder with no saved content.  In this case, trigger a retry
+        // on that navigation with an update |item| url and |context| error.
+        item->SetURL(
+            ExtractUrlFromPlaceholderUrl(net::GURLWithNSURL(self.webView.URL)));
+        item->SetVirtualURL(item->GetURL());
+        context->SetError([NSError
+            errorWithDomain:NSURLErrorDomain
+                       code:NSURLErrorNetworkConnectionLost
+                   userInfo:@{
+                     NSURLErrorFailingURLStringErrorKey :
+                         base::SysUTF8ToNSString(item->GetURL().spec())
+                   }]);
+        item->error_retry_state_machine().SetRetryPlaceholderNavigation();
       }
     }
 

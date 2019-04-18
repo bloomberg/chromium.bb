@@ -248,5 +248,34 @@ TEST_F(ErrorRetryStateMachineTest, OfflineAfterColdStart) {
             machine.state());
 }
 
+// Tests retrying a placeholder navigation.
+TEST_F(ErrorRetryStateMachineTest, RetryPlaceholderNavigation) {
+  GURL test_url(kTestUrl);
+  ErrorRetryStateMachine machine;
+  machine.SetURL(test_url);
+  ASSERT_EQ(ErrorRetryState::kNewRequest, machine.state());
+
+  // First trigger the cached placeholder load.
+  const GURL placeholder_url =
+      wk_navigation_util::CreatePlaceholderUrlForUrl(test_url);
+  ASSERT_EQ(ErrorRetryCommand::kDoNothing,
+            machine.DidFinishNavigation(placeholder_url));
+  ASSERT_EQ(ErrorRetryState::kNoNavigationError, machine.state());
+
+  // Then trigger a retry.
+  machine.SetRetryPlaceholderNavigation();
+  ASSERT_EQ(ErrorRetryCommand::kRewriteWebViewURL,
+            machine.DidFinishNavigation(placeholder_url));
+  ASSERT_EQ(ErrorRetryState::kRetryPlaceholderNavigation, machine.state());
+
+  // Lastly trigger the error view.
+  const GURL target_url =
+      wk_navigation_util::ExtractUrlFromPlaceholderUrl(placeholder_url);
+  ASSERT_EQ(ErrorRetryCommand::kLoadErrorView,
+            machine.DidFinishNavigation(target_url));
+  ASSERT_EQ(ErrorRetryState::kReadyToDisplayErrorForFailedNavigation,
+            machine.state());
+}
+
 }  // namespace
 }  // namespace web
