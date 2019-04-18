@@ -978,6 +978,11 @@ void GpuProcessHost::DidInitialize(
     const base::Optional<gpu::GPUInfo>& gpu_info_for_hardware_gpu,
     const base::Optional<gpu::GpuFeatureInfo>&
         gpu_feature_info_for_hardware_gpu) {
+  if (GetGpuCrashCount() > 0) {
+    LOG(WARNING) << "Reinitialized the GPU process after a crash. The reported "
+                    "initialization time was "
+                 << gpu_info.initialization_time.InMilliseconds() << " ms";
+  }
   if (kind_ != GPU_PROCESS_KIND_UNSANDBOXED_NO_GL) {
     auto* gpu_data_manager = GpuDataManagerImpl::GetInstance();
     // Update GpuFeatureInfo first, because UpdateGpuInfo() will notify all
@@ -1197,6 +1202,8 @@ void GpuProcessHost::RecordProcessCrash() {
 
   // Keep track of the total number of GPU crashes.
   base::subtle::NoBarrier_AtomicIncrement(&gpu_crash_count_, 1);
+  LOG(WARNING) << "The GPU process has crashed " << GetGpuCrashCount()
+               << " time(s)";
 
   int recent_crash_count = 0;
   if (mode_ == gpu::GpuMode::HARDWARE_ACCELERATED) {
