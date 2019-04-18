@@ -149,7 +149,7 @@ OffTheRecordProfileImpl::OffTheRecordProfileImpl(Profile* real_profile)
   prefs_ = CreateIncognitoPrefServiceSyncable(
       PrefServiceSyncableFromProfile(profile_),
       CreateExtensionPrefStore(profile_, true),
-      InProcessPrefServiceFactoryFactory::GetInstanceForContext(this)
+      InProcessPrefServiceFactoryFactory::GetInstanceForKey(key_.get())
           ->CreateDelegate());
 
   key_->SetPrefs(prefs_.get());
@@ -404,7 +404,7 @@ OffTheRecordProfileImpl::HandleServiceRequest(
     const std::string& service_name,
     service_manager::mojom::ServiceRequest request) {
   if (service_name == prefs::mojom::kServiceName) {
-    return InProcessPrefServiceFactoryFactory::GetInstanceForContext(this)
+    return InProcessPrefServiceFactoryFactory::GetInstanceForKey(key_.get())
         ->CreatePrefService(std::move(request));
   }
 

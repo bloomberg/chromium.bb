@@ -572,7 +572,7 @@ ProfileImpl::ProfileImpl(
 
   {
     auto delegate =
-        InProcessPrefServiceFactoryFactory::GetInstanceForContext(this)
+        InProcessPrefServiceFactoryFactory::GetInstanceForKey(key_.get())
             ->CreateDelegate();
     delegate->InitPrefRegistry(pref_registry_.get());
     prefs_ = chrome_prefs::CreateProfilePrefs(
@@ -1274,7 +1274,7 @@ std::unique_ptr<service_manager::Service> ProfileImpl::HandleServiceRequest(
   }
 
   if (service_name == prefs::mojom::kServiceName) {
-    return InProcessPrefServiceFactoryFactory::GetInstanceForContext(this)
+    return InProcessPrefServiceFactoryFactory::GetInstanceForKey(key_.get())
         ->CreatePrefService(std::move(request));
   }
 
