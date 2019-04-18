@@ -66,6 +66,17 @@ class ASH_EXPORT AutoclickController : public ui::EventHandler,
     revert_to_left_click_ = revert_to_left_click;
   }
 
+  // Sets whether to stabilize the cursor position during a click.
+  // If |stabilize_position|, the click position will not change after the
+  // autoclick timer and gesture animation begin, so long as the cursor does
+  // not move outside of the movement threshold. If the position is not
+  // stabilized, the cursor movements will translate into autoclick position
+  // movements (but a cursor movement larger than the movement threshold from
+  // the starting position will still cancel the click).
+  void set_stabilize_click_position(bool stabilize_position) {
+    stabilize_click_position_ = stabilize_position;
+  }
+
   // Functionality for testing.
   static float GetStartGestureDelayRatioForTesting();
   AutoclickMenuBubbleController* GetMenuBubbleControllerForTesting() {
@@ -103,6 +114,7 @@ class ASH_EXPORT AutoclickController : public ui::EventHandler,
   bool enabled_ = false;
   mojom::AutoclickEventType event_type_ = kDefaultAutoclickEventType;
   bool revert_to_left_click_ = true;
+  bool stabilize_click_position_ = false;
   int movement_threshold_ = kDefaultAutoclickMovementThreshold;
   // TODO(katie): The default position should flex with the user's choice of
   // language (RTL vs LTR) and shelf position, following the same behavior

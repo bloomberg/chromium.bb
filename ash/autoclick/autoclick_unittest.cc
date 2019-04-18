@@ -278,13 +278,13 @@ TEST_F(AutoclickTest, MovementWithinThresholdWhileTimerRunning) {
   int animation_delay = 5;
   int full_delay = UpdateAnimationDelayAndGetFullDelay(animation_delay);
 
+  GetAutoclickController()->set_stabilize_click_position(true);
   GetEventGenerator()->MoveMouseTo(100, 100);
   FastForwardBy(animation_delay + 1);
 
   // Move the mouse within the threshold. It shouldn't change the eventual
   // target of the event, or cancel the click.
   GetEventGenerator()->MoveMouseTo(110, 110);
-
   ClearMouseEvents();
   FastForwardBy(full_delay);
   std::vector<ui::MouseEvent> events = GetMouseEvents();
@@ -294,6 +294,25 @@ TEST_F(AutoclickTest, MovementWithinThresholdWhileTimerRunning) {
   EXPECT_EQ(ui::ET_MOUSE_PRESSED, events[0].type());
   EXPECT_EQ(ui::EF_LEFT_MOUSE_BUTTON, events[0].flags());
   EXPECT_EQ(gfx::Point(100, 100), events[1].location());
+  EXPECT_EQ(ui::ET_MOUSE_RELEASED, events[1].type());
+  EXPECT_EQ(ui::EF_LEFT_MOUSE_BUTTON, events[1].flags());
+
+  // When the click position is not stabilized, the mouse movement should
+  // translate into the target of the event, but not cancel the click.
+  GetAutoclickController()->set_stabilize_click_position(false);
+  GetEventGenerator()->MoveMouseTo(200, 200);
+  FastForwardBy(animation_delay + 1);
+  GetEventGenerator()->MoveMouseTo(210, 210);
+
+  ClearMouseEvents();
+  FastForwardBy(full_delay);
+  events = GetMouseEvents();
+
+  EXPECT_EQ(2u, events.size());
+  EXPECT_EQ(gfx::Point(210, 210), events[0].location());
+  EXPECT_EQ(ui::ET_MOUSE_PRESSED, events[0].type());
+  EXPECT_EQ(ui::EF_LEFT_MOUSE_BUTTON, events[0].flags());
+  EXPECT_EQ(gfx::Point(210, 210), events[1].location());
   EXPECT_EQ(ui::ET_MOUSE_RELEASED, events[1].type());
   EXPECT_EQ(ui::EF_LEFT_MOUSE_BUTTON, events[1].flags());
 
@@ -595,8 +614,7 @@ TEST_F(AutoclickTest, WaitsToDrawAnimationAfterDwellBegins) {
   FastForwardBy(animation_delay - 1);
   GetEventGenerator()->MoveMouseTo(105, 105);
 
-  // Fast forward until the animation would have started. Now moving the mouse
-  // a little does not change the center point.
+  // Moving the mouse during the animation changes the center point.
   FastForwardBy(animation_delay);
   GetEventGenerator()->MoveMouseTo(110, 110);
 
@@ -605,7 +623,29 @@ TEST_F(AutoclickTest, WaitsToDrawAnimationAfterDwellBegins) {
   FastForwardBy(full_delay);
   events = GetMouseEvents();
   ASSERT_EQ(2u, events.size());
-  EXPECT_EQ(gfx::Point(105, 105), events[0].location());
+  EXPECT_EQ(gfx::Point(110, 110), events[0].location());
+
+  // Turn off stabilize_click_position and try again, the position should update
+  // with the cursor's new position until the click occurs.
+  GetAutoclickController()->set_stabilize_click_position(true);
+  ClearMouseEvents();
+  GetEventGenerator()->MoveMouseTo(200, 200);
+
+  // (205, 205) will become the center of the animation.
+  FastForwardBy(animation_delay - 1);
+  GetEventGenerator()->MoveMouseTo(205, 205);
+
+  // Fast forward until the animation would have started. Now moving the mouse
+  // a little does not change the center point because we have stabilize on.
+  FastForwardBy(animation_delay);
+  GetEventGenerator()->MoveMouseTo(210, 210);
+  FastForwardBy(full_delay);
+  events = GetMouseEvents();
+  ASSERT_EQ(2u, events.size());
+  EXPECT_EQ(gfx::Point(205, 205), events[0].location());
+
+  // Reset state.
+  GetAutoclickController()->set_stabilize_click_position(false);
 }
 
 TEST_F(AutoclickTest, DoesActionOnBubbleWhenInDifferentModes) {

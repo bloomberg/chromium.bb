@@ -425,6 +425,11 @@ void AutoclickController::OnMouseEvent(ui::MouseEvent* event) {
     } else if (start_gesture_timer_->IsRunning()) {
       // Keep track of where the gesture will be anchored.
       gesture_anchor_location_ = point_in_screen;
+    } else if (autoclick_timer_->IsRunning() && !stabilize_click_position_) {
+      // If we are not stabilizing the click position, update the gesture
+      // center with each mouse move event.
+      anchor_location_ = point_in_screen;
+      autoclick_ring_handler_->SetGestureCenter(point_in_screen, widget_.get());
     }
   } else if (event->type() == ui::ET_MOUSE_PRESSED ||
              event->type() == ui::ET_MOUSE_RELEASED) {
