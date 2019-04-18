@@ -4206,7 +4206,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     translate::TranslateManager* translateManager =
         translateClient->GetTranslateManager();
     DCHECK(translateManager);
-    translateManager->InitiateManualTranslation();
+    translateManager->InitiateManualTranslation(/*auto_translate=*/true);
   }
 }
 

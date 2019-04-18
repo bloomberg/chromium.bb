@@ -1535,9 +1535,9 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
 }
 
 // Tests that the "Translate..." button in the tools menu is enabled if
-// translate is available and it brings up the Translate infobar when tapped. If
-// the page is already translated the infobar should appear in "after translate"
-// state.
+// translate is available and it brings up the Translate infobar and translates
+// the page when tapped. If the page is already translated the infobar should
+// appear in "after translate" state.
 - (void)testTranslateManualTrigger {
   feature_list_.InitAndEnableFeature(translate::kTranslateMobileManualTrigger);
 
@@ -1551,6 +1551,13 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
   [ChromeEarlGrey loadURL:URL];
 
   [self assertTranslateInfobarIsVisible];
+
+  // The source language tab must be selected and the target language tab must
+  // not.
+  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabel(@"French")]
+      assertWithMatcher:ElementIsSelected(YES)];
+  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabel(@"English")]
+      assertWithMatcher:ElementIsSelected(NO)];
 
   // Dismiss the translate infobar.
   [[EarlGrey selectElementWithMatcher:CloseButton()] performAction:grey_tap()];
@@ -1578,12 +1585,12 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
   // Make sure the infobar reappears.
   [self assertTranslateInfobarIsVisible];
 
-  // The source language tab must be selected and the target language tab must
-  // not. Translate the page by tapping the target language tab.
-  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabel(@"French")]
+  // The target language tab must be selected and the source language tab must
+  // not.
+  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabel(@"English")]
       assertWithMatcher:ElementIsSelected(YES)];
-  [[[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabel(@"English")]
-      assertWithMatcher:ElementIsSelected(NO)] performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabel(@"French")]
+      assertWithMatcher:ElementIsSelected(NO)];
 
   // Make sure the page is translated.
   [ChromeEarlGrey waitForWebViewContainingText:"Translated"];

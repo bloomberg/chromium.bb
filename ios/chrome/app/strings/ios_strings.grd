@@ -1808,8 +1808,8 @@ Your data was encrypted with your sync passphrase on <ph name="TIME">$2<ex>Sept 
       <message name="IDS_IOS_TOOLS_MENU_EDIT_BOOKMARK" desc="The iOS menu item for editing a bookmark. This is a verb." meaning="Edit the current bookmark [Length: unlimited] [Verb]">
         Edit Bookmark
       </message>
-      <message name="IDS_IOS_TOOLS_MENU_TRANSLATE" desc="The iOS menu item for translating the current page [iOS only]" meaning="Open the translate menu [Length: unlimited]">
-        Translate...
+      <message name="IDS_IOS_TOOLS_MENU_TRANSLATE" desc="The iOS menu item for translating the current page [iOS only]" meaning="Open the translate infobar [Length: unlimited]">
+        Translate
       </message>
       <message name="IDS_IOS_TOOLS_MENU_FIND_IN_PAGE" desc="The iOS menu item for searching in the current page [iOS only]" meaning="Open the Find In Page menu [Length: unlimited]">
         Find in Page...
