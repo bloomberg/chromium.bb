@@ -141,22 +141,22 @@ ExternalVkImageBacking::ProduceGLTexture(SharedImageManager* manager,
   NOTIMPLEMENTED_LOG_ONCE();
   return nullptr;
 #elif defined(OS_LINUX)
-  VkMemoryGetFdInfoKHR get_fd_info;
-  get_fd_info.sType = VK_STRUCTURE_TYPE_MEMORY_GET_FD_INFO_KHR;
-  get_fd_info.pNext = nullptr;
-  get_fd_info.memory = memory_;
-  get_fd_info.handleType = VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT_KHR;
-
-  int memory_fd = -1;
-  vkGetMemoryFdKHR(device(), &get_fd_info, &memory_fd);
-  if (memory_fd < 0) {
-    LOG(ERROR) << "Unable to extract file descriptor out of external VkImage";
-    return nullptr;
-  }
-
-  gl::GLApi* api = gl::g_current_gl_context;
-
   if (!texture_) {
+    VkMemoryGetFdInfoKHR get_fd_info;
+    get_fd_info.sType = VK_STRUCTURE_TYPE_MEMORY_GET_FD_INFO_KHR;
+    get_fd_info.pNext = nullptr;
+    get_fd_info.memory = memory_;
+    get_fd_info.handleType = VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT_KHR;
+
+    int memory_fd = -1;
+    vkGetMemoryFdKHR(device(), &get_fd_info, &memory_fd);
+    if (memory_fd < 0) {
+      LOG(ERROR) << "Unable to extract file descriptor out of external VkImage";
+      return nullptr;
+    }
+
+    gl::GLApi* api = gl::g_current_gl_context;
+
     constexpr GLenum target = GL_TEXTURE_2D;
     constexpr GLenum get_target = GL_TEXTURE_BINDING_2D;
     GLuint internal_format = viz::TextureStorageFormat(format());
