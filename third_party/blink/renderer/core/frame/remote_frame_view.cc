@@ -93,8 +93,6 @@ bool RemoteFrameView::UpdateViewportIntersectionsForSubtree(
   HTMLFrameOwnerElement* owner_element = remote_frame_->DeprecatedLocalOwner();
   DCHECK(owner_element);
   LayoutEmbeddedContent* owner = owner_element->GetLayoutEmbeddedContent();
-  if (!owner)
-    return needs_occlusion_tracking_;
   IntRect viewport_intersection;
   DocumentLifecycle::LifecycleState parent_lifecycle_state =
       owner_element->GetDocument().Lifecycle().GetState();
@@ -106,9 +104,12 @@ bool RemoteFrameView::UpdateViewportIntersectionsForSubtree(
       parent_lifecycle_state >= DocumentLifecycle::kPrePaintClean &&
       RuntimeEnabledFeatures::IntersectionObserverV2Enabled();
 
-  // If the parent LocalFrameView is throttled and out-of-date, then we can't
-  // get any useful information.
-  if (parent_lifecycle_state >= DocumentLifecycle::kLayoutClean) {
+  if (!owner || !self_visible_) {
+    // The frame is detached from layout or not visible; leave
+    // viewport_intersection empty, and signal the frame as occluded if
+    // necessary.
+    occlusion_state = FrameOcclusionState::kPossiblyOccluded;
+  } else if (parent_lifecycle_state >= DocumentLifecycle::kLayoutClean) {
     unsigned geometry_flags =
         IntersectionGeometry::kShouldUseReplacedContentRect;
     if (should_compute_occlusion)
@@ -137,6 +138,8 @@ bool RemoteFrameView::UpdateViewportIntersectionsForSubtree(
     if (should_compute_occlusion && !geometry.IsVisible())
       occlusion_state = FrameOcclusionState::kPossiblyOccluded;
   } else if (occlusion_state == FrameOcclusionState::kGuaranteedNotOccluded) {
+    // If the parent LocalFrameView is throttled and out-of-date, then we can't
+    // get any useful information.
     occlusion_state = FrameOcclusionState::kUnknown;
   }
 

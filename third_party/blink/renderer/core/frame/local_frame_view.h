@@ -221,6 +221,8 @@ class CORE_EXPORT LocalFrameView final
   // view.
   unsigned GetIntersectionObservationFlags(unsigned parent_flags) const;
 
+  void ForceUpdateViewportIntersections();
+
   void SetPaintArtifactCompositorNeedsUpdate() const;
 
   // Marks this frame, and ancestor frames, as needing a mandatory compositing

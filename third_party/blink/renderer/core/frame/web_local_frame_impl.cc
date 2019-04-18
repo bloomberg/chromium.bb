@@ -2665,4 +2665,14 @@ void WebLocalFrameImpl::SetLifecycleState(mojom::FrameLifecycleState state) {
   GetFrame()->SetLifecycleState(state);
 }
 
+void WebLocalFrameImpl::WasHidden() {
+  if (frame_)
+    frame_->WasHidden();
+}
+
+void WebLocalFrameImpl::WasShown() {
+  if (frame_)
+    frame_->WasShown();
+}
+
 }  // namespace blink
