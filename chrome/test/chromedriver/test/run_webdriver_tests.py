@@ -30,6 +30,7 @@ BLINK_TOOLS_PATH = 'third_party/blink/tools'
 BLINK_TOOLS_ABS_PATH = os.path.join(SRC_DIR, BLINK_TOOLS_PATH)
 
 sys.path.insert(0, BLINK_TOOLS_ABS_PATH)
+from blinkpy.common import exit_codes
 from blinkpy.common.host import Host
 from blinkpy.common.system.log_utils import configure_logging
 from blinkpy.web_tests.models import test_expectations
@@ -66,9 +67,10 @@ def preprocess_skipped_tests(test_results, expectations, path_finder):
   return skip_list
 
 class SubtestResultRecorder(object):
-  def __init__(self, path):
+  def __init__(self, path, port):
     self.result = []
     self.test_path = path
+    self.port = port
 
   def pytest_runtest_logreport(self, report):
     if report.passed and report.when == "call":
@@ -102,7 +104,8 @@ class SubtestResultRecorder(object):
     # location is a (filesystempath, lineno, domaininfo) tuple
     # https://docs.pytest.org/en/3.6.2/reference.html#_pytest.runner.TestReport.location
     test_name = report.location[2]
-    output_name = self.test_path + '::' + test_name
+    output_name = self.port.add_webdriver_subtest_suffix(
+        self.test_path, test_name)
     self.result.append(WebDriverTestResult(
         output_name, status, message))
 
@@ -137,10 +140,10 @@ def set_up_config(chromedriver_server):
     "browser_host": "web-platform.test",
     "ports": {"ws": [9001], "wss": [9444], "http": [8001], "https": [8444]}})
 
-def run_test(path, path_finder, skipped_tests=[]):
+def run_test(path, path_finder, port, skipped_tests=[]):
   abs_path = os.path.abspath(path)
   external_path = path_finder.strip_web_tests_path(abs_path)
-  subtests = SubtestResultRecorder(external_path)
+  subtests = SubtestResultRecorder(external_path, port)
 
   skip_test_flag = ['--deselect=' +
                     skipped_test for skipped_test in skipped_tests]
@@ -221,14 +224,14 @@ if __name__ == '__main__':
   sys.path.insert(0, WEBDRIVER_CLIENT_ABS_PATH)
   try:
     if os.path.isfile(test_path):
-      test_results = run_test(test_path, path_finder, skipped_tests)
+      test_results = run_test(test_path, path_finder, port, skipped_tests)
     elif os.path.isdir(test_path):
       for root, dirnames, filenames in os.walk(test_path):
         for filename in filenames:
           if '__init__' in filename:
             continue
           test_file = os.path.join(root, filename)
-          test_results += run_test(test_file, path_finder, skipped_tests)
+          test_results += run_test(test_file, path_finder, port, skipped_tests)
     else:
       _log.error('%s is not a file nor directory.' % test_path)
       sys.exit(1)
@@ -238,6 +241,7 @@ if __name__ == '__main__':
     chromedriver_server.Kill()
     port.stop_wptserve()
 
+  exit_code = 0
   if options.isolated_script_test_output:
     output = {
       'interrupted': False,
@@ -251,16 +255,21 @@ if __name__ == '__main__':
     success_count = 0
 
     for test_result in test_results:
-      expected_result = test_result.test_status
       if expectations.model().has_test(test_result.test_name):
         expected_result = expectations.get_expectations_string(
             test_result.test_name)
+        status = test_expectations.TestExpectations.expectation_from_string(
+            test_result.test_status)
+        is_unexpected = not expectations.matches_an_expected_result(
+            test_result.test_name, status, False)
+      else:
+        expected_result = 'PASS'
+        is_unexpected = (test_result.test_status != expected_result)
 
-      # TODO(crbug.com/934919): is_unexpected needs to be set for
-      # unexpected failures once expectations have been supported.
       output['tests'][test_result.test_name] = {
         'expected': expected_result,
         'actual': test_result.test_status,
+        'is_unexpected': is_unexpected,
       }
 
       if test_result.message:
@@ -268,6 +277,9 @@ if __name__ == '__main__':
 
       if test_result.test_status == 'PASS':
         success_count += 1
+
+      if is_unexpected:
+        exit_code += 1
 
     output['num_failures_by_type']['PASS'] = success_count
     output['num_failures_by_type']['SKIP'] = len(skipped_tests)
@@ -277,7 +289,9 @@ if __name__ == '__main__':
     with open(options.isolated_script_test_output, 'w') as fp:
       json.dump(output, fp)
 
-  # TODO(crbug.com/934919): exit code should be non-zero once
-  # the runner is able to detect unexpected failures. Currently set
-  # to 0 because all failures are expected.
-  sys.exit(0)
+  if exit_code > exit_codes.MAX_FAILURES_EXIT_STATUS:
+    _log.warning('num regressions (%d) exceeds max exit status (%d)',
+                 exit_code, exit_codes.MAX_FAILURES_EXIT_STATUS)
+    exit_code = exit_codes.MAX_FAILURES_EXIT_STATUS
+
+  sys.exit(exit_code)

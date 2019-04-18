@@ -938,6 +938,15 @@ class PortTest(LoggingTestCase):
         self.assertTrue(port.skips_test('failures/expected/image.html'))
 
 
+    def test_add_webdriver_subtest_suffix(self):
+        port = self.make_port()
+        wb_test_name = "abd"
+        sub_test_name = "bar"
+
+        full_webdriver_name = port.add_webdriver_subtest_suffix(wb_test_name, sub_test_name)
+
+        self.assertEqual(full_webdriver_name, "abd>>bar")
+
 class NaturalCompareTest(unittest.TestCase):
 
     def setUp(self):
