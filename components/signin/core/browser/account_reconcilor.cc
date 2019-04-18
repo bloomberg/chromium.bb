@@ -22,6 +22,7 @@
 #include "build/build_config.h"
 #include "components/signin/core/browser/account_consistency_method.h"
 #include "components/signin/core/browser/account_reconcilor_delegate.h"
+#include "components/signin/core/browser/consistency_cookie_manager_base.h"
 #include "components/signin/core/browser/signin_buildflags.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_metrics.h"
@@ -232,16 +233,12 @@ void AccountReconcilor::Initialize(bool start_reconcile_if_tokens_available) {
     if (start_reconcile_if_tokens_available && IsIdentityManagerReady())
       StartReconcile();
   }
+}
 
-#if defined(OS_ANDROID)
-  // The ConsistencyCookieManager is not created earlier, because it requires
-  // the reconcilor state to be initialized.
-  if (base::FeatureList::IsEnabled(signin::kMiceFeature)) {
-    consistency_cookie_manager_ =
-        std::make_unique<signin::ConsistencyCookieManagerAndroid>(client_,
-                                                                  this);
-  }
-#endif
+void AccountReconcilor::SetConsistencyCookieManager(
+    std::unique_ptr<signin::ConsistencyCookieManagerBase>
+        consistency_cookie_manager) {
+  consistency_cookie_manager_ = std::move(consistency_cookie_manager);
 }
 
 #if defined(OS_IOS)

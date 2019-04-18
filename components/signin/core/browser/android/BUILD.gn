@@ -8,6 +8,7 @@ generate_jni("jni_headers") {
   sources = [
     "java/src/org/chromium/components/signin/AccountTrackerService.java",
     "java/src/org/chromium/components/signin/ChildAccountInfoFetcher.java",
+    "java/src/org/chromium/components/signin/ConsistencyCookieManager.java",
     "java/src/org/chromium/components/signin/OAuth2TokenService.java",
   ]
   jni_package = "components/signin"
@@ -19,6 +20,7 @@ android_library("java") {
     "$google_play_services_package:google_play_services_base_java",
     "$google_play_services_package:google_play_services_basement_java",
     "//base:base_java",
+    "//base:jni_java",
     "//net/android:net_java",
     "//third_party/android_deps:android_support_v4_java",
     "//third_party/android_deps:com_android_support_support_annotations_java",
@@ -36,6 +38,7 @@ android_library("java") {
     "java/src/org/chromium/components/signin/ChildAccountInfoFetcher.java",
     "java/src/org/chromium/components/signin/ChildAccountStatus.java",
     "java/src/org/chromium/components/signin/ChromeSigninController.java",
+    "java/src/org/chromium/components/signin/ConsistencyCookieManager.java",
     "java/src/org/chromium/components/signin/GmsAvailabilityException.java",
     "java/src/org/chromium/components/signin/GmsJustUpdatedException.java",
     "java/src/org/chromium/components/signin/util/PatternMatcher.java",
@@ -45,6 +48,8 @@ android_library("java") {
     "java/src/org/chromium/components/signin/ProfileDataSource.java",
     "java/src/org/chromium/components/signin/SystemAccountManagerDelegate.java",
   ]
+
+  annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 }
 
 junit_binary("components_signin_junit_tests") {
