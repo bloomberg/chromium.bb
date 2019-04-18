@@ -40,11 +40,6 @@ namespace blink {
 
 namespace {
 
-const char kEncryptedMediaFeaturePolicyConsoleWarning[] =
-    "Encrypted Media access has been blocked because of a Feature Policy "
-    "applied to the current document. See https://goo.gl/EuHzyv for more "
-    "details.";
-
 // This class allows capabilities to be checked and a MediaKeySystemAccess
 // object to be created asynchronously.
 class MediaKeySystemAccessInitializer final
@@ -62,15 +57,11 @@ class MediaKeySystemAccessInitializer final
       std::unique_ptr<WebContentDecryptionModuleAccess>) override;
   void RequestNotSupported(const WebString& error_message) override;
 
-  ScriptPromise Promise() { return resolver_->Promise(); }
-
   void Trace(blink::Visitor* visitor) override {
-    visitor->Trace(resolver_);
     MediaKeySystemAccessInitializerBase::Trace(visitor);
   }
 
  private:
-  Member<ScriptPromiseResolver> resolver_;
   DISALLOW_COPY_AND_ASSIGN(MediaKeySystemAccessInitializer);
 };
 
@@ -79,10 +70,9 @@ MediaKeySystemAccessInitializer::MediaKeySystemAccessInitializer(
     const String& key_system,
     const HeapVector<Member<MediaKeySystemConfiguration>>&
         supported_configurations)
-    : MediaKeySystemAccessInitializerBase(ExecutionContext::From(script_state),
+    : MediaKeySystemAccessInitializerBase(script_state,
                                           key_system,
-                                          supported_configurations),
-      resolver_(MakeGarbageCollected<ScriptPromiseResolver>(script_state)) {}
+                                          supported_configurations) {}
 
 void MediaKeySystemAccessInitializer::RequestSucceeded(
     std::unique_ptr<WebContentDecryptionModuleAccess> access) {

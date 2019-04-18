@@ -6,6 +6,8 @@
 
 #include <memory>
 
+#include "base/memory/ptr_util.h"
+#include "base/optional.h"
 #include "media/base/mime_util.h"
 #include "media/base/supported_types.h"
 #include "media/filters/stream_parser_factory.h"
@@ -15,13 +17,23 @@
 #include "third_party/blink/public/platform/modules/media_capabilities/web_media_decoding_configuration.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/public/platform/web_encrypted_media_client.h"
+#include "third_party/blink/public/platform/web_encrypted_media_request.h"
 #include "third_party/blink/public/platform/web_media_recorder_handler.h"
 #include "third_party/blink/public/platform/web_transmission_encoding_info_handler.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/modules/encryptedmedia/encrypted_media_utils.h"
+#include "third_party/blink/renderer/modules/encryptedmedia/media_key_system_access.h"
+#include "third_party/blink/renderer/modules/encryptedmedia/media_key_system_access_initializer_base.h"
+#include "third_party/blink/renderer/modules/encryptedmedia/media_key_system_configuration.h"
+#include "third_party/blink/renderer/modules/encryptedmedia/media_key_system_media_capability.h"
+#include "third_party/blink/renderer/modules/encryptedmedia/media_keys_controller.h"
 #include "third_party/blink/renderer/modules/media_capabilities/media_capabilities_decoding_info.h"
 #include "third_party/blink/renderer/modules/media_capabilities/media_capabilities_decoding_info_callbacks.h"
 #include "third_party/blink/renderer/modules/media_capabilities/media_capabilities_info.h"
@@ -29,9 +41,13 @@
 #include "third_party/blink/renderer/modules/media_capabilities/media_decoding_configuration.h"
 #include "third_party/blink/renderer/modules/media_capabilities/media_encoding_configuration.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/bindings/to_v8.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
+#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
+#include "third_party/blink/renderer/platform/heap/member.h"
 #include "third_party/blink/renderer/platform/network/parsed_content_type.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -41,6 +57,71 @@ constexpr const char* kApplicationMimeTypePrefix = "application/";
 constexpr const char* kAudioMimeTypePrefix = "audio/";
 constexpr const char* kVideoMimeTypePrefix = "video/";
 constexpr const char* kCodecsMimeTypeParam = "codecs";
+
+// Utility function that will create a MediaCapabilitiesDecodingInfo object with
+// all the values set to either true or false.
+MediaCapabilitiesDecodingInfo* CreateDecodingInfoWith(bool value) {
+  MediaCapabilitiesDecodingInfo* info = MediaCapabilitiesDecodingInfo::Create();
+  info->setSupported(value);
+  info->setSmooth(value);
+  info->setPowerEfficient(value);
+  return info;
+}
+
+MediaCapabilitiesDecodingInfo* CreateEncryptedDecodingInfoWith(
+    bool value,
+    MediaKeySystemAccess* access) {
+  MediaCapabilitiesDecodingInfo* info = CreateDecodingInfoWith(value);
+  info->setKeySystemAccess(access);
+  return info;
+}
+
+class MediaCapabilitiesKeySystemAccessInitializer final
+    : public MediaKeySystemAccessInitializerBase {
+ public:
+  MediaCapabilitiesKeySystemAccessInitializer(
+      ScriptState* script_state,
+      const String& key_system,
+      const HeapVector<Member<MediaKeySystemConfiguration>>&
+          supported_configurations)
+      : MediaKeySystemAccessInitializerBase(script_state,
+                                            key_system,
+                                            supported_configurations) {}
+
+  ~MediaCapabilitiesKeySystemAccessInitializer() override = default;
+
+  void RequestSucceeded(
+      std::unique_ptr<WebContentDecryptionModuleAccess> access) override {
+    DVLOG(3) << __func__;
+
+    if (!IsExecutionContextValid())
+      return;
+
+    // TODO(chcunningham): Query the VideoDecodePerfHistory to get real
+    // smoothness and power efficiency.
+    resolver_->Resolve(CreateEncryptedDecodingInfoWith(
+        true, MakeGarbageCollected<MediaKeySystemAccess>(std::move(access))));
+  }
+
+  void RequestNotSupported(const WebString& error_message) override {
+    DVLOG(3) << __func__ << " error: " << error_message.Ascii();
+
+    if (!IsExecutionContextValid())
+      return;
+
+    MediaCapabilitiesDecodingInfo* info =
+        CreateEncryptedDecodingInfoWith(false, nullptr);
+
+    resolver_->Resolve(info);
+  }
+
+  void Trace(blink::Visitor* visitor) override {
+    MediaKeySystemAccessInitializerBase::Trace(visitor);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MediaCapabilitiesKeySystemAccessInitializer);
+};
 
 // Computes the effective framerate value based on the framerate field passed to
 // the VideoConfiguration. It will return the parsed string as a double or
@@ -309,17 +390,6 @@ WebMediaConfiguration ToWebMediaConfiguration(
   return web_configuration;
 }
 
-// Utility function that will create a MediaCapabilitiesDecodingInfo object with
-// all the values set to either true or false.
-MediaCapabilitiesDecodingInfo* CreateDecodingInfoWith(bool value) {
-  MediaCapabilitiesDecodingInfo* info = MediaCapabilitiesDecodingInfo::Create();
-  info->setSupported(value);
-  info->setSmooth(value);
-  info->setPowerEfficient(value);
-
-  return info;
-}
-
 bool CheckMseSupport(const WebMediaConfiguration& configuration) {
   DCHECK_EQ(MediaConfigurationType::kMediaSource, configuration.type);
 
@@ -366,6 +436,145 @@ bool CheckMseSupport(const WebMediaConfiguration& configuration) {
   }
 
   return true;
+}
+
+ScriptPromise CheckEmeSupport(ScriptState* script_state,
+                              const MediaDecodingConfiguration* configuration) {
+  DVLOG(3) << __func__;
+  DCHECK(configuration->hasKeySystemConfiguration());
+
+  ExecutionContext* execution_context = ExecutionContext::From(script_state);
+  DCHECK(execution_context);
+  Document* document = To<Document>(execution_context);
+
+  // See context here:
+  // https://sites.google.com/a/chromium.org/dev/Home/chromium-security/deprecating-permissions-in-cross-origin-iframes
+  if (!document->IsFeatureEnabled(mojom::FeaturePolicyFeature::kEncryptedMedia,
+                                  ReportOptions::kReportOnFailure)) {
+    UseCounter::Count(document,
+                      WebFeature::kEncryptedMediaDisabledByFeaturePolicy);
+    document->AddConsoleMessage(
+        ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
+                               mojom::ConsoleMessageLevel::kWarning,
+                               kEncryptedMediaFeaturePolicyConsoleWarning));
+    return ScriptPromise::RejectWithDOMException(
+        script_state,
+        DOMException::Create(DOMExceptionCode::kSecurityError,
+                             "decodingInfo(): Creating MediaKeySystemAccess is "
+                             "disabled by feature policy."));
+  }
+
+  // Calling context must have a real Document bound to a Page. This check is
+  // ported from rMKSA (see http://crbug.com/456720).
+  if (!document->GetPage()) {
+    return ScriptPromise::RejectWithDOMException(
+        script_state,
+        DOMException::Create(
+            DOMExceptionCode::kInvalidStateError,
+            "The context provided is not associated with a page."));
+  }
+
+  if (execution_context->IsWorkerGlobalScope()) {
+    return ScriptPromise::RejectWithDOMException(
+        script_state,
+        DOMException::Create(
+            DOMExceptionCode::kInvalidStateError,
+            "Encrypted Media decoding info not available in Worker context."));
+  }
+
+  if (!execution_context->IsSecureContext()) {
+    return ScriptPromise::RejectWithDOMException(
+        script_state,
+        DOMException::Create(DOMExceptionCode::kSecurityError,
+                             "Encrypted Media decoding info can only be "
+                             "queried in a secure context."));
+  }
+
+  MediaCapabilitiesKeySystemConfiguration* key_system_config =
+      configuration->keySystemConfiguration();
+  if (!key_system_config->hasKeySystem() ||
+      key_system_config->keySystem().IsEmpty()) {
+    return ScriptPromise::Reject(
+        script_state,
+        V8ThrowException::CreateTypeError(
+            script_state->GetIsolate(), "The key system String is not valid."));
+  }
+
+  MediaKeySystemConfiguration* eme_config =
+      MediaKeySystemConfiguration::Create();
+
+  // Set the initDataTypes attribute to a sequence containing
+  // config.keySystemConfiguration.initDataType.
+  // TODO(chcunningham): double check that this default is idiomatic. Here we
+  // can't check hasInitDataType() because the default ("") makes that always
+  // true. The default in EME is an empty list.
+  if (!key_system_config->initDataType().IsEmpty()) {
+    eme_config->setInitDataTypes(
+        Vector<String>(1, key_system_config->initDataType()));
+  }
+
+  // Set the distinctiveIdentifier attribute to
+  // config.keySystemConfiguration.distinctiveIdentifier.
+  eme_config->setDistinctiveIdentifier(
+      key_system_config->distinctiveIdentifier());
+
+  // Set the persistentState attribute to
+  // config.keySystemConfiguration.persistentState.
+  eme_config->setPersistentState(key_system_config->persistentState());
+
+  // Set the sessionTypes attribute to
+  // config.keySystemConfiguration.sessionTypes.
+  if (key_system_config->hasSessionTypes())
+    eme_config->setSessionTypes(key_system_config->sessionTypes());
+
+  // If an audio is present in config...
+  if (configuration->hasAudio()) {
+    // set the audioCapabilities attribute to a sequence containing a single
+    // MediaKeySystemMediaCapability, initialized as follows:
+    MediaKeySystemMediaCapability* audio_capability =
+        MediaKeySystemMediaCapability::Create();
+    // Set the contentType attribute to config.audio.contentType.
+    audio_capability->setContentType(configuration->audio()->contentType());
+    // Set the robustness attribute to
+    // config.keySystemConfiguration.audioRobustness.
+    audio_capability->setRobustness(key_system_config->audioRobustness());
+
+    eme_config->setAudioCapabilities(
+        HeapVector<Member<MediaKeySystemMediaCapability>>(1, audio_capability));
+  }
+
+  // If a video is present in config...
+  if (configuration->hasVideo()) {
+    // set the videoCapabilities attribute to a sequence containing a single
+    // MediaKeySystemMediaCapability, initialized as follows:
+    MediaKeySystemMediaCapability* video_capability =
+        MediaKeySystemMediaCapability::Create();
+    // Set the contentType attribute to config.video.contentType.
+    video_capability->setContentType(configuration->video()->contentType());
+    // Set the robustness attribute to
+    // config.keySystemConfiguration.videoRobustness.
+    video_capability->setRobustness(key_system_config->videoRobustness());
+
+    eme_config->setVideoCapabilities(
+        HeapVector<Member<MediaKeySystemMediaCapability>>(1, video_capability));
+  }
+
+  HeapVector<Member<MediaKeySystemConfiguration>> config_vector(1, eme_config);
+
+  MediaCapabilitiesKeySystemAccessInitializer* initializer =
+      MakeGarbageCollected<MediaCapabilitiesKeySystemAccessInitializer>(
+          script_state, key_system_config->keySystem(), config_vector);
+
+  // IMPORTANT: Acquire the promise before potentially synchronously resolving
+  // it in the code that follows. Otherwise the promise returned to JS will be
+  // undefined. See comment above Promise() in script_promise_resolver.h
+  ScriptPromise promise = initializer->Promise();
+
+  MediaKeysController::From(document->GetPage())
+      ->EncryptedMediaClient(execution_context)
+      ->RequestMediaKeySystemAccess(WebEncryptedMediaRequest(initializer));
+
+  return promise;
 }
 
 // Returns whether the AudioConfiguration is supported.
@@ -418,61 +627,57 @@ MediaCapabilities::MediaCapabilities() = default;
 ScriptPromise MediaCapabilities::decodingInfo(
     ScriptState* script_state,
     const MediaDecodingConfiguration* configuration) {
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-  ScriptPromise promise = resolver->Promise();
 
   String message;
   if (!IsValidMediaDecodingConfiguration(configuration, &message)) {
-    resolver->Reject(
+    return ScriptPromise::Reject(
+        script_state,
         V8ThrowException::CreateTypeError(script_state->GetIsolate(), message));
-    return promise;
   }
 
   if (configuration->hasVideo() &&
       !IsValidVideoConfiguration(configuration->video())) {
-    resolver->Reject(V8ThrowException::CreateTypeError(
-        script_state->GetIsolate(),
-        "The video configuration dictionary is not valid."));
-    return promise;
+    return ScriptPromise::Reject(
+        script_state, V8ThrowException::CreateTypeError(
+                          script_state->GetIsolate(),
+                          "The video configuration dictionary is not valid."));
   }
 
   if (configuration->hasAudio() &&
       !IsValidAudioConfiguration(configuration->audio())) {
-    resolver->Reject(V8ThrowException::CreateTypeError(
-        script_state->GetIsolate(),
-        "The audio configuration dictionary is not valid."));
-    return promise;
+    return ScriptPromise::Reject(
+        script_state, V8ThrowException::CreateTypeError(
+                          script_state->GetIsolate(),
+                          "The audio configuration dictionary is not valid."));
   }
 
-  if (configuration->hasKeySystemConfiguration()) {
-    ExecutionContext* execution_context = ExecutionContext::From(script_state);
-    DCHECK(execution_context);
-    if (execution_context->IsWorkerGlobalScope()) {
-      resolver->Reject(DOMException::Create(
-          DOMExceptionCode::kInvalidStateError,
-          "Encrypted Media decoding info not available in Worker context."));
-      return promise;
-    }
-
-    if (!execution_context->IsSecureContext()) {
-      resolver->Reject(
-          DOMException::Create(DOMExceptionCode::kSecurityError,
-                               "Encrypted Media decoding info can only be "
-                               "queried in a secure context."));
-      return promise;
-    }
-  }
+  // Validation errors should return above.
+  DCHECK(message.IsEmpty());
 
   WebMediaDecodingConfiguration web_config =
       ToWebMediaConfiguration(configuration);
 
-  DCHECK(message.IsEmpty());
-
-  // MSE support is cheap to check (regex matching). Do it first.
+  // MSE support is cheap to check (regex matching). Do it first. Also, note
+  // that MSE support is not implied by EME support, so do it irrespective of
+  // whether we have a KeySystem configuration.
+  // TODO(chcunningham): re-write CheckMseSupport() to use the blink types to
+  // avoid making a WebMediaDecodingConfiguration when we don't need it for
+  // EME configurations.
   if (web_config.type == MediaConfigurationType::kMediaSource &&
       !CheckMseSupport(web_config)) {
-    resolver->Resolve(WrapPersistent(CreateDecodingInfoWith(false)));
-    return promise;
+    // Unsupported EME queries should resolve with a null MediaKeySystemAccess.
+    return ScriptPromise::Cast(
+        script_state,
+        ToV8(CreateEncryptedDecodingInfoWith(false, nullptr), script_state));
+  }
+
+  if (configuration->hasKeySystemConfiguration()) {
+    // CheckEmeSupport() calls us back, at which point we can query for the
+    // MediaCapabilitiesClient to check smoothness and power efficiency. It also
+    // implicitly checks whether the audio and video with the given KeySystem
+    // configuration. Therefore, return the promise here prior to performing the
+    // audio and video decoding info checks below.
+    return CheckEmeSupport(script_state, configuration);
   }
 
   bool audio_supported = true;
@@ -496,9 +701,17 @@ ScriptPromise MediaCapabilities::decodingInfo(
       }
     }
 
-    resolver->Resolve(WrapPersistent(CreateDecodingInfoWith(audio_supported)));
-    return promise;
+    return ScriptPromise::Cast(
+        script_state,
+        ToV8(CreateDecodingInfoWith(audio_supported), script_state));
   }
+
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+
+  // IMPORTANT: Acquire the promise before potentially synchronously resolving
+  // it in the code that follows. Otherwise the promise returned to JS will be
+  // undefined. See comment above Promise() in script_promise_resolver.h
+  ScriptPromise promise = resolver->Promise();
 
   Platform::Current()->MediaCapabilitiesClient()->DecodingInfo(
       web_config,
@@ -511,6 +724,10 @@ ScriptPromise MediaCapabilities::encodingInfo(
     ScriptState* script_state,
     const MediaEncodingConfiguration* configuration) {
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+
+  // IMPORTANT: Acquire the promise before potentially synchronously resolving
+  // it in the code that follows. Otherwise the promise returned to JS will be
+  // undefined. See comment above Promise() in script_promise_resolver.h
   ScriptPromise promise = resolver->Promise();
 
   if (!IsValidMediaConfiguration(configuration)) {

@@ -22,7 +22,7 @@ class MediaKeySystemAccessInitializerBase : public EncryptedMediaRequest,
 
  public:
   MediaKeySystemAccessInitializerBase(
-      ExecutionContext* execution_context,
+      ScriptState* script_state,
       const String& key_system,
       const HeapVector<Member<MediaKeySystemConfiguration>>&
           supported_configurations);
@@ -36,6 +36,11 @@ class MediaKeySystemAccessInitializerBase : public EncryptedMediaRequest,
   }
   const SecurityOrigin* GetSecurityOrigin() const override;
 
+  // IMPORTANT: Acquire the promise immediately after creating the |this|.
+  // Otherwise the promise returned to JS will be undefined. See comment above
+  // Promise() in script_promise_resolver.h
+  ScriptPromise Promise();
+
   void Trace(blink::Visitor* visitor) override;
 
  protected:
@@ -47,6 +52,7 @@ class MediaKeySystemAccessInitializerBase : public EncryptedMediaRequest,
   // robustness string.
   void CheckVideoCapabilityRobustness() const;
 
+  Member<ScriptPromiseResolver> resolver_;
   const String key_system_;
   WebVector<WebMediaKeySystemConfiguration> supported_configurations_;
 

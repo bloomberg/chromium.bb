@@ -107,27 +107,6 @@ void WebMediaCapabilitiesClientImpl::DecodingInfo(
     return;
   }
 
-  // TODO(907909): this is a mock implementation of Encrypted Media support to
-  // have a form of end-to-end implementation.
-  if (configuration.key_system_configuration.has_value()) {
-    auto key_system_configuration = configuration.key_system_configuration;
-
-    if (!media::IsClearKey(key_system_configuration->key_system.Utf8())) {
-      info->supported = info->smooth = info->power_efficient = false;
-      callbacks->OnSuccess(std::move(info));
-      return;
-    }
-
-    info->supported = info->smooth = info->power_efficient = true;
-    info->content_decryption_module_access =
-        WebContentDecryptionModuleAccessImpl::Create(
-            key_system_configuration->key_system, blink::WebSecurityOrigin(),
-            blink::WebMediaKeySystemConfiguration(), {}, nullptr);
-
-    callbacks->OnSuccess(std::move(info));
-    return;
-  }
-
   // Video is supported! Check its performance history.
   info->supported = true;
 

@@ -13,6 +13,11 @@
 
 namespace blink {
 
+constexpr const char* kEncryptedMediaFeaturePolicyConsoleWarning =
+    "Encrypted Media access has been blocked because of a Feature Policy "
+    "applied to the current document. See https://goo.gl/EuHzyv for more "
+    "details.";
+
 class EncryptedMediaUtils {
   STATIC_ONLY(EncryptedMediaUtils);
 
