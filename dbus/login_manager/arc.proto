@@ -33,7 +33,10 @@ message StartArcMiniContainerRequest {
   // Experiment flag for ARC Custom Tabs.
   optional bool arc_custom_tabs_experiment = 5 [default = false];
 
-  // Next ID to use: 6
+  // Experiment flag for ARC Print Spooler.
+  optional bool arc_print_spooler_experiment = 6 [default = false];
+
+  // Next ID to use: 7
 }
 
 // ARC upgrade options sent from Chrome to session manager. This message is used
