@@ -164,8 +164,7 @@ std::tuple<bool, std::vector<mojom::AnnotationPtr>> ParseJsonDescAnnotations(
       continue;
 
     const base::Value* const score = desc.FindKey("score");
-    if (!score || (!score->is_double() && !score->is_int()) ||
-        score->GetDouble() < 0.0 || score->GetDouble() > 1.0)
+    if (!score || (!score->is_double() && !score->is_int()))
       continue;
 
     const base::Value* const text = desc.FindKey("text");
@@ -175,9 +174,13 @@ std::tuple<bool, std::vector<mojom::AnnotationPtr>> ParseJsonDescAnnotations(
     ReportDescAnnotation(type_lookup->second, score->GetDouble(),
                          text->GetString().empty());
 
-    // Empty text is valid for OCR, but not for labels or captions.
+    // For OCR, we allow empty text and unusual scores; at the time of writing,
+    // a score of -1 is always returned for OCR.
+    //
+    // For other annotation types, we do not allow these cases.
     if (type_lookup->second != mojom::AnnotationType::kOcr &&
-        text->GetString().empty())
+        (text->GetString().empty() || score->GetDouble() < 0.0 ||
+         score->GetDouble() > 1.0))
       continue;
 
     results.push_back(mojom::Annotation::New(
