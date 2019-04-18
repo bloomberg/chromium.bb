@@ -20,7 +20,7 @@
   auto* delegate = static_cast<IOSChromePasswordManagerInfoBarDelegate*>(
       self.infoBarDelegate);
   NSString* message = delegate->GetDetailsMessageText();
-  if (message.length)
+  if (!message.length)
     return;
 
   [view addFooterLabel:message];
