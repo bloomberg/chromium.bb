@@ -14,6 +14,12 @@
         display: block;
       }
 
+      <if expr="not is_macosx">
+        :host(:not([should-show-system-dialog-link_])) {
+          display: none;
+        }
+      </if>
+
       :host cr-icon-button {
         --cr-icon-button-icon-size: 16px;
         --cr-icon-button-margin-end: -2px;
