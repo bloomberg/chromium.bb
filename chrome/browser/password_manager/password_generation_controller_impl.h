@@ -37,7 +37,9 @@ class PasswordGenerationControllerImpl
       override;
   void OnGenerationElementLostFocus() override;
   void OnGenerationRequested() override;
-  void GeneratedPasswordAccepted(const base::string16& password) override;
+  void GeneratedPasswordAccepted(
+      const base::string16& password,
+      base::WeakPtr<password_manager::PasswordManagerDriver> driver) override;
   void GeneratedPasswordRejected() override;
   gfx::NativeWindow top_level_native_window() const override;
 
