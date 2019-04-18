@@ -462,6 +462,10 @@ const base::Feature kSignedExchangeSubresourcePrefetch{
 const base::Feature kSignedHTTPExchange{"SignedHTTPExchange",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Whether to send a ping to the inner URL upon navigation or not.
+const base::Feature kSignedHTTPExchangePingValidity{
+    "SignedHTTPExchangePingValidity", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether SpareRenderProcessHostManager tries to always have a warm
 // spare renderer process around for the most recently requested BrowserContext.
 // This feature is only consulted in site-per-process mode.

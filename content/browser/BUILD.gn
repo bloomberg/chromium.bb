@@ -1893,6 +1893,8 @@ jumbo_source_set("browser") {
     "web_package/signed_exchange_url_loader_factory_for_non_network_service.h",
     "web_package/signed_exchange_utils.cc",
     "web_package/signed_exchange_utils.h",
+    "web_package/signed_exchange_validity_pinger.cc",
+    "web_package/signed_exchange_validity_pinger.h",
     "webrtc/webrtc_internals.cc",
     "webrtc/webrtc_internals.h",
     "webrtc/webrtc_internals_message_handler.cc",

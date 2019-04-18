@@ -36,8 +36,9 @@ class SignedExchangeHandler;
 class SignedExchangeHandlerFactory;
 class SignedExchangePrefetchMetricRecorder;
 class SignedExchangeReporter;
-class URLLoaderThrottle;
+class SignedExchangeValidityPinger;
 class SourceStreamToDataPipe;
+class URLLoaderThrottle;
 
 // SignedExchangeLoader handles an origin-signed HTTP exchange response. It is
 // created when a SignedExchangeRequestHandler recieves an origin-signed HTTP
@@ -120,6 +121,7 @@ class CONTENT_EXPORT SignedExchangeLoader final
       const network::ResourceResponseHead& resource_response,
       std::unique_ptr<net::SourceStream> payload_stream);
 
+  void StartReadingBody();
   void FinishReadingBody(int result);
   void NotifyClientOnCompleteIfReady();
   void ReportLoadResult(SignedExchangeLoadResult result);
@@ -179,6 +181,8 @@ class CONTENT_EXPORT SignedExchangeLoader final
   // Set when |body_data_pipe_adapter_| finishes loading the decoded body.
   base::Optional<int> decoded_body_read_result_;
   const std::string accept_langs_;
+
+  std::unique_ptr<SignedExchangeValidityPinger> validity_pinger_;
 
   base::WeakPtrFactory<SignedExchangeLoader> weak_factory_;
 
