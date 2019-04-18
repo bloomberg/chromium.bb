@@ -21,6 +21,8 @@ class TestWebAppUiDelegate : public WebAppUiDelegate {
 
   // WebAppUiDelegate
   size_t GetNumWindowsForApp(const AppId& app_id) override;
+  void NotifyOnAllAppWindowsClosed(const AppId& app_id,
+                                   base::OnceClosure callback) override;
 
  private:
   std::map<AppId, size_t> app_id_to_num_windows_map_;

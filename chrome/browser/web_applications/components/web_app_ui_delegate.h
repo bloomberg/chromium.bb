@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_WEB_APP_UI_DELEGATE_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_WEB_APP_UI_DELEGATE_H_
 
+#include "base/callback_forward.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 
 namespace web_app {
@@ -14,6 +15,9 @@ namespace web_app {
 class WebAppUiDelegate {
  public:
   virtual size_t GetNumWindowsForApp(const AppId& app_id) = 0;
+
+  virtual void NotifyOnAllAppWindowsClosed(const AppId& app_id,
+                                           base::OnceClosure callback) = 0;
 };
 
 }  // namespace web_app

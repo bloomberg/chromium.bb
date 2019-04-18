@@ -56,7 +56,7 @@ InstallOptions GetWindowedInstallOptions() {
   options.add_to_quick_launch_bar = false;
   options.install_placeholder = true;
   options.reinstall_placeholder = true;
-  options.stop_if_window_opened = true;
+  options.wait_for_windows_closed = true;
   return options;
 }
 
@@ -76,7 +76,7 @@ InstallOptions GetTabbedInstallOptions() {
   options.add_to_quick_launch_bar = false;
   options.install_placeholder = true;
   options.reinstall_placeholder = true;
-  options.stop_if_window_opened = true;
+  options.wait_for_windows_closed = true;
   return options;
 }
 
@@ -94,7 +94,7 @@ InstallOptions GetNoContainerInstallOptions() {
   options.add_to_quick_launch_bar = false;
   options.install_placeholder = true;
   options.reinstall_placeholder = true;
-  options.stop_if_window_opened = true;
+  options.wait_for_windows_closed = true;
   return options;
 }
 
@@ -112,7 +112,7 @@ InstallOptions GetCreateDesktopShorcutDefaultInstallOptions() {
   options.add_to_quick_launch_bar = false;
   options.install_placeholder = true;
   options.reinstall_placeholder = true;
-  options.stop_if_window_opened = true;
+  options.wait_for_windows_closed = true;
   return options;
 }
 
@@ -131,7 +131,7 @@ InstallOptions GetCreateDesktopShorcutFalseInstallOptions() {
   options.add_to_quick_launch_bar = false;
   options.install_placeholder = true;
   options.reinstall_placeholder = true;
-  options.stop_if_window_opened = true;
+  options.wait_for_windows_closed = true;
   return options;
 }
 
@@ -150,7 +150,7 @@ InstallOptions GetCreateDesktopShorcutTrueInstallOptions() {
   options.add_to_quick_launch_bar = false;
   options.install_placeholder = true;
   options.reinstall_placeholder = true;
-  options.stop_if_window_opened = true;
+  options.wait_for_windows_closed = true;
   return options;
 }
 
@@ -423,7 +423,7 @@ TEST_F(WebAppPolicyManagerTest, ReinstallPlaceholderApp) {
   auto reinstall_options = GetWindowedInstallOptions();
   reinstall_options.install_placeholder = false;
   reinstall_options.reinstall_placeholder = true;
-  reinstall_options.stop_if_window_opened = true;
+  reinstall_options.wait_for_windows_closed = true;
   expected_options_list.push_back(std::move(reinstall_options));
 
   EXPECT_EQ(expected_options_list, install_options_list);

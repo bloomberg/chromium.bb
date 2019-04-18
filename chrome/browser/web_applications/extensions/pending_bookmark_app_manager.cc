@@ -160,13 +160,13 @@ void PendingBookmarkAppManager::MaybeStartNextInstallation() {
     }
 
     if (registrar_->IsInstalled(extension_id.value())) {
-      // Stop if the app has any windows opened and |stop_if_window_opened| is
-      // true.
-      if (install_options.stop_if_window_opened &&
+      if (install_options.wait_for_windows_closed &&
           GetUiDelegate().GetNumWindowsForApp(extension_id.value()) != 0) {
-        std::move(front->callback)
-            .Run(install_options.url,
-                 web_app::InstallResultCode::kWindowOpened);
+        GetUiDelegate().NotifyOnAllAppWindowsClosed(
+            extension_id.value(),
+            base::BindOnce(&PendingBookmarkAppManager::Install,
+                           weak_ptr_factory_.GetWeakPtr(), install_options,
+                           std::move(front->callback)));
         continue;
       }
 
