@@ -1221,7 +1221,7 @@ void NotificationViewMD::UpdateViewForExpandedState(bool expanded) {
 }
 
 void NotificationViewMD::ToggleInlineSettings(const ui::Event& event) {
-  if (!settings_row_)
+  if (!weak_ptr_factory_.GetWeakPtr() || !settings_row_)
     return;
 
   bool inline_settings_visible = !settings_row_->visible();
@@ -1238,6 +1238,11 @@ void NotificationViewMD::ToggleInlineSettings(const ui::Event& event) {
 
   SetSettingMode(inline_settings_visible);
   SetExpanded(!inline_settings_visible);
+
+  // Check |this| is valid before continuing, because SetExpanded() might
+  // cause |this| to be deleted.
+  if (!weak_ptr_factory_.GetWeakPtr())
+    return;
 
   PreferredSizeChanged();
 
