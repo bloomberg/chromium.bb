@@ -179,11 +179,7 @@ class TestResourceDispatcherDelegate : public ResourceDispatcherDelegate {
   TestResourceDispatcherDelegate() {}
   ~TestResourceDispatcherDelegate() override {}
 
-  std::unique_ptr<RequestPeer> OnRequestComplete(
-      std::unique_ptr<RequestPeer> current_peer,
-      int error_code) override {
-    return current_peer;
-  }
+  void OnRequestComplete() override {}
 
   std::unique_ptr<RequestPeer> OnReceivedResponse(
       std::unique_ptr<RequestPeer> current_peer,
