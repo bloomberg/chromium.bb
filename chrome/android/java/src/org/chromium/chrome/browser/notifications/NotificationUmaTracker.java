@@ -163,6 +163,11 @@ public class NotificationUmaTracker {
                         SystemNotificationType.NUM_ENTRIES)
                 .record(type);
         recordNotificationAgeHistogram("Mobile.SystemNotification.Content.Click.Age", createTime);
+
+        if (type == SystemNotificationType.SEND_TAB_TO_SELF) {
+            recordNotificationAgeHistogram(
+                    "Mobile.SystemNotification.Content.Click.Age.SendTabToSelf", createTime);
+        }
     }
 
     /**
@@ -180,23 +185,35 @@ public class NotificationUmaTracker {
                         "Mobile.SystemNotification.Dismiss", SystemNotificationType.NUM_ENTRIES)
                 .record(type);
         recordNotificationAgeHistogram("Mobile.SystemNotification.Dismiss.Age", createTime);
+
+        if (type == SystemNotificationType.SEND_TAB_TO_SELF) {
+            recordNotificationAgeHistogram(
+                    "Mobile.SystemNotification.Dismiss.Age.SendTabToSelf", createTime);
+        }
     }
 
     /**
      * Logs notification button click event.
-     * @param type Type of the notification action button.
+     * @param actionType Type of the notification action button.
+     * @param notificationType Type of the notification.
      * @param createTime The notification creation timestamp.
      */
-    public void onNotificationActionClick(@ActionType int type, long createTime) {
-        if (type == ActionType.UNKNOWN) return;
+    public void onNotificationActionClick(@ActionType int actionType,
+            @SystemNotificationType int notificationType, long createTime) {
+        if (actionType == ActionType.UNKNOWN) return;
 
         // TODO(xingliu): This may not work if Android kill Chrome before native library is loaded.
         // Cache data in Android shared preference and flush them to native when available.
         new CachedMetrics
                 .EnumeratedHistogramSample(
                         "Mobile.SystemNotification.Action.Click", ActionType.NUM_ENTRIES)
-                .record(type);
+                .record(actionType);
         recordNotificationAgeHistogram("Mobile.SystemNotification.Action.Click.Age", createTime);
+
+        if (notificationType == SystemNotificationType.SEND_TAB_TO_SELF) {
+            recordNotificationAgeHistogram(
+                    "Mobile.SystemNotification.Action.Click.Age.SendTabToSelf", createTime);
+        }
     }
 
     /**
