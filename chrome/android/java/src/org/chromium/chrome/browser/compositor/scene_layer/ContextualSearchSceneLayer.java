@@ -79,8 +79,8 @@ public class ContextualSearchSceneLayer extends SceneOverlayLayer {
         float customImageVisibilityPercentage = imageControl.getCustomImageVisibilityPercentage();
         int barImageSize = imageControl.getBarImageSize();
 
-        boolean quickActionIconVisible = imageControl.getQuickActionIconVisible();
-        int quickActionIconResId = imageControl.getQuickActionIconResourceId();
+        boolean quickActionIconVisible = imageControl.getCardIconVisible();
+        int quickActionIconResId = imageControl.getCardIconResourceId();
 
         boolean thumbnailVisible = imageControl.getThumbnailVisible();
         String thumbnailUrl = imageControl.getThumbnailUrl();

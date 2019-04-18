@@ -63,6 +63,7 @@ import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.Context
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchQuickActionControl;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchFakeServer.FakeSlowResolveSearch;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchInternalStateController.InternalState;
+import org.chromium.chrome.browser.contextualsearch.ResolvedSearchTerm.CardTag;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.gsa.GSAContextDisplaySelection;
@@ -2883,8 +2884,9 @@ public class ContextualSearchManagerTest {
         // Simulate a tap to show the Bar, then set the quick action data.
         simulateTapSearch("search");
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> mPanel.onSearchTermResolved(
-                                "search", null, "tel:555-555-5555", QuickActionCategory.PHONE));
+                ()
+                        -> mPanel.onSearchTermResolved("search", null, "tel:555-555-5555",
+                                QuickActionCategory.PHONE, CardTag.CT_CONTACT));
 
         ContextualSearchBarControl barControl = mPanel.getSearchBarControl();
         ContextualSearchQuickActionControl quickActionControl = barControl.getQuickActionControl();
@@ -2943,8 +2945,9 @@ public class ContextualSearchManagerTest {
         // Simulate a tap to show the Bar, then set the quick action data.
         simulateTapSearch("search");
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> mPanel.onSearchTermResolved(
-                                "search", null, "tel:555-555-5555", QuickActionCategory.PHONE));
+                ()
+                        -> mPanel.onSearchTermResolved("search", null, "tel:555-555-5555",
+                                QuickActionCategory.PHONE, CardTag.CT_CONTACT));
 
         // Tap on the portion of the bar that should trigger the quick action intent to be fired.
         clickPanelBar();
@@ -2968,8 +2971,9 @@ public class ContextualSearchManagerTest {
         // Simulate a tap to show the Bar, then set the quick action data.
         simulateTapSearch("search");
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> mPanel.onSearchTermResolved(
-                                "search", null, testUrl, QuickActionCategory.WEBSITE));
+                ()
+                        -> mPanel.onSearchTermResolved("search", null, testUrl,
+                                QuickActionCategory.WEBSITE, CardTag.CT_URL));
 
         // Tap on the portion of the bar that should trigger the quick action.
         clickPanelBar();
