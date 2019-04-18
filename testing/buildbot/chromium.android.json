@@ -17997,7 +17997,12 @@
         },
         "name": "resource_sizes_cronet_sample_apk",
         "swarming": {
-          "can_use_on_swarming_builders": false
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-14.04"
+            }
+          ]
         }
       }
     ],
@@ -18059,7 +18064,12 @@
         },
         "name": "resource_sizes_cronet_sample_apk",
         "swarming": {
-          "can_use_on_swarming_builders": false
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-14.04"
+            }
+          ]
         }
       }
     ],
@@ -19044,7 +19054,12 @@
         },
         "name": "resource_sizes_cronet_sample_apk",
         "swarming": {
-          "can_use_on_swarming_builders": false
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-14.04"
+            }
+          ]
         }
       }
     ],
