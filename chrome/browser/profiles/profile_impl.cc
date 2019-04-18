@@ -468,6 +468,7 @@ ProfileImpl::ProfileImpl(
       io_data_(this),
       last_session_exit_type_(EXIT_NORMAL),
       start_time_(base::Time::Now()),
+      key_(std::make_unique<ProfileKey>(GetPath())),
       delegate_(delegate),
       reporting_permissions_checker_factory_(this),
       shared_cors_origin_access_list_(
@@ -583,7 +584,7 @@ ProfileImpl::ProfileImpl(
     user_prefs::UserPrefs::Set(this, prefs_.get());
   }
 
-  key_ = std::make_unique<ProfileKey>(GetPath(), prefs_.get());
+  key_->SetPrefs(prefs_.get());
   SimpleKeyMap::GetInstance()->Associate(this, key_.get());
 
 #if defined(OS_CHROMEOS)

@@ -16,13 +16,13 @@ class PrefService;
 class ProfileKey : public SimpleFactoryKey {
  public:
   ProfileKey(const base::FilePath& path,
-             PrefService* prefs,
              ProfileKey* original_key = nullptr);
   ~ProfileKey() override;
 
   // Profile-specific APIs needed in reduced mode:
   ProfileKey* GetOriginalKey() { return original_key_; }
-  PrefService* GetPrefs() { return prefs_; }
+  PrefService* GetPrefs();
+  void SetPrefs(PrefService* prefs);
 
   static ProfileKey* FromSimpleFactoryKey(SimpleFactoryKey* key);
 

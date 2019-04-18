@@ -139,7 +139,10 @@ void NotifyOTRProfileDestroyedOnIOThread(void* original_profile,
 }  // namespace
 
 OffTheRecordProfileImpl::OffTheRecordProfileImpl(Profile* real_profile)
-    : profile_(real_profile), start_time_(base::Time::Now()) {
+    : profile_(real_profile),
+      start_time_(base::Time::Now()),
+      key_(std::make_unique<ProfileKey>(profile_->GetPath(),
+                                        profile_->GetProfileKey())) {
   // Must happen before we ask for prefs as prefs needs the connection to the
   // service manager, which is set up in Initialize.
   BrowserContext::Initialize(this, profile_->GetPath());
@@ -149,8 +152,7 @@ OffTheRecordProfileImpl::OffTheRecordProfileImpl(Profile* real_profile)
       InProcessPrefServiceFactoryFactory::GetInstanceForContext(this)
           ->CreateDelegate());
 
-  key_ = std::make_unique<ProfileKey>(profile_->GetPath(), prefs_.get(),
-                                      profile_->GetProfileKey());
+  key_->SetPrefs(prefs_.get());
   SimpleKeyMap::GetInstance()->Associate(this, key_.get());
 
   // Register on BrowserContext.

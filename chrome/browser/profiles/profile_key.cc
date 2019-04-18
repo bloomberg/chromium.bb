@@ -4,12 +4,22 @@
 
 #include "chrome/browser/profiles/profile_key.h"
 
-ProfileKey::ProfileKey(const base::FilePath& path,
-                       PrefService* prefs,
-                       ProfileKey* original_key)
-    : SimpleFactoryKey(path), prefs_(prefs), original_key_(original_key) {}
+#include "base/logging.h"
+
+ProfileKey::ProfileKey(const base::FilePath& path, ProfileKey* original_key)
+    : SimpleFactoryKey(path), prefs_(nullptr), original_key_(original_key) {}
 
 ProfileKey::~ProfileKey() = default;
+
+PrefService* ProfileKey::GetPrefs() {
+  DCHECK(prefs_);
+  return prefs_;
+}
+
+void ProfileKey::SetPrefs(PrefService* prefs) {
+  DCHECK(!prefs_);
+  prefs_ = prefs;
+}
 
 bool ProfileKey::IsOffTheRecord() const {
   return original_key_ != nullptr;
