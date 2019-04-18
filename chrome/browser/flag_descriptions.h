@@ -1067,9 +1067,6 @@ extern const char kEnableDrawOcclusionDescription[];
 extern const char kSilentDebuggerExtensionApiName[];
 extern const char kSilentDebuggerExtensionApiDescription[];
 
-extern const char kSignedHTTPExchangeName[];
-extern const char kSignedHTTPExchangeDescription[];
-
 extern const char kSimplifyHttpsIndicatorName[];
 extern const char kSimplifyHttpsIndicatorDescription[];
 

@@ -3039,10 +3039,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kBundledConnectionHelpDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kBundledConnectionHelpFeature)},
 
-    {"enable-signed-http-exchange", flag_descriptions::kSignedHTTPExchangeName,
-     flag_descriptions::kSignedHTTPExchangeDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kSignedHTTPExchange)},
-
 #if defined(OS_CHROMEOS)
     {"enable-oobe-recommend-apps-screen",
      flag_descriptions::kEnableOobeRecommendAppsScreenName,
