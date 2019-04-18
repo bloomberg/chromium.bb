@@ -29,6 +29,9 @@
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/grit/chromium_strings.h"
 #include "ui/chromeos/devicetype_utils.h"
+#else  // defined(OS_CHROMEOS)
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #endif  // defined(OS_CHROMEOS)
 
 namespace {
@@ -152,7 +155,8 @@ base::string16 ManagementUI::GetManagementPageSubtitle(Profile* profile) {
 #else   // defined(OS_CHROMEOS)
   const auto management_domain = ManagementUIHandler::GetAccountDomain(profile);
   const auto managed =
-      policy::ProfilePolicyConnectorFactory::IsProfileManaged(profile);
+      policy::ProfilePolicyConnectorFactory::IsProfileManaged(profile) ||
+      g_browser_process->browser_policy_connector()->HasMachineLevelPolicies();
   if (management_domain.empty()) {
     return l10n_util::GetStringUTF16(managed
                                          ? IDS_MANAGEMENT_SUBTITLE
