@@ -37,18 +37,13 @@ aura::Window* FindArcWindow(const aura::Window::Windows& windows,
   return nullptr;
 }
 
-// Tries to find the specified ARC surface window recursively.
-aura::Window* FindSurfaceWindow(aura::Window* window, int surface_id) {
+// Enumerates surfaces under the window.
+void EnumerateSurfaces(aura::Window* window, std::vector<exo::Surface*>* out) {
   auto* surface = exo::Surface::AsSurface(window);
-  if (surface && surface->GetClientSurfaceId() == surface_id)
-    return window;
-
-  for (aura::Window* child : window->children()) {
-    aura::Window* result = FindSurfaceWindow(child, surface_id);
-    if (result)
-      return result;
-  }
-  return nullptr;
+  if (surface)
+    out->push_back(surface);
+  for (aura::Window* child : window->children())
+    EnumerateSurfaces(child, out);
 }
 
 }  // namespace
@@ -93,17 +88,11 @@ void ArcCustomTabView::EmbedUsingToken(const base::UnguessableToken& token) {
 }
 
 void ArcCustomTabView::Layout() {
-  if (!GetWidget()) {
-    LOG(ERROR) << "No widget";
+  exo::Surface* surface = FindSurface();
+  if (!surface)
     return;
-  }
-  DCHECK(GetWidget()->GetNativeWindow());
-  aura::Window* surface_window =
-      FindSurfaceWindow(GetWidget()->GetNativeWindow(), surface_id_);
-  if (!surface_window) {
-    LOG(ERROR) << "Surface not found " << surface_id_;
-    return;
-  }
+  DCHECK(observed_surfaces_.empty());
+  aura::Window* surface_window = surface->window();
   gfx::Point topleft(0, top_margin_),
       bottomright(surface_window->bounds().width(),
                   surface_window->bounds().height());
@@ -120,10 +109,31 @@ void ArcCustomTabView::Layout() {
 
 void ArcCustomTabView::OnWindowHierarchyChanged(
     const HierarchyChangeParams& params) {
-  auto* surface = exo::Surface::AsSurface(params.target);
-  if (surface && surface->GetClientSurfaceId() == surface_id_ &&
-      params.new_parent != nullptr) {
-    Layout();
+  if (params.receiver == arc_app_window_) {
+    auto* surface = exo::Surface::AsSurface(params.target);
+    if (surface && params.new_parent != nullptr) {
+      // Call Layout() aggressively without checking the surface ID to start
+      // observing surface ID updates in case it's not set yet.
+      Layout();
+    }
+  }
+}
+
+void ArcCustomTabView::OnWindowPropertyChanged(aura::Window* window,
+                                               const void* key,
+                                               intptr_t old) {
+  if (observed_surfaces_.contains(window)) {
+    if (key == exo::kClientSurfaceIdKey) {
+      // Client surface ID was updated. Try to find the surface again.
+      Layout();
+    }
+  }
+}
+
+void ArcCustomTabView::OnWindowDestroying(aura::Window* window) {
+  if (observed_surfaces_.contains(window)) {
+    window->RemoveObserver(this);
+    observed_surfaces_.erase(window);
   }
 }
 
@@ -142,6 +152,8 @@ ArcCustomTabView::ArcCustomTabView(aura::Window* arc_app_window,
 }
 
 ArcCustomTabView::~ArcCustomTabView() {
+  for (auto* window : observed_surfaces_)
+    window->RemoveObserver(this);
   arc_app_window_->RemoveObserver(this);
 }
 
@@ -160,6 +172,30 @@ void ArcCustomTabView::ConvertPointFromWindow(aura::Window* window,
   aura::Window::ConvertPointToTarget(window, GetWidget()->GetNativeWindow(),
                                      point);
   views::View::ConvertPointFromWidget(parent(), point);
+}
+
+exo::Surface* ArcCustomTabView::FindSurface() {
+  std::vector<exo::Surface*> surfaces;
+  EnumerateSurfaces(arc_app_window_, &surfaces);
+
+  // Try to find the surface.
+  for (auto* surface : surfaces) {
+    if (surface->GetClientSurfaceId() == surface_id_) {
+      // Stop observing surfaces for ID updates.
+      for (auto* window : observed_surfaces_)
+        window->RemoveObserver(this);
+      observed_surfaces_.clear();
+      return surface;
+    }
+  }
+  // Surface not found. Start observing surfaces for ID updates.
+  for (auto* surface : surfaces) {
+    if (surface->GetClientSurfaceId() == 0) {
+      observed_surfaces_.insert(surface->window());
+      surface->window()->AddObserver(this);
+    }
+  }
+  return nullptr;
 }
 
 }  // namespace ash
