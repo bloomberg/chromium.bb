@@ -188,6 +188,7 @@ component("vr_ui") {
     "//chrome/app:generated_resources",
     "//chrome/common:constants",
     "//components/url_formatter",
+    "//device/vr/buildflags:buildflags",
     "//media",
     "//net",
     "//skia",

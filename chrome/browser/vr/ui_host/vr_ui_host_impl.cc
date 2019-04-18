@@ -21,8 +21,10 @@
 #include "chrome/browser/vr/service/xr_runtime_manager.h"
 #include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/browser/vr/win/vr_browser_renderer_thread_win.h"
+#include "chrome/common/chrome_features.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/common/service_manager_connection.h"
+#include "device/vr/buildflags/buildflags.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -32,6 +34,15 @@ namespace vr {
 namespace {
 static constexpr base::TimeDelta kPermissionPromptTimeout =
     base::TimeDelta::FromSeconds(5);
+
+base::TimeDelta GetPermissionPromptTimeout(bool first_time) {
+#if BUILDFLAG(ENABLE_WINDOWS_MR)
+  if (base::FeatureList::IsEnabled(features::kWindowsMixedReality) &&
+      first_time)
+    return base::TimeDelta::FromSeconds(10);
+#endif
+  return kPermissionPromptTimeout;
+}
 
 static constexpr base::TimeDelta kPollCapturingStateInterval =
     base::TimeDelta::FromSecondsD(0.2);
@@ -322,6 +333,7 @@ void VRUiHostImpl::InitCapturingStates() {
 
   indicators_shown_start_time_ = base::Time::Now();
   indicators_visible_ = false;
+  indicators_showing_first_time_ = true;
 }
 
 void VRUiHostImpl::PollCapturingState() {
@@ -387,13 +399,15 @@ void VRUiHostImpl::PollCapturingState() {
   ui_rendering_thread_->SetCapturingState(
       active_capturing_, g_default_capturing_state, potential_capturing_);
 
-  if (indicators_shown_start_time_ + kPermissionPromptTimeout >
+  if (indicators_shown_start_time_ +
+          GetPermissionPromptTimeout(indicators_showing_first_time_) >
       base::Time::Now()) {
     if (!indicators_visible_ && !is_external_prompt_showing_in_headset_) {
       indicators_visible_ = true;
       ui_rendering_thread_->SetIndicatorsVisible(true);
     }
   } else {
+    indicators_showing_first_time_ = false;
     if (indicators_visible_) {
       indicators_visible_ = false;
       ui_rendering_thread_->SetIndicatorsVisible(false);

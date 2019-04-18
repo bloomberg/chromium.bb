@@ -70,9 +70,11 @@
 #include "chrome/browser/vr/ui_browser_interface.h"
 #include "chrome/browser/vr/ui_scene.h"
 #include "chrome/browser/vr/ui_scene_constants.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/elide_url.h"
+#include "device/vr/buildflags/buildflags.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/transform_util.h"
@@ -1112,6 +1114,14 @@ void BindIndicatorTranscience(
 }
 
 #endif
+
+int GetIndicatorsTimeout() {
+#if BUILDFLAG(ENABLE_WINDOWS_MR)
+  if (base::FeatureList::IsEnabled(features::kWindowsMixedReality))
+    return kWmrInitialIndicatorsTimeoutSeconds;
+#endif
+  return kToastTimeoutSeconds;
+}
 
 }  // namespace
 
@@ -2989,7 +2999,8 @@ void UiSceneCreator::CreateWebVrOverlayElements() {
   }
 
   auto parent = CreateTransientParent(kWebVrIndicatorTransience,
-                                      kToastTimeoutSeconds, true);
+                                      GetIndicatorsTimeout(), true);
+
 #if defined(OS_WIN)
   parent->AddBinding(
       std::make_unique<
