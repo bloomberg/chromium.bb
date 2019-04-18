@@ -2983,6 +2983,7 @@
             }
           ],
           "hard_timeout": 3600,
+          "idempotent": false,
           "io_timeout": 3600
         },
         "test": "chrome_all_tast_tests"
@@ -3001,6 +3002,7 @@
             }
           ],
           "hard_timeout": 3600,
+          "idempotent": false,
           "io_timeout": 3600
         },
         "test": "chrome_login_tast_tests"
@@ -3191,6 +3193,7 @@
             }
           ],
           "hard_timeout": 3600,
+          "idempotent": false,
           "io_timeout": 3600
         },
         "test": "chrome_all_tast_tests"
