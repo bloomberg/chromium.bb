@@ -87,6 +87,10 @@ VideoCodecProfile Video::Profile() const {
   return profile_;
 }
 
+uint32_t Video::FrameRate() const {
+  return frame_rate_;
+}
+
 uint32_t Video::NumFrames() const {
   return num_frames_;
 }
@@ -157,6 +161,14 @@ bool Video::LoadMetadata() {
     LOG(ERROR) << profile->GetString() << " is not supported";
     return false;
   }
+
+  const base::Value* frame_rate =
+      metadata->FindKeyOfType("frame_rate", base::Value::Type::INTEGER);
+  if (!frame_rate) {
+    LOG(ERROR) << "Key \"frame_rate\" is not found in " << metadata_file_path_;
+    return false;
+  }
+  frame_rate_ = static_cast<uint32_t>(frame_rate->GetInt());
 
   const base::Value* num_frames =
       metadata->FindKeyOfType("num_frames", base::Value::Type::INTEGER);
