@@ -32,6 +32,7 @@ import org.chromium.content_public.browser.test.util.UiThreadSchedulerTestUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -224,6 +225,52 @@ public class UiThreadSchedulerTest {
         });
         // We verify that the current execution waited until the synchronous task completed.
         Assert.assertTrue(taskExecuted.get());
+    }
+
+    @Test
+    @MediumTest
+    public void testChoreographerFrameTrait() throws Exception {
+        List<Integer> orderList = new ArrayList<>();
+        CountDownLatch latch = new CountDownLatch(3);
+        // Post a task so we can run on the UI thread.
+        PostTask.postTask(UiThreadTaskTraits.DEFAULT, new Runnable() {
+            @Override
+            public void run() {
+                PostTask.postTask(TaskTraits.CHOREOGRAPHER_FRAME, new Runnable() {
+                    @Override
+                    public void run() {
+                        synchronized (orderList) {
+                            orderList.add(1);
+                            latch.countDown();
+                        }
+                    }
+                });
+
+                PostTask.postTask(TaskTraits.CHOREOGRAPHER_FRAME, new Runnable() {
+                    @Override
+                    public void run() {
+                        synchronized (orderList) {
+                            orderList.add(2);
+                            latch.countDown();
+                        }
+                    }
+                });
+
+                PostTask.postTask(UiThreadTaskTraits.DEFAULT, new Runnable() {
+                    @Override
+                    public void run() {
+                        synchronized (orderList) {
+                            orderList.add(3);
+                            latch.countDown();
+                        }
+                    }
+                });
+            }
+        });
+        latch.await();
+
+        // The UiThreadTaskTraits.DEFAULT task should run before the two choreographer tasks.
+        assertThat(orderList, contains(3, 1, 2));
     }
 
     private void startContentMainOnUiThread() {
