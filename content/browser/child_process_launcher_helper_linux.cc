@@ -44,7 +44,7 @@ ChildProcessLauncherHelper::GetFilesToMap() {
 }
 
 bool ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
-    const PosixFileDescriptorInfo& files_to_register,
+    PosixFileDescriptorInfo& files_to_register,
     base::LaunchOptions* options) {
   // Convert FD mapping to FileHandleMappingVector
   options->fds_to_remap = files_to_register.GetMappingWithIDAdjustment(

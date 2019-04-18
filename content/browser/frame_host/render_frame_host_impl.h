@@ -251,7 +251,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       const TextSurroundingSelectionCallback& callback,
       int max_length) override;
   void AllowBindings(int binding_flags) override;
-  int GetEnabledBindings() const override;
+  int GetEnabledBindings() override;
   void DisableBeforeUnloadHangMonitorForTesting() override;
   bool IsBeforeUnloadHangMonitorDisabledForTesting() override;
   bool GetSuddenTerminationDisablerState(
@@ -270,7 +270,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void MarkInitiatorsAsRequiringSeparateURLLoaderFactory(
       base::flat_set<url::Origin> request_initiators,
       bool push_to_renderer_now) override;
-  bool IsSandboxed(blink::WebSandboxFlags flags) const override;
+  bool IsSandboxed(blink::WebSandboxFlags flags) override;
   void FlushNetworkAndNavigationInterfacesForTesting() override;
   void PrepareForInnerWebContentsAttach(
       PrepareForInnerWebContentsAttachCallback callback) override;

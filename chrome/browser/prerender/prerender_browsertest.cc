@@ -2284,7 +2284,7 @@ class TtsPlatformMock : public content::TtsPlatform {
   }
 
   void WillSpeakUtteranceWithVoice(
-      const content::TtsUtterance* utterance,
+      content::TtsUtterance* utterance,
       const content::VoiceData& voice_data) override {}
 
   void SetError(const std::string& error) override {}

@@ -61,7 +61,7 @@ TtsControllerDelegateImpl::~TtsControllerDelegateImpl() {
 }
 
 int TtsControllerDelegateImpl::GetMatchingVoice(
-    const content::TtsUtterance* utterance,
+    content::TtsUtterance* utterance,
     std::vector<content::VoiceData>& voices) {
   // Return the index of the voice that best match the utterance parameters.
   //
@@ -211,7 +211,7 @@ void TtsControllerDelegateImpl::UpdateUtteranceDefaultsFromPrefs(
 }
 
 const PrefService* TtsControllerDelegateImpl::GetPrefService(
-    const content::TtsUtterance* utterance) {
+    content::TtsUtterance* utterance) {
   const PrefService* prefs = nullptr;
   // The utterance->GetBrowserContext() is null in tests.
   if (utterance->GetBrowserContext()) {

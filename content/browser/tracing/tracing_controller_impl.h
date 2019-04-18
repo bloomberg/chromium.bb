@@ -63,7 +63,7 @@ class TracingControllerImpl : public TracingController,
   bool StopTracing(const scoped_refptr<TraceDataEndpoint>& endpoint,
                    const std::string& agent_label) override;
   bool GetTraceBufferUsage(GetTraceBufferUsageCallback callback) override;
-  bool IsTracing() const override;
+  bool IsTracing() override;
 
   void RegisterTracingUI(TracingUI* tracing_ui);
   void UnregisterTracingUI(TracingUI* tracing_ui);
@@ -91,7 +91,7 @@ class TracingControllerImpl : public TracingController,
   void AddAgents();
   void ConnectToServiceIfNeeded();
   void DisconnectFromService();
-  std::unique_ptr<base::DictionaryValue> GenerateMetadataDict() const;
+  std::unique_ptr<base::DictionaryValue> GenerateMetadataDict();
 
   // mojo::DataPipeDrainer::Client
   void OnDataAvailable(const void* data, size_t num_bytes) override;

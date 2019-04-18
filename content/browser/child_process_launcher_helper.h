@@ -128,9 +128,8 @@ class ChildProcessLauncherHelper :
   // LaunchOnLauncherThread will not call LaunchProcessOnLauncherThread and
   // AfterLaunchOnLauncherThread, and the launch_result will be reported as
   // LAUNCH_RESULT_FAILURE.
-  bool BeforeLaunchOnLauncherThread(
-      const FileMappedForLaunch& files_to_register,
-      base::LaunchOptions* options);
+  bool BeforeLaunchOnLauncherThread(FileMappedForLaunch& files_to_register,
+                                    base::LaunchOptions* options);
 
   // Does the actual starting of the process.
   // |is_synchronous_launch| is set to false if the starting of the process is

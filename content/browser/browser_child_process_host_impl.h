@@ -73,8 +73,8 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
   void Launch(std::unique_ptr<SandboxedProcessLauncherDelegate> delegate,
               std::unique_ptr<base::CommandLine> cmd_line,
               bool terminate_on_shutdown) override;
-  const ChildProcessData& GetData() const override;
-  ChildProcessHost* GetHost() const override;
+  const ChildProcessData& GetData() override;
+  ChildProcessHost* GetHost() override;
   ChildProcessTerminationInfo GetTerminationInfo(bool known_dead) override;
   std::unique_ptr<base::PersistentMemoryAllocator> TakeMetricsAllocator()
       override;
@@ -86,7 +86,7 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
   // ChildProcessHostDelegate implementation:
   void OnChannelInitialized(IPC::Channel* channel) override;
   void OnChildDisconnected() override;
-  const base::Process& GetProcess() const override;
+  const base::Process& GetProcess() override;
   void BindInterface(const std::string& interface_name,
                      mojo::ScopedMessagePipeHandle interface_pipe) override;
   bool OnMessageReceived(const IPC::Message& message) override;

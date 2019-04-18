@@ -37,7 +37,7 @@ class MockTtsPlatformImpl : public TtsPlatform {
   bool LoadBuiltInTtsEngine(BrowserContext* browser_context) override {
     return false;
   }
-  void WillSpeakUtteranceWithVoice(const TtsUtterance* utterance,
+  void WillSpeakUtteranceWithVoice(TtsUtterance* utterance,
                                    const VoiceData& voice_data) override {}
   void SetError(const std::string& error) override {}
   std::string GetError() override { return std::string(); }
@@ -49,7 +49,7 @@ class MockTtsControllerDelegate : public TtsControllerDelegate {
   MockTtsControllerDelegate() {}
   ~MockTtsControllerDelegate() override {}
 
-  int GetMatchingVoice(const content::TtsUtterance* utterance,
+  int GetMatchingVoice(content::TtsUtterance* utterance,
                        std::vector<content::VoiceData>& voices) override {
     // Below 0 implies a "native" voice.
     return -1;

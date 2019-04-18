@@ -222,7 +222,7 @@ NavigatorDelegate* NavigationHandleImpl::GetDelegate() const {
   return frame_tree_node()->navigator()->GetDelegate();
 }
 
-int64_t NavigationHandleImpl::GetNavigationId() const {
+int64_t NavigationHandleImpl::GetNavigationId() {
   return navigation_id_;
 }
 
@@ -421,7 +421,7 @@ bool NavigationHandleImpl::IsDeferredForTesting() {
   return navigation_request_->IsDeferredForTesting();
 }
 
-bool NavigationHandleImpl::WasStartedFromContextMenu() const {
+bool NavigationHandleImpl::WasStartedFromContextMenu() {
   return navigation_request_->common_params().started_from_context_menu;
 }
 
