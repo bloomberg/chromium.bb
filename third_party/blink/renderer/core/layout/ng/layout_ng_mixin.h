@@ -17,7 +17,6 @@
 namespace blink {
 
 enum class NGBaselineAlgorithmType;
-class NGConstraintSpace;
 class NGPaintFragment;
 class NGPhysicalFragment;
 struct NGInlineNodeData;
@@ -52,8 +51,6 @@ class LayoutNGMixin : public Base {
                    HitTestAction) final;
 
   PositionWithAffinity PositionForPoint(const LayoutPoint&) const final;
-
-  bool AreCachedLinesValidFor(const NGConstraintSpace&) const final;
 
   NGPaintFragment* PaintFragment() const final { return paint_fragment_.get(); }
   void SetPaintFragment(const NGBlockBreakToken*,

@@ -953,35 +953,65 @@ scoped_refptr<const NGLayoutResult> NGInlineNode::Layout(
   return algorithm.Layout();
 }
 
-bool NGInlineNode::PrepareReuseFragments(
+const NGPaintFragment* NGInlineNode::ReusableLineBoxContainer(
     const NGConstraintSpace& constraint_space) {
-  if (!IsPrepareLayoutFinished())
-    return false;
-
+  // |SelfNeedsLayout()| is the most common reason that we check it earlier.
   LayoutBlockFlow* block_flow = GetLayoutBlockFlow();
-  if (!block_flow->EverHadLayout())
-    return false;
+  DCHECK(!block_flow->SelfNeedsLayout());
+  DCHECK(block_flow->EverHadLayout());
 
-  // If the block flow itself was changed, re-layout may be needed.
-  if (block_flow->SelfNeedsLayout())
-    return false;
-
-  // Check the cached result is valid for the constraint space.
-  if (!block_flow->AreCachedLinesValidFor(constraint_space))
-    return false;
+  if (!IsPrepareLayoutFinished())
+    return nullptr;
 
   if (MaybeDirtyData().changes_may_affect_earlier_lines_)
-    return false;
+    return nullptr;
+
+  const NGLayoutResult* cached_layout_result =
+      block_flow->GetCachedLayoutResult();
+  if (!cached_layout_result)
+    return nullptr;
+
+  const NGConstraintSpace& old_space =
+      cached_layout_result->GetConstraintSpaceForCaching();
+  if (constraint_space.AvailableSize().inline_size !=
+      old_space.AvailableSize().inline_size)
+    return nullptr;
+
+  // Floats in either cached or new constraint space prevents reusing cached
+  // lines.
+  if (constraint_space.HasFloats() || old_space.HasFloats())
+    return nullptr;
+
+  // Any floats might need to move, causing lines to wrap differently, needing
+  // re-layout.
+  if (!cached_layout_result->ExclusionSpace().IsEmpty())
+    return nullptr;
+
+  // Propagating OOF needs re-layout.
+  if (!cached_layout_result->OutOfFlowPositionedDescendants().IsEmpty())
+    return nullptr;
+
+  // Cached fragments are not for intermediate layout.
+  if (constraint_space.IsIntermediateLayout())
+    return nullptr;
+
+  // Block fragmentation is not supported yet.
+  if (constraint_space.HasBlockFragmentation())
+    return nullptr;
+
+  const NGPaintFragment* paint_fragment = block_flow->PaintFragment();
+  if (!paint_fragment)
+    return nullptr;
 
   if (!MarkLineBoxesDirty(block_flow))
-    return false;
+    return nullptr;
 
   PrepareLayoutIfNeeded();
 
   if (Data().changes_may_affect_earlier_lines_)
-    return false;
+    return nullptr;
 
-  return true;
+  return paint_fragment;
 }
 
 // Mark the first line box that have |NeedsLayout()| dirty.

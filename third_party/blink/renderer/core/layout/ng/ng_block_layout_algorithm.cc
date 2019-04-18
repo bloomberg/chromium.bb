@@ -728,18 +728,16 @@ scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::FinishLayout(
   return container_builder_.ToBoxFragment();
 }
 
-const NGPaintFragment* NGBlockLayoutAlgorithm::ReusableLineBoxContainer(
-    NGInlineNode inline_node) const {
+const NGInlineBreakToken* NGBlockLayoutAlgorithm::TryReuseFragmentsFromCache(
+    NGInlineNode inline_node,
+    NGPreviousInflowPosition* previous_inflow_position,
+    bool* aborted_out) {
+  LayoutBox* layout_box = inline_node.GetLayoutBox();
+  if (layout_box->SelfNeedsLayout())
+    return nullptr;
+
   // If floats are intruding into this node, re-layout may be needed.
   if (!exclusion_space_.IsEmpty() || !unpositioned_floats_.IsEmpty())
-    return nullptr;
-
-  // Cached fragments are not for intermediate layout.
-  if (ConstraintSpace().IsIntermediateLayout())
-    return nullptr;
-
-  // Block fragmentation is not supported yet.
-  if (ConstraintSpace().HasBlockFragmentation())
     return nullptr;
 
   // Laying out from a break token is not supported yet, because this logic
@@ -747,23 +745,8 @@ const NGPaintFragment* NGBlockLayoutAlgorithm::ReusableLineBoxContainer(
   if (BreakToken())
     return nullptr;
 
-  // Re-use from a NGPaintFragment, because currently dirty flags are on
-  // NGPaintFragment.
-  const NGPaintFragment* paint_fragment = inline_node.PaintFragment();
-  if (!paint_fragment)
-    return nullptr;
-
-  if (!inline_node.PrepareReuseFragments(ConstraintSpace()))
-    return nullptr;
-
-  return paint_fragment;
-}
-
-const NGInlineBreakToken* NGBlockLayoutAlgorithm::TryReuseFragmentsFromCache(
-    NGInlineNode inline_node,
-    NGPreviousInflowPosition* previous_inflow_position,
-    bool* aborted_out) {
-  const NGPaintFragment* lineboxes = ReusableLineBoxContainer(inline_node);
+  const NGPaintFragment* lineboxes =
+      inline_node.ReusableLineBoxContainer(ConstraintSpace());
   if (!lineboxes)
     return nullptr;
 
