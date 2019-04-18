@@ -27,7 +27,6 @@
     <color name="black_alpha_11">#1D000000</color>
     <color name="black_alpha_12">#1F000000</color>
     <color name="black_alpha_20">#33000000</color>
-    <color name="black_alpha_24">#3D000000</color>
     <color name="black_alpha_30">#4D000000</color>
     <color name="black_alpha_65">#A6000000</color>
     <color name="white_alpha_65">#A6FFFFFF</color>
@@ -146,8 +145,6 @@
     <color name="locationbar_status_offline_color_light">@android:color/white</color>
     <color name="locationbar_status_preview_color">@color/modern_blue_600</color>
     <color name="locationbar_status_preview_color_light">@color/modern_blue_300</color>
-    <color name="locationbar_status_separator_color">@color/black_alpha_24</color>
-    <color name="locationbar_status_separator_color_light">#3DFFFFFF</color>
     <color name="omnibox_focused_fading_background_color">@color/black_alpha_65</color>
     <color name="omnibox_focused_fading_background_color_light">@color/white_alpha_65</color>
 

@@ -49,5 +49,5 @@
     <color name="default_green">@color/default_green_light</color>
     <color name="filled_button_bg_color">@color/modern_blue_300</color>
     <color name="filled_button_bg_color_disabled">@color/modern_grey_300_alpha_38</color>
-    <color name="divider_bg_color">@color/white_alpha_12</color>
+    <color name="divider_bg_color">@color/divider_bg_color_light</color>
 </resources>
