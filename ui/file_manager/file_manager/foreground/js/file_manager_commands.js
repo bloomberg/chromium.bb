@@ -30,37 +30,37 @@ const CommandUtil = {};
 /**
  * Extracts entry on which command event was dispatched.
  *
+ * @param {!CommandHandlerDeps} fileManager
  * @param {EventTarget} element Element which is the command event's target.
  * @return {Entry|FakeEntry} Entry of the found node.
  */
-CommandUtil.getCommandEntry = element => {
-  const entries = CommandUtil.getCommandEntries(element);
+CommandUtil.getCommandEntry = (fileManager, element) => {
+  const entries = CommandUtil.getCommandEntries(fileManager, element);
   return entries.length === 0 ? null : entries[0];
 };
 
 /**
  * Extracts entries on which command event was dispatched.
  *
+ * @param {!CommandHandlerDeps} fileManager
  * @param {EventTarget} element Element which is the command event's target.
  * @return {!Array<!Entry>} Entries of the found node.
  */
-CommandUtil.getCommandEntries = element => {
-  if (element instanceof DirectoryTree) {
-    // element is a DirectoryTree.
-    return element.selectedItem ? [element.selectedItem.entry] : [];
-  } else if (
-      element instanceof DirectoryItem || element instanceof ShortcutItem) {
-    // element are sub items in DirectoryTree.
-    return element.entry ? [element.entry] : [];
-  } else if (element instanceof cr.ui.List) {
-    // element is a normal List (eg. the file list on the right panel).
+CommandUtil.getCommandEntries = (fileManager, element) => {
+  if (element && element.entry) {
+    // DirectoryItem has "entry" attribute.
+    return [element.entry];
+  } else if (element.selectedItem && element.selectedItem.entry) {
+    // DirectoryTree has the selected item.
+    return [element.selectedItem.entry];
+  } else if (element.selectedItems && element.selectedItems.length) {
+    // File list (cr.ui.List).
     const entries = element.selectedItems;
     // Check if it is Entry or not by checking for toURL().
-    return entries.some(entry => {
-      return !('toURL' in entry);
-    }) ?
-        [] :
-        entries;
+    return entries.filter(entry => ('toURL' in entry));
+  } else if (fileManager.ui.actionbar.contains(/** @type {Node} */ (element))) {
+    // Commands in the action bar can only act in the currently selected files.
+    return fileManager.getSelection().entries;
   } else {
     return [];
   }
@@ -75,15 +75,13 @@ CommandUtil.getCommandEntries = element => {
  * @return {DirectoryEntry|FilesAppEntry} The extracted parent entry.
  */
 CommandUtil.getParentEntry = (element, directoryModel) => {
-  if (element instanceof DirectoryTree) {
-    if (!element.selectedItem) {
-      return null;
-    }
-    const parentItem = element.selectedItem.parentItem;
-    return parentItem ? parentItem.entry : null;
-  } else if (
-      element instanceof DirectoryItem || element instanceof ShortcutItem) {
-    return element.parentItem ? element.parentItem.entry : null;
+  if (element && element.selectedItem && element.selectedItem.parentItem &&
+      element.selectedItem.parentItem.entry) {
+    // DirectoryTree has the selected item.
+    return element.selectedItem.parentItem.entry;
+  } else if (element.parentItem && element.parentItem.entry) {
+    // DirectoryItem has parentItem.
+    return element.parentItem.entry;
   } else if (element instanceof cr.ui.List) {
     return directoryModel ? directoryModel.getCurrentDirEntry() : null;
   } else {
@@ -92,33 +90,20 @@ CommandUtil.getParentEntry = (element, directoryModel) => {
 };
 
 /**
+ * Returns VolumeInfo from the current target for commands, based on |element|.
+ * It can be from directory tree (clicked item or selected item), or from file
+ * list selected items; or null if can determine it.
+ *
  * @param {EventTarget} element
  * @param {!CommandHandlerDeps} fileManager
  * @return {VolumeInfo}
  */
 CommandUtil.getElementVolumeInfo = (element, fileManager) => {
-  if (element instanceof DirectoryTree && element.selectedItem) {
-    return CommandUtil.getElementVolumeInfo(element.selectedItem, fileManager);
-  }
-  if (element instanceof VolumeItem) {
+  if (element.volumeInfo) {
     return element.volumeInfo;
   }
-  if (element instanceof ShortcutItem) {
-    return element.entry &&
-        fileManager.volumeManager.getVolumeInfo(element.entry);
-  }
-  return null;
-};
-
-/**
- * @param {!CommandHandlerDeps} fileManager
- * @return {VolumeInfo}
- */
-CommandUtil.getCurrentVolumeInfo = fileManager => {
-  const currentDirEntry = fileManager.directoryModel.getCurrentDirEntry();
-  return currentDirEntry ?
-      fileManager.volumeManager.getVolumeInfo(currentDirEntry) :
-      null;
+  const entry = CommandUtil.getCommandEntry(fileManager, element);
+  return entry && fileManager.volumeManager.getVolumeInfo(entry);
 };
 
 /**
@@ -588,9 +573,7 @@ CommandHandler.COMMANDS_['unmount'] = /** @type {Command} */ ({
       label = entry.label || '';
     } else {
       // The element is a removable volume with no partitions.
-      const volumeInfo =
-          CommandUtil.getElementVolumeInfo(element, fileManager) ||
-          CommandUtil.getCurrentVolumeInfo(fileManager);
+      const volumeInfo = CommandUtil.getElementVolumeInfo(element, fileManager);
       if (!volumeInfo) {
         errorCallback();
         return;
@@ -612,8 +595,7 @@ CommandHandler.COMMANDS_['unmount'] = /** @type {Command} */ ({
    */
   canExecute: function(event, fileManager) {
     const volumeInfo =
-        CommandUtil.getElementVolumeInfo(event.target, fileManager) ||
-        CommandUtil.getCurrentVolumeInfo(fileManager);
+        CommandUtil.getElementVolumeInfo(event.target, fileManager);
     const entry = event.target.entry;
     if (!volumeInfo && !entry) {
       event.canExecute = false;
@@ -653,7 +635,7 @@ CommandHandler.COMMANDS_['format'] = /** @type {Command} */ ({
    */
   execute: function(event, fileManager) {
     const directoryModel = fileManager.directoryModel;
-    let root = CommandUtil.getCommandEntry(event.target);
+    let root = CommandUtil.getCommandEntry(fileManager, event.target);
     // If an entry is not found from the event target, use the current
     // directory. This can happen for the format button for unsupported and
     // unrecognized volumes.
@@ -676,7 +658,7 @@ CommandHandler.COMMANDS_['format'] = /** @type {Command} */ ({
    */
   canExecute: function(event, fileManager) {
     const directoryModel = fileManager.directoryModel;
-    let root = CommandUtil.getCommandEntry(event.target);
+    let root = CommandUtil.getCommandEntry(fileManager, event.target);
     // |root| is null for unrecognized volumes. Enable format command for such
     // volumes.
     const isUnrecognizedVolume = (root == null);
@@ -817,7 +799,7 @@ CommandHandler.COMMANDS_['new-folder'] = (() => {
   NewFolderCommand.prototype.canExecute = function(event, fileManager) {
     if (event.target instanceof DirectoryItem ||
         event.target instanceof DirectoryTree) {
-      const entry = CommandUtil.getCommandEntry(event.target);
+      const entry = CommandUtil.getCommandEntry(fileManager, event.target);
       if (!entry || util.isFakeEntry(entry) ||
           util.isTeamDrivesGrandRoot(entry)) {
         event.canExecute = false;
@@ -1005,7 +987,7 @@ CommandHandler.COMMANDS_['delete'] = (() => {
      * @param {!CommandHandlerDeps} fileManager CommandHandlerDeps to use.
      */
     execute: function(event, fileManager) {
-      const entries = CommandUtil.getCommandEntries(event.target);
+      const entries = CommandUtil.getCommandEntries(fileManager, event.target);
 
       // Execute might be called without a call of canExecute method,
       // e.g. called directly from code. Double check here not to delete
@@ -1030,7 +1012,7 @@ CommandHandler.COMMANDS_['delete'] = (() => {
      * @param {!CommandHandlerDeps} fileManager CommandHandlerDeps to use.
      */
     canExecute: function(event, fileManager) {
-      const entries = CommandUtil.getCommandEntries(event.target);
+      const entries = CommandUtil.getCommandEntries(fileManager, event.target);
 
       // If entries contain fake or root entry, hide delete option.
       if (!entries.every(CommandUtil.shouldShowMenuItemsForEntry.bind(
@@ -1132,7 +1114,7 @@ CommandHandler.COMMANDS_['paste-into-folder'] = /** @type {Command} */ ({
    * @param {!CommandHandlerDeps} fileManager CommandHandlerDeps to use.
    */
   execute: function(event, fileManager) {
-    const entries = CommandUtil.getCommandEntries(event.target);
+    const entries = CommandUtil.getCommandEntries(fileManager, event.target);
     if (entries.length !== 1 || !entries[0].isDirectory ||
         !CommandUtil.shouldShowMenuItemsForEntry(
             fileManager.volumeManager, entries[0])) {
@@ -1154,7 +1136,7 @@ CommandHandler.COMMANDS_['paste-into-folder'] = /** @type {Command} */ ({
    * @param {!CommandHandlerDeps} fileManager CommandHandlerDeps to use.
    */
   canExecute: function(event, fileManager) {
-    const entries = CommandUtil.getCommandEntries(event.target);
+    const entries = CommandUtil.getCommandEntries(fileManager, event.target);
 
     // Show this item only when one directory is selected.
     if (entries.length !== 1 || !entries[0].isDirectory ||
@@ -1212,7 +1194,7 @@ CommandHandler.COMMANDS_['rename'] = /** @type {Command} */ ({
    * @param {!CommandHandlerDeps} fileManager CommandHandlerDeps to use.
    */
   execute: function(event, fileManager) {
-    const entry = CommandUtil.getCommandEntry(event.target);
+    const entry = CommandUtil.getCommandEntry(fileManager, event.target);
     if (CommandUtil.isDownloads(fileManager.volumeManager, entry)) {
       return;
     }
@@ -1252,7 +1234,7 @@ CommandHandler.COMMANDS_['rename'] = /** @type {Command} */ ({
   canExecute: function(event, fileManager) {
     // Check if it is removable drive
     if ((() => {
-          const root = CommandUtil.getCommandEntry(event.target);
+          const root = CommandUtil.getCommandEntry(fileManager, event.target);
           // |root| is null for unrecognized volumes. Do not enable rename
           // command for such volumes because they need to be formatted prior to
           // rename.
@@ -1283,7 +1265,7 @@ CommandHandler.COMMANDS_['rename'] = /** @type {Command} */ ({
     const renameTarget = CommandUtil.isFromSelectionMenu(event) ?
         fileManager.ui.listContainer.currentList :
         event.target;
-    const entries = CommandUtil.getCommandEntries(renameTarget);
+    const entries = CommandUtil.getCommandEntries(fileManager, renameTarget);
     if (entries.length === 0 ||
         !CommandUtil.shouldShowMenuItemsForEntry(
             fileManager.volumeManager, entries[0]) ||
@@ -1801,7 +1783,6 @@ CommandHandler.COMMANDS_['manage-in-drive'] = /** @type {Command} */ ({
   }
 });
 
-
 /**
  * Shares the selected (single only) directory with the default crostini VM.
  * @type {Command}
@@ -1812,7 +1793,7 @@ CommandHandler.COMMANDS_['share-with-linux'] = /** @type {Command} */ ({
    * @param {!CommandHandlerDeps} fileManager CommandHandlerDeps to use.
    */
   execute: function(event, fileManager) {
-    const entry = CommandUtil.getCommandEntry(event.target);
+    const entry = CommandUtil.getCommandEntry(fileManager, event.target);
     if (!entry || !entry.isDirectory) {
       return;
     }
@@ -1876,7 +1857,7 @@ CommandHandler.COMMANDS_['share-with-linux'] = /** @type {Command} */ ({
    */
   canExecute: function(event, fileManager) {
     // Must be single directory not already shared.
-    const entries = CommandUtil.getCommandEntries(event.target);
+    const entries = CommandUtil.getCommandEntries(fileManager, event.target);
     event.canExecute = entries.length === 1 && entries[0].isDirectory &&
         !fileManager.crostini.isPathShared(
             constants.DEFAULT_CROSTINI_VM, entries[0]) &&
@@ -1896,7 +1877,7 @@ CommandHandler.COMMANDS_['share-with-plugin-vm'] = /** @type {Command} */ ({
    * @param {!CommandHandlerDeps} fileManager CommandHandlerDeps to use.
    */
   execute: function(event, fileManager) {
-    const entry = CommandUtil.getCommandEntry(event.target);
+    const entry = CommandUtil.getCommandEntry(fileManager, event.target);
     if (!entry || !entry.isDirectory) {
       return;
     }
@@ -1959,7 +1940,7 @@ CommandHandler.COMMANDS_['share-with-plugin-vm'] = /** @type {Command} */ ({
    */
   canExecute: function(event, fileManager) {
     // Must be single directory subfolder of Downloads not already shared.
-    const entries = CommandUtil.getCommandEntries(event.target);
+    const entries = CommandUtil.getCommandEntries(fileManager, event.target);
     event.canExecute = entries.length === 1 && entries[0].isDirectory &&
         !fileManager.crostini.isPathShared(constants.PLUGIN_VM, entries[0]) &&
         fileManager.crostini.canSharePath(
@@ -2015,7 +1996,7 @@ CommandHandler.COMMANDS_['manage-linux-sharing'] = /** @type {Command} */ ({
    * @param {!CommandHandlerDeps} fileManager CommandHandlerDeps to use.
    */
   canExecute: function(event, fileManager) {
-    const entries = CommandUtil.getCommandEntries(event.target);
+    const entries = CommandUtil.getCommandEntries(fileManager, event.target);
     event.canExecute = entries.length === 1 && entries[0].isDirectory &&
         fileManager.crostini.isPathShared(
             constants.DEFAULT_CROSTINI_VM, entries[0]);
@@ -2069,7 +2050,7 @@ CommandHandler.COMMANDS_['manage-plugin-vm-sharing'] = /** @type {Command} */ ({
    * @param {!CommandHandlerDeps} fileManager CommandHandlerDeps to use.
    */
   canExecute: function(event, fileManager) {
-    const entries = CommandUtil.getCommandEntries(event.target);
+    const entries = CommandUtil.getCommandEntries(fileManager, event.target);
     event.canExecute = entries.length === 1 && entries[0].isDirectory &&
         fileManager.crostini.isPathShared(constants.PLUGIN_VM, entries[0]);
     event.command.setHidden(!event.canExecute);
@@ -2410,16 +2391,14 @@ CommandHandler.COMMANDS_['configure'] = /** @type {Command} */ ({
    */
   execute: function(event, fileManager) {
     const volumeInfo =
-        CommandUtil.getElementVolumeInfo(event.target, fileManager) ||
-        CommandUtil.getCurrentVolumeInfo(fileManager);
+        CommandUtil.getElementVolumeInfo(event.target, fileManager);
     if (volumeInfo && volumeInfo.configurable) {
       fileManager.volumeManager.configure(volumeInfo);
     }
   },
   canExecute: function(event, fileManager) {
     const volumeInfo =
-        CommandUtil.getElementVolumeInfo(event.target, fileManager) ||
-        CommandUtil.getCurrentVolumeInfo(fileManager);
+        CommandUtil.getElementVolumeInfo(event.target, fileManager);
     event.canExecute = volumeInfo && volumeInfo.configurable;
     event.command.setHidden(!event.canExecute);
   }
