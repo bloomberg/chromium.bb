@@ -1647,8 +1647,9 @@ public class ChromeTabbedActivity
             }
 
             private boolean shouldShowDataSaverMenuItem() {
-                return DataReductionProxySettings.getInstance()
-                        .shouldUseDataReductionMainMenuItem();
+                return !isInOverviewMode()
+                        && DataReductionProxySettings.getInstance()
+                                   .shouldUseDataReductionMainMenuItem();
             }
 
             @Override
