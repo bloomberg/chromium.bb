@@ -679,6 +679,13 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
         kCorsExemptRequestedWithHeaderName,
         WebString(request.GetRequestedWithHeader()).Utf8());
   }
+  // Set Purpose header to cors_exempt_headers rather than headers to be
+  // exempted from CORS checks.
+  if (!request.GetPurposeHeader().IsEmpty()) {
+    resource_request->cors_exempt_headers.SetHeader(
+        kCorsExemptPurposeHeaderName,
+        WebString(request.GetPurposeHeader()).Utf8());
+  }
 
   if (resource_request->resource_type == RESOURCE_TYPE_PREFETCH ||
       resource_request->resource_type == RESOURCE_TYPE_FAVICON) {

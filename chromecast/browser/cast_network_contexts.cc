@@ -20,6 +20,7 @@
 #include "components/variations/net/variations_http_headers.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/cors_exempt_headers.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "services/network/network_context.h"
@@ -103,6 +104,7 @@ class CastNetworkContexts::SystemNetworkContextOwner {
     context_getter_ = std::move(context_getter);
     network::mojom::NetworkContextParamsPtr network_context_params =
         network::mojom::NetworkContextParams::New();
+    content::UpdateCorsExemptHeader(network_context_params.get());
     variations::UpdateCorsExemptHeaderForVariations(
         network_context_params.get());
     network_context_ = std::make_unique<network::NetworkContext>(

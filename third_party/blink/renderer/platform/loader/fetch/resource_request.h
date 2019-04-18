@@ -402,6 +402,9 @@ class PLATFORM_EXPORT ResourceRequest final {
   void SetClientDataHeader(const String& value) { client_data_header_ = value; }
   const String& GetClientDataHeader() const { return client_data_header_; }
 
+  void SetPurposeHeader(const String& value) { purpose_header_ = value; }
+  const String& GetPurposeHeader() const { return purpose_header_; }
+
   void SetUkmSourceId(ukm::SourceId ukm_source_id) {
     ukm_source_id_ = ukm_source_id;
   }
@@ -492,6 +495,7 @@ class PLATFORM_EXPORT ResourceRequest final {
   base::Optional<String> devtools_id_;
   String requested_with_header_;
   String client_data_header_;
+  String purpose_header_;
 
   ukm::SourceId ukm_source_id_ = ukm::kInvalidSourceId;
 

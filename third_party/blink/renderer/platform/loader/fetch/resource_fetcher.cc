@@ -809,7 +809,7 @@ base::Optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
         DetermineRequestContext(resource_type, kImageNotImageSet));
   }
   if (resource_type == ResourceType::kLinkPrefetch)
-    resource_request.SetHttpHeaderField(http_names::kPurpose, "prefetch");
+    resource_request.SetPurposeHeader("prefetch");
 
   // Indicate whether the network stack can return a stale resource. If a
   // stale resource is returned a StaleRevalidation request will be scheduled.

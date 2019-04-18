@@ -12,6 +12,7 @@ void UpdateCorsExemptHeader(network::mojom::NetworkContextParams* params) {
   // Note: This mechanism will be deprecated in the near future. You can find
   // a recommended alternative approach on URLRequest::cors_exempt_headers at
   // services/network/public/mojom/url_loader.mojom.
+  params->cors_exempt_header_list.push_back(kCorsExemptPurposeHeaderName);
   params->cors_exempt_header_list.push_back(kCorsExemptRequestedWithHeaderName);
 }
 

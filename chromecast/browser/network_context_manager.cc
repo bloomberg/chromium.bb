@@ -11,6 +11,7 @@
 #include "components/variations/net/variations_http_headers.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/cors_exempt_headers.h"
 #include "content/public/browser/network_service_instance.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "services/network/network_context.h"
@@ -52,6 +53,7 @@ void NetworkContextManager::InitializeOnIOThread() {
                                 : content::GetNetworkServiceImpl();
   network::mojom::NetworkContextParamsPtr network_context_params =
       network::mojom::NetworkContextParams::New();
+  content::UpdateCorsExemptHeader(network_context_params.get());
   variations::UpdateCorsExemptHeaderForVariations(network_context_params.get());
   network_context_ = std::make_unique<network::NetworkContext>(
       network_service, mojo::MakeRequest(&network_context_ptr_),

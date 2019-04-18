@@ -48,6 +48,7 @@ CONTENT_EXPORT extern const char kMachBootstrapName[];
 // Defines a HTTP header name that is set internally, and some code places
 // in content need to know the name to manage the header stored in
 // network::ResourceRequest::cors_exempt_headers.
+extern const char kCorsExemptPurposeHeaderName[];
 extern const char kCorsExemptRequestedWithHeaderName[];
 
 } // namespace content
