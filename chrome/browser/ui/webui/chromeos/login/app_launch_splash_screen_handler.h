@@ -9,12 +9,50 @@
 #include <string>
 
 #include "base/macros.h"
-#include "chrome/browser/chromeos/login/screens/app_launch_splash_screen_view.h"
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
 
 namespace chromeos {
+
+class AppLaunchController;
+
+// Interface for UI implementations of the AppLaunchSplashScreen.
+class AppLaunchSplashScreenView {
+ public:
+  enum AppLaunchState {
+    APP_LAUNCH_STATE_PREPARING_NETWORK,
+    APP_LAUNCH_STATE_INSTALLING_APPLICATION,
+    APP_LAUNCH_STATE_WAITING_APP_WINDOW,
+    APP_LAUNCH_STATE_NETWORK_WAIT_TIMEOUT,
+    APP_LAUNCH_STATE_SHOWING_NETWORK_CONFIGURE_UI,
+  };
+
+  constexpr static OobeScreen kScreenId = OobeScreen::SCREEN_APP_LAUNCH_SPLASH;
+
+  virtual ~AppLaunchSplashScreenView() {}
+
+  // Sets screen this view belongs to.
+  virtual void SetDelegate(AppLaunchController* controller) = 0;
+
+  // Shows the contents of the screen.
+  virtual void Show(const std::string& app_id) = 0;
+
+  // Hides the contents of the screen.
+  virtual void Hide() = 0;
+
+  // Set the current app launch state.
+  virtual void UpdateAppLaunchState(AppLaunchState state) = 0;
+
+  // Sets whether configure network control is visible.
+  virtual void ToggleNetworkConfig(bool visible) = 0;
+
+  // Shows the network error and configure UI.
+  virtual void ShowNetworkConfigureUI() = 0;
+
+  // Returns true if the default network has Internet access.
+  virtual bool IsNetworkReady() = 0;
+};
 
 // A class that handles the WebUI hooks for the app launch splash screen.
 class AppLaunchSplashScreenHandler
@@ -41,7 +79,7 @@ class AppLaunchSplashScreenHandler
   void Hide() override;
   void ToggleNetworkConfig(bool visible) override;
   void UpdateAppLaunchState(AppLaunchState state) override;
-  void SetDelegate(AppLaunchSplashScreenHandler::Delegate* delegate) override;
+  void SetDelegate(AppLaunchController* controller) override;
   void ShowNetworkConfigureUI() override;
   bool IsNetworkReady() override;
 
@@ -58,7 +96,7 @@ class AppLaunchSplashScreenHandler
   void HandleContinueAppLaunch();
   void HandleNetworkConfigRequested();
 
-  AppLaunchSplashScreenHandler::Delegate* delegate_ = nullptr;
+  AppLaunchController* controller_ = nullptr;
   bool show_on_init_ = false;
   std::string app_id_;
   AppLaunchState state_ = APP_LAUNCH_STATE_PREPARING_NETWORK;

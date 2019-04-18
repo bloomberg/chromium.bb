@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/login/screens/app_downloading_screen.h"
 
+#include "chrome/browser/ui/webui/chromeos/login/app_downloading_screen_handler.h"
+
 namespace chromeos {
 namespace {
 
