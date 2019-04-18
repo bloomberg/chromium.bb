@@ -115,16 +115,13 @@ void TabletModeWindowDragDelegate::StartWindowDrag(
   DCHECK(!presentation_time_recorder_);
   presentation_time_recorder_.reset();
   if (wm::IsDraggingTabs(dragged_window)) {
-    presentation_time_recorder_ =
-        std::make_unique<PresentationTimeHistogramRecorder>(
-            dragged_window->layer()->GetCompositor(),
-            kSwipeDownDragTabHistogram, kSwipeDownDragTabMaxLatencyHistogram);
+    presentation_time_recorder_ = CreatePresentationTimeHistogramRecorder(
+        dragged_window->layer()->GetCompositor(), kSwipeDownDragTabHistogram,
+        kSwipeDownDragTabMaxLatencyHistogram);
   } else {
-    presentation_time_recorder_ =
-        std::make_unique<PresentationTimeHistogramRecorder>(
-            dragged_window->layer()->GetCompositor(),
-            kSwipeDownDragWindowHistogram,
-            kSwipeDownDragWindowMaxLatencyHistogram);
+    presentation_time_recorder_ = CreatePresentationTimeHistogramRecorder(
+        dragged_window->layer()->GetCompositor(), kSwipeDownDragWindowHistogram,
+        kSwipeDownDragWindowMaxLatencyHistogram);
   }
 
   dragged_window_ = dragged_window;

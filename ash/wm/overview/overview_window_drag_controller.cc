@@ -83,10 +83,9 @@ void OverviewWindowDragController::InitiateDrag(
   Shell::Get()->overview_controller()->PauseOcclusionTracker();
   DCHECK(!presentation_time_recorder_);
 
-  presentation_time_recorder_ =
-      std::make_unique<ash::PresentationTimeHistogramRecorder>(
-          item_->root_window()->layer()->GetCompositor(),
-          kOverviewWindowDragHistogram, kOverviewWindowDragMaxLatencyHistogram);
+  presentation_time_recorder_ = CreatePresentationTimeHistogramRecorder(
+      item_->root_window()->layer()->GetCompositor(),
+      kOverviewWindowDragHistogram, kOverviewWindowDragMaxLatencyHistogram);
 }
 
 void OverviewWindowDragController::Drag(const gfx::PointF& location_in_screen) {

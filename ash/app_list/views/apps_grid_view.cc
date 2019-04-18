@@ -2579,15 +2579,13 @@ void AppsGridView::ScrollStarted() {
   DCHECK(!presentation_time_recorder_);
 
   if (IsTabletMode()) {
-    presentation_time_recorder_ =
-        std::make_unique<ash::PresentationTimeHistogramRecorder>(
-            GetWidget()->GetCompositor(), kPageDragScrollInTabletHistogram,
-            kPageDragScrollInTabletMaxLatencyHistogram);
+    presentation_time_recorder_ = ash::CreatePresentationTimeHistogramRecorder(
+        GetWidget()->GetCompositor(), kPageDragScrollInTabletHistogram,
+        kPageDragScrollInTabletMaxLatencyHistogram);
   } else {
-    presentation_time_recorder_ =
-        std::make_unique<ash::PresentationTimeHistogramRecorder>(
-            GetWidget()->GetCompositor(), kPageDragScrollInClamshellHistogram,
-            kPageDragScrollInClamshellMaxLatencyHistogram);
+    presentation_time_recorder_ = ash::CreatePresentationTimeHistogramRecorder(
+        GetWidget()->GetCompositor(), kPageDragScrollInClamshellHistogram,
+        kPageDragScrollInClamshellMaxLatencyHistogram);
   }
 }
 

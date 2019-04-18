@@ -1540,7 +1540,7 @@ void AppListView::SetIsInDrag(bool is_in_drag) {
     DCHECK(!presentation_time_recorder_);
     if (!is_tablet_mode_) {
       presentation_time_recorder_ =
-          std::make_unique<ash::PresentationTimeHistogramRecorder>(
+          ash::CreatePresentationTimeHistogramRecorder(
               GetWidget()->GetCompositor(), kAppListDragInClamshellHistogram,
               kAppListDragInClamshellMaxLatencyHistogram);
     }
