@@ -85,7 +85,6 @@ bool ClientNativePixmapDmaBuf::IsConfigurationSupported(
 #if defined(CHROMECAST_BUILD)
   switch (usage) {
     case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE:
-    case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT:
       // TODO(spang): Fix b/121148905 and turn these back on.
       return false;
     default:
@@ -126,7 +125,6 @@ bool ClientNativePixmapDmaBuf::IsConfigurationSupported(
       return false;
 
     case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE:
-    case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT:
       return
 #if defined(ARCH_CPU_X86_FAMILY)
           // Currently only Intel driver (i.e. minigbm and

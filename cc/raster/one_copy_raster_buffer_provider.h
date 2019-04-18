@@ -144,7 +144,6 @@ class CC_EXPORT OneCopyRasterBufferProvider : public RasterBufferProvider {
                                     bool mailbox_texture_is_overlay_candidate,
                                     const gpu::SyncToken& sync_token,
                                     const gfx::ColorSpace& color_space);
-  gfx::BufferUsage StagingBufferUsage() const;
 
   viz::ContextProvider* const compositor_context_provider_;
   viz::RasterContextProvider* const worker_context_provider_;

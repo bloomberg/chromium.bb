@@ -56,7 +56,6 @@ class ClientNativePixmapFactoryDmabuf : public ClientNativePixmapFactory {
     switch (usage) {
       case gfx::BufferUsage::SCANOUT_CPU_READ_WRITE:
       case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE:
-      case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT:
       case gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE:
       case gfx::BufferUsage::CAMERA_AND_CPU_READ_WRITE:
         return ClientNativePixmapDmaBuf::ImportFromDmabuf(std::move(handle),

@@ -56,7 +56,6 @@ uint32_t BufferUsageToGbmFlags(gfx::BufferUsage usage) {
       return GBM_BO_USE_SCANOUT | GBM_BO_USE_TEXTURING |
              GBM_BO_USE_HW_VIDEO_DECODER;
     case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE:
-    case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT:
       return GBM_BO_USE_LINEAR | GBM_BO_USE_TEXTURING;
   }
 }
