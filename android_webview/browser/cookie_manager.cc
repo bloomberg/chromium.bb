@@ -18,6 +18,7 @@
 #include "base/android/path_utils.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/containers/circular_deque.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -162,7 +163,8 @@ CookieManager::CookieManager()
     : accept_file_scheme_cookies_(kDefaultFileSchemeAllowed),
       cookie_store_created_(false),
       cookie_store_client_thread_("CookieMonsterClient"),
-      cookie_store_backend_thread_("CookieMonsterBackend") {
+      cookie_store_backend_thread_("CookieMonsterBackend"),
+      setting_new_mojo_cookie_manager_(false) {
   cookie_store_client_thread_.Start();
   cookie_store_backend_thread_.Start();
   cookie_store_task_runner_ = cookie_store_client_thread_.task_runner();
@@ -219,7 +221,34 @@ void CookieManager::ExecCookieTaskSync(
 
 // Executes the |task| using |cookie_store_task_runner_|.
 void CookieManager::ExecCookieTask(base::OnceClosure task) {
-  cookie_store_task_runner_->PostTask(FROM_HERE, std::move(task));
+  base::AutoLock lock(task_queue_lock_);
+  tasks_.push_back(std::move(task));
+  // Unretained is safe, since android_webview::CookieManager is a singleton we
+  // never destroy (we don't need PostTask to do any memory management).
+  cookie_store_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&CookieManager::RunPendingCookieTasks,
+                                base::Unretained(this)));
+}
+
+void CookieManager::RunPendingCookieTasks() {
+  DCHECK(cookie_store_task_runner_->RunsTasksInCurrentSequence());
+  // Don't do any cookie tasks if in the middle of setting a mojo CookieManager,
+  // we'll call this method when that operation is finished.
+  if (setting_new_mojo_cookie_manager_)
+    return;
+
+  // Copy tasks into temp_queue to minimize the amount of time in the critical
+  // section, and to mitigate live-lock issues if these tasks append to the task
+  // queue themselves.
+  base::circular_deque<base::OnceClosure> temp_queue;
+  {
+    base::AutoLock lock(task_queue_lock_);
+    temp_queue.swap(tasks_);
+  }
+  while (!temp_queue.empty()) {
+    std::move(temp_queue.front()).Run();
+    temp_queue.pop_front();
+  }
 }
 
 base::SingleThreadTaskRunner* CookieManager::GetCookieStoreTaskRunner() {
@@ -280,11 +309,16 @@ void CookieManager::SetMojoCookieManagerAsync(
     network::mojom::CookieManagerPtrInfo cookie_manager_info,
     base::OnceClosure complete) {
   DCHECK(cookie_store_task_runner_->RunsTasksInCurrentSequence());
+  setting_new_mojo_cookie_manager_ = true;
+  // For simplicity, only permit this method to be called once (otherwise, we
+  // must sometimes flush the mojo_cookie_manager_ instead of cookie_store_).
+  DCHECK(!mojo_cookie_manager_.is_bound());
   if (!cookie_store_created_) {
-    mojo_cookie_manager_.Bind(std::move(cookie_manager_info));
-    std::move(complete).Run();
+    SwapMojoCookieManagerAsync(std::move(cookie_manager_info),
+                               std::move(complete));
     return;
   }
+
   GetCookieStore()->FlushStore(base::BindOnce(
       &CookieManager::SwapMojoCookieManagerAsync, base::Unretained(this),
       std::move(cookie_manager_info), std::move(complete)));
@@ -294,10 +328,10 @@ void CookieManager::SwapMojoCookieManagerAsync(
     network::mojom::CookieManagerPtrInfo cookie_manager_info,
     base::OnceClosure complete) {
   DCHECK(cookie_store_task_runner_->RunsTasksInCurrentSequence());
-  DCHECK(!mojo_cookie_manager_.is_bound());
-  DCHECK(cookie_store_created_);
   mojo_cookie_manager_.Bind(std::move(cookie_manager_info));
-  std::move(complete).Run();
+  setting_new_mojo_cookie_manager_ = false;
+  std::move(complete).Run();  // unblock content initialization
+  RunPendingCookieTasks();
 }
 
 void CookieManager::SetShouldAcceptCookies(bool accept) {
