@@ -153,8 +153,8 @@ static inline bool LayoutObjectHasAspectRatio(
 }
 
 void LayoutReplaced::RecalcVisualOverflow() {
-  LayoutObject::RecalcVisualOverflow();
   ClearVisualOverflow();
+  LayoutObject::RecalcVisualOverflow();
   AddVisualEffectOverflow();
 }
 
