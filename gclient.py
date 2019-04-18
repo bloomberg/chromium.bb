@@ -3098,19 +3098,40 @@ def disable_buffering():
   sys.stdout = gclient_utils.MakeFileAnnotated(sys.stdout)
 
 
-def main(argv):
-  """Doesn't parse the arguments here, just find the right subcommand to
-  execute."""
+def path_contains_tilde():
+  for element in os.environ['PATH'].split(os.pathsep):
+    if element.startswith('~/'):
+      return True
+  return False
+
+
+def can_run_gclient_and_helpers():
   if sys.hexversion < 0x02060000:
     print(
         '\nYour python version %s is unsupported, please upgrade.\n' %
         sys.version.split(' ', 1)[0],
         file=sys.stderr)
-    return 2
+    return False
   if not sys.executable:
     print(
         '\nPython cannot find the location of it\'s own executable.\n',
         file=sys.stderr)
+    return False
+  if path_contains_tilde():
+    print(
+        '\nYour PATH contains a literal "~", which works in some shells ' +
+        'but will break when python tries to run subprocesses. ' +
+        'Replace the "~" with $HOME.\n' +
+        'See https://crbug.com/952865.\n',
+        file=sys.stderr)
+    return False
+  return True
+
+
+def main(argv):
+  """Doesn't parse the arguments here, just find the right subcommand to
+  execute."""
+  if not can_run_gclient_and_helpers():
     return 2
   fix_encoding.fix_encoding()
   disable_buffering()
