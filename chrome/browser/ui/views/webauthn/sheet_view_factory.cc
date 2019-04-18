@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/views/webauthn/ble_device_selection_sheet_view.h"
 #include "chrome/browser/ui/webauthn/sheet_models.h"
 #include "chrome/browser/webauthn/authenticator_request_dialog_model.h"
+#include "ui/gfx/paint_vector_icon.h"
 
 namespace {
 
@@ -23,9 +24,9 @@ class PlaceholderSheetModel : public AuthenticatorSheetModelBase {
 
  private:
   // AuthenticatorSheetModelBase:
-  gfx::ImageSkia* GetStepIllustration(
+  const gfx::VectorIcon& GetStepIllustration(
       ImageColorScheme color_scheme) const override {
-    return nullptr;
+    return gfx::kNoneIcon;
   }
   base::string16 GetStepTitle() const override { return base::string16(); }
   base::string16 GetStepDescription() const override {

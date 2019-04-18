@@ -13,6 +13,10 @@
 #include "chrome/browser/webauthn/authenticator_request_dialog_model.h"
 #include "ui/base/models/table_model.h"
 
+namespace gfx {
+struct VectorIcon;
+}
+
 namespace ui {
 class MenuModel;
 }
@@ -34,10 +38,6 @@ class AuthenticatorSheetModelBase
   }
 
  protected:
-  // Pulls the image with the given |resource_id| from the resource bundle and
-  // loads it in Skia format.
-  static gfx::ImageSkia* GetImage(int resource_id);
-
   // AuthenticatorRequestSheetModel:
   bool IsActivityIndicatorVisible() const override;
   bool IsBackButtonVisible() const override;
@@ -68,7 +68,7 @@ class AuthenticatorWelcomeSheetModel : public AuthenticatorSheetModelBase {
 
  private:
   // AuthenticatorSheetModelBase:
-  gfx::ImageSkia* GetStepIllustration(
+  const gfx::VectorIcon& GetStepIllustration(
       ImageColorScheme color_scheme) const override;
   base::string16 GetStepTitle() const override;
   base::string16 GetStepDescription() const override;
@@ -92,7 +92,7 @@ class AuthenticatorTransportSelectorSheetModel
  private:
   // AuthenticatorSheetModelBase:
   bool IsBackButtonVisible() const override;
-  gfx::ImageSkia* GetStepIllustration(
+  const gfx::VectorIcon& GetStepIllustration(
       ImageColorScheme color_scheme) const override;
   base::string16 GetStepTitle() const override;
   base::string16 GetStepDescription() const override;
@@ -108,7 +108,7 @@ class AuthenticatorInsertAndActivateUsbSheetModel
  private:
   // AuthenticatorSheetModelBase:
   bool IsActivityIndicatorVisible() const override;
-  gfx::ImageSkia* GetStepIllustration(
+  const gfx::VectorIcon& GetStepIllustration(
       ImageColorScheme color_scheme) const override;
   base::string16 GetStepTitle() const override;
   base::string16 GetStepDescription() const override;
@@ -126,7 +126,7 @@ class AuthenticatorTimeoutErrorModel : public AuthenticatorSheetModelBase {
   // AuthenticatorSheetModelBase:
   bool IsBackButtonVisible() const override;
   base::string16 GetCancelButtonLabel() const override;
-  gfx::ImageSkia* GetStepIllustration(
+  const gfx::VectorIcon& GetStepIllustration(
       ImageColorScheme color_scheme) const override;
   base::string16 GetStepTitle() const override;
   base::string16 GetStepDescription() const override;
@@ -141,7 +141,7 @@ class AuthenticatorNoAvailableTransportsErrorModel
   // AuthenticatorSheetModelBase:
   bool IsBackButtonVisible() const override;
   base::string16 GetCancelButtonLabel() const override;
-  gfx::ImageSkia* GetStepIllustration(
+  const gfx::VectorIcon& GetStepIllustration(
       ImageColorScheme color_scheme) const override;
   base::string16 GetStepTitle() const override;
   base::string16 GetStepDescription() const override;
@@ -156,7 +156,7 @@ class AuthenticatorNotRegisteredErrorModel
   // AuthenticatorSheetModelBase:
   bool IsBackButtonVisible() const override;
   base::string16 GetCancelButtonLabel() const override;
-  gfx::ImageSkia* GetStepIllustration(
+  const gfx::VectorIcon& GetStepIllustration(
       ImageColorScheme color_scheme) const override;
   base::string16 GetStepTitle() const override;
   base::string16 GetStepDescription() const override;
@@ -171,7 +171,7 @@ class AuthenticatorAlreadyRegisteredErrorModel
   // AuthenticatorSheetModelBase:
   bool IsBackButtonVisible() const override;
   base::string16 GetCancelButtonLabel() const override;
-  gfx::ImageSkia* GetStepIllustration(
+  const gfx::VectorIcon& GetStepIllustration(
       ImageColorScheme color_scheme) const override;
   base::string16 GetStepTitle() const override;
   base::string16 GetStepDescription() const override;
@@ -184,7 +184,7 @@ class AuthenticatorInternalUnrecognizedErrorSheetModel
 
  private:
   // AuthenticatorSheetModelBase:
-  gfx::ImageSkia* GetStepIllustration(
+  const gfx::VectorIcon& GetStepIllustration(
       ImageColorScheme color_scheme) const override;
   base::string16 GetStepTitle() const override;
   base::string16 GetStepDescription() const override;
@@ -197,7 +197,7 @@ class AuthenticatorBlePowerOnManualSheetModel
 
  private:
   // AuthenticatorSheetModelBase:
-  gfx::ImageSkia* GetStepIllustration(
+  const gfx::VectorIcon& GetStepIllustration(
       ImageColorScheme color_scheme) const override;
   base::string16 GetStepTitle() const override;
   base::string16 GetStepDescription() const override;
@@ -218,7 +218,7 @@ class AuthenticatorBlePowerOnAutomaticSheetModel
  private:
   // AuthenticatorSheetModelBase:
   bool IsActivityIndicatorVisible() const override;
-  gfx::ImageSkia* GetStepIllustration(
+  const gfx::VectorIcon& GetStepIllustration(
       ImageColorScheme color_scheme) const override;
   base::string16 GetStepTitle() const override;
   base::string16 GetStepDescription() const override;
@@ -237,7 +237,7 @@ class AuthenticatorBlePairingBeginSheetModel
 
  private:
   // AuthenticatorSheetModelBase:
-  gfx::ImageSkia* GetStepIllustration(
+  const gfx::VectorIcon& GetStepIllustration(
       ImageColorScheme color_scheme) const override;
   base::string16 GetStepTitle() const override;
   base::string16 GetStepDescription() const override;
@@ -254,7 +254,7 @@ class AuthenticatorBleEnterPairingModeSheetModel
 
  private:
   // AuthenticatorSheetModelBase:
-  gfx::ImageSkia* GetStepIllustration(
+  const gfx::VectorIcon& GetStepIllustration(
       ImageColorScheme color_scheme) const override;
   base::string16 GetStepTitle() const override;
   base::string16 GetStepDescription() const override;
@@ -268,7 +268,7 @@ class AuthenticatorBleDeviceSelectionSheetModel
  private:
   // AuthenticatorSheetModelBase:
   bool IsActivityIndicatorVisible() const override;
-  gfx::ImageSkia* GetStepIllustration(
+  const gfx::VectorIcon& GetStepIllustration(
       ImageColorScheme color_scheme) const override;
   base::string16 GetStepTitle() const override;
   base::string16 GetStepDescription() const override;
@@ -282,7 +282,7 @@ class AuthenticatorBlePinEntrySheetModel : public AuthenticatorSheetModelBase {
 
  private:
   // AuthenticatorSheetModelBase:
-  gfx::ImageSkia* GetStepIllustration(
+  const gfx::VectorIcon& GetStepIllustration(
       ImageColorScheme color_scheme) const override;
   base::string16 GetStepTitle() const override;
   base::string16 GetStepDescription() const override;
@@ -301,7 +301,7 @@ class AuthenticatorBleVerifyingSheetModel : public AuthenticatorSheetModelBase {
  private:
   // AuthenticatorSheetModelBase:
   bool IsActivityIndicatorVisible() const override;
-  gfx::ImageSkia* GetStepIllustration(
+  const gfx::VectorIcon& GetStepIllustration(
       ImageColorScheme color_scheme) const override;
   base::string16 GetStepTitle() const override;
   base::string16 GetStepDescription() const override;
@@ -316,7 +316,7 @@ class AuthenticatorBleActivateSheetModel : public AuthenticatorSheetModelBase {
  private:
   // AuthenticatorSheetModelBase:
   bool IsActivityIndicatorVisible() const override;
-  gfx::ImageSkia* GetStepIllustration(
+  const gfx::VectorIcon& GetStepIllustration(
       ImageColorScheme color_scheme) const override;
   base::string16 GetStepTitle() const override;
   base::string16 GetStepDescription() const override;
@@ -335,7 +335,7 @@ class AuthenticatorTouchIdIncognitoBumpSheetModel
 
  private:
   // AuthenticatorSheetModelBase:
-  gfx::ImageSkia* GetStepIllustration(
+  const gfx::VectorIcon& GetStepIllustration(
       ImageColorScheme color_scheme) const override;
   base::string16 GetStepTitle() const override;
   base::string16 GetStepDescription() const override;
@@ -357,7 +357,7 @@ class AuthenticatorPaaskSheetModel : public AuthenticatorSheetModelBase {
  private:
   // AuthenticatorSheetModelBase:
   bool IsActivityIndicatorVisible() const override;
-  gfx::ImageSkia* GetStepIllustration(
+  const gfx::VectorIcon& GetStepIllustration(
       ImageColorScheme color_scheme) const override;
   base::string16 GetStepTitle() const override;
   base::string16 GetStepDescription() const override;
@@ -392,7 +392,7 @@ class AuthenticatorClientPinEntrySheetModel
 
  private:
   // AuthenticatorSheetModelBase:
-  gfx::ImageSkia* GetStepIllustration(
+  const gfx::VectorIcon& GetStepIllustration(
       ImageColorScheme color_scheme) const override;
   base::string16 GetStepTitle() const override;
   base::string16 GetStepDescription() const override;
@@ -417,7 +417,7 @@ class AuthenticatorClientPinTapAgainSheetModel
  private:
   // AuthenticatorSheetModelBase:
   bool IsActivityIndicatorVisible() const override;
-  gfx::ImageSkia* GetStepIllustration(
+  const gfx::VectorIcon& GetStepIllustration(
       ImageColorScheme color_scheme) const override;
   base::string16 GetStepTitle() const override;
   base::string16 GetStepDescription() const override;
@@ -450,7 +450,7 @@ class AuthenticatorGenericErrorSheetModel : public AuthenticatorSheetModelBase {
   // AuthenticatorSheetModelBase:
   bool IsBackButtonVisible() const override;
   base::string16 GetCancelButtonLabel() const override;
-  gfx::ImageSkia* GetStepIllustration(
+  const gfx::VectorIcon& GetStepIllustration(
       ImageColorScheme color_scheme) const override;
   base::string16 GetStepTitle() const override;
   base::string16 GetStepDescription() const override;
@@ -475,7 +475,7 @@ class AuthenticatorSelectAccountSheetModel : public AuthenticatorSheetModelBase,
 
  private:
   // AuthenticatorSheetModelBase:
-  gfx::ImageSkia* GetStepIllustration(
+  const gfx::VectorIcon& GetStepIllustration(
       ImageColorScheme color_scheme) const override;
   base::string16 GetStepTitle() const override;
   base::string16 GetStepDescription() const override;
@@ -504,7 +504,7 @@ class AttestationPermissionRequestSheetModel
 
  private:
   // AuthenticatorSheetModelBase:
-  gfx::ImageSkia* GetStepIllustration(
+  const gfx::VectorIcon& GetStepIllustration(
       ImageColorScheme color_scheme) const override;
   base::string16 GetStepTitle() const override;
   base::string16 GetStepDescription() const override;

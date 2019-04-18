@@ -90,11 +90,10 @@ AuthenticatorRequestSheetView::CreateIllustrationWithOverlays() {
   image_with_overlays->SetPreferredSize(illustration_size);
 
   auto image_view = std::make_unique<NonAccessibleImageView>();
-  image_view->SetImage(model()->GetStepIllustration(
-      in_dark_mode_ ? ImageColorScheme::kDark : ImageColorScheme::kLight));
-  image_view->SetPreferredSize(illustration_size);
-  image_view->SizeToPreferredSize();
   step_illustration_ = image_view.get();
+  UpdateIconImageFromModel();
+  image_view->SetSize(illustration_size);
+  image_view->SetVerticalAlignment(views::ImageView::LEADING);
   image_with_overlays->AddChildView(image_view.release());
 
   if (model()->IsActivityIndicatorVisible()) {
@@ -201,6 +200,14 @@ void AuthenticatorRequestSheetView::OnNativeThemeChanged(
   if (in_dark_mode == in_dark_mode_)
     return;
   in_dark_mode_ = in_dark_mode;
-  step_illustration_->SetImage(model_->GetStepIllustration(
-      in_dark_mode_ ? ImageColorScheme::kDark : ImageColorScheme::kLight));
+  UpdateIconImageFromModel();
+}
+
+void AuthenticatorRequestSheetView::UpdateIconImageFromModel() {
+  gfx::IconDescription icon_description(
+      model()->GetStepIllustration(in_dark_mode_ ? ImageColorScheme::kDark
+                                                 : ImageColorScheme::kLight),
+      0 /* automatic dip_size */, SK_ColorBLACK, base::TimeDelta(),
+      gfx::kNoneIcon);
+  step_illustration_->SetImage(gfx::CreateVectorIcon(icon_description));
 }
