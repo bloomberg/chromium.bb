@@ -54,10 +54,12 @@ SpdySessionPool::SpdySessionRequest::Delegate::~Delegate() = default;
 
 SpdySessionPool::SpdySessionRequest::SpdySessionRequest(
     const SpdySessionKey& key,
+    bool enable_ip_based_pooling,
     bool is_websocket,
     Delegate* delegate,
     SpdySessionPool* spdy_session_pool)
     : key_(key),
+      enable_ip_based_pooling_(enable_ip_based_pooling),
       is_websocket_(is_websocket),
       delegate_(delegate),
       spdy_session_pool_(spdy_session_pool) {}
@@ -333,8 +335,8 @@ base::WeakPtr<SpdySession> SpdySessionPool::RequestSession(
 
   RequestSet* request_set = &spdy_session_request_map_[key];
   *is_first_request_for_session = request_set->empty();
-  *spdy_session_request =
-      std::make_unique<SpdySessionRequest>(key, is_websocket, delegate, this);
+  *spdy_session_request = std::make_unique<SpdySessionRequest>(
+      key, enable_ip_based_pooling, is_websocket, delegate, this);
   request_set->insert(spdy_session_request->get());
 
   if (on_request_destroyed_callback && !*is_first_request_for_session) {
@@ -632,6 +634,7 @@ void SpdySessionPool::UpdatePendingRequests(const SpdySessionKey& key) {
   auto it = LookupAvailableSessionByKey(key);
   if (it != available_sessions_.end()) {
     base::WeakPtr<SpdySession> new_session = it->second->GetWeakPtr();
+    bool is_pooled = (key != new_session->spdy_session_key());
     while (new_session && new_session->IsAvailable()) {
       // Each iteration may empty out the RequestSet for |spdy_session_key| in
       // |spdy_session_request_map_|. So each time, check for RequestSet and use
@@ -653,6 +656,9 @@ void SpdySessionPool::UpdatePendingRequests(const SpdySessionKey& key) {
         // If the request is for use with websockets, and the session doesn't
         // support websockets, skip over the request.
         if ((*request)->is_websocket() && !new_session->support_websocket())
+          continue;
+        // Don't use IP pooled session if not allowed.
+        if (!(*request)->enable_ip_based_pooling() && is_pooled)
           continue;
         break;
       }
