@@ -53,7 +53,14 @@ void NigoriModelTypeProcessor::GetLocalChanges(
     GetLocalChangesCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_GT(max_entries, 0U);
-  DCHECK(!model_error_);
+  // If there is a model error, it must have been reported already but hasn't
+  // reached the sync engine yet. In this case return directly to avoid
+  // interactions with the bridge.
+  if (model_error_) {
+    std::move(callback).Run(CommitRequestDataList());
+    return;
+  }
+
   DCHECK(entity_);
 
   // No local changes to commit.
