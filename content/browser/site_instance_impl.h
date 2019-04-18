@@ -122,7 +122,17 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   const GURL& original_url() { return original_url_; }
 
   // Returns the URL which should be used in a LockToOrigin call for this
-  // SiteInstance's process.
+  // SiteInstance's process.  This is the same as |site_| except for cases
+  // involving effective URLs, such as hosted apps.  In those cases, this URL
+  // is a site URL that is computed without the use of effective URLs.
+  //
+  // NOTE: This URL is currently set even in cases where this SiteInstance's
+  // process is *not* going to be locked to it.  Callers should be careful to
+  // consider this case when comparing lock URLs; ShouldLockToOrigin() may be
+  // used to determine whether the process lock will actually be used.
+  //
+  // TODO(alexmos): See if we can clean this up and not set |lock_url_| if the
+  // SiteInstance's process isn't going to be locked.
   const GURL& lock_url() { return lock_url_; }
 
   // True if |url| resolves to an effective URL that is different from |url|.
@@ -227,16 +237,22 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
       const IsolationContext& isolation_context,
       const GURL& url);
 
-  // Returns true if a process can be locked to a site |site_url|. Returning
-  // true here also implies that |site_url| requires a dedicated process.
-  // However, the converse does not hold: this might still return false for
-  // certain special cases where an origin lock can't be applied even when
-  // |site_url| requires a dedicated process (e.g., with --site-per-process).
-  // Examples of those cases include <webview> guests, single-process mode, or
-  // extensions where a process is currently allowed to be reused for different
-  // extensions.  Most of these special cases should eventually be removed, and
-  // this function should become equivalent to
+  // Returns true if a process for a site |site_url| should be locked to just
+  // that site. Returning true here also implies that |site_url| requires a
+  // dedicated process. However, the converse does not hold: this might still
+  // return false for certain special cases where an origin lock can't be
+  // applied even when |site_url| requires a dedicated process (e.g., with
+  // --site-per-process). Examples of those cases include <webview> guests,
+  // single-process mode, or extensions where a process is currently allowed to
+  // be reused for different extensions.  Most of these special cases should
+  // eventually be removed, and this function should become equivalent to
   // DoesSiteRequireDedicatedProcess().
+  //
+  // Note that this function currently requires passing in a site URL (which
+  // may use effective URLs), and not a lock URL to which the process may
+  // eventually be locked via LockToOrigin().  See comments on lock_url() for
+  // more info.
+  // TODO(alexmos):  See if this can take a lock URL instead.
   static bool ShouldLockToOrigin(const IsolationContext& isolation_context,
                                  GURL site_url);
 

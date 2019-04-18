@@ -334,20 +334,6 @@ class ChildProcessSecurityPolicyImpl::SecurityState {
     return lowest_browsing_instance_id_;
   }
 
-  ChildProcessSecurityPolicyImpl::CheckOriginLockResult CheckOriginLock(
-      const GURL& gurl) {
-    if (origin_lock_.is_empty())
-      return ChildProcessSecurityPolicyImpl::CheckOriginLockResult::NO_LOCK;
-
-    if (origin_lock_ == gurl) {
-      return ChildProcessSecurityPolicyImpl::CheckOriginLockResult::
-          HAS_EQUAL_LOCK;
-    }
-
-    return ChildProcessSecurityPolicyImpl::CheckOriginLockResult::
-        HAS_WRONG_LOCK;
-  }
-
   bool has_web_ui_bindings() const {
     return enabled_bindings_ & kWebUIBindingsPolicyMask;
   }
@@ -1336,7 +1322,7 @@ void ChildProcessSecurityPolicyImpl::LockToOrigin(
     int child_id,
     const GURL& gurl) {
   // LockToOrigin should only be called on the UI thread (OTOH, it is okay to
-  // call GetOriginLock or CheckOriginLock from any thread).
+  // call GetOriginLock from any thread).
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
 #if DCHECK_IS_ON()
@@ -1350,16 +1336,6 @@ void ChildProcessSecurityPolicyImpl::LockToOrigin(
   auto state = security_state_.find(child_id);
   DCHECK(state != security_state_.end());
   state->second->LockToOrigin(gurl, context.browsing_instance_id());
-}
-
-ChildProcessSecurityPolicyImpl::CheckOriginLockResult
-ChildProcessSecurityPolicyImpl::CheckOriginLock(int child_id,
-                                                const GURL& site_url) {
-  base::AutoLock lock(lock_);
-  auto state = security_state_.find(child_id);
-  if (state == security_state_.end())
-    return ChildProcessSecurityPolicyImpl::CheckOriginLockResult::NO_LOCK;
-  return state->second->CheckOriginLock(site_url);
 }
 
 GURL ChildProcessSecurityPolicyImpl::GetOriginLock(int child_id) {

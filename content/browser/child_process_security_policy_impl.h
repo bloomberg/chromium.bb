@@ -262,23 +262,6 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
                     int child_id,
                     const GURL& lock_url);
 
-  // Used to indicate the result of comparing a process's origin lock to
-  // another value:
-  enum class CheckOriginLockResult {
-    // The process does not exist, or it has no origin lock.
-    NO_LOCK,
-    // The process has an origin lock and it matches the passed-in value.
-    HAS_EQUAL_LOCK,
-    // The process has an origin lock and it does not match the passed-in
-    // value.
-    HAS_WRONG_LOCK,
-  };
-
-  // Check the origin lock of the process specified by |child_id| against
-  // |site_url|.  See the definition of |CheckOriginLockResult| for possible
-  // returned values.
-  CheckOriginLockResult CheckOriginLock(int child_id, const GURL& site_url);
-
   // Retrieves the current origin lock of process |child_id|.  Returns an empty
   // GURL if the process does not exist or if it is not locked to an origin.
   GURL GetOriginLock(int child_id);

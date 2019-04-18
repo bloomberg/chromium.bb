@@ -32,9 +32,6 @@ namespace content {
 
 int32_t SiteInstanceImpl::next_site_instance_id_ = 1;
 
-using CheckOriginLockResult =
-    ChildProcessSecurityPolicyImpl::CheckOriginLockResult;
-
 SiteInstanceImpl::SiteInstanceImpl(BrowsingInstance* browsing_instance)
     : id_(next_site_instance_id_++),
       active_frame_count_(0),
@@ -785,55 +782,44 @@ void SiteInstanceImpl::LockToOriginIfNeeded() {
 
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
-  auto lock_state = policy->CheckOriginLock(process_->GetID(), lock_url());
+  GURL process_lock = policy->GetOriginLock(process_->GetID());
   if (ShouldLockToOrigin(GetIsolationContext(), site_)) {
     // Sanity check that this won't try to assign an origin lock to a <webview>
     // process, which can't be locked.
     CHECK(!process_->IsForGuestsOnly());
 
-    switch (lock_state) {
-      case CheckOriginLockResult::NO_LOCK: {
-        // TODO(nick): When all sites are isolated, this operation provides
-        // strong protection. If only some sites are isolated, we need
-        // additional logic to prevent the non-isolated sites from requesting
-        // resources for isolated sites. https://crbug.com/509125
-        TRACE_EVENT2("navigation", "SiteInstanceImpl::LockToOrigin", "site id",
-                     id_, "lock", lock_url().possibly_invalid_spec());
-        process_->LockToOrigin(GetIsolationContext(), lock_url());
-        break;
-      }
-      case CheckOriginLockResult::HAS_WRONG_LOCK:
-        // We should never attempt to reassign a different origin lock to a
-        // process.
-        base::debug::SetCrashKeyString(bad_message::GetRequestedSiteURLKey(),
-                                       site_.spec());
-        base::debug::SetCrashKeyString(
-            bad_message::GetKilledProcessOriginLockKey(),
-            policy->GetOriginLock(process_->GetID()).spec());
-        CHECK(false) << "Trying to lock a process to " << lock_url()
-                     << " but the process is already locked to "
-                     << policy->GetOriginLock(process_->GetID());
-        break;
-      case CheckOriginLockResult::HAS_EQUAL_LOCK:
-        // Process already has the right origin lock assigned.  This case will
-        // happen for commits to |site_| after the first one.
-        break;
-      default:
-        NOTREACHED();
+    if (process_lock.is_empty()) {
+      // TODO(nick): When all sites are isolated, this operation provides
+      // strong protection. If only some sites are isolated, we need
+      // additional logic to prevent the non-isolated sites from requesting
+      // resources for isolated sites. https://crbug.com/509125
+      TRACE_EVENT2("navigation", "SiteInstanceImpl::LockToOrigin", "site id",
+                   id_, "lock", lock_url().possibly_invalid_spec());
+      process_->LockToOrigin(GetIsolationContext(), lock_url());
+    } else if (process_lock != lock_url()) {
+      // We should never attempt to reassign a different origin lock to a
+      // process.
+      base::debug::SetCrashKeyString(bad_message::GetRequestedSiteURLKey(),
+                                     site_.spec());
+      base::debug::SetCrashKeyString(
+          bad_message::GetKilledProcessOriginLockKey(), process_lock.spec());
+      CHECK(false) << "Trying to lock a process to " << lock_url()
+                   << " but the process is already locked to " << process_lock;
+    } else {
+      // Process already has the right origin lock assigned.  This case will
+      // happen for commits to |site_| after the first one.
     }
   } else {
     // If the site that we've just committed doesn't require a dedicated
     // process, make sure we aren't putting it in a process for a site that
     // does.
-    if (lock_state != CheckOriginLockResult::NO_LOCK) {
+    if (!process_lock.is_empty()) {
       base::debug::SetCrashKeyString(bad_message::GetRequestedSiteURLKey(),
                                      site_.spec());
       base::debug::SetCrashKeyString(
-          bad_message::GetKilledProcessOriginLockKey(),
-          policy->GetOriginLock(process_->GetID()).spec());
+          bad_message::GetKilledProcessOriginLockKey(), process_lock.spec());
       CHECK(false) << "Trying to commit non-isolated site " << site_
-                   << " in process locked to "
-                   << policy->GetOriginLock(process_->GetID());
+                   << " in process locked to " << process_lock;
     }
   }
 }

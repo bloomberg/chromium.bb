@@ -1908,6 +1908,60 @@ IN_PROC_BROWSER_TEST_F(DynamicIsolatedOriginTest,
   EXPECT_EQ("foo=bar", EvalJs(child, "document.cookie"));
 }
 
+// Verify that a process locked to foo.com is not reused for a navigation to
+// foo.com that does not require a dedicated process.  See
+// https://crbug.com/950453.
+IN_PROC_BROWSER_TEST_F(DynamicIsolatedOriginTest,
+                       LockedProcessNotReusedForNonisolatedSameSiteNavigation) {
+  // This test is designed to run without strict site isolation.
+  if (AreAllSitesIsolatedForTesting())
+    return;
+
+  // Set the process limit to 1.
+  RenderProcessHost::SetMaxRendererProcessCount(1);
+
+  // Start on a non-isolated foo.com URL.
+  GURL foo_url(embedded_test_server()->GetURL("foo.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), foo_url));
+
+  // Navigate to a different isolated origin and wait for the original foo.com
+  // process to shut down.  Note that the foo.com SiteInstance will stick
+  // around in session history.
+  RenderProcessHostWatcher foo_process_observer(
+      web_contents()->GetMainFrame()->GetProcess(),
+      RenderProcessHostWatcher::WATCH_FOR_HOST_DESTRUCTION);
+  GURL isolated_bar_url(
+      embedded_test_server()->GetURL("isolated.bar.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), isolated_bar_url));
+  foo_process_observer.Wait();
+  EXPECT_TRUE(foo_process_observer.did_exit_normally());
+
+  // Start isolating foo.com.
+  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
+  policy->AddIsolatedOrigins({url::Origin::Create(foo_url)});
+
+  // Create a new window, forcing a new BrowsingInstance, and navigate it to
+  // foo.com, which will spin up a process locked to foo.com.
+  Shell* new_shell = CreateBrowser();
+  EXPECT_TRUE(NavigateToURL(new_shell, foo_url));
+  RenderProcessHost* new_process =
+      new_shell->web_contents()->GetMainFrame()->GetProcess();
+  EXPECT_EQ(GURL("http://foo.com"),
+            policy->GetOriginLock(new_process->GetID()));
+
+  // Go to foo.com in the older first tab, where foo.com does not require a
+  // dedicated process.  Ensure that the existing locked foo.com process is
+  // *not* reused in that case (if that were the case, LockToOriginIfNeeded
+  // would trigger a CHECK here).  Using a history navigation here ensures that
+  // the SiteInstance (from session history) will have a foo.com site URL,
+  // rather than a default site URL, since this case isn't yet handled by the
+  // default SiteInstance (see crbug.com/787576).
+  TestNavigationObserver observer(web_contents());
+  web_contents()->GetController().GoBack();
+  observer.Wait();
+  EXPECT_NE(web_contents()->GetMainFrame()->GetProcess(), new_process);
+}
+
 // Checks that isolated origins can be added only for a specific profile,
 // and that they don't apply to other profiles.
 IN_PROC_BROWSER_TEST_F(DynamicIsolatedOriginTest, PerProfileIsolation) {
@@ -2325,9 +2379,9 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTestWithStrictSiteInstances,
   RenderProcessHost* host = root->current_frame_host()->GetProcess();
   EXPECT_EQ(host, child1->current_frame_host()->GetProcess());
   EXPECT_EQ(host, child2->current_frame_host()->GetProcess());
-  EXPECT_EQ(ChildProcessSecurityPolicyImpl::CheckOriginLockResult::NO_LOCK,
-            ChildProcessSecurityPolicyImpl::GetInstance()->CheckOriginLock(
-                host->GetID(), GURL()));
+  EXPECT_TRUE(ChildProcessSecurityPolicyImpl::GetInstance()
+                  ->GetOriginLock(host->GetID())
+                  .is_empty());
 }
 
 // Creates a non-isolated main frame with an isolated child and non-isolated
