@@ -494,11 +494,6 @@
       name: "ExperimentalContentSecurityPolicyFeatures",
       status: "experimental",
     },
-    {
-      name: "ExperimentalHardwareEchoCancellation",
-      origin_trial_feature_name: "ExperimentalHardwareEchoCancellation2",
-      status: "experimental",
-    },
     // Enables navigator.scheduling.isInputPending, allowing long-running JS to
     // be able to yield itself when user input is queued (crbug.com/910421).
     {
