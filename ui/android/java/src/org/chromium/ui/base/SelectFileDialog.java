@@ -155,15 +155,12 @@ public class SelectFileDialog implements WindowAndroid.IntentCallback, PhotoPick
                         new Intent(MediaStore.Audio.Media.RECORD_SOUND_ACTION));
 
         List<String> missingPermissions = new ArrayList<>();
-        if (shouldUsePhotoPicker()) {
-            if (BuildInfo.isAtLeastQ()) {
-                String newImagePermission = "android.permission.READ_MEDIA_IMAGES";
-                if (!window.hasPermission(newImagePermission)) {
-                    missingPermissions.add(newImagePermission);
-                }
-            } else if (!window.hasPermission(Manifest.permission.READ_EXTERNAL_STORAGE)) {
-                missingPermissions.add(Manifest.permission.READ_EXTERNAL_STORAGE);
-            }
+        String storagePermission = BuildInfo.isAtLeastQ()
+                ? "android.permission.READ_MEDIA_IMAGES"
+                : Manifest.permission.READ_EXTERNAL_STORAGE;
+        boolean shouldUsePhotoPicker = shouldUsePhotoPicker();
+        if (shouldUsePhotoPicker) {
+            if (!window.hasPermission(storagePermission)) missingPermissions.add(storagePermission);
         } else {
             if (((mSupportsImageCapture && shouldShowImageTypes())
                         || (mSupportsVideoCapture && shouldShowVideoTypes()))
@@ -183,9 +180,17 @@ public class SelectFileDialog implements WindowAndroid.IntentCallback, PhotoPick
                     missingPermissions.toArray(new String[missingPermissions.size()]);
             window.requestPermissions(requestPermissions, (permissions, grantResults) -> {
                 for (int i = 0; i < grantResults.length; i++) {
-                    if (grantResults[i] == PackageManager.PERMISSION_DENIED && mCapture) {
-                        onFileNotSelected();
-                        return;
+                    if (grantResults[i] == PackageManager.PERMISSION_DENIED) {
+                        if (mCapture) {
+                            onFileNotSelected();
+                            return;
+                        }
+
+                        if (shouldUsePhotoPicker
+                                && requestPermissions[i].equals(storagePermission)) {
+                            onFileNotSelected();
+                            return;
+                        }
                     }
                 }
                 launchSelectFileIntent();
