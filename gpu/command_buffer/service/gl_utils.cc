@@ -914,6 +914,10 @@ CopyTextureMethod GetCopyTextureCHROMIUMMethod(const FeatureInfo* feature_info,
         dest_internal_format != GL_RGB10_A2) {
       return CopyTextureMethod::DRAW_AND_COPY;
     }
+    if (feature_info->workarounds().disable_copy_tex_image_2d_rgb10_a2_mali &&
+        (dest_internal_format == GL_RGB || dest_internal_format == GL_RGBA)) {
+      return CopyTextureMethod::DRAW_AND_COPY;
+    }
   }
 
   // CopyTexImage* should not allow internalformat of GL_BGRA_EXT and
