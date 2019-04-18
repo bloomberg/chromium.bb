@@ -2417,7 +2417,7 @@
     {
       "id": 233,
       "description": "Delayed copy NV12 displays incorrect colors on NVIDIA drivers.",
-      "cr_bugs": [727216],
+      "cr_bugs": [728670],
       "os": {
         "type": "win"
       },
