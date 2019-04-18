@@ -101,6 +101,30 @@
     </Expand>
   </Type>
 
+ <Type Name="std::__1::map&lt;*&gt;">
+    <DisplayString>{{ size={__tree_.__pair3_} }}</DisplayString>
+    <Expand>
+      <Item Name="[size]">__tree_.__pair3_</Item>
+      <TreeItems>
+        <Size>*(size_type*)&amp;__tree_.__pair3_</Size>
+        <HeadPointer>
+          ((__node_pointer)&amp;__tree_.__pair1_)-&gt;__left_</HeadPointer>
+        <LeftPointer>
+          ((std::__1::map&lt;$T1,$T2,$T3,$T4&gt;::__node_pointer)this)
+              -&gt;__left_
+        </LeftPointer>
+        <RightPointer>
+          ((std::__1::map&lt;$T1,$T2,$T3,$T4&gt;::__node_pointer)this)
+              -&gt;__right_
+        </RightPointer>
+        <ValueNode>
+          ((std::__1::map&lt;$T1,$T2,$T3,$T4&gt;::__node_pointer)this)
+              -&gt;__value_.__cc
+        </ValueNode>
+      </TreeItems>
+    </Expand>
+  </Type>
+
   <Type Name="std::__1::unique_ptr&lt;*&gt;">
     <Intrinsic Name="value" Expression="*($T1**)&amp;__ptr_" />
     <SmartPointer Usage="Minimal">value()</SmartPointer>
