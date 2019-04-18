@@ -47,25 +47,36 @@ void FakeBaseTabStripController::RemoveTab(int index) {
   tab_strip_->RemoveTabAt(nullptr, index, was_active);
 }
 
-TabGroupData* FakeBaseTabStripController::CreateTabGroup() {
-  groups_.push_back(std::make_unique<TabGroupData>());
-  return groups_.back().get();
+int FakeBaseTabStripController::CreateTabGroup() {
+  ++num_groups_;
+  return num_groups_ - 1;
 }
 
-void FakeBaseTabStripController::MoveTabIntoGroup(int index,
-                                                  TabGroupData* new_group) {
-  TabGroupData* old_group = tab_to_group_[index];
-  tab_to_group_[index] = new_group;
+void FakeBaseTabStripController::MoveTabIntoGroup(
+    int index,
+    base::Optional<int> new_group) {
+  auto tab_group_pair = tab_to_group_.find(index);
+  base::Optional<int> old_group =
+      tab_group_pair != tab_to_group_.end()
+          ? base::make_optional(tab_group_pair->second)
+          : base::nullopt;
+  if (new_group.has_value())
+    tab_to_group_[index] = new_group.value();
+  else
+    tab_to_group_.erase(index);
   tab_strip_->ChangeTabGroup(index, old_group, new_group);
 }
 
-std::vector<int> FakeBaseTabStripController::ListTabsInGroup(
-    const TabGroupData* group) const {
-  DCHECK(group);
+const TabGroupData* FakeBaseTabStripController::GetDataForGroup(
+    int group) const {
+  return &fake_group_data_;
+}
+
+std::vector<int> FakeBaseTabStripController::ListTabsInGroup(int group) const {
   std::vector<int> result;
-  for (auto const& tab_header_pair : tab_to_group_) {
-    if (tab_header_pair.second == group)
-      result.push_back(tab_header_pair.first);
+  for (auto const& tab_group_pair : tab_to_group_) {
+    if (tab_group_pair.second == group)
+      result.push_back(tab_group_pair.first);
   }
   return result;
 }
