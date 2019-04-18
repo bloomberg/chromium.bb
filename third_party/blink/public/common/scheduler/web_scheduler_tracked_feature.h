@@ -28,8 +28,9 @@ enum class WebSchedulerTrackedFeature {
   kResumeEventListener = 11,
 
   kContainsPlugins = 12,
+  kDocumentLoaded = 13,
 
-  kCount = 13
+  kCount = 14
 };
 
 }  // namespace scheduler

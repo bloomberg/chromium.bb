@@ -294,6 +294,13 @@ std::ostream& operator<<(std::ostream& os, const FeatureUsage& usage) {
 
 std::vector<FeatureUsage> GetFeatureUsageMetrics(
     ukm::TestAutoSetUkmRecorder* recorder) {
+  // Some features are present in almost all page loads (especially the ones
+  // which are related to the document finishing loading).
+  // We ignore them to make tests easier to read and write.
+  constexpr uint64_t features_to_ignore_mask =
+      ~(1 << static_cast<size_t>(
+            blink::scheduler::WebSchedulerTrackedFeature::kDocumentLoaded));
+
   std::vector<FeatureUsage> result;
   for (const auto& entry :
        GetEntries(recorder, "HistoryNavigation",
@@ -301,11 +308,14 @@ std::vector<FeatureUsage> GetFeatureUsageMetrics(
                    "CrossOriginSubframesFeatures"})) {
     FeatureUsage feature_usage;
     feature_usage.source_id = entry.first;
-    feature_usage.main_frame_features = entry.second.at("MainFrameFeatures");
+    feature_usage.main_frame_features =
+        entry.second.at("MainFrameFeatures") & features_to_ignore_mask;
     feature_usage.same_origin_subframes_features =
-        entry.second.at("SameOriginSubframesFeatures");
+        entry.second.at("SameOriginSubframesFeatures") &
+        features_to_ignore_mask;
     feature_usage.cross_origin_subframes_features =
-        entry.second.at("CrossOriginSubframesFeatures");
+        entry.second.at("CrossOriginSubframesFeatures") &
+        features_to_ignore_mask;
     result.push_back(feature_usage);
   }
   return result;
