@@ -4030,6 +4030,12 @@ are declared in tools/grit/grit_rule.gni.
           <message name="IDS_EXTENSIONS_SHOW_BUTTON_IN_TOOLBAR" desc="The text for the menu item to move a button to the toolbar (sentence case).">
             Show in toolbar
           </message>
+          <message name="IDS_EXTENSIONS_PIN_TO_TOOLBAR" desc="The text for the menu item to pin an extension to the toolbar (sentence case).">
+            Pin
+          </message>
+          <message name="IDS_EXTENSIONS_UNPIN_FROM_TOOLBAR" desc="The text for the menu item to unpin an extension from the toolbar (sentence case).">
+            Unpin
+          </message>
           <message name="IDS_MANAGE_EXTENSION" desc="The 'Manage extensions' text in the context menu for when right-clicking on extension icons (sentence case).">
             Manage extensions
           </message>
@@ -4073,6 +4079,12 @@ are declared in tools/grit/grit_rule.gni.
           </message>
           <message name="IDS_EXTENSIONS_SHOW_BUTTON_IN_TOOLBAR" desc="The text for the menu item to move a button to the toolbar (title case).">
             Show in Toolbar
+          </message>
+          <message name="IDS_EXTENSIONS_PIN_TO_TOOLBAR" desc="The text for the menu item to pin an extension to the toolbar (title case).">
+            Pin
+          </message>
+          <message name="IDS_EXTENSIONS_UNPIN_FROM_TOOLBAR" desc="The text for the menu item to unpin an extension from the toolbar (title case).">
+            Unpin
           </message>
           <message name="IDS_MANAGE_EXTENSION" desc="The 'Manage Extensions' text in the context menu for when right-clicking on extension icons (title case).">
             Manage Extensions
