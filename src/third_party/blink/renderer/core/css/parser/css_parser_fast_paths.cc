@@ -1005,6 +1005,7 @@ bool CSSParserFastPaths::IsKeywordPropertyID(CSSPropertyID property_id) {
     case CSSPropertyWordBreak:
     case CSSPropertyWritingMode:
     case CSSPropertyScrollSnapStop:
+    case CSSPropertyRubberbandable:
       return true;
     default:
       return false;
