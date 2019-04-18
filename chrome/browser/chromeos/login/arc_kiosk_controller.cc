@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/chromeos/login/arc_kiosk_splash_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chromeos/login/auth/user_context.h"
 #include "components/account_id/account_id.h"
@@ -51,6 +52,16 @@ void ArcKioskController::StartArcKiosk(const AccountId& account_id) {
 
   login_performer_ = std::make_unique<ChromeLoginPerformer>(this);
   login_performer_->LoginAsArcKioskAccount(account_id);
+}
+
+void ArcKioskController::OnCancelArcKioskLaunch() {
+  KioskAppLaunchError::Save(KioskAppLaunchError::USER_CANCEL);
+  CleanUp();
+  chrome::AttemptUserExit();
+}
+
+void ArcKioskController::OnDeletingSplashScreenView() {
+  arc_kiosk_splash_screen_view_ = nullptr;
 }
 
 void ArcKioskController::CleanUp() {
@@ -147,16 +158,6 @@ void ArcKioskController::OnAppWindowLaunched() {
   if (splash_wait_timer_.IsRunning())
     return;
   CloseSplashScreen();
-}
-
-void ArcKioskController::OnCancelArcKioskLaunch() {
-  KioskAppLaunchError::Save(KioskAppLaunchError::USER_CANCEL);
-  CleanUp();
-  chrome::AttemptUserExit();
-}
-
-void ArcKioskController::OnDeletingSplashScreenView() {
-  arc_kiosk_splash_screen_view_ = nullptr;
 }
 
 }  // namespace chromeos
