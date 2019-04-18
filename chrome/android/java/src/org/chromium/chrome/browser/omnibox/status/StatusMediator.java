@@ -240,8 +240,8 @@ class StatusMediator {
      */
     private void updateColorTheme() {
         @ColorRes
-        int separatorColor = mDarkTheme ? R.color.locationbar_status_separator_color
-                                        : R.color.locationbar_status_separator_color_light;
+        int separatorColor =
+                mDarkTheme ? R.color.divider_bg_color_dark : R.color.divider_bg_color_light;
 
         @ColorRes
         int textColor = 0;

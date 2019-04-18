@@ -38,8 +38,7 @@ public class StatusViewCoordinator implements View.OnClickListener {
         mStatusView = statusView;
 
         mModel = new PropertyModel.Builder(StatusProperties.ALL_KEYS)
-                         .with(StatusProperties.STATUS_ICON_TINT_RES,
-                                 R.color.locationbar_status_separator_color)
+                         .with(StatusProperties.STATUS_ICON_TINT_RES, R.color.divider_bg_color)
                          .build();
 
         PropertyModelChangeProcessor.create(mModel, mStatusView, new StatusViewBinder());
