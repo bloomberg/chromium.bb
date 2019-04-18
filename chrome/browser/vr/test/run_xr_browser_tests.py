@@ -53,7 +53,8 @@ def GetTestExecutable():
 
 
 def ResetACLs(path):
-  logging.warning('Setting ACLs on %s to default.', path)
+  logging.warning(
+      'Setting ACLs on %s to default. This might take a while.', path)
   try:
     # It's normally fine to inherit the ACLs from parents, but in this case,
     # we need to explicitly reset every file via /t.
@@ -64,11 +65,7 @@ def ResetACLs(path):
     logging.error('Command output: %s', e.output)
     sys.exit(e.returncode)
 
-def SetupWindowsACLs():
-  # This should be copied into the root of the output directory, so the
-  # directory this file is in should be the directory we want to change the
-  # ACLs of.
-  acl_dir = os.path.abspath(os.path.dirname(__file__))
+def SetupWindowsACLs(acl_dir):
   try:
     existing_acls = subprocess.check_output(
         ['icacls', acl_dir], stderr=subprocess.STDOUT)
@@ -145,7 +142,10 @@ def main():
   args, rest_args = parser.parse_known_args()
 
   if sys.platform == 'win32':
-    SetupWindowsACLs()
+    # This should be copied into the root of the output directory, so the
+    # directory this file is in should be the directory we want to change the
+    # ACLs of.
+    SetupWindowsACLs(os.path.abspath(os.path.dirname(__file__)))
 
   tracing_args = SetupTracingIfNecessary(args)
 

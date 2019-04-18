@@ -84,7 +84,8 @@ class _BaseVRBenchmark(perf_benchmark.PerfBenchmark):
     parser.add_option(
         '--mock-runtime-directory',
         help='The directory containing the mock runtime implementation to be '
-             'used.')
+             'used. Defaults to the "mock_vr_clients" subdirectory of the '
+             'output directory.')
 
 
 class _BaseWebVRWebXRBenchmark(_BaseVRBenchmark):
