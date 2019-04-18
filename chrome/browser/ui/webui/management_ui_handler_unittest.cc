@@ -24,6 +24,10 @@
 
 #include "ui/base/l10n/l10n_util.h"
 
+#if defined(OS_CHROMEOS)
+#include "ui/chromeos/devicetype_utils.h"
+#endif  // defined(OS_CHROMEOS)
+
 using testing::_;
 using testing::Return;
 using testing::ReturnRef;
@@ -348,6 +352,63 @@ TEST_F(ManagementUIHandlerTests,
 }
 
 #endif  // !defined(OS_CHROMEOS)
+
+#if defined(OS_CHROMEOS)
+TEST_F(ManagementUIHandlerTests,
+       ManagementContextualSourceUpdateManagedAccountKnownDomain) {
+  TestingProfile::Builder builder;
+  builder.SetProfileName("managed@manager.com");
+  auto profile = builder.Build();
+  const auto device_type = ui::GetChromeOSDeviceTypeResourceId();
+
+  base::string16 extensions_installed;
+  base::string16 browser_management_notice;
+  base::string16 subtitle;
+  base::string16 management_overview;
+  base::string16 management_overview_data_notice;
+  base::string16 management_overview_setup_notice;
+  ContextualManagementSourceUpdate extracted{&extensions_installed,
+                                             &browser_management_notice,
+                                             &subtitle,
+                                             &management_overview,
+                                             &management_overview_data_notice,
+                                             &management_overview_setup_notice};
+
+  handler_.SetManagedForTesting(true);
+  auto data = handler_.GetContextualManagedDataForTesting(profile.get());
+  ExtractContextualSourceUpdate(data, extracted);
+
+  EXPECT_EQ(subtitle,
+            l10n_util::GetStringFUTF16(IDS_MANAGEMENT_SUBTITLE_MANAGED_BY,
+                                       l10n_util::GetStringUTF16(device_type),
+                                       base::UTF8ToUTF16("manager.com")));
+}
+
+TEST_F(ManagementUIHandlerTests, ManagementContextualSourceUpdateUnmanaged) {
+  auto profile = TestingProfile::Builder().Build();
+  const auto device_type = ui::GetChromeOSDeviceTypeResourceId();
+
+  base::string16 extension_reporting_title;
+  base::string16 browser_management_notice;
+  base::string16 subtitle;
+  base::string16 management_overview;
+  base::string16 management_overview_data_notice;
+  base::string16 management_overview_setup_notice;
+  ContextualManagementSourceUpdate extracted{&extension_reporting_title,
+                                             &browser_management_notice,
+                                             &subtitle,
+                                             &management_overview,
+                                             &management_overview_data_notice,
+                                             &management_overview_setup_notice};
+
+  handler_.SetManagedForTesting(false);
+  auto data = handler_.GetContextualManagedDataForTesting(profile.get());
+  ExtractContextualSourceUpdate(data, extracted);
+  EXPECT_EQ(subtitle,
+            l10n_util::GetStringFUTF16(IDS_MANAGEMENT_NOT_MANAGED_SUBTITLE,
+                                       l10n_util::GetStringUTF16(device_type)));
+}
+#endif
 
 TEST_F(ManagementUIHandlerTests, ExtensionReportingInfoNoPolicySetNoMessage) {
   handler_.EnableCloudReportingExtension(false);

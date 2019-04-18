@@ -200,7 +200,15 @@
 </if>
             <div>[[accountManagedInfo_.overview]]</div>
             <ul class="overview-messages" hidden="[[!accountManagedInfo_]]">
+<if expr="chromeos">
+              <li>[[accountManagedInfo_.setup]]
+                    <a href="$i18nRaw{managementAccountLearnMoreUrl}"
+                    target="_blank">$i18n{learnMore}</a>
+              </li>
+</if>
+<if expr="not chromeos">
               <li>[[accountManagedInfo_.setup]]</li>
+</if>
               <li>[[accountManagedInfo_.data]]</li>
             </ul>
           </section>

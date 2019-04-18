@@ -97,6 +97,8 @@ content::WebUIDataSource* CreateManagementUIHtmlSource(Profile* profile) {
 #if defined(OS_CHROMEOS)
   source->AddString("managementDeviceLearnMoreUrl",
                     chrome::kLearnMoreEnterpriseURL);
+  source->AddString("managementAccountLearnMoreUrl",
+                    chrome::kManagedUiLearnMoreUrl);
 #endif  // defined(OS_CHROMEOS)
 
   source->SetJsonPath("strings.js");
@@ -128,19 +130,21 @@ base::string16 ManagementUI::GetManagementPageSubtitle(Profile* profile) {
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
   const auto device_type = ui::GetChromeOSDeviceTypeResourceId();
-  if (!connector->IsEnterpriseManaged()) {
+  if (!connector->IsEnterpriseManaged() &&
+      !policy::ProfilePolicyConnectorFactory::IsProfileManaged(profile)) {
     return l10n_util::GetStringFUTF16(IDS_MANAGEMENT_NOT_MANAGED_SUBTITLE,
                                       l10n_util::GetStringUTF16(device_type));
   }
 
   std::string display_domain = connector->GetEnterpriseDisplayDomain();
 
-  if (display_domain.empty()) {
-    if (!connector->IsActiveDirectoryManaged()) {
-      return l10n_util::GetStringFUTF16(IDS_MANAGEMENT_SUBTITLE_MANAGED,
-                                        l10n_util::GetStringUTF16(device_type));
-    }
+  if (display_domain.empty())
     display_domain = connector->GetRealm();
+  if (display_domain.empty())
+    display_domain = ManagementUIHandler::GetAccountDomain(profile);
+  if (display_domain.empty()) {
+    return l10n_util::GetStringFUTF16(IDS_MANAGEMENT_SUBTITLE_MANAGED,
+                                      l10n_util::GetStringUTF16(device_type));
   }
   return l10n_util::GetStringFUTF16(IDS_MANAGEMENT_SUBTITLE_MANAGED_BY,
                                     l10n_util::GetStringUTF16(device_type),
