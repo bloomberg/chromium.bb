@@ -1995,10 +1995,12 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'edgar',
       'elm',
       'eve',
+      'eve-arcnext',
       'eve-campfire',
       'falco',
       'fizz',
       'fizz-accelerator',
+      'fizz-moblab',
       'flapjack',
       'glados',
       'gonzo',
@@ -2021,8 +2023,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'monroe',
       'nami',
       'nocturne',
-      'nyan_big',
-      'nyan_blaze',
       'nyan_kitty',
       'oak',
       'octavius',
@@ -2049,6 +2049,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'veyron_jaq',
       'veyron_jerry',
       'veyron_mighty',
+      'veyron_minnie',
       'veyron_rialto',
       'veyron_speedy',
       'veyron_tiger',
@@ -2088,15 +2089,14 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   _paladin_experimental_boards = _paladin_new_boards | frozenset([
       'auron_paine', # crbug.com/950751
       'cyan', # crbug.com/953920
-      'eve-arcnext', # contact: ihf@ (crbug.com/826755)
-      'fizz-moblab', # crbug.com/952619
       'gale', # crbug.com/953701
-      'whirlwind', # crbug.com/953701
-      'mistral', # contact: roopeshr@
-      'lakitu', # crbug.com/953855#c7
+      'lakitu', # crbug.com/953855
       'lakitu-st', # crbug.com/953855
-      'veyron_minnie', # crbug.com/953619
+      'mistral', # contact: roopeshr@
       'moblab-generic-vm', # crbug.com/953966
+      'nyan_big', # crbug.com/954185
+      'nyan_blaze', # crbug.com/954185
+      'whirlwind', # crbug.com/953701
   ])
 
   assert not (_paladin_experimental_boards & _paladin_important_boards), (
