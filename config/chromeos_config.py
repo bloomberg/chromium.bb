@@ -2021,6 +2021,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'lasilla-ground',
       'leon',
       'littlejoe',
+      'moblab-generic-vm',
       'monroe',
       'nami',
       'nocturne',
@@ -2094,7 +2095,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'lakitu', # crbug.com/953855
       'lakitu-st', # crbug.com/953855
       'mistral', # contact: roopeshr@
-      'moblab-generic-vm', # crbug.com/953966
       'nyan_big', # crbug.com/954185
       'nyan_blaze', # crbug.com/954185
       'whirlwind', # crbug.com/953701
