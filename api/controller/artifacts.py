@@ -10,6 +10,7 @@ from __future__ import print_function
 import os
 
 from chromite.cbuildbot import commands
+from chromite.cbuildbot.stages import vm_test_stages
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
@@ -43,7 +44,7 @@ def BundleImageZip(input_proto, output_proto):
 
   Args:
     input_proto (BundleRequest): The input proto.
-    output_proto (BundleRequest): The output proto.
+    output_proto (BundleResponse): The output proto.
   """
   target = input_proto.build_target.name
   output_dir = input_proto.output_dir
@@ -57,7 +58,7 @@ def BundleTestUpdatePayloads(input_proto, output_proto):
 
   Args:
     input_proto (BundleRequest): The input proto.
-    output_proto (BundleRequest): The output proto.
+    output_proto (BundleResponse): The output proto.
   """
   target = input_proto.build_target.name
   output_dir = input_proto.output_dir
@@ -101,7 +102,7 @@ def BundleAutotestFiles(input_proto, output_proto):
 
   Args:
     input_proto (BundleRequest): The input proto.
-    output_proto (BundleRequest): The output proto.
+    output_proto (BundleResponse): The output proto.
   """
   target = input_proto.build_target.name
   output_dir = input_proto.output_dir
@@ -123,7 +124,7 @@ def BundleTastFiles(input_proto, output_proto):
 
   Args:
     input_proto (BundleRequest): The input proto.
-    output_proto (BundleRequest): The output proto.
+    output_proto (BundleResponse): The output proto.
   """
   target = input_proto.build_target.name
   output_dir = input_proto.output_dir
@@ -148,7 +149,7 @@ def BundlePinnedGuestImages(input_proto, output_proto):
 
   Args:
     input_proto (BundleRequest): The input proto.
-    output_proto (BundleRequest): The output proto.
+    output_proto (BundleResponse): The output proto.
   """
   target = input_proto.build_target.name
   output_dir = input_proto.output_dir
@@ -170,7 +171,7 @@ def BundleFirmware(input_proto, output_proto):
 
   Args:
     input_proto (BundleRequest): The input proto.
-    output_proto (BundleRequest): The output proto.
+    output_proto (BundleResponse): The output proto.
   """
   target = input_proto.build_target.name
   output_dir = input_proto.output_dir
@@ -191,7 +192,7 @@ def BundleEbuildLogs(input_proto, output_proto):
 
   Args:
     input_proto (BundleRequest): The input proto.
-    output_proto (BundleRequest): The output proto.
+    output_proto (BundleResponse): The output proto.
   """
   target = input_proto.build_target.name
   output_dir = input_proto.output_dir
@@ -208,3 +209,33 @@ def BundleEbuildLogs(input_proto, output_proto):
         'Could not create ebuild logs archive. No logs found for %s.', target)
 
   output_proto.artifacts.add().path = os.path.join(output_dir, archive)
+
+
+def BundleVmFiles(input_proto, output_proto):
+  """Tar VM disk and memory files.
+
+  Args:
+    input_proto (SysrootBundleRequest): The input proto.
+    output_proto (BundleResponse): The output proto.
+  """
+  chroot = input_proto.chroot.path
+  sysroot = input_proto.sysroot.path
+  test_results_dir = input_proto.test_results_dir
+  output_dir = input_proto.output_dir
+
+  if not chroot:
+    cros_build_lib.Die('chroot.path is required.')
+  if not sysroot:
+    cros_build_lib.Die('sysroot.path is required.')
+  if not test_results_dir:
+    cros_build_lib.Die('test_results_dir is required.')
+  if not output_dir:
+    cros_build_lib.Die('output_dir is required.')
+
+  # TODO(crbug.com/954344): Replace with a chromite/service implementation.
+  sysroot = sysroot.lstrip(os.sep)
+  result_dir = test_results_dir.lstrip(os.sep)
+  image_dir = os.path.join(chroot, sysroot, result_dir)
+  archives = vm_test_stages.ArchiveVMFilesFromImageDir(image_dir, output_dir)
+  for archive in archives:
+    output_proto.artifacts.add().path = archive

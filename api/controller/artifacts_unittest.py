@@ -13,6 +13,7 @@ import os
 from chromite.api.controller import artifacts
 from chromite.api.gen.chromite.api import artifacts_pb2
 from chromite.cbuildbot import commands
+from chromite.cbuildbot.stages import vm_test_stages
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
@@ -243,3 +244,91 @@ class BundleTestUpdatePayloadsTest(cros_test_lib.MockTempDirTestCase):
     osutils.SafeMakedirs(self.image_root)
     with self.assertRaises(cros_build_lib.DieSystemExit):
       artifacts.BundleTestUpdatePayloads(self.input_proto, self.output_proto)
+
+
+class BundleVmFilesTest(cros_test_lib.MockTestCase):
+  """BuildVmFiles tests."""
+
+  def _GetInput(self, chroot=None, sysroot=None, test_results_dir=None,
+                output_dir=None):
+    """Helper to build out an input message instance.
+
+    Args:
+      chroot (str|None): The chroot path.
+      sysroot (str|None): The sysroot path relative to the chroot.
+      test_results_dir (str|None): The test results directory relative to the
+        sysroot.
+      output_dir (str|None): The directory where the results tarball should be
+        saved.
+    """
+    return artifacts_pb2.BundleVmFilesRequest(
+        chroot={'path': chroot}, sysroot={'path': sysroot},
+        test_results_dir=test_results_dir, output_dir=output_dir,
+    )
+
+  def _GetOutput(self):
+    """Helper to get an empty output message instance."""
+    return artifacts_pb2.BundleResponse()
+
+  def testChrootMissing(self):
+    """Test error handling for missing chroot."""
+    in_proto = self._GetInput(sysroot='/build/board',
+                              test_results_dir='/test/results',
+                              output_dir='/tmp/output')
+    out_proto = self._GetOutput()
+
+    with self.assertRaises(cros_build_lib.DieSystemExit):
+      artifacts.BundleVmFiles(in_proto, out_proto)
+
+  def testSysrootMissing(self):
+    """Test error handling for missing sysroot."""
+    in_proto = self._GetInput(chroot='/chroot/dir',
+                              test_results_dir='/test/results',
+                              output_dir='/tmp/output')
+    out_proto = self._GetOutput()
+
+    with self.assertRaises(cros_build_lib.DieSystemExit):
+      artifacts.BundleVmFiles(in_proto, out_proto)
+
+
+  def testTestResultsDirMissing(self):
+    """Test error handling for missing test results directory."""
+    in_proto = self._GetInput(chroot='/chroot/dir', sysroot='/build/board',
+                              output_dir='/tmp/output')
+    out_proto = self._GetOutput()
+
+    with self.assertRaises(cros_build_lib.DieSystemExit):
+      artifacts.BundleVmFiles(in_proto, out_proto)
+
+  def testOutputDirMissing(self):
+    """Test error handling for missing output directory."""
+    in_proto = self._GetInput(chroot='/chroot/dir', sysroot='/build/board',
+                              test_results_dir='/test/results')
+    out_proto = self._GetOutput()
+
+    with self.assertRaises(cros_build_lib.DieSystemExit):
+      artifacts.BundleVmFiles(in_proto, out_proto)
+
+  def testValidCall(self):
+    """Test image dir building."""
+    in_proto = self._GetInput(chroot='/chroot/dir', sysroot='/build/board',
+                              test_results_dir='/test/results',
+                              output_dir='/tmp/output')
+    out_proto = self._GetOutput()
+    expected_files = ['/tmp/output/f1.tar', '/tmp/output/f2.tar']
+    patch = self.PatchObject(vm_test_stages, 'ArchiveVMFilesFromImageDir',
+                             return_value=expected_files)
+
+    artifacts.BundleVmFiles(in_proto, out_proto)
+
+    patch.assert_called_with('/chroot/dir/build/board/test/results',
+                             '/tmp/output')
+
+    # Make sure we have artifacts, and that every artifact is an expected file.
+    self.assertTrue(out_proto.artifacts)
+    for artifact in out_proto.artifacts:
+      self.assertIn(artifact.path, expected_files)
+      expected_files.remove(artifact.path)
+
+    # Make sure we've seen all of the expected files.
+    self.assertFalse(expected_files)
