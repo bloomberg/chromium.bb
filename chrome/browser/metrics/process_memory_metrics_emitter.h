@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "base/process/process_handle.h"
+#include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/global_memory_dump.h"
@@ -99,6 +100,8 @@ class ProcessMemoryMetricsEmitter
   // Specify this pid_scope_ to only record the memory metrics of the specific
   // process.
   base::ProcessId pid_scope_ = base::kNullProcessId;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(ProcessMemoryMetricsEmitter);
 };
