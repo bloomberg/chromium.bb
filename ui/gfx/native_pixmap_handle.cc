@@ -81,7 +81,7 @@ NativePixmapHandle CloneHandleForIPC(const NativePixmapHandle& handle) {
                               std::move(fd_dup), plane.modifier);
 #elif defined(OS_FUCHSIA)
     zx::vmo vmo_dup;
-    zx_status_t status = plane.vmo.duplicate(ZX_RIGHT_DUPLICATE, &vmo_dup);
+    zx_status_t status = plane.vmo.duplicate(ZX_RIGHT_SAME_RIGHTS, &vmo_dup);
     if (status != ZX_OK) {
       ZX_DLOG(ERROR, status) << "zx_handle_duplicate";
       return NativePixmapHandle();
