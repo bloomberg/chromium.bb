@@ -3380,6 +3380,9 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       <message name="IDS_ACCESSIBILITY_TOOLBAR_BTN_CLOSE_ALL_PRIVATE_TABS" desc="Content description for the close all private tabs button.">
         Close all private tabs
       </message>
+      <message name="IDS_ACCESSIBILITY_INCOGNITO_BADGE" desc="Content description for the badge indicating that the user is in Incognito mode.">
+        Incognito mode
+      </message>
 
       <message name="IDS_ACCESSIBILITY_TOOLBAR_BTN_TABSWITCHER_TOGGLE" desc="Content description for the button that enters or leaves the tab switcher. [ICU Syntax]">
         {OPEN_TABS, plural,

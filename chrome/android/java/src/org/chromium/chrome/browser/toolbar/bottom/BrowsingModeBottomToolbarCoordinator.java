@@ -17,6 +17,7 @@ import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.HomeButton;
+import org.chromium.chrome.browser.toolbar.IncognitoStateProvider;
 import org.chromium.chrome.browser.toolbar.MenuButton;
 import org.chromium.chrome.browser.toolbar.TabCountProvider;
 import org.chromium.chrome.browser.toolbar.TabSwitcherButtonCoordinator;
@@ -106,16 +107,19 @@ public class BrowsingModeBottomToolbarCoordinator {
      * @param overviewModeBehavior The overview mode manager.
      * @param tabCountProvider Updates the tab count number in the tab switcher button.
      * @param themeColorProvider Notifies components when theme color changes.
+     * @param incognitoStateProvider Notifies components when incognito state changes.
      */
     void initializeWithNative(OnClickListener tabSwitcherListener,
             AppMenuButtonHelper menuButtonHelper, OverviewModeBehavior overviewModeBehavior,
-            TabCountProvider tabCountProvider, ThemeColorProvider themeColorProvider) {
+            TabCountProvider tabCountProvider, ThemeColorProvider themeColorProvider,
+            IncognitoStateProvider incognitoStateProvider) {
         mMediator.setOverviewModeBehavior(overviewModeBehavior);
         mMediator.setThemeColorProvider(themeColorProvider);
 
         mHomeButton.setThemeColorProvider(themeColorProvider);
         mShareButton.setThemeColorProvider(themeColorProvider);
         mSearchAccelerator.setThemeColorProvider(themeColorProvider);
+        mSearchAccelerator.setIncognitoStateProvider(incognitoStateProvider);
 
         mTabSwitcherButtonCoordinator.setTabSwitcherListener(tabSwitcherListener);
         mTabSwitcherButtonCoordinator.setThemeColorProvider(themeColorProvider);

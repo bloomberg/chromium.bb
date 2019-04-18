@@ -52,11 +52,15 @@ class StatusProperties {
     /** Specifies width of the verbose status text view. */
     static final WritableIntPropertyKey VERBOSE_STATUS_TEXT_WIDTH = new WritableIntPropertyKey();
 
+    /** Specifies whether the incognito badge is visible or not. */
+    static final WritableBooleanPropertyKey INCOGNITO_BADGE_VISIBLE =
+            new WritableBooleanPropertyKey();
+
     public static final PropertyKey[] ALL_KEYS = new PropertyKey[] {ANIMATIONS_ENABLED,
             STATUS_ICON_ACCESSIBILITY_TOAST_RES, STATUS_ICON_RES, STATUS_ICON_TINT_RES,
             STATUS_ICON_DESCRIPTION_RES, SEPARATOR_COLOR_RES, STATUS_CLICK_LISTENER,
             VERBOSE_STATUS_TEXT_COLOR_RES, VERBOSE_STATUS_TEXT_STRING_RES,
-            VERBOSE_STATUS_TEXT_VISIBLE, VERBOSE_STATUS_TEXT_WIDTH};
+            VERBOSE_STATUS_TEXT_VISIBLE, VERBOSE_STATUS_TEXT_WIDTH, INCOGNITO_BADGE_VISIBLE};
 
     private StatusProperties() {}
 }

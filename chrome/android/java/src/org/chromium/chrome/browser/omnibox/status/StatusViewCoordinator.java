@@ -98,6 +98,13 @@ public class StatusViewCoordinator implements View.OnClickListener {
     }
 
     /**
+     * @param incognitoBadgeVisible Whether or not the incognito badge is visible.
+     */
+    public void setIncognitoBadgeVisibility(boolean incognitoBadgeVisible) {
+        mMediator.setIncognitoBadgeVisibility(incognitoBadgeVisible);
+    }
+
+    /**
      * Updates the security icon displayed in the LocationBar.
      */
     public void updateStatusIcon() {

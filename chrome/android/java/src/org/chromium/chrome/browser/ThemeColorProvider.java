@@ -6,6 +6,7 @@ package org.chromium.chrome.browser;
 
 import android.content.Context;
 import android.content.res.ColorStateList;
+import android.support.annotation.ColorInt;
 import android.support.annotation.Nullable;
 
 import org.chromium.base.ObserverList;
@@ -96,6 +97,14 @@ public abstract class ThemeColorProvider {
      */
     public void removeTintObserver(TintObserver observer) {
         mTintObservers.removeObserver(observer);
+    }
+
+    /**
+     * @return The current theme color of this provider.
+     */
+    @ColorInt
+    public int getThemeColor() {
+        return mPrimaryColor;
     }
 
     /**

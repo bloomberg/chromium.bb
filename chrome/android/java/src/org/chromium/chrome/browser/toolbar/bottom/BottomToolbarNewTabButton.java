@@ -59,7 +59,7 @@ class BottomToolbarNewTabButton extends ChromeImageButton
      */
     void destroy() {
         if (mIncognitoStateProvider != null) {
-            mIncognitoStateProvider.removeObserver((IncognitoStateObserver) this);
+            mIncognitoStateProvider.removeObserver(this);
             mIncognitoStateProvider = null;
         }
         if (mThemeColorProvider != null) {
@@ -86,6 +86,7 @@ class BottomToolbarNewTabButton extends ChromeImageButton
                                 : R.string.accessibility_toolbar_btn_new_tab;
         }
         setContentDescription(getResources().getText(resId));
+        updateBackground();
     }
 
     void setThemeColorProvider(ThemeColorProvider themeColorProvider) {
@@ -96,13 +97,23 @@ class BottomToolbarNewTabButton extends ChromeImageButton
 
     @Override
     public void onThemeColorChanged(int primaryColor, boolean shouldAnimate) {
-        mBackground.setColorFilter(
-                ColorUtils.getTextBoxColorForToolbarBackground(mResources, false, primaryColor),
-                PorterDuff.Mode.SRC_IN);
+        updateBackground();
     }
 
     @Override
     public void onTintChanged(ColorStateList tint, boolean useLight) {
         ApiCompatibilityUtils.setImageTintList(this, tint);
+        updateBackground();
+    }
+
+    private void updateBackground() {
+        if (mThemeColorProvider == null || mIncognitoStateProvider == null) return;
+
+        mBackground.setColorFilter(
+                ColorUtils.getTextBoxColorForToolbarBackground(mResources, false,
+                        mThemeColorProvider.getThemeColor(),
+                        mThemeColorProvider.useLight()
+                                && mIncognitoStateProvider.isIncognitoSelected()),
+                PorterDuff.Mode.SRC_IN);
     }
 }
