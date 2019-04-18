@@ -64,7 +64,10 @@ MATCHER_P(ModelEqualsSpecifics, expected_specifics, "") {
          expected_specifics.sync_user_agent() == arg.sync_user_agent() &&
          expected_specifics.chrome_version() == arg.chrome_version() &&
          expected_specifics.signin_scoped_device_id() ==
-             arg.signin_scoped_device_id();
+             arg.signin_scoped_device_id() &&
+         expected_specifics.feature_fields()
+                 .send_tab_to_self_receiving_enabled() ==
+             arg.send_tab_to_self_receiving_enabled();
 }
 
 Matcher<std::unique_ptr<EntityData>> HasSpecifics(
@@ -127,6 +130,8 @@ DeviceInfoSpecifics CreateSpecifics(
   specifics.set_chrome_version(ChromeVersionForSuffix(suffix));
   specifics.set_signin_scoped_device_id(SigninScopedDeviceIdForSuffix(suffix));
   specifics.set_last_updated_timestamp(TimeToProtoTime(last_updated));
+  specifics.mutable_feature_fields()->set_send_tab_to_self_receiving_enabled(
+      true);
   return specifics;
 }
 
@@ -185,7 +190,7 @@ class TestLocalDeviceInfoProvider : public MutableLocalDeviceInfoProvider {
         cache_guid, session_name, ChromeVersionForSuffix(kLocalSuffix),
         SyncUserAgentForSuffix(kLocalSuffix),
         sync_pb::SyncEnums_DeviceType_TYPE_LINUX,
-        SigninScopedDeviceIdForSuffix(kLocalSuffix));
+        SigninScopedDeviceIdForSuffix(kLocalSuffix), true);
   }
 
   void Clear() override { local_device_info_.reset(); }

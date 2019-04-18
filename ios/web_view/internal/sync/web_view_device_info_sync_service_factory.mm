@@ -56,7 +56,9 @@ WebViewDeviceInfoSyncServiceFactory::BuildServiceInstanceFor(
           version_info::Channel::STABLE, version_info::GetVersionNumber(),
           /*signin_scoped_device_id_callback=*/
           base::BindRepeating(&signin::GetSigninScopedDeviceId,
-                              browser_state->GetPrefs()));
+                              browser_state->GetPrefs()),
+          /*send_tab_to_self_receiving_enabled_callback=*/
+          base::BindRepeating([]() { return false; }));
 
   return std::make_unique<syncer::DeviceInfoSyncServiceImpl>(
       WebViewModelTypeStoreServiceFactory::GetForBrowserState(browser_state)

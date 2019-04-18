@@ -4,9 +4,19 @@
 
 #include "components/send_tab_to_self/features.h"
 
+#include "components/sync/base/sync_prefs.h"
+#include "components/sync/base/user_selectable_type.h"
+#include "components/sync/driver/sync_driver_switches.h"
+
 namespace send_tab_to_self {
 
 const base::Feature kSendTabToSelfShowSendingUI{
     "SendTabToSelfShowSendingUI", base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool IsReceivingEnabledByUserOnThisDevice(PrefService* prefs) {
+  syncer::SyncPrefs sync_prefs(prefs);
+  return base::FeatureList::IsEnabled(switches::kSyncSendTabToSelf) &&
+         sync_prefs.GetSelectedTypes().Has(syncer::UserSelectableType::kTabs);
+}
 
 }  // namespace send_tab_to_self

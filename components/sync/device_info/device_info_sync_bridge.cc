@@ -31,6 +31,7 @@ using base::Time;
 using base::TimeDelta;
 using sync_pb::DeviceInfoSpecifics;
 using sync_pb::EntitySpecifics;
+using sync_pb::FeatureSpecificFields;
 using sync_pb::ModelTypeState;
 
 using Record = ModelTypeStore::Record;
@@ -56,7 +57,8 @@ std::unique_ptr<DeviceInfo> SpecificsToModel(
   return std::make_unique<DeviceInfo>(
       specifics.cache_guid(), specifics.client_name(),
       specifics.chrome_version(), specifics.sync_user_agent(),
-      specifics.device_type(), specifics.signin_scoped_device_id());
+      specifics.device_type(), specifics.signin_scoped_device_id(),
+      specifics.feature_fields().send_tab_to_self_receiving_enabled());
 }
 
 // Allocate a EntityData and copies |specifics| into it.
@@ -82,6 +84,11 @@ std::unique_ptr<DeviceInfoSpecifics> ModelToSpecifics(
   specifics->set_device_type(info.device_type());
   specifics->set_signin_scoped_device_id(info.signin_scoped_device_id());
   specifics->set_last_updated_timestamp(last_updated_timestamp);
+
+  FeatureSpecificFields* feature_fields = specifics->mutable_feature_fields();
+  feature_fields->set_send_tab_to_self_receiving_enabled(
+      info.send_tab_to_self_receiving_enabled());
+
   return specifics;
 }
 

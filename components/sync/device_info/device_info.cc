@@ -13,13 +13,15 @@ DeviceInfo::DeviceInfo(const std::string& guid,
                        const std::string& chrome_version,
                        const std::string& sync_user_agent,
                        const sync_pb::SyncEnums::DeviceType device_type,
-                       const std::string& signin_scoped_device_id)
+                       const std::string& signin_scoped_device_id,
+                       bool send_tab_to_self_receiving_enabled)
     : guid_(guid),
       client_name_(client_name),
       chrome_version_(chrome_version),
       sync_user_agent_(sync_user_agent),
       device_type_(device_type),
-      signin_scoped_device_id_(signin_scoped_device_id) {}
+      signin_scoped_device_id_(signin_scoped_device_id),
+      send_tab_to_self_receiving_enabled_(send_tab_to_self_receiving_enabled) {}
 
 DeviceInfo::~DeviceInfo() {}
 
@@ -49,6 +51,10 @@ sync_pb::SyncEnums::DeviceType DeviceInfo::device_type() const {
 
 const std::string& DeviceInfo::signin_scoped_device_id() const {
   return signin_scoped_device_id_;
+}
+
+bool DeviceInfo::send_tab_to_self_receiving_enabled() const {
+  return send_tab_to_self_receiving_enabled_;
 }
 
 std::string DeviceInfo::GetOSString() const {
@@ -93,7 +99,9 @@ bool DeviceInfo::Equals(const DeviceInfo& other) const {
          this->chrome_version() == other.chrome_version() &&
          this->sync_user_agent() == other.sync_user_agent() &&
          this->device_type() == other.device_type() &&
-         this->signin_scoped_device_id() == other.signin_scoped_device_id();
+         this->signin_scoped_device_id() == other.signin_scoped_device_id() &&
+         this->send_tab_to_self_receiving_enabled() ==
+             other.send_tab_to_self_receiving_enabled();
 }
 
 std::unique_ptr<base::DictionaryValue> DeviceInfo::ToValue() {
@@ -103,11 +111,17 @@ std::unique_ptr<base::DictionaryValue> DeviceInfo::ToValue() {
   value->SetString("os", GetOSString());
   value->SetString("type", GetDeviceTypeString());
   value->SetString("chromeVersion", chrome_version_);
+  value->SetBoolean("sendTabToSelfReceivingEnabled",
+                    send_tab_to_self_receiving_enabled());
   return value;
 }
 
 void DeviceInfo::set_public_id(const std::string& id) {
   public_id_ = id;
+}
+
+void DeviceInfo::set_send_tab_to_self_receiving_enabled(bool new_value) {
+  send_tab_to_self_receiving_enabled_ = new_value;
 }
 
 }  // namespace syncer
