@@ -62,6 +62,7 @@ class AudioContextOptions;
 class AudioListener;
 class AudioWorklet;
 class BiquadFilterNode;
+class BaseAudioContextTracker;
 class ChannelMergerNode;
 class ChannelSplitterNode;
 class ConstantSourceNode;
@@ -315,6 +316,22 @@ class MODULES_EXPORT BaseAudioContext
   // Does nothing when the worklet global scope does not exist.
   void UpdateWorkletGlobalScopeOnRenderingThread();
 
+  // Returns a unique ID for the instance for Devtools.
+  const String& Uuid() const { return uuid_; }
+
+  // Returns -1 if the destination node is unavailable or any other condition
+  // occurs preventing us from determining the count.
+  int32_t MaxChannelCount();
+
+  // Returns the platform-specific callback buffer size for Devtools.
+  // Returns -1 if the destination node is unavailable or any other condition
+  // occurs preventing us from determining the count.
+  int32_t CallbackBufferSize();
+
+  // Returns the render capacity, which is the time spend on render divided by
+  // the hardware callback interval. Glitches happen when it goes beyond 1.0.
+  virtual double RenderCapacity() = 0;
+
  protected:
   enum ContextType { kRealtimeContext, kOfflineContext };
 
@@ -347,8 +364,6 @@ class MODULES_EXPORT BaseAudioContext
   // Returns the Document wich wich the instance is associated.
   Document* GetDocument() const;
 
-  const String& Uuid() const { return uuid_; }
-
   // The audio thread relies on the main thread to perform some operations
   // over the objects that it owns and controls; |ScheduleMainThreadCleanup()|
   // posts the task to initiate those.
@@ -365,6 +380,8 @@ class MODULES_EXPORT BaseAudioContext
   bool is_resolving_resume_promises_;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+
+  BaseAudioContextTracker* Tracker();
 
  private:
   // Unique ID for each context.

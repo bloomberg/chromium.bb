@@ -46,6 +46,7 @@
 #include "third_party/blink/renderer/modules/webaudio/audio_worklet.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_worklet_global_scope.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_worklet_messaging_proxy.h"
+#include "third_party/blink/renderer/modules/webaudio/base_audio_context_tracker.h"
 #include "third_party/blink/renderer/modules/webaudio/biquad_filter_node.h"
 #include "third_party/blink/renderer/modules/webaudio/channel_merger_node.h"
 #include "third_party/blink/renderer/modules/webaudio/channel_splitter_node.h"
@@ -55,6 +56,7 @@
 #include "third_party/blink/renderer/modules/webaudio/dynamics_compressor_node.h"
 #include "third_party/blink/renderer/modules/webaudio/gain_node.h"
 #include "third_party/blink/renderer/modules/webaudio/iir_filter_node.h"
+#include "third_party/blink/renderer/modules/webaudio/inspector_web_audio_agent.h"
 #include "third_party/blink/renderer/modules/webaudio/offline_audio_completion_event.h"
 #include "third_party/blink/renderer/modules/webaudio/offline_audio_context.h"
 #include "third_party/blink/renderer/modules/webaudio/offline_audio_destination_node.h"
@@ -62,6 +64,7 @@
 #include "third_party/blink/renderer/modules/webaudio/panner_node.h"
 #include "third_party/blink/renderer/modules/webaudio/periodic_wave.h"
 #include "third_party/blink/renderer/modules/webaudio/periodic_wave_constraints.h"
+#include "third_party/blink/renderer/modules/webaudio/realtime_audio_destination_node.h"
 #include "third_party/blink/renderer/modules/webaudio/script_processor_node.h"
 #include "third_party/blink/renderer/modules/webaudio/stereo_panner_node.h"
 #include "third_party/blink/renderer/modules/webaudio/wave_shaper_node.h"
@@ -135,6 +138,8 @@ void BaseAudioContext::Initialize() {
     // The AudioParams in the listener need access to the destination node, so
     // only create the listener if the destination node exists.
     listener_ = MakeGarbageCollected<AudioListener>(*this);
+
+    Tracker()->DidCreateBaseAudioContext(this);
   }
 }
 
@@ -169,6 +174,8 @@ void BaseAudioContext::Uninitialize() {
   listener_->WaitForHRTFDatabaseLoaderThreadCompletion();
 
   Clear();
+
+  Tracker()->DidDestroyBaseAudioContext(this);
 
   DCHECK(!is_resolving_resume_promises_);
   DCHECK_EQ(resume_resolvers_.size(), 0u);
@@ -633,6 +640,8 @@ void BaseAudioContext::SetContextState(AudioContextState new_state) {
         ->GetTaskRunner(TaskType::kMediaElementEvent)
         ->PostTask(FROM_HERE, WTF::Bind(&BaseAudioContext::NotifyStateChange,
                                         WrapPersistent(this)));
+
+    Tracker()->DidChangeBaseAudioContext(this);
   }
 }
 
@@ -835,6 +844,36 @@ void BaseAudioContext::UpdateWorkletGlobalScopeOnRenderingThread() {
 
     unlock();
   }
+}
+
+int32_t BaseAudioContext::MaxChannelCount() {
+  DCHECK(IsMainThread());
+
+  AudioDestinationNode* destination_node = destination();
+  if (!destination_node ||
+      !destination_node->GetAudioDestinationHandler().IsInitialized())
+    return -1;
+
+  return destination_node->GetAudioDestinationHandler().MaxChannelCount();
+}
+
+int32_t BaseAudioContext::CallbackBufferSize() {
+  DCHECK(IsMainThread());
+
+  AudioDestinationNode* destination_node = destination();
+  if (!destination_node ||
+      !destination_node->GetAudioDestinationHandler().IsInitialized() ||
+      !HasRealtimeConstraint())
+    return -1;
+
+  RealtimeAudioDestinationHandler& destination_handler =
+      static_cast<RealtimeAudioDestinationHandler&>(
+          destination_node->GetAudioDestinationHandler());
+  return destination_handler.GetCallbackBufferSize();
+}
+
+BaseAudioContextTracker* BaseAudioContext::Tracker() {
+  return BaseAudioContextTracker::FromDocument(*GetDocument());
 }
 
 }  // namespace blink

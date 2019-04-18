@@ -76,6 +76,8 @@
 #include "third_party/blink/renderer/modules/time_zone_monitor/time_zone_monitor_client.h"
 #include "third_party/blink/renderer/modules/vr/navigator_vr.h"
 #include "third_party/blink/renderer/modules/vr/vr_controller.h"
+#include "third_party/blink/renderer/modules/webaudio/base_audio_context_tracker.h"
+#include "third_party/blink/renderer/modules/webaudio/inspector_web_audio_agent.h"
 #include "third_party/blink/renderer/modules/webdatabase/database_client.h"
 #include "third_party/blink/renderer/modules/webdatabase/database_manager.h"
 #include "third_party/blink/renderer/modules/webdatabase/inspector_database_agent.h"
@@ -236,6 +238,7 @@ void ModulesInitializer::InitInspectorAgentSession(
       MakeGarbageCollected<InspectorDOMStorageAgent>(inspected_frames));
   session->Append(MakeGarbageCollected<InspectorAccessibilityAgent>(
       inspected_frames, dom_agent));
+  session->Append(MakeGarbageCollected<InspectorWebAudioAgent>(page));
   if (allow_view_agents) {
     session->Append(MakeGarbageCollected<InspectorDatabaseAgent>(page));
     session->Append(
@@ -290,6 +293,7 @@ void ModulesInitializer::ProvideModulesToPage(Page& page,
   ::blink::ProvideDatabaseClientTo(page,
                                    MakeGarbageCollected<DatabaseClient>());
   StorageNamespace::ProvideSessionStorageNamespaceTo(page, client);
+  BaseAudioContextTracker::ProvideToPage(page);
 }
 
 void ModulesInitializer::ForceNextWebGLContextCreationToFail() const {
