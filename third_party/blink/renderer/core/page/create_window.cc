@@ -141,7 +141,8 @@ WebWindowFeatures GetWindowFeaturesFromString(const String& feature_string) {
     if (key_string.IsEmpty())
       continue;
 
-    if (!ui_features_were_disabled && key_string != "noopener") {
+    if (!ui_features_were_disabled && key_string != "noopener" &&
+        key_string != "noreferrer") {
       ui_features_were_disabled = true;
       window_features.menu_bar_visible = false;
       window_features.status_bar_visible = false;
@@ -173,12 +174,17 @@ WebWindowFeatures GetWindowFeaturesFromString(const String& feature_string) {
       window_features.resizable = value;
     } else if (key_string == "noopener") {
       window_features.noopener = value;
+    } else if (key_string == "noreferrer") {
+      window_features.noreferrer = value;
     } else if (key_string == "background") {
       window_features.background = true;
     } else if (key_string == "persistent") {
       window_features.persistent = true;
     }
   }
+
+  if (window_features.noreferrer)
+    window_features.noopener = true;
 
   return window_features;
 }
