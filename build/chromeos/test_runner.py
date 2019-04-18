@@ -375,10 +375,18 @@ class TastTest(RemoteTest):
 
 class GTestTest(RemoteTest):
 
+  # The following list corresponds to paths that should not be copied over to
+  # the device during tests. In other words, these files are only ever used on
+  # the host.
   _FILE_BLACKLIST = [
+      re.compile(r'.*build/android.*'),
       re.compile(r'.*build/chromeos.*'),
       re.compile(r'.*build/cros_cache.*'),
+      # The following matches anything under //testing/ that isn't under
+      # //testing/buildbot/filters/.
+      re.compile(r'.*testing/(?!buildbot/filters).*'),
       re.compile(r'.*third_party/chromite.*'),
+      re.compile(r'.*tools/swarming_client.*'),
   ]
 
   def __init__(self, args, unknown_args):
