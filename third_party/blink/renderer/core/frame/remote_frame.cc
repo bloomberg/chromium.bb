@@ -20,6 +20,7 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/plugin_script_forbidden_scope.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_timing_info.h"
@@ -68,6 +69,8 @@ void RemoteFrame::ScheduleNavigation(Document& origin_document,
   frame_request.SetFrameType(
       IsMainFrame() ? network::mojom::RequestContextFrameType::kTopLevel
                     : network::mojom::RequestContextFrameType::kNested);
+  frame_request.SetClientRedirectReason(
+      ClientNavigationReason::kFrameNavigation);
   Navigate(frame_request, frame_load_type);
 }
 
@@ -108,6 +111,11 @@ void RemoteFrame::Navigate(const FrameLoadRequest& passed_request,
         frame->GetSecurityContext() &&
         frame->GetSecurityContext()->IsSandboxed(WebSandboxFlags::kDownloads);
     initiator_frame_is_ad = frame->IsAdSubframe();
+    if (passed_request.ClientRedirect() ==
+        ClientRedirectPolicy::kClientRedirect) {
+      probe::FrameRequestedNavigation(frame, this, url,
+                                      passed_request.ClientRedirectReason());
+    }
   }
 
   bool current_frame_has_download_sandbox_flag =

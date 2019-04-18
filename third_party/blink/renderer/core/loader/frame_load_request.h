@@ -75,8 +75,15 @@ struct CORE_EXPORT FrameLoadRequest {
   }
 
   ClientRedirectPolicy ClientRedirect() const { return client_redirect_; }
-  void SetClientRedirect(ClientRedirectPolicy client_redirect) {
-    client_redirect_ = client_redirect;
+
+  void SetClientRedirectReason(ClientNavigationReason reason) {
+    client_redirect_ = ClientRedirectPolicy::kClientRedirect;
+    client_navigation_reason_ = reason;
+  }
+
+  ClientNavigationReason ClientRedirectReason() const {
+    DCHECK_EQ(ClientRedirectPolicy::kClientRedirect, client_redirect_);
+    return client_navigation_reason_;
   }
 
   NavigationPolicy GetNavigationPolicy() const { return navigation_policy_; }
@@ -158,7 +165,11 @@ struct CORE_EXPORT FrameLoadRequest {
   ResourceRequest resource_request_;
   AtomicString frame_name_;
   AtomicString href_translate_;
+  // TODO(caseq): merge ClientRedirectPolicy and ClientNavigationReason.
+  // Currently, client_navigation_reason_ is set iff ClientRedirectPolicy
+  // is set to kClientRedirect.
   ClientRedirectPolicy client_redirect_;
+  ClientNavigationReason client_navigation_reason_;
   NavigationPolicy navigation_policy_ = kNavigationPolicyCurrentTab;
   WebTriggeringEventInfo triggering_event_info_ =
       WebTriggeringEventInfo::kNotFromEvent;

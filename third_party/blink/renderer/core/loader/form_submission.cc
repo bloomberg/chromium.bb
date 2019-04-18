@@ -289,7 +289,9 @@ FrameLoadRequest FormSubmission::CreateFrameLoadRequest(
   if (!target_.IsEmpty())
     frame_request.SetFrameName(target_);
 
+  ClientNavigationReason reason = ClientNavigationReason::kFormSubmissionGet;
   if (method_ == FormSubmission::kPostMethod) {
+    reason = ClientNavigationReason::kFormSubmissionPost;
     frame_request.GetResourceRequest().SetHttpMethod(http_names::kPOST);
     frame_request.GetResourceRequest().SetHttpBody(form_data_);
 
@@ -301,6 +303,7 @@ FrameLoadRequest FormSubmission::CreateFrameLoadRequest(
           content_type_ + "; boundary=" + boundary_);
     }
   }
+  frame_request.SetClientRedirectReason(reason);
 
   frame_request.GetResourceRequest().SetUrl(RequestURL());
 

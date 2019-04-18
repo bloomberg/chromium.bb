@@ -927,11 +927,11 @@ void InspectorPageAgent::FrameStoppedLoading(LocalFrame* frame) {
 }
 
 void InspectorPageAgent::FrameRequestedNavigation(
-    LocalFrame* frame,
+    Frame* target_frame,
     const KURL& url,
     ClientNavigationReason reason) {
   GetFrontend()->frameRequestedNavigation(
-      IdentifiersFactory::FrameId(frame),
+      IdentifiersFactory::FrameId(target_frame),
       ClientNavigationReasonToProtocol(reason), url.GetString());
 }
 

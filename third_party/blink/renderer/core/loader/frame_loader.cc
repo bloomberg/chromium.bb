@@ -948,6 +948,11 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
     }
   }
 
+  if (request.ClientRedirect() == ClientRedirectPolicy::kClientRedirect) {
+    probe::FrameRequestedNavigation(frame_, frame_, url,
+                                    request.ClientRedirectReason());
+  }
+
   Client()->BeginNavigation(
       resource_request, request.GetFrameType(), origin_document,
       nullptr /* document_loader */, navigation_type,
