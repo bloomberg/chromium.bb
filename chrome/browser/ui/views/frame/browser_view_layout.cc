@@ -489,11 +489,8 @@ void BrowserViewLayout::UpdateTopContainerBounds() {
   int height = 0;
   for (int i = 0; i < top_container_->child_count(); ++i) {
     views::View* child = top_container_->child_at(i);
-    if (!child->visible())
-      continue;
-    int child_bottom = child->bounds().bottom();
-    if (child_bottom > height)
-      height = child_bottom;
+    if (child->visible())
+      height = std::max(height, child->bounds().bottom());
   }
 
   // Ensure that the top container view reaches the topmost view in the

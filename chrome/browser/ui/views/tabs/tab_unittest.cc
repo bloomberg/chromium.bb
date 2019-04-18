@@ -506,18 +506,18 @@ TEST_F(TabTest, TooltipProvidedByTab) {
         Tab::GetTooltipText(data.title, data.alert_state);
 
     for (int j = 0; j < tab.child_count(); ++j) {
-      views::View& child = *tab.child_at(j);
-      if (!strcmp(child.GetClassName(), "TabCloseButton"))
+      views::View* child = tab.child_at(j);
+      if (!strcmp(child->GetClassName(), "TabCloseButton"))
         continue;  // Close button is excepted.
-      if (!child.visible())
+      if (!child->visible())
         continue;
-      SCOPED_TRACE(::testing::Message() << "child_at(" << j << "): "
-                   << child.GetClassName());
+      SCOPED_TRACE(::testing::Message()
+                   << "child_at(" << j << "): " << child->GetClassName());
 
-      const gfx::Point midpoint(child.width() / 2, child.height() / 2);
-      EXPECT_FALSE(child.GetTooltipHandlerForPoint(midpoint));
+      const gfx::Point midpoint(child->width() / 2, child->height() / 2);
+      EXPECT_FALSE(child->GetTooltipHandlerForPoint(midpoint));
       const gfx::Point mouse_hover_point =
-          midpoint + child.GetMirroredPosition().OffsetFromOrigin();
+          midpoint + child->GetMirroredPosition().OffsetFromOrigin();
       EXPECT_EQ(expected_tooltip, tab.GetTooltipText(mouse_hover_point));
     }
   }

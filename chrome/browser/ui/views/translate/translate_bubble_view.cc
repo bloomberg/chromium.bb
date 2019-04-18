@@ -311,12 +311,9 @@ bool TranslateBubbleView::AcceleratorPressed(
 
 gfx::Size TranslateBubbleView::CalculatePreferredSize() const {
   int width = 0;
-  for (int i = 0; i < child_count(); i++) {
-    const views::View* child = child_at(i);
-    width = std::max(width, child->GetPreferredSize().width());
-  }
-  int height = GetCurrentView()->GetPreferredSize().height();
-  return gfx::Size(width, height);
+  for (int i = 0; i < child_count(); i++)
+    width = std::max(width, child_at(i)->GetPreferredSize().width());
+  return gfx::Size(width, GetCurrentView()->GetPreferredSize().height());
 }
 
 void TranslateBubbleView::OnPerformAction(views::Combobox* combobox) {

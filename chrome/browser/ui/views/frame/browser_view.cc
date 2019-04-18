@@ -323,10 +323,10 @@ class OverlayViewTargeterDelegate : public views::ViewTargeterDelegate {
   bool DoesIntersectRect(const views::View* target,
                          const gfx::Rect& rect) const override {
     for (int i = 0; i < target->child_count(); ++i) {
+      const views::View* child = target->child_at(i);
       gfx::RectF child_rect(rect);
-      views::View::ConvertRectToTarget(target, target->child_at(i),
-                                       &child_rect);
-      if (target->child_at(i)->HitTestRect(gfx::ToEnclosingRect(child_rect)))
+      views::View::ConvertRectToTarget(target, child, &child_rect);
+      if (child->HitTestRect(gfx::ToEnclosingRect(child_rect)))
         return true;
     }
 

@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "base/numerics/ranges.h"
 #include "chrome/browser/media/webrtc/desktop_media_list.h"
 #include "chrome/browser/media/webrtc/window_icon_util.h"
 #include "chrome/browser/ui/views/desktop_capture/desktop_media_picker_views.h"
@@ -130,9 +131,8 @@ bool DesktopMediaListView::OnKeyPressed(const ui::KeyEvent& event) {
 
   if (selected) {
     int index = GetIndexOf(selected);
-    int new_index = index + position_increment;
-    new_index = std::min(new_index, child_count() - 1);
-    new_index = std::max(new_index, 0);
+    int new_index =
+        base::ClampToRange(index + position_increment, 0, child_count() - 1);
     if (index != new_index)
       new_selected = child_at(new_index);
   } else if (!children().empty()) {

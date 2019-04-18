@@ -279,7 +279,7 @@ TEST_F(PageInfoBubbleViewTest, SetPermissionInfo) {
 
 // Test UI construction and reconstruction with USB devices.
 TEST_F(PageInfoBubbleViewTest, SetPermissionInfoWithUsbDevice) {
-  const int kExpectedChildren = 0;
+  constexpr int kExpectedChildren = 0;
   EXPECT_EQ(kExpectedChildren, api_->permissions_view()->child_count());
 
   const GURL origin = GURL(kUrl).GetOrigin();
@@ -304,12 +304,12 @@ TEST_F(PageInfoBubbleViewTest, SetPermissionInfoWithUsbDevice) {
       api_->permissions_view()->child_at(kExpectedChildren));
   EXPECT_EQ(4, object_view->child_count());
 
-  const int kLabelIndex = 1;
+  constexpr int kLabelIndex = 1;
   views::Label* label =
       static_cast<views::Label*>(object_view->child_at(kLabelIndex));
   EXPECT_EQ(base::ASCIIToUTF16("Gizmo"), label->text());
 
-  const int kButtonIndex = 2;
+  constexpr int kButtonIndex = 2;
   views::Button* button =
       static_cast<views::Button*>(object_view->child_at(kButtonIndex));
 
@@ -337,7 +337,7 @@ constexpr char kPolicySetting[] = R"(
 
 // Test UI construction and reconstruction with policy USB devices.
 TEST_F(PageInfoBubbleViewTest, SetPermissionInfoWithPolicyUsbDevices) {
-  const int kExpectedChildren = 0;
+  constexpr int kExpectedChildren = 0;
   EXPECT_EQ(kExpectedChildren, api_->permissions_view()->child_count());
 
   const GURL origin = GURL(kUrl).GetOrigin();
@@ -359,18 +359,18 @@ TEST_F(PageInfoBubbleViewTest, SetPermissionInfoWithPolicyUsbDevices) {
       api_->permissions_view()->child_at(kExpectedChildren));
   EXPECT_EQ(4, object_view->child_count());
 
-  const int kLabelIndex = 1;
+  constexpr int kLabelIndex = 1;
   views::Label* label =
       static_cast<views::Label*>(object_view->child_at(kLabelIndex));
   EXPECT_EQ(base::ASCIIToUTF16("Unknown product 0x162E from Google Inc."),
             label->text());
 
-  const int kButtonIndex = 2;
+  constexpr int kButtonIndex = 2;
   views::Button* button =
       static_cast<views::Button*>(object_view->child_at(kButtonIndex));
   EXPECT_EQ(button->state(), views::Button::STATE_DISABLED);
 
-  const int kDescIndex = 3;
+  constexpr int kDescIndex = 3;
   views::Label* desc_label =
       static_cast<views::Label*>(object_view->child_at(kDescIndex));
   EXPECT_EQ(base::ASCIIToUTF16("USB device allowed by your administrator"),
@@ -389,7 +389,7 @@ TEST_F(PageInfoBubbleViewTest, SetPermissionInfoWithPolicyUsbDevices) {
 // Test UI construction and reconstruction with both user and policy USB
 // devices.
 TEST_F(PageInfoBubbleViewTest, SetPermissionInfoWithUserAndPolicyUsbDevices) {
-  const int kExpectedChildren = 0;
+  constexpr int kExpectedChildren = 0;
   EXPECT_EQ(kExpectedChildren, api_->permissions_view()->child_count());
 
   const GURL origin = GURL(kUrl).GetOrigin();
@@ -422,17 +422,17 @@ TEST_F(PageInfoBubbleViewTest, SetPermissionInfoWithUserAndPolicyUsbDevices) {
       api_->permissions_view()->child_at(kExpectedChildren));
   EXPECT_EQ(4, object_view->child_count());
 
-  const int kLabelIndex = 1;
+  constexpr int kLabelIndex = 1;
   views::Label* label =
       static_cast<views::Label*>(object_view->child_at(kLabelIndex));
   EXPECT_EQ(base::ASCIIToUTF16("Gizmo"), label->text());
 
-  const int kButtonIndex = 2;
+  constexpr int kButtonIndex = 2;
   views::Button* button =
       static_cast<views::Button*>(object_view->child_at(kButtonIndex));
   EXPECT_NE(button->state(), views::Button::STATE_DISABLED);
 
-  const int kDescIndex = 3;
+  constexpr int kDescIndex = 3;
   views::Label* desc_label =
       static_cast<views::Label*>(object_view->child_at(kDescIndex));
   EXPECT_EQ(base::ASCIIToUTF16("USB device"), desc_label->text());
@@ -517,9 +517,9 @@ TEST_F(PageInfoBubbleViewTest, SetPermissionInfoForUsbGuard) {
 // any extra views to Page Info.
 TEST_F(PageInfoBubbleViewTest, UpdatingSiteDataRetainsLayout) {
 #if defined(OS_WIN) && BUILDFLAG(ENABLE_VR)
-  const int kExpectedChildren = 6;
+  constexpr int kExpectedChildren = 6;
 #else
-  const int kExpectedChildren = 5;
+  constexpr int kExpectedChildren = 5;
 #endif
 
   EXPECT_EQ(kExpectedChildren, api_->view()->child_count());
@@ -577,7 +577,7 @@ TEST_F(PageInfoBubbleViewTest, ChangingFlashSettingForSiteIsRemembered) {
 
   // Check the Flash permission is now showing since it's non-default.
   api_->CreateView();
-  const int kPermissionLabelIndex = 1;
+  constexpr int kPermissionLabelIndex = 1;
   views::Label* label = static_cast<views::Label*>(
       api_->permissions_view()->child_at(kPermissionLabelIndex));
   EXPECT_EQ(base::ASCIIToUTF16("Flash"), label->text());
