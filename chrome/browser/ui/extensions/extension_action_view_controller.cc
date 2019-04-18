@@ -205,9 +205,13 @@ ui::MenuModel* ExtensionActionViewController::GetContextMenu() {
   extensions::ExtensionContextMenuModel::ButtonVisibility visibility =
       extensions::ExtensionContextMenuModel::VISIBLE;
 
-  if (main_bar_->popped_out_action() == this) {
+  // The extension visibility always refers to the corresponding action on the
+  // main bar.
+  ToolbarActionViewController* const action =
+      main_bar_->GetActionForId(GetId());
+  if (main_bar_->popped_out_action() == action) {
     visibility = extensions::ExtensionContextMenuModel::TRANSITIVELY_VISIBLE;
-  } else if (!main_bar_->IsActionVisibleOnMainBar(this)) {
+  } else if (!main_bar_->IsActionVisibleOnMainBar(action)) {
     visibility = extensions::ExtensionContextMenuModel::OVERFLOWED;
   }
 
