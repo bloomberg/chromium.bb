@@ -113,27 +113,18 @@ IN_PROC_BROWSER_TEST_P(MemlogBrowserTest, MAYBE_EndToEnd) {
 
 std::vector<TestParam> GetParams() {
   std::vector<TestParam> params;
-  std::vector<Mode> dynamic_start_modes;
-  dynamic_start_modes.push_back(Mode::kNone);
-  dynamic_start_modes.push_back(Mode::kMinimal);
-  dynamic_start_modes.push_back(Mode::kBrowser);
-  dynamic_start_modes.push_back(Mode::kGpu);
+  std::vector<Mode> dynamic_start_modes{Mode::kNone, Mode::kMinimal,
+                                        Mode::kBrowser, Mode::kGpu};
 
-  std::vector<mojom::StackMode> stack_modes;
-  stack_modes.push_back(mojom::StackMode::MIXED);
-  stack_modes.push_back(mojom::StackMode::NATIVE_WITHOUT_THREAD_NAMES);
-  stack_modes.push_back(mojom::StackMode::PSEUDO);
+  std::vector<mojom::StackMode> stack_modes{
+      mojom::StackMode::MIXED, mojom::StackMode::NATIVE_WITHOUT_THREAD_NAMES,
+      mojom::StackMode::PSEUDO};
 
-  // TODO(https://crbug.com/923459): The outer loop is left in place to keep
-  // the parameterized tests order. Remove it in a follow-up patch.
-  for (int i = 0; i < 2; ++i) {
+  for (const auto& stack_mode : stack_modes) {
     for (const auto& mode : dynamic_start_modes) {
-      for (const auto& stack_mode : stack_modes) {
-        params.push_back({mode, stack_mode,
-                          false /* start_profiling_with_command_line_flag */,
-                          true /* should_sample */,
-                          false /* sample_everything*/});
-      }
+      params.push_back(
+          {mode, stack_mode, false /* start_profiling_with_command_line_flag */,
+           true /* should_sample */, false /* sample_everything*/});
     }
 
 // For unknown reasons, renderer profiling has become flaky on ChromeOS. This is
@@ -144,16 +135,11 @@ std::vector<TestParam> GetParams() {
     // Non-browser processes must be profiled with a command line flag, since
     // otherwise, profiling will start after the relevant processes have been
     // created, thus that process will be not be profiled.
-    std::vector<Mode> command_line_start_modes;
-    command_line_start_modes.push_back(Mode::kAll);
-    command_line_start_modes.push_back(Mode::kAllRenderers);
+    std::vector<Mode> command_line_start_modes{Mode::kAll, Mode::kAllRenderers};
     for (const auto& mode : command_line_start_modes) {
-      for (const auto& stack_mode : stack_modes) {
-        params.push_back({mode, stack_mode,
-                          true /* start_profiling_with_command_line_flag */,
-                          true /* should_sample */,
-                          false /* sample_everything*/});
-      }
+      params.push_back(
+          {mode, stack_mode, true /* start_profiling_with_command_line_flag */,
+           true /* should_sample */, false /* sample_everything*/});
     }
 #endif  // defined(OS_CHROMEOS)
   }
