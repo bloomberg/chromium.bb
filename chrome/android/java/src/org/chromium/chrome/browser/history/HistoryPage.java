@@ -37,6 +37,7 @@ public class HistoryPage extends BasicNativePage {
         mHistoryManager = new HistoryManager(activity, false,
                 ((SnackbarManageable) activity).getSnackbarManager(), host.isIncognito());
         mTitle = activity.getString(R.string.menu_history);
+        mHistoryManager.setTab(host.getActiveTab());
     }
 
     @Override

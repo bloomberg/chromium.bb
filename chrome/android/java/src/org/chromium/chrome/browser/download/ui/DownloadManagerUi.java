@@ -44,6 +44,7 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.widget.ThumbnailProvider;
 import org.chromium.chrome.browser.widget.ThumbnailProviderImpl;
 import org.chromium.chrome.browser.widget.selection.SelectableListLayout;
@@ -341,6 +342,9 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
     public void removeObserver(Observer observer) {
         mObservers.removeObserver(observer);
     }
+
+    @Override
+    public void setTab(Tab tab) {}
 
     @Override
     public boolean onMenuItemClick(MenuItem item) {

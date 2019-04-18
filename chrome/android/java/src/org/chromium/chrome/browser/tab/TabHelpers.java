@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.tab;
 
 import org.chromium.chrome.browser.ChromeActionModeCallback;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.SwipeRefreshHandler;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchTabHelper;
 import org.chromium.chrome.browser.crypto.CipherFactory;
@@ -55,6 +56,10 @@ public final class TabHelpers {
         TabFavicon.from(tab);
         TrustedCdn.from(tab);
         TabAssociatedApp.from(tab);
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.OVERSCROLL_HISTORY_NAVIGATION)
+                && !ChromeFeatureList.isEnabled(ChromeFeatureList.DELEGATE_OVERSCROLL_SWIPES)) {
+            TabContentViewDelegate.from(tab);
+        }
 
         WebContents webContents = tab.getWebContents();
 

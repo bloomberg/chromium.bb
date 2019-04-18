@@ -1171,26 +1171,27 @@ public class Tab
     protected void initWebContents(WebContents webContents) {
         try {
             TraceEvent.begin("ChromeTab.initWebContents");
+            WebContents oldWebContents = mWebContents;
+            mWebContents = webContents;
+
             ContentView cv = ContentView.createContentView(mThemedApplicationContext, webContents);
             cv.setContentDescription(mThemedApplicationContext.getResources().getString(
                     R.string.accessibility_content_view));
+            mContentView = cv;
             webContents.initialize(PRODUCT_VERSION, new TabViewAndroidDelegate(this, cv), cv,
                     getWindowAndroid(), WebContents.createDefaultInternalsHolder());
             NativePage previousNativePage = mNativePage;
             mNativePage = null;
             destroyNativePageInternal(previousNativePage);
 
-            WebContents oldWebContents = mWebContents;
             if (oldWebContents != null) {
                 oldWebContents.setImportance(ChildProcessImportance.NORMAL);
                 getWebContentsAccessibility(oldWebContents).setObscuredByAnotherView(false);
             }
 
-            mWebContents = webContents;
             mWebContents.setImportance(mImportance);
             ContentUtils.setUserAgentOverride(mWebContents);
 
-            mContentView = cv;
             mContentView.setOnHierarchyChangeListener(this);
             mContentView.setOnSystemUiVisibilityChangeListener(this);
             mContentView.addOnAttachStateChangeListener(mAttachStateChangeListener);
