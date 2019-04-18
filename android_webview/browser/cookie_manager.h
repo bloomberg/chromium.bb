@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/containers/circular_deque.h"
 #include "base/lazy_instance.h"
 #include "base/threading/thread.h"
 #include "net/cookies/canonical_cookie.h"
@@ -50,7 +51,8 @@ class CookieManager {
   // Passes a |cookie_manager_info|, which this will use for CookieManager APIs
   // going forward. Only called in the Network Service path, with the intention
   // this is called once during content initialization (when we create the
-  // only NetworkContext).
+  // only NetworkContext). Note: no other cookie tasks will be processed while
+  // this operation is running.
   void SetMojoCookieManager(
       network::mojom::CookieManagerPtrInfo cookie_manager_info);
 
@@ -90,6 +92,8 @@ class CookieManager {
       base::OnceCallback<void(base::RepeatingCallback<void(int)>)> task);
   void ExecCookieTaskSync(base::OnceCallback<void(base::OnceClosure)> task);
   void ExecCookieTask(base::OnceClosure task);
+  // Runs all queued-up cookie tasks in |tasks_|.
+  void RunPendingCookieTasks();
 
   void SetCookieHelper(const GURL& host,
                        const std::string& value,
@@ -150,6 +154,17 @@ class CookieManager {
 
   scoped_refptr<base::SingleThreadTaskRunner> cookie_store_task_runner_;
   std::unique_ptr<net::CookieStore> cookie_store_;
+
+  // Tracks if we're in the middle of a call to SetMojoCookieManager(). See the
+  // note in SetMojoCookieManager(). Must only be accessed on
+  // |cookie_store_task_runner_|.
+  bool setting_new_mojo_cookie_manager_;
+
+  // |tasks_| is a queue we manage, to allow us to delay tasks until after
+  // SetMojoCookieManager()'s work is done. This is modified on different
+  // threads, so accesses must be guarded by |task_queue_lock_|.
+  base::Lock task_queue_lock_;
+  base::circular_deque<base::OnceClosure> tasks_;
 
   // The CookieManager shared with the NetworkContext.
   network::mojom::CookieManagerPtr mojo_cookie_manager_;
