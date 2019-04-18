@@ -18,6 +18,7 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/image_button_factory.h"
+#include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/separator.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/flex_layout.h"
@@ -52,7 +53,6 @@ ExtensionsMenuView::ExtensionsMenuView(views::View* anchor_view,
 
   AddAccelerator(ui::Accelerator(ui::VKEY_DOWN, ui::EF_NONE));
   AddAccelerator(ui::Accelerator(ui::VKEY_UP, ui::EF_NONE));
-
   SetLayoutManager(
       std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
   Repopulate();
@@ -99,11 +99,23 @@ bool ExtensionsMenuView::ShouldSnapFrameWidth() const {
 void ExtensionsMenuView::Repopulate() {
   RemoveAllChildViews(true);
 
+  auto extension_buttons = std::make_unique<views::View>();
+  extension_menu_button_container_for_testing_ = extension_buttons.get();
+  extension_buttons->SetLayoutManager(
+      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
   for (auto action_id : model_->action_ids()) {
-    AddChildView(std::make_unique<ExtensionsMenuButton>(
+    extension_buttons->AddChildView(std::make_unique<ExtensionsMenuButton>(
         browser_, model_->CreateActionForId(browser_, toolbar_actions_bar_,
                                             false, action_id)));
   }
+
+  constexpr int kMaxExtensionButtonsHeightDp = 600;
+  auto scroll_view = std::make_unique<views::ScrollView>();
+  scroll_view->ClipHeightTo(0, kMaxExtensionButtonsHeightDp);
+  scroll_view->set_draw_overflow_indicator(false);
+  scroll_view->set_hide_horizontal_scrollbar(true);
+  scroll_view->SetContents(std::move(extension_buttons));
+  AddChildView(std::move(scroll_view));
 
   AddChildView(std::make_unique<views::Separator>());
   auto icon_view = CreateFixedSizeIconView();

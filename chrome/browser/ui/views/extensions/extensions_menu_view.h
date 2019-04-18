@@ -62,6 +62,9 @@ class ExtensionsMenuView : public views::ButtonListener,
   void OnToolbarHighlightModeChanged(bool is_highlighting) override;
   void OnToolbarModelInitialized() override;
 
+  views::View* extension_menu_button_container_for_testing() {
+    return extension_menu_button_container_for_testing_;
+  }
   views::Button* manage_extensions_button_for_testing() {
     return manage_extensions_button_for_testing_;
   }
@@ -75,6 +78,7 @@ class ExtensionsMenuView : public views::ButtonListener,
   ScopedObserver<ToolbarActionsModel, ToolbarActionsModel::Observer>
       model_observer_;
 
+  views::View* extension_menu_button_container_for_testing_ = nullptr;
   views::Button* manage_extensions_button_for_testing_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionsMenuView);
