@@ -45,6 +45,7 @@
 #include "base/base_switches.h"
 #include "base/feature_list.h"
 #include <base/command_line.h>
+#include <base/logging.h>
 #include <base/message_loop/message_loop.h>
 #include <base/path_service.h>
 #include <base/process/memory.h>
@@ -77,6 +78,9 @@
 #include <third_party/blink/public/web/web_security_policy.h>
 #include <third_party/blink/public/web/web_script_controller.h>
 #include <third_party/blink/public/web/web_script_bindings.h>
+#include <third_party/icu/source/common/unicode/unistr.h>
+#include <third_party/icu/source/i18n/unicode/timezone.h>
+#include <v8/include/v8.h>
 
 #include <atomic>
 #include <condition_variable>
@@ -615,7 +619,7 @@ ToolkitImpl::ToolkitImpl(const std::string&              dictionaryPath,
         base::FieldTrialList::CreateFeaturesFromCommandLine(
             command_line, switches::kEnableFeatures,
         switches::kDisableFeatures, feature_list.get());
-        base::FeatureList::SetInstance(std::move(feature_list));    
+        base::FeatureList::SetInstance(std::move(feature_list));
     }
     // Start pumping the message loop.
     startMessageLoop(sandboxInfo);
@@ -796,7 +800,19 @@ void ToolkitImpl::setTraceThreshold(unsigned int timeoutMS)
     d_messagePump->setTraceThreshold(timeoutMS);
 }
 
-
+int ToolkitImpl::setTimeZone(const StringRef& zoneId)
+{
+    auto *timeZone = icu::TimeZone::createTimeZone(
+        icu::UnicodeString(zoneId.data(), static_cast<int>(zoneId.length())));
+    icu::TimeZone::adoptDefault(timeZone);
+    v8::Date::DateTimeConfigurationChangeNotification(v8::Isolate::GetCurrent());
+    if (*timeZone == icu::TimeZone::getUnknown()) {
+        LOG(ERROR) << "Specified timezone '" << zoneId.toStdString()
+                   << "' can't be recognized. UTC+0 is used.";
+        return -1;
+    }
+    return 0;
+}
 
 // patch section: embedder ipc
 void ToolkitImpl::opaqueMessageToRendererAsync(int pid, const StringRef &message)
