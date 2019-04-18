@@ -248,9 +248,12 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
       const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) override;
   // API to notify accessibility whether there is an active composition
   // from TSF or not.
-  // It notifies the composition range and whether the composition is still
-  // active or not.
-  void SetActiveCompositionForAccessibility(const gfx::Range& range) override;
+  // It notifies the composition range, composition text and whether the
+  // composition has been committed or not.
+  void SetActiveCompositionForAccessibility(
+      const gfx::Range& range,
+      const base::string16& active_composition_text,
+      bool is_composition_committed) override;
 #endif
 
   // Overridden from display::DisplayObserver:

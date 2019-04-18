@@ -215,8 +215,12 @@ class COMPONENT_EXPORT(UI_BASE_IME) TextInputClient {
   // only defined for TSF which is available only on Windows
   // https://docs.microsoft.com/en-us/windows/desktop/api/UIAutomationCore/
   // nf-uiautomationcore-itexteditprovider-getactivecomposition
+  // It notifies the composition range, composition text and whether the
+  // composition has been committed or not.
   virtual void SetActiveCompositionForAccessibility(
-      const gfx::Range& range) = 0;
+      const gfx::Range& range,
+      const base::string16& active_composition_text,
+      bool is_composition_committed) = 0;
 #endif
 };
 

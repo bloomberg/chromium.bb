@@ -878,12 +878,6 @@ STDMETHODIMP TSFTextStore::OnEndEdit(ITfContext* context,
     }
   }
 
-  if (text_input_client_) {
-    // Notify accessibility about this composition
-    text_input_client_->SetActiveCompositionForAccessibility(
-        composition_range_);
-  }
-
   return S_OK;
 }
 
@@ -1262,6 +1256,10 @@ void TSFTextStore::CommitTextAndEndCompositionIfAny(size_t old_size,
     const base::string16& new_committed_string = string_buffer_document_.substr(
         new_committed_string_offset, new_committed_string_size);
     text_input_client_->InsertText(new_committed_string);
+    // Notify accessibility about this committed composition
+    text_input_client_->SetActiveCompositionForAccessibility(
+        replace_text_range_, new_committed_string,
+        /*is_composition_committed*/ true);
   }
 }
 
@@ -1292,6 +1290,21 @@ void TSFTextStore::StartCompositionOnNewText(
   if (text_input_client_) {
     new_text_inserted_ = false;
     text_input_client_->SetCompositionText(composition_text);
+    // Notify accessibility about this ongoing composition if the string is not
+    // empty
+    if (!composition_string.empty()) {
+      text_input_client_->SetActiveCompositionForAccessibility(
+          composition_range_, composition_string,
+          /*is_composition_committed*/ false);
+    } else {
+      // User wants to commit the current composition
+      const base::string16& committed_string = string_buffer_document_.substr(
+          composition_range_.start(),
+          composition_range_.end() - composition_range_.start());
+      text_input_client_->SetActiveCompositionForAccessibility(
+          composition_range_, committed_string,
+          /*is_composition_committed*/ true);
+    }
   }
 }
 

@@ -20,6 +20,8 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/enum_variant.h"
+#include "base/win/scoped_bstr.h"
+#include "base/win/scoped_safearray.h"
 #include "base/win/scoped_variant.h"
 #include "skia/ext/skia_utils_win.h"
 #include "third_party/iaccessible2/ia2_api_all.h"
@@ -592,8 +594,62 @@ gfx::Range AXPlatformNodeWin::GetActiveCompositionOffsets() const {
   return active_composition_range_;
 }
 
-void AXPlatformNodeWin::OnActiveComposition(const gfx::Range& range) {
+void AXPlatformNodeWin::OnActiveComposition(
+    const gfx::Range& range,
+    const base::string16& active_composition_text,
+    bool is_composition_committed) {
+  // Cache the composition range that will be used when
+  // GetActiveComposition and GetConversionTarget is called in
+  // AXPlatformNodeTextProviderWin
   active_composition_range_ = range;
+  // Fire the UiaTextEditTextChangedEvent
+  FireUiaTextEditTextChangedEvent(range, active_composition_text,
+                                  is_composition_committed);
+}
+
+void AXPlatformNodeWin::FireUiaTextEditTextChangedEvent(
+    const gfx::Range& range,
+    const base::string16& active_composition_text,
+    bool is_composition_committed) {
+  if (!::switches::IsExperimentalAccessibilityPlatformUIAEnabled()) {
+    return;
+  }
+
+  // This API is only supported from Win8.1 onwards
+  // Check if the function pointer is valid or not
+  using UiaRaiseTextEditTextChangedEventFunction = HRESULT(WINAPI*)(
+      IRawElementProviderSimple*, TextEditChangeType, SAFEARRAY*);
+  UiaRaiseTextEditTextChangedEventFunction text_edit_text_changed_func =
+      reinterpret_cast<UiaRaiseTextEditTextChangedEventFunction>(
+          ::GetProcAddress(GetModuleHandle(L"uiautomationcore.dll"),
+                           "UiaRaiseTextEditTextChangedEvent"));
+  if (!text_edit_text_changed_func) {
+    return;
+  }
+
+  TextEditChangeType text_edit_change_type =
+      is_composition_committed ? TextEditChangeType_CompositionFinalized
+                               : TextEditChangeType_Composition;
+  // Composition has been finalized by TSF
+  base::win::ScopedBstr composition_text(active_composition_text.c_str());
+  base::win::ScopedSafearray changed_data(
+      SafeArrayCreateVector(VT_BSTR /* element type */, 0 /* lower bound */,
+                            1 /* number of elements */));
+  if (!changed_data.Get()) {
+    return;
+  }
+
+  long index = 0;
+  HRESULT hr =
+      SafeArrayPutElement(changed_data.Get(), &index, composition_text);
+
+  if (FAILED(hr)) {
+    return;
+  } else {
+    // Fire the UiaRaiseTextEditTextChangedEvent
+    text_edit_text_changed_func(this, text_edit_change_type,
+                                changed_data.Release());
+  }
 }
 
 //
