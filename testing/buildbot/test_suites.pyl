@@ -2548,7 +2548,11 @@
           'script': '//tools/perf/process_perf_results.py',
         },
         'swarming': {
-          'can_use_on_swarming_builders': False,
+          'dimension_sets': [
+            {
+              'os': 'Ubuntu-14.04'
+            },
+          ],
         },
       },
     },
