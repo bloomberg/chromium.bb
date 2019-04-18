@@ -33,7 +33,7 @@ public class NetworkImageFetcher extends ImageFetcher {
 
     @Override
     public void fetchGif(String url, String clientName, Callback<BaseGifImage> callback) {
-        mImageFetcherBridge.fetchGif(url, clientName, callback);
+        mImageFetcherBridge.fetchGif(getConfig(), url, clientName, callback);
     }
 
     @Override

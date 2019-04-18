@@ -65,10 +65,10 @@ public class ImageFetcherBridge {
      * @param callback The callback to call when the gif is ready. The callback will be invoked on
      *      the same thread it was called on.
      */
-    // TODO(crbug.com/949331): Support ImageFetcherConfig for this call.
-    public void fetchGif(String url, String clientName, Callback<BaseGifImage> callback) {
+    public void fetchGif(@ImageFetcherConfig int config, String url, String clientName,
+            Callback<BaseGifImage> callback) {
         assert mNativeImageFetcherBridge != 0;
-        nativeFetchImageData(mNativeImageFetcherBridge, url, clientName, (byte[] data) -> {
+        nativeFetchImageData(mNativeImageFetcherBridge, config, url, clientName, (byte[] data) -> {
             if (data == null || data.length == 0) {
                 callback.onResult(null);
             }
@@ -144,8 +144,9 @@ public class ImageFetcherBridge {
     private static native long nativeInit(Profile profile);
     private native void nativeDestroy(long nativeImageFetcherBridge);
     private native String nativeGetFilePath(long nativeImageFetcherBridge, String url);
-    private native void nativeFetchImageData(long nativeImageFetcherBridge, String url,
-            String clientName, Callback<byte[]> callback);
+    private native void nativeFetchImageData(long nativeImageFetcherBridge,
+            @ImageFetcherConfig int config, String url, String clientName,
+            Callback<byte[]> callback);
     private native void nativeFetchImage(long nativeImageFetcherBridge,
             @ImageFetcherConfig int config, String url, String clientName,
             Callback<Bitmap> callback);

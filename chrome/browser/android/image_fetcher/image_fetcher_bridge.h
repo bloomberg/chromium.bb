@@ -34,6 +34,7 @@ class ImageFetcherBridge {
 
   void FetchImageData(JNIEnv* j_env,
                       const base::android::JavaRef<jobject>& j_this,
+                      const jint j_image_fetcher_config,
                       const base::android::JavaRef<jstring>& j_url,
                       const base::android::JavaRef<jstring>& j_client_name,
                       const base::android::JavaRef<jobject>& j_callback);
