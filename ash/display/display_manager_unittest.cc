@@ -3529,10 +3529,12 @@ class DisplayManagerOrientationTest : public DisplayManagerTest {
   void SetUp() override {
     DisplayManagerTest::SetUp();
     const float kMeanGravity = 9.8066f;
-    portrait_primary->Set(ACCELEROMETER_SOURCE_SCREEN, -kMeanGravity, 0.f, 0.f);
-    portrait_secondary->Set(ACCELEROMETER_SOURCE_SCREEN, kMeanGravity, 0.f,
-                            0.f);
-    landscape_primary->Set(ACCELEROMETER_SOURCE_SCREEN, 0, -kMeanGravity, 0.f);
+    portrait_primary->Set(ACCELEROMETER_SOURCE_SCREEN, false,
+                          -kMeanGravity, 0.f, 0.f);
+    portrait_secondary->Set(ACCELEROMETER_SOURCE_SCREEN, false,
+                            kMeanGravity, 0.f, 0.f);
+    landscape_primary->Set(ACCELEROMETER_SOURCE_SCREEN, false,
+                           0, -kMeanGravity, 0.f);
   }
 
  protected:
