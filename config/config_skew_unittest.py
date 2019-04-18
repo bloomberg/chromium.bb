@@ -7,13 +7,14 @@
 
 from __future__ import print_function
 
-import json
 import os
 
+from chromite.api.gen.chromiumos import builder_config_pb2
 from chromite.config import chromeos_config
 from chromite.lib import constants
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
+from google.protobuf import json_format
 
 BUILDER_CONFIG_FILENAME = os.path.join(
     constants.SOURCE_ROOT, 'infra/config/generated/builder_configs.cfg')
@@ -47,16 +48,18 @@ class ConfigSkewTest(cros_test_lib.TestCase):
     """
     if self._new_configs is None:
       try:
-        self._new_configs = json.loads(
-            osutils.ReadFile(BUILDER_CONFIG_FILENAME))
+        self._new_configs = json_format.Parse(
+            osutils.ReadFile(BUILDER_CONFIG_FILENAME),
+            builder_config_pb2.BuilderConfigs(),
+            ignore_unknown_fields=True)
       except IOError as err:
         msg = "IOError, are you running this with an external manifest?"
         raise ErrorWrapper(msg, err)
-    return self._new_configs
+    return self._new_configs.builder_configs
 
   def _get_new_config(self, name):
-    for config in self._get_new_configs()["builderConfigs"]:
-      if config["id"]["name"] == name:
+    for config in self._get_new_configs():
+      if config.id.name == name:
         return config
     return None
 
@@ -74,8 +77,8 @@ class ConfigSkewTest(cros_test_lib.TestCase):
 
     master_postsubmit_children = self._to_utf8(
         master_postsubmit_config.slave_configs)
-    postsubmit_orchestrator_children = postsubmit_orchestrator_config[
-        "orchestrator"]["children"]
+    postsubmit_orchestrator_children = (
+        postsubmit_orchestrator_config.orchestrator.children)
 
     self.assertItemsEqual(postsubmit_orchestrator_children,
                           master_postsubmit_children)
