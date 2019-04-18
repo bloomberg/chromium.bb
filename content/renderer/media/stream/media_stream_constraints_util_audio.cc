@@ -560,16 +560,6 @@ class EchoCancellationContainer {
     return ec_fitness + ec_type_fitness;
   }
 
-  static base::Optional<bool> GetOverrideAec3() {
-    base::Optional<bool> override_aec3;
-    scoped_refptr<AecDumpMessageFilter> aec_dump_message_filter =
-        AecDumpMessageFilter::Get();
-    if (aec_dump_message_filter)
-      override_aec3 = aec_dump_message_filter->GetOverrideAec3();
-
-    return override_aec3;
-  }
-
   bool EchoCancellationModeContains(bool ec) const {
     DCHECK(!ec_mode_allowed_values_.is_universal());
 

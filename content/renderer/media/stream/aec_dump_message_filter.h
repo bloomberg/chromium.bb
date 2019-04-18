@@ -22,8 +22,6 @@ namespace content {
 
 // MessageFilter that handles AEC dump messages and forwards them to an
 // observer.
-// TODO(hlundin): Rename class to reflect expanded use;
-// https://crbug.com/709919.
 class CONTENT_EXPORT AecDumpMessageFilter : public IPC::MessageFilter {
  public:
   class AecDumpDelegate {
@@ -55,18 +53,8 @@ class CONTENT_EXPORT AecDumpMessageFilter : public IPC::MessageFilter {
     return io_task_runner_;
   }
 
-  // Returns the AEC3 setting. Must be called on the main task runner
-  // (|main_task_runner| in constructor).
-  base::Optional<bool> GetOverrideAec3() const;
-
  protected:
   ~AecDumpMessageFilter() override;
-
-  // When this variable is not set, the use of AEC3 is governed by the Finch
-  // experiment and/or WebRTC's own default. When set to true/false, Finch and
-  // WebRTC defaults will be overridden, and AEC3/AEC2 (respectively) will be
-  // used.
-  base::Optional<bool> override_aec3_;
 
  private:
   // Sends an IPC message using |sender_|.
@@ -89,14 +77,12 @@ class CONTENT_EXPORT AecDumpMessageFilter : public IPC::MessageFilter {
   // Accessed on |io_task_runner_|.
   void OnEnableAecDump(int id, IPC::PlatformFileForTransit file_handle);
   void OnDisableAecDump();
-  void OnEnableAec3(bool enable);
 
   // Accessed on |main_task_runner_|.
   void DoEnableAecDump(int id, IPC::PlatformFileForTransit file_handle);
   void DoDisableAecDump();
   void DoChannelClosingOnDelegates();
   int GetIdForDelegate(AecDumpMessageFilter::AecDumpDelegate* delegate);
-  void DoEnableAec3(bool enable);
 
   // Accessed on |io_task_runner_|.
   IPC::Sender* sender_;

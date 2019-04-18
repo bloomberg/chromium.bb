@@ -68,22 +68,6 @@ static bool Contains(const std::vector<T>& vector, T value) {
 
 }  // namespace
 
-// This class is only used for setting |override_aec3_|. We simply inject the
-// current task runner since they are not used.
-class AecDumpMessageFilterForTest : public AecDumpMessageFilter {
- public:
-  AecDumpMessageFilterForTest()
-      : AecDumpMessageFilter(base::MessageLoopCurrent::Get()->task_runner(),
-                             base::MessageLoopCurrent::Get()->task_runner()) {}
-
-  void set_override_aec3(base::Optional<bool> override_aec3) {
-    override_aec3_ = override_aec3;
-  }
-
- protected:
-  ~AecDumpMessageFilterForTest() override {}
-};
-
 class MediaStreamConstraintsUtilAudioTestBase {
  protected:
   void MakeSystemEchoCancellerDeviceExperimental() {
@@ -1673,57 +1657,6 @@ TEST_P(MediaStreamConstraintsUtilAudioTest,
   EXPECT_FALSE(result.HasValue());
   EXPECT_EQ(result.failed_constraint_name(),
             constraint_factory_.basic().device_id.GetName());
-}
-
-// Tests the echoCancellationType constraint when also the AEC3 has been
-// selected via the extension API. That selection ends up in
-// AecDumpMessageFilter and MediaStreamConstraintsUtil checks there if set and
-// to what. It can be unset, true or false. The constraint has precedence over
-// the extension API selection. Tested as basic exact constraints.
-TEST_P(MediaStreamConstraintsUtilAudioTest,
-       EchoCancellationTypeAndAec3Selection) {
-  // First test AEC3 selection when no echo cancellation type constraint has
-  // been set.
-  scoped_refptr<AecDumpMessageFilterForTest> admf =
-      new AecDumpMessageFilterForTest();
-  admf->set_override_aec3(true);
-
-  ResetFactory();
-  constraint_factory_.basic().echo_cancellation.SetExact(true);
-  auto result = SelectSettings();
-  ASSERT_TRUE(result.HasValue());
-
-  CheckAudioProcessingPropertiesForExactEchoCancellationType(
-      kEchoCancellationTypeValues[1],  // AEC3
-      result);
-
-  // Set the echo cancellation type constraint to browser and expect that as
-  // result.
-  ResetFactory();
-  constraint_factory_.basic().echo_cancellation.SetExact(true);
-  constraint_factory_.basic().echo_cancellation_type.SetExact(
-      kEchoCancellationTypeValues[0]);
-  result = SelectSettings();
-  ASSERT_TRUE(result.HasValue());
-
-  CheckAudioProcessingPropertiesForExactEchoCancellationType(
-      kEchoCancellationTypeValues[0],  // Browser
-      result);
-
-  // Set the AEC3 selection to false and echo cancellation type constraint to
-  // AEC3 and expect AEC3 as result.
-  admf->set_override_aec3(false);
-
-  ResetFactory();
-  constraint_factory_.basic().echo_cancellation.SetExact(true);
-  constraint_factory_.basic().echo_cancellation_type.SetExact(
-      kEchoCancellationTypeValues[1]);
-  result = SelectSettings();
-  ASSERT_TRUE(result.HasValue());
-
-  CheckAudioProcessingPropertiesForExactEchoCancellationType(
-      kEchoCancellationTypeValues[1],  // AEC3
-      result);
 }
 
 // Test that having differing mandatory values for echoCancellation and
