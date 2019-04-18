@@ -143,6 +143,15 @@ bool ScreenLockerTester::IsLockShutdownButtonShown() {
   return IsScreenLockerLocked() && is_shutdown_button_shown;
 }
 
+bool ScreenLockerTester::IsAuthErrorBubbleShown() {
+  if (!IsScreenLockerLocked())
+    return false;
+
+  bool is_auth_error_button_shown =
+      login_screen_tester_.IsAuthErrorBubbleShown();
+  return IsScreenLockerLocked() && is_auth_error_button_shown;
+}
+
 void ScreenLockerTester::UnlockWithPassword(const AccountId& account_id,
                                             const std::string& password) {
   ash::mojom::LoginScreenTestApiAsyncWaiter login_screen(test_api_.get());

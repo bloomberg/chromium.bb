@@ -37,6 +37,9 @@ class ScreenLockerTester {
   // Returns true if Shutdown button is visible.
   bool IsLockShutdownButtonShown();
 
+  // Returns true if there is an auth error button on the lock screen.
+  bool IsAuthErrorBubbleShown();
+
   // Enters and submits the given password for the given account.
   void UnlockWithPassword(const AccountId& account_id,
                           const std::string& password);

@@ -41,6 +41,13 @@ bool LoginScreenTester::IsShutdownButtonShown() {
   return is_shutdown_button_shown;
 }
 
+bool LoginScreenTester::IsAuthErrorBubbleShown() {
+  ash::mojom::LoginScreenTestApiAsyncWaiter login_screen(test_api_.get());
+  bool is_auth_error_button_shown;
+  login_screen.IsAuthErrorBubbleShown(&is_auth_error_button_shown);
+  return is_auth_error_button_shown;
+}
+
 bool LoginScreenTester::ClickAddUserButton() {
   ash::mojom::LoginScreenTestApiAsyncWaiter login_screen(test_api_.get());
   bool success;

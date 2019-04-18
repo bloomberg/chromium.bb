@@ -23,6 +23,7 @@ class LoginScreenTester {
   int64_t GetUiUpdateCount();
   bool IsRestartButtonShown();
   bool IsShutdownButtonShown();
+  bool IsAuthErrorBubbleShown();
 
   // Returns true on success (i.e. button is  not disabled).
   bool ClickAddUserButton();

@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_QUICK_UNLOCK_QUICK_UNLOCK_STORAGE_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_QUICK_UNLOCK_QUICK_UNLOCK_STORAGE_H_
 
+#include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "chromeos/login/auth/user_context.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -29,6 +30,9 @@ class QuickUnlockStorage : public KeyedService {
  public:
   explicit QuickUnlockStorage(Profile* profile);
   ~QuickUnlockStorage() override;
+
+  // Replaces default clock with a test clock for testing.
+  void SetClockForTesting(base::Clock* clock);
 
   // Mark that the user has had a strong authentication. This means
   // that they authenticated with their password, for example. Quick
@@ -89,9 +93,10 @@ class QuickUnlockStorage : public KeyedService {
 
   Profile* const profile_;
   base::Time last_strong_auth_;
+  std::unique_ptr<AuthToken> auth_token_;
+  base::Clock* clock_;
   std::unique_ptr<FingerprintStorage> fingerprint_storage_;
   std::unique_ptr<PinStoragePrefs> pin_storage_prefs_;
-  std::unique_ptr<AuthToken> auth_token_;
 
   DISALLOW_COPY_AND_ASSIGN(QuickUnlockStorage);
 };
