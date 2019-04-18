@@ -453,6 +453,8 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
                     intent, mActivity.getString(R.string.share_link_chooser_title)));
         } catch (ActivityNotFoundException e) {
             Log.e(TAG, "Cannot find activity for sharing");
+        } catch (Exception e) {
+            Log.e(TAG, "Cannot start activity for sharing, exception: " + e);
         }
     }
 
