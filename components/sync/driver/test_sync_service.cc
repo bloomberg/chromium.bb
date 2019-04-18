@@ -171,10 +171,6 @@ ModelTypeSet TestSyncService::GetRegisteredDataTypes() const {
   return ModelTypeSet::All();
 }
 
-ModelTypeSet TestSyncService::GetForcedDataTypes() const {
-  return ModelTypeSet();
-}
-
 ModelTypeSet TestSyncService::GetPreferredDataTypes() const {
   return preferred_data_types_;
 }

@@ -128,7 +128,6 @@ class ProfileSyncService : public SyncService,
       override;
   bool IsSetupInProgress() const override;
   ModelTypeSet GetRegisteredDataTypes() const override;
-  ModelTypeSet GetForcedDataTypes() const override;
   ModelTypeSet GetPreferredDataTypes() const override;
   ModelTypeSet GetActiveDataTypes() const override;
   void StopAndClear() override;
@@ -292,7 +291,6 @@ class ProfileSyncService : public SyncService,
 
   // Callbacks for SyncUserSettingsImpl.
   void SyncAllowedByPlatformChanged(bool allowed);
-  bool IsEncryptEverythingAllowed() const;
 
   bool IsEngineAllowedToStart() const;
 

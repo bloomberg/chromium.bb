@@ -969,18 +969,12 @@ void SupervisedUserService::SetExtensionsActive() {
 }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
-syncer::ModelTypeSet SupervisedUserService::GetForcedDataTypes() const {
+syncer::UserSelectableTypeSet SupervisedUserService::GetForcedTypes() const {
   if (!ProfileIsSupervised())
-    return syncer::ModelTypeSet();
+    return syncer::UserSelectableTypeSet();
 
-  syncer::ModelTypeSet result;
-  result.Put(syncer::EXTENSIONS);
-  result.Put(syncer::EXTENSION_SETTINGS);
-  result.Put(syncer::APPS);
-  result.Put(syncer::APP_SETTINGS);
-  result.Put(syncer::APP_LIST);
-  result.Put(syncer::ARC_PACKAGE);
-  return result;
+  return {syncer::UserSelectableType::kExtensions,
+          syncer::UserSelectableType::kApps};
 }
 
 bool SupervisedUserService::IsEncryptEverythingAllowed() const {

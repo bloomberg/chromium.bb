@@ -27,6 +27,7 @@
 #include "components/signin/core/browser/account_info.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/base/model_type.h"
+#include "components/sync/base/user_selectable_type.h"
 #include "components/sync/device_info/device_info.h"
 #include "components/sync/device_info/device_info_sync_service.h"
 #include "components/sync/device_info/device_info_tracker.h"
@@ -213,9 +214,15 @@ ScopedJavaLocalRef<jintArray> ProfileSyncServiceAndroid::GetActiveDataTypes(
 ScopedJavaLocalRef<jintArray> ProfileSyncServiceAndroid::GetChosenDataTypes(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
-  syncer::ModelTypeSet types =
-      sync_service_->GetUserSettings()->GetChosenDataTypes();
-  return JNI_ProfileSyncService_ModelTypeSetToJavaIntArray(env, types);
+  // TODO(crbug/950874): introduce UserSelectableType in java code, then remove
+  // workaround here and in SetChosenDataTypes().
+  syncer::UserSelectableTypeSet types =
+      sync_service_->GetUserSettings()->GetSelectedTypes();
+  syncer::ModelTypeSet model_types;
+  for (syncer::UserSelectableType type : types) {
+    model_types.Put(syncer::UserSelectableTypeToCanonicalModelType(type));
+  }
+  return JNI_ProfileSyncService_ModelTypeSetToJavaIntArray(env, model_types);
 }
 
 ScopedJavaLocalRef<jintArray> ProfileSyncServiceAndroid::GetPreferredDataTypes(
@@ -233,11 +240,18 @@ void ProfileSyncServiceAndroid::SetChosenDataTypes(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   std::vector<int> types_vector;
   base::android::JavaIntArrayToIntVector(env, model_type_array, &types_vector);
-  syncer::ModelTypeSet types;
+  syncer::ModelTypeSet model_types;
   for (size_t i = 0; i < types_vector.size(); i++) {
-    types.Put(static_cast<syncer::ModelType>(types_vector[i]));
+    model_types.Put(static_cast<syncer::ModelType>(types_vector[i]));
   }
-  sync_service_->GetUserSettings()->SetChosenDataTypes(sync_everything, types);
+  syncer::UserSelectableTypeSet selected_types;
+  for (syncer::UserSelectableType type : syncer::UserSelectableTypeSet::All()) {
+    if (model_types.Has(syncer::UserSelectableTypeToCanonicalModelType(type))) {
+      selected_types.Put(type);
+    }
+  }
+  sync_service_->GetUserSettings()->SetSelectedTypes(sync_everything,
+                                                     selected_types);
 }
 
 jboolean ProfileSyncServiceAndroid::IsEncryptEverythingAllowed(

@@ -75,7 +75,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientUserEventsSyncTest,
   // Set up sync on the second client.
   ASSERT_TRUE(
       GetClient(kDecryptingClientId)
-          ->SetupSyncNoWaitForCompletion(syncer::UserSelectableTypes()));
+          ->SetupSyncNoWaitForCompletion(syncer::UserSelectableTypeSet::All()));
   // The second client asks the user to provide a password for decryption.
   ASSERT_TRUE(
       PassphraseRequiredChecker(GetSyncService(kDecryptingClientId)).Wait());

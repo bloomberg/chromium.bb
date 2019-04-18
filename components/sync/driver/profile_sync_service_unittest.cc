@@ -18,6 +18,7 @@
 #include "base/values.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/sync/base/pref_names.h"
+#include "components/sync/base/user_selectable_type.h"
 #include "components/sync/driver/configure_context.h"
 #include "components/sync/driver/fake_data_type_controller.h"
 #include "components/sync/driver/profile_sync_service_bundle.h"
@@ -220,10 +221,10 @@ class ProfileSyncServiceTest : public ::testing::Test {
     SyncPrefs sync_prefs(prefs());
     sync_prefs.SetLastSyncedTime(base::Time::Now());
     sync_prefs.SetSyncRequested(true);
-    sync_prefs.SetDataTypesConfiguration(
+    sync_prefs.SetSelectedTypes(
         /*keep_everything_synced=*/true,
-        /*choosable_types=*/UserSelectableTypes(),
-        /*chosen_types=*/UserSelectableTypes());
+        /*registered_types=*/UserSelectableTypeSet::All(),
+        /*selected_types=*/UserSelectableTypeSet::All());
     sync_prefs.SetFirstSetupComplete();
     service_->Initialize();
   }
@@ -331,10 +332,10 @@ TEST_F(ProfileSyncServiceTest, NeedsConfirmation) {
   base::Time now = base::Time::Now();
   sync_prefs.SetLastSyncedTime(now);
   sync_prefs.SetSyncRequested(true);
-  sync_prefs.SetDataTypesConfiguration(
+  sync_prefs.SetSelectedTypes(
       /*keep_everything_synced=*/true,
-      /*choosable_types=*/UserSelectableTypes(),
-      /*chosen_types=*/UserSelectableTypes());
+      /*registered_types=*/UserSelectableTypeSet::All(),
+      /*selected_types=*/UserSelectableTypeSet::All());
   service()->Initialize();
 
   EXPECT_EQ(SyncService::DISABLE_REASON_NONE, service()->GetDisableReasons());

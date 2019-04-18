@@ -15,6 +15,7 @@
 #include "base/values.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
+#include "components/reading_list/features/reading_list_buildflags.h"
 #include "components/sync/base/pref_names.h"
 
 namespace syncer {
@@ -78,6 +79,37 @@ void RegisterObsoleteUserTypePrefs(user_prefs::PrefRegistrySyncable* registry) {
   }
 }
 
+const char* GetPrefNameForType(UserSelectableType type) {
+  switch (type) {
+    case UserSelectableType::kBookmarks:
+      return prefs::kSyncBookmarks;
+    case UserSelectableType::kPreferences:
+      return prefs::kSyncPreferences;
+    case UserSelectableType::kPasswords:
+      return prefs::kSyncPasswords;
+    case UserSelectableType::kAutofill:
+      return prefs::kSyncAutofill;
+    case UserSelectableType::kThemes:
+      return prefs::kSyncThemes;
+    case UserSelectableType::kHistory:
+      // kSyncTypedUrls used here for historic reasons and pref backward
+      // compatibility.
+      return prefs::kSyncTypedUrls;
+    case UserSelectableType::kExtensions:
+      return prefs::kSyncExtensions;
+    case UserSelectableType::kApps:
+      return prefs::kSyncApps;
+#if BUILDFLAG(ENABLE_READING_LIST)
+    case UserSelectableType::kReadingList:
+      return prefs::kSyncReadingList;
+#endif
+    case UserSelectableType::kTabs:
+      return prefs::kSyncTabs;
+  }
+  NOTREACHED();
+  return nullptr;
+}
+
 }  // namespace
 
 CryptoSyncPrefs::~CryptoSyncPrefs() {}
@@ -118,8 +150,8 @@ void SyncPrefs::RegisterProfilePrefs(
   registry->RegisterBooleanPref(prefs::kSyncFirstSetupComplete, false);
   registry->RegisterBooleanPref(prefs::kSyncSuppressStart, true);
   registry->RegisterBooleanPref(prefs::kSyncKeepEverythingSynced, true);
-  for (ModelType type : UserSelectableTypes()) {
-    RegisterDataTypePreferredPref(registry, type);
+  for (UserSelectableType type : UserSelectableTypeSet::All()) {
+    RegisterTypeSelectedPref(registry, type);
   }
 
   // Internal or bookkeeping prefs.
@@ -185,8 +217,8 @@ void SyncPrefs::ClearPreferences() {
   // since they're never actually set as user preferences.
 
   // Note: We do *not* clear prefs which are directly user-controlled such as
-  // the set of preferred data types here, so that if the user ever chooses to
-  // enable Sync again, they start off with their previous settings by default.
+  // the set of selected types here, so that if the user ever chooses to enable
+  // Sync again, they start off with their previous settings by default.
   // We do however require going through first-time setup again.
   pref_service_->ClearPref(prefs::kSyncFirstSetupComplete);
 }
@@ -270,34 +302,35 @@ bool SyncPrefs::HasKeepEverythingSynced() const {
   return pref_service_->GetBoolean(prefs::kSyncKeepEverythingSynced);
 }
 
-ModelTypeSet SyncPrefs::GetChosenDataTypes() const {
+UserSelectableTypeSet SyncPrefs::GetSelectedTypes() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (pref_service_->GetBoolean(prefs::kSyncKeepEverythingSynced)) {
-    return UserSelectableTypes();
+    return UserSelectableTypeSet::All();
   }
 
-  ModelTypeSet chosen_types;
-  for (ModelType type : UserSelectableTypes()) {
-    if (IsDataTypeChosen(type)) {
-      chosen_types.Put(type);
+  UserSelectableTypeSet selected_types;
+  for (UserSelectableType type : UserSelectableTypeSet::All()) {
+    const char* pref_name = GetPrefNameForType(type);
+    DCHECK(pref_name);
+    if (pref_service_->GetBoolean(pref_name)) {
+      selected_types.Put(type);
     }
   }
-  return chosen_types;
+  return selected_types;
 }
 
-void SyncPrefs::SetDataTypesConfiguration(bool keep_everything_synced,
-                                          ModelTypeSet choosable_types,
-                                          ModelTypeSet chosen_types) {
+void SyncPrefs::SetSelectedTypes(bool keep_everything_synced,
+                                 UserSelectableTypeSet registered_types,
+                                 UserSelectableTypeSet selected_types) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(UserSelectableTypes().HasAll(choosable_types));
-  DCHECK(choosable_types.HasAll(chosen_types));
 
   pref_service_->SetBoolean(prefs::kSyncKeepEverythingSynced,
                             keep_everything_synced);
 
-  for (ModelType type : choosable_types) {
-    SetDataTypeChosen(type, chosen_types.Has(type));
+  for (UserSelectableType type : registered_types) {
+    const char* pref_name = GetPrefNameForType(type);
+    pref_service_->SetBoolean(pref_name, selected_types.Has(type));
   }
 
   for (SyncPrefObserver& observer : sync_pref_observers_) {
@@ -331,67 +364,8 @@ void SyncPrefs::SetKeystoreEncryptionBootstrapToken(const std::string& token) {
 }
 
 // static
-const char* SyncPrefs::GetPrefNameForDataType(ModelType type) {
-  switch (type) {
-    case UNSPECIFIED:
-    case TOP_LEVEL_FOLDER:
-    case AUTOFILL_PROFILE:
-    case AUTOFILL_WALLET_DATA:
-    case AUTOFILL_WALLET_METADATA:
-    case SEARCH_ENGINES:
-    case APP_SETTINGS:
-    case EXTENSION_SETTINGS:
-    case DEPRECATED_APP_NOTIFICATIONS:
-    case HISTORY_DELETE_DIRECTIVES:
-    case DEPRECATED_SYNCED_NOTIFICATIONS:
-    case DEPRECATED_SYNCED_NOTIFICATION_APP_INFO:
-    case DICTIONARY:
-    case FAVICON_IMAGES:
-    case FAVICON_TRACKING:
-    case DEVICE_INFO:
-    case PRIORITY_PREFERENCES:
-    case SUPERVISED_USER_SETTINGS:
-    case DEPRECATED_SUPERVISED_USERS:
-    case DEPRECATED_SUPERVISED_USER_SHARED_SETTINGS:
-    case DEPRECATED_ARTICLES:
-    case APP_LIST:
-    case DEPRECATED_WIFI_CREDENTIALS:
-    case SUPERVISED_USER_WHITELISTS:
-    case ARC_PACKAGE:
-    case PRINTERS:
-    case USER_EVENTS:
-    case SECURITY_EVENTS:
-    case MOUNTAIN_SHARES:
-    case USER_CONSENTS:
-    case SEND_TAB_TO_SELF:
-    case NIGORI:
-    case DEPRECATED_EXPERIMENTS:
-    case ModelType::NUM_ENTRIES:
-    case SESSIONS:
-      break;
-    case BOOKMARKS:
-      return prefs::kSyncBookmarks;
-    case PREFERENCES:
-      return prefs::kSyncPreferences;
-    case PASSWORDS:
-      return prefs::kSyncPasswords;
-    case AUTOFILL:
-      return prefs::kSyncAutofill;
-    case THEMES:
-      return prefs::kSyncThemes;
-    case TYPED_URLS:
-      return prefs::kSyncTypedUrls;
-    case EXTENSIONS:
-      return prefs::kSyncExtensions;
-    case APPS:
-      return prefs::kSyncApps;
-    case READING_LIST:
-      return prefs::kSyncReadingList;
-    case PROXY_TABS:
-      return prefs::kSyncTabs;
-  }
-  NOTREACHED() << "No pref mapping for type " << ModelTypeToString(type);
-  return nullptr;
+const char* SyncPrefs::GetPrefNameForTypeForTesting(UserSelectableType type) {
+  return GetPrefNameForType(type);
 }
 
 void SyncPrefs::OnSyncManagedPrefChanged() {
@@ -419,30 +393,12 @@ void SyncPrefs::SetManagedForTest(bool is_managed) {
 }
 
 // static
-void SyncPrefs::RegisterDataTypePreferredPref(
+void SyncPrefs::RegisterTypeSelectedPref(
     user_prefs::PrefRegistrySyncable* registry,
-    ModelType type) {
-  const char* pref_name = GetPrefNameForDataType(type);
+    UserSelectableType type) {
+  const char* pref_name = GetPrefNameForType(type);
   DCHECK(pref_name);
   registry->RegisterBooleanPref(pref_name, false);
-}
-
-bool SyncPrefs::IsDataTypeChosen(ModelType type) const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  const char* pref_name = GetPrefNameForDataType(type);
-  DCHECK(pref_name);
-  DCHECK(IsUserSelectableType(type));
-
-  return pref_service_->GetBoolean(pref_name);
-}
-
-void SyncPrefs::SetDataTypeChosen(ModelType type, bool is_chosen) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  const char* pref_name = GetPrefNameForDataType(type);
-  DCHECK(pref_name);
-  DCHECK(IsUserSelectableType(type));
-
-  pref_service_->SetBoolean(pref_name, is_chosen);
 }
 
 void SyncPrefs::SetCacheGuid(const std::string& cache_guid) {

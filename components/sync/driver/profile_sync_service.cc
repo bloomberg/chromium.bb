@@ -222,10 +222,9 @@ void ProfileSyncService::Initialize() {
       BuildDataTypeControllerMap(sync_client_->CreateDataTypeControllers(this));
 
   user_settings_ = std::make_unique<SyncUserSettingsImpl>(
-      &crypto_, &sync_prefs_, GetRegisteredDataTypes(),
+      &crypto_, &sync_prefs_, sync_client_->GetPreferenceProvider(),
+      GetRegisteredDataTypes(),
       base::BindRepeating(&ProfileSyncService::SyncAllowedByPlatformChanged,
-                          base::Unretained(this)),
-      base::BindRepeating(&ProfileSyncService::IsEncryptEverythingAllowed,
                           base::Unretained(this)));
 
   sync_prefs_.AddSyncPrefObserver(this);
@@ -1224,20 +1223,9 @@ ModelTypeSet ProfileSyncService::GetRegisteredDataTypes() const {
   return registered_types;
 }
 
-ModelTypeSet ProfileSyncService::GetForcedDataTypes() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  const SyncTypePreferenceProvider* provider =
-      sync_client_->GetPreferenceProvider();
-  if (provider) {
-    return Intersection(provider->GetForcedDataTypes(),
-                        GetRegisteredDataTypes());
-  }
-  return ModelTypeSet();
-}
-
 ModelTypeSet ProfileSyncService::GetPreferredDataTypes() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return Union(user_settings_->GetPreferredDataTypes(), GetForcedDataTypes());
+  return user_settings_->GetPreferredDataTypes();
 }
 
 ModelTypeSet ProfileSyncService::GetActiveDataTypes() const {
@@ -1257,16 +1245,6 @@ void ProfileSyncService::SyncAllowedByPlatformChanged(bool allowed) {
     // also similar comment in OnSyncRequestedPrefChange().
     startup_controller_->TryStart(/*force_immediate=*/false);
   }
-}
-
-bool ProfileSyncService::IsEncryptEverythingAllowed() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  const SyncTypePreferenceProvider* provider =
-      sync_client_->GetPreferenceProvider();
-  if (provider) {
-    return provider->IsEncryptEverythingAllowed();
-  }
-  return true;
 }
 
 void ProfileSyncService::ConfigureDataTypeManager(ConfigureReason reason) {
@@ -1344,13 +1322,10 @@ void ProfileSyncService::ConfigureDataTypeManager(ConfigureReason reason) {
     UMA_HISTOGRAM_BOOLEAN("Sync.SyncEverything2", sync_everything);
 
     if (!sync_everything) {
-      ModelTypeSet chosen_types = GetPreferredDataTypes();
-      chosen_types.RetainAll(UserSelectableTypes());
-
-      for (ModelType type : chosen_types) {
+      for (UserSelectableType type : user_settings_->GetSelectedTypes()) {
         UMA_HISTOGRAM_ENUMERATION("Sync.CustomSync2",
-                                  ModelTypeToHistogramInt(type),
-                                  static_cast<int>(ModelType::NUM_ENTRIES));
+                                  UserSelectableTypeToHistogramInt(type),
+                                  UserSelectableTypeHistogramNumEntries());
       }
     }
   }

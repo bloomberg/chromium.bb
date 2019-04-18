@@ -200,13 +200,15 @@ IN_PROC_BROWSER_TEST_F(SingleClientUserEventsSyncTest, NoHistory) {
   event_service->RecordUserEvent(test_event1);
 
   // Wait until the first events is committed before disabling sync,
-  // because disabled TYPED_URLS also disables user event sync, dropping all
+  // because disabled kHistory also disables user event sync, dropping all
   // uncommitted events.
   EXPECT_TRUE(ExpectUserEvents({test_event1}));
-  ASSERT_TRUE(GetClient(0)->DisableSyncForDatatype(syncer::TYPED_URLS));
+  ASSERT_TRUE(
+      GetClient(0)->DisableSyncForType(syncer::UserSelectableType::kHistory));
 
   event_service->RecordUserEvent(test_event2);
-  ASSERT_TRUE(GetClient(0)->EnableSyncForDatatype(syncer::TYPED_URLS));
+  ASSERT_TRUE(
+      GetClient(0)->EnableSyncForType(syncer::UserSelectableType::kHistory));
   event_service->RecordUserEvent(test_event3);
 
   // No |test_event2| because it was recorded while history was disabled.
@@ -217,7 +219,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientUserEventsSyncTest, NoSessions) {
   const UserEventSpecifics specifics =
       CreateTestEvent(base::Time() + base::TimeDelta::FromMicroseconds(1));
   ASSERT_TRUE(SetupSync());
-  ASSERT_TRUE(GetClient(0)->DisableSyncForDatatype(syncer::PROXY_TABS));
+  ASSERT_TRUE(
+      GetClient(0)->DisableSyncForType(syncer::UserSelectableType::kTabs));
   syncer::UserEventService* event_service =
       browser_sync::UserEventServiceFactory::GetForProfile(GetProfile(0));
 

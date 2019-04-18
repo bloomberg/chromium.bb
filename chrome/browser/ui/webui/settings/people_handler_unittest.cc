@@ -59,16 +59,16 @@ using ::testing::Values;
 
 namespace {
 
-MATCHER_P(ModelTypeSetMatches, value, "") {
+MATCHER_P(UserSelectableTypeSetMatches, value, "") {
   return arg == value;
 }
 
 const char kTestUser[] = "chrome.p13n.test@gmail.com";
 const char kTestCallbackId[] = "test-callback-id";
 
-// Returns a ModelTypeSet with all user selectable types set.
-syncer::ModelTypeSet GetAllTypes() {
-  return syncer::UserSelectableTypes();
+// Returns a UserSelectableTypeSet with all types set.
+syncer::UserSelectableTypeSet GetAllTypes() {
+  return syncer::UserSelectableTypeSet::All();
 }
 
 enum SyncAllDataConfig {
@@ -86,7 +86,7 @@ enum EncryptAllConfig {
 // the passed dictionary are added to the json.
 std::string GetConfiguration(const base::DictionaryValue* extra_values,
                              SyncAllDataConfig sync_all,
-                             syncer::ModelTypeSet types,
+                             syncer::UserSelectableTypeSet types,
                              const std::string& passphrase,
                              EncryptAllConfig encrypt_all) {
   base::DictionaryValue result;
@@ -97,15 +97,22 @@ std::string GetConfiguration(const base::DictionaryValue* extra_values,
   if (!passphrase.empty())
     result.SetString("passphrase", passphrase);
   // Add all of our data types.
-  result.SetBoolean("appsSynced", types.Has(syncer::APPS));
-  result.SetBoolean("autofillSynced", types.Has(syncer::AUTOFILL));
-  result.SetBoolean("bookmarksSynced", types.Has(syncer::BOOKMARKS));
-  result.SetBoolean("extensionsSynced", types.Has(syncer::EXTENSIONS));
-  result.SetBoolean("passwordsSynced", types.Has(syncer::PASSWORDS));
-  result.SetBoolean("preferencesSynced", types.Has(syncer::PREFERENCES));
-  result.SetBoolean("tabsSynced", types.Has(syncer::PROXY_TABS));
-  result.SetBoolean("themesSynced", types.Has(syncer::THEMES));
-  result.SetBoolean("typedUrlsSynced", types.Has(syncer::TYPED_URLS));
+  result.SetBoolean("appsSynced", types.Has(syncer::UserSelectableType::kApps));
+  result.SetBoolean("autofillSynced",
+                    types.Has(syncer::UserSelectableType::kAutofill));
+  result.SetBoolean("bookmarksSynced",
+                    types.Has(syncer::UserSelectableType::kBookmarks));
+  result.SetBoolean("extensionsSynced",
+                    types.Has(syncer::UserSelectableType::kExtensions));
+  result.SetBoolean("passwordsSynced",
+                    types.Has(syncer::UserSelectableType::kPasswords));
+  result.SetBoolean("preferencesSynced",
+                    types.Has(syncer::UserSelectableType::kPreferences));
+  result.SetBoolean("tabsSynced", types.Has(syncer::UserSelectableType::kTabs));
+  result.SetBoolean("themesSynced",
+                    types.Has(syncer::UserSelectableType::kThemes));
+  result.SetBoolean("typedUrlsSynced",
+                    types.Has(syncer::UserSelectableType::kHistory));
   result.SetBoolean("paymentsIntegrationEnabled", false);
   std::string args;
   base::JSONWriter::Write(result, &args);
@@ -142,17 +149,26 @@ void CheckBool(const base::DictionaryValue* dictionary,
 // types.
 void CheckConfigDataTypeArguments(const base::DictionaryValue* dictionary,
                                   SyncAllDataConfig config,
-                                  syncer::ModelTypeSet types) {
+                                  syncer::UserSelectableTypeSet types) {
   CheckBool(dictionary, "syncAllDataTypes", config == SYNC_ALL_DATA);
-  CheckBool(dictionary, "appsSynced", types.Has(syncer::APPS));
-  CheckBool(dictionary, "autofillSynced", types.Has(syncer::AUTOFILL));
-  CheckBool(dictionary, "bookmarksSynced", types.Has(syncer::BOOKMARKS));
-  CheckBool(dictionary, "extensionsSynced", types.Has(syncer::EXTENSIONS));
-  CheckBool(dictionary, "passwordsSynced", types.Has(syncer::PASSWORDS));
-  CheckBool(dictionary, "preferencesSynced", types.Has(syncer::PREFERENCES));
-  CheckBool(dictionary, "tabsSynced", types.Has(syncer::PROXY_TABS));
-  CheckBool(dictionary, "themesSynced", types.Has(syncer::THEMES));
-  CheckBool(dictionary, "typedUrlsSynced", types.Has(syncer::TYPED_URLS));
+  CheckBool(dictionary, "appsSynced",
+            types.Has(syncer::UserSelectableType::kApps));
+  CheckBool(dictionary, "autofillSynced",
+            types.Has(syncer::UserSelectableType::kAutofill));
+  CheckBool(dictionary, "bookmarksSynced",
+            types.Has(syncer::UserSelectableType::kBookmarks));
+  CheckBool(dictionary, "extensionsSynced",
+            types.Has(syncer::UserSelectableType::kExtensions));
+  CheckBool(dictionary, "passwordsSynced",
+            types.Has(syncer::UserSelectableType::kPasswords));
+  CheckBool(dictionary, "preferencesSynced",
+            types.Has(syncer::UserSelectableType::kPreferences));
+  CheckBool(dictionary, "tabsSynced",
+            types.Has(syncer::UserSelectableType::kTabs));
+  CheckBool(dictionary, "themesSynced",
+            types.Has(syncer::UserSelectableType::kThemes));
+  CheckBool(dictionary, "typedUrlsSynced",
+            types.Has(syncer::UserSelectableType::kHistory));
 }
 
 std::unique_ptr<KeyedService> BuildMockSyncService(
@@ -257,18 +273,13 @@ class PeopleHandlerTest : public ChromeRenderViewHostTestHarness {
         .WillByDefault(Return(syncer::SyncService::DISABLE_REASON_NONE));
     ON_CALL(*mock_sync_service_->GetMockUserSettings(), IsSyncRequested())
         .WillByDefault(Return(true));
-    ON_CALL(*mock_sync_service_, GetRegisteredDataTypes())
+    ON_CALL(*mock_sync_service_->GetMockUserSettings(),
+            GetRegisteredSelectableTypes())
         .WillByDefault(Return(GetAllTypes()));
     ON_CALL(*mock_sync_service_->GetMockUserSettings(),
             IsSyncEverythingEnabled())
         .WillByDefault(Return(true));
-    ON_CALL(*mock_sync_service_->GetMockUserSettings(), GetChosenDataTypes())
-        .WillByDefault(Return(GetAllTypes()));
-    ON_CALL(*mock_sync_service_, GetPreferredDataTypes())
-        .WillByDefault(
-            Return(syncer::SyncUserSettingsImpl::ResolvePrefGroupsForTesting(
-                GetAllTypes())));
-    ON_CALL(*mock_sync_service_, GetActiveDataTypes())
+    ON_CALL(*mock_sync_service_->GetMockUserSettings(), GetSelectedTypes())
         .WillByDefault(Return(GetAllTypes()));
     ON_CALL(*mock_sync_service_->GetMockUserSettings(),
             IsEncryptEverythingAllowed())
@@ -807,7 +818,7 @@ TEST_F(PeopleHandlerTest, TestSyncEverything) {
       .WillByDefault(Return(false));
   SetupInitializedSyncService();
   EXPECT_CALL(*mock_sync_service_->GetMockUserSettings(),
-              SetChosenDataTypes(true, _));
+              SetSelectedTypes(true, _));
   handler_->HandleSetDatatypes(&list_args);
 
   ExpectPageStatusResponse(PeopleHandler::kConfigurePageStatus);
@@ -949,9 +960,8 @@ TEST_F(PeopleHandlerTest, EnterBlankExistingPassphrase) {
 // Walks through each user selectable type, and tries to sync just that single
 // data type.
 TEST_F(PeopleHandlerTest, TestSyncIndividualTypes) {
-  syncer::ModelTypeSet user_selectable_types = GetAllTypes();
-  for (syncer::ModelType type : user_selectable_types) {
-    syncer::ModelTypeSet type_to_set;
+  for (syncer::UserSelectableType type : GetAllTypes()) {
+    syncer::UserSelectableTypeSet type_to_set;
     type_to_set.Put(type);
     std::string args = GetConfiguration(NULL,
                                         CHOOSE_WHAT_TO_SYNC,
@@ -967,8 +977,9 @@ TEST_F(PeopleHandlerTest, TestSyncIndividualTypes) {
     ON_CALL(*mock_sync_service_->GetMockUserSettings(), IsPassphraseRequired())
         .WillByDefault(Return(false));
     SetupInitializedSyncService();
-    EXPECT_CALL(*mock_sync_service_->GetMockUserSettings(),
-                SetChosenDataTypes(false, ModelTypeSetMatches(type_to_set)));
+    EXPECT_CALL(
+        *mock_sync_service_->GetMockUserSettings(),
+        SetSelectedTypes(false, UserSelectableTypeSetMatches(type_to_set)));
 
     handler_->HandleSetDatatypes(&list_args);
     ExpectPageStatusResponse(PeopleHandler::kConfigurePageStatus);
@@ -991,8 +1002,9 @@ TEST_F(PeopleHandlerTest, TestSyncAllManually) {
   ON_CALL(*mock_sync_service_->GetMockUserSettings(), IsPassphraseRequired())
       .WillByDefault(Return(false));
   SetupInitializedSyncService();
-  EXPECT_CALL(*mock_sync_service_->GetMockUserSettings(),
-              SetChosenDataTypes(false, ModelTypeSetMatches(GetAllTypes())));
+  EXPECT_CALL(
+      *mock_sync_service_->GetMockUserSettings(),
+      SetSelectedTypes(false, UserSelectableTypeSetMatches(GetAllTypes())));
   handler_->HandleSetDatatypes(&list_args);
 
   ExpectPageStatusResponse(PeopleHandler::kConfigurePageStatus);
@@ -1120,8 +1132,7 @@ TEST_F(PeopleHandlerTest, ShowSetupManuallySyncAll) {
 }
 
 TEST_F(PeopleHandlerTest, ShowSetupSyncForAllTypesIndividually) {
-  syncer::ModelTypeSet user_selectable_types = GetAllTypes();
-  for (syncer::ModelType type : user_selectable_types) {
+  for (syncer::UserSelectableType type : GetAllTypes()) {
     ON_CALL(*mock_sync_service_->GetMockUserSettings(), IsPassphraseRequired())
         .WillByDefault(Return(false));
     ON_CALL(*mock_sync_service_->GetMockUserSettings(),
@@ -1132,12 +1143,9 @@ TEST_F(PeopleHandlerTest, ShowSetupSyncForAllTypesIndividually) {
     ON_CALL(*mock_sync_service_->GetMockUserSettings(),
             IsSyncEverythingEnabled())
         .WillByDefault(Return(false));
-    syncer::ModelTypeSet types(type);
-    ON_CALL(*mock_sync_service_->GetMockUserSettings(), GetChosenDataTypes())
+    syncer::UserSelectableTypeSet types(type);
+    ON_CALL(*mock_sync_service_->GetMockUserSettings(), GetSelectedTypes())
         .WillByDefault(Return(types));
-    ON_CALL(*mock_sync_service_, GetPreferredDataTypes())
-        .WillByDefault(Return(
-            syncer::SyncUserSettingsImpl::ResolvePrefGroupsForTesting(types)));
 
     // This should display the sync setup dialog (not login).
     handler_->HandleShowSetupUI(nullptr);

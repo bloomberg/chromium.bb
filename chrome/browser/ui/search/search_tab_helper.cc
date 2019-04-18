@@ -35,6 +35,7 @@
 #include "components/omnibox/browser/omnibox_view.h"
 #include "components/search/search.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/sync/base/user_selectable_type.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
 #include "content/public/browser/navigation_details.h"
@@ -100,7 +101,8 @@ void RecordNewTabLoadTime(content::WebContents* contents) {
 bool IsHistorySyncEnabled(Profile* profile) {
   syncer::SyncService* sync = ProfileSyncServiceFactory::GetForProfile(profile);
   return sync && sync->IsSyncFeatureEnabled() &&
-         sync->GetUserSettings()->GetChosenDataTypes().Has(syncer::TYPED_URLS);
+         sync->GetUserSettings()->GetSelectedTypes().Has(
+             syncer::UserSelectableType::kHistory);
 }
 
 }  // namespace

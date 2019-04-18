@@ -30,8 +30,11 @@ class TestSyncUserSettings : public SyncUserSettings {
   void SetFirstSetupComplete() override;
 
   bool IsSyncEverythingEnabled() const override;
-  ModelTypeSet GetChosenDataTypes() const override;
-  void SetChosenDataTypes(bool sync_everything, ModelTypeSet types) override;
+  UserSelectableTypeSet GetSelectedTypes() const override;
+  void SetSelectedTypes(bool sync_everything,
+                        UserSelectableTypeSet types) override;
+  UserSelectableTypeSet GetRegisteredSelectableTypes() const override;
+  UserSelectableTypeSet GetForcedTypes() const override;
 
   bool IsEncryptEverythingAllowed() const override;
   bool IsEncryptEverythingEnabled() const override;

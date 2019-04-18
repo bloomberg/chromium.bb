@@ -39,11 +39,10 @@ class SyncUserSettingsTest : public testing::Test {
   std::unique_ptr<SyncUserSettingsImpl> MakeSyncUserSettings(
       ModelTypeSet registered_types) {
     return std::make_unique<SyncUserSettingsImpl>(
-        sync_service_crypto_.get(), sync_prefs_.get(), registered_types,
+        sync_service_crypto_.get(), sync_prefs_.get(),
+        /*preference_provider=*/nullptr, registered_types,
         /*sync_allowed_by_platform_changed=*/
-        base::DoNothing(),
-        /*is_encrypt_everything_allowed=*/
-        base::BindRepeating([] { return true; }));
+        base::DoNothing());
   }
 
   // The order of fields matters because it determines destruction order and
@@ -71,9 +70,9 @@ TEST_F(SyncUserSettingsTest, DeleteDirectivesAndProxyTabsMigration) {
       MakeSyncUserSettings(registered_types);
 
   // Enable all other types.
-  sync_user_settings->SetChosenDataTypes(
+  sync_user_settings->SetSelectedTypes(
       /*keep_everything_synced=*/false,
-      /*chosen_types=*/Intersection(UserSelectableTypes(), registered_types));
+      /*selected_types=*/sync_user_settings->GetRegisteredSelectableTypes());
 
   // Manually enable typed urls (to simulate the old world) and perform the
   // migration to check it doesn't affect the proxy tab preference value.
@@ -110,9 +109,9 @@ TEST_F(SyncUserSettingsTest, PreferredTypesSyncEverything) {
 
   EXPECT_TRUE(sync_user_settings->IsSyncEverythingEnabled());
   EXPECT_EQ(UserTypes(), GetPreferredUserTypes(*sync_user_settings));
-  for (ModelType type : UserSelectableTypes()) {
-    sync_user_settings->SetChosenDataTypes(/*sync_everything=*/true,
-                                           /*chosen_types=*/ModelTypeSet{type});
+  for (UserSelectableType type : UserSelectableTypeSet::All()) {
+    sync_user_settings->SetSelectedTypes(/*sync_everything=*/true,
+                                         /*selected_type=*/{type});
     EXPECT_EQ(UserTypes(), GetPreferredUserTypes(*sync_user_settings));
   }
 }
@@ -121,37 +120,39 @@ TEST_F(SyncUserSettingsTest, PreferredTypesNotKeepEverythingSynced) {
   std::unique_ptr<SyncUserSettingsImpl> sync_user_settings =
       MakeSyncUserSettings(UserTypes());
 
-  sync_user_settings->SetChosenDataTypes(/*sync_everything=*/false,
-                                         /*chosen_types=*/ModelTypeSet());
+  sync_user_settings->SetSelectedTypes(
+      /*sync_everything=*/false,
+      /*selected_types=*/UserSelectableTypeSet());
   ASSERT_NE(UserTypes(), GetPreferredUserTypes(*sync_user_settings));
-  for (ModelType type : UserSelectableTypes()) {
-    ModelTypeSet expected_preferred_types{type};
-    if (type == AUTOFILL) {
+  for (UserSelectableType type : UserSelectableTypeSet::All()) {
+    ModelTypeSet expected_preferred_types{
+        UserSelectableTypeToCanonicalModelType(type)};
+    if (type == UserSelectableType::kAutofill) {
       expected_preferred_types.Put(AUTOFILL_PROFILE);
       expected_preferred_types.Put(AUTOFILL_WALLET_DATA);
       expected_preferred_types.Put(AUTOFILL_WALLET_METADATA);
     }
-    if (type == PREFERENCES) {
+    if (type == UserSelectableType::kPreferences) {
       expected_preferred_types.Put(DICTIONARY);
       expected_preferred_types.Put(PRIORITY_PREFERENCES);
       expected_preferred_types.Put(SEARCH_ENGINES);
     }
-    if (type == APPS) {
+    if (type == UserSelectableType::kApps) {
       expected_preferred_types.Put(APP_LIST);
       expected_preferred_types.Put(APP_SETTINGS);
       expected_preferred_types.Put(ARC_PACKAGE);
     }
-    if (type == EXTENSIONS) {
+    if (type == UserSelectableType::kExtensions) {
       expected_preferred_types.Put(EXTENSION_SETTINGS);
     }
-    if (type == TYPED_URLS) {
+    if (type == UserSelectableType::kHistory) {
       expected_preferred_types.Put(HISTORY_DELETE_DIRECTIVES);
       expected_preferred_types.Put(SESSIONS);
       expected_preferred_types.Put(FAVICON_IMAGES);
       expected_preferred_types.Put(FAVICON_TRACKING);
       expected_preferred_types.Put(USER_EVENTS);
     }
-    if (type == PROXY_TABS) {
+    if (type == UserSelectableType::kTabs) {
       expected_preferred_types.Put(SESSIONS);
       expected_preferred_types.Put(FAVICON_IMAGES);
       expected_preferred_types.Put(FAVICON_TRACKING);
@@ -159,8 +160,8 @@ TEST_F(SyncUserSettingsTest, PreferredTypesNotKeepEverythingSynced) {
     }
 
     expected_preferred_types.PutAll(AlwaysPreferredUserTypes());
-    sync_user_settings->SetChosenDataTypes(/*sync_everything=*/false,
-                                           /*chosen_types=*/ModelTypeSet{type});
+    sync_user_settings->SetSelectedTypes(/*sync_everything=*/false,
+                                         /*selected_types=*/{type});
     EXPECT_EQ(expected_preferred_types,
               GetPreferredUserTypes(*sync_user_settings));
   }
@@ -171,18 +172,18 @@ TEST_F(SyncUserSettingsTest, DeviceInfo) {
   std::unique_ptr<SyncUserSettingsImpl> sync_user_settings =
       MakeSyncUserSettings(UserTypes());
   EXPECT_TRUE(sync_user_settings->GetPreferredDataTypes().Has(DEVICE_INFO));
-  sync_user_settings->SetChosenDataTypes(
+  sync_user_settings->SetSelectedTypes(
       /*keep_everything_synced=*/true,
-      /*chosen_types=*/UserSelectableTypes());
+      /*selected_types=*/UserSelectableTypeSet::All());
   EXPECT_TRUE(sync_user_settings->GetPreferredDataTypes().Has(DEVICE_INFO));
-  sync_user_settings->SetChosenDataTypes(
+  sync_user_settings->SetSelectedTypes(
       /*keep_everything_synced=*/false,
-      /*chosen_types=*/UserSelectableTypes());
+      /*selected_types=*/UserSelectableTypeSet::All());
   EXPECT_TRUE(sync_user_settings->GetPreferredDataTypes().Has(DEVICE_INFO));
   sync_user_settings = MakeSyncUserSettings(ModelTypeSet(DEVICE_INFO));
-  sync_user_settings->SetChosenDataTypes(
+  sync_user_settings->SetSelectedTypes(
       /*keep_everything_synced=*/false,
-      /*chosen_types=*/ModelTypeSet());
+      /*selected_types=*/UserSelectableTypeSet());
   EXPECT_TRUE(sync_user_settings->GetPreferredDataTypes().Has(DEVICE_INFO));
 }
 
@@ -191,18 +192,18 @@ TEST_F(SyncUserSettingsTest, UserConsents) {
   std::unique_ptr<SyncUserSettingsImpl> sync_user_settings =
       MakeSyncUserSettings(UserTypes());
   EXPECT_TRUE(sync_user_settings->GetPreferredDataTypes().Has(USER_CONSENTS));
-  sync_user_settings->SetChosenDataTypes(
+  sync_user_settings->SetSelectedTypes(
       /*keep_everything_synced=*/true,
-      /*chosen_types=*/UserSelectableTypes());
+      /*selected_types=*/UserSelectableTypeSet::All());
   EXPECT_TRUE(sync_user_settings->GetPreferredDataTypes().Has(USER_CONSENTS));
-  sync_user_settings->SetChosenDataTypes(
+  sync_user_settings->SetSelectedTypes(
       /*keep_everything_synced=*/false,
-      /*chosen_types=*/UserSelectableTypes());
+      /*selected_types=*/UserSelectableTypeSet::All());
   EXPECT_TRUE(sync_user_settings->GetPreferredDataTypes().Has(USER_CONSENTS));
   sync_user_settings = MakeSyncUserSettings(ModelTypeSet(USER_CONSENTS));
-  sync_user_settings->SetChosenDataTypes(
+  sync_user_settings->SetSelectedTypes(
       /*keep_everything_synced=*/false,
-      /*chosen_types=*/ModelTypeSet());
+      /*selected_types=*/UserSelectableTypeSet());
   EXPECT_TRUE(sync_user_settings->GetPreferredDataTypes().Has(USER_CONSENTS));
 }
 

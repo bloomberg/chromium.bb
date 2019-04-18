@@ -10,7 +10,7 @@
 #include "build/build_config.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/prefs/pref_service.h"
-#include "components/sync/base/model_type.h"
+#include "components/sync/base/user_selectable_type.h"
 #include "components/sync/driver/sync_user_settings.h"
 #include "components/unified_consent/pref_names.h"
 
@@ -78,21 +78,30 @@ bool RecordSyncSetupDataTypesImpl(syncer::SyncUserSettings* sync_settings,
 
   bool metric_recorded = false;
 
-  std::vector<std::pair<SyncDataType, syncer::ModelType>> sync_types;
-  sync_types.emplace_back(SyncDataType::kBookmarks, syncer::BOOKMARKS);
-  sync_types.emplace_back(SyncDataType::kHistory, syncer::TYPED_URLS);
-  sync_types.emplace_back(SyncDataType::kSettings, syncer::PREFERENCES);
-  sync_types.emplace_back(SyncDataType::kTabs, syncer::PROXY_TABS);
-  sync_types.emplace_back(SyncDataType::kPasswords, syncer::PASSWORDS);
-  sync_types.emplace_back(SyncDataType::kAutofill, syncer::AUTOFILL);
+  std::vector<std::pair<SyncDataType, syncer::UserSelectableType>> sync_types;
+  sync_types.emplace_back(SyncDataType::kBookmarks,
+                          syncer::UserSelectableType::kBookmarks);
+  sync_types.emplace_back(SyncDataType::kHistory,
+                          syncer::UserSelectableType::kHistory);
+  sync_types.emplace_back(SyncDataType::kSettings,
+                          syncer::UserSelectableType::kPreferences);
+  sync_types.emplace_back(SyncDataType::kTabs,
+                          syncer::UserSelectableType::kTabs);
+  sync_types.emplace_back(SyncDataType::kPasswords,
+                          syncer::UserSelectableType::kPasswords);
+  sync_types.emplace_back(SyncDataType::kAutofill,
+                          syncer::UserSelectableType::kAutofill);
 #if !defined(OS_ANDROID)
-  sync_types.emplace_back(SyncDataType::kApps, syncer::APPS);
-  sync_types.emplace_back(SyncDataType::kExtensions, syncer::EXTENSIONS);
-  sync_types.emplace_back(SyncDataType::kThemes, syncer::THEMES);
+  sync_types.emplace_back(SyncDataType::kApps,
+                          syncer::UserSelectableType::kApps);
+  sync_types.emplace_back(SyncDataType::kExtensions,
+                          syncer::UserSelectableType::kExtensions);
+  sync_types.emplace_back(SyncDataType::kThemes,
+                          syncer::UserSelectableType::kThemes);
 #endif
 
   for (const auto& data_type : sync_types) {
-    if (!sync_settings->GetChosenDataTypes().Has(data_type.second)) {
+    if (!sync_settings->GetSelectedTypes().Has(data_type.second)) {
       RecordSyncDataTypeSample(data_type.first);
       metric_recorded = true;
     }

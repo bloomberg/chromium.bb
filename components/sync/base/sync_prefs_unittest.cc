@@ -127,7 +127,7 @@ TEST_F(SyncPrefsTest, ClearPreferences) {
 }
 
 // -----------------------------------------------------------------------------
-// Test that manipulate chosen data types.
+// Test that manipulate selected types.
 // -----------------------------------------------------------------------------
 
 TEST_F(SyncPrefsTest, Basic) {
@@ -147,15 +147,15 @@ TEST_F(SyncPrefsTest, Basic) {
   EXPECT_EQ(now, sync_prefs_->GetLastSyncedTime());
 
   EXPECT_TRUE(sync_prefs_->HasKeepEverythingSynced());
-  sync_prefs_->SetDataTypesConfiguration(
+  sync_prefs_->SetSelectedTypes(
       /*keep_everything_synced=*/false,
-      /*choosable_types=*/UserSelectableTypes(),
-      /*chosen_types=*/UserSelectableTypes());
+      /*registered_types=*/UserSelectableTypeSet::All(),
+      /*selected_types=*/UserSelectableTypeSet::All());
   EXPECT_FALSE(sync_prefs_->HasKeepEverythingSynced());
-  sync_prefs_->SetDataTypesConfiguration(
+  sync_prefs_->SetSelectedTypes(
       /*keep_everything_synced=*/true,
-      /*choosable_types=*/UserSelectableTypes(),
-      /*chosen_types=*/ModelTypeSet());
+      /*registered_types=*/UserSelectableTypeSet::All(),
+      /*selected_types=*/UserSelectableTypeSet());
   EXPECT_TRUE(sync_prefs_->HasKeepEverythingSynced());
 
   EXPECT_TRUE(sync_prefs_->GetEncryptionBootstrapToken().empty());
@@ -163,35 +163,32 @@ TEST_F(SyncPrefsTest, Basic) {
   EXPECT_EQ("token", sync_prefs_->GetEncryptionBootstrapToken());
 }
 
-TEST_F(SyncPrefsTest, ChosenTypesKeepEverythingSynced) {
+TEST_F(SyncPrefsTest, SelectedTypesKeepEverythingSynced) {
   EXPECT_TRUE(sync_prefs_->HasKeepEverythingSynced());
 
-  EXPECT_EQ(UserSelectableTypes(), sync_prefs_->GetChosenDataTypes());
-  for (ModelType type : UserSelectableTypes()) {
-    ModelTypeSet chosen_types;
-    chosen_types.Put(type);
-    sync_prefs_->SetDataTypesConfiguration(
+  EXPECT_EQ(UserSelectableTypeSet::All(), sync_prefs_->GetSelectedTypes());
+  for (UserSelectableType type : UserSelectableTypeSet::All()) {
+    sync_prefs_->SetSelectedTypes(
         /*keep_everything_synced=*/true,
-        /*choosable_types=*/UserSelectableTypes(),
-        /*chosen_types=*/chosen_types);
-    EXPECT_EQ(UserSelectableTypes(), sync_prefs_->GetChosenDataTypes());
+        /*registered_types=*/UserSelectableTypeSet::All(),
+        /*selected_types=*/{type});
+    EXPECT_EQ(UserSelectableTypeSet::All(), sync_prefs_->GetSelectedTypes());
   }
 }
 
-TEST_F(SyncPrefsTest, ChosenTypesNotKeepEverythingSynced) {
-  sync_prefs_->SetDataTypesConfiguration(
+TEST_F(SyncPrefsTest, SelectedTypesNotKeepEverythingSynced) {
+  sync_prefs_->SetSelectedTypes(
       /*keep_everything_synced=*/false,
-      /*choosable_types=*/UserSelectableTypes(),
-      /*chosen_types=*/ModelTypeSet());
+      /*registered_types=*/UserSelectableTypeSet::All(),
+      /*selected_types=*/UserSelectableTypeSet());
 
-  ASSERT_NE(UserSelectableTypes(), sync_prefs_->GetChosenDataTypes());
-  for (ModelType type : UserSelectableTypes()) {
-    ModelTypeSet chosen_types{type};
-    sync_prefs_->SetDataTypesConfiguration(
+  ASSERT_NE(UserSelectableTypeSet::All(), sync_prefs_->GetSelectedTypes());
+  for (UserSelectableType type : UserSelectableTypeSet::All()) {
+    sync_prefs_->SetSelectedTypes(
         /*keep_everything_synced=*/false,
-        /*choosable_types=*/UserSelectableTypes(),
-        /*chosen_types=*/chosen_types);
-    EXPECT_EQ(chosen_types, sync_prefs_->GetChosenDataTypes());
+        /*registered_types=*/UserSelectableTypeSet::All(),
+        /*selected_types=*/{type});
+    EXPECT_EQ(UserSelectableTypeSet{type}, sync_prefs_->GetSelectedTypes());
   }
 }
 

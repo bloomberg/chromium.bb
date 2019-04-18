@@ -39,7 +39,6 @@ class FakeSyncService : public SyncService {
   void OnDataTypeRequestsSyncStartup(ModelType type) override;
   void StopAndClear() override;
   ModelTypeSet GetRegisteredDataTypes() const override;
-  ModelTypeSet GetForcedDataTypes() const override;
   ModelTypeSet GetPreferredDataTypes() const override;
   std::unique_ptr<SyncSetupInProgressHandle> GetSetupInProgressHandle()
       override;
