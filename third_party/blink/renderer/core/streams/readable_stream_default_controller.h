@@ -58,6 +58,18 @@ class ReadableStreamDefaultController : public ScriptWrappable {
   // https://streams.spec.whatwg.org/#readable-stream-default-controller-get-desired-size
   base::Optional<double> GetDesiredSize() const;
 
+  //
+  // Used by TransformStream
+  //
+  // https://streams.spec.whatwg.org/#readable-stream-default-controller-can-close-or-enqueue
+  static bool CanCloseOrEnqueue(const ReadableStreamDefaultController*);
+
+  // https://streams.spec.whatwg.org/#rs-default-controller-has-backpressure
+  static bool HasBackpressure(const ReadableStreamDefaultController*);
+
+  static const char* EnqueueExceptionMessage(
+      const ReadableStreamDefaultController*);
+
   void Trace(Visitor*) override;
 
  private:
@@ -79,12 +91,6 @@ class ReadableStreamDefaultController : public ScriptWrappable {
   // https://streams.spec.whatwg.org/#readable-stream-default-controller-clear-algorithms
   static void ClearAlgorithms(ReadableStreamDefaultController*);
 
-  // https://streams.spec.whatwg.org/#rs-default-controller-has-backpressure
-  static bool HasBackpressure(const ReadableStreamDefaultController*);
-
-  // https://streams.spec.whatwg.org/#readable-stream-default-controller-can-close-or-enqueue
-  static bool CanCloseOrEnqueue(const ReadableStreamDefaultController*);
-
   // https://streams.spec.whatwg.org/#set-up-readable-stream-default-controller
   static void SetUp(ScriptState*,
                     ReadableStreamNative*,
@@ -105,9 +111,6 @@ class ReadableStreamDefaultController : public ScriptWrappable {
                                         StrategySizeAlgorithm* size_algorithm,
                                         bool enable_blink_lock_notifications,
                                         ExceptionState&);
-
-  static const char* EnqueueExceptionMessage(
-      const ReadableStreamDefaultController*);
 
   // Boolean flags are grouped together to reduce object size. Verbs have been
   // added to the names in the standard to match Blink style.
