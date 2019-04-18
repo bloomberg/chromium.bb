@@ -679,12 +679,12 @@ function removeStyle_() {
 
 /**
  * Disables the __gCrWeb.findInPage module.
- * Basically just removes the style and class names.
+ * Removes any matches and the style and class names.
  */
-__gCrWeb.findInPage.disable = function() {
+__gCrWeb.findInPage.stop = function() {
   if (styleElement_) {
     removeStyle_();
-    window.setTimeout(cleanUp_, 0);
+    cleanUp_();
   }
   __gCrWeb.findInPage.hasInitialized = false;
 };
@@ -818,6 +818,6 @@ function escapeRegex_(text) {
   return text.replace(REGEX_ESCAPER, '\\$1');
 };
 
-window.addEventListener('pagehide', __gCrWeb.findInPage.disable);
+window.addEventListener('pagehide', __gCrWeb.findInPage.stop);
 
 })();
