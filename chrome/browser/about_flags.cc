@@ -35,7 +35,6 @@
 #include "chrome/browser/search/ntp_features.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
-#include "chrome/browser/ui/blocked_content/tab_under_navigation_throttle.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/channel_info.h"
@@ -2940,10 +2939,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"tab-hover-card-images", flag_descriptions::kTabHoverCardImagesName,
      flag_descriptions::kTabHoverCardImagesDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kTabHoverCardImages)},
-
-    {"enable-block-tab-unders", flag_descriptions::kBlockTabUndersName,
-     flag_descriptions::kBlockTabUndersDescription, kOsAll,
-     FEATURE_VALUE_TYPE(TabUnderNavigationThrottle::kBlockTabUnders)},
 
     {"top-sites-from-site-engagement",
      flag_descriptions::kTopSitesFromSiteEngagementName,

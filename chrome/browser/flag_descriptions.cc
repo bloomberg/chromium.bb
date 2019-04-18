@@ -210,11 +210,6 @@ const char kAwaitOptimizationName[] = "Await optimization";
 const char kAwaitOptimizationDescription[] =
     "Enables await taking 1 tick on the microtask queue.";
 
-const char kBlockTabUndersName[] = "Block tab-unders";
-const char kBlockTabUndersDescription[] =
-    "Blocks tab-unders in Chrome with some native UI to allow the user to "
-    "proceed.";
-
 const char kBrowserTaskSchedulerName[] = "Task Scheduler";
 const char kBrowserTaskSchedulerDescription[] =
     "Enables redirection of some task posting APIs to the task scheduler.";

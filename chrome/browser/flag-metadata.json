@@ -893,11 +893,6 @@
     "expiry_milestone": 75
   },
   {
-    "name": "enable-block-tab-unders",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-brotli",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
