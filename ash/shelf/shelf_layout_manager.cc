@@ -20,6 +20,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/interfaces/app_list_view.mojom.h"
 #include "ash/root_window_controller.h"
+#include "ash/rotator/screen_rotation_animator.h"
 #include "ash/screen_util.h"
 #include "ash/session/session_controller.h"
 #include "ash/shelf/shelf.h"
@@ -216,20 +217,6 @@ ShelfLayoutManager::ShelfLayoutManager(ShelfWidget* shelf_widget, Shelf* shelf)
           app_list_features::IsBackgroundBlurEnabled()) {
   DCHECK(shelf_widget_);
   DCHECK(shelf_);
-  Shell::Get()->AddShellObserver(this);
-  Shell::Get()->overview_controller()->AddObserver(this);
-  if (Shell::Get()->app_list_controller())
-    Shell::Get()->app_list_controller()->AddObserver(this);
-  Shell::Get()
-      ->home_screen_controller()
-      ->home_launcher_gesture_handler()
-      ->AddObserver(this);
-  Shell::Get()->lock_state_controller()->AddObserver(this);
-  Shell::Get()->activation_client()->AddObserver(this);
-  Shell::Get()->locale_update_controller()->AddObserver(this);
-  state_.session_state = Shell::Get()->session_controller()->GetSessionState();
-  wallpaper_controller_observer_.Add(Shell::Get()->wallpaper_controller());
-  display::Screen::GetScreen()->AddObserver(this);
 }
 
 ShelfLayoutManager::~ShelfLayoutManager() {
@@ -256,10 +243,34 @@ ShelfLayoutManager::~ShelfLayoutManager() {
     Shell::Get()->overview_controller()->RemoveObserver(this);
 }
 
+void ShelfLayoutManager::InitObservers() {
+  Shell::Get()->AddShellObserver(this);
+  Shell::Get()->overview_controller()->AddObserver(this);
+  if (Shell::Get()->app_list_controller())
+    Shell::Get()->app_list_controller()->AddObserver(this);
+  Shell::Get()
+      ->home_screen_controller()
+      ->home_launcher_gesture_handler()
+      ->AddObserver(this);
+  Shell::Get()->lock_state_controller()->AddObserver(this);
+  Shell::Get()->activation_client()->AddObserver(this);
+  Shell::Get()->locale_update_controller()->AddObserver(this);
+  state_.session_state = Shell::Get()->session_controller()->GetSessionState();
+  wallpaper_controller_observer_.Add(Shell::Get()->wallpaper_controller());
+  display::Screen::GetScreen()->AddObserver(this);
+  ScreenRotationAnimator::GetForRootWindow(
+      shelf_widget_->GetNativeWindow()->GetRootWindow())
+      ->AddObserver(this);
+}
+
 void ShelfLayoutManager::PrepareForShutdown() {
   in_shutdown_ = true;
+
   // Stop observing changes to avoid updating a partially destructed shelf.
   Shell::Get()->activation_client()->RemoveObserver(this);
+  ScreenRotationAnimator::GetForRootWindow(
+      shelf_widget_->GetNativeWindow()->GetRootWindow())
+      ->RemoveObserver(this);
 }
 
 bool ShelfLayoutManager::IsVisible() const {
@@ -701,6 +712,18 @@ void ShelfLayoutManager::OnLocaleChanged() {
   // Layout update is needed when language changes between LTR and RTL.
   LayoutShelfAndUpdateBounds();
 }
+
+void ShelfLayoutManager::OnScreenCopiedBeforeRotation() {
+  if (suspend_visibility_update_) {
+    suspend_visibility_update_ = false;
+    UpdateVisibilityState();
+    MaybeUpdateShelfBackground(AnimationChangeType::IMMEDIATE);
+  }
+}
+
+void ShelfLayoutManager::OnScreenRotationAnimationFinished(
+    ScreenRotationAnimator* animator,
+    bool canceled) {}
 
 ////////////////////////////////////////////////////////////////////////////////
 // ShelfLayoutManager, private:
