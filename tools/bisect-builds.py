@@ -614,25 +614,25 @@ def RunRevision(context, revision, zip_file, profile, num_runs, command, args):
       runcommand.append(
           token.replace('%p', os.path.abspath(context.GetLaunchPath(revision))).
           replace('%s', ' '.join(testargs)))
-
-  results = []
-  for _ in range(num_runs):
-    subproc = subprocess.Popen(runcommand,
-                               bufsize=-1,
-                               stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE)
-    (stdout, stderr) = subproc.communicate()
-    results.append((subproc.returncode, stdout, stderr))
-  os.chdir(cwd)
+  result = None
   try:
-    shutil.rmtree(tempdir, True)
-  except Exception:
-    pass
-
-  for (returncode, stdout, stderr) in results:
-    if returncode:
-      return (returncode, stdout, stderr)
-  return results[0]
+    for _ in range(num_runs):
+      subproc = subprocess.Popen(
+          runcommand,
+          bufsize=-1,
+          stdout=subprocess.PIPE,
+          stderr=subprocess.PIPE)
+      (stdout, stderr) = subproc.communicate()
+      result = (subproc.returncode, stdout, stderr)
+      if subproc.returncode:
+        break
+    return result
+  finally:
+    os.chdir(cwd)
+    try:
+      shutil.rmtree(tempdir, True)
+    except Exception:
+      pass
 
 
 # The arguments status, stdout and stderr are unused.
@@ -1046,10 +1046,10 @@ def PrintChangeLog(min_chromium_rev, max_chromium_rev):
          GetGitHashFromSVNRevision(max_chromium_rev)))
 
 def error_internal_option(option, opt, value, parser):
-   raise optparse.OptionValueError(
-         'The -o and -r options are only\navailable in the internal version of '
-         'this script. Google\nemployees should visit http://go/bisect-builds '
-         'for\nconfiguration instructions.')
+  raise optparse.OptionValueError(
+        'The -o and -r options are only\navailable in the internal version of '
+        'this script. Google\nemployees should visit http://go/bisect-builds '
+        'for\nconfiguration instructions.')
 
 def main():
   usage = ('%prog [options] [-- chromium-options]\n'
