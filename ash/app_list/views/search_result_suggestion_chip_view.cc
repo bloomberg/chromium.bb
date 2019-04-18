@@ -49,9 +49,6 @@ void LogAppLaunch(int index_in_suggestion_chip_container) {
   base::UmaHistogramSparse("Apps.AppListSuggestedChipLaunched",
                            index_in_suggestion_chip_container);
 
-  UMA_HISTOGRAM_BOOLEAN(kAppListAppLaunchedFullscreen,
-                        true /* suggested app */);
-
   base::RecordAction(base::UserMetricsAction("AppList_OpenSuggestedApp"));
 }
 

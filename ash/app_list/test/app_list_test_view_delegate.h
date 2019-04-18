@@ -15,6 +15,7 @@
 #include "ash/app_list/app_list_view_delegate.h"
 #include "ash/app_list/model/search/search_model.h"
 #include "ash/app_list/test/app_list_test_model.h"
+#include "ash/public/interfaces/app_list.mojom.h"
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -74,21 +75,27 @@ class AppListTestViewDelegate : public AppListViewDelegate,
   void GetSearchResultContextMenuModel(
       const std::string& result_id,
       GetContextMenuModelCallback callback) override;
-  void SearchResultContextMenuItemSelected(const std::string& result_id,
-                                           int command_id,
-                                           int event_flags) override {}
+  void SearchResultContextMenuItemSelected(
+      const std::string& result_id,
+      int command_id,
+      int event_flags,
+      ash::mojom::AppListLaunchType launch_type) override {}
   void ViewShown(int64_t display_id) override {}
   void DismissAppList() override;
   void ViewClosing() override {}
   void ViewClosed() override {}
   void GetWallpaperProminentColors(
       GetWallpaperProminentColorsCallback callback) override {}
-  void ActivateItem(const std::string& id, int event_flags) override;
+  void ActivateItem(const std::string& id,
+                    int event_flags,
+                    ash::mojom::AppListLaunchedFrom launched_from) override;
   void GetContextMenuModel(const std::string& id,
                            GetContextMenuModelCallback callback) override;
-  void ContextMenuItemSelected(const std::string& id,
-                               int command_id,
-                               int event_flags) override {}
+  void ContextMenuItemSelected(
+      const std::string& id,
+      int command_id,
+      int event_flags,
+      ash::mojom::AppListLaunchedFrom launched_from) override {}
   void ShowWallpaperContextMenu(const gfx::Point& onscreen_location,
                                 ui::MenuSourceType source_type) override;
   bool ProcessHomeLauncherGesture(ui::GestureEvent* event,
@@ -111,6 +118,8 @@ class AppListTestViewDelegate : public AppListViewDelegate,
   AppListTestModel* GetTestModel() { return model_.get(); }
 
  private:
+  void RecordAppLaunched(ash::mojom::AppListLaunchedFrom launched_from);
+
   // ui::SimpleMenuModel::Delegate overrides:
   bool IsCommandIdChecked(int command_id) const override;
   bool IsCommandIdEnabled(int command_id) const override;

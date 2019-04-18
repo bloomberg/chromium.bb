@@ -408,23 +408,23 @@ TEST_F(AppsGridViewTest, UMATestForLaunchingApps) {
   base::HistogramTester histogram_tester;
   model_->PopulateApps(5);
 
-  // Select the first suggested app and launch it.
+  // Select the first app in grid and launch it.
   contents_view_->GetAppListMainView()->ActivateApp(GetItemViewAt(0)->item(),
                                                     0);
 
-  // Test that histograms recorded that a regular app launched.
-  histogram_tester.ExpectBucketCount("Apps.AppListAppLaunchedFullscreen", 0, 1);
-  // Test that histograms did not record that a suggested launched.
-  histogram_tester.ExpectBucketCount("Apps.AppListAppLaunchedFullscreen", 1, 0);
+  // Test that histogram recorded app launch from grid.
+  histogram_tester.ExpectBucketCount(
+      "Apps.AppListAppLaunchedV2.FullscreenAllApps", 1 /* kAppListItem */,
+      1 /* Times kAppListItem launched */);
 
   // Launch a suggested app.
   suggestions_container_->child_at(0)->OnKeyPressed(
       ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_RETURN, ui::EF_NONE));
 
-  // Test that histograms recorded that a suggested app launched, and that the
-  // count for regular apps launched is unchanged.
-  histogram_tester.ExpectBucketCount("Apps.AppListAppLaunchedFullscreen", 0, 1);
-  histogram_tester.ExpectBucketCount("Apps.AppListAppLaunchedFullscreen", 1, 1);
+  // Test that histogram recorded app launched from suggestion chip.
+  histogram_tester.ExpectBucketCount(
+      "Apps.AppListAppLaunchedV2.FullscreenAllApps", 2 /* kSuggestionChip */,
+      1 /* Times kSuggestionChip Launched */);
 }
 
 TEST_F(AppsGridViewTest, ItemLabelShortNameOverride) {

@@ -381,7 +381,8 @@ void SearchResultTileItemView::OnMenuClosed() {
 void SearchResultTileItemView::ExecuteCommand(int command_id, int event_flags) {
   if (result()) {
     view_delegate_->SearchResultContextMenuItemSelected(
-        result()->id(), command_id, event_flags);
+        result()->id(), command_id, event_flags,
+        ash::mojom::AppListLaunchType::kAppSearchResult);
   }
 }
 

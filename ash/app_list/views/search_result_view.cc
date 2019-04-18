@@ -17,6 +17,7 @@
 #include "ash/app_list/views/search_result_list_view.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
+#include "ash/public/interfaces/app_list.mojom.h"
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/gfx/canvas.h"
@@ -531,7 +532,8 @@ void SearchResultView::OnGetContextMenu(
 void SearchResultView::ExecuteCommand(int command_id, int event_flags) {
   if (result()) {
     view_delegate_->SearchResultContextMenuItemSelected(
-        result()->id(), command_id, event_flags);
+        result()->id(), command_id, event_flags,
+        ash::mojom::AppListLaunchType::kSearchResult);
   }
 }
 

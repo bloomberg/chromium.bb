@@ -131,6 +131,9 @@ class APP_LIST_PRESENTER_EXPORT AppListPresenterImpl
   // Show/hide the expand arrow view button.
   void SetExpandArrowViewVisibility(bool show);
 
+  // Returns whether home launcher is currently shown.
+  bool home_launcher_shown() const { return home_launcher_shown_; }
+
  private:
   // Sets the app list view and attempts to show it.
   void SetView(AppListView* view);
@@ -200,6 +203,9 @@ class APP_LIST_PRESENTER_EXPORT AppListPresenterImpl
 
   // If true, dismiss the app list immediately.
   bool dismiss_without_animation_ = false;
+
+  // Whether the home launcher is currently shown.
+  bool home_launcher_shown_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(AppListPresenterImpl);
 };

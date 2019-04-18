@@ -8,6 +8,8 @@
 #include <string>
 #include <utility>
 
+#include "ash/app_list/app_list_controller_impl.h"
+#include "ash/app_list/app_list_metrics.h"
 #include "ash/public/cpp/app_menu_constants.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/menu_utils.h"
@@ -215,9 +217,14 @@ void ShelfContextMenuModel::ExecuteCommand(int command_id, int event_flags) {
       Shell::Get()->wallpaper_controller()->OpenWallpaperPickerIfAllowed();
       break;
     default:
-      // Have the shelf item delegate execute the context menu command.
-      if (delegate_)
+      if (delegate_) {
+        if (app_list::IsCommandIdAnAppLaunch(command_id)) {
+          Shell::Get()->app_list_controller()->RecordShelfAppLaunched(
+              base::nullopt);
+        }
+
         delegate_->ExecuteCommand(true, command_id, event_flags, display_id_);
+      }
       break;
   }
 }
