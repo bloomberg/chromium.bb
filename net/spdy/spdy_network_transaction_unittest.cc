@@ -7817,6 +7817,129 @@ TEST_F(SpdyNetworkTransactionTest, WebSocketOpensNewConnection) {
                                       /* expected_count = */ 1);
 }
 
+// Make sure that a WebSocket job doesn't pick up a newly created SpdySession
+// that doesn't support WebSockets through
+// HttpStreamFactory::Job::OnSpdySessionAvailable().
+TEST_F(SpdyNetworkTransactionTest,
+       WebSocketDoesUseNewH2SessionWithoutWebSocketSupport) {
+  base::HistogramTester histogram_tester;
+  auto session_deps = std::make_unique<SpdySessionDependencies>();
+  session_deps->enable_websocket_over_http2 = true;
+  NormalSpdyTransactionHelper helper(request_, HIGHEST, log_,
+                                     std::move(session_deps));
+  helper.RunPreTestSetup();
+
+  spdy::SpdySerializedFrame req(
+      spdy_util_.ConstructSpdyGet(nullptr, 0, 1, HIGHEST));
+
+  MockWrite writes[] = {CreateMockWrite(req, 0)};
+
+  spdy::SpdySerializedFrame resp1(
+      spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
+  spdy::SpdySerializedFrame body1(spdy_util_.ConstructSpdyDataFrame(1, true));
+  MockRead reads[] = {CreateMockRead(resp1, 1), CreateMockRead(body1, 2),
+                      MockRead(SYNCHRONOUS, ERR_IO_PENDING, 3)};
+
+  SequencedSocketData data(
+      // Just as with other operations, this means to pause during connection
+      // establishment.
+      MockConnect(ASYNC, ERR_IO_PENDING), reads, writes);
+  helper.AddData(&data);
+
+  MockWrite writes2[] = {
+      MockWrite(SYNCHRONOUS, 0,
+                "GET / HTTP/1.1\r\n"
+                "Host: www.example.org\r\n"
+                "Connection: Upgrade\r\n"
+                "Upgrade: websocket\r\n"
+                "Origin: http://www.example.org\r\n"
+                "Sec-WebSocket-Version: 13\r\n"
+                "Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\n"
+                "Sec-WebSocket-Extensions: permessage-deflate; "
+                "client_max_window_bits\r\n\r\n")};
+
+  MockRead reads2[] = {
+      MockRead(SYNCHRONOUS, 1,
+               "HTTP/1.1 101 Switching Protocols\r\n"
+               "Upgrade: websocket\r\n"
+               "Connection: Upgrade\r\n"
+               "Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=\r\n\r\n")};
+  SequencedSocketData data2(MockConnect(ASYNC, ERR_IO_PENDING), reads2,
+                            writes2);
+  auto ssl_provider2 = std::make_unique<SSLSocketDataProvider>(ASYNC, OK);
+  // Test that request has empty |alpn_protos|, that is, HTTP/2 is disabled.
+  ssl_provider2->next_protos_expected_in_ssl_config = NextProtoVector{};
+  // Force socket to use HTTP/1.1, the default protocol without ALPN.
+  ssl_provider2->next_proto = kProtoHTTP11;
+  // ssl_provider2->ssl_info.cert =
+  //  ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem");
+  helper.AddDataWithSSLSocketDataProvider(&data2, std::move(ssl_provider2));
+
+  TestCompletionCallback callback1;
+  int rv = helper.trans()->Start(&request_, callback1.callback(), log_);
+  ASSERT_THAT(rv, IsError(ERR_IO_PENDING));
+
+  // Create HTTP/2 connection.
+  base::RunLoop().RunUntilIdle();
+
+  HttpRequestInfo request2;
+  request2.method = "GET";
+  request2.url = GURL("wss://www.example.org/");
+  request2.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+  EXPECT_TRUE(HostPortPair::FromURL(request_.url)
+                  .Equals(HostPortPair::FromURL(request2.url)));
+  request2.extra_headers.SetHeader("Connection", "Upgrade");
+  request2.extra_headers.SetHeader("Upgrade", "websocket");
+  request2.extra_headers.SetHeader("Origin", "http://www.example.org");
+  request2.extra_headers.SetHeader("Sec-WebSocket-Version", "13");
+
+  TestWebSocketHandshakeStreamCreateHelper websocket_stream_create_helper;
+
+  HttpNetworkTransaction trans2(MEDIUM, helper.session());
+  trans2.SetWebSocketHandshakeStreamCreateHelper(
+      &websocket_stream_create_helper);
+
+  TestCompletionCallback callback2;
+  rv = trans2.Start(&request2, callback2.callback(), log_);
+  ASSERT_THAT(rv, IsError(ERR_IO_PENDING));
+
+  // Run until waiting on both connections.
+  base::RunLoop().RunUntilIdle();
+
+  // The H2 connection completes.
+  data.socket()->OnConnectComplete(MockConnect(SYNCHRONOUS, OK));
+  EXPECT_EQ(OK, callback1.WaitForResult());
+  const HttpResponseInfo* response = helper.trans()->GetResponseInfo();
+  ASSERT_TRUE(response->headers);
+  EXPECT_TRUE(response->was_fetched_via_spdy);
+  EXPECT_EQ("HTTP/1.1 200", response->headers->GetStatusLine());
+  std::string response_data;
+  rv = ReadTransaction(helper.trans(), &response_data);
+  EXPECT_THAT(rv, IsOk());
+  EXPECT_EQ("hello!", response_data);
+
+  SpdySessionKey key(HostPortPair::FromURL(request_.url), ProxyServer::Direct(),
+                     PRIVACY_MODE_DISABLED,
+                     SpdySessionKey::IsProxySession::kFalse, SocketTag());
+
+  base::WeakPtr<SpdySession> spdy_session =
+      helper.session()->spdy_session_pool()->FindAvailableSession(
+          key, /* enable_ip_based_pooling = */ true,
+          /* is_websocket = */ false, log_);
+  ASSERT_TRUE(spdy_session);
+  EXPECT_FALSE(spdy_session->support_websocket());
+
+  EXPECT_FALSE(callback2.have_result());
+
+  // Create WebSocket stream.
+  data2.socket()->OnConnectComplete(MockConnect(SYNCHRONOUS, OK));
+
+  rv = callback2.WaitForResult();
+  ASSERT_THAT(rv, IsOk());
+  helper.VerifyDataConsumed();
+}
+
 TEST_F(SpdyNetworkTransactionTest, WebSocketOverHTTP2) {
   base::HistogramTester histogram_tester;
   auto session_deps = std::make_unique<SpdySessionDependencies>();
