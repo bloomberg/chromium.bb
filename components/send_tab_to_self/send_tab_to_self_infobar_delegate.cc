@@ -4,8 +4,6 @@
 
 #include "components/send_tab_to_self/send_tab_to_self_infobar_delegate.h"
 
-#include <memory>
-
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/send_tab_to_self/send_tab_to_self_entry.h"
@@ -13,11 +11,7 @@
 
 namespace send_tab_to_self {
 
-SendTabToSelfInfoBarDelegate::SendTabToSelfInfoBarDelegate(
-    const SendTabToSelfEntry* entry) {
-  entry_ = entry;
-}
-
+// static
 std::unique_ptr<SendTabToSelfInfoBarDelegate>
 SendTabToSelfInfoBarDelegate::Create(const SendTabToSelfEntry* entry) {
   return base::WrapUnique(new SendTabToSelfInfoBarDelegate(entry));
@@ -42,6 +36,11 @@ void SendTabToSelfInfoBarDelegate::InfoBarDismissed() {
 infobars::InfoBarDelegate::InfoBarIdentifier
 SendTabToSelfInfoBarDelegate::GetIdentifier() const {
   return SEND_TAB_TO_SELF_INFOBAR_DELEGATE;
+}
+
+SendTabToSelfInfoBarDelegate::SendTabToSelfInfoBarDelegate(
+    const SendTabToSelfEntry* entry) {
+  entry_ = entry;
 }
 
 }  // namespace send_tab_to_self

@@ -17,7 +17,6 @@ class SendTabToSelfEntry;
 
 // Delegate containing logic about what to display and how to behave
 // in the SendTabToSelf infobar. Used across Android and iOS.
-// TODO(crbug.com/
 class SendTabToSelfInfoBarDelegate : public infobars::InfoBarDelegate {
  public:
   static std::unique_ptr<SendTabToSelfInfoBarDelegate> Create(
@@ -35,7 +34,7 @@ class SendTabToSelfInfoBarDelegate : public infobars::InfoBarDelegate {
   infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
 
  private:
-  SendTabToSelfInfoBarDelegate(const SendTabToSelfEntry* entry);
+  explicit SendTabToSelfInfoBarDelegate(const SendTabToSelfEntry* entry);
 
   // The entry that was share to this device. Must outlive this instance.
   const SendTabToSelfEntry* entry_ = nullptr;
