@@ -1258,7 +1258,6 @@ source_set("chromeos") {
     "login/screen_manager.h",
     "login/screens/app_downloading_screen.cc",
     "login/screens/app_downloading_screen.h",
-    "login/screens/arc_kiosk_splash_screen_view.h",
     "login/screens/arc_terms_of_service_screen.cc",
     "login/screens/arc_terms_of_service_screen.h",
     "login/screens/arc_terms_of_service_screen_view.h",
