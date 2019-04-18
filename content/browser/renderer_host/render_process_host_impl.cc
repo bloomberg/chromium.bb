@@ -281,9 +281,6 @@
 
 namespace content {
 
-using CheckOriginLockResult =
-    ChildProcessSecurityPolicyImpl::CheckOriginLockResult;
-
 namespace {
 
 // Stores the maximum number of renderer processes the content module can
@@ -3717,13 +3714,13 @@ bool RenderProcessHostImpl::IsSuitableHost(
   // from |site_url| if an effective URL is used.
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
   bool host_has_web_ui_bindings = policy->HasWebUIBindings(host->GetID());
-  auto lock_state = policy->CheckOriginLock(host->GetID(), lock_url);
+  GURL process_lock = policy->GetOriginLock(host->GetID());
   if (host->HostHasNotBeenUsed()) {
     // If the host hasn't been used, it won't have the expected WebUI bindings
     // or origin locks just *yet* - skip the checks in this case.  One example
     // where this case can happen is when the spare RenderProcessHost gets used.
     CHECK(!host_has_web_ui_bindings);
-    CHECK_EQ(CheckOriginLockResult::NO_LOCK, lock_state);
+    CHECK(process_lock.is_empty());
   } else {
     // WebUI checks.
     bool url_requires_web_ui_bindings =
@@ -3732,21 +3729,26 @@ bool RenderProcessHostImpl::IsSuitableHost(
     if (host_has_web_ui_bindings != url_requires_web_ui_bindings)
       return false;
 
-    // Sites requiring dedicated processes can only reuse a compatible process.
-    switch (lock_state) {
-      case CheckOriginLockResult::HAS_EQUAL_LOCK:
-        break;
-      case CheckOriginLockResult::HAS_WRONG_LOCK:
+    if (!process_lock.is_empty()) {
+      // If this process is locked to a site, it cannot be reused for a
+      // destination that doesn't require a dedicated process, even for the
+      // same site. This can happen with dynamic isolated origins (see
+      // https://crbug.com/950453).
+      if (!SiteInstanceImpl::ShouldLockToOrigin(isolation_context, site_url))
         return false;
-      case CheckOriginLockResult::NO_LOCK:
-        if (!host->IsUnused() &&
-            SiteInstanceImpl::ShouldLockToOrigin(isolation_context, site_url)) {
-          // If this process has been used to host any other content, it cannot
-          // be reused if the destination site requires a dedicated process and
-          // should use a process locked to just that site.
-          return false;
-        }
-        break;
+
+      // If the destination requires a different process lock, this process
+      // cannot be used.
+      if (process_lock != lock_url)
+        return false;
+    } else {
+      if (!host->IsUnused() &&
+          SiteInstanceImpl::ShouldLockToOrigin(isolation_context, site_url)) {
+        // If this process has been used to host any other content, it cannot
+        // be reused if the destination site requires a dedicated process and
+        // should use a process locked to just that site.
+        return false;
+      }
     }
   }
 

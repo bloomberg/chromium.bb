@@ -252,11 +252,9 @@ IN_PROC_BROWSER_TEST_F(WebUINavigationBrowserTest, WebUIMainFrameToWebAllowed) {
   EXPECT_EQ(chrome_url, webui_rfh->GetLastCommittedURL());
   EXPECT_TRUE(ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
       webui_rfh->GetProcess()->GetID()));
-  EXPECT_EQ(
-      ChildProcessSecurityPolicyImpl::CheckOriginLockResult::HAS_EQUAL_LOCK,
-      ChildProcessSecurityPolicyImpl::GetInstance()->CheckOriginLock(
-          root->current_frame_host()->GetProcess()->GetID(),
-          webui_site_instance->GetSiteURL()));
+  EXPECT_EQ(ChildProcessSecurityPolicyImpl::GetInstance()->GetOriginLock(
+                root->current_frame_host()->GetProcess()->GetID()),
+            webui_site_instance->GetSiteURL());
 
   GURL web_url(embedded_test_server()->GetURL("/title2.html"));
   std::string script =
@@ -273,11 +271,9 @@ IN_PROC_BROWSER_TEST_F(WebUINavigationBrowserTest, WebUIMainFrameToWebAllowed) {
       root->current_frame_host()->GetSiteInstance()));
   EXPECT_FALSE(ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
       root->current_frame_host()->GetProcess()->GetID()));
-  EXPECT_NE(
-      ChildProcessSecurityPolicyImpl::CheckOriginLockResult::HAS_EQUAL_LOCK,
-      ChildProcessSecurityPolicyImpl::GetInstance()->CheckOriginLock(
-          root->current_frame_host()->GetProcess()->GetID(),
-          webui_site_instance->GetSiteURL()));
+  EXPECT_NE(ChildProcessSecurityPolicyImpl::GetInstance()->GetOriginLock(
+                root->current_frame_host()->GetProcess()->GetID()),
+            webui_site_instance->GetSiteURL());
 }
 
 IN_PROC_BROWSER_TEST_F(WebUINavigationBrowserTest,
