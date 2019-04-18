@@ -31,6 +31,7 @@ class SearchIPCRouterPolicyImpl : public SearchIPCRouter::Policy {
   bool ShouldProcessDeleteMostVisitedItem() override;
   bool ShouldProcessUndoMostVisitedDeletion() override;
   bool ShouldProcessUndoAllMostVisitedDeletions() override;
+  bool ShouldProcessToggleMostVisitedOrCustomLinks() override;
   bool ShouldProcessAddCustomLink() override;
   bool ShouldProcessUpdateCustomLink() override;
   bool ShouldProcessReorderCustomLink() override;

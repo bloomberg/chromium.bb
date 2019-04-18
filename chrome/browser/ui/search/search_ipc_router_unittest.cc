@@ -61,6 +61,7 @@ class MockSearchIPCRouterDelegate : public SearchIPCRouter::Delegate {
   MOCK_METHOD1(OnDeleteMostVisitedItem, void(const GURL& url));
   MOCK_METHOD1(OnUndoMostVisitedDeletion, void(const GURL& url));
   MOCK_METHOD0(OnUndoAllMostVisitedDeletions, void());
+  MOCK_METHOD0(OnToggleMostVisitedOrCustomLinks, void());
   MOCK_METHOD2(OnAddCustomLink,
                bool(const GURL& url, const std::string& title));
   MOCK_METHOD3(OnUpdateCustomLink,
@@ -104,6 +105,7 @@ class MockSearchIPCRouterPolicy : public SearchIPCRouter::Policy {
   MOCK_METHOD0(ShouldProcessDeleteMostVisitedItem, bool());
   MOCK_METHOD0(ShouldProcessUndoMostVisitedDeletion, bool());
   MOCK_METHOD0(ShouldProcessUndoAllMostVisitedDeletions, bool());
+  MOCK_METHOD0(ShouldProcessToggleMostVisitedOrCustomLinks, bool());
   MOCK_METHOD0(ShouldProcessAddCustomLink, bool());
   MOCK_METHOD0(ShouldProcessUpdateCustomLink, bool());
   MOCK_METHOD0(ShouldProcessReorderCustomLink, bool());
@@ -486,6 +488,32 @@ TEST_F(SearchIPCRouterTest, IgnoreUndoAllMostVisitedDeletionsMsg) {
       .WillOnce(Return(false));
 
   GetSearchIPCRouter().UndoAllMostVisitedDeletions(GetSearchIPCRouterSeqNo());
+}
+
+TEST_F(SearchIPCRouterTest, ProcessToggleMostVisitedOrCustomLinksMsg) {
+  NavigateAndCommitActiveTab(GURL("chrome-search://foo/bar"));
+  SetupMockDelegateAndPolicy();
+  MockSearchIPCRouterPolicy* policy = GetSearchIPCRouterPolicy();
+  EXPECT_CALL(*mock_delegate(), OnToggleMostVisitedOrCustomLinks()).Times(1);
+  EXPECT_CALL(*policy, ShouldProcessToggleMostVisitedOrCustomLinks())
+      .Times(1)
+      .WillOnce(Return(true));
+
+  GetSearchIPCRouter().ToggleMostVisitedOrCustomLinks(
+      GetSearchIPCRouterSeqNo());
+}
+
+TEST_F(SearchIPCRouterTest, IgnoreToggleMostVisitedOrCustomLinksMsg) {
+  NavigateAndCommitActiveTab(GURL("chrome-search://foo/bar"));
+  SetupMockDelegateAndPolicy();
+  MockSearchIPCRouterPolicy* policy = GetSearchIPCRouterPolicy();
+  EXPECT_CALL(*mock_delegate(), OnToggleMostVisitedOrCustomLinks()).Times(0);
+  EXPECT_CALL(*policy, ShouldProcessToggleMostVisitedOrCustomLinks())
+      .Times(1)
+      .WillOnce(Return(false));
+
+  GetSearchIPCRouter().ToggleMostVisitedOrCustomLinks(
+      GetSearchIPCRouterSeqNo());
 }
 
 TEST_F(SearchIPCRouterTest, ProcessAddCustomLinkMsg) {

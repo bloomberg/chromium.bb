@@ -1560,6 +1560,9 @@ const char kNtpActivateHideShortcutsFieldTrial[] =
 const char kNtpCustomBackgroundDict[] = "ntp.custom_background_dict";
 const char kNtpCustomBackgroundLocalToDevice[] =
     "ntp.custom_background_local_to_device";
+// Tracks whether the user has chosen to use custom links or most visited sites
+// for the shortcut tiles on the NTP.
+const char kNtpUseMostVisitedTiles[] = "ntp.use_most_visited_tiles";
 
 // Data associated with search suggestions that appear on the NTP.
 const char kNtpSearchSuggestionsBlocklist[] =

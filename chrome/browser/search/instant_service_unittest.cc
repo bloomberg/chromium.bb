@@ -106,6 +106,26 @@ TEST_F(InstantServiceTest, DeleteThumbnailDataIfExists) {
   EXPECT_FALSE(base::PathExists(database_dir));
 }
 
+TEST_F(InstantServiceTest, DoesToggleMostVisitedOrCustomLinks) {
+  sync_preferences::TestingPrefServiceSyncable* pref_service =
+      profile()->GetTestingPrefService();
+  SetUserSelectedDefaultSearchProvider("{google:baseURL}");
+  ASSERT_FALSE(pref_service->GetBoolean(prefs::kNtpUseMostVisitedTiles));
+
+  // Enable most visited tiles.
+  EXPECT_TRUE(instant_service_->ToggleMostVisitedOrCustomLinks());
+  EXPECT_TRUE(pref_service->GetBoolean(prefs::kNtpUseMostVisitedTiles));
+
+  // Disable most visited tiles.
+  EXPECT_TRUE(instant_service_->ToggleMostVisitedOrCustomLinks());
+  EXPECT_FALSE(pref_service->GetBoolean(prefs::kNtpUseMostVisitedTiles));
+
+  // Should do nothing if this is a non-Google NTP.
+  SetUserSelectedDefaultSearchProvider("https://www.search.com");
+  EXPECT_FALSE(instant_service_->ToggleMostVisitedOrCustomLinks());
+  EXPECT_FALSE(pref_service->GetBoolean(prefs::kNtpUseMostVisitedTiles));
+}
+
 TEST_F(InstantServiceTest,
        DisableUndoCustomLinkActionForNonGoogleSearchProvider) {
   SetUserSelectedDefaultSearchProvider("{google:baseURL}");
@@ -121,6 +141,25 @@ TEST_F(InstantServiceTest, DisableResetCustomLinksForNonGoogleSearchProvider) {
 
   SetUserSelectedDefaultSearchProvider("https://www.search.com");
   EXPECT_FALSE(instant_service_->ResetCustomLinks());
+}
+
+TEST_F(InstantServiceTest, IsCustomLinksEnabled) {
+  sync_preferences::TestingPrefServiceSyncable* pref_service =
+      profile()->GetTestingPrefService();
+
+  // Test that custom links are only enabled when Most Visited is toggled off
+  // and this is a Google NTP.
+  pref_service->SetBoolean(prefs::kNtpUseMostVisitedTiles, false);
+  SetUserSelectedDefaultSearchProvider("{google:baseURL}");
+  EXPECT_TRUE(instant_service_->IsCustomLinksEnabled());
+
+  // All other cases should return false.
+  SetUserSelectedDefaultSearchProvider("https://www.search.com");
+  EXPECT_FALSE(instant_service_->IsCustomLinksEnabled());
+  pref_service->SetBoolean(prefs::kNtpUseMostVisitedTiles, true);
+  EXPECT_FALSE(instant_service_->IsCustomLinksEnabled());
+  SetUserSelectedDefaultSearchProvider("{google:baseURL}");
+  EXPECT_FALSE(instant_service_->IsCustomLinksEnabled());
 }
 
 TEST_F(InstantServiceTest, SetCustomBackgroundURL) {

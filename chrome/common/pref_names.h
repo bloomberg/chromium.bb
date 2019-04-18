@@ -538,6 +538,7 @@ extern const char kContentSuggestionsNotificationsSentCount[];
 extern const char kNtpActivateHideShortcutsFieldTrial[];
 extern const char kNtpCustomBackgroundDict[];
 extern const char kNtpCustomBackgroundLocalToDevice[];
+extern const char kNtpUseMostVisitedTiles[];
 extern const char kNtpSearchSuggestionsBlocklist[];
 extern const char kNtpSearchSuggestionsImpressions[];
 extern const char kNtpSearchSuggestionsOptOut[];

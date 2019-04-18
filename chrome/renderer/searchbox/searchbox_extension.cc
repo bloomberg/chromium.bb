@@ -600,6 +600,7 @@ class NewTabPageBindings : public gin::Wrappable<NewTabPageBindings> {
   // custom links iframe, and/or the local NTP.
   static v8::Local<v8::Value> GetMostVisitedItemData(v8::Isolate* isolate,
                                                      int rid);
+  static void ToggleMostVisitedOrCustomLinks();
   static void UpdateCustomLink(int rid,
                                const std::string& url,
                                const std::string& title);
@@ -667,6 +668,8 @@ gin::ObjectTemplateBuilder NewTabPageBindings::GetObjectTemplateBuilder(
                  &NewTabPageBindings::UndoMostVisitedDeletion)
       .SetMethod("getMostVisitedItemData",
                  &NewTabPageBindings::GetMostVisitedItemData)
+      .SetMethod("toggleMostVisitedOrCustomLinks",
+                 &NewTabPageBindings::ToggleMostVisitedOrCustomLinks)
       .SetMethod("updateCustomLink", &NewTabPageBindings::UpdateCustomLink)
       .SetMethod("reorderCustomLink", &NewTabPageBindings::ReorderCustomLink)
       .SetMethod("undoCustomLinkAction",
@@ -850,6 +853,14 @@ v8::Local<v8::Value> NewTabPageBindings::GetMostVisitedItemData(
   int render_view_id =
       GetMainRenderFrameForCurrentContext()->GetRenderView()->GetRoutingID();
   return GenerateMostVisitedItemData(isolate, render_view_id, rid, item);
+}
+
+// static
+void NewTabPageBindings::ToggleMostVisitedOrCustomLinks() {
+  SearchBox* search_box = GetSearchBoxForCurrentContext();
+  if (!search_box)
+    return;
+  search_box->ToggleMostVisitedOrCustomLinks();
 }
 
 // static

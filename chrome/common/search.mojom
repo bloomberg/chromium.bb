@@ -45,6 +45,9 @@ interface EmbeddedSearch {
   // Tells InstantExtended to undo one most visited item deletion.
   UndoMostVisitedDeletion(int32 page_seq_no, url.mojom.Url url);
 
+  // Tells InstantExtended to toggle between most visited items or custom links.
+  ToggleMostVisitedOrCustomLinks(int32 page_seq_no);
+
   // Tells InstantExtended to add a custom link. Returns true if successful.
   AddCustomLink(int32 page_seq_no, url.mojom.Url url, string title)
       => (bool success);
