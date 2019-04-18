@@ -109,15 +109,15 @@ TEST_F(IntersectionObserverTest, NotificationSentWhenRootRemoved) {
   SimRequest main_resource("https://example.com/", "text/html");
   LoadURL("https://example.com/");
   main_resource.Complete(R"HTML(
-<style>
-#target {
-  width: 100px;
-  height: 100px;
-}
-</style>
-<div id='root'>
-  <div id='target'></div>
-</div>
+    <style>
+    #target {
+      width: 100px;
+      height: 100px;
+    }
+    </style>
+    <div id='root'>
+      <div id='target'></div>
+    </div>
   )HTML");
 
   Element* root = GetDocument().getElementById("root");
@@ -419,6 +419,43 @@ TEST_F(IntersectionObserverTest, RootIntersectionWithForceZeroLayoutHeight) {
   test::RunPendingTasks();
   ASSERT_EQ(observer_delegate->CallCount(), 3);
   EXPECT_TRUE(observer_delegate->LastIntersectionRect().IsEmpty());
+}
+
+TEST_F(IntersectionObserverTest, TrackedTargetBookkeeping) {
+  SimRequest main_resource("https://example.com/", "text/html");
+  LoadURL("https://example.com/");
+  main_resource.Complete(R"HTML(
+    <style>
+    </style>
+    <div id='target'></div>
+  )HTML");
+
+  Element* target = GetDocument().getElementById("target");
+  ASSERT_TRUE(target);
+  IntersectionObserverInit* observer_init = IntersectionObserverInit::Create();
+  DummyExceptionStateForTesting exception_state;
+  TestIntersectionObserverDelegate* observer_delegate =
+      MakeGarbageCollected<TestIntersectionObserverDelegate>(GetDocument());
+  IntersectionObserver* observer1 = IntersectionObserver::Create(
+      observer_init, *observer_delegate, exception_state);
+  ASSERT_FALSE(exception_state.HadException());
+  observer1->observe(target, exception_state);
+  ASSERT_FALSE(exception_state.HadException());
+  IntersectionObserver* observer2 = IntersectionObserver::Create(
+      observer_init, *observer_delegate, exception_state);
+  ASSERT_FALSE(exception_state.HadException());
+  observer2->observe(target, exception_state);
+  ASSERT_FALSE(exception_state.HadException());
+
+  IntersectionObserverController& controller =
+      GetDocument().EnsureIntersectionObserverController();
+  EXPECT_EQ(controller.GetTrackedTargetCountForTesting(), 1u);
+  observer1->unobserve(target, exception_state);
+  ASSERT_FALSE(exception_state.HadException());
+  EXPECT_EQ(controller.GetTrackedTargetCountForTesting(), 1u);
+  observer2->unobserve(target, exception_state);
+  ASSERT_FALSE(exception_state.HadException());
+  EXPECT_EQ(controller.GetTrackedTargetCountForTesting(), 0u);
 }
 
 TEST_F(IntersectionObserverV2Test, TrackVisibilityInit) {
