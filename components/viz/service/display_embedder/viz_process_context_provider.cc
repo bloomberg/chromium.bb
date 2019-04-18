@@ -44,7 +44,7 @@ namespace {
 
 gpu::ContextCreationAttribs CreateAttributes(
     bool requires_alpha_channel,
-    const gfx::ColorSpace& color_space) {
+    const RendererSettings& renderer_settings) {
   gpu::ContextCreationAttribs attributes;
   attributes.alpha_size = requires_alpha_channel ? 8 : -1;
   attributes.depth_size = 0;
@@ -65,9 +65,10 @@ gpu::ContextCreationAttribs CreateAttributes(
   attributes.lose_context_when_out_of_memory = true;
 
 #if defined(OS_ANDROID)
-  if (color_space == gfx::ColorSpace::CreateSRGB()) {
+  if (renderer_settings.color_space == gfx::ColorSpace::CreateSRGB()) {
     attributes.color_space = gpu::COLOR_SPACE_SRGB;
-  } else if (color_space == gfx::ColorSpace::CreateDisplayP3D65()) {
+  } else if (renderer_settings.color_space ==
+             gfx::ColorSpace::CreateDisplayP3D65()) {
     attributes.color_space = gpu::COLOR_SPACE_DISPLAY_P3;
   } else {
     // The browser only sends the above two color spaces.
@@ -84,6 +85,8 @@ gpu::ContextCreationAttribs CreateAttributes(
   }
 
   attributes.enable_swap_timestamps_if_supported = true;
+  attributes.backed_by_surface_texture =
+      renderer_settings.backed_by_surface_texture;
 #endif  // defined(OS_ANDROID)
 
   return attributes;
@@ -91,15 +94,6 @@ gpu::ContextCreationAttribs CreateAttributes(
 
 void UmaRecordContextLost(ContextLostReason reason) {
   UMA_HISTOGRAM_ENUMERATION("GPU.ContextLost.DisplayCompositor", reason);
-}
-
-gfx::ColorSpace ColorSpaceForRendererSettings(
-    const RendererSettings& renderer_settings) {
-#if defined(OS_ANDROID)
-  return renderer_settings.color_space;
-#else
-  return gfx::ColorSpace();
-#endif
 }
 
 gpu::SharedMemoryLimits SharedMemoryLimitsForRendererSettings(
@@ -121,9 +115,8 @@ VizProcessContextProvider::VizProcessContextProvider(
     gpu::ImageFactory* image_factory,
     gpu::GpuChannelManagerDelegate* gpu_channel_manager_delegate,
     const RendererSettings& renderer_settings)
-    : attributes_(
-          CreateAttributes(renderer_settings.requires_alpha_channel,
-                           ColorSpaceForRendererSettings(renderer_settings))) {
+    : attributes_(CreateAttributes(renderer_settings.requires_alpha_channel,
+                                   renderer_settings)) {
   InitializeContext(std::move(task_executor), surface_handle,
                     gpu_memory_buffer_manager, image_factory,
                     gpu_channel_manager_delegate,

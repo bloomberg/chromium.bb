@@ -68,6 +68,7 @@ class CompositorView : public content::CompositorClient,
                       jint format,
                       jint width,
                       jint height,
+                      bool backed_by_surface_texture,
                       const base::android::JavaParamRef<jobject>& surface);
   void OnPhysicalBackingSizeChanged(
       JNIEnv* env,
