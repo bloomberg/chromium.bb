@@ -554,23 +554,20 @@ void SplitViewController::StartResize(const gfx::Point& location_in_screen) {
 
   base::RecordAction(base::UserMetricsAction("SplitView_ResizeWindows"));
   if (state_ == BOTH_SNAPPED) {
-    presentation_time_recorder_ =
-        std::make_unique<PresentationTimeHistogramRecorder>(
-            split_view_divider_->divider_widget()->GetCompositor(),
-            kSplitViewResizeMultiHistogram,
-            kSplitViewResizeMultiMaxLatencyHistogram);
+    presentation_time_recorder_ = CreatePresentationTimeHistogramRecorder(
+        split_view_divider_->divider_widget()->GetCompositor(),
+        kSplitViewResizeMultiHistogram,
+        kSplitViewResizeMultiMaxLatencyHistogram);
   } else if (GetOverviewSession() && !GetOverviewSession()->IsEmpty()) {
-    presentation_time_recorder_ =
-        std::make_unique<PresentationTimeHistogramRecorder>(
-            split_view_divider_->divider_widget()->GetCompositor(),
-            kSplitViewResizeWithOverviewHistogram,
-            kSplitViewResizeWithOverviewMaxLatencyHistogram);
+    presentation_time_recorder_ = CreatePresentationTimeHistogramRecorder(
+        split_view_divider_->divider_widget()->GetCompositor(),
+        kSplitViewResizeWithOverviewHistogram,
+        kSplitViewResizeWithOverviewMaxLatencyHistogram);
   } else {
-    presentation_time_recorder_ =
-        std::make_unique<PresentationTimeHistogramRecorder>(
-            split_view_divider_->divider_widget()->GetCompositor(),
-            kSplitViewResizeSingleHistogram,
-            kSplitViewResizeSingleMaxLatencyHistogram);
+    presentation_time_recorder_ = CreatePresentationTimeHistogramRecorder(
+        split_view_divider_->divider_widget()->GetCompositor(),
+        kSplitViewResizeSingleHistogram,
+        kSplitViewResizeSingleMaxLatencyHistogram);
   }
 }
 

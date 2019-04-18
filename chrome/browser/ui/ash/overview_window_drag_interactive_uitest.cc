@@ -247,7 +247,6 @@ class OverviewWindowDragTest
   std::vector<std::string> GetUMAHistogramNames() const override {
     return {
         "Ash.Overview.WindowDrag.PresentationTime.TabletMode",
-        "Ash.Overview.WindowDrag.PresentationTime.MaxLatency.TabletMode",
     };
   }
 
@@ -301,7 +300,7 @@ IN_PROC_BROWSER_TEST_P(OverviewWindowDragTest, DISABLED_DragToClose) {
 
   content::WindowedNotificationObserver waiter(
       chrome::NOTIFICATION_BROWSER_CLOSED,
-      content::NotificationService::AllSources());
+      content::Source<Browser>(chrome::FindLastActive()));
 
   gfx::Point start_point = GetStartLocation(GetDisplaySize(browser_window));
   gfx::Point end_point(start_point);
