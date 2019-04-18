@@ -135,6 +135,8 @@ class CrostiniInstallerView
 
   void RecordSetupResultHistogram(SetupResult result);
 
+  void OnAvailableDiskSpace(int64_t bytes);
+
   State state_ = State::PROMPT;
   views::ImageView* logo_image_ = nullptr;
   views::Label* big_message_label_ = nullptr;
@@ -149,12 +151,18 @@ class CrostiniInstallerView
   base::Time state_start_time_;
   std::unique_ptr<base::RepeatingTimer> state_progress_timer_;
   bool do_cleanup_ = true;
+  base::TimeTicks install_start_time_;
+  int64_t free_disk_space_;
 
   // Whether the result has been logged or not is stored to prevent multiple
   // results being logged for a given setup flow. This can happen due to
   // multiple error callbacks happening in some cases, as well as the user being
   // able to hit Cancel after any errors occur.
   bool has_logged_result_ = false;
+
+  bool has_logged_timing_result_ = false;
+
+  bool has_logged_free_disk_result_ = false;
 
   base::RepeatingCallback<void(double)> progress_bar_callback_for_testing_;
   base::OnceClosure quit_closure_for_testing_;
