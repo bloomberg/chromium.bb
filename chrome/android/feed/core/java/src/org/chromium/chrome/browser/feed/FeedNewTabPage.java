@@ -288,6 +288,7 @@ public class FeedNewTabPage extends NewTabPage {
 
         mRootView = new RootView(context, mConstructedTimeNs);
         mRootView.setPadding(0, topPadding, 0, 0);
+        mRootView.setTab(mTab);
         mUiConfig = new UiConfig(mRootView);
     }
 

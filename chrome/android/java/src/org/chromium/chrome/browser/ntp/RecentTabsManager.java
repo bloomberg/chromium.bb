@@ -240,6 +240,14 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
     }
 
     /**
+     * Return the managed tab.
+     * @return the tab instance being managed by this object.
+     */
+    public Tab activeTab() {
+        return mTab;
+    }
+
+    /**
      * Returns a 16x16 favicon for a given synced url.
      *
      * @param url The url to fetch the favicon for.

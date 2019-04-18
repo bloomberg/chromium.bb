@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.gesturenav;
 
-import android.content.Context;
 import android.support.annotation.IntDef;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
@@ -12,6 +11,8 @@ import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 
 import org.chromium.base.Supplier;
+import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.tab.Tab;
 
 import java.lang.annotation.Retention;
@@ -21,21 +22,29 @@ import java.lang.annotation.RetentionPolicy;
  * Handles history overscroll navigation controlling the underlying UI widget.
  */
 public class NavigationHandler {
+    // Width of a rectangluar area in dp on the left/right edge used for navigation.
+    // Swipe beginning from a point within these rects triggers the operation.
+    @VisibleForTesting
+    static final float EDGE_WIDTH_DP = 48;
+
+    // Weighted value to determine when to trigger an edge swipe. Initial scroll
+    // vector should form 30 deg or below to initiate swipe action.
+    private static final float WEIGTHED_TRIGGER_THRESHOLD = 1.73f;
+
+    // |EDGE_WIDTH_DP| in physical pixel.
+    private final float mEdgeWidthPx;
+
     @IntDef({GestureState.NONE, GestureState.STARTED, GestureState.DRAGGED})
     @Retention(RetentionPolicy.SOURCE)
     private @interface GestureState {
         int NONE = 0;
         int STARTED = 1;
         int DRAGGED = 2;
-        int GLOW = 3;
     }
 
-    private final Context mContext;
+    private final ViewGroup mParentView;
+    private final Supplier<Tab> mCurrentTab;
 
-    private Supplier<Tab> mTabProvider;
-
-    private ViewGroup mParentView;
-    private GestureDetector mGestureDetector;
     private @GestureState int mState = GestureState.NONE;
 
     // Frame layout where the main logic turning the gesture into corresponding UI resides.
@@ -49,34 +58,23 @@ public class NavigationHandler {
     // it does not conflict with pending Android draws.
     private Runnable mDetachLayoutRunnable;
 
-    public NavigationHandler(Context context, Supplier<Tab> tabProvider) {
-        mContext = context;
-        mTabProvider = tabProvider;
-    }
-
-    /**
-     * Sets the view to which a widget view is added.
-     * @param view Parent view to contain the navigation UI view.
-     */
-    public void setParentView(ViewGroup view) {
-        if (view == null && mParentView != null) detachLayoutIfNecessary();
-        mParentView = view;
+    public NavigationHandler(ViewGroup parentView, Supplier<Tab> tabProvider) {
+        mParentView = parentView;
+        mCurrentTab = tabProvider;
+        mEdgeWidthPx = EDGE_WIDTH_DP * parentView.getResources().getDisplayMetrics().density;
     }
 
     private void createLayout() {
-        mSideSlideLayout = new SideSlideLayout(mContext);
+        mSideSlideLayout = new SideSlideLayout(mParentView.getContext());
         mSideSlideLayout.setLayoutParams(
                 new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
-        mSideSlideLayout.setOnNavigationListener((isForward) -> {
-            Tab tab = mTabProvider.get();
-            if (isForward) {
+        mSideSlideLayout.setOnNavigationListener((forward) -> {
+            Tab tab = mCurrentTab.get();
+            if (forward) {
                 tab.goForward();
             } else {
-                if (canNavigate(/* forward= */ false)) {
-                    tab.goBack();
-                } else {
-                    tab.getActivity().onBackPressed();
-                }
+                // TODO(jinsukkim): Consider removing the direct dependency on Tab/Activity.
+                tab.getActivity().onBackPressed();
             }
             cancelStopNavigatingRunnable();
             mSideSlideLayout.post(getStopNavigatingRunnable());
@@ -92,64 +90,81 @@ public class NavigationHandler {
         });
     }
 
-    private boolean canNavigate(boolean forward) {
-        Tab tab = mTabProvider.get();
-        if (tab == null) return false;
-        return forward ? tab.canGoForward() : tab.canGoBack();
-    }
-
     /**
      * @see View#onTouchEvent(MotionEvent)
      */
-    void onTouchEvent(MotionEvent e) {
-        if (e.getAction() == MotionEvent.ACTION_UP) {
-            if (mState == GestureState.DRAGGED) mSideSlideLayout.release(true);
+    public void onTouchEvent(int action) {
+        if (action == MotionEvent.ACTION_UP) {
+            if (mState == GestureState.DRAGGED && mSideSlideLayout != null) {
+                mSideSlideLayout.release(true);
+            }
         }
     }
 
     /**
      * @see GestureDetector#SimpleOnGestureListener#onDown(MotionEvent)
      */
-    boolean onDown(MotionEvent event) {
+    public boolean onDown() {
         mState = GestureState.STARTED;
         return true;
     }
 
     /**
-     * @see GestureDetector#SimpleOnGestureListener#onScroll(MotionEvent, MotionEvent, float, float)
+     * Processes scroll event from {@link SimpleOnGestureListener#onScroll()}.
+     * @param startX X coordinate of the position where gesture swipes from.
+     * @param distanceX X delta between previous and current motion event.
+     * @param distanceX Y delta between previous and current motion event.
+     * @param endX X coordinate of the current motion event.
+     * @param endY Y coordinate of the current motion event.
      */
-    boolean onScroll(float distanceX, float distanceY) {
-        // onScroll needs handling only after the state moves away from none state.
+    public boolean onScroll(
+            float startX, float distanceX, float distanceY, float endX, float endY) {
+        // onScroll needs handling only after the state moves away from |NONE|.
         if (mState == GestureState.NONE) return true;
 
         if (mState == GestureState.STARTED) {
-            if (Math.abs(distanceX) > Math.abs(distanceY)) {
+            if (shouldTriggerUi(startX, distanceX, distanceY)) {
                 boolean forward = distanceX > 0;
-                boolean navigable = canNavigate(forward);
-                if (navigable || !forward) {
-                    start(forward, !navigable);
+                if (canNavigate(forward) || !forward) {
+                    showArrowWidget(forward);
                     mState = GestureState.DRAGGED;
                 }
             }
             if (mState != GestureState.DRAGGED) mState = GestureState.NONE;
         }
-        if (mState == GestureState.DRAGGED) pull(-distanceX);
+        if (mState == GestureState.DRAGGED) mSideSlideLayout.pull(-distanceX);
         return true;
     }
 
-    /**
-     * Initiates navigation UI widget on the screen.
-     * @param isForward {@code true} if started for forward navigation.
-     * @param enableCloseIndicator Whether 'close chrome' indicator should be
-     *     enabled when the condition is met.
-     */
-    public void start(boolean isForward, boolean enableCloseIndicator) {
+    private boolean shouldTriggerUi(float sX, float dX, float dY) {
+        return Math.abs(dX) > Math.abs(dY) * WEIGTHED_TRIGGER_THRESHOLD
+                && (sX < mEdgeWidthPx || (mParentView.getWidth() - mEdgeWidthPx) < sX);
+    }
+
+    private boolean canNavigate(boolean forward) {
+        Tab tab = mCurrentTab.get();
+        return forward ? tab.canGoForward() : tab.canGoBack();
+    }
+
+    public void showArrowWidget(boolean forward) {
         if (mSideSlideLayout == null) createLayout();
         mSideSlideLayout.setEnabled(true);
-        mSideSlideLayout.setDirection(isForward);
-        mSideSlideLayout.setEnableCloseIndicator(enableCloseIndicator);
+        mSideSlideLayout.setDirection(forward);
+        mSideSlideLayout.setEnableCloseIndicator(shouldShowCloseIndicator(forward));
         attachLayoutIfNecessary();
         mSideSlideLayout.start();
+    }
+
+    private boolean shouldShowCloseIndicator(boolean forward) {
+        // Some tabs, upon back at the beginning of the history stack, should be just closed
+        // than closing the entire app. In such case we do not show the close indicator.
+        final boolean back = false;
+        return !forward && !canNavigate(back) && willBackExitApp();
+    }
+
+    private boolean willBackExitApp() {
+        boolean inTabbedMode = mCurrentTab.get().getActivity() instanceof ChromeTabbedActivity;
+        return inTabbedMode ? !ChromeTabbedActivity.backShouldCloseTab(mCurrentTab.get()) : true;
     }
 
     /**
@@ -162,9 +177,16 @@ public class NavigationHandler {
     }
 
     /**
+     * @return {@code true} if navigation was triggered, and its UI is in action.
+     */
+    public boolean isActive() {
+        return mState == GestureState.DRAGGED;
+    }
+
+    /**
      * @return {@code true} if navigation is not in operation.
      */
-    boolean isStopped() {
+    public boolean isStopped() {
         return mState == GestureState.NONE;
     }
 
@@ -217,16 +239,12 @@ public class NavigationHandler {
         // The animation view is attached/detached on-demand to minimize overlap
         // with composited SurfaceView content.
         cancelDetachLayoutRunnable();
-        if (mSideSlideLayout.getParent() == null) {
-            mParentView.addView(mSideSlideLayout);
-        }
+        if (mSideSlideLayout.getParent() == null) mParentView.addView(mSideSlideLayout);
     }
 
     private void detachLayoutIfNecessary() {
         if (mSideSlideLayout == null) return;
         cancelDetachLayoutRunnable();
-        if (mSideSlideLayout.getParent() != null) {
-            mParentView.removeView(mSideSlideLayout);
-        }
+        if (mSideSlideLayout.getParent() != null) mParentView.removeView(mSideSlideLayout);
     }
 }

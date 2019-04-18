@@ -10,10 +10,9 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.widget.FrameLayout;
 
-import org.chromium.chrome.browser.ActivityTabProvider;
-import org.chromium.chrome.browser.ActivityTabProvider.ActivityTabObserver;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.tab.Tab;
 
 /**
  * FrameLayout that supports side-wise slide gesture for history navigation. Inheriting
@@ -23,10 +22,10 @@ import org.chromium.chrome.browser.ChromeFeatureList;
  * claims to handle touch events.
  */
 public class HistoryNavigationLayout extends FrameLayout {
-    private final ActivityTabObserver mTabObserver;
-    private final ActivityTabProvider mTabProvider;
-    private final GestureDetector mDetector;
-    private final NavigationHandler mNavigationHandler;
+    private final boolean mDelegateSwipes;
+    private final boolean mNavigationEnabled;
+    private GestureDetector mDetector;
+    private NavigationHandler mNavigationHandler;
 
     public HistoryNavigationLayout(Context context) {
         this(context, null);
@@ -34,58 +33,64 @@ public class HistoryNavigationLayout extends FrameLayout {
 
     public HistoryNavigationLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.OVERSCROLL_HISTORY_NAVIGATION)
-                && context instanceof ChromeActivity) {
-            mDetector = new GestureDetector(getContext(), new SideNavGestureListener());
-            mTabProvider = ((ChromeActivity) context).getActivityTabProvider();
-            mNavigationHandler = new NavigationHandler(context, mTabProvider);
-            mNavigationHandler.setParentView(this);
-            mTabObserver = (tab, hint) -> mNavigationHandler.reset();
-        } else {
-            mDetector = null;
-            mTabProvider = null;
-            mNavigationHandler = null;
-            mTabObserver = null;
-        }
+        mDelegateSwipes = ChromeFeatureList.isEnabled(ChromeFeatureList.DELEGATE_OVERSCROLL_SWIPES);
+        mNavigationEnabled =
+                ChromeFeatureList.isEnabled(ChromeFeatureList.OVERSCROLL_HISTORY_NAVIGATION)
+                && (context instanceof ChromeActivity);
     }
 
-    @Override
-    protected void onAttachedToWindow() {
-        super.onAttachedToWindow();
-        if (mTabObserver != null) mTabProvider.addObserverAndTrigger(mTabObserver);
+    /**
+     * Sets the tab which the native page for this layout is running on.
+     * @param tab Tab instance.
+     * TODO(jinsukkim): Look into replacing tab with an interface which will make this a pure
+     *     UI class. Then navigation tests will also be a pure UI one using a dummy activity.
+     */
+    public void setTab(Tab tab) {
+        if (!mNavigationEnabled) return;
+        mDetector = new GestureDetector(getContext(), new SideNavGestureListener());
+        mNavigationHandler = new NavigationHandler(this, () -> tab);
     }
 
     @Override
     public void onDetachedFromWindow() {
         super.onDetachedFromWindow();
-        if (mTabObserver != null) mTabProvider.removeObserver(mTabObserver);
+        if (mNavigationEnabled) mNavigationHandler.reset();
     }
 
     @Override
     public boolean dispatchTouchEvent(MotionEvent e) {
         if (mDetector != null) {
             mDetector.onTouchEvent(e);
-            mNavigationHandler.onTouchEvent(e);
+            mNavigationHandler.onTouchEvent(e.getAction());
         }
         return super.dispatchTouchEvent(e);
+    }
+
+    @Override
+    public boolean onInterceptTouchEvent(MotionEvent e) {
+        // Do not propagate touch events down to children if navigation UI was triggered.
+        if (mDetector != null && !mDelegateSwipes && mNavigationHandler.isActive()) return true;
+        return super.onInterceptTouchEvent(e);
     }
 
     private class SideNavGestureListener extends GestureDetector.SimpleOnGestureListener {
         @Override
         public boolean onDown(MotionEvent event) {
-            return mNavigationHandler.onDown(event);
+            return mNavigationHandler.onDown();
         }
 
         @Override
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-            // onScroll needs handling only after the state moves away from none state.
+            // |onScroll| needs handling only after the state moves away from |NONE|. This helps
+            // invoke |wasLastSideSwipeGestureConsumed| which may be expensive less often.
             if (mNavigationHandler.isStopped()) return true;
 
-            if (wasLastSideSwipeGestureConsumed()) {
+            if (mDelegateSwipes && wasLastSideSwipeGestureConsumed()) {
                 mNavigationHandler.reset();
                 return true;
             }
-            return mNavigationHandler.onScroll(distanceX, distanceY);
+            return mNavigationHandler.onScroll(
+                    e1.getX(), distanceX, distanceY, e2.getX(), e2.getY());
         }
     }
 

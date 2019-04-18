@@ -112,7 +112,8 @@ public class SwipeRefreshHandler
         };
         mTab.addObserver(mTabObserver);
         mNavigationEnabled =
-                ChromeFeatureList.isEnabled(ChromeFeatureList.OVERSCROLL_HISTORY_NAVIGATION);
+                ChromeFeatureList.isEnabled(ChromeFeatureList.OVERSCROLL_HISTORY_NAVIGATION)
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.DELEGATE_OVERSCROLL_SWIPES);
     }
 
     private void initSwipeRefreshLayout(final Context context) {
@@ -150,15 +151,14 @@ public class SwipeRefreshHandler
     public void initWebContents(WebContents webContents) {
         webContents.setOverscrollRefreshHandler(this);
         mContainerView = mTab.getContentView();
-        if (mNavigationHandler != null) mNavigationHandler.setParentView(mContainerView);
         setEnabled(true);
     }
 
     @Override
     public void cleanupWebContents(WebContents webContents) {
         if (mSwipeRefreshLayout != null) detachSwipeRefreshLayoutIfNecessary();
-        if (mNavigationHandler != null) mNavigationHandler.setParentView(null);
         mContainerView = null;
+        mNavigationHandler = null;
         setEnabled(false);
     }
 
@@ -196,20 +196,15 @@ public class SwipeRefreshHandler
             return mSwipeRefreshLayout.start();
         } else if (type == OverscrollAction.HISTORY_NAVIGATION && mNavigationEnabled) {
             if (mNavigationHandler == null) {
-                mNavigationHandler = new NavigationHandler(mContainerView.getContext(), () -> mTab);
-                mNavigationHandler.setParentView(mContainerView);
+                mNavigationHandler = new NavigationHandler(mContainerView, () -> mTab);
             }
-            boolean navigable = canNavigate(navigateForward);
+            boolean navigable = navigateForward ? mTab.canGoForward() : mTab.canGoBack();
             boolean shouldStart = navigable || !navigateForward;
-            if (shouldStart) mNavigationHandler.start(navigateForward, false);
+            if (shouldStart) mNavigationHandler.showArrowWidget(navigateForward);
             return shouldStart;
         }
         mSwipeType = OverscrollAction.NONE;
         return false;
-    }
-
-    private boolean canNavigate(boolean forward) {
-        return forward ? mTab.canGoForward() : mTab.canGoBack();
     }
 
     @Override

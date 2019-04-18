@@ -42,6 +42,7 @@ import org.chromium.chrome.browser.signin.SigninManager.SignInStateObserver;
 import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.util.ConversionUtils;
@@ -278,6 +279,14 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
         mLargeIconBridge = null;
         SigninManager.get().removeSignInStateObserver(this);
         mPrefChangeRegistrar.destroy();
+    }
+
+    /**
+     * Sets the tab this manager is running on.
+     * @param tab Tab instance.
+     */
+    public void setTab(Tab tab) {
+        mSelectableListLayout.setTab(tab);
     }
 
     /**

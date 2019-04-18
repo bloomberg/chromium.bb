@@ -26,6 +26,7 @@ import org.chromium.chrome.browser.native_page.BasicNativePage;
 import org.chromium.chrome.browser.partnerbookmarks.PartnerBookmarksReader;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.ConversionUtils;
 import org.chromium.chrome.browser.widget.selection.SelectableListLayout;
 import org.chromium.chrome.browser.widget.selection.SelectableListToolbar.SearchDelegate;
@@ -263,6 +264,14 @@ public class BookmarkManager implements BookmarkDelegate, SearchDelegate,
      */
     public void setBasicNativePage(BasicNativePage nativePage) {
         mNativePage = nativePage;
+    }
+
+    /**
+     * Sets the tab this manager is running on.
+     * @param tab Tab instance.
+     */
+    public void setTab(Tab tab) {
+        mSelectableListLayout.setTab(tab);
     }
 
     /**
