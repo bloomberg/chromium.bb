@@ -49,6 +49,7 @@ source_set("factory") {
     ":public",
     "//base",
     "//components/keyed_service/core",
+    "//components/leveldb_proto",
   ]
 }
 

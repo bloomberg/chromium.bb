@@ -8,8 +8,11 @@
 #include <memory>
 
 #include "base/macros.h"
-
 #include "components/keyed_service/core/keyed_service.h"
+
+namespace leveldb_proto {
+class ProtoDatabaseProvider;
+}  // namespace leveldb_proto
 
 namespace notifications {
 
@@ -20,7 +23,8 @@ class NotificationBackgroundTaskScheduler;
 // notification scheduler internal code.
 KeyedService* CreateNotificationScheduleService(
     std::unique_ptr<NotificationBackgroundTaskScheduler>
-        background_task_scheduler);
+        background_task_scheduler,
+    leveldb_proto::ProtoDatabaseProvider* db_provider);
 
 }  // namespace notifications
 
