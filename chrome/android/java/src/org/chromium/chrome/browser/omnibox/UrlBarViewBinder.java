@@ -100,7 +100,7 @@ class UrlBarViewBinder {
             hintColor =
                     ApiCompatibilityUtils.getColor(resources, R.color.locationbar_light_hint_text);
             highlightColor = ApiCompatibilityUtils.getColor(
-                    resources, R.color.locationbar_light_selection_color);
+                    resources, R.color.highlight_color_on_light_text);
         }
 
         view.setTextColor(textColor);
