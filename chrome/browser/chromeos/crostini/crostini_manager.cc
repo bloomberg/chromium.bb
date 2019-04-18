@@ -65,8 +65,6 @@
 namespace crostini {
 
 namespace {
-
-constexpr int64_t kMinimumDiskSize = 1ll * 1024 * 1024 * 1024;  // 1 GiB
 constexpr base::FilePath::CharType kHomeDirectory[] =
     FILE_PATH_LITERAL("/home");
 const char kSeparator[] = "--";
@@ -261,18 +259,6 @@ class CrostiniManager::CrostiniRestarter
     }
 
     int64_t disk_size_available = (free_disk_bytes * 9) / 10;
-    // If there's no existing disk image, need enough space to create one.
-    if (disk_space_taken == 0) {
-      // Don't enforce minimum disk size on dev box or trybots because
-      // base::SysInfo::AmountOfFreeDiskSpace returns zero in testing.
-      if (disk_size_available < kMinimumDiskSize &&
-          base::SysInfo::IsRunningOnChromeOS()) {
-        LOG(ERROR) << "Insufficient disk available. Need to free "
-                   << kMinimumDiskSize - disk_size_available << " bytes";
-        FinishRestart(CrostiniResult::INSUFFICIENT_DISK);
-        return;
-      }
-    }
     // If we have an already existing disk, CreateDiskImage will just return its
     // path so we can pass it to StartTerminaVm.
     crostini_manager_->CreateDiskImage(

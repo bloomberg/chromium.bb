@@ -52,6 +52,7 @@ class CrostiniInstallerView
     kErrorFetchingSshKeys = 9,
     kErrorMountingContainer = 10,
     kErrorSettingUpContainer = 11,
+    kErrorInsufficientDiskSpace = 22,
 
     kUserCancelledStart = 12,
     kUserCancelledInstallImageLoader = 13,
@@ -99,6 +100,7 @@ class CrostiniInstallerView
   void SetCloseCallbackForTesting(base::OnceClosure quit_closure);
   void SetProgressBarCallbackForTesting(
       base::RepeatingCallback<void(double)> callback);
+  void SetGetFreeDiskSpaceCallbackForTesting(base::OnceClosure quit_closure);
 
  private:
   enum class State {
@@ -137,6 +139,8 @@ class CrostiniInstallerView
 
   void OnAvailableDiskSpace(int64_t bytes);
 
+  void PressAccept();
+
   State state_ = State::PROMPT;
   views::ImageView* logo_image_ = nullptr;
   views::Label* big_message_label_ = nullptr;
@@ -166,6 +170,7 @@ class CrostiniInstallerView
 
   base::RepeatingCallback<void(double)> progress_bar_callback_for_testing_;
   base::OnceClosure quit_closure_for_testing_;
+  base::OnceClosure free_disk_space_callback_for_testing_;
 
   base::WeakPtrFactory<CrostiniInstallerView> weak_ptr_factory_;
 

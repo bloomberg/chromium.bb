@@ -10584,6 +10584,7 @@ Called by update_net_error_codes.py.-->
   <int value="19" label="User Cancelled While Setting Up Container"/>
   <int value="20" label="User Cancelled While Fetching SSH Keys"/>
   <int value="21" label="User Cancelled While Mounting Container"/>
+  <int value="22" label="Insufficient Disk Space"/>
 </enum>
 
 <enum name="CrostiniUISurface">
