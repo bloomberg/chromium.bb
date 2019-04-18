@@ -306,6 +306,10 @@ bool SearchBox::IsCustomLinks() const {
   return is_custom_links_;
 }
 
+void SearchBox::ToggleMostVisitedOrCustomLinks() {
+  embedded_search_service_->ToggleMostVisitedOrCustomLinks(page_seq_no_);
+}
+
 void SearchBox::AddCustomLink(const GURL& url, const std::string& title) {
   if (!url.is_valid()) {
     AddCustomLinkResult(false);

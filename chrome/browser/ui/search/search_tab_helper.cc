@@ -293,6 +293,11 @@ void SearchTabHelper::OnUndoAllMostVisitedDeletions() {
     instant_service_->UndoAllMostVisitedDeletions();
 }
 
+void SearchTabHelper::OnToggleMostVisitedOrCustomLinks() {
+  if (instant_service_)
+    instant_service_->ToggleMostVisitedOrCustomLinks();
+}
+
 bool SearchTabHelper::OnAddCustomLink(const GURL& url,
                                       const std::string& title) {
   DCHECK(!url.is_empty());

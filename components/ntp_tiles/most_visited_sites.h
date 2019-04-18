@@ -171,7 +171,8 @@ class MostVisitedSites : public history::TopSitesObserver,
   // otherwise.
   bool IsCustomLinksInitialized();
   // Enables or disables custom links, but does not (un)initialize them. Called
-  // when a third-party NTP is being used.
+  // when a third-party NTP is being used, or when the user switches between
+  // custom links and Most Visited sites.
   void EnableCustomLinks(bool enable);
   // Adds a custom link. If the number of current links is maxed, returns false
   // and does nothing. Will initialize custom links if they have not been

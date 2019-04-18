@@ -112,6 +112,9 @@ class SearchBox : public content::RenderFrameObserver,
   // Returns true if the most visited items are custom links.
   bool IsCustomLinks() const;
 
+  // Sends ToggleMostVisitedOrCustomLinks to the browser.
+  void ToggleMostVisitedOrCustomLinks();
+
   // Sends AddCustomLink to the browser.
   void AddCustomLink(const GURL& url, const std::string& title);
 
