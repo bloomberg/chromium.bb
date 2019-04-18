@@ -89,6 +89,7 @@
 #include "chrome/common/extensions/chrome_extensions_client.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/grit/chromium_strings.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "components/component_updater/component_updater_service.h"
 #include "components/component_updater/timer_update_scheduler.h"
@@ -289,6 +290,12 @@ void BrowserProcessImpl::Init() {
 
 #if !defined(OS_CHROMEOS)
   message_center::MessageCenter::Initialize();
+  // Set the system notification source display name ("Google Chrome" or
+  // "Chromium").
+  if (message_center::MessageCenter::Get()) {
+    message_center::MessageCenter::Get()->SetSystemNotificationAppName(
+        l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
+  }
 #endif
 
   system_notification_helper_ = std::make_unique<SystemNotificationHelper>();
