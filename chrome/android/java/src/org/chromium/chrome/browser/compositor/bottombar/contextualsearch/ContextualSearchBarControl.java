@@ -56,6 +56,12 @@ public class ContextualSearchBarControl {
     private final ContextualSearchQuickActionControl mQuickActionControl;
 
     /**
+     * The {@link ContextualSearchCardIconControl} used to control icons for non-action Cards
+     * returned by the server.
+     */
+    private final ContextualSearchCardIconControl mCardIconControl;
+
+    /**
      * The {@link ContextualSearchImageControl} for the panel.
      */
     private ContextualSearchImageControl mImageControl;
@@ -144,6 +150,7 @@ public class ContextualSearchBarControl {
         mCaptionControl = new ContextualSearchCaptionControl(panel, context, container, loader,
                 mCanPromoteToNewTab);
         mQuickActionControl = new ContextualSearchQuickActionControl(context, loader);
+        mCardIconControl = new ContextualSearchCardIconControl(context, loader);
 
         mTextLayerMinHeight = context.getResources().getDimension(
                 R.dimen.contextual_search_text_layer_min_height);
@@ -192,6 +199,7 @@ public class ContextualSearchBarControl {
         mSearchTermControl.destroy();
         mCaptionControl.destroy();
         mQuickActionControl.destroy();
+        mCardIconControl.destroy();
     }
 
     /**
@@ -239,6 +247,19 @@ public class ContextualSearchBarControl {
         mContextControl.setContextDetails(selection, end);
         resetSearchBarContextOpacity();
         animateDividerLine(false);
+    }
+
+    /**
+     * Updates the Bar to display a dictionary definition card.
+     * @param searchTerm The string that represents the search term to display.
+     */
+    public void updateForDictionaryDefinition(String searchTerm) {
+        if (!mCardIconControl.canUpdateControlsForDefinition(
+                    mContextControl, mImageControl, searchTerm)) {
+            // Can't style, just update with the text to display.
+            setSearchTerm(searchTerm);
+            animateSearchTermResolution();
+        }
     }
 
     /**
@@ -340,7 +361,7 @@ public class ContextualSearchBarControl {
             // TODO(twellington): should the quick action caption be stored separately from the
             // regular caption?
             mCaptionControl.setCaption(mQuickActionControl.getCaption());
-            mImageControl.setQuickActionIconResourceId(mQuickActionControl.getIconResId());
+            mImageControl.setCardIconResourceId(mQuickActionControl.getIconResId());
             animateDividerLine(true);
         }
     }
