@@ -1481,8 +1481,6 @@ Bug(none) virtual/layout_ng_experimental/fragmentation/scrolling-contents-scroll
 
 # Flexbox in NG
 #
-# Fails due to fragment caching (?)
-crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/flexbox-width-with-overflow-auto.html [ Failure ]
 
 ### virtual/layout_ng_experimental/css3/flexbox/
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/auto-height-column-with-border-and-padding.html [ Failure ]
