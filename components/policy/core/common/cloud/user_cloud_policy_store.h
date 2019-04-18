@@ -30,7 +30,8 @@ class POLICY_EXPORT DesktopCloudPolicyStore : public UserCloudPolicyStoreBase {
       const base::FilePath& policy_file,
       const base::FilePath& key_file,
       scoped_refptr<base::SequencedTaskRunner> background_task_runner,
-      PolicyScope policy_scope);
+      PolicyScope policy_scope,
+      PolicySource policy_source);
   ~DesktopCloudPolicyStore() override;
 
   // Loads policy immediately on the current thread. Virtual for mocks.
