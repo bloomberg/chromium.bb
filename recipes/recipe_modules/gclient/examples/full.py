@@ -38,6 +38,7 @@ TEST_CONFIGS = [
   'master_deps',
   'mojo',
   'nacl',
+  'openscreen',
   'pdfium',
   'recipes_py',
   'recipes_py_bare',

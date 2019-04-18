@@ -441,3 +441,10 @@ def celab(c):
   soln.name = 'cel'
   soln.url = 'https://chromium.googlesource.com/enterprise/cel.git'
   c.got_revision_mapping['cel'] = 'got_revision'
+
+@config_ctx()
+def openscreen(c):
+  s = c.solutions.add()
+  s.name = 'openscreen'
+  s.url = 'https://chromium.googlesource.com/openscreen'
+  c.got_revision_mapping['openscreen'] = 'got_revision'
