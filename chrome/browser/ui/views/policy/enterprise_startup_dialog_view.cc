@@ -158,6 +158,10 @@ bool EnterpriseStartupDialogView::Close() {
   return Cancel();
 }
 
+bool EnterpriseStartupDialogView::IsDialogDraggable() const {
+  return true;
+}
+
 bool EnterpriseStartupDialogView::ShouldShowWindowTitle() const {
   return false;
 }

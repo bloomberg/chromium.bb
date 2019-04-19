@@ -122,6 +122,10 @@ bool ChromeCleanerRebootDialog::Close() {
   return true;
 }
 
+bool ChromeCleanerRebootDialog::IsDialogDraggable() const {
+  return true;
+}
+
 void ChromeCleanerRebootDialog::HandleDialogInteraction(
     DialogInteractionResult result) {
   if (!dialog_controller_)

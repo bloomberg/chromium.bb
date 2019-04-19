@@ -57,6 +57,7 @@ class TestDialog : public DialogDelegateView {
     closed_ = true;
     return closeable_;
   }
+  bool IsDialogDraggable() const override { return true; }
 
   gfx::Size CalculatePreferredSize() const override {
     return gfx::Size(200, 200);

@@ -388,6 +388,13 @@ bool ExtensionInstallDialogView::Accept() {
   return true;
 }
 
+// parent_window() may be null if an upgrade permissions prompt is triggered
+// when launching via a desktop shortcut. In that case, there is no browser
+// window to move (which would move the dialog), so allow dragging in this case.
+bool ExtensionInstallDialogView::IsDialogDraggable() const {
+  return !parent_window();
+}
+
 int ExtensionInstallDialogView::GetDialogButtons() const {
   int buttons = prompt_->GetDialogButtons();
   // Simply having just an OK button is *not* supported. See comment on function

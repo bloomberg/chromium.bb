@@ -44,6 +44,7 @@ class ChromeCleanerRebootDialog : public views::DialogDelegateView {
   bool Accept() override;
   bool Cancel() override;
   bool Close() override;
+  bool IsDialogDraggable() const override;
 
  private:
   enum class DialogInteractionResult {
