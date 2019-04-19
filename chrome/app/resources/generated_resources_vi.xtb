@@ -92,7 +92,7 @@
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">Chỉnh sửa công cụ tìm kiếm</translation>
 <translation id="1134009406053225289">Mở trong cửa sổ ẩn danh</translation>
-<translation id="1136712381129578788">Khóa bảo mật bị khóa do bạn đã nhập sai mã PIN quá nhiều lần. Để mở khóa, hãy rút ra và cắm lại khóa bảo mật.</translation>
+<translation id="1136712381129578788">Khóa bảo mật đã bị khóa do bạn nhập sai mã PIN quá nhiều lần. Để mở khóa, hãy rút ra và cắm lại.</translation>
 <translation id="1137673463384776352">Mở liên kết trong <ph name="APP" /></translation>
 <translation id="1140351953533677694">Truy cập thiết bị tuần tự và Bluetooth của bạn</translation>
 <translation id="1140610710803014750">Để sử dụng dấu trang trên tất cả các thiết bị của bạn, hãy đăng nhập và bật đồng bộ hóa.</translation>
@@ -161,7 +161,7 @@
 <translation id="1227507814927581609">Xác thực không thành công trong khi kết nối với "<ph name="DEVICE_NAME" />".</translation>
 <translation id="1231733316453485619">Bạn muốn bật tính năng đồng bộ hóa?</translation>
 <translation id="1232569758102978740">Không tên</translation>
-<translation id="1233497634904001272">Chạm lại vào khóa bảo mật của bạn để hoàn tất yêu cầu.</translation>
+<translation id="1233497634904001272">Chạm lại vào khóa bảo mật để hoàn tất yêu cầu.</translation>
 <translation id="1233721473400465416">Ngôn ngữ</translation>
 <translation id="1234808891666923653">Service Workers</translation>
 <translation id="1235458158152011030">Mạng đã biết</translation>
@@ -203,7 +203,7 @@
 <translation id="1303671224831497365">Không tìm thấy thiết bị Bluetooth nào</translation>
 <translation id="130491383855577612">Đã thay thế thành công các ứng dụng và tệp Linux</translation>
 <translation id="1306606229401759371">Thay đổi cài đặt</translation>
-<translation id="1307165550267142340">Bạn đã tạo mã PIN của mình</translation>
+<translation id="1307165550267142340">Mã PIN của bạn đã được tạo</translation>
 <translation id="1307559529304613120">Rất tiếc! Hệ thống không lưu trữ được mã thông báo truy cập API dài hạn cho thiết bị này.</translation>
 <translation id="1313405956111467313">Cấu hình proxy tự động</translation>
 <translation id="131364520783682672">Caps Lock</translation>
@@ -258,7 +258,7 @@
 <translation id="1399511500114202393">Không có chứng chỉ người dùng</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (Được giám sát)</translation>
 <translation id="1406500794671479665">Đang xác minh...</translation>
-<translation id="140723521119632973">Kích hoạt thẻ SIM mạng di động</translation>
+<translation id="140723521119632973">Kích hoạt mạng di động</translation>
 <translation id="1407489512183974736">Cắt giữa</translation>
 <translation id="1408504635543854729">Khám phá nội dung của thiết bị trong ứng dụng Tệp. Quản trị viên đã hạn chế nội dung và bạn không thể sửa đổi nội dung này.</translation>
 <translation id="1408789165795197664">Nâng cao...</translation>
@@ -1774,7 +1774,7 @@
 <translation id="3776796446459804932">Tiện ích này vi phạm chính sách của Cửa hàng Chrome trực tuyến.</translation>
 <translation id="3777806571986431400">Đã bật tiện ích</translation>
 <translation id="3778152852029592020">Đã hủy tải xuống.</translation>
-<translation id="3778208826288864398">Khóa bảo mật bị khóa do bạn đã nhập sai mã PIN quá nhiều lần. Bạn cần đặt lại khóa bảo mật.</translation>
+<translation id="3778208826288864398">Khóa bảo mật đã bị khóa do bạn nhập sai mã PIN quá nhiều lần. Bạn cần đặt lại khóa bảo mật.</translation>
 <translation id="3778740492972734840">Công cụ dành cho &amp;Nhà phát triển</translation>
 <translation id="3778868487658107119">Đặt câu hỏi cho Trợ lý. Yêu cầu Trợ lý làm mọi việc. Đó là Google của riêng bạn, luôn sẵn sàng trợ giúp bạn.</translation>
 <translation id="378312418865624974">Đọc mã số nhận dạng duy nhất dành cho máy tính này</translation>
@@ -1993,7 +1993,7 @@
 <translation id="4090947011087001172">Đặt lại quyền của trang web cho <ph name="SITE" />?</translation>
 <translation id="4091434297613116013">trang giấy</translation>
 <translation id="4093955363990068916">Tệp cục bộ:</translation>
-<translation id="4095264805865317199">Mở UI kích hoạt di động</translation>
+<translation id="4095264805865317199">Mở giao diện kích hoạt mạng di động</translation>
 <translation id="4095507791297118304">Màn hình chính</translation>
 <translation id="409579654357498729">Thêm vào Cloud Print</translation>
 <translation id="4096508467498758490">Vô hiệu hóa tiện ích chế độ nhà phát triển</translation>
@@ -2014,7 +2014,7 @@
 <translation id="4120388883569225797">Không thể đặt lại khóa bảo mật này</translation>
 <translation id="4120817667028078560">Đường dẫn quá dài</translation>
 <translation id="4121428309786185360">Hết hạn Vào</translation>
-<translation id="4124823734405044952">Bạn đã đặt lại khóa bảo mật của mình</translation>
+<translation id="4124823734405044952">Khóa bảo mật của bạn đã được đặt lại</translation>
 <translation id="4124935795427217608">Kỳ lân</translation>
 <translation id="412730574613779332">Spandex</translation>
 <translation id="412940972494182898">Chạy Flash lần này</translation>

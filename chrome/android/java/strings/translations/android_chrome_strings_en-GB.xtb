@@ -45,6 +45,7 @@
 <translation id="1285320974508926690">Never translate this site</translation>
 <translation id="1291207594882862231">Clear history, cookies, site data, cache…</translation>
 <translation id="129553762522093515">Recently closed</translation>
+<translation id="1303507811548703290"><ph name="DOMAIN" /> – Sent from <ph name="DEVICE_NAME" /></translation>
 <translation id="1326317727527857210">To get your tabs from your other devices, sign in to Chrome.</translation>
 <translation id="1331212799747679585">Chrome can’t update. More options</translation>
 <translation id="1332501820983677155">Google Chrome feature shortcuts</translation>
@@ -171,6 +172,7 @@
 <translation id="2154484045852737596">Edit card</translation>
 <translation id="2154710561487035718">Copy URL</translation>
 <translation id="2156074688469523661">Remaining sites (<ph name="NUMBER_OF_SITES" />)</translation>
+<translation id="218608176142494674">Sharing</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, web app. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Continue as <ph name="USER_FULL_NAME" /></translation>
 <translation id="2232379019872353004">Sends some system information and page content to Google</translation>
@@ -651,6 +653,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="5797070761912323120">Google may use your history to personalise Search, ads and other Google services</translation>
 <translation id="5804241973901381774">Permissions</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{# hour ago}other{# hours ago}}</translation>
+<translation id="5810288467834065221">Copyright <ph name="YEAR" /> Google LLC. All rights reserved.</translation>
 <translation id="5817918615728894473">Pair</translation>
 <translation id="583281660410589416">Unknown</translation>
 <translation id="5833984609253377421">Share link</translation>
@@ -903,6 +906,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="756809126120519699">Cleared Chrome data</translation>
 <translation id="757524316907819857">Block sites from playing protected content</translation>
 <translation id="757855969265046257">{FILES,plural, =1{<ph name="FILES_DOWNLOADED_ONE" /> file downloaded}other{<ph name="FILES_DOWNLOADED_MANY" /> files downloaded}}</translation>
+<translation id="7588219262685291874">Turn on dark theme when your device's Battery Saver is on</translation>
 <translation id="7589445247086920869">Block for current search engine</translation>
 <translation id="7593557518625677601">Open Android settings and re-enable Android system sync to start Chrome sync</translation>
 <translation id="7596558890252710462">Operating system</translation>
@@ -1002,6 +1006,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="8266862848225348053">Download location</translation>
 <translation id="8274165955039650276">See downloads</translation>
 <translation id="8283853025636624853">Syncing to <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
+<translation id="8300705686683892304">Managed by app</translation>
 <translation id="8310344678080805313">Standard tabs</translation>
 <translation id="8313455859591948645">Edit startup page</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> and more sites</translation>

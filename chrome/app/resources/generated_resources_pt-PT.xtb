@@ -3529,7 +3529,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6564072216966459757">Remover aplicações do Linux para <ph name="DEVICE_TYPE" /></translation>
 <translation id="6567688344210276845">Não foi possível carregar o ícone "<ph name="ICON" />" para a ação da página.</translation>
 <translation id="6571979863037191371">Desassocie o seu telemóvel do Chromebook. Deixarão de se ligar um ao outro automaticamente.</translation>
-<translation id="6573998787994398565"><ph name="FILE_NAME" /> não é habitualmente transferido e pode ser perigoso. Está protegido pela Proteção avançada.</translation>
+<translation id="6573998787994398565">O ficheiro <ph name="FILE_NAME" /> não é habitualmente transferido e pode ser perigoso. Está protegido pela Proteção avançada.</translation>
 <translation id="657402800789773160">&amp;Recarregar esta página</translation>
 <translation id="6577284282025554716">Transferência cancelada: <ph name="FILE_NAME" /></translation>
 <translation id="6578664922716508575">Encriptar as palavras-passe sincronizadas com o seu nome de utilizador e palavra-passe Google</translation>

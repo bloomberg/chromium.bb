@@ -1288,7 +1288,6 @@
 <translation id="8100588592594801589">유효하지 않은 카드가 삭제되었습니다.</translation>
 <translation id="8103161714697287722">결제 수단</translation>
 <translation id="8118489163946903409">결제 수단</translation>
-<translation id="8123836779274890062"><ph name="DEVICE_TYPE" /> 기기는 <ph name="ENROLLMENT_DOMAIN" />에서 관리하는 기기입니다</translation>
 <translation id="8127301229239896662">'<ph name="SOFTWARE_NAME" />'이(가) 컴퓨터 또는 네트워크에 제대로 설치되지 않았습니다. IT 관리자에게 문제 해결을 요청해 보세요.</translation>
 <translation id="8131740175452115882">확인</translation>
 <translation id="8149426793427495338">컴퓨터가 절전 모드 상태입니다.</translation>

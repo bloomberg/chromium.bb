@@ -1278,7 +1278,6 @@
 <translation id="8100588592594801589">無効なカードを削除しました</translation>
 <translation id="8103161714697287722">お支払い方法</translation>
 <translation id="8118489163946903409">お支払い方法</translation>
-<translation id="8123836779274890062"><ph name="DEVICE_TYPE" /> は <ph name="ENROLLMENT_DOMAIN" /> によって管理されています</translation>
 <translation id="8127301229239896662">「<ph name="SOFTWARE_NAME" />」がパソコンまたはネットワークに正しくインストールされていません。管理者にこの問題を解決するよう依頼してください。</translation>
 <translation id="8131740175452115882">確認</translation>
 <translation id="8149426793427495338">パソコンがスリープ状態です。</translation>

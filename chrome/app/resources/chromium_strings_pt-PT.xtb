@@ -30,7 +30,7 @@
 <translation id="1929939181775079593">O Chromium não responde. Reiniciar agora?</translation>
 <translation id="1966382378801805537">O Chromium não consegue determinar ou definir o navegador predefinido</translation>
 <translation id="2008474315282236005">Esta ação elimina 1 item deste dispositivo. Para recuperar os dados mais tarde, inicie sessão no Chromium como <ph name="USER_EMAIL" />.</translation>
-<translation id="2037988709973327241"><ph name="FILE_NAME" /> é perigoso. Como tal, o Chromium bloqueou-o. Está protegido pela Proteção avançada.</translation>
+<translation id="2037988709973327241">O ficheiro <ph name="FILE_NAME" /> é perigoso. Como tal, o Chromium bloqueou-o. Está protegido pela Proteção avançada.</translation>
 <translation id="2117378023188580026">O seu administrador solicita-lhe que reinicie o Chromium para aplicar esta atualização.</translation>
 <translation id="2119636228670142020">Acerca do SO &amp;Chromium</translation>
 <translation id="2178765360243863853">Deve reiniciar o Chromium agora</translation>
@@ -62,7 +62,7 @@
 <translation id="3068515742935458733">Ajudar a melhorar o Chromium ao enviar relatórios de falhas e <ph name="UMA_LINK" /> à Google</translation>
 <translation id="3103660991484857065">Houve uma falha no programa de instalação ao descompactar o arquivo. Transfira novamente o Chromium.</translation>
 <translation id="3130323860337406239">O Chromium está a utilizar o microfone.</translation>
-<translation id="3154325651427862069"><ph name="FILE_NAME" /> pode ser perigoso. Como tal, o Chromium bloqueou-o. Está protegido pela Proteção avançada.</translation>
+<translation id="3154325651427862069">O ficheiro <ph name="FILE_NAME" /> pode ser perigoso. Como tal, o Chromium bloqueou-o. Está protegido pela Proteção avançada.</translation>
 <translation id="3155163173539279776">Reiniciar o Chromium</translation>
 <translation id="3179665906251668410">Abrir link numa janela de nave&amp;gação anónima do Chromium</translation>
 <translation id="3190315855212034486">Ups! O Chromium falhou. Reiniciar agora?</translation>

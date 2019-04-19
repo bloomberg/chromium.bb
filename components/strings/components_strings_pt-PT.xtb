@@ -777,7 +777,7 @@
 <translation id="5252000469029418751">C7 (Envelope)</translation>
 <translation id="5254958791078852567">E1</translation>
 <translation id="5283044957620376778">B1</translation>
-<translation id="528468243742722775">End</translation>
+<translation id="528468243742722775">Sair</translation>
 <translation id="5284909709419567258">Endereços de rede</translation>
 <translation id="5285570108065881030">Mostrar todas as palavras-passe guardadas</translation>
 <translation id="5287240709317226393">Mostrar cookies</translation>
@@ -1288,7 +1288,6 @@ Detalhes adicionais:
 <translation id="8100588592594801589">Os cartões inválidos foram removidos.</translation>
 <translation id="8103161714697287722">Método de pagamento</translation>
 <translation id="8118489163946903409">Método de pagamento</translation>
-<translation id="8123836779274890062"><ph name="DEVICE_TYPE" /> gerido por <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="8127301229239896662">O "<ph name="SOFTWARE_NAME" />" não foi instalado corretamente no computador ou na rede. Peça ao gestor de TI que resolva este problema.</translation>
 <translation id="8131740175452115882">Confirmar</translation>
 <translation id="8149426793427495338">O computador entrou em suspensão.</translation>
