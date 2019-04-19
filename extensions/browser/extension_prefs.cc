@@ -1869,7 +1869,7 @@ void ExtensionPrefs::RegisterProfilePrefs(
                                 true);
   registry->RegisterIntegerPref(kCorruptedDisableCount, 0);
   registry->RegisterBooleanPref(pref_names::kInsecureExtensionUpdatesEnabled,
-                                true);
+                                false);
   registry->RegisterBooleanPref(pref_names::kUninstallBlacklistedExtensions,
                                 false);
 
