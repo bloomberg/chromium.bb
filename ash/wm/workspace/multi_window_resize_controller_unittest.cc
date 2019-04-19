@@ -278,6 +278,17 @@ TEST_F(MultiWindowResizeControllerTest, Drag) {
   EXPECT_TRUE(IsShowing());
   EXPECT_EQ(gfx::Rect(0, 0, 110, 100), w1->bounds());
   EXPECT_EQ(gfx::Rect(110, 0, 100, 100), w2->bounds());
+
+  // It should be possible to move 1px.
+  bounds = resize_widget()->GetWindowBoundsInScreen();
+
+  generator->MoveMouseTo(bounds.x() + 1, bounds.y() + 1);
+  generator->PressLeftButton();
+  generator->MoveMouseBy(1, 0);
+  generator->ReleaseLeftButton();
+
+  EXPECT_EQ(gfx::Rect(0, 0, 111, 100), w1->bounds());
+  EXPECT_EQ(gfx::Rect(111, 0, 100, 100), w2->bounds());
 }
 
 // Makes sure three windows are picked up.

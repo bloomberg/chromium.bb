@@ -905,6 +905,10 @@ bool WorkspaceWindowResizer::UpdateMagnetismWindow(
   const std::vector<aura::Window*>& children = container->children();
   for (auto i = children.rbegin();
        i != children.rend() && !matcher.AreEdgesObscured(); ++i) {
+    // Ignore already attached windows.
+    if (base::ContainsValue(attached_windows_, *i))
+      continue;
+
     wm::WindowState* other_state = wm::GetWindowState(*i);
     if (other_state->window() == GetTarget() ||
         !other_state->window()->IsVisible() ||
