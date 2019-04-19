@@ -24,6 +24,16 @@
     </Expand>
   </Type>
 
+  <Type Name="std::__1::array&lt;*,*&gt;">
+    <DisplayString>{{ size={$T2} }}</DisplayString>
+    <Expand>
+      <ArrayItems>
+        <Size>$T2</Size>
+        <ValuePointer>__elems_</ValuePointer>
+      </ArrayItems>
+    </Expand>
+  </Type>
+
   <!--libc++'s short string optimization:
       A basic_string is 3 size_t words long. In the "alternate string layout" that we use,
       they are: pointer to data, size, capacity.
@@ -101,14 +111,73 @@
     </Expand>
   </Type>
 
- <Type Name="std::__1::map&lt;*&gt;">
-    <DisplayString>{{ size={__tree_.__pair3_} }}</DisplayString>
+  <Type Name="std::__1::deque&lt;*,*&gt;">
+    <Intrinsic Name="size" Expression="*(size_type*)&amp;__size_" />
+    <Intrinsic Name="block_size"
+        Expression="sizeof($T1) &lt; 256 ? 4096 / sizeof($T1) : 16" />
+    <DisplayString>{{ size={size()} }}</DisplayString>
     <Expand>
-      <Item Name="[size]">__tree_.__pair3_</Item>
+      <IndexListItems>
+        <Size>size()</Size>
+        <ValueNode>
+          *(*(__map_.__begin_ + ($i + __start_) / block_size()) +
+                                ($i + __start_) % block_size())
+        </ValueNode>
+      </IndexListItems>
+    </Expand>
+  </Type>
+
+  <Type Name="std::__1::forward_list&lt;*&gt;">
+    <Intrinsic Name="head"
+        Expression="((__node_pointer)&amp;__before_begin_)-&gt;__next_" />
+    <DisplayString Condition="head() == 0">empty</DisplayString>
+    <DisplayString Condition="head() != 0">non-empty</DisplayString>
+    <Expand>
+      <LinkedListItems>
+        <HeadPointer>head()</HeadPointer>
+        <NextPointer>__next_</NextPointer>
+        <ValueNode>__value_</ValueNode>
+      </LinkedListItems>
+    </Expand>
+  </Type>
+
+  <!-- Note: Not in __1! But will win over the one in stl.natvis -->
+  <Type Name="std::initializer_list&lt;*&gt;">
+    <DisplayString>{{ size={__size_} }}</DisplayString>
+    <Expand>
+      <ArrayItems>
+        <Size>__size_</Size>
+        <ValuePointer>__begin_</ValuePointer>
+      </ArrayItems>
+    </Expand>
+  </Type>
+
+  <Type Name="std::__1::list&lt;*&gt;">
+    <Intrinsic Name="size" Expression="*(size_type*)&amp;__size_alloc_" />
+    <DisplayString>{{ size={size()} }}</DisplayString>
+    <Expand>
+      <LinkedListItems>
+        <Size>size()</Size>
+        <HeadPointer>__end_.__next_</HeadPointer>
+        <NextPointer>__next_</NextPointer>
+        <ValueNode>
+          ((std::__1::list&lt;$T1,$T2&gt;::__node_pointer)this)
+              -&gt;__value_
+        </ValueNode>
+      </LinkedListItems>
+    </Expand>
+  </Type>
+
+  <Type Name="std::__1::map&lt;*&gt;">
+    <Intrinsic Name="size" Expression="*(size_type*)&amp;__tree_.__pair3_" />
+    <DisplayString>{{ size={size()} }}</DisplayString>
+    <Expand>
+      <Item Name="[size]">size()</Item>
       <TreeItems>
-        <Size>*(size_type*)&amp;__tree_.__pair3_</Size>
+        <Size>size()</Size>
         <HeadPointer>
-          ((__node_pointer)&amp;__tree_.__pair1_)-&gt;__left_</HeadPointer>
+          ((__node_pointer)&amp;__tree_.__pair1_)-&gt;__left_
+        </HeadPointer>
         <LeftPointer>
           ((std::__1::map&lt;$T1,$T2,$T3,$T4&gt;::__node_pointer)this)
               -&gt;__left_
@@ -125,6 +194,101 @@
     </Expand>
   </Type>
 
+  <Type Name="std::__1::multimap&lt;*&gt;">
+    <Intrinsic Name="size" Expression="*(size_type*)&amp;__tree_.__pair3_" />
+    <DisplayString>{{ size={size()} }}</DisplayString>
+    <Expand>
+      <Item Name="[size]">size()</Item>
+      <TreeItems>
+        <Size>size()</Size>
+        <HeadPointer>
+          ((__node_pointer)&amp;__tree_.__pair1_)-&gt;__left_
+        </HeadPointer>
+        <LeftPointer>
+          ((std::__1::multimap&lt;$T1,$T2,$T3,$T4&gt;::__node_pointer)this)
+              -&gt;__left_
+        </LeftPointer>
+        <RightPointer>
+          ((std::__1::multimap&lt;$T1,$T2,$T3,$T4&gt;::__node_pointer)this)
+              -&gt;__right_
+        </RightPointer>
+        <ValueNode>
+          ((std::__1::multimap&lt;$T1,$T2,$T3,$T4&gt;::__node_pointer)this)
+              -&gt;__value_.__cc
+        </ValueNode>
+      </TreeItems>
+    </Expand>
+  </Type>
+
+  <Type Name="std::__1::multiset&lt;*&gt;">
+    <Intrinsic Name="size" Expression="*(size_type*)&amp;__tree_.__pair3_" />
+    <DisplayString>{{ size={size()} }}</DisplayString>
+    <Expand>
+      <Item Name="[size]">size()</Item>
+      <TreeItems>
+        <Size>size()</Size>
+        <HeadPointer>
+          ((__base::__node_pointer)&amp;__tree_.__pair1_)-&gt;__left_
+        </HeadPointer>
+        <LeftPointer>
+          ((std::__1::multiset&lt;$T1,$T2,$T3&gt;::__base::__node_pointer)this)
+              -&gt;__left_
+        </LeftPointer>
+        <RightPointer>
+          ((std::__1::multiset&lt;$T1,$T2,$T3&gt;::__base::__node_pointer)this)
+              -&gt;__right_
+        </RightPointer>
+        <ValueNode>
+          ((std::__1::multiset&lt;$T1,$T2,$T3&gt;::__base::__node_pointer)this)
+              -&gt;__value_
+        </ValueNode>
+      </TreeItems>
+    </Expand>
+  </Type>
+
+
+  <Type Name="std::__1::set&lt;*&gt;">
+    <Intrinsic Name="size" Expression="*(size_type*)&amp;__tree_.__pair3_" />
+    <DisplayString>{{ size={size()} }}</DisplayString>
+    <Expand>
+      <Item Name="[size]">size()</Item>
+      <TreeItems>
+        <Size>size()</Size>
+        <HeadPointer>
+          ((__base::__node_pointer)&amp;__tree_.__pair1_)-&gt;__left_
+        </HeadPointer>
+        <LeftPointer>
+          ((std::__1::set&lt;$T1,$T2,$T3&gt;::__base::__node_pointer)this)
+              -&gt;__left_
+        </LeftPointer>
+        <RightPointer>
+          ((std::__1::set&lt;$T1,$T2,$T3&gt;::__base::__node_pointer)this)
+              -&gt;__right_
+        </RightPointer>
+        <ValueNode>
+          ((std::__1::set&lt;$T1,$T2,$T3&gt;::__base::__node_pointer)this)
+              -&gt;__value_
+        </ValueNode>
+      </TreeItems>
+    </Expand>
+  </Type>
+
+  <Type Name="std::__1::stack&lt;*&gt;">
+    <AlternativeType Name="std::__1::queue&lt;*&gt;" />
+    <DisplayString>{c}</DisplayString>
+    <Expand>
+      <ExpandedItem>c</ExpandedItem>
+    </Expand>
+  </Type>
+
+  <Type Name="std::__1::priority_queue&lt;*&gt;">
+    <DisplayString>{c}</DisplayString>
+    <Expand>
+      <ExpandedItem>c</ExpandedItem>
+      <Item Name="[comp]">comp</Item>
+    </Expand>
+  </Type>
+
   <Type Name="std::__1::unique_ptr&lt;*&gt;">
     <Intrinsic Name="value" Expression="*($T1**)&amp;__ptr_" />
     <SmartPointer Usage="Minimal">value()</SmartPointer>
@@ -138,6 +302,7 @@
 
   <Type Name="std::__1::vector&lt;*&gt;">
     <Intrinsic Name="size" Expression="__end_ - __begin_" />
+    <DisplayString>{{ size={size()} }}</DisplayString>
     <Expand>
       <ArrayItems>
         <Size>size()</Size>
