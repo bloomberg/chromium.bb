@@ -4,6 +4,7 @@
 
 #include "services/network/public/cpp/cors/preflight_cache.h"
 
+#include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/time/time.h"
 #include "net/http/http_request_headers.h"
@@ -23,6 +24,7 @@ class PreflightCacheTest : public testing::Test {
  protected:
   size_t CountOrigins() const { return cache_.CountOriginsForTesting(); }
   size_t CountEntries() const { return cache_.CountEntriesForTesting(); }
+  void MayPurge(size_t max_entries) { cache_.MayPurgeForTesting(max_entries); }
   PreflightCache* cache() { return &cache_; }
 
   void AppendEntry(const std::string& origin, const GURL& url) {
@@ -47,6 +49,7 @@ class PreflightCacheTest : public testing::Test {
   void SetUp() override { PreflightResult::SetTickClockForTesting(&clock_); }
   void TearDown() override { PreflightResult::SetTickClockForTesting(nullptr); }
 
+  base::test::ScopedTaskEnvironment env_;
   PreflightCache cache_;
   base::SimpleTestTickClock clock_;
 };
@@ -74,6 +77,11 @@ TEST_F(PreflightCacheTest, CacheSize) {
 
   EXPECT_EQ(2u, CountOrigins());
   EXPECT_EQ(3u, CountEntries());
+
+  for (size_t max_entries : {3, 2, 1, 0}) {
+    MayPurge(max_entries);
+    EXPECT_EQ(max_entries, CountEntries());
+  }
 }
 
 TEST_F(PreflightCacheTest, CacheTimeout) {
