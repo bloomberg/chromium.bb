@@ -104,6 +104,7 @@ void PlatformKeysTestBase::SetUpInProcessBrowserTestFixture() {
     device_affiliation_ids.insert(kAffiliationID);
     ASSERT_NO_FATAL_FAILURE(affiliation_helper.SetDeviceAffiliationIDs(
         &device_policy_test_helper_, device_affiliation_ids));
+    device_policy_test_helper_.InstallOwnerKey();
     install_attributes_.Get()->SetCloudManaged(
         policy::PolicyBuilder::kFakeDomain,
         policy::PolicyBuilder::kFakeDeviceId);

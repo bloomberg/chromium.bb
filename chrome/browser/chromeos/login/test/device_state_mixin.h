@@ -38,6 +38,7 @@ class DeviceStateMixin : public InProcessBrowserTestMixin {
  private:
   void SetDeviceState();
   void WriteInstallAttrFile();
+  void WriteOwnerKey();
 
   State state_;
   std::string domain_;

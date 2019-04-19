@@ -392,7 +392,6 @@ class DisplayResolutionBootTest
   void SetUpInProcessBrowserTestFixture() override {
     // Override FakeSessionManagerClient. This will be shut down by the browser.
     chromeos::SessionManagerClient::InitializeFakeInMemory();
-    test_helper_.InstallOwnerKey();
     ash::DisplayConfigurationController::DisableAnimatorForTest();
     chromeos::MixinBasedInProcessBrowserTest::
         SetUpInProcessBrowserTestFixture();

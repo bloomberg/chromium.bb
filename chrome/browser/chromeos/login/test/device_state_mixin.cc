@@ -4,11 +4,13 @@
 
 #include "chrome/browser/chromeos/login/test/device_state_mixin.h"
 
+#include "base/numerics/safe_conversions.h"
 #include "base/path_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/constants/chromeos_paths.h"
+#include "components/policy/core/common/cloud/policy_builder.h"
 #include "components/policy/proto/install_attributes.pb.h"
 #include "components/prefs/pref_service.h"
 
@@ -66,6 +68,7 @@ void DeviceStateMixin::SetDeviceState() {
   is_setup_ = true;
 
   WriteInstallAttrFile();
+  WriteOwnerKey();
 }
 
 void DeviceStateMixin::WriteInstallAttrFile() {
@@ -102,8 +105,31 @@ void DeviceStateMixin::WriteInstallAttrFile() {
   std::string blob;
   CHECK(BuildInstallAttributes(device_mode, domain, realm, kFakeDeviceId)
             .SerializeToString(&blob));
-  CHECK_EQ(static_cast<int>(blob.size()),
-           base::WriteFile(install_attrs_file, blob.data(), blob.size()));
+  CHECK_EQ(base::checked_cast<int>(blob.length()),
+           base::WriteFile(install_attrs_file, blob.data(), blob.length()));
+}
+
+void DeviceStateMixin::WriteOwnerKey() {
+  switch (state_) {
+    case DeviceStateMixin::State::BEFORE_OOBE:
+    case DeviceStateMixin::State::OOBE_COMPLETED_UNOWNED:
+    case DeviceStateMixin::State::OOBE_COMPLETED_ACTIVE_DIRECTORY_ENROLLED:
+      return;
+    case DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED:
+    case DeviceStateMixin::State::OOBE_COMPLETED_CONSUMER_OWNED:
+    case DeviceStateMixin::State::OOBE_COMPLETED_DEMO_MODE:
+      base::FilePath user_data_dir;
+      base::FilePath owner_key_file;
+      CHECK(base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir));
+      owner_key_file = user_data_dir.Append("stub_owner.key");
+      const std::string owner_key_bits =
+          policy::PolicyBuilder::GetPublicTestKeyAsString();
+      CHECK(!owner_key_bits.empty());
+      CHECK_EQ(base::checked_cast<int>(owner_key_bits.length()),
+               base::WriteFile(owner_key_file, owner_key_bits.data(),
+                               owner_key_bits.length()));
+      break;
+  }
 }
 
 DeviceStateMixin::~DeviceStateMixin() = default;

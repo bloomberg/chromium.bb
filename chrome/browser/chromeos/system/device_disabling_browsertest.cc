@@ -131,8 +131,6 @@ void DeviceDisablingTest::SetUpInProcessBrowserTestFixture() {
   chromeos::SessionManagerClient::InitializeFakeInMemory();
 
   OobeBaseTest::SetUpInProcessBrowserTestFixture();
-
-  test_helper_.InstallOwnerKey();
 }
 
 void DeviceDisablingTest::SetUpOnMainThread() {

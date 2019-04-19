@@ -130,7 +130,7 @@ base::FilePath GetKerberosCredentialsCachePath() {
 
 class ExistingUserControllerTest : public policy::DevicePolicyCrosBrowserTest {
  protected:
-  ExistingUserControllerTest() {}
+  ExistingUserControllerTest() = default;
 
   ExistingUserController* existing_user_controller() {
     return ExistingUserController::current_controller();
@@ -141,16 +141,12 @@ class ExistingUserControllerTest : public policy::DevicePolicyCrosBrowserTest {
   }
 
   void SetUpInProcessBrowserTestFixture() override {
-    SetUpSessionManager();
-
     DevicePolicyCrosBrowserTest::SetUpInProcessBrowserTestFixture();
 
     mock_login_display_host_ = std::make_unique<MockLoginDisplayHost>();
     mock_login_display_ = std::make_unique<MockLoginDisplay>();
     SetUpLoginDisplay();
   }
-
-  virtual void SetUpSessionManager() {}
 
   virtual void SetUpLoginDisplay() {
     EXPECT_CALL(*mock_login_display_host_, GetLoginDisplay())
@@ -164,11 +160,13 @@ class ExistingUserControllerTest : public policy::DevicePolicyCrosBrowserTest {
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
+    policy::DevicePolicyCrosBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kLoginManager);
     command_line->AppendSwitch(switches::kForceLoginManagerInTests);
   }
 
   void SetUpOnMainThread() override {
+    policy::DevicePolicyCrosBrowserTest::SetUpOnMainThread();
     existing_user_controller_ = std::make_unique<ExistingUserController>();
     EXPECT_CALL(*mock_login_display_host_, GetExistingUserController())
         .Times(AnyNumber())
@@ -278,27 +276,16 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest, DISABLED_ExistingUserLogin) {
 // started.
 class ExistingUserControllerUntrustedTest : public ExistingUserControllerTest {
  public:
-  ExistingUserControllerUntrustedTest();
+  ExistingUserControllerUntrustedTest() = default;
 
-  void SetUpInProcessBrowserTestFixture() override;
-
-  void SetUpSessionManager() override;
+  void SetUpInProcessBrowserTestFixture() override {
+    ExistingUserControllerTest::SetUpInProcessBrowserTestFixture();
+    ExpectLoginFailure();
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ExistingUserControllerUntrustedTest);
 };
-
-ExistingUserControllerUntrustedTest::ExistingUserControllerUntrustedTest() {}
-
-void ExistingUserControllerUntrustedTest::SetUpInProcessBrowserTestFixture() {
-  ExistingUserControllerTest::SetUpInProcessBrowserTestFixture();
-
-  ExpectLoginFailure();
-}
-
-void ExistingUserControllerUntrustedTest::SetUpSessionManager() {
-  InstallOwnerKey();
-}
 
 IN_PROC_BROWSER_TEST_F(ExistingUserControllerUntrustedTest,
                        ExistingUserLoginForbidden) {
@@ -385,9 +372,8 @@ class ExistingUserControllerPublicSessionTest
     }
   }
 
-  void SetUpSessionManager() override {
-    InstallOwnerKey();
-
+  void SetUpInProcessBrowserTestFixture() override {
+    ExistingUserControllerTest::SetUpInProcessBrowserTestFixture();
     // Setup the device policy.
     em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
     em::DeviceLocalAccountInfoProto* account =
@@ -1034,9 +1020,10 @@ class ExistingUserControllerSavePasswordHashTest
     : public ExistingUserControllerTest {
  public:
   ExistingUserControllerSavePasswordHashTest() = default;
+  ~ExistingUserControllerSavePasswordHashTest() override = default;
 
-  void SetUpSessionManager() override {
-    InstallOwnerKey();
+  void SetUpInProcessBrowserTestFixture() override {
+    ExistingUserControllerTest::SetUpInProcessBrowserTestFixture();
     RefreshDevicePolicy();
   }
 };

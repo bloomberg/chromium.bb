@@ -71,15 +71,6 @@ void DevicePolicyCrosBrowserTest::SetUp() {
   chromeos::MixinBasedInProcessBrowserTest::SetUp();
 }
 
-void DevicePolicyCrosBrowserTest::SetUpInProcessBrowserTestFixture() {
-  InstallOwnerKey();
-  chromeos::MixinBasedInProcessBrowserTest::SetUpInProcessBrowserTestFixture();
-}
-
-void DevicePolicyCrosBrowserTest::InstallOwnerKey() {
-  test_helper_.InstallOwnerKey();
-}
-
 void DevicePolicyCrosBrowserTest::RefreshDevicePolicy() {
   // Reset the key to its original state.
   device_policy()->SetDefaultSigningKey();

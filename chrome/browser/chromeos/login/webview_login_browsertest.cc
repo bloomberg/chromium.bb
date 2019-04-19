@@ -542,8 +542,6 @@ class WebviewClientCertsLoginTest : public WebviewLoginTest {
   }
 
   void SetUpInProcessBrowserTestFixture() override {
-    device_policy_test_helper_.InstallOwnerKey();
-
     // Override FakeSessionManagerClient. This will be shut down by the browser.
     chromeos::SessionManagerClient::InitializeFakeInMemory();
     FakeSessionManagerClient::Get()->set_device_policy(
@@ -898,8 +896,6 @@ class WebviewProxyAuthLoginTest : public WebviewLoginTest {
 
   void SetUpInProcessBrowserTestFixture() override {
     WebviewLoginTest::SetUpInProcessBrowserTestFixture();
-
-    device_policy_test_helper_.InstallOwnerKey();
 
     FakeSessionManagerClient::Get()->set_device_policy(
         device_policy_builder()->GetBlob());

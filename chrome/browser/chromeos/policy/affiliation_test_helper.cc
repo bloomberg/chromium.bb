@@ -20,6 +20,7 @@
 #include "chrome/browser/chromeos/policy/device_cloud_policy_store_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
+#include "chrome/common/chrome_paths.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/auth_policy/fake_auth_policy_client.h"
@@ -48,6 +49,10 @@ namespace {
 
 // Creates policy key file for the user specified in |user_policy|.
 void SetUserKeys(const policy::UserPolicyBuilder& user_policy) {
+  base::FilePath user_data_dir;
+  if (base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir))
+    chromeos::dbus_paths::RegisterStubPathOverrides(user_data_dir);
+
   const AccountId account_id =
       AccountId::FromUserEmail(user_policy.policy_data().username());
   base::FilePath user_keys_dir;
@@ -123,7 +128,6 @@ void AffiliationTestHelper::SetDeviceAffiliationIDs(
   if (management_type_ != ManagementType::kActiveDirectory) {
     // Create keys and sign policy. Note that Active Directory policy is
     // unsigned.
-    test_helper->InstallOwnerKey();
     device_policy->SetDefaultSigningKey();
   }
   device_policy->Build();
