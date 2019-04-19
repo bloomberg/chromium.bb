@@ -37,10 +37,10 @@ enum class TrustStatus {
 };
 
 // Returns trust status of usage constraints dictionary |trust_dict| for a
-// certificate that |is_self_signed|.
+// certificate that |is_self_issued|.
 TrustStatus IsTrustDictionaryTrustedForPolicy(
     CFDictionaryRef trust_dict,
-    bool is_self_signed,
+    bool is_self_issued,
     const CFStringRef target_policy_oid) {
   // An empty trust dict should be interpreted as
   // kSecTrustSettingsResultTrustRoot. This is handled by falling through all
@@ -104,12 +104,22 @@ TrustStatus IsTrustDictionaryTrustedForPolicy(
   if (trust_settings_result == kSecTrustSettingsResultDeny)
     return TrustStatus::DISTRUSTED;
 
+  // This is a bit of a hack: if the cert is self-issued allow either
+  // kSecTrustSettingsResultTrustRoot or kSecTrustSettingsResultTrustAsRoot on
+  // the basis that SecTrustSetTrustSettings should not allow creating an
+  // invalid trust record in the first place. (The spec is that
   // kSecTrustSettingsResultTrustRoot can only be applied to root(self-signed)
-  // certs.
-  if (is_self_signed)
-    return (trust_settings_result == kSecTrustSettingsResultTrustRoot)
+  // certs and kSecTrustSettingsResultTrustAsRoot is used for other certs.)
+  // This hack avoids having to check the signature on the cert which is slow
+  // if using the platform APIs, and may require supporting MD5 signature
+  // algorithms on some older OSX versions or locally added roots, which is
+  // undesirable in the built-in signature verifier.
+  if (is_self_issued) {
+    return (trust_settings_result == kSecTrustSettingsResultTrustRoot ||
+            trust_settings_result == kSecTrustSettingsResultTrustAsRoot)
                ? TrustStatus::TRUSTED
                : TrustStatus::UNSPECIFIED;
+  }
 
   // kSecTrustSettingsResultTrustAsRoot can only be applied to non-root certs.
   return (trust_settings_result == kSecTrustSettingsResultTrustAsRoot)
@@ -118,15 +128,15 @@ TrustStatus IsTrustDictionaryTrustedForPolicy(
 }
 
 // Returns true if the trust settings array |trust_settings| for a certificate
-// that |is_self_signed| should be treated as a trust anchor.
+// that |is_self_issued| should be treated as a trust anchor.
 TrustStatus IsTrustSettingsTrustedForPolicy(CFArrayRef trust_settings,
-                                            bool is_self_signed,
+                                            bool is_self_issued,
                                             const CFStringRef policy_oid) {
   // An empty trust settings array (that is, the trust_settings parameter
   // returns a valid but empty CFArray) means "always trust this certificate"
   // with an overall trust setting for the certificate of
   // kSecTrustSettingsResultTrustRoot.
-  if (CFArrayGetCount(trust_settings) == 0 && is_self_signed)
+  if (CFArrayGetCount(trust_settings) == 0 && is_self_issued)
     return TrustStatus::TRUSTED;
 
   for (CFIndex i = 0, settings_count = CFArrayGetCount(trust_settings);
@@ -134,7 +144,7 @@ TrustStatus IsTrustSettingsTrustedForPolicy(CFArrayRef trust_settings,
     CFDictionaryRef trust_dict = reinterpret_cast<CFDictionaryRef>(
         const_cast<void*>(CFArrayGetValueAtIndex(trust_settings, i)));
     TrustStatus trust = IsTrustDictionaryTrustedForPolicy(
-        trust_dict, is_self_signed, policy_oid);
+        trust_dict, is_self_issued, policy_oid);
     if (trust != TrustStatus::UNSPECIFIED)
       return trust;
   }
@@ -143,9 +153,12 @@ TrustStatus IsTrustSettingsTrustedForPolicy(CFArrayRef trust_settings,
 
 // Returns true if the certificate |cert_handle| is trusted for the policy
 // |policy_oid|.
-TrustStatus IsSecCertificateTrustedForPolicy(SecCertificateRef cert_handle,
-                                             const CFStringRef policy_oid) {
-  const bool is_self_signed = x509_util::IsSelfSigned(cert_handle);
+TrustStatus IsSecCertificateTrustedForPolicy(
+    const scoped_refptr<ParsedCertificate>& cert,
+    SecCertificateRef cert_handle,
+    const CFStringRef policy_oid) {
+  const bool is_self_issued =
+      cert->normalized_subject() == cert->normalized_issuer();
   // Evaluate trust domains in user, admin, system order. Admin settings can
   // override system ones, and user settings can override both admin and system.
   for (const auto& trust_domain :
@@ -167,7 +180,7 @@ TrustStatus IsSecCertificateTrustedForPolicy(SecCertificateRef cert_handle,
       continue;
     }
     TrustStatus trust = IsTrustSettingsTrustedForPolicy(
-        trust_settings, is_self_signed, policy_oid);
+        trust_settings, is_self_issued, policy_oid);
     if (trust != TrustStatus::UNSPECIFIED)
       return trust;
   }
@@ -242,7 +255,7 @@ void TrustStoreMac::GetTrust(const scoped_refptr<ParsedCertificate>& cert,
   }
 
   TrustStatus trust_status =
-      IsSecCertificateTrustedForPolicy(cert_handle, policy_oid_);
+      IsSecCertificateTrustedForPolicy(cert, cert_handle, policy_oid_);
   switch (trust_status) {
     case TrustStatus::TRUSTED:
       *trust = CertificateTrust::ForTrustAnchor();
