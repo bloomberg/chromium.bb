@@ -3021,7 +3021,7 @@ crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-08C
 crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-08D.html [ Failure ]
 crbug.com/893490 [ Win ] external/wpt/css/css-text/white-space/control-chars-08D.html [ Failure ]
 crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-08E.html [ Failure ]
-crbug.com/893490 [ Win ] external/wpt/css/css-text/white-space/control-chars-08E.html [ Failure ]
+crbug.com/893490 [ Win7 ] external/wpt/css/css-text/white-space/control-chars-08E.html [ Failure ]
 crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-08F.html [ Failure ]
 crbug.com/893490 [ Win ] external/wpt/css/css-text/white-space/control-chars-08F.html [ Failure ]
 crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-090.html [ Failure ]
