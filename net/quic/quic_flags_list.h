@@ -322,3 +322,8 @@ QUIC_FLAG(bool,
 
 // If true, non-ASCII QUIC tags are printed as hex instead of integers."
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_print_tag_hex, false)
+
+// If true, terminate Google QUIC connections similary as IETF QUIC.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_terminate_gquic_connection_as_ietf,
+          false)
