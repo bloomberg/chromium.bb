@@ -892,6 +892,8 @@ jumbo_component("platform") {
     "graphics/dark_mode_bitmap_image_classifier.h",
     "graphics/dark_mode_color_classifier.cc",
     "graphics/dark_mode_color_classifier.h",
+    "graphics/dark_mode_filter.cc",
+    "graphics/dark_mode_filter.h",
     "graphics/dark_mode_settings.h",
     "graphics/darkmode/darkmode_classifier.cc",
     "graphics/darkmode/darkmode_classifier.h",

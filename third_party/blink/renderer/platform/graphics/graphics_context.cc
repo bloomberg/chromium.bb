@@ -64,16 +64,16 @@ class GraphicsContext::DarkModeFlags final {
 
  public:
   // This helper's lifetime should never exceed |flags|'.
-  DarkModeFlags(const GraphicsContext* gc, const PaintFlags& flags) {
-    if (!gc->dark_mode_filter_) {
+  DarkModeFlags(GraphicsContext* gc, const PaintFlags& flags) {
+    sk_sp<SkColorFilter> filter = gc->dark_mode_filter_.GetColorFilter();
+    if (!filter) {
       flags_ = &flags;
     } else {
       dark_mode_flags_ = flags;
       if (flags.HasShader()) {
-        dark_mode_flags_->setColorFilter(gc->dark_mode_filter_);
+        dark_mode_flags_->setColorFilter(filter);
       } else {
-        dark_mode_flags_->setColor(
-            gc->dark_mode_filter_->filterColor(flags.getColor()));
+        dark_mode_flags_->setColor(filter->filterColor(flags.getColor()));
       }
 
       flags_ = &dark_mode_flags_.value();
@@ -171,35 +171,7 @@ unsigned GraphicsContext::SaveCount() const {
 #endif
 
 void GraphicsContext::SetDarkMode(const DarkModeSettings& settings) {
-  dark_mode_settings_ = settings;
-
-  SkHighContrastConfig config;
-  switch (dark_mode_settings_.mode) {
-    case DarkMode::kOff:
-      dark_mode_filter_.reset(nullptr);
-      return;
-    case DarkMode::kSimpleInvertForTesting: {
-      uint8_t identity[256], invert[256];
-      for (int i = 0; i < 256; ++i) {
-        identity[i] = i;
-        invert[i] = 255 - i;
-      }
-      dark_mode_filter_ =
-          SkTableColorFilter::MakeARGB(identity, invert, invert, invert);
-      return;
-    }
-    case DarkMode::kInvertBrightness:
-      config.fInvertStyle =
-          SkHighContrastConfig::InvertStyle::kInvertBrightness;
-      break;
-    case DarkMode::kInvertLightness:
-      config.fInvertStyle = SkHighContrastConfig::InvertStyle::kInvertLightness;
-      break;
-  }
-
-  config.fGrayscale = dark_mode_settings_.grayscale;
-  config.fContrast = dark_mode_settings_.contrast;
-  dark_mode_filter_ = SkHighContrastFilter::Make(config);
+  dark_mode_filter_.UpdateSettings(settings);
 }
 
 void GraphicsContext::SaveLayer(const SkRect* bounds, const PaintFlags* flags) {
@@ -415,13 +387,15 @@ int GraphicsContext::FocusRingOutsetExtent(int offset,
 void GraphicsContext::DrawFocusRingPath(const SkPath& path,
                                         const Color& color,
                                         float width) {
-  DrawPlatformFocusRing(path, canvas_, ApplyDarkModeFilter(color).Rgb(), width);
+  DrawPlatformFocusRing(path, canvas_, dark_mode_filter_.Apply(color).Rgb(),
+                        width);
 }
 
 void GraphicsContext::DrawFocusRingRect(const SkRect& rect,
                                         const Color& color,
                                         float width) {
-  DrawPlatformFocusRing(rect, canvas_, ApplyDarkModeFilter(color).Rgb(), width);
+  DrawPlatformFocusRing(rect, canvas_, dark_mode_filter_.Apply(color).Rgb(),
+                        width);
 }
 
 void GraphicsContext::DrawFocusRing(const Path& focus_ring_path,
@@ -496,7 +470,7 @@ void GraphicsContext::DrawInnerShadow(const FloatRoundedRect& rect,
   if (ContextDisabled())
     return;
 
-  Color shadow_color = ApplyDarkModeFilter(orig_shadow_color);
+  Color shadow_color = dark_mode_filter_.Apply(orig_shadow_color);
 
   FloatRect hole_rect(rect.Rect());
   hole_rect.Inflate(-shadow_spread);
@@ -899,8 +873,10 @@ void GraphicsContext::DrawImage(
   image_flags.setBlendMode(op);
   image_flags.setColor(SK_ColorBLACK);
   image_flags.setFilterQuality(ComputeFilterQuality(image, dest, src));
-  if (ShouldApplyDarkModeFilterToImage(*image, src))
-    image_flags.setColorFilter(dark_mode_filter_);
+  if (dark_mode_filter_.ShouldApplyToImage(*image, src)) {
+    image_flags.setColorFilter(dark_mode_filter_.GetColorFilter());
+  }
+
   image->Draw(canvas_, image_flags, dest, src, should_respect_image_orientation,
               Image::kClampImageToSourceRect, decode_mode);
   paint_controller_.SetImagePainted();
@@ -934,8 +910,9 @@ void GraphicsContext::DrawImageRRect(
   image_flags.setColor(SK_ColorBLACK);
   image_flags.setFilterQuality(
       ComputeFilterQuality(image, dest.Rect(), src_rect));
-  if (ShouldApplyDarkModeFilterToImage(*image, src_rect))
-    image_flags.setColorFilter(dark_mode_filter_);
+  if (dark_mode_filter_.ShouldApplyToImage(*image, src_rect)) {
+    image_flags.setColorFilter(dark_mode_filter_.GetColorFilter());
+  }
 
   bool use_shader = (visible_src == src_rect) &&
                     (respect_orientation == kDoNotRespectImageOrientation);
@@ -1145,7 +1122,7 @@ void GraphicsContext::FillDRRect(const FloatRoundedRect& outer,
       canvas_->drawDRRect(outer, inner, ImmutableState()->FillFlags());
     } else {
       PaintFlags flags(ImmutableState()->FillFlags());
-      flags.setColor(ApplyDarkModeFilter(color).Rgb());
+      flags.setColor(dark_mode_filter_.Apply(color).Rgb());
       canvas_->drawDRRect(outer, inner, flags);
     }
 
@@ -1158,7 +1135,7 @@ void GraphicsContext::FillDRRect(const FloatRoundedRect& outer,
   stroke_r_rect.inset(stroke_width / 2, stroke_width / 2);
 
   PaintFlags stroke_flags(ImmutableState()->FillFlags());
-  stroke_flags.setColor(ApplyDarkModeFilter(color).Rgb());
+  stroke_flags.setColor(dark_mode_filter_.Apply(color).Rgb());
   stroke_flags.setStyle(PaintFlags::kStroke_Style);
   stroke_flags.setStrokeWidth(stroke_width);
 
@@ -1353,7 +1330,7 @@ void GraphicsContext::FillRectWithRoundedHole(
     return;
 
   PaintFlags flags(ImmutableState()->FillFlags());
-  flags.setColor(ApplyDarkModeFilter(color).Rgb());
+  flags.setColor(dark_mode_filter_.Apply(color).Rgb());
   canvas_->drawDRRect(SkRRect::MakeRect(rect), rounded_hole_rect, flags);
 }
 
@@ -1397,28 +1374,6 @@ sk_sp<SkColorFilter> GraphicsContext::WebCoreColorFilterToSkiaColorFilter(
   }
 
   return nullptr;
-}
-
-bool GraphicsContext::ShouldApplyDarkModeFilterToImage(
-    Image& image,
-    const FloatRect& src_rect) {
-  if (!dark_mode_filter_)
-    return false;
-
-  switch (dark_mode_settings_.image_policy) {
-    case DarkModeImagePolicy::kFilterSmart:
-      return image.ShouldApplyDarkModeFilter(src_rect);
-    case DarkModeImagePolicy::kFilterAll:
-      return true;
-    default:
-      return false;
-  }
-}
-
-Color GraphicsContext::ApplyDarkModeFilter(const Color& input) const {
-  if (!dark_mode_filter_)
-    return input;
-  return Color(dark_mode_filter_->filterColor(input.Rgb()));
 }
 
 }  // namespace blink
