@@ -1162,6 +1162,15 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   // primary profile.
   chrome_keyboard_controller_client_->Shutdown();
 
+  // Must occur before BrowserProcessImpl::StartTearDown() destroys the
+  // ProfileManager.
+  Profile* primary_user = ProfileManager::GetPrimaryUserProfile();
+  if (primary_user) {
+    // See startup_settings_cache::ReadAppLocale() comment for why we do this.
+    startup_settings_cache::WriteAppLocale(primary_user->GetPrefs()->GetString(
+        language::prefs::kApplicationLocale));
+  }
+
   // NOTE: Closes ash and destroys ash::Shell.
   ChromeBrowserMainPartsLinux::PostMainMessageLoopRun();
 
@@ -1200,11 +1209,6 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   g_browser_process->platform_part()->ShutdownSessionManager();
   // Ash needs to be closed before UserManager is destroyed.
   g_browser_process->platform_part()->DestroyChromeUserManager();
-
-  // See comment at startup_settings_cache::ReadAppLocale() for why we do this.
-  startup_settings_cache::WriteAppLocale(
-      g_browser_process->local_state()->GetString(
-          language::prefs::kApplicationLocale));
 }
 
 void ChromeBrowserMainPartsChromeos::PostDestroyThreads() {
