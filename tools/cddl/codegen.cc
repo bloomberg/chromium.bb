@@ -5,8 +5,10 @@
 #include "tools/cddl/codegen.h"
 
 #include <cinttypes>
+#include <iostream>
 #include <limits>
 #include <set>
+#include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
@@ -350,6 +352,9 @@ bool WriteTypeDefinition(int fd, const CppType& type) {
     } break;
     case CppType::Which::kStruct: {
       dprintf(fd, "\nstruct %s {\n", name.c_str());
+      if (type.type_key != absl::nullopt) {
+        dprintf(fd, "  // type key: %" PRIu64 "\n", type.type_key.value());
+      }
       dprintf(fd, "  bool operator==(const %s& other) const;\n", name.c_str());
       dprintf(fd, "  bool operator!=(const %s& other) const;\n\n",
               name.c_str());
@@ -435,40 +440,49 @@ bool EnsureDependentTypeDefinitionsWritten(int fd,
 // };
 //
 // This function ensures that Bar would be written sometime before Foo.
-bool WriteTypeDefinitions(int fd, const CppSymbolTable& table) {
+bool WriteTypeDefinitions(int fd, CppSymbolTable* table) {
   std::set<std::string> defs;
-  CppType* root_type = table.cpp_type_map.find(table.root_rule)->second;
-  // NOTE: Currently encoding the type tag as a uint8_t.
-  if (root_type->discriminated_union.members.size() >
-      std::numeric_limits<uint8_t>::max()) {
-    return false;
-  }
-  for (const auto* type : root_type->discriminated_union.members) {
-    CppType* real_type = type->tagged_type.real_type;
+  for (const std::unique_ptr<CppType>& real_type : table->cpp_types) {
     if (real_type->which != CppType::Which::kStruct ||
         real_type->struct_type.key_type ==
             CppType::Struct::KeyType::kPlainGroup) {
-      return false;
+      continue;
     }
     if (!EnsureDependentTypeDefinitionsWritten(fd, *real_type, &defs))
       return false;
   }
 
-  dprintf(fd, "\nenum class Type {\n");
-  for (const auto* type : root_type->discriminated_union.members) {
-    dprintf(fd, "    k%s,\n",
-            ToCamelCase(type->tagged_type.real_type->name).c_str());
+  dprintf(fd, "\nenum class Type : uint64_t {\n");
+  dprintf(fd, "    kUnknown = 0ull,\n");
+  for (CppType* type : table->TypesWithId()) {
+    dprintf(fd, "    k%s = %" PRIu64 "ull,\n", ToCamelCase(type->name).c_str(),
+            type->type_key.value());
   }
   dprintf(fd, "};\n");
   return true;
 }
 
+// Writes a parser that takes in a uint64_t and outputs the corresponding Type
+// if one matches up, or Type::kUnknown if none does.
+// NOTE: In future, this could be changes to use a Trie, which would allow for
+// manufacturers to more easily add their own type ids to ours.
+bool WriteTypeParserDefinition(int fd, CppSymbolTable* table) {
+  dprintf(fd, "\n//static\n");
+  dprintf(fd, "Type TypeEnumValidator::SafeCast(uint64_t type_id) {\n");
+  dprintf(fd, "  switch (type_id) {\n");
+  for (CppType* type : table->TypesWithId()) {
+    dprintf(fd, "    case uint64_t{%" PRIu64 "}: return Type::k%s;\n",
+            type->type_key.value(), ToCamelCase(type->name).c_str());
+  }
+  dprintf(fd, "    default: return Type::kUnknown;\n");
+  dprintf(fd, "  }\n}\n");
+  return true;
+}
+
 // Writes the function prototypes for the encode and decode functions for each
 // type in |table| to the file descriptor |fd|.
-bool WriteFunctionDeclarations(int fd, const CppSymbolTable& table) {
-  CppType* root_type = table.cpp_type_map.find(table.root_rule)->second;
-  for (const auto* type : root_type->discriminated_union.members) {
-    CppType* real_type = type->tagged_type.real_type;
+bool WriteFunctionDeclarations(int fd, CppSymbolTable* table) {
+  for (CppType* real_type : table->TypesWithId()) {
     const auto& name = real_type->name;
     if (real_type->which != CppType::Which::kStruct ||
         real_type->struct_type.key_type ==
@@ -835,12 +849,51 @@ bool WriteArrayEncoder(int fd,
   return true;
 }
 
+uint8_t GetByte(uint64_t value, size_t byte) {
+  return static_cast<uint8_t>((value >> (byte * 8)) & 0xFF);
+}
+
+std::string GetEncodedTypeKey(const CppType& type) {
+  if (type.type_key == absl::nullopt) {
+    return "";
+  }
+
+  // Determine all constants needed for calculating the encoded id bytes.
+  uint64_t type_id = type.type_key.value();
+  uint8_t encoding_size;
+  uint8_t start_processing_byte;
+  if (type_id < 0x1 << 6) {
+    encoding_size = 0x0;
+    start_processing_byte = 0;
+  } else if (type_id < 0x1 << 14) {
+    encoding_size = 0x01;
+    start_processing_byte = 1;
+  } else if (type_id < 0x1 << 30) {
+    encoding_size = 0x02;
+    start_processing_byte = 3;
+  } else if (type_id < uint64_t{0x1} << 62) {
+    encoding_size = 0x03;
+    start_processing_byte = 7;
+  } else {
+    return "";
+  }
+
+  // Parse the encoded id into a string;
+  std::stringstream ss;
+  uint8_t first_byte =
+      encoding_size << 6 | GetByte(type_id, start_processing_byte);
+  ss << "{0x" << std::hex << uint32_t{first_byte};
+  for (int i = start_processing_byte - 1; i >= 0; i--) {
+    ss << ", 0x" << std::hex << uint32_t{GetByte(type_id, i)};
+  }
+  ss << "}";
+  return ss.str();
+}
+
 // Writes encoding functions for each type in |table| to the file descriptor
 // |fd|.
-bool WriteEncoders(int fd, const CppSymbolTable& table) {
-  CppType* root_type = table.cpp_type_map.find(table.root_rule)->second;
-  for (const auto* type : root_type->discriminated_union.members) {
-    CppType* real_type = type->tagged_type.real_type;
+bool WriteEncoders(int fd, CppSymbolTable* table) {
+  for (CppType* real_type : table->TypesWithId()) {
     const auto& name = real_type->name;
     if (real_type->which != CppType::Which::kStruct ||
         real_type->struct_type.key_type ==
@@ -895,7 +948,10 @@ bool Encode%1$s(
   if (buffer->AvailableLength() == 0 &&
       !buffer->Append(CborEncodeBuffer::kDefaultInitialEncodeBufferSize))
     return false;
-  buffer->SetType(Type::k%1$s);
+  const uint8_t type_id[] = %2$s;
+  if(!buffer->SetType(type_id, sizeof(type_id))) {
+    return false;
+  }
   while (true) {
     size_t available_length = buffer->AvailableLength();
     ssize_t error_or_size = msgs::Encode%1$s(
@@ -913,8 +969,12 @@ bool Encode%1$s(
 }
 )";
 
-    dprintf(fd, vector_encode_function, cpp_name.c_str());
+    std::string encoded_id = GetEncodedTypeKey(*real_type);
+    if (encoded_id.empty()) {
+      return false;
+    }
 
+    dprintf(fd, vector_encode_function, cpp_name.c_str(), encoded_id.c_str());
     dprintf(fd, "\nssize_t Encode%s(\n", cpp_name.c_str());
     dprintf(fd, "    const %s& data,\n", cpp_name.c_str());
     dprintf(fd, "    uint8_t* buffer,\n    size_t length) {\n");
@@ -1372,8 +1432,8 @@ bool WriteArrayDecoder(int fd,
 }
 
 // Writes the equality operators for all structs.
-bool WriteEqualityOperators(int fd, const CppSymbolTable& table) {
-  for (const auto& pair : table.cpp_type_map) {
+bool WriteEqualityOperators(int fd, CppSymbolTable* table) {
+  for (const auto& pair : table->cpp_type_map) {
     CppType* real_type = pair.second;
     if (real_type->which == CppType::Which::kStruct &&
         real_type->struct_type.key_type !=
@@ -1388,10 +1448,11 @@ bool WriteEqualityOperators(int fd, const CppSymbolTable& table) {
 
 // Writes a decoder function definition for every type in |table| to the file
 // descriptor |fd|.
-bool WriteDecoders(int fd, const CppSymbolTable& table) {
-  CppType* root_type = table.cpp_type_map.find(table.root_rule)->second;
-  for (const auto* type : root_type->discriminated_union.members) {
-    CppType* real_type = type->tagged_type.real_type;
+bool WriteDecoders(int fd, CppSymbolTable* table) {
+  if (!WriteTypeParserDefinition(fd, table)) {
+    return false;
+  }
+  for (CppType* real_type : table->TypesWithId()) {
     const auto& name = real_type->name;
     int temporary_count = 0;
     if (real_type->which != CppType::Which::kStruct ||
@@ -1473,6 +1534,11 @@ class CborEncodeBuffer;
 
 bool WriteHeaderEpilogue(int fd, const std::string& header_filename) {
   static const char epilogue[] = R"(
+class TypeEnumValidator {
+ public:
+  static Type SafeCast(uint64_t type_id);
+};
+
 class CborEncodeBuffer {
  public:
   static constexpr size_t kDefaultInitialEncodeBufferSize = 250;
@@ -1484,7 +1550,7 @@ class CborEncodeBuffer {
 
   bool Append(size_t length);
   bool ResizeBy(ssize_t length);
-  void SetType(Type type);
+  bool SetType(const uint8_t encoded_id[], size_t size);
 
   const uint8_t* data() const { return data_.data(); }
   size_t size() const { return data_.size(); }
@@ -1588,11 +1654,22 @@ constexpr size_t CborEncodeBuffer::kDefaultMaxEncodeBufferSize;
 
 CborEncodeBuffer::CborEncodeBuffer()
     : max_size_(kDefaultMaxEncodeBufferSize),
-      position_(1),
+      position_(0),
       data_(kDefaultInitialEncodeBufferSize) {}
 CborEncodeBuffer::CborEncodeBuffer(size_t initial_size, size_t max_size)
-    : max_size_(max_size), position_(1), data_(initial_size) {}
+    : max_size_(max_size), position_(0), data_(initial_size) {}
 CborEncodeBuffer::~CborEncodeBuffer() = default;
+
+bool CborEncodeBuffer::SetType(const uint8_t encoded_id[], size_t size) {
+  if (this->AvailableLength() < size) {
+    if (!this->ResizeBy(size)) {
+      return false;
+    }
+  }
+  memcpy(&data_[position_], encoded_id, size);
+  position_ += size;
+  return true;
+}
 
 bool CborEncodeBuffer::Append(size_t length) {
   if (length == 0)
@@ -1604,7 +1681,7 @@ bool CborEncodeBuffer::Append(size_t length) {
   }
   size_t append_area = data_.size();
   data_.resize(append_area + length);
-  position_ = append_area + 1;
+  position_ = append_area;
   return true;
 }
 
@@ -1617,10 +1694,6 @@ bool CborEncodeBuffer::ResizeBy(ssize_t delta) {
     return false;
   data_.resize(data_.size() + delta);
   return true;
-}
-
-void CborEncodeBuffer::SetType(Type type) {
-  data_[position_ - 1] = static_cast<uint8_t>(type);
 }
 
 bool IsError(ssize_t x) {

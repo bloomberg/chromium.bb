@@ -148,9 +148,10 @@ int main(int argc, char** argv) {
   Logger::Log("Successfully initialized CDDL Code generator!");
 
   // Parse the full CDDL into a graph structure.
-  Logger::Log("Parsing CDDL Input File...");
+  Logger::Log("Parsing CDDL input file...");
   ParseResult parse_result = ParseCddl(data);
   if (!parse_result.root) {
+    Logger::Error("Failed to parse CDDL input file");
     return 1;
   }
   Logger::Log("Successfully parsed CDDL input file!\n");
@@ -189,14 +190,14 @@ int main(int argc, char** argv) {
   Logger::Log("Successfully wrote header prologue!\n");
 
   Logger::Log("Writing type definitions...");
-  if (!WriteTypeDefinitions(header_fd, cpp_result.second)) {
+  if (!WriteTypeDefinitions(header_fd, &cpp_result.second)) {
     Logger::Error("WriteTypeDefinitions failed");
     return 1;
   }
   Logger::Log("Successfully wrote type definitions!\n");
 
   Logger::Log("Writing function declaration...");
-  if (!WriteFunctionDeclarations(header_fd, cpp_result.second)) {
+  if (!WriteFunctionDeclarations(header_fd, &cpp_result.second)) {
     Logger::Error("WriteFunctionDeclarations failed");
     return 1;
   }
@@ -217,21 +218,21 @@ int main(int argc, char** argv) {
   Logger::Log("Successfully wrote source prologue!\n");
 
   Logger::Log("Writing encoders...");
-  if (!WriteEncoders(cc_fd, cpp_result.second)) {
+  if (!WriteEncoders(cc_fd, &cpp_result.second)) {
     Logger::Error("WriteEncoders failed");
     return 1;
   }
   Logger::Log("Successfully wrote encoders!\n");
 
   Logger::Log("Writing decoders...");
-  if (!WriteDecoders(cc_fd, cpp_result.second)) {
+  if (!WriteDecoders(cc_fd, &cpp_result.second)) {
     Logger::Error("WriteDecoders failed");
     return 1;
   }
   Logger::Log("Successfully wrote decoders!\n");
 
   Logger::Log("Writing equality operators...");
-  if (!WriteEqualityOperators(cc_fd, cpp_result.second)) {
+  if (!WriteEqualityOperators(cc_fd, &cpp_result.second)) {
     Logger::Error("WriteStructEqualityOperators failed");
     return 1;
   }

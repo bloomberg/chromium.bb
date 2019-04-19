@@ -13,6 +13,7 @@
 #include <utility>
 #include <vector>
 
+#include "absl/algorithm/container.h"
 #include "absl/types/optional.h"
 #include "tools/cddl/parse.h"
 
@@ -83,6 +84,7 @@ struct CddlType {
 
   Op op;
   CddlType* constraint_type;
+  absl::optional<uint64_t> type_key;
 };
 
 // Override for << operator to simplify logging.
@@ -196,9 +198,6 @@ struct CddlSymbolTable {
 
   // Map from name of a group to the object that represents it.
   std::map<std::string, CddlGroup*> group_map;
-
-  // Root rule for the CDDL document.
-  std::string root_rule;
 };
 
 // Represents a C++ Type, as translated from CDDL.
@@ -302,6 +301,7 @@ struct CppType {
 
   Which which = Which::kUninitialized;
   std::string name;
+  absl::optional<uint64_t> type_key;
   union {
     Vector vector_type;
     Enum enum_type;
@@ -353,9 +353,14 @@ inline std::ostream& operator<<(std::ostream& os, const CppType::Which& which) {
 }
 
 struct CppSymbolTable {
+ public:
   std::vector<std::unique_ptr<CppType>> cpp_types;
   std::map<std::string, CppType*> cpp_type_map;
-  std::string root_rule;
+
+  std::vector<CppType*> TypesWithId();
+
+ private:
+  std::vector<CppType*> TypesWithId_;
 };
 
 std::pair<bool, CddlSymbolTable> BuildSymbolTable(const AstNode& rules);

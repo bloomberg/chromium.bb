@@ -7,9 +7,67 @@
 #include <memory>
 
 #include "api/impl/quic/quic_connection.h"
+#include "base/big_endian.h"
+#include "base/error.h"
 #include "platform/api/logging.h"
 
 namespace openscreen {
+
+// static
+// Decodes a varUint, expecting it to follow the encoding format described here:
+// https://tools.ietf.org/html/draft-ietf-quic-transport-16#section-16
+ErrorOr<uint64_t> MessageTypeDecoder::DecodeVarUint(
+    const std::vector<uint8_t>& buffer,
+    size_t* num_bytes_decoded) {
+  if (buffer.size() == 0) {
+    return Error::Code::kCborIncompleteMessage;
+  }
+
+  uint8_t num_type_bytes = static_cast<uint8_t>(buffer[0] >> 6 & 0x03);
+  *num_bytes_decoded = 0x1 << num_type_bytes;
+
+  // Ensure that ReadBigEndian won't read beyond the end of the buffer. Also,
+  // since we expect the id to be followed by the message, equality is not valid
+  if (buffer.size() <= *num_bytes_decoded) {
+    return Error::Code::kCborIncompleteMessage;
+  }
+
+  switch (num_type_bytes) {
+    case 0:
+      return buffer[0] & ~0xC0;
+    case 1:
+      return ReadBigEndian<uint16_t>(&buffer[0]) & ~(0xC0 << 8);
+    case 2:
+      return ReadBigEndian<uint32_t>(&buffer[0]) & ~(0xC0 << 24);
+    case 3:
+      return ReadBigEndian<uint64_t>(&buffer[0]) & ~(uint64_t{0xC0} << 56);
+    default:
+      OSP_NOTREACHED();
+      return Error::Code::kCborParsing;
+  }
+}
+
+// static
+// Decodes the Type of message, expecting it to follow the encoding format
+// described here:
+// https://tools.ietf.org/html/draft-ietf-quic-transport-16#section-16
+ErrorOr<msgs::Type> MessageTypeDecoder::DecodeType(
+    const std::vector<uint8_t>& buffer,
+    size_t* num_bytes_decoded) {
+  ErrorOr<uint64_t> message_type =
+      MessageTypeDecoder::DecodeVarUint(buffer, num_bytes_decoded);
+  if (message_type.is_error()) {
+    return message_type.error();
+  }
+
+  msgs::Type parsed_type =
+      msgs::TypeEnumValidator::SafeCast(message_type.value());
+  if (parsed_type == msgs::Type::kUnknown) {
+    return Error::Code::kCborInvalidMessage;
+  }
+
+  return parsed_type;
+}
 
 // static
 constexpr size_t MessageDemuxer::kDefaultBufferLimit;
@@ -175,6 +233,7 @@ MessageDemuxer::HandleStreamBufferResult MessageDemuxer::HandleStreamBufferLoop(
   return result;
 }
 
+// TODO(rwkeane) Use absl::Span for the buffer
 MessageDemuxer::HandleStreamBufferResult MessageDemuxer::HandleStreamBuffer(
     uint64_t endpoint_id,
     uint64_t connection_id,
@@ -185,15 +244,23 @@ MessageDemuxer::HandleStreamBufferResult MessageDemuxer::HandleStreamBuffer(
   bool handled = false;
   do {
     consumed = 0;
-    auto message_type = static_cast<msgs::Type>((*buffer)[0]);
-    auto callback_entry = message_callbacks->find(message_type);
+    size_t msg_type_byte_length;
+    ErrorOr<msgs::Type> message_type =
+        MessageTypeDecoder::DecodeType(*buffer, &msg_type_byte_length);
+    if (message_type.is_error()) {
+      buffer->clear();
+      break;
+    }
+    auto callback_entry = message_callbacks->find(message_type.value());
     if (callback_entry == message_callbacks->end())
       break;
     handled = true;
-    OSP_VLOG << "handling message type " << static_cast<int>(message_type);
+    OSP_VLOG << "handling message type "
+             << static_cast<int>(message_type.value());
     auto consumed_or_error = callback_entry->second->OnStreamMessage(
-        endpoint_id, connection_id, message_type, buffer->data() + 1,
-        buffer->size() - 1, now_function_());
+        endpoint_id, connection_id, message_type.value(),
+        buffer->data() + msg_type_byte_length,
+        buffer->size() - msg_type_byte_length, now_function_());
     if (!consumed_or_error) {
       if (consumed_or_error.error().code() !=
           Error::Code::kCborIncompleteMessage) {
@@ -202,7 +269,8 @@ MessageDemuxer::HandleStreamBufferResult MessageDemuxer::HandleStreamBuffer(
       }
     } else {
       consumed = consumed_or_error.value();
-      buffer->erase(buffer->begin(), buffer->begin() + consumed + 1);
+      buffer->erase(buffer->begin(),
+                    buffer->begin() + consumed + msg_type_byte_length);
     }
     total_consumed += consumed;
   } while (consumed && !buffer->empty());

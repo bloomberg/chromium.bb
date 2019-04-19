@@ -1,31 +1,6 @@
 ; Open Screen protocol spec: https://webscreens.github.io/openscreenprotocol/#appendix-a
 ; CDDL spec: https://tools.ietf.org/html/draft-ietf-cbor-cddl-08
 
-open-screen-message =
-  #6.10010(agent-info-request) /
-  #6.10011(agent-info-response) /
-  #6.10012(agent-status-request) /
-  #6.10013(agent-status-response) /
-  #6.10014(presentation-url-availability-request) /
-  #6.10015(presentation-url-availability-response) /
-  #6.10016(presentation-connection-message) /
-
-  #6.10103(presentation-url-availability-event) /
-  #6.10104(presentation-start-request) /
-  #6.10105(presentation-start-response) /
-  #6.10106(presentation-termination-request) /
-  #6.10107(presentation-termination-response) /
-  #6.10108(presentation-termination-event) /
-  #6.10109(presentation-connection-open-request) /
-  #6.10110(presentation-connection-open-response) /
-  #6.10111(presentation-connection-close-request) /
-  #6.10112(presentation-connection-close-response) /
-  #6.10113(presentation-connection-close-event) /
-
-  #6.11001(authentication-request) /
-  #6.11002(authentication-response) /
-  #6.11003(authentication-result)
-
 ; type key 10
 agent-info-request = {
   request

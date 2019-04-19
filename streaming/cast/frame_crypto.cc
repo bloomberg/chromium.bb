@@ -6,8 +6,8 @@
 
 #include <random>
 
+#include "base/big_endian.h"
 #include "base/boringssl_util.h"
-#include "streaming/cast/big_endian.h"
 #include "third_party/boringssl/src/include/openssl/crypto.h"
 #include "third_party/boringssl/src/include/openssl/err.h"
 #include "third_party/boringssl/src/include/openssl/rand.h"

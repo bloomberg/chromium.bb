@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef STREAMING_CAST_BIG_ENDIAN_H_
-#define STREAMING_CAST_BIG_ENDIAN_H_
+#ifndef BASE_BIG_ENDIAN_H_
+#define BASE_BIG_ENDIAN_H_
 
 #include <stdint.h>
 
@@ -11,7 +11,6 @@
 #include <type_traits>
 
 namespace openscreen {
-namespace cast_streaming {
 
 ////////////////////////////////////////////////////////////////////////////////
 // Note: All of the functions here are defined inline, as any half-decent
@@ -102,7 +101,6 @@ inline void WriteBigEndian(Integer val, void* dest) {
   memcpy(dest, &val, sizeof(val));
 }
 
-}  // namespace cast_streaming
 }  // namespace openscreen
 
-#endif  // STREAMING_CAST_BIG_ENDIAN_H_
+#endif  // BASE_BIG_ENDIAN_H_

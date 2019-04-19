@@ -14,6 +14,7 @@
 
 #include "absl/strings/ascii.h"
 #include "absl/strings/match.h"
+#include "absl/types/optional.h"
 #include "platform/api/logging.h"
 #include "tools/cddl/logging.h"
 
@@ -256,6 +257,29 @@ AstNode* ParseOccur(Parser* p) {
               absl::string_view(p->data, p_speculative.data - p->data));
   p->data = p_speculative.data;
   return node;
+}
+
+absl::optional<std::string> ParseTypeKeyFromComment(Parser* p) {
+  Parser p_speculative{p->data};
+  if (!TrySkipCharacter(&p_speculative, ';')) {
+    return absl::nullopt;
+  }
+
+  SkipWhitespace(&p_speculative, false);
+  const char* key_string = "type key";
+  if (!absl::StartsWith(p_speculative.data, key_string)) {
+    return absl::nullopt;
+  }
+  p_speculative.data += sizeof(key_string);
+
+  SkipWhitespace(&p_speculative, false);
+  Parser p_speculative2{p_speculative.data};
+  for (; absl::ascii_isdigit(p_speculative2.data[0]); p_speculative2.data++) {
+  }
+  auto result = absl::string_view(p_speculative.data,
+                                  p_speculative2.data - p_speculative.data);
+  p->data = p_speculative2.data;
+  return std::string(result.data()).substr(0, result.length());
 }
 
 AstNode* ParseMemberKeyFromComment(Parser* p) {
@@ -892,6 +916,10 @@ AstNode* ParseGroupEntry(Parser* p) {
 AstNode* ParseRule(Parser* p) {
   const char* start = p->data;
 
+  // Parse the type key, if it's present
+  absl::optional<std::string> type_key = ParseTypeKeyFromComment(p);
+  SkipWhitespace(p);
+
   // Use the parser to extract the id and data.
   AstNode* id = ParseId(p);
   if (!id) {
@@ -924,7 +952,7 @@ AstNode* ParseRule(Parser* p) {
 
   // Parse the object type being assigned.
   SkipWhitespace(p);
-  AstNode* type = ParseType(p);  // Try to parse it as a type.
+  AstNode* type = ParseType(p, false);  // Try to parse it as a type.
   id->type = AstNode::Type::kTypename;
   if (!type) {  // If it's not a type, try and parse it as a group.
     type = ParseGroupEntry(p);
@@ -935,11 +963,13 @@ AstNode* ParseRule(Parser* p) {
     return nullptr;
   }
   assign_node->sibling = type;
-  SkipWhitespace(p);
+  SkipWhitespace(p, false);
 
   // Return the results.
-  return AddNode(p, AstNode::Type::kRule,
-                 absl::string_view(start, p->data - start), id);
+  auto rule_node = AddNode(p, AstNode::Type::kRule,
+                           absl::string_view(start, p->data - start), id);
+  rule_node->type_key = type_key;
+  return rule_node;
 }
 
 // Iteratively parse the CDDL spec into a tree structure.
@@ -958,6 +988,9 @@ ParseResult ParseCddl(absl::string_view data) {
       Logger::Error("Failed to parse next node. Failed starting at: '%s'",
                     p.data);
       return {nullptr, {}};
+    } else {
+      Logger::Log("Processed text \"%s\" into node: ", next->text);
+      DumpAst(next);
     }
 
     if (!root) {
@@ -967,11 +1000,7 @@ ParseResult ParseCddl(absl::string_view data) {
       tail->sibling = next;
     }
     tail = next;
-
-    SkipWhitespace(&p);
   } while (p.data[0]);
-
-  DumpAst(root);
   return {root, std::move(p.nodes)};
 }
 
@@ -987,78 +1016,82 @@ void DumpAst(AstNode* node, int indent_level) {
     // Print the type.
     switch (node->type) {
       case AstNode::Type::kRule:
-        node_text += "kRule: ";
+        node_text += "kRule";
         break;
       case AstNode::Type::kTypename:
-        node_text += "kTypename: ";
+        node_text += "kTypename";
         break;
       case AstNode::Type::kGroupname:
-        node_text += "kGroupname: ";
+        node_text += "kGroupname";
         break;
       case AstNode::Type::kAssign:
-        node_text += "kAssign: ";
+        node_text += "kAssign";
         break;
       case AstNode::Type::kAssignT:
-        node_text += "kAssignT: ";
+        node_text += "kAssignT";
         break;
       case AstNode::Type::kAssignG:
-        node_text += "kAssignG: ";
+        node_text += "kAssignG";
         break;
       case AstNode::Type::kType:
-        node_text += "kType: ";
+        node_text += "kType";
         break;
       case AstNode::Type::kGrpent:
-        node_text += "kGrpent: ";
+        node_text += "kGrpent";
         break;
       case AstNode::Type::kType1:
-        node_text += "kType1: ";
+        node_text += "kType1";
         break;
       case AstNode::Type::kType2:
-        node_text += "kType2: ";
+        node_text += "kType2";
         break;
       case AstNode::Type::kValue:
-        node_text += "kValue: ";
+        node_text += "kValue";
         break;
       case AstNode::Type::kGroup:
-        node_text += "kGroup: ";
+        node_text += "kGroup";
         break;
       case AstNode::Type::kUint:
-        node_text += "kUint: ";
+        node_text += "kUint";
         break;
       case AstNode::Type::kDigit:
-        node_text += "kDigit: ";
+        node_text += "kDigit";
         break;
       case AstNode::Type::kRangeop:
-        node_text += "kRangeop: ";
+        node_text += "kRangeop";
         break;
       case AstNode::Type::kCtlop:
-        node_text += "kCtlop: ";
+        node_text += "kCtlop";
         break;
       case AstNode::Type::kGrpchoice:
-        node_text += "kGrpchoice: ";
+        node_text += "kGrpchoice";
         break;
       case AstNode::Type::kOccur:
-        node_text += "kOccur: ";
+        node_text += "kOccur";
         break;
       case AstNode::Type::kMemberKey:
-        node_text += "kMemberKey: ";
+        node_text += "kMemberKey";
         break;
       case AstNode::Type::kId:
-        node_text += "kId: ";
+        node_text += "kId";
         break;
       case AstNode::Type::kNumber:
-        node_text += "kNumber: ";
+        node_text += "kNumber";
         break;
       case AstNode::Type::kText:
-        node_text += "kText: ";
+        node_text += "kText";
         break;
       case AstNode::Type::kBytes:
-        node_text += "kBytes: ";
+        node_text += "kBytes";
         break;
       case AstNode::Type::kOther:
-        node_text += "kOther: ";
+        node_text += "kOther";
         break;
     }
+    if (node->type_key != absl::nullopt) {
+      node_text += " (type key=\"" + node->type_key.value() + "\")";
+    }
+    node_text += ": ";
 
     // Print the contents.
     int size = static_cast<int>(node->text.size());

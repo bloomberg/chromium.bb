@@ -4,6 +4,7 @@
 
 source_set("base") {
   sources = [
+    "big_endian.h",
     "boringssl_util.cc",
     "boringssl_util.h",
     "error.cc",
@@ -30,6 +31,7 @@ source_set("base_unittests") {
   testonly = true
 
   sources = [
+    "big_endian_unittest.cc",
     "error_unittest.cc",
     "ip_address_unittest.cc",
     "scoped_pipe_unittest.cc",

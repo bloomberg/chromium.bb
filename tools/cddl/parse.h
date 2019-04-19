@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "absl/strings/string_view.h"
+#include "absl/types/optional.h"
 
 struct AstNode {
   // These types all correspond to types in the grammar, which can be found in
@@ -59,6 +60,9 @@ struct AstNode {
 
   // Text parsed from another source but used when serializing this node.
   std::string integer_member_key_text;
+
+  // Text parsed from the CDDL spec for the type key.
+  absl::optional<std::string> type_key;
 };
 
 // Override for << operator to simplify logging.

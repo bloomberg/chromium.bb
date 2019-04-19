@@ -121,7 +121,6 @@ std::ostream& operator<<(std::ostream& out, const Error& error);
 //
 // TODO(mfoltz):
 // - Add support for type conversions
-// - Better support for primitive (non-movable) values
 template <typename Value>
 class ErrorOr {
  public:
@@ -131,6 +130,7 @@ class ErrorOr {
   }
 
   ErrorOr(ErrorOr&& error_or) = default;
+  ErrorOr(const Value& value) : value_(value) {}
   ErrorOr(Value&& value) noexcept : value_(std::move(value)) {}
   ErrorOr(Error error) : error_(std::move(error)) {}
   ErrorOr(Error::Code code) : error_(code) {}

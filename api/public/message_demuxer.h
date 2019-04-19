@@ -119,6 +119,16 @@ class MessageDemuxer {
 // resest function for readability.
 void StopWatching(MessageDemuxer::MessageWatch* watch);
 
+class MessageTypeDecoder {
+ public:
+  static ErrorOr<msgs::Type> DecodeType(const std::vector<uint8_t>& buffer,
+                                        size_t* num_bytes_decoded);
+
+ private:
+  static ErrorOr<uint64_t> DecodeVarUint(const std::vector<uint8_t>& buffer,
+                                         size_t* num_bytes_decoded);
+};
+
 }  // namespace openscreen
 
 #endif  // API_PUBLIC_MESSAGE_DEMUXER_H_
