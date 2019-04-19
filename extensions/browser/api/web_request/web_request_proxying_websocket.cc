@@ -5,6 +5,7 @@
 #include "extensions/browser/api/web_request/web_request_proxying_websocket.h"
 
 #include "base/bind.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_navigation_ui_data.h"
@@ -95,6 +96,7 @@ void WebRequestProxyingWebSocket::AddChannelRequest(
                 true /* is_async */);
 
   forwarding_client_ = std::move(client);
+  additional_headers_ = std::move(additional_headers);
 
   // If the header client will be used, we start the request immediately, and
   // OnBeforeSendHeaders and OnSendHeaders will be handled there. Otherwise,
@@ -409,10 +411,18 @@ void WebRequestProxyingWebSocket::OnBeforeSendHeadersComplete(
 void WebRequestProxyingWebSocket::ContinueToStartRequest(int error_code) {
   network::mojom::WebSocketClientPtr proxy;
 
+  base::flat_set<std::string> used_header_names;
   std::vector<network::mojom::HttpHeaderPtr> additional_headers;
   for (net::HttpRequestHeaders::Iterator it(request_.headers); it.GetNext();) {
     additional_headers.push_back(
         network::mojom::HttpHeader::New(it.name(), it.value()));
+    used_header_names.insert(base::ToLowerASCII(it.name()));
+  }
+  for (const auto& header : additional_headers_) {
+    if (!used_header_names.contains(base::ToLowerASCII(header->name))) {
+      additional_headers.push_back(
+          network::mojom::HttpHeader::New(header->name, header->value));
+    }
   }
 
   binding_as_client_.Bind(mojo::MakeRequest(&proxy));

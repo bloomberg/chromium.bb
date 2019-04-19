@@ -146,6 +146,7 @@ class WebRequestProxyingWebSocket
   OnAuthRequiredCallback auth_required_callback_;
   scoped_refptr<net::HttpResponseHeaders> override_headers_;
   std::vector<std::string> websocket_protocols_;
+  std::vector<network::mojom::HttpHeaderPtr> additional_headers_;
 
   OnBeforeSendHeadersCallback on_before_send_headers_callback_;
   OnHeadersReceivedCallback on_headers_received_callback_;

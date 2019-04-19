@@ -146,6 +146,7 @@ const char kEmulateNetworkConditionsPage[] =
 const char kDispatchKeyEventShowsAutoFill[] =
     "files/devtools/dispatch_key_event_shows_auto_fill.html";
 const char kDOMWarningsTestPage[] = "files/devtools/dom_warnings_page.html";
+const char kEmptyTestPage[] = "files/devtools/empty.html";
 
 template <typename... T>
 void DispatchOnTestSuiteSkipCheck(DevToolsWindow* window,
@@ -2378,4 +2379,20 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessDevToolsSanityTest,
       DevToolsWindowTesting::OpenDevToolsWindowSync(GetInspectedTab(), false);
   RunTestFunction(window, "testInputDispatchEventsToOOPIF");
   DevToolsWindowTesting::CloseDevToolsWindowSync(window);
+}
+
+IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest,
+                       ExtensionWebSocketUserAgentOverride) {
+  net::SpawnedTestServer websocket_server(
+      net::SpawnedTestServer::TYPE_WS,
+      base::FilePath(FILE_PATH_LITERAL("net/data/websocket")));
+  websocket_server.set_websocket_basic_auth(false);
+  ASSERT_TRUE(websocket_server.Start());
+  uint16_t websocket_port = websocket_server.host_port_pair().port();
+
+  LoadExtension("web_request");
+  OpenDevToolsWindow(kEmptyTestPage, /* is_docked */ false);
+  DispatchOnTestSuite(window_, "testExtensionWebSocketUserAgentOverride",
+                      std::to_string(websocket_port).c_str());
+  CloseDevToolsWindow();
 }
