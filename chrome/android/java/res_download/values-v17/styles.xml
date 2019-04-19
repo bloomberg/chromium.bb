@@ -101,12 +101,19 @@
         <item name="android:background">@drawable/circular_progress_bar_background_large</item>
         <item name="indeterminateProgress">@drawable/circular_progress_bar_indeterminate_large</item>
         <item name="determinateProgress">@drawable/circular_progress_bar_determinate_large</item>
-        <item name="resumeSrc">@drawable/ic_play_arrow_white_36dp</item>
+        <item name="resumeSrc">@drawable/ic_file_download_36dp</item>
         <item name="retrySrc">@drawable/ic_refresh_white_36dp</item>
         <item name="pauseSrc">@drawable/ic_pause_white_36dp</item>
     </style>
     <style name="AsyncImageView">
         <item name="unavailableSrc">@drawable/async_image_view_unavailable</item>
         <item name="waitingSrc">@drawable/async_image_view_waiting</item>
+    </style>
+    <style name="LargeMediaPlayButton">
+        <item name="android:layout_width">60dp</item>
+        <item name="android:layout_height">60dp</item>
+        <item name="android:background">@drawable/circular_progress_bar_background_large</item>
+        <item name="android:src">@drawable/ic_play_arrow_white_36dp</item>
+        <item name="android:tint">@color/modern_grey_800</item>
     </style>
 </resources>
