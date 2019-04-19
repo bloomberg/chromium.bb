@@ -199,6 +199,11 @@ void DecoderStreamTraits<DemuxerStream::VIDEO>::OnDecode(
 
 PostDecodeAction DecoderStreamTraits<DemuxerStream::VIDEO>::OnDecodeDone(
     const scoped_refptr<OutputType>& buffer) {
+  // Add a timestamp here (after decoding completed) to enable buffering delay
+  // measurements down the line.
+  buffer->metadata()->SetTimeTicks(media::VideoFrameMetadata::DECODE_TIME,
+                                   base::TimeTicks::Now());
+
   auto it = frame_metadata_.find(buffer->timestamp());
 
   // If the frame isn't in |frame_metadata_| it probably was erased below on a
@@ -217,12 +222,6 @@ PostDecodeAction DecoderStreamTraits<DemuxerStream::VIDEO>::OnDecodeDone(
     buffer->metadata()->SetTimeDelta(VideoFrameMetadata::FRAME_DURATION,
                                      it->second.duration);
   }
-
-  // Add a timestamp here (after decoding completed) to enable buffering delay
-  // measurements down the line.
-  buffer->metadata()->SetTimeTicks(
-      media::VideoFrameMetadata::DECODE_COMPLETE_TIMESTAMP,
-      base::TimeTicks::Now());
 
   // We erase from the beginning onward to our target frame since frames should
   // be returned in presentation order. It's possible to accumulate entries in

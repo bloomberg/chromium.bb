@@ -164,7 +164,7 @@ class MEDIA_EXPORT VideoFrameMetadata {
     // If present, this field represents the local time at which the VideoFrame
     // was decoded from whichever format it was encoded in.
     // Use Get/SetTimeTicks() for this key.
-    DECODE_COMPLETE_TIMESTAMP,
+    DECODE_TIME,
 
     NUM_KEYS
   };
