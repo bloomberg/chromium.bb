@@ -31,8 +31,9 @@ ScriptPromise GPUAdapter::requestDevice(ScriptState* script_state,
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  GPUDevice* device =
-      GPUDevice::Create(GetDawnControlClient(), this, descriptor);
+  ExecutionContext* execution_context = ExecutionContext::From(script_state);
+  GPUDevice* device = GPUDevice::Create(
+      execution_context, GetDawnControlClient(), this, descriptor);
 
   resolver->Resolve(device);
   return promise;

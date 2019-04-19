@@ -6,10 +6,12 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGPU_GPU_DEVICE_H_
 
 #include "base/memory/scoped_refptr.h"
+#include "third_party/blink/renderer/modules/webgpu/dawn_callback.h"
 #include "third_party/blink/renderer/modules/webgpu/dawn_object.h"
 
 namespace blink {
 
+class ExecutionContext;
 class GPUAdapter;
 class GPUAdapter;
 class GPUBuffer;
@@ -41,10 +43,12 @@ class GPUDevice final : public DawnObject<DawnDevice> {
 
  public:
   static GPUDevice* Create(
+      ExecutionContext* execution_context,
       scoped_refptr<DawnControlClientHolder> dawn_control_client,
       GPUAdapter* adapter,
       const GPUDeviceDescriptor* descriptor);
-  explicit GPUDevice(scoped_refptr<DawnControlClientHolder> dawn_control_client,
+  explicit GPUDevice(ExecutionContext* execution_context,
+                     scoped_refptr<DawnControlClientHolder> dawn_control_client,
                      GPUAdapter* adapter,
                      const GPUDeviceDescriptor* descriptor);
   ~GPUDevice() override;
@@ -78,8 +82,12 @@ class GPUDevice final : public DawnObject<DawnDevice> {
   GPUQueue* getQueue();
 
  private:
+  void OnError(ExecutionContext* execution_context, const char* message);
+
   Member<GPUAdapter> adapter_;
   Member<GPUQueue> queue_;
+  std::unique_ptr<DawnCallback<base::RepeatingCallback<void(const char*)>>>
+      error_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(GPUDevice);
 };
