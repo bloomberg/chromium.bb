@@ -6,6 +6,8 @@
   await TestRunner.loadModule('axe_core_test_runner');
   const locationsToTest =
     [
+      // elements
+      'elements.domProperties',
       // Performance Monitor
       'performance.monitor',
       // Sensors
