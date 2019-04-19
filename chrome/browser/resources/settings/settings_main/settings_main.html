@@ -57,7 +57,8 @@
       <div>$i18nRaw{searchNoResultsHelp}</div>
     </div>
     <template is="dom-if"
-        if="[[showManagedHeader_(inSearchMode_, showingSubpage_)]]">
+        if="[[showManagedHeader_(inSearchMode_, showingSubpage_,
+        showPages_.about)]]">
       <managed-footnote></managed-footnote>
     </template>
     <template is="dom-if" if="[[showPages_.settings]]">
