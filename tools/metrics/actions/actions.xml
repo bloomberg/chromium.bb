@@ -21659,6 +21659,15 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="WrenchMenu_Bookmarks_LaunchURL">
+  <owner>dfried@chromium.org</owner>
+  <description>
+    The user opened a bookmark from the wrench/application/three-dot menu.
+    Distinguished from launching from e.g. the bookmarks bar or bookmark
+    manager.
+  </description>
+</action>
+
 <action name="WrenchMenu_OpenRecentTabFromDevice">
   <owner>jwd@chromium.org</owner>
   <description>

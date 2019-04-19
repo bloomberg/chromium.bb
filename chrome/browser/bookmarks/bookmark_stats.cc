@@ -37,8 +37,12 @@ bool IsBookmarkBarLocation(BookmarkLaunchLocation location) {
 
 void RecordBookmarkLaunch(const BookmarkNode* node,
                           BookmarkLaunchLocation location) {
-  if (IsBookmarkBarLocation(location))
+  if (IsBookmarkBarLocation(location)) {
     base::RecordAction(base::UserMetricsAction("ClickedBookmarkBarURLButton"));
+  } else if (location == BOOKMARK_LAUNCH_LOCATION_APP_MENU) {
+    base::RecordAction(
+        base::UserMetricsAction("WrenchMenu_Bookmarks_LaunchURL"));
+  }
 
   UMA_HISTOGRAM_ENUMERATION("Bookmarks.LaunchLocation", location,
                             BOOKMARK_LAUNCH_LOCATION_LIMIT);
