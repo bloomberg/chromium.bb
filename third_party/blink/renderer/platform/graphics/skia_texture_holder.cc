@@ -23,7 +23,8 @@ SkiaTextureHolder::SkiaTextureHolder(
       image_(std::move(image)) {}
 
 SkiaTextureHolder::SkiaTextureHolder(
-    std::unique_ptr<TextureHolder> texture_holder)
+    std::unique_ptr<TextureHolder> texture_holder,
+    bool backed_by_shared_image)
     : TextureHolder(SharedGpuContext::ContextProviderWrapper()) {
   DCHECK(texture_holder->IsMailboxTextureHolder());
   const gpu::Mailbox mailbox = texture_holder->GetMailbox();
@@ -39,8 +40,19 @@ SkiaTextureHolder::SkiaTextureHolder(
          shared_gr_context);  // context isValid already checked in callers
 
   shared_gl->WaitSyncTokenCHROMIUM(sync_token.GetConstData());
-  GLuint shared_context_texture_id =
-      shared_gl->CreateAndConsumeTextureCHROMIUM(mailbox.name);
+  GLuint shared_context_texture_id = 0u;
+  if (backed_by_shared_image) {
+    shared_context_texture_id =
+        shared_gl->CreateAndTexStorage2DSharedImageCHROMIUM(mailbox.name);
+    shared_gl->BeginSharedImageAccessDirectCHROMIUM(
+        shared_context_texture_id, GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM);
+    shared_image_texture_id_ = shared_context_texture_id;
+  } else {
+    shared_context_texture_id =
+        shared_gl->CreateAndConsumeTextureCHROMIUM(mailbox.name);
+    shared_image_texture_id_ = 0u;
+  }
+
   GrGLTextureInfo texture_info;
   texture_info.fTarget = GL_TEXTURE_2D;
   texture_info.fID = shared_context_texture_id;
@@ -60,6 +72,10 @@ SkiaTextureHolder::SkiaTextureHolder(
 SkiaTextureHolder::~SkiaTextureHolder() {
   // Object must be destroyed on the same thread where it was created.
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  if (shared_image_texture_id_ && ContextProvider()) {
+    ContextProvider()->ContextGL()->EndSharedImageAccessDirectCHROMIUM(
+        shared_image_texture_id_);
+  }
 }
 
 bool SkiaTextureHolder::IsValid() const {

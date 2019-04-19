@@ -273,8 +273,11 @@ void AcceleratedStaticBitmapImage::CreateImageFromMailboxIfNeeded() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (texture_holder_->IsSkiaTextureHolder())
     return;
-  texture_holder_ =
-      std::make_unique<SkiaTextureHolder>(std::move(texture_holder_));
+
+  const bool backed_by_shared_image =
+      mailbox_type_ == MailboxType::kSharedImageId;
+  texture_holder_ = std::make_unique<SkiaTextureHolder>(
+      std::move(texture_holder_), backed_by_shared_image);
 }
 
 void AcceleratedStaticBitmapImage::EnsureMailbox(MailboxSyncMode mode,
