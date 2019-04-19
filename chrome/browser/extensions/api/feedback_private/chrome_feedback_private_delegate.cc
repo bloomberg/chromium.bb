@@ -204,6 +204,7 @@ void ChromeFeedbackPrivateDelegate::FetchExtraLogs(
                                   std::move(callback)));
   } else {
     VLOG(1) << "WiFi dump logs are not present.";
+    std::move(callback).Run(feedback_data);
   }
 }
 
