@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_DARK_MODE_IMAGE_CLASSIFIER_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_DARK_MODE_IMAGE_CLASSIFIER_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_DARK_MODE_BITMAP_IMAGE_CLASSIFIER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_DARK_MODE_BITMAP_IMAGE_CLASSIFIER_H_
 
 #include <vector>
 
@@ -16,16 +16,14 @@ namespace blink {
 
 class IntRect;
 
-class PLATFORM_EXPORT DarkModeImageClassifier {
+class PLATFORM_EXPORT DarkModeBitmapImageClassifier {
   DISALLOW_NEW();
 
  public:
-  DarkModeImageClassifier();
-  ~DarkModeImageClassifier() = default;
+  DarkModeBitmapImageClassifier();
+  ~DarkModeBitmapImageClassifier() = default;
 
-  DarkModeClassification ClassifyBitmapImageForDarkMode(
-      Image& image,
-      const FloatRect& src_rect);
+  DarkModeClassification Classify(Image& image, const FloatRect& src_rect);
 
   bool ComputeImageFeaturesForTesting(Image& image,
                                       std::vector<float>* features) {
@@ -96,4 +94,4 @@ class PLATFORM_EXPORT DarkModeImageClassifier {
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_DARK_MODE_IMAGE_CLASSIFIER_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_DARK_MODE_BITMAP_IMAGE_CLASSIFIER_H_

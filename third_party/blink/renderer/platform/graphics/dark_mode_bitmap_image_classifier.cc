@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/platform/graphics/dark_mode_image_classifier.h"
+#include "third_party/blink/renderer/platform/graphics/dark_mode_bitmap_image_classifier.h"
 
 #include "base/rand_util.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
@@ -36,18 +36,18 @@ const float kHighColorCountThreshold[2] = {1, 0.025635};
 
 namespace blink {
 
-DarkModeImageClassifier::DarkModeImageClassifier()
+DarkModeBitmapImageClassifier::DarkModeBitmapImageClassifier()
     : pixels_to_sample_(kPixelsToSample) {}
 
-DarkModeClassification DarkModeImageClassifier::ClassifyBitmapImageForDarkMode(
+DarkModeClassification DarkModeBitmapImageClassifier::Classify(
     Image& image,
     const FloatRect& src_rect) {
-  std::vector<SkColor> sampled_pixels;
   if (src_rect.Width() < kMinImageSizeForClassification1D ||
       src_rect.Height() < kMinImageSizeForClassification1D)
     return DarkModeClassification::kApplyDarkModeFilter;
 
   std::vector<float> features;
+  std::vector<SkColor> sampled_pixels;
   if (!ComputeImageFeatures(image, src_rect, &features, &sampled_pixels)) {
     // TODO(https://crbug.com/945434): Do not cache the classification when
     // the correct resource is not loaded
@@ -61,7 +61,7 @@ DarkModeClassification DarkModeImageClassifier::ClassifyBitmapImageForDarkMode(
 // This function computes a single feature vector based on a sample set of image
 // pixels. Please refer to |GetSamples| function for description of the sampling
 // method, and |GetFeatures| function for description of the features.
-bool DarkModeImageClassifier::ComputeImageFeatures(
+bool DarkModeBitmapImageClassifier::ComputeImageFeatures(
     Image& image,
     const FloatRect& src_rect,
     std::vector<float>* features,
@@ -85,9 +85,9 @@ bool DarkModeImageClassifier::ComputeImageFeatures(
   return true;
 }
 
-bool DarkModeImageClassifier::GetBitmap(Image& image,
-                                        const FloatRect& src_rect,
-                                        SkBitmap* bitmap) {
+bool DarkModeBitmapImageClassifier::GetBitmap(Image& image,
+                                              const FloatRect& src_rect,
+                                              SkBitmap* bitmap) {
   DCHECK(image.IsBitmapImage());
   if (!src_rect.Width() || !src_rect.Height())
     return false;
@@ -111,10 +111,11 @@ bool DarkModeImageClassifier::GetBitmap(Image& image,
 // Extracts sample pixels from the image. The image is separated into uniformly
 // distributed blocks through its width and height, each block is sampled, and
 // checked to see if it seems to be background or foreground.
-void DarkModeImageClassifier::GetSamples(const SkBitmap& bitmap,
-                                         std::vector<SkColor>* sampled_pixels,
-                                         float* transparency_ratio,
-                                         float* background_ratio) {
+void DarkModeBitmapImageClassifier::GetSamples(
+    const SkBitmap& bitmap,
+    std::vector<SkColor>* sampled_pixels,
+    float* transparency_ratio,
+    float* background_ratio) {
   int pixels_per_block = pixels_to_sample_ / (kBlocksCount1D * kBlocksCount1D);
 
   int transparent_pixels = 0;
@@ -164,7 +165,7 @@ void DarkModeImageClassifier::GetSamples(const SkBitmap& bitmap,
 // Selects samples at regular intervals from a block of the image.
 // Returns the opaque sampled pixels, and the number of transparent
 // sampled pixels.
-void DarkModeImageClassifier::GetBlockSamples(
+void DarkModeBitmapImageClassifier::GetBlockSamples(
     const SkBitmap& bitmap,
     const IntRect& block,
     const int required_samples_count,
@@ -206,7 +207,7 @@ void DarkModeImageClassifier::GetBlockSamples(
 //    possiblities. Color buckets are represented with 4 bits per color channel.
 // 2: Ratio of transparent area to the whole image.
 // 3: Ratio of the background area to the whole image.
-void DarkModeImageClassifier::GetFeatures(
+void DarkModeBitmapImageClassifier::GetFeatures(
     const std::vector<SkColor>& sampled_pixels,
     const float transparency_ratio,
     const float background_ratio,
@@ -238,7 +239,7 @@ void DarkModeImageClassifier::GetFeatures(
   (*features)[3] = background_ratio;
 }
 
-float DarkModeImageClassifier::ComputeColorBucketsRatio(
+float DarkModeBitmapImageClassifier::ComputeColorBucketsRatio(
     const std::vector<SkColor>& sampled_pixels,
     const ColorMode color_mode) {
   std::set<unsigned> buckets;
@@ -268,7 +269,8 @@ float DarkModeImageClassifier::ComputeColorBucketsRatio(
          max_buckets[color_mode == ColorMode::kColor];
 }
 
-DarkModeClassification DarkModeImageClassifier::ClassifyImageUsingDecisionTree(
+DarkModeClassification
+DarkModeBitmapImageClassifier::ClassifyImageUsingDecisionTree(
     const std::vector<float>& features) {
   DCHECK_EQ(features.size(), 4u);
 
@@ -289,7 +291,7 @@ DarkModeClassification DarkModeImageClassifier::ClassifyImageUsingDecisionTree(
   return DarkModeClassification::kNotClassified;
 }
 
-DarkModeClassification DarkModeImageClassifier::ClassifyImage(
+DarkModeClassification DarkModeBitmapImageClassifier::ClassifyImage(
     const std::vector<float>& features) {
   DCHECK_EQ(features.size(), 4u);
 

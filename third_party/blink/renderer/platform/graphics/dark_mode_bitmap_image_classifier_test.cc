@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/platform/graphics/dark_mode_image_classifier.h"
+#include "third_party/blink/renderer/platform/graphics/dark_mode_bitmap_image_classifier.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/graphics/bitmap_image.h"
@@ -50,7 +50,7 @@ class FakeImageForCacheTest : public Image {
             ImageDecodingMode) override {}
 };
 
-class DarkModeImageClassifierTest : public testing::Test {
+class DarkModeBitmapImageClassifierTest : public testing::Test {
  public:
   // Loads the image from |file_name|, computes features vector into |features|,
   // and returns the classification result.
@@ -59,7 +59,7 @@ class DarkModeImageClassifierTest : public testing::Test {
     SCOPED_TRACE(file_name);
     scoped_refptr<BitmapImage> image = LoadImage(file_name);
     classifier_.ComputeImageFeaturesForTesting(*image.get(), features);
-    DarkModeClassification result = classifier_.ClassifyBitmapImageForDarkMode(
+    DarkModeClassification result = classifier_.Classify(
         *image.get(), FloatRect(0, 0, image->width(), image->height()));
     return result == DarkModeClassification::kApplyDarkModeFilter;
   }
@@ -73,7 +73,7 @@ class DarkModeImageClassifierTest : public testing::Test {
     }
   }
 
-  DarkModeImageClassifier* classifier() { return &classifier_; }
+  DarkModeBitmapImageClassifier* classifier() { return &classifier_; }
 
  protected:
   scoped_refptr<BitmapImage> LoadImage(const std::string& file_name) {
@@ -88,10 +88,10 @@ class DarkModeImageClassifierTest : public testing::Test {
 
   ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
       platform_;
-  DarkModeImageClassifier classifier_;
+  DarkModeBitmapImageClassifier classifier_;
 };
 
-TEST_F(DarkModeImageClassifierTest, FeaturesAndClassification) {
+TEST_F(DarkModeBitmapImageClassifierTest, FeaturesAndClassification) {
   std::vector<float> features;
 
   // Test Case 1:
@@ -150,7 +150,7 @@ TEST_F(DarkModeImageClassifierTest, FeaturesAndClassification) {
   AssertFeaturesEqual(features, {1.0f, 0.0151367f, 0.0f, 0.0f});
 }
 
-TEST_F(DarkModeImageClassifierTest, Caching) {
+TEST_F(DarkModeBitmapImageClassifierTest, Caching) {
   scoped_refptr<FakeImageForCacheTest> image = FakeImageForCacheTest::Create();
   FloatRect src_rect1(0, 0, 50, 50);
   FloatRect src_rect2(5, 20, 100, 100);
