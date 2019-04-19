@@ -253,14 +253,8 @@ void AuthenticationService::MigrateAccountsStoredInPrefsIfNeeded() {
   std::vector<std::string> account_ids = GetAccountsInPrefs();
   base::ListValue accounts_pref_value;
   for (const std::string& account_id : account_ids) {
-    auto maybe_account =
-        identity_manager_->FindAccountInfoForAccountWithRefreshTokenByAccountId(
-            account_id);
-    AccountInfo account_info =
-        maybe_account.has_value() ? maybe_account.value() : AccountInfo();
-    if (!account_info.email.empty()) {
-      DCHECK(!account_info.gaia.empty());
-      accounts_pref_value.AppendString(account_info.account_id);
+    if (identity_manager_->HasAccountWithRefreshToken(account_id)) {
+      accounts_pref_value.AppendString(account_id);
     } else {
       // The account for |email| was removed since the last application cold
       // start. Insert |kFakeAccountIdForRemovedAccount| to ensure
@@ -559,7 +553,7 @@ void AuthenticationService::ReloadCredentialsFromIdentities(
   base::AutoReset<bool> auto_reset(&is_reloading_credentials_, true);
 
   HandleForgottenIdentity(nil, should_prompt);
-  if (GetAuthenticatedUserEmail()) {
+  if (IsAuthenticated()) {
     // TODO(crbug.com/930094): Eliminate this.
     identity_manager_->LegacyReloadAccountsFromSystem();
   }
