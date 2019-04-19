@@ -13,25 +13,29 @@
 
 namespace {
 // Text label gray color.
-const CGFloat grayHexColor = 0x6d6d72;
+const CGFloat kGrayHexColor = 0x6d6d72;
 // Action button blue background color.
-const CGFloat blueHexColor = 0x1A73E8;
+const CGFloat kBlueHexColor = 0x1A73E8;
+// Default Button title Color.
+const CGFloat kDefaultButtonTitleColor = 0xFFFFFF;
 // Alpha value for the disabled action button.
-const CGFloat disabledButtonAlpha = 0.5;
+const CGFloat kDisabledButtonAlpha = 0.5;
 // Vertical spacing between stackView and cell contentView.
-const CGFloat stackViewVerticalSpacing = 9.0;
+const CGFloat kStackViewVerticalSpacing = 9.0;
 // Horizontal spacing between stackView and cell contentView.
-const CGFloat stackViewHorizontalSpacing = 16.0;
+const CGFloat kStackViewHorizontalSpacing = 16.0;
 // SubView spacing within stackView.
-const CGFloat stackViewSubViewSpacing = 13.0;
+const CGFloat kStackViewSubViewSpacing = 13.0;
 // Horizontal Inset between button contents and edge.
-const CGFloat buttonTitleHorizontalContentInset = 40.0;
+const CGFloat kButtonTitleHorizontalContentInset = 40.0;
 // Vertical Inset between button contents and edge.
-const CGFloat buttonTitleVerticalContentInset = 8.0;
+const CGFloat kButtonTitleVerticalContentInset = 8.0;
 // Button corner radius.
-const CGFloat buttonCornerRadius = 8;
+const CGFloat kButtonCornerRadius = 8;
 // Font Size for Button Title Label.
-const CGFloat buttonTitleFontSize = 17.0;
+const CGFloat kButtonTitleFontSize = 17.0;
+
+const NSTextAlignment kDefaultTextAlignment = NSTextAlignmentCenter;
 }  // namespace
 
 @implementation TableViewTextButtonItem
@@ -45,6 +49,7 @@ const CGFloat buttonTitleFontSize = 17.0;
   if (self) {
     self.cellClass = [TableViewTextButtonCell class];
     _enabled = YES;
+    _textAlignment = kDefaultTextAlignment;
   }
   return self;
 }
@@ -55,19 +60,33 @@ const CGFloat buttonTitleFontSize = 17.0;
   TableViewTextButtonCell* cell =
       base::mac::ObjCCastStrict<TableViewTextButtonCell>(tableCell);
   cell.textLabel.text = self.text;
+  [cell enableItemSpacing:[self.text length]];
+  [cell disableButtonIntrinsicWidth:self.disableButtonIntrinsicWidth];
+  cell.textLabel.textAlignment = self.textAlignment;
   [cell.button setTitle:self.buttonText forState:UIControlStateNormal];
+  if (self.buttonTextColor) {
+    [cell.button setTitleColor:self.buttonTextColor
+                      forState:UIControlStateNormal];
+  }
   cell.button.accessibilityIdentifier = self.buttonAccessibilityIdentifier;
   cell.button.backgroundColor = self.buttonBackgroundColor
                                     ? self.buttonBackgroundColor
-                                    : UIColorFromRGB(blueHexColor);
+                                    : UIColorFromRGB(kBlueHexColor);
   [cell setSelectionStyle:UITableViewCellSelectionStyleNone];
   cell.button.enabled = self.enabled;
   if (!self.enabled) {
     cell.button.backgroundColor = [cell.button.backgroundColor
-        colorWithAlphaComponent:disabledButtonAlpha];
+        colorWithAlphaComponent:kDisabledButtonAlpha];
   }
 }
 
+@end
+
+@interface TableViewTextButtonCell ()
+// StackView that contains the cell's Button and Label.
+@property(nonatomic, strong) UIStackView* verticalStackView;
+// Constraints used to match the Button width to the StackView.
+@property(nonatomic, strong) NSArray* expandedButtonWidthConstraints;
 @end
 
 @implementation TableViewTextButtonCell
@@ -85,48 +104,80 @@ const CGFloat buttonTitleFontSize = 17.0;
     self.textLabel.textAlignment = NSTextAlignmentCenter;
     self.textLabel.font =
         [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
-    self.textLabel.textColor = UIColorFromRGB(grayHexColor);
+    self.textLabel.textColor = UIColorFromRGB(kGrayHexColor);
 
     // Create button.
     self.button = [[UIButton alloc] init];
-    [self.button setTitleColor:[UIColor whiteColor]
+    [self.button setTitleColor:UIColorFromRGB(kDefaultButtonTitleColor)
                       forState:UIControlStateNormal];
     self.button.translatesAutoresizingMaskIntoConstraints = NO;
     [self.button.titleLabel
-        setFont:[UIFont boldSystemFontOfSize:buttonTitleFontSize]];
-    self.button.layer.cornerRadius = buttonCornerRadius;
+        setFont:[UIFont boldSystemFontOfSize:kButtonTitleFontSize]];
+    self.button.layer.cornerRadius = kButtonCornerRadius;
     self.button.clipsToBounds = YES;
     self.button.contentEdgeInsets = UIEdgeInsetsMake(
-        buttonTitleVerticalContentInset, buttonTitleHorizontalContentInset,
-        buttonTitleVerticalContentInset, buttonTitleHorizontalContentInset);
+        kButtonTitleVerticalContentInset, kButtonTitleHorizontalContentInset,
+        kButtonTitleVerticalContentInset, kButtonTitleHorizontalContentInset);
 
     // Vertical stackView to hold label and button.
-    UIStackView* verticalStackView = [[UIStackView alloc]
+    self.verticalStackView = [[UIStackView alloc]
         initWithArrangedSubviews:@[ self.textLabel, self.button ]];
-    verticalStackView.alignment = UIStackViewAlignmentCenter;
-    verticalStackView.axis = UILayoutConstraintAxisVertical;
-    verticalStackView.spacing = stackViewSubViewSpacing;
-    verticalStackView.translatesAutoresizingMaskIntoConstraints = NO;
+    self.verticalStackView.alignment = UIStackViewAlignmentCenter;
+    self.verticalStackView.axis = UILayoutConstraintAxisVertical;
+    self.verticalStackView.translatesAutoresizingMaskIntoConstraints = NO;
 
-    [self.contentView addSubview:verticalStackView];
+    [self.contentView addSubview:self.verticalStackView];
 
     // Add constraints for stackView
     [NSLayoutConstraint activateConstraints:@[
-      [verticalStackView.leadingAnchor
+      [self.verticalStackView.leadingAnchor
           constraintEqualToAnchor:self.contentView.leadingAnchor
-                         constant:stackViewHorizontalSpacing],
-      [verticalStackView.trailingAnchor
+                         constant:kStackViewHorizontalSpacing],
+      [self.verticalStackView.trailingAnchor
           constraintEqualToAnchor:self.contentView.trailingAnchor
-                         constant:-stackViewHorizontalSpacing],
-      [verticalStackView.topAnchor
+                         constant:-kStackViewHorizontalSpacing],
+      [self.verticalStackView.topAnchor
           constraintEqualToAnchor:self.contentView.topAnchor
-                         constant:stackViewVerticalSpacing],
-      [verticalStackView.bottomAnchor
+                         constant:kStackViewVerticalSpacing],
+      [self.verticalStackView.bottomAnchor
           constraintEqualToAnchor:self.contentView.bottomAnchor
-                         constant:-stackViewVerticalSpacing]
+                         constant:-kStackViewVerticalSpacing]
     ]];
+
+    self.expandedButtonWidthConstraints = @[
+      [self.button.leadingAnchor
+          constraintEqualToAnchor:self.verticalStackView.leadingAnchor],
+      [self.button.trailingAnchor
+          constraintEqualToAnchor:self.verticalStackView.trailingAnchor],
+    ];
   }
   return self;
+}
+
+#pragma mark - Public Methods
+
+- (void)enableItemSpacing:(BOOL)enable {
+  self.verticalStackView.spacing = enable ? kStackViewSubViewSpacing : 0;
+}
+
+- (void)disableButtonIntrinsicWidth:(BOOL)disable {
+  if (disable) {
+    [NSLayoutConstraint
+        activateConstraints:self.expandedButtonWidthConstraints];
+  } else {
+    [NSLayoutConstraint
+        deactivateConstraints:self.expandedButtonWidthConstraints];
+  }
+}
+
+#pragma mark - UITableViewCell
+
+- (void)prepareForReuse {
+  [super prepareForReuse];
+  [self.button setTitleColor:UIColorFromRGB(kDefaultButtonTitleColor)
+                    forState:UIControlStateNormal];
+  self.textLabel.textAlignment = kDefaultTextAlignment;
+  [self disableButtonIntrinsicWidth:NO];
 }
 
 @end

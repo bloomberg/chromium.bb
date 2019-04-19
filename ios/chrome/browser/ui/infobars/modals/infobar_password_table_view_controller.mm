@@ -9,7 +9,6 @@
 #import "ios/chrome/browser/ui/infobars/modals/infobar_modal_constants.h"
 #import "ios/chrome/browser/ui/infobars/modals/infobar_password_modal_delegate.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
-#import "ios/chrome/browser/ui/table_view/cells/table_view_detail_icon_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_button_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_edit_item.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
@@ -29,6 +28,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeUsername,
   ItemTypePassword,
   ItemTypeSaveCredentials,
+  ItemTypeNeverForThisSite,
 };
 
 @interface InfobarPasswordTableViewController ()
@@ -38,6 +38,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 @property(nonatomic, strong) TableViewTextEditItem* passwordItem;
 // Item that holds the SaveCredentials Button information.
 @property(nonatomic, strong) TableViewTextButtonItem* saveCredentialsItem;
+// Item that holds the Never Save for this site Button information.
+@property(nonatomic, strong) TableViewTextButtonItem* neverForThisSiteItem;
 @end
 
 @implementation InfobarPasswordTableViewController
@@ -81,12 +83,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
   TableViewModel* model = self.tableViewModel;
   [model addSectionWithIdentifier:SectionIdentifierContent];
 
-  TableViewDetailIconItem* URLDetailItem =
-      [[TableViewDetailIconItem alloc] initWithType:ItemTypeURL];
-  URLDetailItem.text = l10n_util::GetNSString(IDS_IOS_SHOW_PASSWORD_VIEW_SITE);
-  URLDetailItem.detailText = self.URL;
-  [model addItem:URLDetailItem
-      toSectionWithIdentifier:SectionIdentifierContent];
+  TableViewTextEditItem* URLItem =
+      [[TableViewTextEditItem alloc] initWithType:ItemTypeURL];
+  URLItem.textFieldName =
+      l10n_util::GetNSString(IDS_IOS_SHOW_PASSWORD_VIEW_SITE);
+  URLItem.textFieldValue = self.URL;
+  [model addItem:URLItem toSectionWithIdentifier:SectionIdentifierContent];
 
   self.usernameItem =
       [[TableViewTextEditItem alloc] initWithType:ItemTypeUsername];
@@ -103,15 +105,24 @@ typedef NS_ENUM(NSInteger, ItemType) {
   self.passwordItem.textFieldName =
       l10n_util::GetNSString(IDS_IOS_SHOW_PASSWORD_VIEW_PASSWORD);
   self.passwordItem.textFieldValue = self.maskedPassword;
-  self.passwordItem.textFieldEnabled = YES;
-  self.passwordItem.autoCapitalizationType = UITextAutocapitalizationTypeNone;
   [model addItem:self.passwordItem
       toSectionWithIdentifier:SectionIdentifierContent];
 
   self.saveCredentialsItem =
       [[TableViewTextButtonItem alloc] initWithType:ItemTypeSaveCredentials];
+  self.saveCredentialsItem.textAlignment = NSTextAlignmentNatural;
+  self.saveCredentialsItem.text = self.detailsTextMessage;
   self.saveCredentialsItem.buttonText = self.saveButtonText;
+  self.saveCredentialsItem.disableButtonIntrinsicWidth = YES;
   [model addItem:self.saveCredentialsItem
+      toSectionWithIdentifier:SectionIdentifierContent];
+
+  self.neverForThisSiteItem =
+      [[TableViewTextButtonItem alloc] initWithType:ItemTypeNeverForThisSite];
+  self.neverForThisSiteItem.buttonText = self.cancelButtonText;
+  self.neverForThisSiteItem.buttonTextColor = [UIColor blueColor];
+  self.neverForThisSiteItem.buttonBackgroundColor = [UIColor clearColor];
+  [model addItem:self.neverForThisSiteItem
       toSectionWithIdentifier:SectionIdentifierContent];
 }
 
@@ -131,6 +142,15 @@ typedef NS_ENUM(NSInteger, ItemType) {
       [tableViewTextButtonCell.button
                  addTarget:self
                     action:@selector(saveCredentialsButtonWasPressed:)
+          forControlEvents:UIControlEventTouchUpInside];
+      break;
+    }
+    case ItemTypeNeverForThisSite: {
+      TableViewTextButtonCell* tableViewTextButtonCell =
+          base::mac::ObjCCastStrict<TableViewTextButtonCell>(cell);
+      [tableViewTextButtonCell.button
+                 addTarget:self.infobarModalDelegate
+                    action:@selector(neverSaveCredentialsForCurrentSite)
           forControlEvents:UIControlEventTouchUpInside];
       break;
     }

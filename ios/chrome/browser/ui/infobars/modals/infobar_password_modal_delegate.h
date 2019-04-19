@@ -17,6 +17,10 @@
 - (void)updateCredentialsWithUsername:(NSString*)username
                              password:(NSString*)password;
 
+// Blacklists the current site to never prompt the user to save its credentials
+// again.
+- (void)neverSaveCredentialsForCurrentSite;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_INFOBARS_MODALS_INFOBAR_PASSWORD_MODAL_DELEGATE_H_

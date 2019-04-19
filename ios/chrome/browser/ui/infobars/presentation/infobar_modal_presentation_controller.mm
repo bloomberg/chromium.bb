@@ -12,7 +12,7 @@
 
 namespace {
 // The presented view Height
-const CGFloat kPresentedViewHeight = 267.0;
+const CGFloat kPresentedViewHeight = 350.0;
 // The presented view outer horizontal margins.
 const CGFloat kPresentedViewHorizontalMargin = 10.0;
 // The presented view maximum width.

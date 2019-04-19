@@ -93,9 +93,14 @@
                         withString:@"•"
                    startingAtIndex:0];
   self.modalViewController.unmaskedPassword = password;
+  self.modalViewController.detailsTextMessage =
+      self.passwordInfoBarDelegate->GetDetailsMessageText();
   self.modalViewController.saveButtonText =
       base::SysUTF16ToNSString(self.passwordInfoBarDelegate->GetButtonLabel(
           ConfirmInfoBarDelegate::BUTTON_OK));
+  self.modalViewController.cancelButtonText =
+      base::SysUTF16ToNSString(self.passwordInfoBarDelegate->GetButtonLabel(
+          ConfirmInfoBarDelegate::BUTTON_CANCEL));
   self.modalViewController.URL = self.passwordInfoBarDelegate->GetURLHostText();
 }
 
@@ -118,6 +123,11 @@
 - (void)updateCredentialsWithUsername:(NSString*)username
                              password:(NSString*)password {
   self.passwordInfoBarDelegate->UpdateCredentials(username, password);
+  [self dismissInfobarModal:self completion:nil];
+}
+
+- (void)neverSaveCredentialsForCurrentSite {
+  self.passwordInfoBarDelegate->Cancel();
   [self dismissInfobarModal:self completion:nil];
 }
 
