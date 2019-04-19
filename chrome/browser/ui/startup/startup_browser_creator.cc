@@ -912,6 +912,28 @@ bool StartupBrowserCreator::ProcessLoadApps(
 }
 
 // static
+void StartupBrowserCreator::ProcessCommandLineAlreadyRunningImpl(
+    const base::CommandLine& command_line,
+    const base::FilePath& cur_dir,
+    const base::FilePath& profile_path) {
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  Profile* profile = profile_manager->GetProfileByPath(profile_path);
+
+  // The profile isn't loaded yet and so needs to be loaded asynchronously.
+  if (!profile) {
+    profile_manager->CreateProfileAsync(
+        profile_path,
+        base::BindRepeating(&ProcessCommandLineOnProfileCreated, command_line,
+                            cur_dir),
+        base::string16(), std::string());
+    return;
+  }
+  StartupBrowserCreator startup_browser_creator;
+  startup_browser_creator.ProcessCmdLineImpl(
+      command_line, cur_dir, /*process_startup=*/false, profile, Profiles());
+}
+
+// static
 void StartupBrowserCreator::ProcessCommandLineOnProfileCreated(
     const base::CommandLine& command_line,
     const base::FilePath& cur_dir,
@@ -929,20 +951,15 @@ void StartupBrowserCreator::ProcessCommandLineAlreadyRunning(
     const base::CommandLine& command_line,
     const base::FilePath& cur_dir,
     const base::FilePath& profile_path) {
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-  Profile* profile = profile_manager->GetProfileByPath(profile_path);
-
-  // The profile isn't loaded yet and so needs to be loaded asynchronously.
-  if (!profile) {
-    profile_manager->CreateProfileAsync(
-        profile_path,
-        base::Bind(&ProcessCommandLineOnProfileCreated, command_line, cur_dir),
-        base::string16(), std::string());
-    return;
-  }
-  StartupBrowserCreator startup_browser_creator;
-  startup_browser_creator.ProcessCmdLineImpl(command_line, cur_dir, false,
-                                             profile, Profiles());
+  // The Windows-specific code in browser_finder.cc that determines if a window
+  // is on the current virtual desktop uses a COM interface that can't be
+  // invoked if we're processing a SendMessage call. So, we post a task to
+  // finish the command line processing.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &StartupBrowserCreator::ProcessCommandLineAlreadyRunningImpl,
+          command_line, cur_dir, profile_path));
 }
 
 // static
