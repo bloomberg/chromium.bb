@@ -704,11 +704,10 @@ void MergeCookiesInOnBeforeSendHeadersResponses(
 }
 
 void MergeOnBeforeSendHeadersResponses(
-    const GURL& url,
+    const extensions::WebRequestInfo& request,
     const EventResponseDeltas& deltas,
     net::HttpRequestHeaders* request_headers,
     IgnoredActions* ignored_actions,
-    extensions::WebRequestInfo::Logger* logger,
     std::set<std::string>* removed_headers,
     std::set<std::string>* set_headers,
     bool* request_headers_modified) {
@@ -737,10 +736,23 @@ void MergeOnBeforeSendHeadersResponses(
         const std::string& key = modification.name();
         const std::string& value = modification.value();
 
-        // We must not delete anything that has been modified before.
+        // We must not modify anything that has been deleted before.
         if (removed_headers->find(key) != removed_headers->end() &&
             !extension_conflicts) {
           extension_conflicts = true;
+          break;
+        }
+
+        // Prevent extensions from adding any header removed by the Declarative
+        // Net Request API.
+        if (std::find_if(request.request_headers_to_remove.begin(),
+                         request.request_headers_to_remove.end(),
+                         [&key](const char* header_to_remove) {
+                           return base::EqualsCaseInsensitiveASCII(
+                               header_to_remove, key);
+                         }) != request.request_headers_to_remove.end()) {
+          extension_conflicts = true;
+          break;
         }
 
         // We must not modify anything that has been set to a *different*
@@ -762,11 +774,8 @@ void MergeOnBeforeSendHeadersResponses(
       for (auto key = delta.deleted_request_headers.begin();
            key != delta.deleted_request_headers.end() && !extension_conflicts;
            ++key) {
-        if (set_headers->find(*key) != set_headers->end()) {
-          std::string current_value;
-          request_headers->GetHeader(*key, &current_value);
+        if (set_headers->find(*key) != set_headers->end())
           extension_conflicts = true;
-        }
       }
     }
 
@@ -789,13 +798,14 @@ void MergeOnBeforeSendHeadersResponses(
           removed_headers->insert(header);
         }
       }
-      logger->LogEvent(net::NetLogEventType::CHROME_EXTENSION_MODIFIED_HEADERS,
-                       delta.extension_id);
+      request.logger->LogEvent(
+          net::NetLogEventType::CHROME_EXTENSION_MODIFIED_HEADERS,
+          delta.extension_id);
       *request_headers_modified = true;
     } else {
       ignored_actions->emplace_back(
           delta.extension_id, web_request::IGNORED_ACTION_TYPE_REQUEST_HEADERS);
-      logger->LogEvent(
+      request.logger->LogEvent(
           net::NetLogEventType::CHROME_EXTENSION_IGNORED_DUE_TO_CONFLICT,
           delta.extension_id);
     }
@@ -846,8 +856,8 @@ void MergeOnBeforeSendHeadersResponses(
   }
 
   // Currently, conflicts are ignored while merging cookies.
-  MergeCookiesInOnBeforeSendHeadersResponses(url, deltas, request_headers,
-                                             logger);
+  MergeCookiesInOnBeforeSendHeadersResponses(
+      request.url, deltas, request_headers, request.logger.get());
 }
 
 // Retrieves all cookies from |override_response_headers|.
@@ -1074,13 +1084,12 @@ static ResponseHeader ToLowerCase(const ResponseHeader& header) {
 }
 
 void MergeOnHeadersReceivedResponses(
-    const GURL& url,
+    const extensions::WebRequestInfo& request,
     const EventResponseDeltas& deltas,
     const net::HttpResponseHeaders* original_response_headers,
     scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
     GURL* allowed_unsafe_redirect_url,
     IgnoredActions* ignored_actions,
-    extensions::WebRequestInfo::Logger* logger,
     bool* response_headers_modified) {
   DCHECK(response_headers_modified);
   *response_headers_modified = false;
@@ -1100,9 +1109,10 @@ void MergeOnHeadersReceivedResponses(
     }
 
     // Only create a copy if we really want to modify the response headers.
-    if (override_response_headers->get() == NULL) {
-      *override_response_headers = new net::HttpResponseHeaders(
-          original_response_headers->raw_headers());
+    if (override_response_headers->get() == nullptr) {
+      *override_response_headers =
+          base::MakeRefCounted<net::HttpResponseHeaders>(
+              original_response_headers->raw_headers());
     }
 
     // We consider modifications as pairs of (delete, add) operations.
@@ -1111,12 +1121,26 @@ void MergeOnHeadersReceivedResponses(
     // conflict. As deltas is sorted by decreasing extension installation order,
     // this takes care of precedence.
     bool extension_conflicts = false;
-    ResponseHeaders::const_iterator i;
-    for (i = delta.deleted_response_headers.begin();
-         i != delta.deleted_response_headers.end(); ++i) {
-      if (removed_headers.find(ToLowerCase(*i)) != removed_headers.end()) {
+    for (const ResponseHeader& header : delta.deleted_response_headers) {
+      if (removed_headers.find(ToLowerCase(header)) != removed_headers.end()) {
         extension_conflicts = true;
         break;
+      }
+    }
+
+    // Prevent extensions from adding any response header which was removed by
+    // the Declarative Net Request API.
+    if (!extension_conflicts && !request.response_headers_to_remove.empty()) {
+      for (const ResponseHeader& header : delta.added_response_headers) {
+        if (std::find_if(request.response_headers_to_remove.begin(),
+                         request.response_headers_to_remove.end(),
+                         [&header](const char* header_to_remove) {
+                           return base::EqualsCaseInsensitiveASCII(
+                               header.first, header_to_remove);
+                         }) != request.response_headers_to_remove.end()) {
+          extension_conflicts = true;
+          break;
+        }
       }
     }
 
@@ -1124,44 +1148,46 @@ void MergeOnHeadersReceivedResponses(
     if (!extension_conflicts) {
       // Delete headers
       {
-        for (i = delta.deleted_response_headers.begin();
-             i != delta.deleted_response_headers.end(); ++i) {
-          (*override_response_headers)->RemoveHeaderLine(i->first, i->second);
-          removed_headers.insert(ToLowerCase(*i));
+        for (const ResponseHeader& header : delta.deleted_response_headers) {
+          (*override_response_headers)
+              ->RemoveHeaderLine(header.first, header.second);
+          removed_headers.insert(ToLowerCase(header));
         }
       }
 
       // Add headers.
       {
-        for (i = delta.added_response_headers.begin();
-             i != delta.added_response_headers.end(); ++i) {
-          ResponseHeader lowercase_header(ToLowerCase(*i));
+        for (const ResponseHeader& header : delta.added_response_headers) {
+          ResponseHeader lowercase_header(ToLowerCase(header));
           if (added_headers.find(lowercase_header) != added_headers.end())
             continue;
           added_headers.insert(lowercase_header);
-          (*override_response_headers)->AddHeader(i->first + ": " + i->second);
+          (*override_response_headers)
+              ->AddHeader(header.first + ": " + header.second);
         }
       }
-      logger->LogEvent(net::NetLogEventType::CHROME_EXTENSION_MODIFIED_HEADERS,
-                       delta.extension_id);
+      request.logger->LogEvent(
+          net::NetLogEventType::CHROME_EXTENSION_MODIFIED_HEADERS,
+          delta.extension_id);
       *response_headers_modified = true;
     } else {
       ignored_actions->emplace_back(
           delta.extension_id,
           web_request::IGNORED_ACTION_TYPE_RESPONSE_HEADERS);
-      logger->LogEvent(
+      request.logger->LogEvent(
           net::NetLogEventType::CHROME_EXTENSION_IGNORED_DUE_TO_CONFLICT,
           delta.extension_id);
     }
   }
 
   // Currently, conflicts are ignored while merging cookies.
-  MergeCookiesInOnHeadersReceivedResponses(url, deltas,
-                                           original_response_headers,
-                                           override_response_headers, logger);
+  MergeCookiesInOnHeadersReceivedResponses(
+      request.url, deltas, original_response_headers, override_response_headers,
+      request.logger.get());
 
   GURL new_url;
-  MergeRedirectUrlOfResponses(url, deltas, &new_url, ignored_actions, logger);
+  MergeRedirectUrlOfResponses(request.url, deltas, &new_url, ignored_actions,
+                              request.logger.get());
   if (new_url.is_valid()) {
     // Only create a copy if we really want to modify the response headers.
     if (override_response_headers->get() == NULL) {
@@ -1196,7 +1222,6 @@ void MergeOnHeadersReceivedResponses(
   }
   UMA_HISTOGRAM_BOOLEAN("Extensions.WebRequest.SetCookieResponseHeaderRemoved",
                         set_cookie_removed && !set_cookie_modified);
-
 }
 
 bool MergeOnAuthRequiredResponses(const EventResponseDeltas& deltas,

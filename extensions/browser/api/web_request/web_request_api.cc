@@ -2388,8 +2388,6 @@ int ExtensionWebRequestEventRouter::ExecuteDeltas(void* browser_context,
   helpers::MergeCancelOfResponses(blocked_request.response_deltas, &canceled,
                                   request->logger.get());
 
-  // TODO(crbug.com/947591): Prevent web request extensions from adding headers
-  // removed by Declarative Net Request.
   extension_web_request_api_helpers::IgnoredActions ignored_actions;
   if (blocked_request.event == kOnBeforeRequest) {
     CHECK(!blocked_request.callback.is_null());
@@ -2399,9 +2397,9 @@ int ExtensionWebRequestEventRouter::ExecuteDeltas(void* browser_context,
   } else if (blocked_request.event == kOnBeforeSendHeaders) {
     CHECK(!blocked_request.before_send_headers_callback.is_null());
     helpers::MergeOnBeforeSendHeadersResponses(
-        request->url, blocked_request.response_deltas,
+        *request, blocked_request.response_deltas,
         blocked_request.request_headers, &ignored_actions,
-        request->logger.get(), &request_headers_removed, &request_headers_set,
+        &request_headers_removed, &request_headers_set,
         &request_headers_modified);
 
     // Also include headers removed by the declarative net request API.
@@ -2412,10 +2410,10 @@ int ExtensionWebRequestEventRouter::ExecuteDeltas(void* browser_context,
   } else if (blocked_request.event == kOnHeadersReceived) {
     CHECK(!blocked_request.callback.is_null());
     helpers::MergeOnHeadersReceivedResponses(
-        request->url, blocked_request.response_deltas,
+        *request, blocked_request.response_deltas,
         blocked_request.filtered_response_headers.get(),
         blocked_request.override_response_headers, blocked_request.new_url,
-        &ignored_actions, request->logger.get(), &response_headers_modified);
+        &ignored_actions, &response_headers_modified);
   } else if (blocked_request.event == kOnAuthRequired) {
     CHECK(blocked_request.callback.is_null());
     CHECK(!blocked_request.auth_callback.is_null());

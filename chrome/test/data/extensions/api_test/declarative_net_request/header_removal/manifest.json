@@ -9,6 +9,7 @@
   "permissions": [
     "declarativeNetRequest",
     "webRequest",
+    "webRequestBlocking",
     "<all_urls>",
     "tabs",
     "cookies"

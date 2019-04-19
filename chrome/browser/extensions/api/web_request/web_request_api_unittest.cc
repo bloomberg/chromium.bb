@@ -47,6 +47,7 @@
 #include "extensions/browser/api/web_request/web_request_api.h"
 #include "extensions/browser/api/web_request/web_request_api_constants.h"
 #include "extensions/browser/api/web_request/web_request_api_helpers.h"
+#include "extensions/browser/api/web_request/web_request_info.h"
 #include "extensions/common/api/web_request.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_messages.h"
@@ -2063,7 +2064,6 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnBeforeSendHeadersResponses) {
   net::HttpRequestHeaders base_headers;
   base_headers.SetHeader("key1", "value 1");
   base_headers.SetHeader("key2", "value 2");
-  TestLogger logger;
   helpers::IgnoredActions ignored_actions;
   std::string header_value;
   EventResponseDeltas deltas;
@@ -2077,8 +2077,12 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnBeforeSendHeadersResponses) {
   std::set<std::string> ignore1, ignore2;
   net::HttpRequestHeaders headers0;
   headers0.MergeFrom(base_headers);
-  MergeOnBeforeSendHeadersResponses(GURL(), deltas, &headers0, &ignored_actions,
-                                    &logger, &ignore1, &ignore2,
+  WebRequestInfo info;
+  info.logger = std::make_unique<TestLogger>();
+  // Take a reference to TestLogger to simplify accessing TestLogger methods.
+  TestLogger& logger = static_cast<TestLogger&>(*info.logger);
+  MergeOnBeforeSendHeadersResponses(info, deltas, &headers0, &ignored_actions,
+                                    &ignore1, &ignore2,
                                     &request_headers_modified0);
   ASSERT_TRUE(headers0.GetHeader("key1", &header_value));
   EXPECT_EQ("value 1", header_value);
@@ -2104,8 +2108,8 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnBeforeSendHeadersResponses) {
   bool request_headers_modified1;
   net::HttpRequestHeaders headers1;
   headers1.MergeFrom(base_headers);
-  MergeOnBeforeSendHeadersResponses(GURL(), deltas, &headers1, &ignored_actions,
-                                    &logger, &ignore1, &ignore2,
+  MergeOnBeforeSendHeadersResponses(info, deltas, &headers1, &ignored_actions,
+                                    &ignore1, &ignore2,
                                     &request_headers_modified1);
   EXPECT_FALSE(headers1.HasHeader("key1"));
   ASSERT_TRUE(headers1.GetHeader("key2", &header_value));
@@ -2133,8 +2137,8 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnBeforeSendHeadersResponses) {
   bool request_headers_modified2;
   net::HttpRequestHeaders headers2;
   headers2.MergeFrom(base_headers);
-  MergeOnBeforeSendHeadersResponses(GURL(), deltas, &headers2, &ignored_actions,
-                                    &logger, &ignore1, &ignore2,
+  MergeOnBeforeSendHeadersResponses(info, deltas, &headers2, &ignored_actions,
+                                    &ignore1, &ignore2,
                                     &request_headers_modified2);
   EXPECT_FALSE(headers2.HasHeader("key1"));
   ASSERT_TRUE(headers2.GetHeader("key2", &header_value));
@@ -2166,8 +2170,8 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnBeforeSendHeadersResponses) {
   bool request_headers_modified3;
   net::HttpRequestHeaders headers3;
   headers3.MergeFrom(base_headers);
-  MergeOnBeforeSendHeadersResponses(GURL(), deltas, &headers3, &ignored_actions,
-                                    &logger, &ignore1, &ignore2,
+  MergeOnBeforeSendHeadersResponses(info, deltas, &headers3, &ignored_actions,
+                                    &ignore1, &ignore2,
                                     &request_headers_modified3);
   EXPECT_FALSE(headers3.HasHeader("key1"));
   ASSERT_TRUE(headers3.GetHeader("key2", &header_value));
@@ -2182,6 +2186,39 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnBeforeSendHeadersResponses) {
                        web_request::IGNORED_ACTION_TYPE_REQUEST_HEADERS));
   EXPECT_EQ(3u, logger.log_size());
   EXPECT_TRUE(request_headers_modified3);
+
+  // Check that headers removed by Declarative Net Request API can't be modified
+  // and result in a conflict.
+  ignored_actions.clear();
+  logger.clear();
+  ignore1.clear();
+  ignore2.clear();
+  bool request_headers_modified4 = false;
+  net::HttpRequestHeaders headers4;
+  headers4.MergeFrom(base_headers);
+  info.request_headers_to_remove = {"key5"};
+  MergeOnBeforeSendHeadersResponses(info, deltas, &headers4, &ignored_actions,
+                                    &ignore1, &ignore2,
+                                    &request_headers_modified4);
+  // deleted by |d1|.
+  EXPECT_FALSE(headers4.HasHeader("key1"));
+  // Added by |d1|.
+  ASSERT_TRUE(headers4.GetHeader("key2", &header_value));
+  EXPECT_EQ("value 3", header_value);
+  // Removed by Declarative Net Request API.
+  EXPECT_FALSE(headers4.HasHeader("key5"));
+  EXPECT_EQ(2u, ignored_actions.size());
+  EXPECT_TRUE(
+      HasIgnoredAction(ignored_actions, "extid2",
+                       web_request::IGNORED_ACTION_TYPE_REQUEST_HEADERS));
+  EXPECT_TRUE(
+      HasIgnoredAction(ignored_actions, "extid2",
+                       web_request::IGNORED_ACTION_TYPE_REQUEST_HEADERS));
+  EXPECT_TRUE(
+      HasIgnoredAction(ignored_actions, "extid3",
+                       web_request::IGNORED_ACTION_TYPE_REQUEST_HEADERS));
+  EXPECT_EQ(3u, logger.log_size());
+  EXPECT_TRUE(request_headers_modified4);
 }
 
 TEST(ExtensionWebRequestHelpersTest,
@@ -2189,7 +2226,6 @@ TEST(ExtensionWebRequestHelpersTest,
   net::HttpRequestHeaders base_headers;
   base_headers.SetHeader("Cookie",
                          "name=value; name2=value2; name3=\"value3\"");
-  TestLogger logger;
   helpers::IgnoredActions ignored_actions;
   std::string header_value;
   EventResponseDeltas deltas;
@@ -2234,8 +2270,13 @@ TEST(ExtensionWebRequestHelpersTest,
   net::HttpRequestHeaders headers1;
   headers1.MergeFrom(base_headers);
   ignored_actions.clear();
-  MergeOnBeforeSendHeadersResponses(GURL(), deltas, &headers1, &ignored_actions,
-                                    &logger, &ignore1, &ignore2,
+
+  WebRequestInfo info;
+  info.logger = std::make_unique<TestLogger>();
+  // Take a reference to TestLogger to simplify accessing TestLogger methods.
+  TestLogger& logger = static_cast<TestLogger&>(*info.logger);
+  MergeOnBeforeSendHeadersResponses(info, deltas, &headers1, &ignored_actions,
+                                    &ignore1, &ignore2,
                                     &request_headers_modified1);
   EXPECT_TRUE(headers1.HasHeader("Cookie"));
   ASSERT_TRUE(headers1.GetHeader("Cookie", &header_value));
@@ -2489,7 +2530,6 @@ TEST(ExtensionWebRequestHelpersTest,
 }
 
 TEST(ExtensionWebRequestHelpersTest, TestMergeOnHeadersReceivedResponses) {
-  TestLogger logger;
   helpers::IgnoredActions ignored_actions;
   std::string header_value;
   EventResponseDeltas deltas;
@@ -2512,9 +2552,15 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnHeadersReceivedResponses) {
   bool response_headers_modified0;
   scoped_refptr<net::HttpResponseHeaders> new_headers0;
   GURL allowed_unsafe_redirect_url0;
-  MergeOnHeadersReceivedResponses(GURL(kExampleUrl), deltas, base_headers.get(),
+  WebRequestInfo info;
+  info.url = GURL(kExampleUrl);
+  info.logger = std::make_unique<TestLogger>();
+  // Take a reference to TestLogger to simplify accessing TestLogger methods.
+  TestLogger& logger = static_cast<TestLogger&>(*info.logger);
+
+  MergeOnHeadersReceivedResponses(info, deltas, base_headers.get(),
                                   &new_headers0, &allowed_unsafe_redirect_url0,
-                                  &ignored_actions, &logger,
+                                  &ignored_actions,
                                   &response_headers_modified0);
   EXPECT_FALSE(new_headers0.get());
   EXPECT_TRUE(allowed_unsafe_redirect_url0.is_empty());
@@ -2528,6 +2574,7 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnHeadersReceivedResponses) {
     d1.deleted_response_headers.push_back(
         ResponseHeader("KEY2", "Value2, Foo"));
     d1.added_response_headers.push_back(ResponseHeader("Key2", "Value3"));
+    d1.added_response_headers.push_back(ResponseHeader("Key3", "Foo"));
     deltas.push_back(std::move(d1));
   }
   deltas.sort(&InDecreasingExtensionInstallationTimeOrder);
@@ -2536,14 +2583,15 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnHeadersReceivedResponses) {
   bool response_headers_modified1;
   scoped_refptr<net::HttpResponseHeaders> new_headers1;
   GURL allowed_unsafe_redirect_url1;
-  MergeOnHeadersReceivedResponses(GURL(kExampleUrl), deltas, base_headers.get(),
+  MergeOnHeadersReceivedResponses(info, deltas, base_headers.get(),
                                   &new_headers1, &allowed_unsafe_redirect_url1,
-                                  &ignored_actions, &logger,
+                                  &ignored_actions,
                                   &response_headers_modified1);
   ASSERT_TRUE(new_headers1.get());
   EXPECT_TRUE(allowed_unsafe_redirect_url1.is_empty());
   std::multimap<std::string, std::string> expected1;
   expected1.insert(std::pair<std::string, std::string>("Key2", "Value3"));
+  expected1.insert(std::pair<std::string, std::string>("Key3", "Foo"));
   size_t iter = 0;
   std::string name;
   std::string value;
@@ -2572,9 +2620,9 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnHeadersReceivedResponses) {
   bool response_headers_modified2;
   scoped_refptr<net::HttpResponseHeaders> new_headers2;
   GURL allowed_unsafe_redirect_url2;
-  MergeOnHeadersReceivedResponses(GURL(kExampleUrl), deltas, base_headers.get(),
+  MergeOnHeadersReceivedResponses(info, deltas, base_headers.get(),
                                   &new_headers2, &allowed_unsafe_redirect_url2,
-                                  &ignored_actions, &logger,
+                                  &ignored_actions,
                                   &response_headers_modified2);
   ASSERT_TRUE(new_headers2.get());
   EXPECT_TRUE(allowed_unsafe_redirect_url2.is_empty());
@@ -2590,12 +2638,40 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnHeadersReceivedResponses) {
                        web_request::IGNORED_ACTION_TYPE_RESPONSE_HEADERS));
   EXPECT_EQ(2u, logger.log_size());
   EXPECT_TRUE(response_headers_modified2);
+
+  // Ensure headers removed by Declarative Net Request API can't be added by web
+  // request extensions and result in a conflict.
+  info.response_headers_to_remove = {"key3"};
+  ignored_actions.clear();
+  logger.clear();
+  bool response_headers_modified3 = false;
+  scoped_refptr<net::HttpResponseHeaders> new_headers3;
+  GURL allowed_unsafe_redirect_url3;
+  MergeOnHeadersReceivedResponses(info, deltas, base_headers.get(),
+                                  &new_headers3, &allowed_unsafe_redirect_url3,
+                                  &ignored_actions,
+                                  &response_headers_modified3);
+  ASSERT_TRUE(new_headers3.get());
+  EXPECT_TRUE(allowed_unsafe_redirect_url3.is_empty());
+  iter = 0;
+  std::multimap<std::string, std::string> actual3;
+  while (new_headers3->EnumerateHeaderLines(&iter, &name, &value))
+    actual3.emplace(name, value);
+  std::multimap<std::string, std::string> expected3;
+  expected3.emplace("Key2", "Value4");
+  expected3.emplace("Key1", "Value1");
+  EXPECT_EQ(expected3, actual3);
+  EXPECT_EQ(1u, ignored_actions.size());
+  EXPECT_TRUE(
+      HasIgnoredAction(ignored_actions, "extid1",
+                       web_request::IGNORED_ACTION_TYPE_RESPONSE_HEADERS));
+  EXPECT_EQ(2u, logger.log_size());
+  EXPECT_TRUE(response_headers_modified3);
 }
 
 // Check that we do not delete too much
 TEST(ExtensionWebRequestHelpersTest,
      TestMergeOnHeadersReceivedResponsesDeletion) {
-  TestLogger logger;
   helpers::IgnoredActions ignored_actions;
   std::string header_value;
   EventResponseDeltas deltas;
@@ -2620,9 +2696,16 @@ TEST(ExtensionWebRequestHelpersTest,
   bool response_headers_modified1;
   scoped_refptr<net::HttpResponseHeaders> new_headers1;
   GURL allowed_unsafe_redirect_url1;
-  MergeOnHeadersReceivedResponses(GURL(kExampleUrl), deltas, base_headers.get(),
+
+  WebRequestInfo info;
+  info.url = GURL(kExampleUrl);
+  info.logger = std::make_unique<TestLogger>();
+  // Take a reference to TestLogger to simplify accessing TestLogger methods.
+  TestLogger& logger = static_cast<TestLogger&>(*info.logger);
+
+  MergeOnHeadersReceivedResponses(info, deltas, base_headers.get(),
                                   &new_headers1, &allowed_unsafe_redirect_url1,
-                                  &ignored_actions, &logger,
+                                  &ignored_actions,
                                   &response_headers_modified1);
   ASSERT_TRUE(new_headers1.get());
   EXPECT_TRUE(allowed_unsafe_redirect_url1.is_empty());
@@ -2649,7 +2732,6 @@ TEST(ExtensionWebRequestHelpersTest,
 TEST(ExtensionWebRequestHelpersTest,
      TestMergeOnHeadersReceivedResponsesRedirect) {
   EventResponseDeltas deltas;
-  TestLogger logger;
   helpers::IgnoredActions ignored_actions;
 
   char base_headers_string[] =
@@ -2667,9 +2749,16 @@ TEST(ExtensionWebRequestHelpersTest,
   bool response_headers_modified0;
   scoped_refptr<net::HttpResponseHeaders> new_headers0;
   GURL allowed_unsafe_redirect_url0;
-  MergeOnHeadersReceivedResponses(GURL(kExampleUrl), deltas, base_headers.get(),
+
+  WebRequestInfo info;
+  info.url = GURL(kExampleUrl);
+  info.logger = std::make_unique<TestLogger>();
+  // Take a reference to TestLogger to simplify accessing TestLogger methods.
+  TestLogger& logger = static_cast<TestLogger&>(*info.logger);
+
+  MergeOnHeadersReceivedResponses(info, deltas, base_headers.get(),
                                   &new_headers0, &allowed_unsafe_redirect_url0,
-                                  &ignored_actions, &logger,
+                                  &ignored_actions,
                                   &response_headers_modified0);
   EXPECT_FALSE(new_headers0.get());
   EXPECT_TRUE(allowed_unsafe_redirect_url0.is_empty());
@@ -2690,9 +2779,9 @@ TEST(ExtensionWebRequestHelpersTest,
 
   scoped_refptr<net::HttpResponseHeaders> new_headers1;
   GURL allowed_unsafe_redirect_url1;
-  MergeOnHeadersReceivedResponses(GURL(kExampleUrl), deltas, base_headers.get(),
+  MergeOnHeadersReceivedResponses(info, deltas, base_headers.get(),
                                   &new_headers1, &allowed_unsafe_redirect_url1,
-                                  &ignored_actions, &logger,
+                                  &ignored_actions,
                                   &response_headers_modified1);
 
   EXPECT_TRUE(new_headers1.get());

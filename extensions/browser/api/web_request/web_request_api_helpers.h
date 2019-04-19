@@ -327,11 +327,10 @@ void MergeCookiesInOnBeforeSendHeadersResponses(
 // Stores in |request_headers_modified| whether the request headers were
 // modified.
 void MergeOnBeforeSendHeadersResponses(
-    const GURL& url,
+    const extensions::WebRequestInfo& request,
     const EventResponseDeltas& deltas,
     net::HttpRequestHeaders* request_headers,
     IgnoredActions* ignored_actions,
-    extensions::WebRequestInfo::Logger* logger,
     std::set<std::string>* removed_headers,
     std::set<std::string>* set_headers,
     bool* request_headers_modified);
@@ -354,13 +353,12 @@ void MergeCookiesInOnHeadersReceivedResponses(
 // Stores in |response_headers_modified| whether the response headers were
 // modified.
 void MergeOnHeadersReceivedResponses(
-    const GURL& url,
+    const extensions::WebRequestInfo& request,
     const EventResponseDeltas& deltas,
     const net::HttpResponseHeaders* original_response_headers,
     scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
     GURL* allowed_unsafe_redirect_url,
     IgnoredActions* ignored_actions,
-    extensions::WebRequestInfo::Logger* logger,
     bool* response_headers_modified);
 // Merge the responses of blocked onAuthRequired handlers. The first
 // registered listener that supplies authentication credentials in a response,
