@@ -253,6 +253,8 @@ def forward_signals(procs):
   assert all(isinstance(p, subprocess.Popen) for p in procs)
   def _sig_handler(sig, _):
     for p in procs:
+      if p.poll() is not None:
+        continue
       # SIGBREAK is defined only for win32.
       if sys.platform == 'win32' and sig == signal.SIGBREAK:
         p.send_signal(signal.CTRL_BREAK_EVENT)
@@ -262,7 +264,7 @@ def forward_signals(procs):
     signal.signal(signal.SIGBREAK, _sig_handler)
   else:
     signal.signal(signal.SIGTERM, _sig_handler)
-
+    signal.signal(signal.SIGINT, _sig_handler)
 
 def run_executable(cmd, env, stdoutfile=None):
   """Runs an executable with:
