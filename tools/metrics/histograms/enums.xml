@@ -1173,6 +1173,15 @@ Unknown properties are collapsed to zero. -->
   <int value="7" label="Has waived has moderate has strong"/>
 </enum>
 
+<enum name="Android.Download.Rename.Dialog.Action">
+  <int value="0" label="RenameDialogConfirm"/>
+  <int value="1" label="RenameDialogCancel"/>
+  <int value="2" label="RenameDialogOther"/>
+  <int value="3" label="RenameExtensionDialogConfirm"/>
+  <int value="4" label="RenameExtensionDialogCancel"/>
+  <int value="5" label="RenameExtensionDialogOther"/>
+</enum>
+
 <enum name="Android.DownloadManager.List.Section.Menu.Actions">
   <int value="0" label="START_SELECTING"/>
   <int value="1" label="SHARE_ALL"/>
