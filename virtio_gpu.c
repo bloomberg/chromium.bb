@@ -72,6 +72,29 @@ static int virtio_dumb_bo_create(struct bo *bo, uint32_t width, uint32_t height,
 	return drv_dumb_bo_create(bo, width, height, format, use_flags);
 }
 
+static inline void handle_flag(uint64_t *flag, uint64_t check_flag, uint32_t *bind,
+			       uint32_t virgl_bind)
+{
+	if ((*flag) & check_flag) {
+		(*flag) &= ~check_flag;
+		(*bind) |= virgl_bind;
+	}
+}
+
+static uint32_t use_flags_to_bind(uint64_t use_flags)
+{
+	uint32_t bind = 0;
+
+	handle_flag(&use_flags, BO_USE_TEXTURE, &bind, VIRGL_BIND_SAMPLER_VIEW);
+	handle_flag(&use_flags, BO_USE_RENDERING, &bind, VIRGL_BIND_RENDER_TARGET);
+	handle_flag(&use_flags, BO_USE_SCANOUT, &bind, VIRGL_BIND_SCANOUT);
+	// TODO (b/12983436): handle other use flags.
+	if (use_flags) {
+		drv_log("Unhandled bo use flag: %llx\n", (unsigned long long)use_flags);
+	}
+	return bind;
+}
+
 static int virtio_virgl_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_t format,
 				  uint64_t use_flags)
 {
@@ -79,6 +102,7 @@ static int virtio_virgl_bo_create(struct bo *bo, uint32_t width, uint32_t height
 	ssize_t plane;
 	ssize_t num_planes = drv_num_planes_from_format(format);
 	uint32_t stride0;
+	uint32_t bind = use_flags_to_bind(use_flags);
 
 	for (plane = 0; plane < num_planes; plane++) {
 		uint32_t stride = drv_stride_from_format(format, width, plane);
@@ -97,7 +121,7 @@ static int virtio_virgl_bo_create(struct bo *bo, uint32_t width, uint32_t height
 		 */
 		res_create.target = PIPE_TEXTURE_2D;
 		res_create.format = res_format;
-		res_create.bind = VIRGL_BIND_RENDER_TARGET;
+		res_create.bind = bind;
 		res_create.width = width;
 		res_create.height = height;
 		res_create.depth = 1;
@@ -175,8 +199,10 @@ static int virtio_gpu_init(struct driver *drv)
 		priv->has_3d = 0;
 	}
 
+	/* This doesn't mean host can scanout everything, it just means host
+	 * hypervisor can show it. */
 	drv_add_combinations(drv, render_target_formats, ARRAY_SIZE(render_target_formats),
-			     &LINEAR_METADATA, BO_USE_RENDER_MASK);
+			     &LINEAR_METADATA, BO_USE_RENDER_MASK | BO_USE_SCANOUT);
 
 	if (priv->has_3d)
 		drv_add_combinations(drv, texture_source_formats,
