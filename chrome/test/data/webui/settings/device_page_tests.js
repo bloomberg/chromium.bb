@@ -604,6 +604,7 @@ cr.define('device_page_tests', function() {
               'showExternalMetaKey': false,
               'showAppleCommandKey': false,
               'hasInternalKeyboard': false,
+              'hasAssistantKey': false,
             };
             cr.webUIListenerCallback('show-keys-changed', keyboardParams);
             Polymer.dom.flush();
@@ -611,6 +612,7 @@ cr.define('device_page_tests', function() {
             expectFalse(!!keyboardPage.$$('#capsLockKey'));
             expectFalse(!!keyboardPage.$$('#externalMetaKey'));
             expectFalse(!!keyboardPage.$$('#externalCommandKey'));
+            expectFalse(!!keyboardPage.$$('#assistantKey'));
 
             // Pretend a Caps Lock key is now available.
             keyboardParams['showCapsLock'] = true;
@@ -620,6 +622,7 @@ cr.define('device_page_tests', function() {
             expectTrue(!!keyboardPage.$$('#capsLockKey'));
             expectFalse(!!keyboardPage.$$('#externalMetaKey'));
             expectFalse(!!keyboardPage.$$('#externalCommandKey'));
+            expectFalse(!!keyboardPage.$$('#assistantKey'));
 
             // Add a non-Apple external keyboard.
             keyboardParams['showExternalMetaKey'] = true;
@@ -629,6 +632,7 @@ cr.define('device_page_tests', function() {
             expectTrue(!!keyboardPage.$$('#capsLockKey'));
             expectTrue(!!keyboardPage.$$('#externalMetaKey'));
             expectFalse(!!keyboardPage.$$('#externalCommandKey'));
+            expectFalse(!!keyboardPage.$$('#assistantKey'));
 
             // Add an Apple keyboard.
             keyboardParams['showAppleCommandKey'] = true;
@@ -638,6 +642,7 @@ cr.define('device_page_tests', function() {
             expectTrue(!!keyboardPage.$$('#capsLockKey'));
             expectTrue(!!keyboardPage.$$('#externalMetaKey'));
             expectTrue(!!keyboardPage.$$('#externalCommandKey'));
+            expectFalse(!!keyboardPage.$$('#assistantKey'));
 
             // Add an internal keyboard.
             keyboardParams['hasInternalKeyboard'] = true;
@@ -647,6 +652,17 @@ cr.define('device_page_tests', function() {
             expectTrue(!!keyboardPage.$$('#capsLockKey'));
             expectTrue(!!keyboardPage.$$('#externalMetaKey'));
             expectTrue(!!keyboardPage.$$('#externalCommandKey'));
+            expectFalse(!!keyboardPage.$$('#assistantKey'));
+
+            // Pretend an Assistant key is now available.
+            keyboardParams['hasAssistantKey'] = true;
+            cr.webUIListenerCallback('show-keys-changed', keyboardParams);
+            Polymer.dom.flush();
+            expectTrue(!!keyboardPage.$$('#internalSearchKey'));
+            expectTrue(!!keyboardPage.$$('#capsLockKey'));
+            expectTrue(!!keyboardPage.$$('#externalMetaKey'));
+            expectTrue(!!keyboardPage.$$('#externalCommandKey'));
+            expectTrue(!!keyboardPage.$$('#assistantKey'));
 
             collapse = keyboardPage.$$('iron-collapse');
             assertTrue(!!collapse);
