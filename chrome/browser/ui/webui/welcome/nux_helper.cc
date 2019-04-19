@@ -59,8 +59,10 @@ bool CanShowNTPBackgroundModule(const policy::PolicyMap& policies) {
 }
 
 bool CanShowSetDefaultModule(const policy::PolicyMap& policies) {
-  // TODO(hcarmona): Will add in followup CL.
-  return true;
+  const base::Value* set_default_value =
+      policies.GetValue(policy::key::kDefaultBrowserSettingEnabled);
+
+  return !set_default_value || set_default_value->GetBool();
 }
 
 bool CanShowSigninModule(const policy::PolicyMap& policies) {
