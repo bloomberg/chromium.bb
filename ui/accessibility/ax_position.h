@@ -164,7 +164,7 @@ class AXPosition {
     if (!IsTextPosition() || text_offset_ > MaxTextOffset())
       return str;
 
-    std::string text = base::UTF16ToUTF8(GetInnerText());
+    std::string text = base::UTF16ToUTF8(GetText());
     DCHECK_GE(text_offset_, 0);
     DCHECK_LE(text_offset_, static_cast<int>(text.length()));
     std::string annotated_text;
@@ -1372,14 +1372,16 @@ class AXPosition {
   int MaxTextOffset() const {
     if (IsNullPosition())
       return INVALID_INDEX;
-    return static_cast<int>(GetInnerText().length());
+    return static_cast<int>(GetText().length());
   }
 
   // Abstract methods.
 
-  // Returns the text that is present inside the anchor node, including any text
-  // found in descendant nodes.
-  virtual base::string16 GetInnerText() const = 0;
+  // Returns the text that is present inside the anchor node, where the
+  // representation of text found in descendant nodes depends on the platform.
+  // For example some platforms may include descendant text while while other
+  // platforms may use a special character to represent descendant text.
+  virtual base::string16 GetText() const = 0;
 
  protected:
   AXPosition() = default;

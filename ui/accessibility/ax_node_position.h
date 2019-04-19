@@ -27,7 +27,7 @@ class AX_EXPORT AXNodePosition : public AXPosition<AXNodePosition, AXNode> {
 
   AXPositionInstance Clone() const override;
 
-  base::string16 GetInnerText() const override;
+  base::string16 GetText() const override;
 
   static void SetTreeForTesting(AXTree* tree) { tree_ = tree; }
 

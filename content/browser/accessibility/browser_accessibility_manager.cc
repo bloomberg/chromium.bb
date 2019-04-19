@@ -1017,7 +1017,7 @@ base::string16 BrowserAccessibilityManager::GetTextForRange(
     const BrowserAccessibility& start_object,
     const BrowserAccessibility& end_object) {
   return GetTextForRange(start_object, 0, end_object,
-                         end_object.GetText().length());
+                         end_object.GetInnerText().length());
 }
 
 // static
@@ -1033,13 +1033,14 @@ base::string16 BrowserAccessibilityManager::GetTextForRange(
     if (start_offset > end_offset)
       std::swap(start_offset, end_offset);
 
-    if (start_offset >= static_cast<int>(start_object.GetText().length()) ||
-        end_offset > static_cast<int>(start_object.GetText().length())) {
+    if (start_offset >=
+            static_cast<int>(start_object.GetInnerText().length()) ||
+        end_offset > static_cast<int>(start_object.GetInnerText().length())) {
       return base::string16();
     }
 
-    return start_object.GetText().substr(start_offset,
-                                         end_offset - start_offset);
+    return start_object.GetInnerText().substr(start_offset,
+                                              end_offset - start_offset);
   }
 
   std::vector<const BrowserAccessibility*> text_only_objects =
@@ -1053,12 +1054,12 @@ base::string16 BrowserAccessibilityManager::GetTextForRange(
       std::swap(start_offset, end_offset);
 
     const BrowserAccessibility* text_object = text_only_objects[0];
-    if (start_offset < static_cast<int>(text_object->GetText().length()) &&
-        end_offset <= static_cast<int>(text_object->GetText().length())) {
-      return text_object->GetText().substr(start_offset,
-                                           end_offset - start_offset);
+    if (start_offset < static_cast<int>(text_object->GetInnerText().length()) &&
+        end_offset <= static_cast<int>(text_object->GetInnerText().length())) {
+      return text_object->GetInnerText().substr(start_offset,
+                                                end_offset - start_offset);
     }
-    return text_object->GetText();
+    return text_object->GetInnerText();
   }
 
   base::string16 text;
@@ -1070,28 +1071,30 @@ base::string16 BrowserAccessibilityManager::GetTextForRange(
   if (!first_object || first_object != start_text_object)
     std::swap(start_offset, end_offset);
 
-  if (start_offset < static_cast<int>(start_text_object->GetText().length())) {
-    text += start_text_object->GetText().substr(start_offset);
+  if (start_offset <
+      static_cast<int>(start_text_object->GetInnerText().length())) {
+    text += start_text_object->GetInnerText().substr(start_offset);
   } else {
-    text += start_text_object->GetText();
+    text += start_text_object->GetInnerText();
   }
 
   for (size_t i = 1; i < text_only_objects.size() - 1; ++i) {
-    text += text_only_objects[i]->GetText();
+    text += text_only_objects[i]->GetInnerText();
   }
 
   const BrowserAccessibility* end_text_object = text_only_objects.back();
-  if (end_offset <= static_cast<int>(end_text_object->GetText().length())) {
-    text += end_text_object->GetText().substr(0, end_offset);
+  if (end_offset <=
+      static_cast<int>(end_text_object->GetInnerText().length())) {
+    text += end_text_object->GetInnerText().substr(0, end_offset);
   } else {
-    text += end_text_object->GetText();
+    text += end_text_object->GetInnerText();
   }
 
   return text;
 }
 
 // static
-gfx::Rect BrowserAccessibilityManager::GetRootFrameRangeBoundsRect(
+gfx::Rect BrowserAccessibilityManager::GetRootFrameInnerTextRangeBoundsRect(
     const BrowserAccessibility& start_object,
     int start_offset,
     const BrowserAccessibility& end_object,
@@ -1103,14 +1106,14 @@ gfx::Rect BrowserAccessibilityManager::GetRootFrameRangeBoundsRect(
     if (start_offset > end_offset)
       std::swap(start_offset, end_offset);
 
-    if (start_offset >= static_cast<int>(start_object.GetText().length()) ||
-        end_offset > static_cast<int>(start_object.GetText().length())) {
+    if (start_offset >=
+            static_cast<int>(start_object.GetInnerText().length()) ||
+        end_offset > static_cast<int>(start_object.GetInnerText().length())) {
       return gfx::Rect();
     }
 
-    return start_object.GetRootFrameRangeBoundsRect(
-        start_offset, end_offset - start_offset,
-        ui::AXClippingBehavior::kUnclipped);
+    return start_object.GetUnclippedRootFrameInnerTextRangeBoundsRect(
+        start_offset, end_offset);
   }
 
   gfx::Rect result;
@@ -1132,16 +1135,15 @@ gfx::Rect BrowserAccessibilityManager::GetRootFrameRangeBoundsRect(
   const BrowserAccessibility* current = first;
   do {
     if (current->IsTextOnlyObject()) {
-      int len = static_cast<int>(current->GetText().size());
+      int len = static_cast<int>(current->GetInnerText().size());
       int start_char_index = 0;
       int end_char_index = len;
       if (current == first)
         start_char_index = start_offset;
       if (current == last)
         end_char_index = end_offset;
-      result.Union(current->GetRootFrameRangeBoundsRect(
-          start_char_index, end_char_index - start_char_index,
-          ui::AXClippingBehavior::kUnclipped));
+      result.Union(current->GetUnclippedRootFrameInnerTextRangeBoundsRect(
+          start_char_index, end_char_index));
     } else {
       result.Union(current->GetClippedRootFrameBoundsRect());
     }

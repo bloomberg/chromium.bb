@@ -51,6 +51,14 @@ gfx::NativeViewAccessible AXPlatformNodeDelegateBase::ChildAtIndex(int index) {
   return nullptr;
 }
 
+base::string16 AXPlatformNodeDelegateBase::GetHypertext() const {
+  return base::string16();
+}
+
+base::string16 AXPlatformNodeDelegateBase::GetInnerText() const {
+  return base::string16();
+}
+
 gfx::Rect AXPlatformNodeDelegateBase::GetBoundsRect(
     const AXCoordinateSystem coordinate_system,
     const AXClippingBehavior clipping_behavior,
@@ -58,12 +66,21 @@ gfx::Rect AXPlatformNodeDelegateBase::GetBoundsRect(
   return gfx::Rect();
 }
 
-gfx::Rect AXPlatformNodeDelegateBase::GetRangeBoundsRect(
+gfx::Rect AXPlatformNodeDelegateBase::GetHypertextRangeBoundsRect(
     const int start_offset,
     const int end_offset,
     const AXCoordinateSystem coordinate_system,
     const AXClippingBehavior clipping_behavior,
     AXOffscreenResult* offscreen_result) const {
+  return gfx::Rect();
+}
+
+gfx::Rect AXPlatformNodeDelegateBase::GetInnerTextRangeBoundsRect(
+    const int start_offset,
+    const int end_offset,
+    const AXCoordinateSystem coordinate_system,
+    const AXClippingBehavior clipping_behavior,
+    AXOffscreenResult* offscreen_result = nullptr) const {
   return gfx::Rect();
 }
 

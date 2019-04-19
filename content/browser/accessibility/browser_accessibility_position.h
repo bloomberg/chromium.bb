@@ -29,7 +29,7 @@ class CONTENT_EXPORT BrowserAccessibilityPosition
 
   AXPositionInstance Clone() const override;
 
-  base::string16 GetInnerText() const override;
+  base::string16 GetText() const override;
 
  protected:
   BrowserAccessibilityPosition(const BrowserAccessibilityPosition& other) =

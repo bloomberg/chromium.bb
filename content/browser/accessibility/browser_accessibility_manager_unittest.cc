@@ -30,6 +30,13 @@ class CountedBrowserAccessibility : public BrowserAccessibility {
   }
   ~CountedBrowserAccessibility() override { global_obj_count_--; }
 
+  // TODO: Existing cross-platform BrowserAccessibiltity hypertext tests rely on
+  // the default behavior of inner text. Since hypertext implementations are
+  // platform specific and are unavailable here, refactor tests which rely on
+  // GetHypertext (such as GetRootFrameHypertextRangeBoundsRect) as platform
+  // unit tests.
+  base::string16 GetHypertext() const override { return GetInnerText(); }
+
   void NativeAddReference() override { native_ref_count_++; }
 
   void NativeReleaseReference() override {
@@ -635,37 +642,37 @@ TEST_F(BrowserAccessibilityManagerTest, BoundsForRange) {
 
   EXPECT_EQ(gfx::Rect(100, 100, 6, 9).ToString(),
             static_text_accessible
-                ->GetRootFrameRangeBoundsRect(
+                ->GetRootFrameHypertextRangeBoundsRect(
                     0, 1, ui::AXClippingBehavior::kUnclipped)
                 .ToString());
 
   EXPECT_EQ(gfx::Rect(100, 100, 26, 9).ToString(),
             static_text_accessible
-                ->GetRootFrameRangeBoundsRect(
+                ->GetRootFrameHypertextRangeBoundsRect(
                     0, 5, ui::AXClippingBehavior::kUnclipped)
                 .ToString());
 
   EXPECT_EQ(gfx::Rect(100, 109, 5, 9).ToString(),
             static_text_accessible
-                ->GetRootFrameRangeBoundsRect(
+                ->GetRootFrameHypertextRangeBoundsRect(
                     7, 1, ui::AXClippingBehavior::kUnclipped)
                 .ToString());
 
   EXPECT_EQ(gfx::Rect(100, 109, 25, 9).ToString(),
             static_text_accessible
-                ->GetRootFrameRangeBoundsRect(
+                ->GetRootFrameHypertextRangeBoundsRect(
                     7, 5, ui::AXClippingBehavior::kUnclipped)
                 .ToString());
 
   EXPECT_EQ(gfx::Rect(100, 100, 29, 18).ToString(),
             static_text_accessible
-                ->GetRootFrameRangeBoundsRect(
+                ->GetRootFrameHypertextRangeBoundsRect(
                     5, 3, ui::AXClippingBehavior::kUnclipped)
                 .ToString());
 
   EXPECT_EQ(gfx::Rect(100, 100, 29, 18).ToString(),
             static_text_accessible
-                ->GetRootFrameRangeBoundsRect(
+                ->GetRootFrameHypertextRangeBoundsRect(
                     0, 13, ui::AXClippingBehavior::kUnclipped)
                 .ToString());
 
@@ -674,7 +681,7 @@ TEST_F(BrowserAccessibilityManagerTest, BoundsForRange) {
   // TODO(nektar): Investigate failure on Linux.
   EXPECT_EQ(gfx::Rect(100, 100, 29, 18).ToString(),
             root_accessible
-                ->GetRootFrameRangeBoundsRect(
+                ->GetRootFrameHypertextRangeBoundsRect(
                     0, 13, ui::AXClippingBehavior::kUnclipped)
                 .ToString());
 }
@@ -739,50 +746,50 @@ TEST_F(BrowserAccessibilityManagerTest, BoundsForRangeMultiElement) {
   // The first line.
   EXPECT_EQ(gfx::Rect(0, 20, 33, 9).ToString(),
             manager
-                ->GetRootFrameRangeBoundsRect(*static_text_accessible, 0,
-                                              *static_text_accessible, 3)
+                ->GetRootFrameInnerTextRangeBoundsRect(
+                    *static_text_accessible, 0, *static_text_accessible, 3)
                 .ToString());
 
   // Part of the first line.
   EXPECT_EQ(gfx::Rect(0, 20, 21, 9).ToString(),
             manager
-                ->GetRootFrameRangeBoundsRect(*static_text_accessible, 0,
-                                              *static_text_accessible, 2)
+                ->GetRootFrameInnerTextRangeBoundsRect(
+                    *static_text_accessible, 0, *static_text_accessible, 2)
                 .ToString());
 
   // Part of the first line.
   EXPECT_EQ(gfx::Rect(10, 20, 23, 9).ToString(),
             manager
-                ->GetRootFrameRangeBoundsRect(*static_text_accessible, 1,
-                                              *static_text_accessible, 3)
+                ->GetRootFrameInnerTextRangeBoundsRect(
+                    *static_text_accessible, 1, *static_text_accessible, 3)
                 .ToString());
 
   // The second line.
   EXPECT_EQ(gfx::Rect(10, 40, 33, 9).ToString(),
             manager
-                ->GetRootFrameRangeBoundsRect(*static_text_accessible2, 0,
-                                              *static_text_accessible2, 3)
+                ->GetRootFrameInnerTextRangeBoundsRect(
+                    *static_text_accessible2, 0, *static_text_accessible2, 3)
                 .ToString());
 
   // All of both lines.
   EXPECT_EQ(gfx::Rect(0, 20, 43, 29).ToString(),
             manager
-                ->GetRootFrameRangeBoundsRect(*static_text_accessible, 0,
-                                              *static_text_accessible2, 3)
+                ->GetRootFrameInnerTextRangeBoundsRect(
+                    *static_text_accessible, 0, *static_text_accessible2, 3)
                 .ToString());
 
   // Part of both lines.
   EXPECT_EQ(gfx::Rect(10, 20, 23, 29).ToString(),
             manager
-                ->GetRootFrameRangeBoundsRect(*static_text_accessible, 2,
-                                              *static_text_accessible2, 1)
+                ->GetRootFrameInnerTextRangeBoundsRect(
+                    *static_text_accessible, 2, *static_text_accessible2, 1)
                 .ToString());
 
   // Part of both lines in reverse order.
   EXPECT_EQ(gfx::Rect(10, 20, 23, 29).ToString(),
             manager
-                ->GetRootFrameRangeBoundsRect(*static_text_accessible2, 1,
-                                              *static_text_accessible, 2)
+                ->GetRootFrameInnerTextRangeBoundsRect(
+                    *static_text_accessible2, 1, *static_text_accessible, 2)
                 .ToString());
 }
 
@@ -850,31 +857,31 @@ TEST_F(BrowserAccessibilityManagerTest, BoundsForRangeBiDi) {
 
   EXPECT_EQ(gfx::Rect(100, 100, 60, 20).ToString(),
             static_text_accessible
-                ->GetRootFrameRangeBoundsRect(
+                ->GetRootFrameHypertextRangeBoundsRect(
                     0, 6, ui::AXClippingBehavior::kUnclipped)
                 .ToString());
 
   EXPECT_EQ(gfx::Rect(100, 100, 10, 20).ToString(),
             static_text_accessible
-                ->GetRootFrameRangeBoundsRect(
+                ->GetRootFrameHypertextRangeBoundsRect(
                     0, 1, ui::AXClippingBehavior::kUnclipped)
                 .ToString());
 
   EXPECT_EQ(gfx::Rect(100, 100, 30, 20).ToString(),
             static_text_accessible
-                ->GetRootFrameRangeBoundsRect(
+                ->GetRootFrameHypertextRangeBoundsRect(
                     0, 3, ui::AXClippingBehavior::kUnclipped)
                 .ToString());
 
   EXPECT_EQ(gfx::Rect(150, 100, 10, 20).ToString(),
             static_text_accessible
-                ->GetRootFrameRangeBoundsRect(
+                ->GetRootFrameHypertextRangeBoundsRect(
                     3, 1, ui::AXClippingBehavior::kUnclipped)
                 .ToString());
 
   EXPECT_EQ(gfx::Rect(130, 100, 30, 20).ToString(),
             static_text_accessible
-                ->GetRootFrameRangeBoundsRect(
+                ->GetRootFrameHypertextRangeBoundsRect(
                     3, 3, ui::AXClippingBehavior::kUnclipped)
                 .ToString());
 
@@ -882,7 +889,7 @@ TEST_F(BrowserAccessibilityManagerTest, BoundsForRangeBiDi) {
   // the bounds are as wide as four characters.
   EXPECT_EQ(gfx::Rect(120, 100, 40, 20).ToString(),
             static_text_accessible
-                ->GetRootFrameRangeBoundsRect(
+                ->GetRootFrameHypertextRangeBoundsRect(
                     2, 2, ui::AXClippingBehavior::kUnclipped)
                 .ToString());
 }
@@ -931,13 +938,13 @@ TEST_F(BrowserAccessibilityManagerTest, BoundsForRangeScrolledWindow) {
   if (manager->UseRootScrollOffsetsWhenComputingBounds()) {
     EXPECT_EQ(gfx::Rect(75, 50, 16, 9).ToString(),
               static_text_accessible
-                  ->GetRootFrameRangeBoundsRect(
+                  ->GetRootFrameHypertextRangeBoundsRect(
                       0, 3, ui::AXClippingBehavior::kUnclipped)
                   .ToString());
   } else {
     EXPECT_EQ(gfx::Rect(100, 100, 16, 9).ToString(),
               static_text_accessible
-                  ->GetRootFrameRangeBoundsRect(
+                  ->GetRootFrameHypertextRangeBoundsRect(
                       0, 3, ui::AXClippingBehavior::kUnclipped)
                   .ToString());
   }
@@ -1015,37 +1022,37 @@ TEST_F(BrowserAccessibilityManagerTest, BoundsForRangeOnParentElement) {
 
   EXPECT_EQ(gfx::Rect(100, 100, 20, 20).ToString(),
             div_accessible
-                ->GetRootFrameRangeBoundsRect(
+                ->GetRootFrameHypertextRangeBoundsRect(
                     0, 1, ui::AXClippingBehavior::kUnclipped)
                 .ToString());
 
   EXPECT_EQ(gfx::Rect(100, 100, 40, 20).ToString(),
             div_accessible
-                ->GetRootFrameRangeBoundsRect(
+                ->GetRootFrameHypertextRangeBoundsRect(
                     0, 2, ui::AXClippingBehavior::kUnclipped)
                 .ToString());
 
   EXPECT_EQ(gfx::Rect(100, 100, 80, 20).ToString(),
             div_accessible
-                ->GetRootFrameRangeBoundsRect(
+                ->GetRootFrameHypertextRangeBoundsRect(
                     0, 4, ui::AXClippingBehavior::kUnclipped)
                 .ToString());
 
   EXPECT_EQ(gfx::Rect(120, 100, 60, 20).ToString(),
             div_accessible
-                ->GetRootFrameRangeBoundsRect(
+                ->GetRootFrameHypertextRangeBoundsRect(
                     1, 3, ui::AXClippingBehavior::kUnclipped)
                 .ToString());
 
   EXPECT_EQ(gfx::Rect(120, 100, 80, 20).ToString(),
             div_accessible
-                ->GetRootFrameRangeBoundsRect(
+                ->GetRootFrameHypertextRangeBoundsRect(
                     1, 4, ui::AXClippingBehavior::kUnclipped)
                 .ToString());
 
   EXPECT_EQ(gfx::Rect(100, 100, 100, 20).ToString(),
             div_accessible
-                ->GetRootFrameRangeBoundsRect(
+                ->GetRootFrameHypertextRangeBoundsRect(
                     0, 5, ui::AXClippingBehavior::kUnclipped)
                 .ToString());
 }
@@ -1696,5 +1703,4 @@ TEST_F(BrowserAccessibilityManagerTest, TreeUpdatesAreMergedWhenPossible) {
   // Remove the observer before the manager is destroyed.
   manager->ax_tree()->RemoveObserver(&observer);
 }
-
 }  // namespace content

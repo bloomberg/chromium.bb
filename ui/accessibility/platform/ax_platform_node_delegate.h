@@ -82,6 +82,15 @@ class AX_EXPORT AXPlatformNodeDelegate {
   // Get the child of a node given a 0-based index.
   virtual gfx::NativeViewAccessible ChildAtIndex(int index) = 0;
 
+  // Returns the text of this node and represent the text of descendant nodes
+  // with a special character in place of every embedded object. This represents
+  // the concept of text in ATK and IA2 APIs.
+  virtual base::string16 GetHypertext() const = 0;
+
+  // Returns the text of this node and all descendant nodes; including text
+  // found in embedded objects.
+  virtual base::string16 GetInnerText() const = 0;
+
   // Return the bounds of this node in the coordinate system indicated. If the
   // clipping behavior is set to clipped, clipping is applied. If an offscreen
   // result address is provided, it will be populated depending on whether the
@@ -91,14 +100,24 @@ class AX_EXPORT AXPlatformNodeDelegate {
       const AXClippingBehavior clipping_behavior,
       AXOffscreenResult* offscreen_result = nullptr) const = 0;
 
-  // Return the bounds of the text range given by text offsets in the coordinate
-  // system indicated. When determining the text offset of a node, the text of
-  // this node is included while descendant text may be accounted for with a
-  // single special character. If the clipping behavior is set to clipped,
-  // clipping is applied. If an offscreen result address is provided, it will be
-  // populated depending on whether the returned bounding box is onscreen or
-  // offscreen.
-  virtual gfx::Rect GetRangeBoundsRect(
+  // Return the bounds of the text range given by text offsets relative to
+  // GetHypertext in the coordinate system indicated. If the clipping behavior
+  // is set to clipped, clipping is applied. If an offscreen result address is
+  // provided, it will be populated depending on whether the returned bounding
+  // box is onscreen or offscreen.
+  virtual gfx::Rect GetHypertextRangeBoundsRect(
+      const int start_offset,
+      const int end_offset,
+      const AXCoordinateSystem coordinate_system,
+      const AXClippingBehavior clipping_behavior,
+      AXOffscreenResult* offscreen_result = nullptr) const = 0;
+
+  // Return the bounds of the text range given by text offsets relative to
+  // GetInnerText in the coordinate system indicated. If the clipping behavior
+  // is set to clipped, clipping is applied. If an offscreen result address is
+  // provided, it will be populated depending on whether the returned bounding
+  // box is onscreen or offscreen.
+  virtual gfx::Rect GetInnerTextRangeBoundsRect(
       const int start_offset,
       const int end_offset,
       const AXCoordinateSystem coordinate_system,

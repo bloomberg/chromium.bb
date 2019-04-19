@@ -322,8 +322,9 @@ NSAttributedString* GetAttributedTextForTextMarkerRange(
 
   int trim_length = 0;
   if ((end_object->IsPlainTextField() || end_object->IsTextOnlyObject()) &&
-      end_offset < static_cast<int>(end_object->GetText().length())) {
-    trim_length = static_cast<int>(end_object->GetText().length()) - end_offset;
+      end_offset < static_cast<int>(end_object->GetInnerText().length())) {
+    trim_length =
+        static_cast<int>(end_object->GetInnerText().length()) - end_offset;
   }
   int range_length = [text length] - start_offset - trim_length;
 
@@ -2393,7 +2394,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 
   base::string16 text = owner_->GetValue();
   if (owner_->IsTextOnlyObject() && text.empty())
-    text = owner_->GetText();
+    text = owner_->GetInnerText();
 
   // We need to get the whole text because a spelling mistake might start or end
   // outside our range.
@@ -2674,8 +2675,8 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
     if ([self internalRole] != ax::mojom::Role::kStaticText)
       return nil;
     NSRange range = [(NSValue*)parameter rangeValue];
-    gfx::Rect rect =
-        owner_->GetUnclippedScreenRangeBoundsRect(range.location, range.length);
+    gfx::Rect rect = owner_->GetUnclippedScreenInnerTextRangeBoundsRect(
+        range.location, range.location + range.length);
     NSRect nsrect = [self rectInScreen:rect];
     return [NSValue valueWithRect:nsrect];
   }
@@ -2734,8 +2735,9 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
     DCHECK_GE(startOffset, 0);
     DCHECK_GE(endOffset, 0);
 
-    gfx::Rect rect = BrowserAccessibilityManager::GetRootFrameRangeBoundsRect(
-        *startObject, startOffset, *endObject, endOffset);
+    gfx::Rect rect =
+        BrowserAccessibilityManager::GetRootFrameInnerTextRangeBoundsRect(
+            *startObject, startOffset, *endObject, endOffset);
     NSRect nsrect = [self rectInScreen:rect];
     return [NSValue valueWithRect:nsrect];
   }

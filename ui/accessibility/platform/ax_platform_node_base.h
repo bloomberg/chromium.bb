@@ -209,7 +209,14 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
 
   bool HasFocus();
 
-  virtual base::string16 GetText() const;
+  // Returns the text of this node and represent the text of descendant nodes
+  // with a special character in place of every embedded object. This represents
+  // the concept of text in ATK and IA2 APIs.
+  virtual base::string16 GetHypertext() const;
+
+  // Returns the text of this node and all descendant nodes; including text
+  // found in embedded objects.
+  virtual base::string16 GetInnerText() const;
 
   virtual base::string16 GetValue() const;
 
@@ -255,10 +262,6 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   // a floating-point value. This is different from the value string
   // attribute used in input controls such as text boxes and combo boxes.
   base::string16 GetRangeValueText() const;
-
-  // |GetInnerText| recursively includes all the text from descendants such as
-  // text found in any embedded object.
-  base::string16 GetInnerText() const;
 
   // Get the role description from the node data or from the image annotation
   // status.

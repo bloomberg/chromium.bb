@@ -96,7 +96,7 @@ class AXRange {
     DCHECK_GE(end_offset, 0);
 
     do {
-      text += start->GetInnerText();
+      text += start->GetText();
       start = start->CreateNextTextAnchorPosition();
     } while (!start->IsNullPosition() && *start < *end);
 
@@ -109,7 +109,7 @@ class AXRange {
     if (*start == *end && !start->IsNullPosition())
       return text;
 
-    size_t text_length = text.length() - end->GetInnerText().length() +
+    size_t text_length = text.length() - end->GetText().length() +
                          static_cast<size_t>(end_offset);
     return text.substr(0, text_length);
   }
@@ -205,13 +205,15 @@ class AXRange {
       AXPlatformNodeDelegate* current_anchor_delegate =
           manager->GetDelegate(current_tree_id, current_anchor->id());
 
-      gfx::Rect current_rect = current_anchor_delegate->GetRangeBoundsRect(
-          current_line_start->text_offset(), current_line_end->text_offset(),
-          AXCoordinateSystem::kScreen, AXClippingBehavior::kClipped);
+      gfx::Rect current_rect =
+          current_anchor_delegate->GetHypertextRangeBoundsRect(
+              current_line_start->text_offset(),
+              current_line_end->text_offset(), AXCoordinateSystem::kScreen,
+              AXClippingBehavior::kClipped);
 
       // Only add rects that are within the current viewport. The 'clipped'
-      // parameter for GetClippedScreenRangeBoundsRect will return an empty rect
-      // in that case.
+      // parameter for GetHypertextRangeBoundsRect will return an empty rect in
+      // that case.
       if (!current_rect.IsEmpty())
         rectangles.emplace_back(current_rect);
 

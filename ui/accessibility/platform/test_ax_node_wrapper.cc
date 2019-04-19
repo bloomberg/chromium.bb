@@ -145,7 +145,7 @@ gfx::Rect TestAXNodeWrapper::GetBoundsRect(
   }
 }
 
-gfx::Rect TestAXNodeWrapper::GetRangeBoundsRect(
+gfx::Rect TestAXNodeWrapper::GetHypertextRangeBoundsRect(
     const int start_offset,
     const int end_offset,
     const AXCoordinateSystem coordinate_system,

@@ -105,10 +105,10 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   // AXPlatformNodeBase overrides.
   void Init(AXPlatformNodeDelegate* delegate) override;
   int GetIndexInParent() override;
-  base::string16 GetText() const override;
+  base::string16 GetHypertext() const override;
 
   void UpdateHypertext();
-  const AXHypertext& GetHypertext();
+  const AXHypertext& GetAXHypertext();
   const base::OffsetAdjuster::Adjustments& GetHypertextAdjustments();
   size_t UTF16ToUnicodeOffsetInText(size_t utf16_offset);
   size_t UnicodeToUTF16OffsetInText(size_t unicode_offset);

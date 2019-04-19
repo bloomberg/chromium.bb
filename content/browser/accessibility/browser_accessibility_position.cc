@@ -22,7 +22,7 @@ BrowserAccessibilityPosition::Clone() const {
   return AXPositionInstance(new BrowserAccessibilityPosition(*this));
 }
 
-base::string16 BrowserAccessibilityPosition::GetInnerText() const {
+base::string16 BrowserAccessibilityPosition::GetText() const {
   if (IsNullPosition())
     return base::string16();
   DCHECK(GetAnchor());
@@ -123,7 +123,7 @@ bool BrowserAccessibilityPosition::IsInWhiteSpace() const {
 
   DCHECK(GetAnchor());
   return GetAnchor()->IsLineBreakObject() ||
-         base::ContainsOnlyChars(GetInnerText(), base::kWhitespaceUTF16);
+         base::ContainsOnlyChars(GetText(), base::kWhitespaceUTF16);
 }
 
 std::vector<int32_t> BrowserAccessibilityPosition::GetWordStartOffsets() const {

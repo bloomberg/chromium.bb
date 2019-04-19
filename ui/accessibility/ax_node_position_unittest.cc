@@ -263,76 +263,74 @@ TEST_F(AXPositionTest, Clone) {
   EXPECT_EQ(AXNodePosition::INVALID_INDEX, copy_position->child_index());
 }
 
-TEST_F(AXPositionTest, GetInnerTextFromNullPosition) {
+TEST_F(AXPositionTest, GetTextFromNullPosition) {
   TestPositionType text_position = AXNodePosition::CreateNullPosition();
   ASSERT_NE(nullptr, text_position);
   ASSERT_TRUE(text_position->IsNullPosition());
-  ASSERT_EQ(base::WideToUTF16(L""), text_position->GetInnerText());
+  ASSERT_EQ(base::WideToUTF16(L""), text_position->GetText());
 }
 
-TEST_F(AXPositionTest, GetInnerTextFromRoot) {
+TEST_F(AXPositionTest, GetTextFromRoot) {
   TestPositionType text_position = AXNodePosition::CreateTextPosition(
       tree_.data().tree_id, root_.id, 0 /* text_offset */,
       ax::mojom::TextAffinity::kUpstream);
   ASSERT_NE(nullptr, text_position);
   ASSERT_TRUE(text_position->IsTextPosition());
-  ASSERT_EQ(base::WideToUTF16(L"Line 1\nLine 2"),
-            text_position->GetInnerText());
+  ASSERT_EQ(base::WideToUTF16(L"Line 1\nLine 2"), text_position->GetText());
 }
 
-TEST_F(AXPositionTest, GetInnerTextFromButton) {
+TEST_F(AXPositionTest, GetTextFromButton) {
   TestPositionType text_position = AXNodePosition::CreateTextPosition(
       tree_.data().tree_id, button_.id, 0 /* text_offset */,
       ax::mojom::TextAffinity::kUpstream);
   ASSERT_NE(nullptr, text_position);
   ASSERT_TRUE(text_position->IsTextPosition());
-  ASSERT_EQ(base::WideToUTF16(L""), text_position->GetInnerText());
+  ASSERT_EQ(base::WideToUTF16(L""), text_position->GetText());
 }
 
-TEST_F(AXPositionTest, GetInnerTextFromCheckbox) {
+TEST_F(AXPositionTest, GetTextFromCheckbox) {
   TestPositionType text_position = AXNodePosition::CreateTextPosition(
       tree_.data().tree_id, check_box_.id, 0 /* text_offset */,
       ax::mojom::TextAffinity::kUpstream);
   ASSERT_NE(nullptr, text_position);
   ASSERT_TRUE(text_position->IsTextPosition());
-  ASSERT_EQ(base::WideToUTF16(L""), text_position->GetInnerText());
+  ASSERT_EQ(base::WideToUTF16(L""), text_position->GetText());
 }
 
-TEST_F(AXPositionTest, GetInnerTextFromTextField) {
+TEST_F(AXPositionTest, GetTextFromTextField) {
   TestPositionType text_position = AXNodePosition::CreateTextPosition(
       tree_.data().tree_id, text_field_.id, 0 /* text_offset */,
       ax::mojom::TextAffinity::kUpstream);
   ASSERT_NE(nullptr, text_position);
   ASSERT_TRUE(text_position->IsTextPosition());
-  ASSERT_EQ(base::WideToUTF16(L"Line 1\nLine 2"),
-            text_position->GetInnerText());
+  ASSERT_EQ(base::WideToUTF16(L"Line 1\nLine 2"), text_position->GetText());
 }
 
-TEST_F(AXPositionTest, GetInnerTextFromStaticText) {
+TEST_F(AXPositionTest, GetTextFromStaticText) {
   TestPositionType text_position = AXNodePosition::CreateTextPosition(
       tree_.data().tree_id, static_text1_.id, 0 /* text_offset */,
       ax::mojom::TextAffinity::kUpstream);
   ASSERT_NE(nullptr, text_position);
   ASSERT_TRUE(text_position->IsTextPosition());
-  ASSERT_EQ(base::WideToUTF16(L"Line 1"), text_position->GetInnerText());
+  ASSERT_EQ(base::WideToUTF16(L"Line 1"), text_position->GetText());
 }
 
-TEST_F(AXPositionTest, GetInnerTextFromInlineTextBox) {
+TEST_F(AXPositionTest, GetTextFromInlineTextBox) {
   TestPositionType text_position = AXNodePosition::CreateTextPosition(
       tree_.data().tree_id, inline_box1_.id, 0 /* text_offset */,
       ax::mojom::TextAffinity::kUpstream);
   ASSERT_NE(nullptr, text_position);
   ASSERT_TRUE(text_position->IsTextPosition());
-  ASSERT_EQ(base::WideToUTF16(L"Line 1"), text_position->GetInnerText());
+  ASSERT_EQ(base::WideToUTF16(L"Line 1"), text_position->GetText());
 }
 
-TEST_F(AXPositionTest, GetInnerTextFromLineBreak) {
+TEST_F(AXPositionTest, GetTextFromLineBreak) {
   TestPositionType text_position = AXNodePosition::CreateTextPosition(
       tree_.data().tree_id, line_break_.id, 0 /* text_offset */,
       ax::mojom::TextAffinity::kUpstream);
   ASSERT_NE(nullptr, text_position);
   ASSERT_TRUE(text_position->IsTextPosition());
-  ASSERT_EQ(base::WideToUTF16(L"\n"), text_position->GetInnerText());
+  ASSERT_EQ(base::WideToUTF16(L"\n"), text_position->GetText());
 }
 
 TEST_F(AXPositionTest, GetMaxTextOffsetFromNullPosition) {

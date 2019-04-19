@@ -579,9 +579,11 @@ int AXPlatformNodeWin::GetIndexInParent() {
   return -1;
 }
 
-base::string16 AXPlatformNodeWin::GetText() const {
+base::string16 AXPlatformNodeWin::GetHypertext() const {
+  // Hypertext of platform leaves, which internally are composite objects, are
+  // represented with the inner text of the internal composite object.
   if (IsChildOfLeaf())
-    return AXPlatformNodeBase::GetText();
+    return GetInnerText();
 
   return hypertext_.hypertext;
 }
@@ -1569,7 +1571,7 @@ IFACEMETHODIMP AXPlatformNodeWin::setSelectionRanges(LONG nRanges,
     return E_INVALIDARG;
 
   if (anchor_node->IsTextOnlyObject() || anchor_node->IsPlainTextField()) {
-    if (size_t{ranges->anchorOffset} > anchor_node->GetText().length()) {
+    if (size_t{ranges->anchorOffset} > anchor_node->GetHypertext().length()) {
       return E_INVALIDARG;
     }
   } else {
@@ -1578,7 +1580,7 @@ IFACEMETHODIMP AXPlatformNodeWin::setSelectionRanges(LONG nRanges,
   }
 
   if (focus_node->IsTextOnlyObject() || focus_node->IsPlainTextField()) {
-    if (size_t{ranges->activeOffset} > focus_node->GetText().length())
+    if (size_t{ranges->activeOffset} > focus_node->GetHypertext().length())
       return E_INVALIDARG;
   } else {
     if (ranges->activeOffset > focus_node->GetChildCount())
@@ -6628,12 +6630,12 @@ base::string16 AXPlatformNodeWin::TextForIAccessibleText() {
   // UI.
   if (IsPlainTextField())
     return GetString16Attribute(ax::mojom::StringAttribute::kValue);
-  return GetText();
+  return GetHypertext();
 }
 
 void AXPlatformNodeWin::HandleSpecialTextOffset(LONG* offset) {
   if (*offset == IA2_TEXT_OFFSET_LENGTH) {
-    *offset = static_cast<LONG>(GetText().length());
+    *offset = static_cast<LONG>(GetHypertext().length());
   } else if (*offset == IA2_TEXT_OFFSET_CARET) {
     int selection_start, selection_end;
     GetSelectionOffsets(&selection_start, &selection_end);

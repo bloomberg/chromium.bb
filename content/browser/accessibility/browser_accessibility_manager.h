@@ -361,7 +361,9 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
       const BrowserAccessibility& end_object,
       int end_offset);
 
-  static gfx::Rect GetRootFrameRangeBoundsRect(
+  // DEPRECATED: Prefer using AXPlatformNodeDelegate bounds interfaces when
+  // writing new code.
+  static gfx::Rect GetRootFrameInnerTextRangeBoundsRect(
       const BrowserAccessibility& start_object,
       int start_offset,
       const BrowserAccessibility& end_object,

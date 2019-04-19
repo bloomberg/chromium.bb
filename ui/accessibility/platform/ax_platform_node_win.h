@@ -410,7 +410,7 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   void Destroy() override;
   int GetIndexInParent() override;
   base::string16 GetValue() const override;
-  base::string16 GetText() const override;
+  base::string16 GetHypertext() const override;
 
   //
   // IAccessible methods.

@@ -438,6 +438,10 @@ bool AXPlatformNodeBase::IsRichTextField() const {
          GetData().HasState(ax::mojom::State::kRichlyEditable);
 }
 
+base::string16 AXPlatformNodeBase::GetHypertext() const {
+  return base::string16();
+}
+
 base::string16 AXPlatformNodeBase::GetInnerText() const {
   if (IsTextOnlyObject())
     return GetString16Attribute(ax::mojom::StringAttribute::kName);
@@ -755,10 +759,6 @@ bool AXPlatformNodeBase::IsVerticallyScrollable() const {
   return IsScrollable() &&
          GetIntAttribute(ax::mojom::IntAttribute::kScrollYMin) <
              GetIntAttribute(ax::mojom::IntAttribute::kScrollYMax);
-}
-
-base::string16 AXPlatformNodeBase::GetText() const {
-  return GetInnerText();
 }
 
 base::string16 AXPlatformNodeBase::GetValue() const {
@@ -1256,7 +1256,7 @@ int32_t AXPlatformNodeBase::GetHypertextOffsetFromChild(
           FromNativeViewAccessible(GetDelegate()->ChildAtIndex(i)));
       DCHECK(sibling);
       if (sibling->IsTextOnlyObject()) {
-        hypertext_offset += (int32_t)sibling->GetText().size();
+        hypertext_offset += (int32_t)sibling->GetHypertext().size();
       } else {
         ++hypertext_offset;
       }
@@ -1355,7 +1355,7 @@ int AXPlatformNodeBase::GetHypertextOffsetFromEndpoint(
   if (endpoint_index_in_common_parent < index_in_common_parent)
     return 0;
   if (endpoint_index_in_common_parent > index_in_common_parent)
-    return static_cast<int32_t>(GetText().size());
+    return static_cast<int32_t>(GetHypertext().size());
 
   NOTREACHED();
   return -1;
@@ -1569,8 +1569,8 @@ int AXPlatformNodeBase::FindTextBoundary(
 
   std::vector<int32_t> unused_line_start_offsets;
   return static_cast<int>(
-      FindAccessibleTextBoundary(GetText(), unused_line_start_offsets, boundary,
-                                 offset, direction, affinity));
+      FindAccessibleTextBoundary(GetHypertext(), unused_line_start_offsets,
+                                 boundary, offset, direction, affinity));
 }
 
 }  // namespace ui

@@ -802,7 +802,7 @@ AtkHyperlink* GetLink(AtkHypertext* hypertext, int index) {
   if (!obj)
     return nullptr;
 
-  const AXHypertext& ax_hypertext = obj->GetHypertext();
+  const AXHypertext& ax_hypertext = obj->GetAXHypertext();
   if (index > static_cast<int>(ax_hypertext.hyperlinks.size()) || index < 0)
     return nullptr;
 
@@ -828,7 +828,7 @@ int GetNLinks(AtkHypertext* hypertext) {
   g_return_val_if_fail(ATK_HYPERTEXT(hypertext), 0);
   AXPlatformNodeAuraLinux* obj =
       AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(hypertext));
-  return obj ? obj->GetHypertext().hyperlinks.size() : 0;
+  return obj ? obj->GetAXHypertext().hyperlinks.size() : 0;
 }
 
 int GetLinkIndex(AtkHypertext* hypertext, int char_index) {
@@ -836,8 +836,8 @@ int GetLinkIndex(AtkHypertext* hypertext, int char_index) {
   AXPlatformNodeAuraLinux* obj =
       AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(hypertext));
 
-  auto it = obj->GetHypertext().hyperlink_offset_to_index.find(char_index);
-  if (it == obj->GetHypertext().hyperlink_offset_to_index.end())
+  auto it = obj->GetAXHypertext().hyperlink_offset_to_index.find(char_index);
+  if (it == obj->GetAXHypertext().hyperlink_offset_to_index.end())
     return -1;
   return it->second;
 }
@@ -864,7 +864,7 @@ gchar* GetText(AtkText* atk_text, gint start_offset, gint end_offset) {
   if (start_offset < 0)
     return nullptr;
 
-  base::string16 text = obj->GetText();
+  base::string16 text = obj->GetHypertext();
 
   start_offset = obj->UnicodeToUTF16OffsetInText(start_offset);
   if (end_offset < 0) {
@@ -889,7 +889,7 @@ gint GetCharacterCount(AtkText* atk_text) {
   if (!obj)
     return 0;
 
-  return obj->UTF16ToUnicodeOffsetInText(obj->GetText().length());
+  return obj->UTF16ToUnicodeOffsetInText(obj->GetHypertext().length());
 }
 
 AtkAttributeSet* GetRunAttributes(AtkText* atk_text,
@@ -916,7 +916,7 @@ gunichar GetCharacterAtOffset(AtkText* atk_text, int offset) {
   if (!obj)
     return 0;
 
-  base::string16 text = obj->GetText();
+  base::string16 text = obj->GetHypertext();
   int32_t text_length = text.length();
 
   offset = obj->UnicodeToUTF16OffsetInText(offset);
@@ -984,7 +984,7 @@ char* GetTextWithBoundaryType(AtkText* atk_text,
   *start_offset_ptr = obj->UTF16ToUnicodeOffsetInText(start_offset);
   *end_offset_ptr = obj->UTF16ToUnicodeOffsetInText(end_offset);
 
-  base::string16 text = obj->GetText();
+  base::string16 text = obj->GetHypertext();
   DCHECK_LE(end_offset, static_cast<int>(text.size()));
 
   base::string16 substr = text.substr(start_offset, end_offset - start_offset);
@@ -1128,7 +1128,7 @@ char* GetStringAtOffset(AtkText* atk_text,
 }
 #endif  // ATK_CHECK_VERSION(2, 10, 0)
 
-gfx::Rect GetUnclippedParentRangeBoundsRect(
+gfx::Rect GetUnclippedParentHypertextRangeBoundsRect(
     AXPlatformNodeDelegate* ax_platform_node_delegate,
     const int start_offset,
     const int end_offset) {
@@ -1139,7 +1139,7 @@ gfx::Rect GetUnclippedParentRangeBoundsRect(
     const AXPlatformNodeDelegate* parent_ax_platform_node_delegate =
         parent_platform_node->GetDelegate();
     if (parent_ax_platform_node_delegate) {
-      return ax_platform_node_delegate->GetRangeBoundsRect(
+      return ax_platform_node_delegate->GetHypertextRangeBoundsRect(
                  start_offset, end_offset, AXCoordinateSystem::kRootFrame,
                  AXClippingBehavior::kUnclipped) -
              parent_ax_platform_node_delegate
@@ -1166,12 +1166,12 @@ void GetCharacterExtents(AtkText* atk_text,
     switch (coordinate_type) {
 #ifdef ATK_230
       case ATK_XY_PARENT:
-        rect = GetUnclippedParentRangeBoundsRect(obj->GetDelegate(), offset,
-                                                 offset + 1);
+        rect = GetUnclippedParentHypertextRangeBoundsRect(obj->GetDelegate(),
+                                                          offset, offset + 1);
         break;
 #endif
       default:
-        rect = obj->GetDelegate()->GetRangeBoundsRect(
+        rect = obj->GetDelegate()->GetHypertextRangeBoundsRect(
             obj->UnicodeToUTF16OffsetInText(offset),
             obj->UnicodeToUTF16OffsetInText(offset + 1),
             AtkCoordTypeToAXCoordinateSystem(coordinate_type),
@@ -1205,12 +1205,12 @@ void GetRangeExtents(AtkText* atk_text,
     switch (coordinate_type) {
 #ifdef ATK_230
       case ATK_XY_PARENT:
-        rect = GetUnclippedParentRangeBoundsRect(obj->GetDelegate(),
-                                                 start_offset, end_offset);
+        rect = GetUnclippedParentHypertextRangeBoundsRect(
+            obj->GetDelegate(), start_offset, end_offset);
         break;
 #endif
       default:
-        rect = obj->GetDelegate()->GetRangeBoundsRect(
+        rect = obj->GetDelegate()->GetHypertextRangeBoundsRect(
             obj->UnicodeToUTF16OffsetInText(start_offset),
             obj->UnicodeToUTF16OffsetInText(end_offset),
             AtkCoordTypeToAXCoordinateSystem(coordinate_type),
@@ -3279,7 +3279,7 @@ void AXPlatformNodeAuraLinux::UpdateHypertext() {
   }
 }
 
-const AXHypertext& AXPlatformNodeAuraLinux::GetHypertext() {
+const AXHypertext& AXPlatformNodeAuraLinux::GetAXHypertext() {
   return hypertext_;
 }
 
@@ -3290,7 +3290,7 @@ AXPlatformNodeAuraLinux::GetHypertextAdjustments() {
 
   text_unicode_adjustments_.emplace();
 
-  base::string16 text = GetText();
+  base::string16 text = GetHypertext();
   int32_t text_length = text.size();
   for (int32_t i = 0; i < text_length; i++) {
     uint32_t code_point;
@@ -3505,13 +3505,15 @@ void AXPlatformNodeAuraLinux::SetEmbeddingWindow(
   SetWeakGPtrToAtkObject(&embedding_window_, new_embedding_window);
 }
 
-base::string16 AXPlatformNodeAuraLinux::GetText() const {
+base::string16 AXPlatformNodeAuraLinux::GetHypertext() const {
   // Special case allows us to get text even in non-HTML case, e.g. browser UI.
   if (IsPlainTextField())
     return GetString16Attribute(ax::mojom::StringAttribute::kValue);
 
+  // Hypertext of platform leaves, which internally are composite objects, are
+  // represented with the inner text of the composite object.
   if (IsChildOfLeaf())
-    return AXPlatformNodeBase::GetText();
+    return GetInnerText();
 
   return hypertext_.hypertext;
 }
@@ -3543,7 +3545,7 @@ bool AXPlatformNodeAuraLinux::SetTextSelectionForAtkText(int start_offset,
   start_offset = UnicodeToUTF16OffsetInText(start_offset);
   end_offset = UnicodeToUTF16OffsetInText(end_offset);
 
-  base::string16 text = GetText();
+  base::string16 text = GetHypertext();
   if (start_offset < 0 || start_offset > static_cast<int>(text.length()))
     return false;
   if (end_offset < 0 || end_offset > static_cast<int>(text.length()))

@@ -20,7 +20,7 @@ AXNodePosition::AXPositionInstance AXNodePosition::Clone() const {
   return AXPositionInstance(new AXNodePosition(*this));
 }
 
-base::string16 AXNodePosition::GetInnerText() const {
+base::string16 AXNodePosition::GetText() const {
   if (IsNullPosition())
     return base::string16();
 
@@ -38,7 +38,7 @@ base::string16 AXNodePosition::GetInnerText() const {
 
   base::string16 text;
   for (size_t i = 0, c = AnchorChildCount(); i < c; ++i)
-    text += CreateChildPositionAt(i)->GetInnerText();
+    text += CreateChildPositionAt(i)->GetText();
 
   return text;
 }
@@ -105,7 +105,7 @@ bool AXNodePosition::IsInWhiteSpace() const {
 
   DCHECK(GetAnchor());
   return GetAnchor()->IsLineBreak() ||
-         base::ContainsOnlyChars(GetInnerText(), base::kWhitespaceUTF16);
+         base::ContainsOnlyChars(GetText(), base::kWhitespaceUTF16);
 }
 
 std::vector<int32_t> AXNodePosition::GetWordStartOffsets() const {
