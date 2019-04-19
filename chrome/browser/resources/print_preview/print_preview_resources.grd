@@ -415,6 +415,10 @@
                  file="new/print_preview_shared_css.html"
                  type="chrome_html"
                  preprocess="true" />
+      <structure name="IDR_PRINT_PREVIEW_NEW_PRINT_PREVIEW_VARS_CSS_HTML"
+                 file="new/print_preview_vars_css.html"
+                 type="chrome_html"
+                 preprocess="true" />
       <structure name="IDR_PRINT_PREVIEW_NEW_THROBBER_CSS_HTML"
                  file="new/throbber_css.html"
                  type="chrome_html"/>

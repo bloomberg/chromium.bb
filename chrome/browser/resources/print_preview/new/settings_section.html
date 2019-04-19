@@ -1,13 +1,14 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
+<link rel="import" href="print_preview_shared_css.html">
 
 <dom-module id="print-preview-settings-section">
   <template>
-    <style>
+    <style include="print-preview-shared">
       :host {
         display: flex;
-        padding: 0 20px;
+        padding: 0 var(--print-preview-sidebar-padding);
       }
 
       ::slotted([slot=controls]),
@@ -15,7 +16,7 @@
         display: flex;
         flex-direction: column;
         justify-content: center;
-        min-height: 38px;
+        min-height: var(--print-preview-row-height);
         word-break: break-word;
       }
 
@@ -29,7 +30,7 @@
         flex: none;
         font-size: 1em;
         line-height: calc(20/13 * 1em);
-        width: 100px;
+        width: var(--print-preview-title-width);
       }
     </style>
     <slot name="title"></slot>

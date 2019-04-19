@@ -1,6 +1,5 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
-<link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/load_time_data.html">
@@ -13,7 +12,7 @@
 <link rel="import" href="../data/destination.html">
 <link rel="import" href="../data/document_info.html">
 <link rel="import" href="../data/measurement_system.html">
-<link rel="import" href="print_preview_shared_css.html">
+<link rel="import" href="print_preview_vars_css.html">
 <link rel="import" href="strings.html">
 <link rel="import" href="settings_behavior.html">
 <link rel="import" href="state.html">
@@ -23,7 +22,7 @@
 
 <dom-module id="print-preview-app">
   <template>
-    <style include="print-preview-shared cr-shared-style">
+    <style>
       :host {
         display: flex;
         height: 100%;
@@ -40,7 +39,7 @@
 
       print-preview-sidebar {
         flex: none;
-        width: 326px;
+        width: var(--print-preview-sidebar-width);
       }
 
       #preview-area-container {

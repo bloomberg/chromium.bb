@@ -15,6 +15,7 @@
 <link rel="import" href="destination_dialog.html">
 <link rel="import" href="destination_select.html">
 <link rel="import" href="print_preview_shared_css.html">
+<link rel="import" href="print_preview_vars_css.html">
 <link rel="import" href="throbber_css.html">
 <link rel="import" href="settings_behavior.html">
 <link rel="import" href="settings_section.html">
@@ -46,7 +47,9 @@
       }
 
       #destinationSelect {
-        margin-inline-start: 13px;
+        /* Reduce margin by 2px so that the <select> inside this element will
+           be aligned with others after adding margin for the border. */
+        margin-inline-start: calc(var(--print-preview-sidebar-margin) - 2px);
       }
 
       #destination-status-wrapper,
