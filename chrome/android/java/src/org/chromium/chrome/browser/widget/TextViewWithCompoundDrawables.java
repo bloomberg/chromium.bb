@@ -89,6 +89,7 @@ public class TextViewWithCompoundDrawables extends AppCompatTextView {
         for (Drawable drawable : drawables) {
             if (drawable == null) continue;
 
+            drawable.mutate();
             drawable.setColorFilter(
                     mDrawableTint.getColorForState(getDrawableState(), 0), PorterDuff.Mode.SRC_IN);
         }
