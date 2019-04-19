@@ -42,6 +42,8 @@ void RecordBookmarkLaunch(const BookmarkNode* node,
   } else if (location == BOOKMARK_LAUNCH_LOCATION_APP_MENU) {
     base::RecordAction(
         base::UserMetricsAction("WrenchMenu_Bookmarks_LaunchURL"));
+  } else if (location == BOOKMARK_LAUNCH_LOCATION_TOP_MENU) {
+    base::RecordAction(base::UserMetricsAction("TopMenu_Bookmarks_LaunchURL"));
   }
 
   UMA_HISTOGRAM_ENUMERATION("Bookmarks.LaunchLocation", location,

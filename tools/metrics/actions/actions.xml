@@ -20798,6 +20798,15 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="TopMenu_Bookmarks_LaunchURL">
+  <owner>dfried@chromium.org</owner>
+  <description>
+    The user opened a bookmark from the application menu at the top of the
+    screen on, for example, MacOS. Distinguished from launching from the
+    wrench/app menu or the bookmarks bar.
+  </description>
+</action>
+
 <action name="Touchpad_Gesture_Overview">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>

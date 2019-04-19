@@ -37,6 +37,8 @@ enum BookmarkLaunchLocation {
   BOOKMARK_LAUNCH_LOCATION_MANAGER,
   // Autocomplete suggestion.
   BOOKMARK_LAUNCH_LOCATION_OMNIBOX,
+  // System application menu (e.g. on Mac).
+  BOOKMARK_LAUNCH_LOCATION_TOP_MENU,
 
   BOOKMARK_LAUNCH_LOCATION_LIMIT  // Keep this last.
 };
