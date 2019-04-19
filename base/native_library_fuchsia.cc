@@ -64,6 +64,21 @@ NativeLibrary LoadNativeLibraryWithOptions(const FilePath& library_path,
     }
     return nullptr;
   }
+
+  // VMOs must be marked as exec-capable to be mapped executable in dlopen_vmo,
+  // and fdio_get_vmo_clone shouldn't be marking every VMO it returns
+  // exec-capable.  So we should mark it as exec-capable here.
+  // In the fullness of time, this invalid handle should be swapped out for a
+  // ZX_RSRC_KIND_VMEX handle.
+  status = vmo.replace_as_executable(zx::handle(), &vmo);
+  if (status != ZX_OK) {
+    if (error) {
+      error->message = base::StringPrintf("zx_vmo_replace_as_executable: %s",
+                                          zx_status_get_string(status));
+    }
+    return nullptr;
+  }
+
   NativeLibrary result = dlopen_vmo(vmo.get(), RTLD_LAZY | RTLD_LOCAL);
   return result;
 }
