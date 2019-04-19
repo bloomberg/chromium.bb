@@ -14,7 +14,7 @@
 #include "base/optional.h"
 #include "content/common/bluetooth/web_bluetooth_device_id.h"
 #include "content/common/content_export.h"
-#include "third_party/blink/public/platform/modules/bluetooth/web_bluetooth.mojom.h"
+#include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom.h"
 
 namespace device {
 class BluetoothUUID;
