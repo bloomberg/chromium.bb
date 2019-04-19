@@ -870,7 +870,8 @@ TEST_P(UrlRequestTest, UploadFailsWithoutInitializingStream) {
   EXPECT_TRUE(callback->on_error_called_);
 }
 
-TEST_P(UrlRequestTest, UploadCancelReadSync) {
+// TODO(https://crbug.com/954372): Flakes in AssertClosed().
+TEST_P(UrlRequestTest, DISABLED_UploadCancelReadSync) {
   auto callback =
       std::make_unique<TestUrlRequestCallback>(GetDirectExecutorParam());
   const std::string url = cronet::TestServer::GetEchoRequestBodyURL();
@@ -911,7 +912,8 @@ TEST_P(UrlRequestTest, UploadCancelReadAsync) {
   EXPECT_TRUE(callback->on_canceled_called_);
 }
 
-TEST_P(UrlRequestTest, UploadCancelRewindSync) {
+// TODO(https://crbug.com/954372): Flakes in AssertClosed().
+TEST_P(UrlRequestTest, DISABLED_UploadCancelRewindSync) {
   auto callback =
       std::make_unique<TestUrlRequestCallback>(GetDirectExecutorParam());
   const std::string url = cronet::TestServer::GetRedirectToEchoBodyURL();
