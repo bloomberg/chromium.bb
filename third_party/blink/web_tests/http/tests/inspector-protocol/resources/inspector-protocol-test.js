@@ -345,8 +345,9 @@ TestRunner.Session = class {
   async _navigate(url) {
     await this.protocol.Page.enable();
     await this.protocol.Page.setLifecycleEventsEnabled({enabled: true});
-    await this.protocol.Page.navigate({url: url});
-    await this.protocol.Page.onceLifecycleEvent(event => event.params.name === 'load');
+    const frameId = (await this.protocol.Page.navigate({url: url})).result.frameId;
+    await this.protocol.Page.onceLifecycleEvent(
+        event => event.params.name === 'load' && event.params.frameId === frameId);
   }
 
   _dispatchMessage(message) {
