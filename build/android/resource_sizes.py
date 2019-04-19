@@ -735,6 +735,11 @@ def main():
   argparser.add_argument(
       '--isolated-script-test-filter', help=argparse.SUPPRESS)
   argparser.add_argument(
+      '--isolated-script-test-perf-output',
+      type=os.path.realpath,
+      help=argparse.SUPPRESS)
+
+  argparser.add_argument(
       '--isolated-script-test-output',
       type=os.path.realpath,
       help='File to which results will be written in the '
