@@ -13,6 +13,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/task/post_task.h"
 #include "components/google/core/common/google_util.h"
 #include "components/security_interstitials/core/urls.h"
@@ -131,6 +132,19 @@ void JNI_AwContentsStatics_SetCheckClearTextPermitted(
   // path).
   AwContentBrowserClient::set_check_cleartext_permitted(permitted);
   AwURLRequestContextGetter::set_check_cleartext_permitted(permitted);
+}
+
+// static
+void JNI_AwContentsStatics_LogCommandLineForDebugging(JNIEnv* env) {
+  // Note: this should only be called for debugging purposes, since this is
+  // *very* spammy.
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  for (const auto& pair : command_line.GetSwitches()) {
+    const std::string& key = pair.first;
+    const base::CommandLine::StringType& value = pair.second;
+    LOG(INFO) << "WebViewCommandLine '" << key << "': '" << value << "'";
+  }
 }
 
 // static
