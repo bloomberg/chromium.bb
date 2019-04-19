@@ -479,21 +479,10 @@ void DeleteSelectionCommand::RemoveNode(
       if (!node->hasChildren())
         return;
       // Search this non-editable region for editable regions to empty.
-      Node* child = node->firstChild();
-      while (child) {
-        Node* next_child = child->nextSibling();
-        RemoveNode(child, editing_state,
-                   should_assume_content_is_always_editable);
-        if (editing_state->IsAborted())
-          return;
-        // Bail if nextChild is no longer node's child.
-        if (next_child && next_child->parentNode() != node)
-          return;
-        child = next_child;
-      }
-
       // Don't remove editable regions that are inside non-editable ones, just
       // clear them.
+      RemoveAllChildrenIfPossible(ToContainerNode(node), editing_state,
+                                  should_assume_content_is_always_editable);
       return;
     }
   }
@@ -501,15 +490,10 @@ void DeleteSelectionCommand::RemoveNode(
   if (IsTableStructureNode(node) || IsRootEditableElement(*node)) {
     // Do not remove an element of table structure; remove its contents.
     // Likewise for the root editable element.
-    Node* child = node->firstChild();
-    while (child) {
-      Node* remove = child;
-      child = child->nextSibling();
-      RemoveNode(remove, editing_state,
-                 should_assume_content_is_always_editable);
-      if (editing_state->IsAborted())
-        return;
-    }
+    RemoveAllChildrenIfPossible(ToContainerNode(node), editing_state,
+                                should_assume_content_is_always_editable);
+    if (editing_state->IsAborted())
+      return;
 
     // Make sure empty cell has some height, if a placeholder can be inserted.
     GetDocument().UpdateStyleAndLayout();

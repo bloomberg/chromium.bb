@@ -373,6 +373,25 @@ void CompositeEditCommand::AppendNode(Node* node,
                           editing_state);
 }
 
+void CompositeEditCommand::RemoveAllChildrenIfPossible(
+    ContainerNode* container,
+    EditingState* editing_state,
+    ShouldAssumeContentIsAlwaysEditable
+        should_assume_content_is_always_editable) {
+  Node* child = container->firstChild();
+  while (child) {
+    Node* const next = child->nextSibling();
+    RemoveNode(child, editing_state, should_assume_content_is_always_editable);
+    if (editing_state->IsAborted())
+      return;
+    if (next && next->parentNode() != container) {
+      // |RemoveNode()| moves |next| outside |node|.
+      return;
+    }
+    child = next;
+  }
+}
+
 void CompositeEditCommand::RemoveChildrenInRange(Node* node,
                                                  unsigned from,
                                                  unsigned to,
