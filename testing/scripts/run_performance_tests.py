@@ -490,8 +490,9 @@ def main():
 
   test_results_list = []
   for test_results_file in test_results_files:
-    with open(test_results_file, 'r') as fh:
-      test_results_list.append(json.load(fh))
+    if os.path.exists(test_results_file):
+      with open(test_results_file, 'r') as fh:
+        test_results_list.append(json.load(fh))
   merged_test_results = results_merger.merge_test_results(test_results_list)
   with open(options.isolated_script_test_output, 'w') as f:
     json.dump(merged_test_results, f)
