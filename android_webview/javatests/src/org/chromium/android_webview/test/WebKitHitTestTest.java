@@ -25,6 +25,7 @@ import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.test.util.AwTestTouchUtils;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.base.test.util.DisableIf;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content_public.browser.test.util.TestCallbackHelperContainer.OnPageCommitVisibleHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -399,6 +400,7 @@ public class WebKitHitTestTest {
 
     @Test
     @SmallTest
+    @DisabledTest(message = "crbug.com/954578")
     @DisableIf.Build(hardware_is = "flo", message = "crbug.com/948622")
     @Feature({"AndroidWebView", "WebKitHitTest"})
     public void testUnknownTypeUnrecognizedNode() throws Throwable {
