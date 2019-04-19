@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/login/screens/recommend_apps_screen.h"
 
 #include "chrome/browser/chromeos/login/screens/recommend_apps/recommend_apps_fetcher.h"
+#include "chrome/browser/ui/webui/chromeos/login/recommend_apps_screen_handler.h"
 
 namespace chromeos {
 

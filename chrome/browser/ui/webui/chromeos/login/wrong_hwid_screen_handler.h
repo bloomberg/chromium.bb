@@ -7,11 +7,25 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "chrome/browser/chromeos/login/screens/wrong_hwid_screen_view.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "content/public/browser/web_ui.h"
 
 namespace chromeos {
+
+class WrongHWIDScreen;
+
+// Interface between wrong HWID screen and its representation.
+// Note, do not forget to call OnViewDestroyed in the dtor.
+class WrongHWIDScreenView {
+ public:
+  constexpr static OobeScreen kScreenId = OobeScreen::SCREEN_WRONG_HWID;
+
+  virtual ~WrongHWIDScreenView() {}
+
+  virtual void Show() = 0;
+  virtual void Hide() = 0;
+  virtual void SetDelegate(WrongHWIDScreen* delegate) = 0;
+};
 
 // WebUI implementation of WrongHWIDScreenActor.
 class WrongHWIDScreenHandler : public WrongHWIDScreenView,
@@ -23,7 +37,7 @@ class WrongHWIDScreenHandler : public WrongHWIDScreenView,
   // WrongHWIDScreenActor implementation:
   void Show() override;
   void Hide() override;
-  void SetDelegate(Delegate* delegate) override;
+  void SetDelegate(WrongHWIDScreen* delegate) override;
 
   // BaseScreenHandler implementation:
   void DeclareLocalizedValues(
@@ -37,7 +51,7 @@ class WrongHWIDScreenHandler : public WrongHWIDScreenView,
   // JS messages handlers.
   void HandleOnSkip();
 
-  Delegate* delegate_ = nullptr;
+  WrongHWIDScreen* delegate_ = nullptr;
 
   // Keeps whether screen should be shown right after initialization.
   bool show_on_init_ = false;

@@ -9,10 +9,23 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
-#include "chrome/browser/chromeos/login/screens/kiosk_enable_screen_view.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 
 namespace chromeos {
+
+class KioskEnableScreen;
+
+// Interface between enable kiosk screen and its representation.
+// Note, do not forget to call OnViewDestroyed in the dtor.
+class KioskEnableScreenView {
+ public:
+  constexpr static OobeScreen kScreenId = OobeScreen::SCREEN_KIOSK_ENABLE;
+
+  virtual ~KioskEnableScreenView() {}
+
+  virtual void Show() = 0;
+  virtual void SetDelegate(KioskEnableScreen* delegate) = 0;
+};
 
 // WebUI implementation of KioskEnableScreenActor.
 class KioskEnableScreenHandler : public KioskEnableScreenView,
@@ -23,7 +36,7 @@ class KioskEnableScreenHandler : public KioskEnableScreenView,
 
   // KioskEnableScreenActor implementation:
   void Show() override;
-  void SetDelegate(Delegate* delegate) override;
+  void SetDelegate(KioskEnableScreen* delegate) override;
 
   // BaseScreenHandler implementation:
   void DeclareLocalizedValues(
@@ -45,7 +58,7 @@ class KioskEnableScreenHandler : public KioskEnableScreenView,
   void OnGetConsumerKioskAutoLaunchStatus(
       KioskAppManager::ConsumerKioskAutoLaunchStatus status);
 
-  Delegate* delegate_ = nullptr;
+  KioskEnableScreen* delegate_ = nullptr;
 
   // Keeps whether screen should be shown right after initialization.
   bool show_on_init_ = false;

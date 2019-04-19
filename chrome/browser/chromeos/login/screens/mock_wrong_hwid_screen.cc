@@ -20,7 +20,7 @@ MockWrongHWIDScreenView::~MockWrongHWIDScreenView() {
     delegate_->OnViewDestroyed(this);
 }
 
-void MockWrongHWIDScreenView::SetDelegate(Delegate* delegate) {
+void MockWrongHWIDScreenView::SetDelegate(WrongHWIDScreen* delegate) {
   delegate_ = delegate;
   MockSetDelegate(delegate);
 }

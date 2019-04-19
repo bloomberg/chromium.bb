@@ -6,12 +6,29 @@
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_MARKETING_OPT_IN_SCREEN_HANDLER_H_
 
 #include "base/macros.h"
-#include "chrome/browser/chromeos/login/screens/marketing_opt_in_screen_view.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 
 namespace chromeos {
 
 class MarketingOptInScreen;
+
+// Interface for dependency injection between MarketingOptInScreen and its
+// WebUI representation.
+class MarketingOptInScreenView {
+ public:
+  constexpr static OobeScreen kScreenId = OobeScreen::SCREEN_MARKETING_OPT_IN;
+
+  virtual ~MarketingOptInScreenView() = default;
+
+  // Sets screen this view belongs to.
+  virtual void Bind(MarketingOptInScreen* screen) = 0;
+
+  // Shows the contents of the screen.
+  virtual void Show() = 0;
+
+  // Hides the contents of the screen.
+  virtual void Hide() = 0;
+};
 
 // The sole implementation of the MarketingOptInScreenView, using WebUI.
 class MarketingOptInScreenHandler : public BaseScreenHandler,

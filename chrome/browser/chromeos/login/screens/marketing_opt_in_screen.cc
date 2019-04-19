@@ -5,10 +5,10 @@
 #include "chrome/browser/chromeos/login/screens/marketing_opt_in_screen.h"
 
 #include "base/logging.h"
-#include "chrome/browser/chromeos/login/screens/marketing_opt_in_screen_view.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/webui/chromeos/login/marketing_opt_in_screen_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/prefs/pref_service.h"

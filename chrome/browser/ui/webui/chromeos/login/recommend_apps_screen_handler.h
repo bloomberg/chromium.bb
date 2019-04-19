@@ -7,13 +7,47 @@
 
 #include "base/macros.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/login/screens/recommend_apps_screen_view.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "components/prefs/pref_service.h"
 
 namespace chromeos {
 
 class RecommendAppsScreen;
+class RecommendAppsScreenViewObserver;
+
+// Interface for dependency injection between RecommendAppsScreen and its
+// WebUI representation.
+class RecommendAppsScreenView {
+ public:
+  constexpr static OobeScreen kScreenId = OobeScreen::SCREEN_RECOMMEND_APPS;
+
+  virtual ~RecommendAppsScreenView() = default;
+
+  // Adds/Removes observer for view.
+  virtual void AddObserver(RecommendAppsScreenViewObserver* observer) = 0;
+  virtual void RemoveObserver(RecommendAppsScreenViewObserver* observer) = 0;
+
+  // Sets screen this view belongs to.
+  virtual void Bind(RecommendAppsScreen* screen) = 0;
+
+  // Shows the contents of the screen.
+  virtual void Show() = 0;
+
+  // Hides the contents of the screen.
+  virtual void Hide() = 0;
+
+  // Called when the download of the recommend app list fails. Show an error
+  // message to the user.
+  virtual void OnLoadError() = 0;
+
+  // Called when the download of the recommend app list is successful. Shows the
+  // downloaded |app_list| to the user.
+  virtual void OnLoadSuccess(const base::Value& app_list) = 0;
+
+  // Called when parsing the recommend app list response fails. Should skip this
+  // screen.
+  virtual void OnParseResponseError() = 0;
+};
 
 // The sole implementation of the RecommendAppsScreenView, using WebUI.
 class RecommendAppsScreenHandler : public BaseScreenHandler,

@@ -11,26 +11,28 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
-#include "chrome/browser/chromeos/login/screens/wrong_hwid_screen_view.h"
 
 namespace chromeos {
 
+class WrongHWIDScreenView;
+
 // Representation independent class that controls screen showing warning about
 // malformed HWID to users.
-class WrongHWIDScreen : public BaseScreen,
-                        public WrongHWIDScreenView::Delegate {
+class WrongHWIDScreen : public BaseScreen {
  public:
   WrongHWIDScreen(WrongHWIDScreenView* view,
                   const base::RepeatingClosure& exit_callback);
   ~WrongHWIDScreen() override;
 
+  // Called when screen is exited.
+  void OnExit();
+  // This method is called, when view is being destroyed. Note, if Delegate
+  // is destroyed earlier then it has to call SetDelegate(NULL).
+  void OnViewDestroyed(WrongHWIDScreenView* view);
+
   // BaseScreen implementation:
   void Show() override;
   void Hide() override;
-
-  // WrongHWIDScreenView::Delegate implementation:
-  void OnExit() override;
-  void OnViewDestroyed(WrongHWIDScreenView* view) override;
 
  private:
   WrongHWIDScreenView* view_;
