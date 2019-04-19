@@ -6119,7 +6119,7 @@ LONG AXPlatformNodeWin::ComputeUIAControlType() {  // NOLINT(runtime/int)
 
     case ax::mojom::Role::kTextField:
     case ax::mojom::Role::kSearchBox:
-      return UIA_DocumentControlTypeId;
+      return UIA_EditControlTypeId;
 
     case ax::mojom::Role::kTextFieldWithComboBox:
       return UIA_ComboBoxControlTypeId;

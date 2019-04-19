@@ -4193,7 +4193,19 @@ TEST_F(AXPlatformNodeWinTest, TestComputeUIAControlType) {
   child2.role = ax::mojom::Role::kLayoutTable;
   root.child_ids.push_back(child2_id);
 
-  Init(root, child1, child2);
+  AXNodeData child3;
+  int32_t child3_id = 3;
+  child3.id = child3_id;
+  child3.role = ax::mojom::Role::kTextField;
+  root.child_ids.push_back(child3_id);
+
+  AXNodeData child4;
+  int32_t child4_id = 4;
+  child4.id = child4_id;
+  child4.role = ax::mojom::Role::kSearchBox;
+  root.child_ids.push_back(child4_id);
+
+  Init(root, child1, child2, child3, child4);
 
   EXPECT_UIA_INT_EQ(
       QueryInterfaceFromNodeId<IRawElementProviderSimple>(child1_id),
@@ -4201,6 +4213,12 @@ TEST_F(AXPlatformNodeWinTest, TestComputeUIAControlType) {
   EXPECT_UIA_INT_EQ(
       QueryInterfaceFromNodeId<IRawElementProviderSimple>(child2_id),
       UIA_ControlTypePropertyId, int{UIA_TableControlTypeId});
+  EXPECT_UIA_INT_EQ(
+      QueryInterfaceFromNodeId<IRawElementProviderSimple>(child3_id),
+      UIA_ControlTypePropertyId, int{UIA_EditControlTypeId});
+  EXPECT_UIA_INT_EQ(
+      QueryInterfaceFromNodeId<IRawElementProviderSimple>(child4_id),
+      UIA_ControlTypePropertyId, int{UIA_EditControlTypeId});
 }
 
 TEST_F(AXPlatformNodeWinTest, TestUIALandmarkType) {
