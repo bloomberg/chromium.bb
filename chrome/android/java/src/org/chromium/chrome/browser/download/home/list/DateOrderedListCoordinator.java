@@ -152,6 +152,7 @@ public class DateOrderedListCoordinator implements ToolbarCoordinator.ToolbarLis
 
     /** Tears down this coordinator. */
     public void destroy() {
+        mFilterCoordinator.destroy();
         mMediator.destroy();
         mRenameDialogManager.destroy();
     }

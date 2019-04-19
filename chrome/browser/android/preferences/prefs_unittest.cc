@@ -62,6 +62,8 @@ TEST_F(PrefsTest, TestIndex) {
   EXPECT_EQ(autofill::prefs::kAutofillCreditCardEnabled,
             GetPrefName(AUTOFILL_CREDIT_CARD_ENABLED));
   EXPECT_EQ(prefs::kUsageStatsEnabled, GetPrefName(USAGE_STATS_ENABLED));
+  EXPECT_EQ(offline_pages::prefetch_prefs::kUserSettingEnabled,
+            GetPrefName(OFFLINE_PREFETCH_USER_SETTING_ENABLED));
 
   // If this check fails, a pref is missing a test case above.
   EXPECT_EQ(Pref::PREF_NUM_PREFS, pref_count_);

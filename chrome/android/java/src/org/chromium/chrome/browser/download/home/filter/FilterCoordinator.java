@@ -12,6 +12,8 @@ import org.chromium.base.ObserverList;
 import org.chromium.chrome.browser.download.home.filter.Filters.FilterType;
 import org.chromium.chrome.browser.download.home.filter.chips.ChipsCoordinator;
 import org.chromium.chrome.browser.offlinepages.prefetch.PrefetchConfiguration;
+import org.chromium.chrome.browser.preferences.Pref;
+import org.chromium.chrome.browser.preferences.PrefChangeRegistrar;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
@@ -33,12 +35,16 @@ public class FilterCoordinator {
         void onFilterChanged(@FilterType int selectedTab);
     }
 
+    private static Boolean sPrefetchUserSettingValueForTesting;
+
     private final ObserverList<Observer> mObserverList = new ObserverList<>();
     private final PropertyModel mModel = new PropertyModel(FilterProperties.ALL_KEYS);
     private final FilterView mView;
 
     private final ChipsCoordinator mChipsCoordinator;
     private final FilterChipsProvider mChipsProvider;
+
+    private PrefChangeRegistrar mPrefChangeRegistrar;
 
     /**
      * Builds a new FilterCoordinator.
@@ -55,7 +61,30 @@ public class FilterCoordinator {
         mModel.set(FilterProperties.CHANGE_LISTENER, this::handleTabSelected);
         selectTab(TabType.FILES);
 
-        mModel.set(FilterProperties.SHOW_TABS, PrefetchConfiguration.isPrefetchingFlagEnabled());
+        mModel.set(FilterProperties.SHOW_TABS, isPrefetchTabEnabled());
+
+        addPrefetchUserSettingsObserver();
+    }
+
+    private void addPrefetchUserSettingsObserver() {
+        if (sPrefetchUserSettingValueForTesting != null) return;
+
+        mPrefChangeRegistrar = new PrefChangeRegistrar();
+        mPrefChangeRegistrar.addObserver(
+                Pref.OFFLINE_PREFETCH_USER_SETTING_ENABLED, new PrefChangeRegistrar.PrefObserver() {
+                    @Override
+                    public void onPreferenceChange() {
+                        mModel.set(FilterProperties.SHOW_TABS, isPrefetchTabEnabled());
+                        int selectedTab = mModel.get(FilterProperties.SELECTED_TAB);
+                        if (!isPrefetchTabEnabled()) selectedTab = TabType.FILES;
+                        handleTabSelected(selectedTab);
+                    }
+                });
+    }
+
+    /** Tears down this coordinator. */
+    public void destroy() {
+        if (mPrefChangeRegistrar != null) mPrefChangeRegistrar.destroy();
     }
 
     /** @return The {@link View} representing this widget. */
@@ -73,6 +102,11 @@ public class FilterCoordinator {
         mObserverList.removeObserver(observer);
     }
 
+    /** For testing only. */
+    public static void setPrefetchUserSettingValueForTesting(boolean enabled) {
+        sPrefetchUserSettingValueForTesting = enabled;
+    }
+
     /**
      * Pushes a selected filter onto this {@link FilterCoordinator}.  This is used when external
      * components might need to update the UI state.
@@ -80,8 +114,7 @@ public class FilterCoordinator {
     public void setSelectedFilter(@FilterType int filter) {
         @TabType
         int tabSelected;
-        if (filter == Filters.FilterType.PREFETCHED
-                && PrefetchConfiguration.isPrefetchingFlagEnabled()) {
+        if (filter == Filters.FilterType.PREFETCHED && isPrefetchTabEnabled()) {
             tabSelected = TabType.PREFETCH;
         } else {
             mChipsProvider.setFilterSelected(filter);
@@ -121,5 +154,12 @@ public class FilterCoordinator {
 
     private void handleChipSelected() {
         handleTabSelected(mModel.get(FilterProperties.SELECTED_TAB));
+    }
+
+    private static boolean isPrefetchTabEnabled() {
+        return sPrefetchUserSettingValueForTesting == null
+                ? PrefetchConfiguration.isPrefetchingFlagEnabled()
+                        && PrefetchConfiguration.isPrefetchingEnabledInSettings()
+                : sPrefetchUserSettingValueForTesting;
     }
 }

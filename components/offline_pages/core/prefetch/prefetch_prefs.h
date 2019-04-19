@@ -17,6 +17,7 @@ namespace offline_pages {
 namespace prefetch_prefs {
 
 extern const char kBackoff[];
+extern const char kUserSettingEnabled[];
 
 void RegisterPrefs(PrefRegistrySimple* registry);
 
