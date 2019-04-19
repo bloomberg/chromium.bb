@@ -133,8 +133,12 @@ void AvatarToolbarButton::UpdateText() {
   if (IsIncognito()) {
     int incognito_window_count =
         BrowserList::GetIncognitoSessionsActiveForProfile(profile_);
-    if (!IsIncognitoCounterActive())
+    if (IsIncognitoCounterActive()) {
+      SetAccessibleName(l10n_util::GetPluralStringFUTF16(
+          IDS_INCOGNITO_BUBBLE_ACCESSIBLE_TITLE, incognito_window_count));
+    } else {
       incognito_window_count = 1;
+    }
     text = l10n_util::GetPluralStringFUTF16(IDS_AVATAR_BUTTON_INCOGNITO,
                                             incognito_window_count);
   } else if (sync_state == SyncState::kError) {
