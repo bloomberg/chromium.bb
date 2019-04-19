@@ -130,17 +130,19 @@ std::unique_ptr<Network::Cookie> BuildCookie(
           .SetSession(!cookie.IsPersistent())
           .Build();
 
-  // TODO(chlily): Add EXTENDED_MODE and UNSPECIFIED to devtools'
-  // Network::CookieSameSiteEnum.
   switch (cookie.SameSite()) {
     case net::CookieSameSite::STRICT_MODE:
       devtools_cookie->SetSameSite(Network::CookieSameSiteEnum::Strict);
       break;
     case net::CookieSameSite::LAX_MODE:
-    case net::CookieSameSite::EXTENDED_MODE:
       devtools_cookie->SetSameSite(Network::CookieSameSiteEnum::Lax);
       break;
+    case net::CookieSameSite::EXTENDED_MODE:
+      devtools_cookie->SetSameSite(Network::CookieSameSiteEnum::Extended);
+      break;
     case net::CookieSameSite::NO_RESTRICTION:
+      devtools_cookie->SetSameSite(Network::CookieSameSiteEnum::None);
+      break;
     case net::CookieSameSite::UNSPECIFIED:
       break;
   }
@@ -444,11 +446,15 @@ std::unique_ptr<net::CanonicalCookie> MakeCookieFromProtocolValues(
         expires ? base::Time::FromDoubleT(expires) : base::Time::UnixEpoch();
   }
 
-  net::CookieSameSite css = net::CookieSameSite::NO_RESTRICTION;
+  net::CookieSameSite css = net::CookieSameSite::UNSPECIFIED;
   if (same_site == Network::CookieSameSiteEnum::Lax)
     css = net::CookieSameSite::LAX_MODE;
   if (same_site == Network::CookieSameSiteEnum::Strict)
     css = net::CookieSameSite::STRICT_MODE;
+  if (same_site == Network::CookieSameSiteEnum::Extended)
+    css = net::CookieSameSite::EXTENDED_MODE;
+  if (same_site == Network::CookieSameSiteEnum::None)
+    css = net::CookieSameSite::NO_RESTRICTION;
 
   return net::CanonicalCookie::CreateSanitizedCookie(
       url, name, value, normalized_domain, path, base::Time(), expiration_date,
