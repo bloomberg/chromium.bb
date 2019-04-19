@@ -127,6 +127,9 @@ ContentSettingsType kPermissionType[] = {
     CONTENT_SETTINGS_TYPE_MIDI_SYSEX,
     CONTENT_SETTINGS_TYPE_CLIPBOARD_READ,
     CONTENT_SETTINGS_TYPE_USB_GUARD,
+#if !defined(OS_ANDROID)
+    CONTENT_SETTINGS_TYPE_SERIAL_GUARD,
+#endif
 };
 
 // Checks whether this permission is currently the factory default, as set by

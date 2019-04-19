@@ -162,6 +162,9 @@ const PermissionsUIInfo kPermissionsUIInfo[] = {
     {CONTENT_SETTINGS_TYPE_CLIPBOARD_READ, IDS_PAGE_INFO_TYPE_CLIPBOARD},
     {CONTENT_SETTINGS_TYPE_SENSORS, IDS_PAGE_INFO_TYPE_SENSORS},
     {CONTENT_SETTINGS_TYPE_USB_GUARD, IDS_PAGE_INFO_TYPE_USB},
+#if !defined(OS_ANDROID)
+    {CONTENT_SETTINGS_TYPE_SERIAL_GUARD, IDS_PAGE_INFO_TYPE_SERIAL},
+#endif
 };
 
 std::unique_ptr<PageInfoUI::SecurityDescription> CreateSecurityDescription(
@@ -541,6 +544,11 @@ const gfx::ImageSkia PageInfoUI::GetPermissionIcon(const PermissionInfo& info,
     case CONTENT_SETTINGS_TYPE_USB_GUARD:
       icon = &vector_icons::kUsbIcon;
       break;
+#if !defined(OS_ANDROID)
+    case CONTENT_SETTINGS_TYPE_SERIAL_GUARD:
+      icon = &vector_icons::kSerialPortIcon;
+      break;
+#endif
     default:
       // All other |ContentSettingsType|s do not have icons on desktop or are
       // not shown in the Page Info bubble.

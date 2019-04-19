@@ -74,14 +74,17 @@ std::string SerialChooserContext::GetObjectName(
 std::vector<std::unique_ptr<ChooserContextBase::Object>>
 SerialChooserContext::GetGrantedObjects(const GURL& requesting_origin,
                                         const GURL& embedding_origin) {
-  std::vector<std::unique_ptr<Object>> objects;
+  if (!CanRequestObjectPermission(requesting_origin, embedding_origin))
+    return {};
+
   auto origin_it = ephemeral_ports_.find(
       std::make_pair(url::Origin::Create(requesting_origin),
                      url::Origin::Create(embedding_origin)));
   if (origin_it == ephemeral_ports_.end())
-    return objects;
+    return {};
   const std::set<base::UnguessableToken> ports = origin_it->second;
 
+  std::vector<std::unique_ptr<Object>> objects;
   for (const auto& token : ports) {
     auto it = port_info_.find(token);
     if (it == port_info_.end())

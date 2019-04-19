@@ -88,12 +88,15 @@ bool PermissionMenuModel::ShouldShowAllow(const GURL& url) {
   }
 
   // Chooser permissions do not support CONTENT_SETTING_ALLOW.
-  if (permission_.type == CONTENT_SETTINGS_TYPE_USB_GUARD)
+  if (permission_.type == CONTENT_SETTINGS_TYPE_SERIAL_GUARD ||
+      permission_.type == CONTENT_SETTINGS_TYPE_USB_GUARD) {
     return false;
+  }
 
   return true;
 }
 
 bool PermissionMenuModel::ShouldShowAsk(const GURL& url) {
-  return permission_.type == CONTENT_SETTINGS_TYPE_USB_GUARD;
+  return permission_.type == CONTENT_SETTINGS_TYPE_USB_GUARD ||
+         permission_.type == CONTENT_SETTINGS_TYPE_SERIAL_GUARD;
 }

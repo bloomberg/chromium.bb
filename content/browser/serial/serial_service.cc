@@ -76,6 +76,11 @@ void SerialService::RequestPort(
     return;
   }
 
+  if (!delegate->CanRequestPortPermission(render_frame_host_)) {
+    std::move(callback).Run(nullptr);
+    return;
+  }
+
   chooser_ = delegate->RunChooser(
       render_frame_host_, std::move(filters),
       base::BindOnce(&SerialService::FinishRequestPort,

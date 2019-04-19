@@ -22,6 +22,7 @@ class MockSerialDelegate : public SerialDelegate {
       SerialChooser::Callback callback) override;
 
   MOCK_METHOD0(RunChooserInternal, device::mojom::SerialPortInfoPtr());
+  MOCK_METHOD1(CanRequestPortPermission, bool(RenderFrameHost* frame));
   MOCK_METHOD2(HasPortPermission,
                bool(content::RenderFrameHost* frame,
                     const device::mojom::SerialPortInfo& port));
