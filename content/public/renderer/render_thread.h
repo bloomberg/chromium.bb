@@ -81,6 +81,9 @@ class CONTENT_EXPORT RenderThread : virtual public ChildThread {
   virtual void SetResourceDispatcherDelegate(
       ResourceDispatcherDelegate* delegate) = 0;
 
+  // DEPRECATED: Use mojo::Create*SharedMemoryRegion (see
+  // mojo/public/cpp/base/shared_memory_utils.h) instead.
+  //
   // Asks the host to create a block of shared memory for the renderer.
   // The shared memory allocated by the host is returned back.
   virtual std::unique_ptr<base::SharedMemory> HostAllocateSharedMemoryBuffer(
