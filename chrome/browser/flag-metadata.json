@@ -420,8 +420,8 @@
   },
   {
     "name": "cros-regions-mode",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "alemate" ],
+    "expiry_milestone": 80
   },
   {
     "name": "crostini-app-search",
