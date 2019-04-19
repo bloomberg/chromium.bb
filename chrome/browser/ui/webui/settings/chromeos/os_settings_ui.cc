@@ -14,7 +14,6 @@
 #include "ash/public/cpp/resources/grit/ash_public_unscaled_resources.h"
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
-#include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/browser/ui/webui/certificates_handler.h"
 #include "chrome/browser/ui/webui/dark_mode_handler.h"
 #include "chrome/browser/ui/webui/managed_ui_handler.h"
@@ -138,14 +137,6 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
 
   html_source->AddBoolean("unifiedConsentEnabled",
                           unified_consent::IsUnifiedConsentFeatureEnabled());
-
-  html_source->AddBoolean(
-      "navigateToGooglePasswordManager",
-      ShouldManagePasswordsinGooglePasswordManager(profile));
-
-  html_source->AddBoolean("showImportPasswords",
-                          base::FeatureList::IsEnabled(
-                              password_manager::features::kPasswordImport));
 
   AddSettingsPageUIHandler(
       base::WrapUnique(::settings::AboutHandler::Create(html_source, profile)));
