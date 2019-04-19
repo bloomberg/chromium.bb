@@ -591,7 +591,7 @@ _BANNED_CPP_FUNCTIONS = (
       (),
     ),
     (
-      r'RunMessageLoop',
+      r'/\bRunMessageLoop\b',
       (
           'RunMessageLoop is deprecated, use RunLoop instead.',
       ),

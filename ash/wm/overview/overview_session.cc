@@ -780,7 +780,8 @@ void OverviewSession::OnKeyEvent(ui::KeyEvent* event) {
   // we let the app list to handle the key event.
   // TODO(crbug.com/952315): Explore better ways to handle this splitview +
   // overview + applist case.
-  if (Shell::Get()->app_list_controller()->IsVisible())
+  Shell* shell = Shell::Get();
+  if (shell->app_list_controller() && shell->app_list_controller()->IsVisible())
     return;
 
   if (event->type() != ui::ET_KEY_PRESSED)
@@ -792,7 +793,7 @@ void OverviewSession::OnKeyEvent(ui::KeyEvent* event) {
     case ui::VKEY_ESCAPE:
       // Cancel overview unless we're in single split mode with no overview
       // windows.
-      if (!(IsEmpty() && Shell::Get()->IsSplitViewModeActive()))
+      if (!(IsEmpty() && shell->IsSplitViewModeActive()))
         CancelSelection();
       break;
     case ui::VKEY_UP:

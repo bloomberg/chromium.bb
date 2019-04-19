@@ -179,16 +179,16 @@ bool ShelfContextMenuModel::IsCommandIdEnabled(int command_id) const {
 
 void ShelfContextMenuModel::ExecuteCommand(int command_id, int event_flags) {
   DCHECK(IsCommandIdEnabled(command_id));
+  Shell* shell = Shell::Get();
   PrefService* prefs =
-      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+      shell->session_controller()->GetLastActiveUserPrefService();
   if (!prefs)  // Null during startup.
     return;
 
-  UserMetricsRecorder* metrics = Shell::Get()->metrics();
+  UserMetricsRecorder* metrics = shell->metrics();
   // Clamshell mode only options should not activate in tablet mode.
-  const bool is_tablet_mode = Shell::Get()
-                                  ->tablet_mode_controller()
-                                  ->IsTabletModeWindowManagerEnabled();
+  const bool is_tablet_mode =
+      shell->tablet_mode_controller()->IsTabletModeWindowManagerEnabled();
   switch (command_id) {
     case MENU_AUTO_HIDE:
       SetShelfAutoHideBehaviorPref(
@@ -214,13 +214,13 @@ void ShelfContextMenuModel::ExecuteCommand(int command_id, int event_flags) {
       SetShelfAlignmentPref(prefs, display_id_, SHELF_ALIGNMENT_BOTTOM);
       break;
     case MENU_CHANGE_WALLPAPER:
-      Shell::Get()->wallpaper_controller()->OpenWallpaperPickerIfAllowed();
+      shell->wallpaper_controller()->OpenWallpaperPickerIfAllowed();
       break;
     default:
       if (delegate_) {
-        if (app_list::IsCommandIdAnAppLaunch(command_id)) {
-          Shell::Get()->app_list_controller()->RecordShelfAppLaunched(
-              base::nullopt);
+        if (app_list::IsCommandIdAnAppLaunch(command_id) &&
+            shell->app_list_controller()) {
+          shell->app_list_controller()->RecordShelfAppLaunched(base::nullopt);
         }
 
         delegate_->ExecuteCommand(true, command_id, event_flags, display_id_);

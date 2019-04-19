@@ -13,6 +13,9 @@
 #include "ash/assistant/assistant_ui_controller.h"
 #include "ash/assistant/model/assistant_ui_model.h"
 #include "ash/assistant/test/test_assistant_service.h"
+#include "ash/kiosk_next/kiosk_next_shell_test_util.h"
+#include "ash/kiosk_next/mock_kiosk_next_shell_client.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
 #include "ash/shelf/shelf.h"
@@ -22,6 +25,7 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/voice_interaction/voice_interaction_controller.h"
+#include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
@@ -36,6 +40,7 @@ ui::GestureEvent CreateGestureEvent(ui::GestureEventDetails details) {
   return ui::GestureEvent(0, 0, ui::EF_NONE, base::TimeTicks(), details);
 }
 
+// TODO(michaelpg): Rename AppListButtonTest => HomeButtonTest.
 class AppListButtonTest : public AshTestBase {
  public:
   AppListButtonTest() = default;
@@ -269,6 +274,47 @@ TEST_F(VoiceInteractionAppListButtonTest,
                                                ->ui_controller()
                                                ->model()
                                                ->visibility());
+}
+
+class KioskNextHomeButtonTest : public AppListButtonTest {
+ public:
+  KioskNextHomeButtonTest() {
+    scoped_feature_list_.InitAndEnableFeature(features::kKioskNextShell);
+  }
+
+  void SetUp() override {
+    set_start_session(false);
+    AppListButtonTest::SetUp();
+    client_ = BindMockKioskNextShellClient();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+  std::unique_ptr<MockKioskNextShellClient> client_;
+
+  DISALLOW_COPY_AND_ASSIGN(KioskNextHomeButtonTest);
+};
+
+TEST_F(KioskNextHomeButtonTest, TapToGoHome) {
+  LogInKioskNextUser(GetSessionControllerClient());
+
+  ShelfViewTestAPI test_api(GetPrimaryShelf()->GetShelfViewForTesting());
+  test_api.RunMessageLoopUntilAnimationsDone();
+
+  // Enter Overview mode.
+  OverviewController* overview_controller = Shell::Get()->overview_controller();
+  ASSERT_TRUE(overview_controller->ToggleOverview());
+  ASSERT_TRUE(overview_controller->IsSelecting());
+  test_api.RunMessageLoopUntilAnimationsDone();
+
+  // Tapping the home button should exit Overview mode.
+  gfx::Point center = app_list_button()->GetCenterPoint();
+  views::View::ConvertPointToScreen(app_list_button(), &center);
+  GetEventGenerator()->GestureTapDownAndUp(center);
+  test_api.RunMessageLoopUntilAnimationsDone();
+  EXPECT_FALSE(overview_controller->IsSelecting());
+
+  // TODO(michaelpg): Create a Home Screen aura::Window* and verify its state.
 }
 
 }  // namespace ash
