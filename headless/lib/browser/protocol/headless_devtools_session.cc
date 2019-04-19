@@ -7,7 +7,6 @@
 #include "base/command_line.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_agent_host_client.h"
-#include "content/public/common/content_switches.h"
 #include "headless/lib/browser/protocol/browser_handler.h"
 #include "headless/lib/browser/protocol/headless_handler.h"
 #include "headless/lib/browser/protocol/page_handler.h"
@@ -16,9 +15,7 @@
 namespace headless {
 namespace protocol {
 static bool EnableInternalDevToolsBinaryProtocol() {
-  static bool disabled = base::CommandLine::ForCurrentProcess()->HasSwitch(
-      ::switches::kDisableInternalDevToolsBinaryProtocol);
-  return !disabled;
+  return true;
 }
 
 HeadlessDevToolsSession::HeadlessDevToolsSession(

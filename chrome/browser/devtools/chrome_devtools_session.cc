@@ -11,7 +11,6 @@
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_agent_host_client.h"
 #include "content/public/browser/devtools_manager_delegate.h"
-#include "content/public/common/content_switches.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/devtools/protocol/window_manager_handler.h"
@@ -54,9 +53,7 @@ void ChromeDevToolsSession::sendProtocolResponse(
 }
 
 static bool EnableInternalDevToolsBinaryProtocol() {
-  static bool disabled = base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableInternalDevToolsBinaryProtocol);
-  return !disabled;
+  return true;
 }
 
 void ChromeDevToolsSession::HandleCommand(

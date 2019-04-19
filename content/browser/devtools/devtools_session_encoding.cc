@@ -9,7 +9,6 @@
 
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
-#include "content/public/common/content_switches.h"
 #include "third_party/inspector_protocol/encoding/encoding.h"
 
 using inspector_protocol_encoding::span;
@@ -37,9 +36,7 @@ class ContentShellPlatform : public Platform {
 };
 }  // namespace
 bool EnableInternalDevToolsBinaryProtocol() {
-  static bool disabled = base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableInternalDevToolsBinaryProtocol);
-  return !disabled;
+  return true;
 }
 
 // TODO(johannes): Push error handling to client code after devtools_session.cc
