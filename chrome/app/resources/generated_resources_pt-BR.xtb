@@ -408,7 +408,6 @@
 <translation id="1639239467298939599">Carregando</translation>
 <translation id="163993578339087550"><ph name="SERVICE_NAME" /> quer verificar se você está usando um dispositivo Chrome OS qualificado.</translation>
 <translation id="1640283014264083726">PKCS #1 MD4 com criptografia RSA</translation>
-<translation id="1641113438599504367">Navegação segura</translation>
 <translation id="1642494467033190216">É necessário remover a proteção roofts e reiniciar antes de ativar outros recursos de depuração.</translation>
 <translation id="1643050526526937107">Apenas sincronização</translation>
 <translation id="1643072738649235303">Assinatura X9.62 ECDSA com SHA-1</translation>
@@ -788,7 +787,6 @@
 <translation id="2230051135190148440">CHAP</translation>
 <translation id="223106756035922488">Clique para visualizar o doodle de hoje</translation>
 <translation id="2231238007119540260">Ao excluir um certificado do servidor, você restaura as verificações de segurança normais do servidor e solicita que ele utilize um certificado válido.</translation>
-<translation id="2232379019872353004">Envia algumas informações do sistema e conteúdo da página para o Google</translation>
 <translation id="2232876851878324699">O arquivo continha um certificado que não foi importado:</translation>
 <translation id="2233502537820838181">&amp;Mais informações</translation>
 <translation id="2234876718134438132">Serviços do Google e de sincronização</translation>
@@ -3698,6 +3696,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6841186874966388268">Erros</translation>
 <translation id="6843423766595476978">Ok Google configurado</translation>
 <translation id="6845038076637626672">Abrir maximizado</translation>
+<translation id="6845325883481699275">Ajudar a melhorar a segurança do Chrome</translation>
 <translation id="6848388270925200958">No momento, você tem alguns cartões que só podem ser usados neste dispositivo</translation>
 <translation id="6851497530878285708">App ativado</translation>
 <translation id="6853388645642883916">Atualizador em modo de espera</translation>
@@ -4260,7 +4259,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7730449930968088409">Capturar o conteúdo da sua tela</translation>
 <translation id="7732111077498238432">A rede é controlada por política</translation>
 <translation id="7737238973539693982">Excluir o Linux (Beta)</translation>
-<translation id="773905249182896430">Protege você e seu dispositivo de sites perigosos</translation>
 <translation id="7740996059027112821">Padrão</translation>
 <translation id="7750228210027921155">Picture-in-picture</translation>
 <translation id="7751260505918304024">Exibir todos</translation>
@@ -5072,7 +5070,6 @@ Pessoas com conexões mais lentas talvez não vejam seu conteúdo.</translation>
 <translation id="8978154919215542464">Ativado - sincronizar tudo</translation>
 <translation id="897939795688207351">Em <ph name="ORIGIN" /></translation>
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> - Falhou</translation>
-<translation id="8983677657449185470">Ajude a melhorar a Navegação segura</translation>
 <translation id="8986362086234534611">Esquecer</translation>
 <translation id="8986494364107987395">Envia estatísticas de uso e relatórios de erros ao Google automaticamente</translation>
 <translation id="8987927404178983737">Mês</translation>

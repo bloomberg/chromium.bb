@@ -408,7 +408,6 @@
 <translation id="1639239467298939599">Načítání</translation>
 <translation id="163993578339087550">Služba <ph name="SERVICE_NAME" /> chce ověřit, zda používáte vhodné zařízení se systémem Chrome OS.</translation>
 <translation id="1640283014264083726">Šifrování PKCS #1 MD4 s RSA</translation>
-<translation id="1641113438599504367">Bezpečné prohlížení</translation>
 <translation id="1642494467033190216">Před aktivací dalších funkcí ladění je potřeba odebrat ochranu rootfs a restartovat zařízení.</translation>
 <translation id="1643050526526937107">Jen synchronizovat</translation>
 <translation id="1643072738649235303">Podpis X9.62 ECDSA s SHA-1</translation>
@@ -788,7 +787,6 @@
 <translation id="2230051135190148440">CHAP</translation>
 <translation id="223106756035922488">Kliknutím zobrazíte dnešní sváteční logo</translation>
 <translation id="2231238007119540260">Smažete-li certifikát serveru, bude server opět prověřován běžnými bezpečnostními kontrolami a bude od něj vyžadován platný certifikát.</translation>
-<translation id="2232379019872353004">Odesílá část informací o systému a obsahu stránek do Googlu</translation>
 <translation id="2232876851878324699">Soubor obsahoval jeden certifikát, který nebyl importován:</translation>
 <translation id="2233502537820838181">&amp;Další informace</translation>
 <translation id="2234876718134438132">Synchronizace a služby Google</translation>
@@ -3245,7 +3243,7 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="6122095009389448667">Tomuto webu přístup ke schránce i nadále blokovat</translation>
 <translation id="6122875415561139701">Operace zápisu v zařízení <ph name="DEVICE_NAME" /> není povolena.</translation>
 <translation id="6124650939968185064">Na tomto rozšíření závisejí následující rozšíření:</translation>
-<translation id="6124698108608891449">Tento web potřebuje další oprávnění.</translation>
+<translation id="6124698108608891449">Web potřebuje další oprávnění.</translation>
 <translation id="6125479973208104919">Do zařízení <ph name="DEVICE_TYPE" /> je nutné znovu přidat účet.</translation>
 <translation id="6129691635767514872">Vybraná data byla z Chromu a synchronizovaných zařízení odstraněna. Na stránce <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> mohou být k dispozici další druhy historie prohlížení zaznamenané ve vašem účtu Google, například vyhledávací dotazy a aktivita z ostatních služeb Google.</translation>
 <translation id="6129938384427316298">Komentář certifikátu Netscape</translation>
@@ -3425,7 +3423,7 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="641081527798843608">Shoda předmětu</translation>
 <translation id="6412931879992742813">Nové anonymní okno</translation>
 <translation id="6415900369006735853">Připojit se k internetu přes telefon</translation>
-<translation id="6416743254476733475">Povolte nebo zablokujte je na počítači.</translation>
+<translation id="6416743254476733475">Je třeba je v počítači povolit nebo zablokovat.</translation>
 <translation id="6417265370957905582">Asistent Google</translation>
 <translation id="6418160186546245112">Obnovování předchozí nainstalované verze aplikace <ph name="IDS_SHORT_PRODUCT_NAME" /></translation>
 <translation id="6418481728190846787">Natrvalo odebrat přístup všem aplikacím</translation>
@@ -3692,6 +3690,7 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="6841186874966388268">Chyby</translation>
 <translation id="6843423766595476978">Funkce OK Google je připravená</translation>
 <translation id="6845038076637626672">Otevřít maximalizované</translation>
+<translation id="6845325883481699275">Pomoci zlepšovat zabezpečení Chromu</translation>
 <translation id="6848388270925200958">V současné době máte několik karet, které lze používat jen na tomto zařízení.</translation>
 <translation id="6851497530878285708">Aplikace povolena</translation>
 <translation id="6853388645642883916">Nástroj na aktualizaci je v režimu spánku</translation>
@@ -4252,7 +4251,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="7730449930968088409">Zachycení obsahu obrazovky</translation>
 <translation id="7732111077498238432">Síť podléhá zásadám</translation>
 <translation id="7737238973539693982">Vymazat Linux (beta)</translation>
-<translation id="773905249182896430">Chrání vás a vaše zařízení před nebezpečnými weby</translation>
 <translation id="7740996059027112821">Standardně</translation>
 <translation id="7750228210027921155">Obraz v obraze</translation>
 <translation id="7751260505918304024">Zobrazit vše</translation>
@@ -5062,7 +5060,6 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="8978154919215542464">Zapnuto – synchronizovat vše</translation>
 <translation id="897939795688207351">V doméně <ph name="ORIGIN" /></translation>
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> – selhalo</translation>
-<translation id="8983677657449185470">Pomoci zlepšovat Bezpečné prohlížení</translation>
 <translation id="8986362086234534611">Odstranit</translation>
 <translation id="8986494364107987395">Automaticky posílat společnosti Google statistiky používání a zprávy o selhání</translation>
 <translation id="8987927404178983737">Měsíc</translation>

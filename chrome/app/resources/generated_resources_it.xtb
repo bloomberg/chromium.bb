@@ -408,7 +408,6 @@
 <translation id="1639239467298939599">Caricamento</translation>
 <translation id="163993578339087550"><ph name="SERVICE_NAME" /> chiede di controllare che tu stia utilizzando un dispositivo Chrome OS idoneo.</translation>
 <translation id="1640283014264083726">PKCS #1 MD4 con crittografia RSA</translation>
-<translation id="1641113438599504367">Navigazione sicura</translation>
 <translation id="1642494467033190216">Per poter attivare altre funzioni di debug è necessario rimuovere la protezione rootfs e riavviare.</translation>
 <translation id="1643050526526937107">Solo sincronizzazione</translation>
 <translation id="1643072738649235303">Firma X9.62 ECDSA con SHA-1</translation>
@@ -788,7 +787,6 @@
 <translation id="2230051135190148440">CHAP</translation>
 <translation id="223106756035922488">Fai clic per visualizzare il doodle di oggi</translation>
 <translation id="2231238007119540260">Se elimini un certificato server, ripristini i normali controlli di protezione del server e richiedi l'utilizzo di un certificato valido per il server.</translation>
-<translation id="2232379019872353004">Invia a Google alcune informazioni sul sistema e alcuni contenuti delle pagine</translation>
 <translation id="2232876851878324699">Il file conteneva un certificato, che non è stato importato:</translation>
 <translation id="2233502537820838181">Ulteriori infor&amp;mazioni</translation>
 <translation id="2234876718134438132">Sincronizzazione e servizi Google</translation>
@@ -3692,6 +3690,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="6841186874966388268">Errori</translation>
 <translation id="6843423766595476978">Ok Google impostato</translation>
 <translation id="6845038076637626672">Apri ingrandita</translation>
+<translation id="6845325883481699275">Contribuisci a migliorare la sicurezza di Chrome</translation>
 <translation id="6848388270925200958">Al momento hai delle carte che possono essere utilizzate solo da questo dispositivo.</translation>
 <translation id="6851497530878285708">App attivata</translation>
 <translation id="6853388645642883916">Programma di aggiornamento in sospensione</translation>
@@ -4252,7 +4251,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="7730449930968088409">Acquisizione dei contenuti dello schermo</translation>
 <translation id="7732111077498238432">La rete è gestita tramite norme</translation>
 <translation id="7737238973539693982">Elimina Linux (beta)</translation>
-<translation id="773905249182896430">Protegge te e il tuo dispositivo da siti pericolosi</translation>
 <translation id="7740996059027112821">Standard</translation>
 <translation id="7750228210027921155">Picture in picture</translation>
 <translation id="7751260505918304024">Mostra tutto</translation>
@@ -5062,7 +5060,6 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8978154919215542464">On: sincronizza tutto</translation>
 <translation id="897939795688207351">Su <ph name="ORIGIN" /></translation>
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> - Bloccata</translation>
-<translation id="8983677657449185470">Contribuisci a migliorare Navigazione sicura</translation>
 <translation id="8986362086234534611">Elimina</translation>
 <translation id="8986494364107987395">Invia automaticamente a Google statistiche sull'utilizzo e rapporti sugli arresti anomali</translation>
 <translation id="8987927404178983737">Mese</translation>

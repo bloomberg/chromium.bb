@@ -405,7 +405,6 @@
 <translation id="1639239467298939599">Laster inn</translation>
 <translation id="163993578339087550"><ph name="SERVICE_NAME" /> ønsker å bekrefte at du bruker en kvalifisert Chrome OS-enhet.</translation>
 <translation id="1640283014264083726"> PKCS #1 MD4 med RSA-kryptering</translation>
-<translation id="1641113438599504367">Safe Browsing</translation>
 <translation id="1642494467033190216">Fjerning av rootfs-beskyttelse og omstart er nødvendig før du slår på andre feilsøkingsfunksjoner.</translation>
 <translation id="1643050526526937107">Bare synkroniser</translation>
 <translation id="1643072738649235303">X9.62 ECDSA-signatur med SHA-1</translation>
@@ -785,7 +784,6 @@
 <translation id="2230051135190148440">CHAP</translation>
 <translation id="223106756035922488">Klikk for å se dagens doodle</translation>
 <translation id="2231238007119540260">Hvis du sletter et tjenersertifikat, gjenoppretter du de vanlige sikkerhetskontrollene for tjeneren og krever at den bruker et gyldig sertifikat.</translation>
-<translation id="2232379019872353004">Sender noe systeminformasjon og sideinnhold til Google</translation>
 <translation id="2232876851878324699">Filen inneholdt ett sertifikat som ikke ble importert:</translation>
 <translation id="2233502537820838181">Mer informasjon</translation>
 <translation id="2234876718134438132">Synkronisering/Google-tjenester</translation>
@@ -3689,6 +3687,7 @@
 <translation id="6841186874966388268">Feil</translation>
 <translation id="6843423766595476978">Ok Google er konfigurert</translation>
 <translation id="6845038076637626672">Maksimer ved åpning</translation>
+<translation id="6845325883481699275">Bidra til å gjøre Chrome sikrere</translation>
 <translation id="6848388270925200958">Akkurat nå har du noen kort som bare kan brukes på denne enheten</translation>
 <translation id="6851497530878285708">Appen er slått på</translation>
 <translation id="6853388645642883916">Oppdatereringsprogrammet er i hvilemodus</translation>
@@ -4249,7 +4248,6 @@
 <translation id="7730449930968088409">ta bilde av innhold på skjermen din</translation>
 <translation id="7732111077498238432">Nettverket er kontrollert av regler</translation>
 <translation id="7737238973539693982">Slett Linux (beta)</translation>
-<translation id="773905249182896430">Beskytter deg og enheten din mot farlige nettsteder</translation>
 <translation id="7740996059027112821">Standard</translation>
 <translation id="7750228210027921155">Bilde i bilde</translation>
 <translation id="7751260505918304024">Vis alle</translation>
@@ -5060,7 +5058,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="8978154919215542464">På – synkroniser alt</translation>
 <translation id="897939795688207351">På <ph name="ORIGIN" /></translation>
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> – kræsjet</translation>
-<translation id="8983677657449185470">Bidra til å forbedre Safe Browsing</translation>
 <translation id="8986362086234534611">Glem</translation>
 <translation id="8986494364107987395">Send bruksstatistikk og programstopprapporter automatisk til Google</translation>
 <translation id="8987927404178983737">Måned</translation>

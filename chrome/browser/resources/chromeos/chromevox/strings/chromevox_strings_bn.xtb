@@ -14,7 +14,7 @@
 <translation id="1038795173450935438">কোনো পৃষ্ঠায় আইটেমগুলির মধ্যে এগিয়ে যেতে সার্চ + ডান তীরচিহ্ন, বা  পিছনে ফিরে আসতে সার্চ + বাঁ তীরচিহ্ন টিপুন। পরের লাইনে যেতে, সার্চ + নিম্নমুখী তীরচিহ্ন টিপুন। পূর্ববর্তী লাইনে যেতে, সার্চ + উর্ধ্বমুখী তীরচিহ্ন ব্যবহার করুন। আপনি যখন আপনি ক্লিক করতে চান এমন আইটেমে পৌঁছান, তখন সার্চ + স্পেস টিপুন।</translation>
 <translation id="1044777062731150180">কোনো শিরোলেখ নেই</translation>
 <translation id="106222400312645156">rwhdr</translation>
-<translation id="1065552602950927991">অবৈধ ইনপুট</translation>
+<translation id="1065552602950927991">ভুল ইনপুট</translation>
 <translation id="1066085461259044485">বনের সবুজ</translation>
 <translation id="1082209053475788238">কোনো পূর্ববর্তী স্তর ৬ শিরোনাম নেই৷</translation>
 <translation id="1087788677726983142">ইভেন্ট স্ট্রিম ফিল্টার লুকান</translation>
@@ -346,7 +346,7 @@
 <translation id="3457000393508828486">আংশিক টেপা</translation>
 <translation id="3458865416877308321"><ph name="NAME" />, বন্ধ করুন</translation>
 <translation id="3462439746547587373"><ph name="NAME" />, বোতাম</translation>
-<translation id="3466530247399808663">একটি অবৈধ কী টেপা</translation>
+<translation id="3466530247399808663">একটি ভুল কী টেপা</translation>
 <translation id="3468959318854349468">কোনও শীর্ষক নেই</translation>
 <translation id="3469413619751135069">ফ্যাকাশে সবুজ</translation>
 <translation id="3473644018603298796">sld <ph name="COUNT" />টি</translation>
@@ -524,7 +524,7 @@
 <translation id="4729095194763193578">পূর্ববর্তী সারণী সারি</translation>
 <translation id="4736221692378411923">আগস্ট</translation>
 <translation id="4740661827607246557">সহায়তা আদেশগুলি</translation>
-<translation id="4755857887974653209">ChromeVox অক্ষম করুন</translation>
+<translation id="4755857887974653209">ChromeVox বন্ধ করুন</translation>
 <translation id="4763296182459741068">নিচে সম্পৃক্ত রয়েছে</translation>
 <translation id="4763480195061959176">ভিডিও</translation>
 <translation id="4764692524839457597">ডিফল্ট</translation>
@@ -1212,7 +1212,7 @@ Chrome ব্রাউজার মেনু খুলতে, Alt+F প্রে
 <translation id="958854023026327378">এক আঙ্গুল দিয়ে নিচের দিকে সোয়াইপ করুন</translation>
 <translation id="962913030769097253">পরবর্তী স্তর ১ শিরোনাম</translation>
 <translation id="966588271015727539">ব্লুটুথ ব্রেইল ডিসপ্লে বেছে নিন</translation>
-<translation id="973955474346881951">স্টিকি মোড সক্ষম/অক্ষম করুন</translation>
+<translation id="973955474346881951">স্টিকি মোড চালু/বন্ধ করুন</translation>
 <translation id="976849232629612000">কোনো আইটেম নেই।</translation>
 <translation id="992256792861109788">গোলাপী</translation>
 </translationbundle>

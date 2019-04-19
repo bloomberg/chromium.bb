@@ -407,7 +407,6 @@
 <translation id="1639239467298939599">लोड करीत आहे</translation>
 <translation id="163993578339087550"><ph name="SERVICE_NAME" /> ला तुम्ही पात्र Chrome OS डिव्हाइस वापरता आहात का हे तपासायचे आहे.</translation>
 <translation id="1640283014264083726">PKCS #1 RSA एंक्रिप्शनसह MD4</translation>
-<translation id="1641113438599504367">सुरक्षित ब्राउझिंग</translation>
 <translation id="1642494467033190216">इतर डीबगिंग वैशिष्‍ट्ये सक्षम करण्‍यापूर्वी rootfs संरक्षण काढणे आणि रीस्‍टार्ट करणे आवश्‍यक आहे.</translation>
 <translation id="1643050526526937107">फक्त सिंक करा</translation>
 <translation id="1643072738649235303">SHA-1 सह X9.62 ECDSA स्वाक्षरी</translation>
@@ -787,7 +786,6 @@
 <translation id="2230051135190148440">CHAP</translation>
 <translation id="223106756035922488">आजचे डुडल पाहण्यासाठी क्लिक करा</translation>
 <translation id="2231238007119540260">तुम्ही एक सर्व्हर सर्टिफिकेट हटविल्यास, तुम्ही त्या सर्व्हरसाठी नेहमीचे सुरक्षा चेक पुनर्संचयित करता आणि त्यास एक वैध सर्टिफिकेट वापरणे आवश्यक आहे.</translation>
-<translation id="2232379019872353004">Google ला थोडी सिस्टम माहिती आणि पेज आशय आपोआप पाठवा</translation>
 <translation id="2232876851878324699">फाइलमध्ये एक सर्टिफिकेट आहे, जे इंपोर्ट झाले नाही:</translation>
 <translation id="2233502537820838181">&amp;अधिक माहिती</translation>
 <translation id="2234876718134438132">सिंक आणि Google सेवा</translation>
@@ -3429,7 +3427,7 @@
 <translation id="641081527798843608">जुळणारा विषय</translation>
 <translation id="6412931879992742813">नवीन गुप्त विंडो</translation>
 <translation id="6415900369006735853">तुमच्या फोनमधून इंटरनेटशी कनेक्ट करा</translation>
-<translation id="6416743254476733475">तुमच्या कॉंप्युटरवर परवानगी द्या किंवा ब्लॉक करा.</translation>
+<translation id="6416743254476733475">अनुमती द्या किंवा तुमच्या कॉंप्युटरवर ब्लॉक करा.</translation>
 <translation id="6417265370957905582">Google साहाय्यक</translation>
 <translation id="6418160186546245112"><ph name="IDS_SHORT_PRODUCT_NAME" /> च्या पूर्वी स्‍थापित केलेल्या आवृत्तीवर परत करत आहे</translation>
 <translation id="6418481728190846787">सर्व ॲप साठी अॅक्सेस कायमचे काढून टाका</translation>
@@ -3696,6 +3694,7 @@
 <translation id="6841186874966388268">एरर</translation>
 <translation id="6843423766595476978">Ok Google सर्व तयार आहे</translation>
 <translation id="6845038076637626672">वाढवलेले उघडा</translation>
+<translation id="6845325883481699275">Chrome सुरक्षेमध्ये सुधारणा करण्यात मदत करा</translation>
 <translation id="6848388270925200958">सध्या तुमच्याकडे काही कार्डे आहेत जी फक्त या डिव्हाइसवर वापरली जाऊ शकतात</translation>
 <translation id="6851497530878285708">ॲप सक्रीय केले</translation>
 <translation id="6853388645642883916">अद्यतनकर्ता निष्क्रिय आहे</translation>
@@ -4258,7 +4257,6 @@
 <translation id="7730449930968088409">आपल्या स्क्रीनची सामग्री कॅप्चर करा</translation>
 <translation id="7732111077498238432">नेटवर्क धोरण-नियंत्रित आहे</translation>
 <translation id="7737238973539693982">Linux (बीटा) हटवा</translation>
-<translation id="773905249182896430">धोकादायक साइटपासून तुमचे आणि तुमच्या डिव्हाइसचे संरक्षण करते</translation>
 <translation id="7740996059027112821">मानक</translation>
 <translation id="7750228210027921155">चित्रात-चित्र</translation>
 <translation id="7751260505918304024">सर्व दर्शवा</translation>
@@ -5068,7 +5066,6 @@
 <translation id="8978154919215542464">ऑन - सर्वकाही सिंक करत आहे</translation>
 <translation id="897939795688207351"><ph name="ORIGIN" /> वर</translation>
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> - क्रॅश झाले</translation>
-<translation id="8983677657449185470">सुरक्षित ब्राउझिंग सुधारण्यात मदत करा</translation>
 <translation id="8986362086234534611">विसरा</translation>
 <translation id="8986494364107987395">Google ला वापर आकडेवारी आणि क्रॅश अहवाल आपोआप पाठवा</translation>
 <translation id="8987927404178983737">महिना</translation>

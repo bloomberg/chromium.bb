@@ -408,7 +408,6 @@
 <translation id="1639239467298939599">Chargement en cours</translation>
 <translation id="163993578339087550"><ph name="SERVICE_NAME" /> veut vérifier si vous utilisez un appareil Chrome OS éligible.</translation>
 <translation id="1640283014264083726">PKCS #1 MD4 avec chiffrement RSA</translation>
-<translation id="1641113438599504367">Navigation sécurisée</translation>
 <translation id="1642494467033190216">La suppression de la protection rootfs et un redémarrage s'avèrent nécessaires avant d'activer d'autres fonctionnalités de débogage.</translation>
 <translation id="1643050526526937107">Synchroniser uniquement</translation>
 <translation id="1643072738649235303">Signature X9.62 ECDSA avec SHA-1</translation>
@@ -788,7 +787,6 @@
 <translation id="2230051135190148440">CHAP</translation>
 <translation id="223106756035922488">Cliquez ici pour afficher le doodle du jour</translation>
 <translation id="2231238007119540260">Lorsque vous supprimez un certificat de serveur, vous rétablissez les contrôles de sécurité habituels du serveur et un certificat valide lui est demandé.</translation>
-<translation id="2232379019872353004">Envoie des informations système et du contenu de pages à Google</translation>
 <translation id="2232876851878324699">Le fichier contenait un certificat, qui n'a pas été importé :</translation>
 <translation id="2233502537820838181">Plus d'informations</translation>
 <translation id="2234876718134438132">Services Google/Synchronisation</translation>
@@ -3697,6 +3695,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6841186874966388268">Erreurs</translation>
 <translation id="6843423766595476978">Ok Google est à présent configuré</translation>
 <translation id="6845038076637626672">Ouvrir la version agrandie</translation>
+<translation id="6845325883481699275">Contribuer à améliorer la sécurité de Chrome</translation>
 <translation id="6848388270925200958">Vous disposez actuellement de plusieurs cartes qui ne peuvent être utilisées qu'avec cet appareil</translation>
 <translation id="6851497530878285708">Application activée</translation>
 <translation id="6853388645642883916">Processus de mise à jour en veille</translation>
@@ -4259,7 +4258,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="7730449930968088409">Effectuer une capture d'écran</translation>
 <translation id="7732111077498238432">Le réseau est soumis à des règles</translation>
 <translation id="7737238973539693982">Effacer Linux (Bêta)</translation>
-<translation id="773905249182896430">Assure votre protection et celle de votre appareil contre les sites dangereux</translation>
 <translation id="7740996059027112821">Standard</translation>
 <translation id="7750228210027921155">Mode PIP (Picture-in-Picture)</translation>
 <translation id="7751260505918304024">Tout afficher</translation>
@@ -5070,7 +5068,6 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8978154919215542464">Activé – Tout synchroniser</translation>
 <translation id="897939795688207351">Sur <ph name="ORIGIN" /></translation>
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> – Plantage</translation>
-<translation id="8983677657449185470">Contribuer à l'amélioration de la navigation sécurisée</translation>
 <translation id="8986362086234534611">Retirer</translation>
 <translation id="8986494364107987395">Envoie automatiquement les statistiques d'utilisation et les rapports d'erreur à Google</translation>
 <translation id="8987927404178983737">Mois</translation>

@@ -408,7 +408,6 @@
 <translation id="1639239467298939599">S'està carregant</translation>
 <translation id="163993578339087550"><ph name="SERVICE_NAME" /> vol comprovar si fas servir un dispositiu Chrome OS apte.</translation>
 <translation id="1640283014264083726">PKCS #1 MD4 amb encriptació RSA</translation>
-<translation id="1641113438599504367">Navegació segura</translation>
 <translation id="1642494467033190216">Abans d'activar altres funcions de depuració, heu d'eliminar la protecció del sistema de fitxers rootfs i reiniciar el sistema.</translation>
 <translation id="1643050526526937107">Només sincronitza</translation>
 <translation id="1643072738649235303">Signatura d'ECDSA X9.62 amb SHA-1</translation>
@@ -788,7 +787,6 @@
 <translation id="2230051135190148440">CHAP</translation>
 <translation id="223106756035922488">Fes clic per veure el doodle del dia</translation>
 <translation id="2231238007119540260">Si suprimiu un certificat de servidor, restaurareu les comprovacions de seguretat normals per a aquell servidor i es necessitarà que utilitzi un certificat vàlid.</translation>
-<translation id="2232379019872353004">Envia a Google algunes dades del sistema i contingut de les pàgines</translation>
 <translation id="2232876851878324699">El fitxer contenia un certificat que no s'ha importat:</translation>
 <translation id="2233502537820838181">&amp;Més informació</translation>
 <translation id="2234876718134438132">Sincronització i serveis de Google</translation>
@@ -3692,6 +3690,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="6841186874966388268">Errors</translation>
 <translation id="6843423766595476978">Ok Google ja està configurat</translation>
 <translation id="6845038076637626672">Obre-la maximitzada</translation>
+<translation id="6845325883481699275">Ajuda a millorar la seguretat de Chrome</translation>
 <translation id="6848388270925200958">En aquest moment tens targetes que només es poden fer servir en aquest dispositiu</translation>
 <translation id="6851497530878285708">Aplicació activada</translation>
 <translation id="6853388645642883916">S'ha posat l'actualitzador en repòs.</translation>
@@ -4252,7 +4251,6 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="7730449930968088409">Capturar el contingut de la pantalla</translation>
 <translation id="7732111077498238432">La xarxa està controlada per una política</translation>
 <translation id="7737238973539693982">Suprimeix Linux (versió beta)</translation>
-<translation id="773905249182896430">Et protegeix i protegeix el teu dispositiu de llocs web perillosos</translation>
 <translation id="7740996059027112821">Estàndard</translation>
 <translation id="7750228210027921155">Pantalla en pantalla</translation>
 <translation id="7751260505918304024">Mostra-ho tot</translation>
@@ -5062,7 +5060,6 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="8978154919215542464">Activat: se sincronitza tot</translation>
 <translation id="897939795688207351">A <ph name="ORIGIN" /></translation>
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" />: ha fallat</translation>
-<translation id="8983677657449185470">Ajuda a millorar Navegació segura</translation>
 <translation id="8986362086234534611">Oblida</translation>
 <translation id="8986494364107987395">Envia automàticament estadístiques d'ús i informes d'error a Google</translation>
 <translation id="8987927404178983737">Mes</translation>

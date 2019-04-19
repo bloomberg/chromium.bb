@@ -86,7 +86,6 @@
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1623104350909869708">Zapobiegaj wyświetlaniu dodatkowych okien dialogowych na tej stronie</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{Usuń 1 wybrany element}few{Usuń # wybrane elementy}many{Usuń # wybranych elementów}other{Usuń # wybranego elementu}}</translation>
-<translation id="1641113438599504367">Bezpieczne przeglądanie</translation>
 <translation id="164269334534774161">Oglądasz kopię offline tej strony z <ph name="CREATION_TIME" /></translation>
 <translation id="1644574205037202324">Historia</translation>
 <translation id="1647391597548383849">Dostęp do kamery</translation>
@@ -173,7 +172,6 @@
 <translation id="2156074688469523661">Pozostałe strony (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" /> – aplikacja internetowa. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Kontynuuj jako <ph name="USER_FULL_NAME" /></translation>
-<translation id="2232379019872353004">Wysyła do Google pewne informacje o systemie i część zawartości stron</translation>
 <translation id="2234876718134438132">Synchronizacja i usługi Google</translation>
 <translation id="2259659629660284697">Eksportuj hasła…</translation>
 <translation id="2268044343513325586">Zawęź</translation>
@@ -281,7 +279,6 @@
 <translation id="305593374596241526">Lokalizacja jest wyłączona. Włącz ją w <ph name="BEGIN_LINK" />Ustawieniach Androida<ph name="END_LINK" />.</translation>
 <translation id="3058498974290601450">W każdej chwili możesz włączyć synchronizację w ustawieniach</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> zakładka}few{<ph name="BOOKMARKS_COUNT_MANY" /> zakładki}many{<ph name="BOOKMARKS_COUNT_MANY" /> zakładek}other{<ph name="BOOKMARKS_COUNT_MANY" /> zakładki}}</translation>
-<translation id="307908932405420782">Wkrótce pojawi się więcej artykułów. Życzymy miłego poranka.</translation>
 <translation id="3089395242580810162">Otwórz w karcie incognito</translation>
 <translation id="311456632243022227">Wiele linków otwartych w Chrome</translation>
 <translation id="3115898365077584848">Pokaż informacje</translation>
@@ -686,7 +683,6 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="605721222689873409">RR</translation>
 <translation id="6075798973483050474">Edytuj stronę główną</translation>
 <translation id="60923314841986378">Pozostało: <ph name="HOURS" /> godz.</translation>
-<translation id="60924377787140961">Wkrótce pojawi się więcej artykułów. Życzymy miłego popołudnia.</translation>
 <translation id="6099151465289169210">Przełączono do kart prywatnych</translation>
 <translation id="6108923351542677676">Trwa konfigurowanie…</translation>
 <translation id="6111020039983847643">użytych danych</translation>
@@ -799,6 +795,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="6820607729870073286">Nie masz zapisanych żadnych ustawień witryny.</translation>
 <translation id="6820686453637990663">Kod CVC</translation>
 <translation id="6831043979455480757">Tłumacz</translation>
+<translation id="6845325883481699275">Pomóż zwiększyć bezpieczeństwo Chrome</translation>
 <translation id="6846298663435243399">Wczytuję…</translation>
 <translation id="6850409657436465440">Pobieranie wciąż trwa</translation>
 <translation id="6850830437481525139">Zamknięte karty: <ph name="TAB_COUNT" /></translation>
@@ -923,7 +920,6 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="7704317875155739195">Autouzupełniaj wyszukiwania i adresy URL</translation>
 <translation id="773466115871691567">Zawsze tłumacz strony, których językiem jest <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="7735672056998735387"><ph name="SPACE_FREE" /> (<ph name="SPACE_OTHER" />)</translation>
-<translation id="773905249182896430">Chroni Ciebie i Twoje urządzenie przed niebezpiecznymi witrynami</translation>
 <translation id="7762668264895820836">Karta SD <ph name="SD_CARD_NUMBER" /></translation>
 <translation id="7764225426217299476">Dodaj adres</translation>
 <translation id="7765158879357617694">Przenieś</translation>
@@ -1039,7 +1035,6 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="8562452229998620586">Tutaj pojawią się zapisane hasła.</translation>
 <translation id="8569404424186215731">od <ph name="DATE" /></translation>
 <translation id="8571213806525832805">Ostatnie 4 tygodnie</translation>
-<translation id="857509777403223202">Wkrótce pojawi się więcej artykułów. Życzymy miłego wieczoru.</translation>
 <translation id="857943718398505171">Dozwolone (zalecane)</translation>
 <translation id="8582216581279205169">Otwarte karty – pełna wysokość</translation>
 <translation id="8583805026567836021">Usuwam dane konta</translation>
@@ -1088,7 +1083,6 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="8970887620466824814">Coś poszło nie tak.</translation>
 <translation id="8972098258593396643">Czy pobrać do folderu domyślnego?</translation>
 <translation id="8981454092730389528">Zarządzanie aktywnością w Google</translation>
-<translation id="8983677657449185470">Pomóż ulepszyć Bezpieczne przeglądanie</translation>
 <translation id="8986494364107987395">Automatycznie przesyłaj do Google statystyki użytkowania i raporty o awariach</translation>
 <translation id="8993760627012879038">Otwórz nową kartę w trybie incognito</translation>
 <translation id="8998729206196772491">Logujesz się na konto, którym zarządza <ph name="MANAGED_DOMAIN" />, i przekazujesz jego administratorowi kontrolę nad Twoimi danymi Chrome. Zostaną one trwale przypisane do tego konta. Gdy się wylogujesz, znikną one z tego urządzenia, ale pozostaną zapisane na Twoim koncie Google.</translation>

@@ -408,7 +408,6 @@
 <translation id="1639239467298939599">Indlæser...</translation>
 <translation id="163993578339087550"><ph name="SERVICE_NAME" /> vil gerne tjekke, om du bruger en kvalificeret Chrome OS-enhed.</translation>
 <translation id="1640283014264083726">PKCS #1 MD4 med RSA-kryptering</translation>
-<translation id="1641113438599504367">Beskyttet browsing</translation>
 <translation id="1642494467033190216">Fjernelse af rootfs-beskyttelse og efterfølgende genstart er påkrævet, før du aktiverer andre fejlfindingsfunktioner.</translation>
 <translation id="1643050526526937107">Kun synkronisering</translation>
 <translation id="1643072738649235303">X9.62 ECDSA-signatur med SHA-1</translation>
@@ -785,7 +784,6 @@
 <translation id="2230051135190148440">CHAP</translation>
 <translation id="223106756035922488">Klik for at se dagens doodle</translation>
 <translation id="2231238007119540260">Hvis du sletter et servercertifikat, gendanner du den sædvanlige sikkerhedskontrol for den server og kræver, at den bruger et gyldigt certifikat.</translation>
-<translation id="2232379019872353004">Sender nogle systemoplysninger og noget sideindhold til Google</translation>
 <translation id="2232876851878324699">Filen indeholdt ét certifikat, der ikke blev importeret:</translation>
 <translation id="2233502537820838181">&amp;Flere oplysninger</translation>
 <translation id="2234876718134438132">Synkr. og Google-tjenester</translation>
@@ -3695,6 +3693,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6841186874966388268">Fejl</translation>
 <translation id="6843423766595476978">Ok Google er konfigureret</translation>
 <translation id="6845038076637626672">Åbn maksimeret</translation>
+<translation id="6845325883481699275">Hjælp med at forbedre sikkerheden i Chrome</translation>
 <translation id="6848388270925200958">Lige nu har du kort, som kun kan bruges på denne enhed.</translation>
 <translation id="6851497530878285708">Appen er aktiveret</translation>
 <translation id="6853388645642883916">Opdateringsprogrammet er i dvale</translation>
@@ -4257,7 +4256,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7730449930968088409">Tage et screenshot af dit indhold</translation>
 <translation id="7732111077498238432">Netværket er underlagt politikker</translation>
 <translation id="7737238973539693982">Fjern Linux (beta)</translation>
-<translation id="773905249182896430">Beskytter dig og din enhed mod farlige websites</translation>
 <translation id="7740996059027112821">Standard</translation>
 <translation id="7750228210027921155">Integreret billede</translation>
 <translation id="7751260505918304024">Vis alle</translation>
@@ -5068,7 +5066,6 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8978154919215542464">Til – synkroniser alt</translation>
 <translation id="897939795688207351">På <ph name="ORIGIN" /></translation>
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> – gået ned</translation>
-<translation id="8983677657449185470">Vær med til at forbedre Beskyttet browsing</translation>
 <translation id="8986362086234534611">Glem</translation>
 <translation id="8986494364107987395">Send automatisk brugsstatistikker og nedbrudsrapporter til Google</translation>
 <translation id="8987927404178983737">Måned</translation>

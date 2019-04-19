@@ -152,7 +152,7 @@
 <translation id="2850124913210091882">ব্যাকআপ নিন</translation>
 <translation id="2870836398458454343">লিপ্যন্তরকরণ (marhaban ← مرحبا)</translation>
 <translation id="288024221176729610">চেক</translation>
-<translation id="2887525882758501333">PDF দস্তাবেজ</translation>
+<translation id="2887525882758501333">পিডিএফ দস্তাবেজ</translation>
 <translation id="2888807692577297075">&lt;b&gt;"<ph name="SEARCH_STRING" />"&lt;/b&gt; এর সাথে কোনো আইটেম মেলেনি</translation>
 <translation id="2894654529758326923">তথ্য</translation>
 <translation id="2902312830803030883">আরও অ্যাকশন</translation>
@@ -297,7 +297,7 @@
 <translation id="4724850507808590449"><ph name="FILE_COUNT" />টি ফটোর ব্যাকআপ নেওয়া হয়েছে</translation>
 <translation id="4725511304875193254">কর্গি কুকুর</translation>
 <translation id="4732760563705710320">দুঃখিত, এই ভিডিওটি আপনার কাস্ট ডিভাইসে সমর্থিত নয়৷</translation>
-<translation id="4734518477988699048">ইনপুট মান অবৈধ।</translation>
+<translation id="4734518477988699048">ইনপুট মান ভুল।</translation>
 <translation id="4737050008115666127">ল্যান্ডিং</translation>
 <translation id="4747271164117300400">ম্যাসিডোনীয়</translation>
 <translation id="4749157430980974800">জর্জিয়ান কীবোর্ড</translation>
@@ -576,7 +576,7 @@
 <translation id="7853966320808728790">ফরাসি BÉPO</translation>
 <translation id="7864662577698025113">নতুন পরিষেবা যোগ করুন</translation>
 <translation id="7873831373602885875"><ph name="FOLDER_NAME" />-এ সেভ করা যাচ্ছে না। সব এডিট ডাউনলোড ফোল্ডারের মধ্যে <ph name="DOWNLOADS_FOLDER" />-এ সেভ করা হবে।</translation>
-<translation id="7881969471599061635">সাবটাইটেল অক্ষম করুন</translation>
+<translation id="7881969471599061635">সাবটাইটেল বন্ধ করুন</translation>
 <translation id="78946041517601018">শেয়ার করা ডিভাইস</translation>
 <translation id="7896906914454843592">মার্কিন প্রসারিত কীবোর্ড</translation>
 <translation id="7898607018410277265">গুজরাতি কীবোর্ড (নতুন ফোনেটিক)</translation>
@@ -634,7 +634,7 @@
 <translation id="8418113698656761985">রোমানিয় কীবোর্ড</translation>
 <translation id="8432745813735585631">ইউএস কোলেম্যাক কীবোর্ড</translation>
 <translation id="8437209419043462667">মার্কিন যুক্তরাষ্ট্রীয়</translation>
-<translation id="8456681095658380701">অবৈধ নাম</translation>
+<translation id="8456681095658380701">ভুল নাম</translation>
 <translation id="8466234950814670489">Tar আর্কাইভ</translation>
 <translation id="8467473010914675605">কোরিয় ইনপুট পদ্ধতি</translation>
 <translation id="8475647382427415476">Google ড্রাইভ এই মুহূর্তে "<ph name="FILENAME" />" সিঙ্ক করতে পারেনি। Google ড্রাইভ পরে আবার চেষ্টা করবে।</translation>

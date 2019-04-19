@@ -52,7 +52,7 @@
 <translation id="2830827904629746450">Zadokuj okno po prawej stronie</translation>
 <translation id="2840766858109427815">Przejdź na następną stronę</translation>
 <translation id="2872353916818027657">Zamień główny monitor</translation>
-<translation id="2914313326123580426">Pokaż lub ukryj panel narzędzi dla programistów</translation>
+<translation id="2914313326123580426">Pokaż lub ukryj panel narzędzi dla deweloperów</translation>
 <translation id="292495055542441795">Włącz lub wyłącz pełny ekran</translation>
 <translation id="3020183492814296499">Skróty</translation>
 <translation id="3084301071537457911">Zaznacz następny element na półce</translation>
@@ -116,7 +116,7 @@
 <translation id="5757111373163288447">Otwórz link w tej karcie</translation>
 <translation id="5757474750054631686">Przyciemnij klawiaturę (dotyczy tylko klawiatur podświetlanych)</translation>
 <translation id="587531134027443617">Usuń poprzednie słowo</translation>
-<translation id="5899919361772749550">Pokaż lub ukryj konsolę Narzędzi dla programistów</translation>
+<translation id="5899919361772749550">Pokaż lub ukryj konsolę Narzędzi dla deweloperów</translation>
 <translation id="5921745308587794300">Obróć okno</translation>
 <translation id="6022924867608035986">Wyczyść tekst w polu wyszukiwania</translation>
 <translation id="6045998054441862242">Włącz tryb wysokiego kontrastu</translation>
@@ -172,7 +172,7 @@
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> lub <ph name="E" /></translation>
 <translation id="8232835244134740473">Przełączaj zaznaczenie między: paskiem stanu (tam, gdzie widać obraz konta), Menu z aplikacjami, paskiem adresu, paskiem zakładek (jeśli jest widoczny), otwartą aktualnie stroną, paskiem pobranych plików (jeśli jest widoczny).</translation>
 <translation id="8234414138295101081">Obróć ekran o 90 stopni</translation>
-<translation id="8264941229485248811">Pokaż lub ukryj inspektora z Narzędzi dla programistów</translation>
+<translation id="8264941229485248811">Pokaż lub ukryj inspektora z Narzędzi dla deweloperów</translation>
 <translation id="836869401750819675">Otwórz stronę Pobrane pliki</translation>
 <translation id="8388247778047144397">Przeciągnij link na pusty obszar na pasku kart</translation>
 <translation id="8389638407792712197">Otwórz nowe okno</translation>

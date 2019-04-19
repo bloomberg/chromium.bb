@@ -408,7 +408,6 @@
 <translation id="1639239467298939599">లోడ్ అవుతోంది</translation>
 <translation id="163993578339087550">మీరు అర్హత ఉన్న Chrome OS పరికరాన్ని ఉపయోగిస్తున్నారని <ph name="SERVICE_NAME" /> తనిఖీ చేయాలనుకుంటోంది.</translation>
 <translation id="1640283014264083726">RSA ఎన్‌క్రిప్షన్‌తో PKCS #1 MD4</translation>
-<translation id="1641113438599504367">సురక్షిత బ్రౌజింగ్</translation>
 <translation id="1642494467033190216">ఇతర డీబగ్గింగ్ ఫీచ‌ర్‌లను ప్రారంభించడానికి ముందు rootfs రక్షణను తీసివేసి, పునఃప్రారంభించాలి.</translation>
 <translation id="1643050526526937107">కేవలం సమకాలీకరించు</translation>
 <translation id="1643072738649235303">SHA-1తో X9.62 ECDSA సంతకం</translation>
@@ -788,7 +787,6 @@
 <translation id="2230051135190148440">CHAP</translation>
 <translation id="223106756035922488">నేటి డూడుల్‌ను వీక్షించడం కోసం క్లిక్ చేయండి</translation>
 <translation id="2231238007119540260">మీరు సర్వర్ ప్రమాణపత్రాన్ని తొలగిస్తే, సర్వర్ కోసం మీరు సాధారణ భద్రతా తనిఖీలను పునరుద్ధరించండి మరియు చెల్లుబాటు అయ్యే ప్రమాణపత్రాన్ని ఉపయోగించడానికి ఇది అవసరం.</translation>
-<translation id="2232379019872353004">కొంత సిస్టమ్ సమాచారం మరియు పేజీ కంటెంట్‌ను Googleకి పంపుతుంది</translation>
 <translation id="2232876851878324699">ఫైల్ దిగుమతి చెయ్యని ఒక ప్రమాణపత్రాన్ని కలిగి ఉంది:</translation>
 <translation id="2233502537820838181">&amp;మరింత సమాచారం</translation>
 <translation id="2234876718134438132">సింక్ మరియు Google సేవలు</translation>
@@ -3695,6 +3693,7 @@
 <translation id="6841186874966388268">లోపాలు</translation>
 <translation id="6843423766595476978">Ok Googleని పూర్తిగా సిద్ధం చేశారు</translation>
 <translation id="6845038076637626672">గరిష్టీకరించిన దాన్ని తెరువు</translation>
+<translation id="6845325883481699275">Chrome భద్రతను మెరుగుపరచడంలో సహాయం చేయండి</translation>
 <translation id="6848388270925200958">ఇప్పుడు, కేవలం ఈ పరికరంలో మాత్రమే ఉపయోగించగల కొన్ని కార్డ్‌లు మీ వద్ద ఉన్నాయి</translation>
 <translation id="6851497530878285708">యాప్ ప్రారంభించబడింది</translation>
 <translation id="6853388645642883916">అప్‌డేటర్ నిద్రావస్థలో ఉంది</translation>
@@ -4257,7 +4256,6 @@
 <translation id="7730449930968088409">మీ స్క్రీన్ కంటెంట్‌ని క్యాప్చర్ చేయండి</translation>
 <translation id="7732111077498238432">విధానం ద్వారా నెట్‌వర్క్ నియంత్రించబడుతుంది</translation>
 <translation id="7737238973539693982">Linux (బీటా)ని తొలగించండి</translation>
-<translation id="773905249182896430">ప్రమాదకరమైన సైట్‌ల నుండి మిమ్మల్ని మరియు మీ పరికరాన్ని రక్షిస్తుంది</translation>
 <translation id="7740996059027112821">ప్రామాణికం</translation>
 <translation id="7750228210027921155">చిత్రంలో చిత్రం</translation>
 <translation id="7751260505918304024">అన్నీ చూపించు</translation>
@@ -5065,7 +5063,6 @@
 <translation id="8978154919215542464">ఆన్‌లో ఉంది - ప్రతిదీ సమకాలీకరిస్తుంది</translation>
 <translation id="897939795688207351"><ph name="ORIGIN" />లో</translation>
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> - క్రాష్ అయ్యింది</translation>
-<translation id="8983677657449185470">సురక్షిత బ్రౌజింగ్‌ను మెరుగుపరచడంలో సహాయపడండి</translation>
 <translation id="8986362086234534611">మరిచిపోయారా</translation>
 <translation id="8986494364107987395">Googleకు ఆటోమేటిక్‌గా వినియోగ‌ గణాంకాలను, క్రాష్ నివేదికలను పంపు</translation>
 <translation id="8987927404178983737">నెల</translation>

@@ -92,7 +92,7 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="388648406173476553">I-customize at kontrolin ang Chromium. May kailangan kang pagtuunan ng pansin - mag-click para sa mga detalye.</translation>
 <translation id="3889543394854987837">I-click ang iyong pangalan upang buksan ang Chromium at simulan ang pagba-browse.</translation>
 <translation id="3898493977366060150">Pag-browse sa web gamit ang mga smart na feature ng Google</translation>
-<translation id="3931244652999881512">Puwedeng mapanganib ang file na ito kaya na-block ito ng Chromium. Pinoprotektahan ka ng Advanced na Proteksyon.</translation>
+<translation id="3931244652999881512">Maaaring mapanganib ang file na ito kaya na-block ito ng Chromium. Pinoprotektahan ka ng Advanced na Proteksyon.</translation>
 <translation id="3965668104013180445">{0,plural, =1{Magre-restart ang Chromium OS sa loob ng isang oras}one{Magre-restart ang Chromium OS sa loob ng # oras}other{Magre-restart ang Chromium OS sa loob ng # na oras}}</translation>
 <translation id="4036079820698952681">Tulungang pahusayin ang Chromium sa pamamagitan ng pag-ulat sa <ph name="BEGIN_LINK" />mga kasalukuyang setting<ph name="END_LINK" /></translation>
 <translation id="4050175100176540509">May available na mahahalagang pagpapahusay sa seguridad at mga bagong feature sa pinakabagong bersyon.</translation>
@@ -258,7 +258,7 @@ Pakitingnan ang iyong email sa <ph name="ACCOUNT_EMAIL" /> para sa mga karagdaga
 <translation id="8667808506758191620">Napapanahon ang iyong <ph name="DEVICE_TYPE" />.</translation>
 <translation id="8697124171261953979">Kinokontrol din nito kung anong pahina ang ipinapakita kapag sinimulan mo ang Chromium o naghanap mula sa Omnibox.</translation>
 <translation id="8704119203788522458">Ito ang iyong Chromium</translation>
-<translation id="8704255848199359374">Ginagamit nito ang parehong spellchecker na ginagamit sa paghahanap sa Google. Ipinapadala sa Google ang text na tina-type mo sa browser. Puwede mong baguhin palagi ang gawing ito sa mga setting.</translation>
+<translation id="8704255848199359374">Ginagamit nito ang parehong spellchecker na ginagamit sa paghahanap sa Google. Ipinapadala sa Google ang text na tina-type mo sa browser. Puwede mong baguhin palagi ang gawi na ito sa mga setting.</translation>
 <translation id="8796602469536043152">Kailangan ng Chromium ng pahintulot na i-access ang iyong camera at mikropono para sa site na ito</translation>
 <translation id="8803635938069941624">Mga tuntunin ng Chromium OS</translation>
 <translation id="8821041990367117597">Hindi mai-sync ng Chromium ang iyong data dahil hindi napapanahon ang mga detalye sa pag-sign in ng iyong account.</translation>

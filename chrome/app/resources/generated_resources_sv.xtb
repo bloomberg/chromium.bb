@@ -408,7 +408,6 @@
 <translation id="1639239467298939599">Läser in</translation>
 <translation id="163993578339087550"><ph name="SERVICE_NAME" /> vill kontrollera om du använder en Chrome OS-enhet som uppfyller villkoren.</translation>
 <translation id="1640283014264083726">PKCS #1 MD4 med RSA-kryptering</translation>
-<translation id="1641113438599504367">Säker webbsökning</translation>
 <translation id="1642494467033190216">Borttagning av rootfs-skydd och omstart krävs innan du kan aktivera andra felsökningsfunktioner.</translation>
 <translation id="1643050526526937107">Enbart synkronisering</translation>
 <translation id="1643072738649235303">X9.62 ECDSA-signatur med SHA-1</translation>
@@ -787,7 +786,6 @@
 <translation id="2230051135190148440">CHAP</translation>
 <translation id="223106756035922488">Klicka här om du vill visa dagens doodle</translation>
 <translation id="2231238007119540260">Om du tar bort ett servercertifikat återställer du de vanliga säkerhetskontrollerna för servern. Därefter måste servern använda ett giltigt certifikat.</translation>
-<translation id="2232379019872353004">Skickar viss information om systemet och sidors innehåll till Google</translation>
 <translation id="2232876851878324699">Filen innehöll ett certifikat och det importerades inte:</translation>
 <translation id="2233502537820838181">Mer information</translation>
 <translation id="2234876718134438132">Synk och Googles tjänster</translation>
@@ -3695,6 +3693,7 @@
 <translation id="6841186874966388268">Fel</translation>
 <translation id="6843423766595476978">Ok Google är klart att använda</translation>
 <translation id="6845038076637626672">Öppna maximerad</translation>
+<translation id="6845325883481699275">Bidra till att göra Chrome säkrare</translation>
 <translation id="6848388270925200958">Du har för närvarande några kort som bara kan användas på den här enheten</translation>
 <translation id="6851497530878285708">Appaktivering</translation>
 <translation id="6853388645642883916">Uppdateringstjänsten är i viloläge</translation>
@@ -4257,7 +4256,6 @@
 <translation id="7730449930968088409">Ta en bild av innehållet på skärmen</translation>
 <translation id="7732111077498238432">Nätverket styrs av en princip</translation>
 <translation id="7737238973539693982">Radera Linux (beta)</translation>
-<translation id="773905249182896430">Skyddar dig och enheten från skadliga webbplatser</translation>
 <translation id="7740996059027112821">Standard</translation>
 <translation id="7750228210027921155">Bild-i-bild</translation>
 <translation id="7751260505918304024">Visa alla</translation>
@@ -5068,7 +5066,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8978154919215542464">På – synkronisera allt</translation>
 <translation id="897939795688207351">På <ph name="ORIGIN" /></translation>
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> – kraschat</translation>
-<translation id="8983677657449185470">Bidra till att förbättra Säker webbsökning</translation>
 <translation id="8986362086234534611">Glöm</translation>
 <translation id="8986494364107987395">Skicka användningsstatistik och kraschrapporter till Google automatiskt</translation>
 <translation id="8987927404178983737">Månad</translation>

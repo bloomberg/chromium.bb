@@ -408,7 +408,6 @@
 <translation id="1639239467298939599">Γίνεται φόρτωση</translation>
 <translation id="163993578339087550">Η υπηρεσία <ph name="SERVICE_NAME" /> θέλει να ελέγξει εάν χρησιμοποιείτε μια κατάλληλη συσκευή Chrome OS.</translation>
 <translation id="1640283014264083726">PKCS #1 MD4 με κρυπτογράφηση RSA</translation>
-<translation id="1641113438599504367">Ασφαλής περιήγηση</translation>
 <translation id="1642494467033190216">Πριν από την ενεργοποίηση άλλων λειτουργιών εντοπισμού σφαλμάτων, απαιτείται κατάργηση της προστασίας rootfs και επανεκκίνηση.</translation>
 <translation id="1643050526526937107">Μόνο συγχρονισμός</translation>
 <translation id="1643072738649235303">Υπογραφή X9.62 ECDSA με SHA-1</translation>
@@ -788,7 +787,6 @@
 <translation id="2230051135190148440">CHAP</translation>
 <translation id="223106756035922488">Κάντε κλικ για να δείτε το σημερινό doodle</translation>
 <translation id="2231238007119540260">Εάν διαγράψετε ένα πιστοποιητικό διακομιστή, θα επαναφέρετε τους συνήθεις ελέγχους ασφαλείας για αυτό το διακομιστή και θα απαιτείται η χρήση ενός έγκυρου πιστοποιητικού.</translation>
-<translation id="2232379019872353004">Αποστέλλει ορισμένες πληροφορίες συστήματος και περιεχόμενο σελίδων στην Google</translation>
 <translation id="2232876851878324699">Το αρχείο περιείχε ένα πιστοποιητικό, το οποίο δεν εισάχθηκε: </translation>
 <translation id="2233502537820838181">&amp;Περισσότερες πληροφορίες</translation>
 <translation id="2234876718134438132">Συγχρονισμός και υπηρ. Google</translation>
@@ -3697,6 +3695,7 @@
 <translation id="6841186874966388268">Σφάλματα</translation>
 <translation id="6843423766595476978">Η εντολή "Ok Google" είναι έτοιμη</translation>
 <translation id="6845038076637626672">Άνοιγμα μεγιστοποιημένης εφαρμογής</translation>
+<translation id="6845325883481699275">Συμβάλετε στη βελτίωση της ασφάλειας του Chrome</translation>
 <translation id="6848388270925200958">Αυτήν τη στιγμή, έχετε ορισμένες κάρτες που μπορούν να χρησιμοποιηθούν μόνο σε αυτήν τη συσκευή</translation>
 <translation id="6851497530878285708">Η εφαρμογή ενεργοποιήθηκε</translation>
 <translation id="6853388645642883916">Το πρόγραμμα ενημέρωσης είναι σε αδράνεια</translation>
@@ -4259,7 +4258,6 @@
 <translation id="7730449930968088409">Εγγραφή του περιεχομένου της οθόνης σας</translation>
 <translation id="7732111077498238432">Το δίκτυο διέπεται από πολιτική</translation>
 <translation id="7737238973539693982">Διαγραφή Linux (beta)</translation>
-<translation id="773905249182896430">Προστατεύει εσάς και τη συσκευή σας από επικίνδυνους ιστοτόπους</translation>
 <translation id="7740996059027112821">Τυπική</translation>
 <translation id="7750228210027921155">Picture in picture</translation>
 <translation id="7751260505918304024">Προβολή όλων</translation>
@@ -5068,7 +5066,6 @@
 <translation id="8978154919215542464">Ενεργό - συγχρονισμός όλων</translation>
 <translation id="897939795688207351">Ενεργό <ph name="ORIGIN" /></translation>
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> - Παρουσίασε σφάλμα</translation>
-<translation id="8983677657449185470">Συμβάλλετε στη βελτίωση της Ασφαλούς περιήγησης</translation>
 <translation id="8986362086234534611">Διαγραφή από τη μνήμη</translation>
 <translation id="8986494364107987395">Αυτόματη αποστολή στατιστικών στοιχείων χρήσης και αναφορών σφαλμάτων στην Google</translation>
 <translation id="8987927404178983737">Μήνας</translation>

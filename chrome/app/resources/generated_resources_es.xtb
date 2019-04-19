@@ -408,7 +408,6 @@
 <translation id="1639239467298939599">Cargando</translation>
 <translation id="163993578339087550"><ph name="SERVICE_NAME" /> quiere comprobar si estás utilizando un dispositivo Chrome OS apto.</translation>
 <translation id="1640283014264083726">PKCS #1 MD4 con cifrado RSA</translation>
-<translation id="1641113438599504367">Navegación Segura</translation>
 <translation id="1642494467033190216">Para poder habilitar otras funciones de depuración, es necesario eliminar la protección de rootfs y reiniciar.</translation>
 <translation id="1643050526526937107">Solo sincronización</translation>
 <translation id="1643072738649235303">Firma X9.62 ECDSA con SHA-1</translation>
@@ -788,7 +787,6 @@
 <translation id="2230051135190148440">CHAP</translation>
 <translation id="223106756035922488">Haz clic para ver el doodle de hoy</translation>
 <translation id="2231238007119540260">Si eliminas un certificado de servidor, restablecerás las comprobaciones de seguridad habituales de ese servidor y necesitarás que este utilice un certificado válido.</translation>
-<translation id="2232379019872353004">Envía información del sistema y contenido de las páginas a Google</translation>
 <translation id="2232876851878324699">El archivo contenía un certificado, que no se ha importado:</translation>
 <translation id="2233502537820838181">&amp;Más información</translation>
 <translation id="2234876718134438132">Servicios de Google y sincronización</translation>
@@ -3693,6 +3691,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6841186874966388268">Errores</translation>
 <translation id="6843423766595476978">Ok Google ya se ha configurado</translation>
 <translation id="6845038076637626672">Abrir de forma maximizada</translation>
+<translation id="6845325883481699275">Ayudar a mejorar la seguridad de Chrome</translation>
 <translation id="6848388270925200958">Tienes algunas tarjetas que solo se pueden utilizar en este dispositivo</translation>
 <translation id="6851497530878285708">Aplicación habilitada</translation>
 <translation id="6853388645642883916">Herramienta de actualización no disponible</translation>
@@ -4255,7 +4254,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7730449930968088409">Captura contenido de la pantalla</translation>
 <translation id="7732111077498238432">La red está controlada por políticas</translation>
 <translation id="7737238973539693982">Eliminar Linux (Beta)</translation>
-<translation id="773905249182896430">Te protege a ti y a tu dispositivo frente a sitios web peligrosos</translation>
 <translation id="7740996059027112821">Estándar</translation>
 <translation id="7750228210027921155">Imagen en imagen</translation>
 <translation id="7751260505918304024">Mostrar todo</translation>
@@ -5066,7 +5064,6 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8978154919215542464">Activada: sincronizar todo</translation>
 <translation id="897939795688207351">En <ph name="ORIGIN" /></translation>
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" />: ha fallado</translation>
-<translation id="8983677657449185470">Ayudar a mejorar la función Navegación Segura</translation>
 <translation id="8986362086234534611">Dejar de recordar</translation>
 <translation id="8986494364107987395">Enviar automáticamente estadísticas de uso e informes sobre fallos a Google</translation>
 <translation id="8987927404178983737">Mes</translation>

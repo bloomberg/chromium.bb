@@ -403,7 +403,6 @@
 <translation id="1639239467298939599">ஏற்றுகிறது</translation>
 <translation id="163993578339087550"><ph name="SERVICE_NAME" /> நீங்கள் தகுதியான Chrome OS சாதனத்தைப் பயன்படுத்துகிறீர்களா என்பதைச் சரிபார்க்க விரும்புகிறது.</translation>
 <translation id="1640283014264083726">RSA குறியாக்கத்துடன் PKCS #1 MD4</translation>
-<translation id="1641113438599504367">பாதுகாப்பாக உலாவுதல்</translation>
 <translation id="1642494467033190216">வேறு பிழைத் திருத்த அம்சங்களை இயக்கும் முன், rootfs பாதுகாப்பை அகற்றி, மீண்டும் தொடங்க வேண்டும்.</translation>
 <translation id="1643050526526937107">ஒத்திசைவை மட்டும் இயக்கு</translation>
 <translation id="1643072738649235303">SHA-1 உடனான X9.62 ECDSA கையொப்பம்</translation>
@@ -780,7 +779,6 @@
 <translation id="2230051135190148440">CHAP</translation>
 <translation id="223106756035922488">இன்றைய doodleஐப் பார்க்க, கிளிக் செய்யவும்</translation>
 <translation id="2231238007119540260">நீங்கள் ஒரு சேவையக சான்றிதழை நீக்கினால், அந்த சேவையகத்திற்கான வழக்கமான பாதுகாப்பு சரிபார்ப்புகளை மீட்டமைக்கிறீர்கள் மற்றும் அது செல்லுபடியாகும் சான்றிதழைப் பயன்படுத்துமாறும் கோருகிறீர்கள்.</translation>
-<translation id="2232379019872353004">சில சாதனத் தகவலையும் பக்க உள்ளடக்கத்தையும் Googleக்கு அனுப்பும்</translation>
 <translation id="2232876851878324699">கோப்பில் ஒரு இறக்குமதி செய்யப்படாத சான்றிதழ் உள்ளது:</translation>
 <translation id="2233502537820838181">&amp;மேலும் தகவல்</translation>
 <translation id="2234876718134438132">ஒத்திசைவு &amp; Google சேவைகள்</translation>
@@ -3659,6 +3657,7 @@
 <translation id="6841186874966388268">பிழைகள்</translation>
 <translation id="6843423766595476978">Ok Google அமைக்கப்பட்டுவிட்டது</translation>
 <translation id="6845038076637626672">பெரிதாக்கப்பட்டதை திற</translation>
+<translation id="6845325883481699275">Chromeமின் பாதுகாப்பை மேம்படுத்த உதவுக</translation>
 <translation id="6848388270925200958">தற்போது, இந்தச் சாதனத்தில் மட்டுமே பயன்படுத்தக்கூடிய சில கார்டுகள் உள்ளன</translation>
 <translation id="6851497530878285708">பயன்பாடு இயக்கப்பட்டது</translation>
 <translation id="6853388645642883916">புதுப்பிப்பான் செயலில் இல்லை</translation>
@@ -4206,7 +4205,6 @@
 <translation id="7730449930968088409">உங்கள் திரையின் உள்ளடக்கத்தைப் பதிவுசெய்யலாம்</translation>
 <translation id="7732111077498238432">இது கொள்கையால் கட்டுப்படுத்தப்படும் நெட்வொர்க்</translation>
 <translation id="7737238973539693982">Linuxஸை (பீட்டா) நீக்கு</translation>
-<translation id="773905249182896430">ஆபத்தான தளங்களிலிருந்து உங்களையும் உங்கள் சாதனத்தையும் பாதுகாக்கும்</translation>
 <translation id="7740996059027112821">நிலையானது</translation>
 <translation id="7750228210027921155">பிக்ச்சர்-இன்-பிக்ச்சர்</translation>
 <translation id="7751260505918304024">அனைத்தையும் காண்பி</translation>
@@ -5015,7 +5013,6 @@
 <translation id="8978154919215542464">இயக்கத்திலுள்ளது - அனைத்தையும் ஒத்திசை</translation>
 <translation id="897939795688207351"><ph name="ORIGIN" /> இல்</translation>
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> - சிதைந்துவிட்டது</translation>
-<translation id="8983677657449185470">பாதுகாப்பான உலாவலை மேம்படுத்த உதவுக</translation>
 <translation id="8986362086234534611">மற</translation>
 <translation id="8986494364107987395">பயன்பாட்டுப் புள்ளிவிவரங்களையும் சிதைவு அறிக்கைகளையும் தானாகவே Google க்கு அனுப்பு</translation>
 <translation id="8987927404178983737">மாதம்</translation>

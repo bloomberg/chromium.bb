@@ -412,7 +412,6 @@
 <translation id="1639239467298939599">Loading</translation>
 <translation id="163993578339087550"><ph name="SERVICE_NAME" /> wants to check if you are using an eligible Chrome OS device.</translation>
 <translation id="1640283014264083726">PKCS #1 MD4 With RSA Encryption</translation>
-<translation id="1641113438599504367">Safe Browsing</translation>
 <translation id="1642494467033190216">A removal of rootfs protection and restart is required before enabling other debugging features.</translation>
 <translation id="1643050526526937107">Just sync</translation>
 <translation id="1643072738649235303">X9.62 ECDSA Signature with SHA-1</translation>
@@ -794,7 +793,6 @@
 <translation id="2230051135190148440">CHAP</translation>
 <translation id="223106756035922488">Click to view today’s doodle</translation>
 <translation id="2231238007119540260">If you delete a server certificate, you restore the usual security checks for that server and require that it uses a valid certificate.</translation>
-<translation id="2232379019872353004">Sends some system information and page content to Google</translation>
 <translation id="2232876851878324699">The file contained one certificate, which was not imported:</translation>
 <translation id="2233502537820838181">&amp;More information</translation>
 <translation id="2234876718134438132">Sync and Google services</translation>
@@ -3721,6 +3719,7 @@
 <translation id="6841186874966388268">Errors</translation>
 <translation id="6843423766595476978">"Ok Google" is ready</translation>
 <translation id="6845038076637626672">Open Maximised</translation>
+<translation id="6845325883481699275">Help improve Chrome security</translation>
 <translation id="6848388270925200958">At the moment, you have some cards that can only be used on this device</translation>
 <translation id="6851497530878285708">App Enabled</translation>
 <translation id="6853388645642883916">Updater sleeping</translation>
@@ -4289,7 +4288,6 @@
 <translation id="7730449930968088409">Capture content of your screen</translation>
 <translation id="7732111077498238432">Network is policy controlled</translation>
 <translation id="7737238973539693982">Delete Linux (Beta)</translation>
-<translation id="773905249182896430">Protects you and your device from dangerous sites</translation>
 <translation id="7740996059027112821">Standard</translation>
 <translation id="7750228210027921155">Picture-in-picture</translation>
 <translation id="7751260505918304024">Show all</translation>
@@ -5105,7 +5103,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8978154919215542464">On – sync everything</translation>
 <translation id="897939795688207351">On <ph name="ORIGIN" /></translation>
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> – Crashed</translation>
-<translation id="8983677657449185470">Help improve Safe Browsing</translation>
 <translation id="8986362086234534611">Forget</translation>
 <translation id="8986494364107987395">Automatically send usage statistics and crash reports to Google</translation>
 <translation id="8987927404178983737">Month</translation>

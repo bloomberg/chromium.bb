@@ -408,7 +408,6 @@
 <translation id="1639239467298939599">Se încarcă</translation>
 <translation id="163993578339087550"><ph name="SERVICE_NAME" /> dorește să verifice dacă folosești un dispozitiv cu sistem de operare Chrome eligibil.</translation>
 <translation id="1640283014264083726">PKCS # 1 MD4 cu criptare RSA</translation>
-<translation id="1641113438599504367">Navigare sigură</translation>
 <translation id="1642494467033190216">Înainte de activarea altor funcții de remediere a erorilor, trebuie să elimini protecția sistemului rootfs și să repornești.</translation>
 <translation id="1643050526526937107">Doar sincronizare</translation>
 <translation id="1643072738649235303">Semnătură X9.62 ECDSA cu SHA-1</translation>
@@ -788,7 +787,6 @@
 <translation id="2230051135190148440">CHAP</translation>
 <translation id="223106756035922488">Dă clic pentru a vedea doodle-ul de astăzi</translation>
 <translation id="2231238007119540260">Dacă ștergi un certificat de server, restabilești verificările de securitate obișnuite pentru serverul respectiv și soliciți utilizarea unui certificat valid.</translation>
-<translation id="2232379019872353004">Trimite la Google anumite informații despre sistem și conținutul paginii</translation>
 <translation id="2232876851878324699">Fișierul conținea un certificat, care nu a fost importat:</translation>
 <translation id="2233502537820838181">&amp;Mai multe informații</translation>
 <translation id="2234876718134438132">Sincronizarea și serviciile Google</translation>
@@ -3696,6 +3694,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="6841186874966388268">Erori</translation>
 <translation id="6843423766595476978">Ok Google este configurat</translation>
 <translation id="6845038076637626672">Deschideți aplicația maximizată</translation>
+<translation id="6845325883481699275">Contribuie la îmbunătățirea securității pentru Chrome</translation>
 <translation id="6848388270925200958">În acest moment ai câteva carduri care pot fi folosite doar pe acest dispozitiv.</translation>
 <translation id="6851497530878285708">Aplicația a fost activată</translation>
 <translation id="6853388645642883916">Utilitarul de actualizare este inactiv</translation>
@@ -4258,7 +4257,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="7730449930968088409">Capturează conținutul ecranului</translation>
 <translation id="7732111077498238432">Rețeaua este controlată de politică</translation>
 <translation id="7737238973539693982">Șterge Linux (Beta)</translation>
-<translation id="773905249182896430">Protecție împotriva site-urilor periculoase</translation>
 <translation id="7740996059027112821">Standard</translation>
 <translation id="7750228210027921155">Picture-in-picture</translation>
 <translation id="7751260505918304024">Afișați-le pe toate</translation>
@@ -5069,7 +5067,6 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="8978154919215542464">Activată – sincronizează tot</translation>
 <translation id="897939795688207351">Pe <ph name="ORIGIN" /></translation>
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> – s-a blocat</translation>
-<translation id="8983677657449185470">Contribuie la îmbunătățirea Navigării sigure</translation>
 <translation id="8986362086234534611">Șterge</translation>
 <translation id="8986494364107987395">Trimite automat la Google statistici de utilizare și rapoarte de blocare</translation>
 <translation id="8987927404178983737">Lună</translation>
