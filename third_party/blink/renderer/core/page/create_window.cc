@@ -50,6 +50,9 @@
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/text/number_parsing_options.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_to_number.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_view.h"
 
 namespace blink {
 
@@ -73,7 +76,7 @@ WebWindowFeatures GetWindowFeaturesFromString(const String& feature_string) {
   unsigned key_begin, key_end;
   unsigned value_begin, value_end;
 
-  String buffer = feature_string.DeprecatedLower();
+  String buffer = feature_string.LowerASCII();
   unsigned length = buffer.length();
   for (unsigned i = 0; i < length;) {
     // skip to first non-separator (start of key name), but don't skip
@@ -126,20 +129,24 @@ WebWindowFeatures GetWindowFeaturesFromString(const String& feature_string) {
       value_end = i;
     }
 
-    String key_string(
-        buffer.Substring(key_begin, key_end - key_begin).LowerASCII());
-    String value_string(
-        buffer.Substring(value_begin, value_end - value_begin).LowerASCII());
+    if (key_begin == key_end)
+      continue;
+
+    StringView key_string(buffer, key_begin, key_end - key_begin);
+    StringView value_string(buffer, value_begin, value_end - value_begin);
 
     // Listing a key with no value is shorthand for key=yes
     int value;
-    if (value_string.IsEmpty() || value_string == "yes")
+    if (value_string.IsEmpty() || value_string == "yes") {
       value = 1;
-    else
-      value = value_string.ToInt();
-
-    if (key_string.IsEmpty())
-      continue;
+    } else if (value_string.Is8Bit()) {
+      value = CharactersToInt(value_string.Characters8(), value_string.length(),
+                              WTF::NumberParsingOptions::kLoose, nullptr);
+    } else {
+      value =
+          CharactersToInt(value_string.Characters16(), value_string.length(),
+                          WTF::NumberParsingOptions::kLoose, nullptr);
+    }
 
     if (!ui_features_were_disabled && key_string != "noopener" &&
         key_string != "noreferrer") {
