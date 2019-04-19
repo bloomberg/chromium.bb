@@ -427,6 +427,7 @@ struct weston_data_source {
 	struct weston_seat *seat;
 	bool accepted;
 	bool actions_set;
+	bool set_selection;
 	uint32_t dnd_actions;
 	enum wl_data_device_manager_dnd_action current_dnd_action;
 	enum wl_data_device_manager_dnd_action compositor_action;
