@@ -86,6 +86,9 @@ var eventAttributes = {
   // kChromeOSJank
   505: {color: '#ff0000', name: 'Chrome composition jank', width: 1.0},
 
+  // kCustomEvent
+  600: {color: '#7cb342', name: 'Custom event', width: 1.0},
+
   // Service events.
   // kTimeMark
   10000: {color: '#fff', name: 'Time mark', width: 0.75},
@@ -652,6 +655,7 @@ class EventBands {
     var eventIconRadius = 4;
     var eventNameOffset = 78;
     var verticalGap = 5;
+    var intentOffset = 12;
     var lineHeight = 16;
     var fontSize = 12;
     var width = 220;
@@ -687,15 +691,23 @@ class EventBands {
       // Show the global event info.
       var attributes = eventAttributes[globalEvent[0]];
       SVG.addText(
-          svg, horizontalGap, yOffset, 12,
+          svg, horizontalGap, yOffset, fontSize,
           attributes.name + ' ' + timestempToMsText(globalEvent[1]) + ' ms.');
+      yOffset += lineHeight;
+      // Render content if exists.
+      if (globalEvent.length > 2) {
+        SVG.addText(
+            svg, horizontalGap + intentOffset, yOffset, fontSize,
+            globalEvent[2]);
+        yOffset += lineHeight;
+      }
     } else if (index < 0 || eventBand.isEndOfSequence(index)) {
       // In case cursor points to idle event, show its interval.
       var startIdle = index < 0 ? 0 : eventBand.events[index][1];
       var endIdle =
           nextIndex < 0 ? this.maxTimestamp : eventBand.events[nextIndex][1];
       SVG.addText(
-          svg, horizontalGap, yOffset, 12,
+          svg, horizontalGap, yOffset, fontSize,
           'Idle ' + timestempToMsText(startIdle) + '...' +
               timestempToMsText(endIdle) + ' ms.');
       yOffset += lineHeight;
@@ -1327,5 +1339,7 @@ function setGraphicBuffersModel(model) {
     activityBands.addGlobal(new Events(
         view.global_events, 106 /* kBufferFillJank */,
         106 /* kBufferFillJank */));
+    activityBands.addGlobal(new Events(
+        view.global_events, 600 /* kCustomEvent */, 600 /* kCustomEvent */));
   }
 }

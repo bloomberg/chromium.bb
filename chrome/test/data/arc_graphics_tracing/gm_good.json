@@ -9,7 +9,7 @@
    "views": [ {
       "activity": "com.android.vending/com.android.vending.AssetBrowserActivity",
       "buffers": [ [ [ 200, 0.0 ], [ 201, 149.0 ] ], [ [ 300, 168.0 ], [ 202, 173.0 ] ] ],
-      "global_events": [ ],
+      "global_events": [ [ 600, 808.0, "CustomEvent" ] ],
       "task_id": 6
    } ]
 }

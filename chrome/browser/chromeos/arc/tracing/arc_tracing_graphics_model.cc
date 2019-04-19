@@ -10,6 +10,7 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/no_destructor.h"
+#include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "base/trace_event/common/trace_event_common.h"
 #include "chrome/browser/chromeos/arc/tracing/arc_graphics_jank_detector.h"
@@ -25,6 +26,8 @@ namespace {
 using BufferEvent = ArcTracingGraphicsModel::BufferEvent;
 using BufferEvents = ArcTracingGraphicsModel::BufferEvents;
 using BufferEventType = ArcTracingGraphicsModel::BufferEventType;
+
+constexpr char kCustomTracePrefix[] = "customTrace";
 
 constexpr char kUnknownActivity[] = "unknown";
 
@@ -532,6 +535,30 @@ BufferToEvents GetChromeEvents(
   return per_buffer_chrome_events;
 }
 
+void ScanForCustomEvents(
+    const ArcTracingEvent* event,
+    ArcTracingGraphicsModel::BufferEvents* out_custom_events) {
+  if (base::StartsWith(event->GetName(), kCustomTracePrefix,
+                       base::CompareCase::SENSITIVE)) {
+    DCHECK(!event->GetArgs() || event->GetArgs()->empty());
+    out_custom_events->emplace_back(
+        ArcTracingGraphicsModel::BufferEventType::kCustomEvent,
+        event->GetTimestamp(),
+        event->GetName().substr(base::size(kCustomTracePrefix) - 1));
+  }
+  for (const auto& child : event->children())
+    ScanForCustomEvents(child.get(), out_custom_events);
+}
+
+// Extracts custom events from the model. Custom events start from customTrace
+ArcTracingGraphicsModel::BufferEvents GetCustomEvents(
+    const ArcTracingModel& common_model) {
+  ArcTracingGraphicsModel::BufferEvents custom_events;
+  for (const ArcTracingEvent* root : common_model.GetRoots())
+    ScanForCustomEvents(root, &custom_events);
+  return custom_events;
+}
+
 // Helper that finds a event of particular type in the list of events |events|
 // starting from the index |start_index|. Returns |kInvalidBufferIndex| if event
 // cannot be found.
@@ -764,6 +791,12 @@ base::ListValue SerializeEvents(
     event_value.GetList().push_back(base::Value(static_cast<int>(event.type)));
     event_value.GetList().push_back(
         base::Value(static_cast<double>(event.timestamp)));
+    if (event.type == BufferEventType::kCustomEvent) {
+      DCHECK(!event.content.empty());
+      event_value.GetList().push_back(base::Value(event.content));
+    } else {
+      DCHECK(event.content.empty());
+    }
     list.GetList().emplace_back(std::move(event_value));
   }
   return list;
@@ -799,7 +832,7 @@ bool LoadEvents(const base::Value* value,
     return false;
   int64_t previous_timestamp = 0;
   for (const auto& entry : value->GetList()) {
-    if (!entry.is_list() || entry.GetList().size() != 2)
+    if (!entry.is_list() || entry.GetList().size() < 2)
       return false;
     if (!entry.GetList()[0].is_int())
       return false;
@@ -817,7 +850,9 @@ bool LoadEvents(const base::Value* value,
         !IsInRange(type, BufferEventType::kVsync,
                    BufferEventType::kSurfaceFlingerCompositionJank) &&
         !IsInRange(type, BufferEventType::kChromeOSDraw,
-                   BufferEventType::kChromeOSJank)) {
+                   BufferEventType::kChromeOSJank) &&
+        !IsInRange(type, BufferEventType::kCustomEvent,
+                   BufferEventType::kCustomEvent)) {
       return false;
     }
 
@@ -826,8 +861,15 @@ bool LoadEvents(const base::Value* value,
     const int64_t timestamp = entry.GetList()[1].GetDouble();
     if (timestamp < previous_timestamp)
       return false;
-    out_events->emplace_back(
-        ArcTracingGraphicsModel::BufferEvent(type, timestamp));
+    if (type == BufferEventType::kCustomEvent) {
+      if (entry.GetList().size() != 3 || !entry.GetList()[2].is_string())
+        return false;
+      out_events->emplace_back(type, timestamp, entry.GetList()[2].GetString());
+    } else {
+      if (entry.GetList().size() != 2)
+        return false;
+      out_events->emplace_back(type, timestamp);
+    }
     previous_timestamp = timestamp;
   }
   return true;
@@ -871,9 +913,15 @@ ArcTracingGraphicsModel::BufferEvent::BufferEvent(BufferEventType type,
                                                   int64_t timestamp)
     : type(type), timestamp(timestamp) {}
 
+ArcTracingGraphicsModel::BufferEvent::BufferEvent(BufferEventType type,
+                                                  int64_t timestamp,
+                                                  const std::string& content)
+    : type(type), timestamp(timestamp), content(content) {}
+
 bool ArcTracingGraphicsModel::BufferEvent::operator==(
     const BufferEvent& other) const {
-  return type == other.type && timestamp == other.timestamp;
+  return type == other.type && timestamp == other.timestamp &&
+         content == other.content;
 }
 
 ArcTracingGraphicsModel::ViewId::ViewId(int task_id,
@@ -960,11 +1008,18 @@ bool ArcTracingGraphicsModel::Build(const ArcTracingModel& common_model) {
     return false;
   }
 
+  // TODO(khmel): Add more information to resolve owner of custom events. At
+  // this moment add custom events to each view.
+  const ArcTracingGraphicsModel::BufferEvents custom_events =
+      GetCustomEvents(common_model);
   for (auto& it : view_buffers_) {
     AddJanks(&it.second, BufferEventType::kBufferQueueDequeueStart,
              BufferEventType::kBufferFillJank);
     AddJanks(&it.second, BufferEventType::kExoSurfaceAttach,
              BufferEventType::kExoJank);
+    it.second.global_events().insert(it.second.global_events().end(),
+                                     custom_events.begin(),
+                                     custom_events.end());
     SortBufferEventsByTimestamp(&it.second.global_events());
   }
 

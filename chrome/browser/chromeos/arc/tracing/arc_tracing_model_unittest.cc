@@ -102,7 +102,8 @@ bool ValidateGrahpicsEvents(const GraphicsEvents& events,
   return true;
 }
 
-bool TestGraphicsModelLoad(const std::string& name) {
+std::unique_ptr<ArcTracingGraphicsModel> LoadGraphicsModel(
+    const std::string& name) {
   base::FilePath base_path;
   base::PathService::Get(chrome::DIR_TEST_DATA, &base_path);
   const base::FilePath tracing_path =
@@ -110,8 +111,21 @@ bool TestGraphicsModelLoad(const std::string& name) {
   std::string json_data;
   base::ReadFileToString(tracing_path, &json_data);
   DCHECK(!json_data.empty());
-  ArcTracingGraphicsModel model;
-  return model.LoadFromJson(json_data);
+  std::unique_ptr<ArcTracingGraphicsModel> model =
+      std::make_unique<ArcTracingGraphicsModel>();
+  if (!model->LoadFromJson(json_data))
+    return nullptr;
+  return model;
+}
+
+// Ensures |model1| is equal to |model2|.
+void EnsureGraphicsModelsEqual(const ArcTracingGraphicsModel& model1,
+                               const ArcTracingGraphicsModel& model2) {
+  EXPECT_EQ(model1.android_top_level(), model2.android_top_level());
+  EXPECT_EQ(model1.chrome_top_level(), model2.chrome_top_level());
+  EXPECT_EQ(model1.view_buffers(), model2.view_buffers());
+  EXPECT_EQ(model1.system_model(), model2.system_model());
+  EXPECT_EQ(model1.duration(), model2.duration());
 }
 
 }  // namespace
@@ -232,15 +246,7 @@ TEST_F(ArcTracingModelTest, TopLevel) {
   EXPECT_TRUE(graphics_model_loaded.LoadFromJson(graphics_model_data));
 
   // Models should match.
-  EXPECT_EQ(graphics_model.android_top_level(),
-            graphics_model_loaded.android_top_level());
-  EXPECT_EQ(graphics_model.chrome_top_level(),
-            graphics_model_loaded.chrome_top_level());
-  EXPECT_EQ(graphics_model.view_buffers(),
-            graphics_model_loaded.view_buffers());
-  EXPECT_EQ(graphics_model.system_model(),
-            graphics_model_loaded.system_model());
-  EXPECT_EQ(graphics_model.duration(), graphics_model_loaded.duration());
+  EnsureGraphicsModelsEqual(graphics_model, graphics_model_loaded);
 }
 
 TEST_F(ArcTracingModelTest, Event) {
@@ -407,11 +413,18 @@ TEST_F(ArcTracingModelTest, TimeMinMax) {
   EXPECT_EQ(0U, model_with_empty_time_filter.GetRoots().size());
 }
 
-TEST_F(ArcTracingModelTest, GraphicsModelLoad) {
-  EXPECT_TRUE(TestGraphicsModelLoad("gm_good.json"));
-  EXPECT_FALSE(TestGraphicsModelLoad("gm_bad_no_view_buffers.json"));
-  EXPECT_FALSE(TestGraphicsModelLoad("gm_bad_no_view_desc.json"));
-  EXPECT_FALSE(TestGraphicsModelLoad("gm_bad_wrong_timestamp.json"));
+TEST_F(ArcTracingModelTest, GraphicsModelLoadSerialize) {
+  std::unique_ptr<ArcTracingGraphicsModel> model =
+      LoadGraphicsModel("gm_good.json");
+  ASSERT_TRUE(model);
+  ArcTracingGraphicsModel test_model;
+  EXPECT_TRUE(test_model.LoadFromJson(model->SerializeToJson()));
+  EnsureGraphicsModelsEqual(*model, test_model);
+
+  EXPECT_TRUE(LoadGraphicsModel("gm_good.json"));
+  EXPECT_FALSE(LoadGraphicsModel("gm_bad_no_view_buffers.json"));
+  EXPECT_FALSE(LoadGraphicsModel("gm_bad_no_view_desc.json"));
+  EXPECT_FALSE(LoadGraphicsModel("gm_bad_wrong_timestamp.json"));
 }
 
 }  // namespace arc
