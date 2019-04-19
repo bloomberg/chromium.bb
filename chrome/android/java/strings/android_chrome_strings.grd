@@ -2960,23 +2960,11 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       <message name="IDS_NTP_LEARN_MORE_ABOUT_SUGGESTED_CONTENT" desc="Text in the footer of the New Tab Page. Part of the text is a link to a help center page where the user can learn more about suggested content.">
         <ph name="BEGIN_LINK">&lt;link&gt;</ph>Learn more<ph name="END_LINK">&lt;/link&gt;</ph> about suggested content
       </message>
-      <message name="IDS_NTP_ALL_DISMISSED_BODY_TEXT_MORNING" desc="Body text shown in the morning on the New Tab Page when all suggested content has been dismissed.">
-        More articles will appear soon. Enjoy your morning!
-      </message>
-      <message name="IDS_NTP_ALL_DISMISSED_BODY_TEXT_AFTERNOON" desc="Body text shown in the afternoon on the New Tab Page when all suggested content has been dismissed.">
-        More articles will appear soon. Enjoy your afternoon!
-      </message>
-      <message name="IDS_NTP_ALL_DISMISSED_BODY_TEXT_EVENING" desc="Body text shown in the evening on the New Tab Page when all suggested content has been dismissed.">
-        More articles will appear soon. Enjoy your evening!
-      </message>
       <message name="IDS_NTP_SUGGESTIONS_FETCH_FAILED" desc="Snackbar text shown when the user presses the More button to get more suggestions, but this fails (eg, no internet connectivity).">
         Can’t get suggestions
       </message>
       <message name="IDS_NTP_SUGGESTIONS_FETCH_NO_NEW_SUGGESTIONS" desc="Snackbar text shown when the user presses the More button to get more suggestions, the fetch succeeds but provides no new suggestions.">
         No new suggestions
-      </message>
-      <message name="IDS_NTP_ALL_DISMISSED_REFRESH" desc="Text label for button to refresh the New Tab Page when all suggested content has been dismissed. [CHAR-LIMIT=20]">
-        Refresh
       </message>
 
       <!-- Explore sites strings -->
