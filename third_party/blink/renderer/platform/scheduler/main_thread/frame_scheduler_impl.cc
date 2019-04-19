@@ -1083,7 +1083,7 @@ uint64_t
 FrameSchedulerImpl::GetActiveFeaturesTrackedForBackForwardCacheMetricsMask()
     const {
   auto result = back_forward_cache_opt_outs_.to_ullong();
-  static_assert(static_cast<size_t>(SchedulingPolicy::Feature::kCount) <=
+  static_assert(static_cast<size_t>(SchedulingPolicy::Feature::kMaxValue) <
                     sizeof(result) * 8,
                 "Number of the features should allow a bitmask to fit into "
                 "64-bit integer");

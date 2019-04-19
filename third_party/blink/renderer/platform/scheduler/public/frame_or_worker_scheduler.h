@@ -76,7 +76,7 @@ class PLATFORM_EXPORT FrameOrWorkerScheduler {
                                      SchedulingPolicy policy,
                                      base::WeakPtr<FrameOrWorkerScheduler>);
 
-    SchedulingPolicy::Feature feature_ = SchedulingPolicy::Feature::kCount;
+    SchedulingPolicy::Feature feature_ = SchedulingPolicy::Feature::kMaxValue;
     SchedulingPolicy policy_;
     base::WeakPtr<FrameOrWorkerScheduler> scheduler_;
 

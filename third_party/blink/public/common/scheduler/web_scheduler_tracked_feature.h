@@ -31,8 +31,11 @@ enum class WebSchedulerTrackedFeature {
   kDocumentLoaded = 13,
   kDedicatedWorkerOrWorklet = 14,
   kOutstandingNetworkRequest = 15,
+  // TODO(altimin): This doesn't include service worker-controlled origins.
+  // We need to track them too.
+  kServiceWorkerControlledPage = 16,
 
-  kCount = 16
+  kMaxValue = kServiceWorkerControlledPage
 };
 
 }  // namespace scheduler
