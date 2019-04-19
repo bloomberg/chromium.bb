@@ -1113,6 +1113,24 @@ void AppListControllerImpl::NotifyAppListTargetVisibilityChanged(bool visible) {
 ////////////////////////////////////////////////////////////////////////////////
 // Private used only:
 
+void AppListControllerImpl::OnHomeLauncherDragStart() {
+  app_list::AppListView* app_list_view = presenter_.GetView();
+  DCHECK(app_list_view);
+  app_list_view->OnHomeLauncherDragStart();
+}
+
+void AppListControllerImpl::OnHomeLauncherDragInProgress() {
+  app_list::AppListView* app_list_view = presenter_.GetView();
+  DCHECK(app_list_view);
+  app_list_view->OnHomeLauncherDragInProgress();
+}
+
+void AppListControllerImpl::OnHomeLauncherDragEnd() {
+  app_list::AppListView* app_list_view = presenter_.GetView();
+  DCHECK(app_list_view);
+  app_list_view->OnHomeLauncherDragEnd();
+}
+
 syncer::StringOrdinal AppListControllerImpl::GetOemFolderPos() {
   // Place the OEM folder just after the web store, which should always be
   // followed by a pre-installed app (e.g. Search), so the poosition should be

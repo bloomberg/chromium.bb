@@ -173,6 +173,10 @@ aura::Window* GetDividerWindow() {
       ->GetNativeWindow();
 }
 
+HomeScreenDelegate* GetHomeScreenDelegate() {
+  return Shell::Get()->home_screen_controller()->delegate();
+}
+
 }  // namespace
 
 // Class which allows us to make modifications to a window, and removes those
@@ -307,6 +311,10 @@ bool HomeLauncherGestureHandler::OnPressEvent(Mode mode,
         mode == Mode::kSlideUpToShow /*showing*/, display_.id());
   }
 
+  HomeScreenDelegate* home_screen_delegate = GetHomeScreenDelegate();
+  DCHECK(home_screen_delegate);
+  home_screen_delegate->OnHomeLauncherDragStart();
+
   UpdateWindows(0.0, /*animate=*/false);
   return true;
 }
@@ -323,6 +331,11 @@ bool HomeLauncherGestureHandler::OnScrollEvent(const gfx::Point& location,
   last_scroll_y_ = scroll_y;
 
   DCHECK(display_.is_valid());
+
+  HomeScreenDelegate* home_screen_delegate = GetHomeScreenDelegate();
+  DCHECK(home_screen_delegate);
+  home_screen_delegate->OnHomeLauncherDragInProgress();
+
   UpdateWindows(GetHeightInWorkAreaAsRatio(location, display_.work_area()),
                 /*animate=*/false);
   return true;
@@ -331,6 +344,14 @@ bool HomeLauncherGestureHandler::OnScrollEvent(const gfx::Point& location,
 bool HomeLauncherGestureHandler::OnReleaseEvent(const gfx::Point& location) {
   if (IsAnimating())
     return false;
+
+  // In clamshell mode, AppListView::SetIsInDrag is called explicitly so it
+  // does not need the notification from HomeLauncherGestureHandler.
+  if (IsTabletMode()) {
+    HomeScreenDelegate* home_screen_delegate = GetHomeScreenDelegate();
+    DCHECK(home_screen_delegate);
+    home_screen_delegate->OnHomeLauncherDragEnd();
+  }
 
   if (!IsDragInProgress()) {
     if (GetActiveWindow()) {
@@ -353,6 +374,10 @@ bool HomeLauncherGestureHandler::OnReleaseEvent(const gfx::Point& location) {
 void HomeLauncherGestureHandler::Cancel() {
   if (!IsDragInProgress())
     return;
+
+  HomeScreenDelegate* home_screen_delegate = GetHomeScreenDelegate();
+  DCHECK(home_screen_delegate);
+  home_screen_delegate->OnHomeLauncherDragEnd();
 
   AnimateToFinalState();
   return;
@@ -487,8 +512,7 @@ void HomeLauncherGestureHandler::OnImplicitAnimationsCompleted() {
     }
   }
 
-  HomeScreenDelegate* home_screen_delegate =
-      Shell::Get()->home_screen_controller()->delegate();
+  HomeScreenDelegate* home_screen_delegate = GetHomeScreenDelegate();
   DCHECK(home_screen_delegate);
 
   // Return the app list to its original opacity and transform without
@@ -569,8 +593,7 @@ void HomeLauncherGestureHandler::UpdateSettings(
   if (IsDragInProgress())
     duration_ms = kAnimationDurationMs;
 
-  HomeScreenDelegate* home_screen_delegate =
-      Shell::Get()->home_screen_controller()->delegate();
+  HomeScreenDelegate* home_screen_delegate = GetHomeScreenDelegate();
   duration_ms = home_screen_delegate->GetOptionalAnimationDuration().value_or(
       duration_ms);
 
@@ -588,8 +611,7 @@ void HomeLauncherGestureHandler::UpdateWindows(double progress, bool animate) {
   const int y_position =
       gfx::Tween::IntValueBetween(progress, work_area.bottom(), work_area.y());
   const float opacity = gfx::Tween::FloatValueBetween(progress, 0.f, 1.f);
-  HomeScreenDelegate* home_screen_delegate =
-      Shell::Get()->home_screen_controller()->delegate();
+  HomeScreenDelegate* home_screen_delegate = GetHomeScreenDelegate();
   DCHECK(home_screen_delegate);
   home_screen_delegate->UpdateYPositionAndOpacityForHomeLauncher(
       y_position, opacity,

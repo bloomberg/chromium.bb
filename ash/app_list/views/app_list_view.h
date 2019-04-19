@@ -38,6 +38,8 @@ FORWARD_DECLARE_TEST(AppListControllerImplTest,
                      CheckAppListViewBoundsWhenVKeyboardEnabled);
 FORWARD_DECLARE_TEST(AppListControllerImplTest,
                      CheckAppListViewBoundsWhenDismissVKeyboard);
+FORWARD_DECLARE_TEST(AppListControllerImplMetricsTest,
+                     PresentationTimeRecordedForDragInTabletMode);
 }
 
 namespace app_list {
@@ -254,6 +256,11 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   // Returns a animation metrics reportre for state transition.
   ui::AnimationMetricsReporter* GetStateTransitionMetricsReporter();
 
+  // Called when drag in tablet mode starts/proceeds/ends.
+  void OnHomeLauncherDragStart();
+  void OnHomeLauncherDragInProgress();
+  void OnHomeLauncherDragEnd();
+
   // WindowObserver overrides:
   void OnWindowDestroying(aura::Window* window) override;
   void OnWindowBoundsChanged(aura::Window* window,
@@ -311,6 +318,8 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
                            CheckAppListViewBoundsWhenVKeyboardEnabled);
   FRIEND_TEST_ALL_PREFIXES(ash::AppListControllerImplTest,
                            CheckAppListViewBoundsWhenDismissVKeyboard);
+  FRIEND_TEST_ALL_PREFIXES(ash::AppListControllerImplMetricsTest,
+                           PresentationTimeRecordedForDragInTabletMode);
 
   // A widget observer that is responsible for keeping the AppListView state up
   // to date on closing.

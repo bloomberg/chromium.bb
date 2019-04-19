@@ -13,6 +13,9 @@
 #include "ash/home_screen/home_launcher_gesture_handler.h"
 #include "ash/home_screen/home_screen_controller.h"
 #include "ash/keyboard/ash_keyboard_controller.h"
+#include "ash/public/cpp/presentation_time_recorder.h"
+#include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
@@ -21,6 +24,7 @@
 #include "base/strings/string16.cc"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "ui/events/test/event_generator.h"
 
 namespace ash {
 
@@ -247,6 +251,14 @@ class AppListControllerImplMetricsTest : public AshTestBase {
   void SetUp() override {
     AshTestBase::SetUp();
     controller_ = ash::Shell::Get()->app_list_controller();
+    ash::PresentationTimeRecorder::SetReportPresentationTimeImmediatelyForTest(
+        true);
+  }
+
+  void TearDown() override {
+    ash::PresentationTimeRecorder::SetReportPresentationTimeImmediatelyForTest(
+        false);
+    AshTestBase::TearDown();
   }
 
   AppListControllerImpl* controller_;
@@ -307,6 +319,161 @@ TEST_F(AppListControllerImplMetricsTest, LogManyClicksInOneBucket) {
                                           4);
   histogram_tester_.ExpectUniqueSample(kAppListTileLaunchIndexAndQueryLength,
                                        32, 50);
+}
+
+// Verifies that the PresentationTimeRecorder works correctly for the home
+// launcher gesture drag in tablet mode (https://crbug.com/947105).
+TEST_F(AppListControllerImplMetricsTest,
+       PresentationTimeRecordedForDragInTabletMode) {
+  // Wait until the construction of TabletModeController finishes.
+  base::RunLoop().RunUntilIdle();
+
+  // Turn on the tablet mode.
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  EXPECT_TRUE(IsTabletMode());
+
+  // Create a window then press the home launcher button. Expect that |w| is
+  // hidden.
+  std::unique_ptr<aura::Window> w(
+      AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400)));
+  Shell::Get()
+      ->home_screen_controller()
+      ->home_launcher_gesture_handler()
+      ->ShowHomeLauncher(display::Screen::GetScreen()->GetPrimaryDisplay());
+  EXPECT_FALSE(w->IsVisible());
+  EXPECT_EQ(mojom::AppListViewState::kFullscreenAllApps,
+            GetAppListView()->app_list_state());
+
+  int delta_y = 1;
+  gfx::Point start = GetAppListView()
+                         ->get_fullscreen_widget_for_test()
+                         ->GetWindowBoundsInScreen()
+                         .top_right();
+  base::TimeTicks timestamp = base::TimeTicks::Now();
+
+  // Emulate to drag the launcher downward.
+  // Send SCROLL_START event. Check the presentation metrics values.
+  ui::GestureEvent start_event = ui::GestureEvent(
+      start.x(), start.y(), ui::EF_NONE, timestamp,
+      ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_BEGIN, 0, delta_y));
+  GetAppListView()->OnGestureEvent(&start_event);
+  histogram_tester_.ExpectTotalCount(
+      "Apps.StateTransition.Drag.PresentationTime.TabletMode", 0);
+  histogram_tester_.ExpectTotalCount(
+      "Apps.StateTransition.Drag.PresentationTime.MaxLatency.TabletMode", 0);
+
+  // Send SCROLL_UPDATE event. Check the presentation metrics values.
+  timestamp += base::TimeDelta::FromMilliseconds(25);
+  delta_y += 20;
+  start.Offset(0, 1);
+  ui::GestureEvent update_event = ui::GestureEvent(
+      start.x(), start.y(), ui::EF_NONE, timestamp,
+      ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_UPDATE, 0, delta_y));
+  GetAppListView()->OnGestureEvent(&update_event);
+  histogram_tester_.ExpectTotalCount(
+      "Apps.StateTransition.Drag.PresentationTime.TabletMode", 1);
+  histogram_tester_.ExpectTotalCount(
+      "Apps.StateTransition.Drag.PresentationTime.MaxLatency.TabletMode", 0);
+
+  // Send SCROLL_END event. Check the presentation metrics values.
+  timestamp += base::TimeDelta::FromMilliseconds(25);
+  start.Offset(0, 1);
+  ui::GestureEvent end_event =
+      ui::GestureEvent(start.x(), start.y() + delta_y, ui::EF_NONE, timestamp,
+                       ui::GestureEventDetails(ui::ET_GESTURE_END));
+  GetAppListView()->OnGestureEvent(&end_event);
+  histogram_tester_.ExpectTotalCount(
+      "Apps.StateTransition.Drag.PresentationTime.TabletMode", 1);
+  histogram_tester_.ExpectTotalCount(
+      "Apps.StateTransition.Drag.PresentationTime.MaxLatency.TabletMode", 1);
+
+  // After the gesture scroll event ends, the window shows.
+  EXPECT_TRUE(w->IsVisible());
+  ASSERT_TRUE(IsTabletMode());
+}
+
+// One edge case may do harm to the presentation metrics reporter for tablet
+// mode: the user may keep pressing on launcher while exiting the tablet mode by
+// rotating the lid. In this situation, OnHomeLauncherDragEnd is not triggered.
+// It is handled correctly now because the AppListView is always closed after
+// exiting the tablet mode. But it still has potential risk to break in future.
+// Write this test case for precaution (https://crbug.com/947105).
+TEST_F(AppListControllerImplMetricsTest,
+       PresentationMetricsForTabletNotRecordedInClamshell) {
+  // Wait until the construction of TabletModeController finishes.
+  base::RunLoop().RunUntilIdle();
+
+  // Turn on the tablet mode.
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  EXPECT_TRUE(IsTabletMode());
+
+  // Create a window then press the home launcher button. Expect that |w| is
+  // hidden.
+  std::unique_ptr<aura::Window> w(
+      AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400)));
+  Shell::Get()
+      ->home_screen_controller()
+      ->home_launcher_gesture_handler()
+      ->ShowHomeLauncher(display::Screen::GetScreen()->GetPrimaryDisplay());
+  EXPECT_FALSE(w->IsVisible());
+  EXPECT_EQ(mojom::AppListViewState::kFullscreenAllApps,
+            GetAppListView()->app_list_state());
+
+  gfx::Point start = GetAppListView()
+                         ->get_fullscreen_widget_for_test()
+                         ->GetWindowBoundsInScreen()
+                         .top_right();
+  base::TimeTicks timestamp = base::TimeTicks::Now();
+
+  // Emulate to drag the launcher downward.
+  // Send SCROLL_START event. Check the presentation metrics values.
+  ui::GestureEvent start_event = ui::GestureEvent(
+      start.x(), start.y(), ui::EF_NONE, timestamp,
+      ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_BEGIN, 0, 1));
+  GetAppListView()->OnGestureEvent(&start_event);
+
+  // Turn off the tablet mode before scrolling is finished.
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
+  EXPECT_FALSE(IsTabletMode());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(GetAppListView());
+
+  // Check metrics initial values.
+  histogram_tester_.ExpectTotalCount(
+      "Apps.StateTransition.Drag.PresentationTime.TabletMode", 0);
+  histogram_tester_.ExpectTotalCount(
+      "Apps.StateTransition.Drag.PresentationTime.MaxLatency.TabletMode", 0);
+
+  // Emulate to drag launcher from shelf. Then verifies the following things:
+  // (1) Metrics values for tablet mode are not recorded.
+  // (2) Metrics values for clamshell mode are recorded correctly.
+  gfx::Rect shelf_bounds =
+      GetPrimaryShelf()->shelf_widget()->GetWindowBoundsInScreen();
+  shelf_bounds.Intersect(
+      display::Screen::GetScreen()->GetPrimaryDisplay().bounds());
+  gfx::Point shelf_center = shelf_bounds.CenterPoint();
+  gfx::Point target_point =
+      display::Screen::GetScreen()->GetPrimaryDisplay().bounds().CenterPoint();
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->GestureScrollSequence(shelf_center, target_point,
+                                   base::TimeDelta::FromMicroseconds(500), 1);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(mojom::AppListViewState::kFullscreenAllApps,
+            GetAppListView()->app_list_state());
+  histogram_tester_.ExpectTotalCount(
+      "Apps.StateTransition.Drag.PresentationTime.TabletMode", 0);
+  histogram_tester_.ExpectTotalCount(
+      "Apps.StateTransition.Drag.PresentationTime.MaxLatency.TabletMode", 0);
+
+  // AppListView::UpdateYPositionAndOpacity is triggered by
+  // ShelfLayoutManager::StartGestureDrag and
+  // ShelfLayoutManager::UpdateGestureDrag. Note that scrolling step of event
+  // generator is 1. So the expected value is 2.
+  histogram_tester_.ExpectTotalCount(
+      "Apps.StateTransition.Drag.PresentationTime.ClamshellMode", 2);
+
+  histogram_tester_.ExpectTotalCount(
+      "Apps.StateTransition.Drag.PresentationTime.MaxLatency.ClamshellMode", 1);
 }
 
 }  // namespace ash
