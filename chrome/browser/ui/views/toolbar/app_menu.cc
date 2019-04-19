@@ -428,14 +428,17 @@ class AppMenu::CutCopyPasteView : public AppMenuView {
   gfx::Size CalculatePreferredSize() const override {
     // Returned height doesn't matter as MenuItemView forces everything to the
     // height of the menuitemview.
-    return gfx::Size(GetMaxChildViewPreferredWidth() * child_count(), 0);
+    return {GetMaxChildViewPreferredWidth() * int{children().size()}, 0};
   }
 
   void Layout() override {
     // All buttons are given the same width.
     int width = GetMaxChildViewPreferredWidth();
-    for (int i = 0; i < child_count(); ++i)
-      child_at(i)->SetBounds(i * width, 0, width, height());
+    int x = 0;
+    for (auto* child : children()) {
+      child->SetBounds(x, 0, width, height());
+      x += width;
+    }
   }
 
   // Overridden from ButtonListener.
@@ -447,8 +450,8 @@ class AppMenu::CutCopyPasteView : public AppMenuView {
   // Returns the max preferred width of all the children.
   int GetMaxChildViewPreferredWidth() const {
     int width = 0;
-    for (int i = 0; i < child_count(); ++i)
-      width = std::max(width, child_at(i)->GetPreferredSize().width());
+    for (const auto* child : children())
+      width = std::max(width, child->GetPreferredSize().width());
     return width;
   }
 
@@ -1072,8 +1075,8 @@ void AppMenu::Observe(int type,
 void AppMenu::PopulateMenu(MenuItemView* parent, MenuModel* model) {
   for (int i = 0, max = model->GetItemCount(); i < max; ++i) {
     // Add the menu item at the end.
-    int menu_index = parent->HasSubmenu() ?
-        parent->GetSubmenu()->child_count() : 0;
+    int menu_index =
+        parent->HasSubmenu() ? int{parent->GetSubmenu()->children().size()} : 0;
     MenuItemView* item =
         AddMenuItem(parent, menu_index, model, i, model->GetTypeAt(i));
 
@@ -1100,8 +1103,7 @@ void AppMenu::PopulateMenu(MenuItemView* parent, MenuModel* model) {
       case IDC_EXTENSIONS_OVERFLOW_MENU: {
         auto extension_toolbar =
             std::make_unique<ExtensionToolbarMenuView>(browser_, item);
-        for (int i = 0; i < extension_toolbar->contents()->child_count(); ++i) {
-          View* action_view = extension_toolbar->contents()->child_at(i);
+        for (View* action_view : extension_toolbar->contents()->children()) {
           action_view->SetBackground(std::make_unique<InMenuButtonBackground>(
               InMenuButtonBackground::ROUNDED_BUTTON));
         }

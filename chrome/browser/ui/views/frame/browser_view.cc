@@ -322,15 +322,13 @@ class OverlayViewTargeterDelegate : public views::ViewTargeterDelegate {
 
   bool DoesIntersectRect(const views::View* target,
                          const gfx::Rect& rect) const override {
-    for (int i = 0; i < target->child_count(); ++i) {
-      const views::View* child = target->child_at(i);
+    const auto& children = target->children();
+    const auto hits_child = [target, rect](const views::View* child) {
       gfx::RectF child_rect(rect);
       views::View::ConvertRectToTarget(target, child, &child_rect);
-      if (child->HitTestRect(gfx::ToEnclosingRect(child_rect)))
-        return true;
-    }
-
-    return false;
+      return child->HitTestRect(gfx::ToEnclosingRect(child_rect));
+    };
+    return std::any_of(children.cbegin(), children.cend(), hits_child);
   }
 
  private:
@@ -1212,7 +1210,7 @@ void BrowserView::FocusInactivePopupForAccessibility() {
     return;
   }
 
-  if (infobar_container_->child_count() > 0)
+  if (!infobar_container_->children().empty())
     infobar_container_->SetPaneFocusAndFocusDefault();
 }
 

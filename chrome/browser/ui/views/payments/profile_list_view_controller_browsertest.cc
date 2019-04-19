@@ -62,7 +62,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestProfileListTest, PrioritizeCompleteness) {
   OpenShippingAddressSectionScreen();
   views::View* sheet = dialog_view()->GetViewByID(
       static_cast<int>(DialogViewID::SHIPPING_ADDRESS_SHEET_LIST_VIEW));
-  ASSERT_EQ(2, sheet->child_count());
+  ASSERT_EQ(2u, sheet->children().size());
   views::View* first_label = sheet->child_at(0)->GetViewByID(
       static_cast<int>(DialogViewID::PROFILE_LABEL_LINE_1));
   views::View* second_label = sheet->child_at(1)->GetViewByID(

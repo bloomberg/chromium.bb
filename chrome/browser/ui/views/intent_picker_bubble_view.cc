@@ -431,7 +431,7 @@ void IntentPickerBubbleView::RunCallback(
 }
 
 size_t IntentPickerBubbleView::GetScrollViewSize() const {
-  return scroll_view_->contents()->child_count();
+  return scroll_view_->contents()->children().size();
 }
 
 void IntentPickerBubbleView::AdjustScrollViewVisibleRegion() {

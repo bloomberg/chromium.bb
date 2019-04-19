@@ -385,7 +385,7 @@ void OmniboxPopupContentsView::OnGestureEvent(ui::GestureEvent* event) {
 // OmniboxPopupContentsView, private:
 
 gfx::Rect OmniboxPopupContentsView::GetTargetBounds() {
-  DCHECK_GE(static_cast<size_t>(child_count()), model_->result().size());
+  DCHECK_GE(children().size(), model_->result().size());
   int popup_height = 0;
   for (size_t i = 0; i < model_->result().size(); ++i)
     popup_height += child_at(i)->GetPreferredSize().height();
@@ -440,9 +440,9 @@ size_t OmniboxPopupContentsView::GetIndexForPoint(const gfx::Point& point) {
     return OmniboxPopupModel::kNoMatch;
 
   size_t nb_match = model_->result().size();
-  DCHECK_LE(nb_match, size_t{child_count()});
+  DCHECK_LE(nb_match, children().size());
   for (size_t i = 0; i < nb_match; ++i) {
-    views::View* child = child_at(int{i});
+    views::View* child = children()[i];
     gfx::Point point_in_child_coords(point);
     View::ConvertPointToTarget(this, child, &point_in_child_coords);
     if (child->visible() && child->HitTestPoint(point_in_child_coords))

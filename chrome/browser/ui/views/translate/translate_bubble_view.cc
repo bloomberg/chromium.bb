@@ -311,8 +311,8 @@ bool TranslateBubbleView::AcceleratorPressed(
 
 gfx::Size TranslateBubbleView::CalculatePreferredSize() const {
   int width = 0;
-  for (int i = 0; i < child_count(); i++)
-    width = std::max(width, child_at(i)->GetPreferredSize().width());
+  for (const views::View* child : children())
+    width = std::max(width, child->GetPreferredSize().width());
   return gfx::Size(width, GetCurrentView()->GetPreferredSize().height());
 }
 
@@ -544,10 +544,8 @@ void TranslateBubbleView::UpdateChildVisibilities() {
     advanced_always_translate_checkbox_->SetChecked(should_always_translate_);
   if (before_always_translate_checkbox_)
     before_always_translate_checkbox_->SetChecked(should_always_translate_);
-  for (int i = 0; i < child_count(); i++) {
-    views::View* view = child_at(i);
+  for (views::View* view : children())
     view->SetVisible(view == GetCurrentView());
-  }
   if (GetWidget())
     GetWidget()->UpdateWindowTitle();
   // BoxLayout only considers visible children, so ensure any newly visible

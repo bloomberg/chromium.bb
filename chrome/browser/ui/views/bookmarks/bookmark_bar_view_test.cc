@@ -1361,19 +1361,17 @@ class BookmarkBarViewTest13 : public BookmarkBarViewEventTestBase {
 
     // Find the first separator.
     views::SubmenuView* submenu = menu->GetSubmenu();
-    views::View* separator_view = NULL;
-    for (int i = 0; i < submenu->child_count(); ++i) {
-      if (submenu->child_at(i)->id() != views::MenuItemView::kMenuItemViewID) {
-        separator_view = submenu->child_at(i);
-        break;
-      }
-    }
-    ASSERT_TRUE(separator_view);
+    const auto i = std::find_if(
+        submenu->children().begin(), submenu->children().end(),
+        [](const auto* child) {
+          return child->id() != views::MenuItemView::kMenuItemViewID;
+        });
+    ASSERT_FALSE(i == submenu->children().end());
 
     // Click on the separator. Clicking on the separator shouldn't visually
     // change anything.
-    ui_test_utils::MoveMouseToCenterAndPress(separator_view,
-        ui_controls::LEFT, ui_controls::DOWN | ui_controls::UP,
+    ui_test_utils::MoveMouseToCenterAndPress(
+        *i, ui_controls::LEFT, ui_controls::DOWN | ui_controls::UP,
         CreateEventTask(this, &BookmarkBarViewTest13::Step4));
   }
 
@@ -1834,7 +1832,7 @@ class BookmarkBarViewTest20 : public BookmarkBarViewEventTestBase {
     }
 
     void Layout() override {
-      DCHECK_EQ(2, child_count());
+      DCHECK_EQ(2u, children().size());
       views::View* bb_view = child_at(0);
       views::View* test_view = child_at(1);
       const int width = bb_view->width();
@@ -1896,7 +1894,7 @@ class BookmarkBarViewTest21 : public BookmarkBarViewEventTestBase {
 
     views::SubmenuView* submenu = menu->GetSubmenu();
     ASSERT_TRUE(submenu->IsShowing());
-    ASSERT_EQ(1, submenu->child_count());
+    ASSERT_EQ(1u, submenu->children().size());
 
     views::View* view = submenu->child_at(0);
     ASSERT_TRUE(view != NULL);

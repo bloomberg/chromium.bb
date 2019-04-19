@@ -27,7 +27,7 @@ void ButtonLayout::Layout(views::View* host) {
   gfx::Size button_size(host_size.width(), max_child_size.height());
   if (UseWideButtons(host_size.width(), max_child_size.width())) {
     host->child_at(0)->SetBoundsRect({gfx::Point(), button_size});
-    if (host->child_count() > 1) {
+    if (host->children().size() > 1) {
       int bottom_y = button_size.height() + kPaddingBetweenButtons;
       host->child_at(1)->SetBoundsRect({{0, bottom_y}, button_size});
     }
@@ -36,7 +36,7 @@ void ButtonLayout::Layout(views::View* host) {
     // The offset of the right-side narrow button.
     const int right_x = button_size.width() + kPaddingBetweenButtons;
     auto right_button = host->children().begin();
-    if (host->child_count() > 1) {
+    if (host->children().size() > 1) {
       host->child_at(0)->SetBoundsRect({gfx::Point(), button_size});
       ++right_button;
     }
@@ -49,7 +49,7 @@ gfx::Size ButtonLayout::GetPreferredSize(const views::View* host) const {
 
   // |view_width_| is a hard limit; the buttons will be sized and positioned to
   // fill it.
-  if ((host->child_count() > 1) &&
+  if ((host->children().size() > 1) &&
       UseWideButtons(view_width_, max_child_size.width())) {
     // Two rows of equal height with padding between them.
     return {view_width_, max_child_size.height() * 2 + kPaddingBetweenButtons};
@@ -63,7 +63,7 @@ gfx::Size ButtonLayout::GetPreferredSize(const views::View* host) const {
 // static
 gfx::Size ButtonLayout::GetMaxChildPreferredSize(const views::View* host) {
   gfx::Size max_child_size = host->child_at(0)->GetPreferredSize();
-  if (host->child_count() > 1)
+  if (host->children().size() > 1)
     max_child_size.SetToMax(host->child_at(1)->GetPreferredSize());
   return max_child_size;
 }

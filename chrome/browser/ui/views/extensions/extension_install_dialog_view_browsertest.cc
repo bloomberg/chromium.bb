@@ -445,8 +445,7 @@ void ExtensionInstallDialogRatingsSectionTest::TestRatingsSectionA11y(
               node_data.GetStringAttribute(ax::mojom::StringAttribute::kName));
   }
 
-  for (int i = 0; i < rating_view->child_count(); ++i) {
-    views::View* child = rating_view->child_at(i);
+  for (views::View* child : rating_view->children()) {
     ui::AXNodeData node_data;
     child->GetAccessibleNodeData(&node_data);
     EXPECT_EQ(ax::mojom::Role::kIgnored, node_data.role);

@@ -354,19 +354,19 @@ TEST_P(TabStripTest, RemoveTab) {
   TestTabStripObserver observer(tab_strip_);
   controller_->AddTab(0, false);
   controller_->AddTab(1, false);
-  const int child_view_count = tab_strip_->child_count();
+  const size_t num_children = tab_strip_->children().size();
   EXPECT_EQ(2, tab_strip_->tab_count());
   controller_->RemoveTab(0);
   EXPECT_EQ(0, observer.last_tab_removed());
   // When removing a tab the tabcount should immediately decrement.
   EXPECT_EQ(1, tab_strip_->tab_count());
   // But the number of views should remain the same (it's animatining closed).
-  EXPECT_EQ(child_view_count, tab_strip_->child_count());
+  EXPECT_EQ(num_children, tab_strip_->children().size());
   tab_strip_->SetBounds(0, 0, 200, 20);
   // Layout at a different size should force the animation to end and delete
   // the tab that was removed.
   tab_strip_->Layout();
-  EXPECT_EQ(child_view_count - 1, tab_strip_->child_count());
+  EXPECT_EQ(num_children - 1, tab_strip_->children().size());
 
   // Remove the last tab to make sure things are cleaned up correctly when
   // the TabStrip is destroyed and an animation is ongoing.

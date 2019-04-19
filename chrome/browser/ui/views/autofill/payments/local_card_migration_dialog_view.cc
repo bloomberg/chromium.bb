@@ -321,8 +321,7 @@ class LocalCardMigrationOfferView : public views::View,
 
   const std::vector<std::string> GetSelectedCardGuids() const {
     std::vector<std::string> selected_cards;
-    for (int index = 0; index < card_list_view_->child_count(); ++index) {
-      views::View* child = card_list_view_->child_at(index);
+    for (views::View* child : card_list_view_->children()) {
       DCHECK_EQ(MigratableCardView::kViewClassName, child->GetClassName());
       auto* card = static_cast<MigratableCardView*>(child);
       if (card->IsSelected())
