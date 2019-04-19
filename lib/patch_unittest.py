@@ -1405,7 +1405,7 @@ class MockPatchFactory(object):
     if not approvals:
       approvals = [{'type': 'VRIF', 'value': '1', 'grantedOn': 1391733002},
                    {'type': 'CRVW', 'value': '2', 'grantedOn': 1391733002},
-                   {'type': 'COMR', 'value': '1', 'grantedOn': 1391733002}]
+                   {'type': 'COMR', 'value': '2', 'grantedOn': 1391733002}]
 
     current_patch_set = {
         'number': patch_number,
