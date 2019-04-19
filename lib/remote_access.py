@@ -1196,6 +1196,8 @@ class ChromiumOSDevice(RemoteDevice):
     # TODO(yjhong): Make sure an update is not pending.
     logging.info('Need to reboot to actually disable the verification.')
     self.Reboot()
+    # After reboot, the rootfs is mounted read-only, so remount as read-write.
+    self._RemountRootfsAsWritable()
 
   def MountRootfsReadWrite(self):
     """Checks mount types and remounts them as read-write if needed.
@@ -1214,9 +1216,7 @@ class ChromiumOSDevice(RemoteDevice):
       return True
 
     logging.info('Unable to remount rootfs as rw (normal w/verified rootfs).')
-    # If the image is built with rootfs verification, turn off the
-    # rootfs verification. After reboot, the rootfs will be mounted as
-    # read-write (there is no need to remount).
+    # If the image is built with rootfs verification, turn it off.
     self.DisableRootfsVerification()
 
     return not self._RootfsIsReadOnly()
