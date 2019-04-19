@@ -2004,6 +2004,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'fizz-moblab',
       'flapjack',
       'glados',
+      'gale',
       'gonzo',
       'grunt',
       'guado',
@@ -2056,6 +2057,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'veyron_speedy',
       'veyron_tiger',
       'viking',
+      'whirlwind',
       'winky',
       'wizpig',
       'wolf',
@@ -2091,13 +2093,11 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   _paladin_experimental_boards = _paladin_new_boards | frozenset([
       'auron_paine', # crbug.com/950751
       'cyan', # crbug.com/953920
-      'gale', # crbug.com/953701
       'lakitu', # crbug.com/953855
       'lakitu-st', # crbug.com/953855
       'mistral', # contact: roopeshr@
       'nyan_big', # crbug.com/954185
       'nyan_blaze', # crbug.com/954185
-      'whirlwind', # crbug.com/953701
   ])
 
   assert not (_paladin_experimental_boards & _paladin_important_boards), (
