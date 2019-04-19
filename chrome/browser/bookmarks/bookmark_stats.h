@@ -45,6 +45,11 @@ enum BookmarkLaunchLocation {
 void RecordBookmarkLaunch(const bookmarks::BookmarkNode* node,
                           BookmarkLaunchLocation location);
 
+// Records the user launching all bookmarks in a folder (via middle-click, etc.)
+// for UMA purposes.
+void RecordBookmarkFolderLaunch(const bookmarks::BookmarkNode* node,
+                                BookmarkLaunchLocation location);
+
 // Records the user opening a folder of bookmarks for UMA purposes.
 void RecordBookmarkFolderOpen(BookmarkLaunchLocation location);
 

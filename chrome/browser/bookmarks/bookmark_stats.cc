@@ -50,6 +50,15 @@ void RecordBookmarkLaunch(const BookmarkNode* node,
   RecordNodeDepth(node);
 }
 
+void RecordBookmarkFolderLaunch(const BookmarkNode* node,
+                                BookmarkLaunchLocation location) {
+  if (IsBookmarkBarLocation(location))
+    base::RecordAction(
+        base::UserMetricsAction("MiddleClickedBookmarkBarFolder"));
+
+  RecordNodeDepth(node);
+}
+
 void RecordBookmarkFolderOpen(BookmarkLaunchLocation location) {
   if (IsBookmarkBarLocation(location))
     base::RecordAction(base::UserMetricsAction("ClickedBookmarkBarFolder"));

@@ -10984,6 +10984,15 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="MiddleClickedBookmarkBarFolder">
+  <owner>dfried@chromium.org</owner>
+  <description>
+    Triggered when user middle-clicks a bookmarks bar folder, resulting in all
+    bookmarks in the folder being opened. Applies to all folders reachable from
+    the bookmark bar, including subfolders and overflow.
+  </description>
+</action>
+
 <action name="MinButton_Clk">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
