@@ -100,6 +100,16 @@ void AddSameConstraints(id<LayoutGuideProvider> view1,
   ]];
 }
 
+void AddSameConstraintsWithInsets(id<LayoutGuideProvider> innerView,
+                                  id<LayoutGuideProvider> outerView,
+                                  ChromeDirectionalEdgeInsets insets) {
+  AddSameConstraintsToSidesWithInsets(
+      innerView, outerView,
+      (LayoutSides::kTop | LayoutSides::kLeading | LayoutSides::kBottom |
+       LayoutSides::kTrailing),
+      insets);
+}
+
 void PinToSafeArea(id<LayoutGuideProvider> innerView, UIView* outerView) {
   AddSameConstraints(innerView, outerView.safeAreaLayoutGuide);
 }

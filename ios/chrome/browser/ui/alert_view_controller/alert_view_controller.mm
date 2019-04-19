@@ -27,6 +27,16 @@ constexpr CGFloat kMinimumWidth = 30;
 constexpr CGFloat kMinimumHeight = 30;
 constexpr CGFloat kMinimumMargin = 4;
 
+// Inset for the content in the alert view.
+constexpr CGFloat kTitleInsetTop = 20;
+constexpr CGFloat kTitleInsetLeading = 20;
+constexpr CGFloat kTitleInsetBottom = 4;
+constexpr CGFloat kTitleInsetTrailing = 20;
+constexpr CGFloat kMessageInsetTop = 4;
+constexpr CGFloat kMessageInsetLeading = 20;
+constexpr CGFloat kMessageInsetBottom = 20;
+constexpr CGFloat kMessageInsetTrailing = 20;
+
 }  // namespace
 
 @interface AlertAction ()
@@ -146,34 +156,40 @@ constexpr CGFloat kMinimumMargin = 4;
     titleLabel.textAlignment = NSTextAlignmentCenter;
     titleLabel.text = self.title;
     titleLabel.translatesAutoresizingMaskIntoConstraints = NO;
-    [self.contentView addSubview:titleLabel];
 
-    [NSLayoutConstraint activateConstraints:@[
-      [titleLabel.trailingAnchor
-          constraintEqualToAnchor:self.contentView.trailingAnchor],
-      [titleLabel.leadingAnchor
-          constraintEqualToAnchor:self.contentView.leadingAnchor],
-    ]];
-    [stackView addArrangedSubview:titleLabel];
+    UIView* titleContainer = [[UIView alloc] init];
+    [titleContainer addSubview:titleLabel];
+    titleContainer.translatesAutoresizingMaskIntoConstraints = NO;
+    [stackView addArrangedSubview:titleContainer];
+
+    ChromeDirectionalEdgeInsets contentInsets =
+        ChromeDirectionalEdgeInsetsMake(kTitleInsetTop, kTitleInsetLeading,
+                                        kTitleInsetBottom, kTitleInsetTrailing);
+    AddSameConstraintsWithInsets(titleLabel, titleContainer, contentInsets);
+    AddSameConstraintsToSides(titleContainer, self.contentView,
+                              LayoutSides::kTrailing | LayoutSides::kLeading);
   }
 
   if (self.message.length) {
     UILabel* messageLabel = [[UILabel alloc] init];
     messageLabel.numberOfLines = 0;
     messageLabel.font =
-        [UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline];
+        [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
     messageLabel.textAlignment = NSTextAlignmentCenter;
     messageLabel.text = self.message;
     messageLabel.translatesAutoresizingMaskIntoConstraints = NO;
-    [self.contentView addSubview:messageLabel];
 
-    [NSLayoutConstraint activateConstraints:@[
-      [messageLabel.trailingAnchor
-          constraintEqualToAnchor:self.contentView.trailingAnchor],
-      [messageLabel.leadingAnchor
-          constraintEqualToAnchor:self.contentView.leadingAnchor],
-    ]];
-    [stackView addArrangedSubview:messageLabel];
+    UIView* messageContainer = [[UIView alloc] init];
+    [messageContainer addSubview:messageLabel];
+    messageContainer.translatesAutoresizingMaskIntoConstraints = NO;
+    [stackView addArrangedSubview:messageContainer];
+
+    ChromeDirectionalEdgeInsets contentInsets = ChromeDirectionalEdgeInsetsMake(
+        kMessageInsetTop, kMessageInsetLeading, kMessageInsetBottom,
+        kMessageInsetTrailing);
+    AddSameConstraintsWithInsets(messageLabel, messageContainer, contentInsets);
+    AddSameConstraintsToSides(messageContainer, self.contentView,
+                              LayoutSides::kTrailing | LayoutSides::kLeading);
   }
 
   self.buttonAlertActionsDictionary = [[NSMutableDictionary alloc] init];
