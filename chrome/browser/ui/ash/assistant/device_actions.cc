@@ -12,6 +12,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/power_manager/backlight.pb.h"
 #include "chromeos/network/network_state_handler.h"
@@ -30,6 +31,12 @@ using chromeos::assistant::mojom::AndroidAppInfoPtr;
 using chromeos::assistant::mojom::AppStatus;
 
 namespace {
+
+constexpr char kIntentPrefix[] = "#Intent";
+constexpr char kAction[] = "action";
+constexpr char kPackage[] = "package";
+constexpr char kLaunchFlags[] = "launchFlags";
+constexpr char kEndSuffix[] = "end";
 
 AppStatus GetAndroidAppStatus(const std::string& package_name) {
   auto* prefs = ArcAppListPrefs::Get(ProfileManager::GetActiveUserProfile());
@@ -56,6 +63,22 @@ base::Optional<std::string> GetActivity(const std::string& package_name) {
   }
 
   return base::nullopt;
+}
+
+std::string GetLaunchIntent(AndroidAppInfoPtr app_info) {
+  auto& package_name = app_info->package_name;
+  if (app_info->intent.empty() || app_info->action.empty()) {
+    // No action or data specified. Using launch intent from ARC.
+    return arc::GetLaunchIntent(package_name,
+                                GetActivity(package_name).value_or(""),
+                                /*extra_params=*/{});
+  }
+  return base::StringPrintf("%s;%s;%s=%s;%s=0x%x;%s=%s;%s",
+                            app_info->intent.c_str(), kIntentPrefix, kAction,
+                            app_info->action.c_str(), kLaunchFlags,
+                            arc::Intent::FLAG_ACTIVITY_NEW_TASK |
+                                arc::Intent::FLAG_ACTIVITY_RESET_TASK_IF_NEEDED,
+                            kPackage, package_name.c_str(), kEndSuffix);
 }
 
 }  // namespace
@@ -136,39 +159,17 @@ void DeviceActions::OpenAndroidApp(AndroidAppInfoPtr app_info,
     return;
   }
 
-  auto* helper = ARC_GET_INSTANCE_FOR_METHOD(
-      arc::ArcServiceManager::Get()->arc_bridge_service()->intent_helper(),
-      HandleIntent);
-  if (!helper) {
-    LOG(ERROR) << "Android container is not running.";
-    std::move(callback).Run(false);
-    return;
-  }
-  auto& package_name = app_info->package_name;
-
-  arc::mojom::ActivityNamePtr activity = arc::mojom::ActivityName::New();
-  activity->package_name = package_name;
-  auto intent = arc::mojom::IntentInfo::New();
-  if (!app_info->action.empty())
-    intent->action = app_info->action;
-
-  if (!app_info->intent.empty()) {
-    intent->data = app_info->intent;
+  auto* app = ARC_GET_INSTANCE_FOR_METHOD(
+      arc::ArcServiceManager::Get()->arc_bridge_service()->app(), LaunchIntent);
+  if (app) {
+    app->LaunchIntent(GetLaunchIntent(std::move(app_info)),
+                      display::kDefaultDisplayId);
   } else {
-    // Intent is not specified to resolve the activity, set default activity
-    // name.
-    auto activity_name = GetActivity(package_name);
-    if (!activity_name.has_value()) {
-      LOG(ERROR) << "No activity resolved from package name.";
-      std::move(callback).Run(false);
-      return;
-    }
-
-    activity->activity_name = activity_name.value();
+    LOG(ERROR) << "Android container is not running. Discard request for launch"
+               << app_info->package_name;
   }
-  helper->HandleIntent(std::move(intent), std::move(activity));
 
-  std::move(callback).Run(true);
+  std::move(callback).Run(!!app);
 }
 
 void DeviceActions::VerifyAndroidApp(
