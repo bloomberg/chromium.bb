@@ -144,27 +144,6 @@ void UpdateProfileName(Profile* profile,
                           base::UTF16ToUTF8(new_profile_name));
 }
 
-std::vector<CoreAccountInfo> GetSecondaryAccountsForSignedInProfile(
-    Profile* profile) {
-  auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
-  std::vector<CoreAccountInfo> accounts =
-      identity_manager->GetAccountsWithRefreshTokens();
-
-  // The vector returned by GetAccountsWithRefreshTokens() contains
-  // the primary account too, so we need to remove it from the list.
-  DCHECK(identity_manager->HasPrimaryAccount());
-  CoreAccountInfo primary_account = identity_manager->GetPrimaryAccountInfo();
-
-  auto primary_index = std::find_if(
-      accounts.begin(), accounts.end(),
-      [&primary_account](const CoreAccountInfo& account_info) {
-        return account_info.account_id == primary_account.account_id;
-      });
-  DCHECK(primary_index != accounts.end());
-  accounts.erase(primary_index);
-
-  return accounts;
-}
 #endif  // !defined(OS_CHROMEOS)
 
 bool IsRegularOrGuestSession(Browser* browser) {
