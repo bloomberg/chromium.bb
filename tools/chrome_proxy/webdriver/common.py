@@ -207,6 +207,10 @@ class TestDriver:
     self._flags = ParseFlags()
     self._driver = None
     self._chrome_args = set()
+    # By default use the default_integration policy. It is the same as the
+    # default policy except that it disables GFE caching to make sure we are
+    # running the tests against the current server version.
+    self._experiment = 'default_integration'
     self._url = ''
     self._logger = GetLogger(name='TestDriver')
     self._has_logs = False
@@ -251,6 +255,10 @@ class TestDriver:
     a flag given in the code. In that case, check by the flag whether to
     override the argument.
     """
+    # Set the Data Reduction Proxy experiment.
+    if self._experiment is not None:
+      self._chrome_args.add('--data-reduction-proxy-experiment=' +
+        self._experiment)
     def GetDictKey(argument):
       return argument.split('=', 1)[0]
     if self._flags.browser_args and len(self._flags.browser_args) > 0:
@@ -336,6 +344,14 @@ class TestDriver:
     self._logger.debug('Stopping ChromeDriver')
     self._driver.quit()
     self._driver = None
+
+  def SetExperiment(self, exp):
+    """Sets the Data Reduction Proxy experiment to use.
+
+    Args:
+      exp: a string with the experiment name.
+    """
+    self._experiment = exp
 
   def AddChromeArgs(self, args):
     """Adds multiple arguments that will be passed to Chromium at start.

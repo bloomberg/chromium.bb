@@ -139,7 +139,6 @@ class CompressionRegression(IntegrationTest):
         compression[key] = [value]
     with TestDriver() as t:
       t.AddChromeArg('--enable-spdy-proxy-auth')
-      t.AddChromeArg('--data-reduction-proxy-server-experiments-disabled')
       t.LoadURL('http://check.googlezip.net/metrics/local.gif')
       t.LoadURL('http://check.googlezip.net/metrics/local.png')
       t.LoadURL('http://check.googlezip.net/metrics/local.jpg')

@@ -190,8 +190,7 @@ class Bypass(IntegrationTest):
       self.skipTest('This test cannot be run with other experiments.')
     with TestDriver() as test_driver:
       test_driver.AddChromeArg('--enable-spdy-proxy-auth')
-      test_driver.AddChromeArg('--data-reduction-proxy-experiment='
-                               'client_test_bypass')
+      test_driver.SetExperiment('client_test_bypass')
 
       # Verify that loading a page other than the specific exp directive test
       # page loads through the proxy without being bypassed.

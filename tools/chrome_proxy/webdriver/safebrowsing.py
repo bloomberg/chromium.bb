@@ -7,6 +7,7 @@ from common import TestDriver
 from common import IntegrationTest
 from decorators import AndroidOnly
 from decorators import NotAndroid
+from decorators import ChromeVersionBeforeM
 from decorators import ChromeVersionEqualOrAfterM
 
 from selenium.common.exceptions import TimeoutException
@@ -14,6 +15,7 @@ from selenium.common.exceptions import TimeoutException
 class SafeBrowsing(IntegrationTest):
 
   @AndroidOnly
+  @ChromeVersionBeforeM(73)
   def testSafeBrowsingOn(self):
     with TestDriver() as t:
       t.AddChromeArg('--enable-spdy-proxy-auth')

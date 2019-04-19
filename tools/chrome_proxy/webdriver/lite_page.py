@@ -38,6 +38,8 @@ class LitePage(IntegrationTest):
           'force_effective_connection_type/2G,'
           'DataReductionProxyServerExperiments.IgnoreCountryBlacklist:'
           'exp/ignore_preview_blacklist')
+      # The previous argument implicitly sets the experiment.
+      test_driver.SetExperiment(None)
       test_driver.AddChromeArg(
           '--force-fieldtrials=NetworkQualityEstimator/Enabled/'
           'DataReductionProxyServerExperiments/IgnoreCountryBlacklist')
@@ -167,8 +169,7 @@ class LitePage(IntegrationTest):
       # Need to force 2G speed to get lite-page response.
       test_driver.AddChromeArg('--force-effective-connection-type=2G')
       # Set exp=client_test_nano to force Nano response.
-      test_driver.AddChromeArg(
-          '--data-reduction-proxy-experiment=client_test_nano')
+      test_driver.SetExperiment('client_test_nano')
 
       # This page is long and has many media resources.
       test_driver.LoadURL('http://check.googlezip.net/metrics/index.html')
@@ -217,8 +218,7 @@ class LitePage(IntegrationTest):
       test_driver.AddChromeArg('--disable-features=AndroidOmniboxPreviewsBadge')
       test_driver.AddChromeArg('--force-effective-connection-type=2G')
       # Set exp=client_test_nano to force Lite page response.
-      test_driver.AddChromeArg(
-        '--data-reduction-proxy-experiment=client_test_nano')
+      test_driver.SetExperiment('client_test_nano')
       # LoadURL waits for onLoadFinish so the Previews UI will be showing by
       # then since it's triggered on commit.
       test_driver.LoadURL(
@@ -463,8 +463,7 @@ class LitePage(IntegrationTest):
       # Need to force 2G speed to get a preview.
       test_driver.AddChromeArg('--force-effective-connection-type=2G')
       # Set exp=client_test_icaspr to force iCASPR response.
-      test_driver.AddChromeArg(
-          '--data-reduction-proxy-experiment=ihdp_integration')
+      test_driver.SetExperiment('ihdp_integration')
 
       test_driver.LoadURL('http://check.googlezip.net/previews/ihdp.html')
 

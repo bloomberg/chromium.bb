@@ -55,8 +55,7 @@ class HttpsPreviewsBaseClass():
     t.AddChromeArg('--ignore-previews-blocklist')
     t.AddChromeArg('--force-effective-connection-type=2G')
     t.AddChromeArg('--ignore-litepage-redirect-optimization-blacklist')
-    t.AddChromeArg('--data-reduction-proxy-experiment='
-      'external_chrome_integration_test')
+    t.SetExperiment('external_chrome_integration_test')
 
     # Start Chrome and wait for initialization.
     t.LoadURL('data:,')
