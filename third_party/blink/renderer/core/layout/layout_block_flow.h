@@ -775,7 +775,7 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
     DISALLOW_COPY_AND_ASSIGN(LayoutBlockFlowRareData);
   };
 
-  void ClearOffsetMapping();
+  void ClearOffsetMappingIfNeeded();
   const NGOffsetMapping* GetOffsetMapping() const;
   void SetOffsetMapping(std::unique_ptr<NGOffsetMapping>);
 

@@ -447,8 +447,7 @@ void LayoutBlockFlow::UpdateBlockLayout(bool relayout_children) {
   if (RuntimeEnabledFeatures::TrackLayoutPassesPerBlockEnabled())
     IncrementLayoutPassCount();
 
-  if (rare_data_)
-    ClearOffsetMapping();
+  ClearOffsetMappingIfNeeded();
 
   if (!relayout_children && SimplifiedLayout())
     return;
@@ -4894,9 +4893,10 @@ LayoutBlockFlow::LayoutBlockFlowRareData::LayoutBlockFlowRareData(
 
 LayoutBlockFlow::LayoutBlockFlowRareData::~LayoutBlockFlowRareData() = default;
 
-void LayoutBlockFlow::ClearOffsetMapping() {
+void LayoutBlockFlow::ClearOffsetMappingIfNeeded() {
   DCHECK(!IsLayoutNGObject());
-  DCHECK(rare_data_);
+  if (!rare_data_)
+    return;
   rare_data_->offset_mapping_.reset();
 }
 

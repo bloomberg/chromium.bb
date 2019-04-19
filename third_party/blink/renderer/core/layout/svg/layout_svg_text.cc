@@ -189,6 +189,8 @@ void LayoutSVGText::UpdateLayout() {
   DCHECK(!needs_reordering_);
   LayoutAnalyzer::Scope analyzer(*this);
 
+  ClearOffsetMappingIfNeeded();
+
   // When laying out initially, build the character data map and propagate
   // resulting layout attributes to all LayoutSVGInlineText children in the
   // subtree.
