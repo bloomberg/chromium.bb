@@ -740,6 +740,29 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, BasicRequest) {
   EXPECT_EQ("Echo", *simple_loader_helper.response_body());
 }
 
+IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, DataURL) {
+  if (IsRestartStateWithInProcessNetworkService())
+    return;
+  std::unique_ptr<network::ResourceRequest> request =
+      std::make_unique<network::ResourceRequest>();
+  request->url = GURL("data:text/plain,foo");
+  content::SimpleURLLoaderTestHelper simple_loader_helper;
+  std::unique_ptr<network::SimpleURLLoader> simple_loader =
+      network::SimpleURLLoader::Create(std::move(request),
+                                       TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  simple_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      loader_factory(), simple_loader_helper.GetCallback());
+  simple_loader_helper.WaitForCallback();
+
+  ASSERT_TRUE(simple_loader->ResponseInfo());
+  // Data URLs don't have headers.
+  EXPECT_FALSE(simple_loader->ResponseInfo()->headers);
+  EXPECT_EQ("text/plain", simple_loader->ResponseInfo()->mime_type);
+  ASSERT_TRUE(simple_loader_helper.response_body());
+  EXPECT_EQ("foo", *simple_loader_helper.response_body());
+}
+
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, FileURL) {
   if (IsRestartStateWithInProcessNetworkService())
     return;

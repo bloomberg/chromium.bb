@@ -13,7 +13,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/base64.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -2517,69 +2516,6 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, SavePageNonHTMLViaGet) {
   ASSERT_EQ(2u, download_items.size());
   ASSERT_EQ(url, download_items[0]->GetOriginalUrl());
   ASSERT_EQ(url, download_items[1]->GetOriginalUrl());
-}
-
-// Times out often on debug ChromeOS because test is slow.
-#if defined(OS_CHROMEOS) && !defined(NDEBUG)
-#define MAYBE_SaveLargeImage DISABLED_SaveLargeImage
-#else
-#define MAYBE_SaveLargeImage SaveLargeImage
-#endif
-// Tests saving an image from a data URL that's bigger than url::kMaxURLChars.
-IN_PROC_BROWSER_TEST_F(DownloadTest, MAYBE_SaveLargeImage) {
-  embedded_test_server()->ServeFilesFromDirectory(GetTestDataDirectory());
-  ASSERT_TRUE(embedded_test_server()->Start());
-  EnableFileChooser(true);
-
-  GURL url = embedded_test_server()->GetURL("/empty.html");
-  ui_test_utils::NavigateToURL(browser(), url);
-
-  base::FilePath data_file = ui_test_utils::GetTestFilePath(
-      base::FilePath().AppendASCII("downloads"),
-      base::FilePath().AppendASCII("large_image.png"));
-  std::string png_data, data_url;
-  {
-    base::ScopedAllowBlockingForTesting allow_blocking;
-    CHECK(base::ReadFileToString(data_file, &png_data));
-  }
-
-  base::Base64Encode(png_data, &data_url);
-  data_url.insert(0, "data:image/png;base64,");
-
-  ASSERT_GE(data_url.size(), url::kMaxURLChars);
-
-  // Try to download a large image via a context menu.
-  std::unique_ptr<content::DownloadTestObserver> waiter_context_menu(
-      new content::DownloadTestObserverTerminal(
-          DownloadManagerForBrowser(browser()), 1,
-          content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
-  content::ContextMenuParams context_menu_params;
-  context_menu_params.media_type = blink::WebContextMenuData::kMediaTypeImage;
-  context_menu_params.src_url = GURL(data_url);
-  context_menu_params.page_url = url;
-  TestRenderViewContextMenu menu(
-      browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame(),
-      context_menu_params);
-  menu.Init();
-  menu.ExecuteCommand(IDC_CONTENT_CONTEXT_SAVEIMAGEAS, 0);
-  waiter_context_menu->WaitForFinished();
-  EXPECT_EQ(
-      1u, waiter_context_menu->NumDownloadsSeenInState(DownloadItem::COMPLETE));
-  CheckDownloadStates(1, DownloadItem::COMPLETE);
-
-  // Validate that the correct file was downloaded via the context menu.
-  std::vector<DownloadItem*> download_items;
-  GetDownloads(browser(), &download_items);
-  EXPECT_TRUE(DidShowFileChooser());
-  ASSERT_EQ(1u, download_items.size());
-
-  std::string downloaded_data;
-  {
-    base::ScopedAllowBlockingForTesting allow_blocking;
-    CHECK(base::ReadFileToString(download_items[0]->GetFullPath(),
-                                 &downloaded_data));
-  }
-  ASSERT_EQ(downloaded_data, png_data);
 }
 
 // A EmbeddedTestServer::HandleRequestCallback function that checks for requests
