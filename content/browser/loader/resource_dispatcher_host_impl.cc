@@ -721,7 +721,6 @@ void ResourceDispatcherHostImpl::OnRequestResourceInternal(
     network::mojom::URLLoaderClientPtr url_loader_client,
     const net::NetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK(requester_info->IsRenderer() ||
-         requester_info->IsNavigationPreload() ||
          requester_info->IsCertificateFetcherForSignedExchange());
   BeginRequest(requester_info, request_id, request_data, is_sync_load,
                routing_id, url_loader_options, std::move(mojo_request),
@@ -753,7 +752,6 @@ void ResourceDispatcherHostImpl::BeginRequest(
     network::mojom::URLLoaderClientPtr url_loader_client,
     const net::NetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK(requester_info->IsRenderer() ||
-         requester_info->IsNavigationPreload() ||
          requester_info->IsCertificateFetcherForSignedExchange());
 
   int child_id = requester_info->child_id();
@@ -883,7 +881,6 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
     const net::NetworkTrafficAnnotationTag& traffic_annotation,
     HeaderInterceptorResult interceptor_result) {
   DCHECK(requester_info->IsRenderer() ||
-         requester_info->IsNavigationPreload() ||
          requester_info->IsCertificateFetcherForSignedExchange());
   // The request is always for a subresource.
   // The renderer process is killed in BeginRequest() when it happens with a
@@ -928,15 +925,6 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
   // Construct the request.
   std::unique_ptr<net::URLRequest> new_request = request_context->CreateRequest(
       request_data.url, request_data.priority, nullptr, traffic_annotation);
-
-  // Log that this request is a service worker navigation preload request
-  // here, since navigation preload machinery has no access to netlog.
-  // TODO(falken): Figure out how network::mojom::URLLoaderClient can
-  // access the request's netlog.
-  if (requester_info->IsNavigationPreload()) {
-    new_request->net_log().AddEvent(
-        net::NetLogEventType::SERVICE_WORKER_NAVIGATION_PRELOAD_REQUEST);
-  }
 
   new_request->set_method(request_data.method);
   new_request->set_site_for_cookies(request_data.site_for_cookies);
@@ -993,13 +981,8 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
   // values), so |report_security_info| is not subject to the extra security
   // checks that are applied to |report_raw_headers|.
   report_security_info = request_data.report_raw_headers;
-  if (report_raw_headers && !policy->CanReadRawCookies(child_id) &&
-      !requester_info->IsNavigationPreload()) {
-    // For navigation preload, the child_id is -1 so CanReadRawCookies would
-    // return false. But |report_raw_headers| of the navigation preload
-    // request was copied from the original request, so this check has already
-    // been carried out.
-    // TODO: https://crbug.com/523063 can we call
+  if (report_raw_headers && !policy->CanReadRawCookies(child_id)) {
+    // TODO(https://crbug.com/523063): can we call
     // bad_message::ReceivedBadMessage here?
     VLOG(1) << "Denied unauthorized request for raw headers";
     report_raw_headers = false;
@@ -1111,7 +1094,6 @@ ResourceDispatcherHostImpl::CreateResourceHandler(
     network::mojom::URLLoaderRequest mojo_request,
     network::mojom::URLLoaderClientPtr url_loader_client) {
   DCHECK(requester_info->IsRenderer() ||
-         requester_info->IsNavigationPreload() ||
          requester_info->IsCertificateFetcherForSignedExchange());
   // Construct the IPC resource handler.
   std::unique_ptr<ResourceHandler> handler =

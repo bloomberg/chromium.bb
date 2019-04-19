@@ -34,7 +34,6 @@ class ChromeBlobStorageContext;
 class PrefetchURLLoaderService;
 class ResourceContext;
 class ResourceRequesterInfo;
-class ServiceWorkerContextWrapper;
 
 // This class filters out incoming IPC messages for network requests and
 // processes them on the IPC thread.  As a result, network requests are not
@@ -50,8 +49,8 @@ class CONTENT_EXPORT ResourceMessageFilter
                               ResourceContext**,
                               net::URLRequestContext**)> GetContextsCallback;
 
-  // |appcache_service|, |blob_storage_context|, |file_system_context|,
-  // |service_worker_context| may be nullptr in unittests.
+  // |appcache_service|, |blob_storage_context|, and |file_system_context| may
+  // be nullptr in unittests.
   // InitializeForTest() needs to be manually called for unittests where
   // OnFilterAdded() would not otherwise be called.
   ResourceMessageFilter(
@@ -59,7 +58,6 @@ class CONTENT_EXPORT ResourceMessageFilter
       ChromeAppCacheService* appcache_service,
       ChromeBlobStorageContext* blob_storage_context,
       storage::FileSystemContext* file_system_context,
-      ServiceWorkerContextWrapper* service_worker_context,
       PrefetchURLLoaderService* prefetch_url_loader_service,
       const GetContextsCallback& get_contexts_callback,
       const scoped_refptr<base::SingleThreadTaskRunner>& io_thread_runner);
