@@ -3922,8 +3922,9 @@ offer_io_func(struct task *task, uint32_t events)
 		    offer->x, offer->y, offer->user_data);
 
 	if (len == 0) {
-		if (display->data_device_manager_version >=
-		    WL_DATA_OFFER_FINISH_SINCE_VERSION)
+		if ((offer != offer->input->selection_offer) &&
+		    (display->data_device_manager_version >=
+		     WL_DATA_OFFER_FINISH_SINCE_VERSION))
 			wl_data_offer_finish(offer->offer);
 		close(offer->fd);
 		data_offer_destroy(offer);
