@@ -367,7 +367,10 @@ void FtlSignalStrategy::Core::SendMessage(const SignalingAddress& receiver,
   std::string receiver_registration_id;
   bool get_info_result =
       receiver.GetFtlInfo(&receiver_username, &receiver_registration_id);
-  DCHECK(get_info_result);
+  if (!get_info_result) {
+    LOG(DFATAL) << "Receiver is not in FTL address: " << receiver.jid();
+    return;
+  }
 
   HOST_LOG << "Sending outgoing stanza:\n"
            << "Receiver: " << receiver_username << "\n"

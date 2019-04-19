@@ -28,6 +28,8 @@ static_library("signaling") {
     "log_to_server.cc",
     "log_to_server.h",
     "message_reception_channel.h",
+    "muxing_signal_strategy.cc",
+    "muxing_signal_strategy.h",
     "push_notification_subscriber.cc",
     "push_notification_subscriber.h",
     "registration_manager.h",
