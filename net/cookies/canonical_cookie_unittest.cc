@@ -130,6 +130,18 @@ TEST(CanonicalCookieTest, Create) {
                                    same_site_options);
   ASSERT_TRUE(cookie.get());
   EXPECT_EQ(CookieSameSite::LAX_MODE, cookie->SameSite());
+  cookie = CanonicalCookie::Create(url, "A=2; SameSite=Extended", creation_time,
+                                   same_site_options);
+  ASSERT_TRUE(cookie.get());
+  EXPECT_EQ(CookieSameSite::EXTENDED_MODE, cookie->SameSite());
+  cookie = CanonicalCookie::Create(url, "A=2; SameSite=None", creation_time,
+                                   same_site_options);
+  ASSERT_TRUE(cookie.get());
+  EXPECT_EQ(CookieSameSite::NO_RESTRICTION, cookie->SameSite());
+  cookie =
+      CanonicalCookie::Create(url, "A=2", creation_time, same_site_options);
+  ASSERT_TRUE(cookie.get());
+  EXPECT_EQ(CookieSameSite::UNSPECIFIED, cookie->SameSite());
 
   // Test the creating cookies using specific parameter instead of a cookie
   // string.
@@ -171,12 +183,12 @@ TEST(CanonicalCookieTest, CreateNonStandardSameSite) {
   cookie =
       CanonicalCookie::Create(url, "A=2; SameSite=NonStandard", now, options);
   EXPECT_TRUE(cookie.get());
-  EXPECT_EQ(CookieSameSite::NO_RESTRICTION, cookie->SameSite());
+  EXPECT_EQ(CookieSameSite::UNSPECIFIED, cookie->SameSite());
 
   // Omit value for the SameSite attribute.
   cookie = CanonicalCookie::Create(url, "A=2; SameSite", now, options);
   EXPECT_TRUE(cookie.get());
-  EXPECT_EQ(CookieSameSite::NO_RESTRICTION, cookie->SameSite());
+  EXPECT_EQ(CookieSameSite::UNSPECIFIED, cookie->SameSite());
 }
 
 TEST(CanonicalCookieTest, CreateInvalidHttpOnly) {
@@ -568,10 +580,29 @@ TEST(CanonicalCookieTest, IncludeSameSiteForSameSiteURL) {
   EXPECT_EQ(cookie->IncludeForRequestURL(url, options),
             CanonicalCookie::CookieInclusionStatus::INCLUDE);
 
-  // TODO(chlily): Use SameSite=None once ParsedCookie supports it.
-  // Cookies without a SameSite attribute are parsed as
-  // CookieSameSite::NO_RESTRICTION, and are included for all URLs.
-  cookie = CanonicalCookie::Create(url, "A=2", creation_time, options);
+  // `SameSite=Extended` cookies are included for a URL only if the options'
+  // SameSiteCookieMode is SAME_SITE_STRICT or SAME_SITE_LAX.
+  // TODO(crbug.com/953995): Right now Extended behaves the same as Lax.
+  // Implement Extended.
+  cookie = CanonicalCookie::Create(url, "A=2; SameSite=Extended", creation_time,
+                                   options);
+  EXPECT_EQ(CookieSameSite::EXTENDED_MODE, cookie->SameSite());
+  options.set_same_site_cookie_context(
+      CookieOptions::SameSiteCookieContext::CROSS_SITE);
+  EXPECT_EQ(cookie->IncludeForRequestURL(url, options),
+            CanonicalCookie::CookieInclusionStatus::EXCLUDE_SAMESITE_LAX);
+  options.set_same_site_cookie_context(
+      CookieOptions::SameSiteCookieContext::SAME_SITE_LAX);
+  EXPECT_EQ(cookie->IncludeForRequestURL(url, options),
+            CanonicalCookie::CookieInclusionStatus::INCLUDE);
+  options.set_same_site_cookie_context(
+      CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
+  EXPECT_EQ(cookie->IncludeForRequestURL(url, options),
+            CanonicalCookie::CookieInclusionStatus::INCLUDE);
+
+  // `SameSite=None` cookies are included for all URLs.
+  cookie = CanonicalCookie::Create(url, "A=2; SameSite=None", creation_time,
+                                   options);
   EXPECT_EQ(CookieSameSite::NO_RESTRICTION, cookie->SameSite());
   options.set_same_site_cookie_context(
       CookieOptions::SameSiteCookieContext::CROSS_SITE);
@@ -586,11 +617,9 @@ TEST(CanonicalCookieTest, IncludeSameSiteForSameSiteURL) {
   EXPECT_EQ(cookie->IncludeForRequestURL(url, options),
             CanonicalCookie::CookieInclusionStatus::INCLUDE);
 
-  // TODO(chlily): Use Create() once ParsedCookie supports UNSPECIFIED.
-  // Cookies with CookieSameSite::UNSPECIFIED depend on the FeatureList.
-  cookie = std::make_unique<CanonicalCookie>(
-      "A", "2", "example.test", "/", creation_time, base::Time(), base::Time(),
-      false, false, CookieSameSite::UNSPECIFIED, COOKIE_PRIORITY_DEFAULT);
+  // Cookies with no SameSite attribute are parsed as
+  // CookieSameSite::UNSPECIFIED, and inclusion depends on the FeatureList.
+  cookie = CanonicalCookie::Create(url, "A=2", creation_time, options);
   EXPECT_EQ(CookieSameSite::UNSPECIFIED, cookie->SameSite());
   {
     base::test::ScopedFeatureList feature_list;

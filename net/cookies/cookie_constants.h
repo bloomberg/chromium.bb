@@ -44,7 +44,7 @@ NET_EXPORT CookiePriority StringToCookiePriority(const std::string& priority);
 NET_EXPORT std::string CookieSameSiteToString(CookieSameSite same_site);
 
 // Converts the Set-Cookie header SameSite token |same_site| to a
-// CookieSameSite. Defaults to CookieSameSite::NO_RESTRICTION for empty or
+// CookieSameSite. Defaults to CookieSameSite::UNSPECIFIED for empty or
 // unrecognized strings.
 NET_EXPORT CookieSameSite StringToCookieSameSite(const std::string& same_site);
 

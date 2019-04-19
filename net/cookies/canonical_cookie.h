@@ -139,8 +139,8 @@ class NET_EXPORT CanonicalCookie {
   // having been canonicalized (in
   // GetCookieDomainWithString->CanonicalizeHost).
   bool IsEquivalent(const CanonicalCookie& ecc) const {
-    // It seems like it would make sense to take secure and httponly into
-    // account, but the RFC doesn't specify this.
+    // It seems like it would make sense to take secure, httponly, and samesite
+    // into account, but the RFC doesn't specify this.
     // NOTE: Keep this logic in-sync with TrimDuplicateCookiesForHost().
     return (name_ == ecc.Name() && domain_ == ecc.Domain()
             && path_ == ecc.Path());
