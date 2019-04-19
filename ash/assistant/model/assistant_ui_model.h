@@ -92,8 +92,9 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantUiModel {
   void AddObserver(AssistantUiModelObserver* observer);
   void RemoveObserver(AssistantUiModelObserver* observer);
 
-  // Sets the UI mode.
-  void SetUiMode(AssistantUiMode ui_mode);
+  // Sets the UI mode. If |due_to_interaction| is true, the UI mode was changed
+  // as a result of an Assistant interaction.
+  void SetUiMode(AssistantUiMode ui_mode, bool due_to_interaction = false);
 
   // Returns the UI mode.
   AssistantUiMode ui_mode() const { return ui_mode_; }
@@ -119,7 +120,7 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantUiModel {
                      base::Optional<AssistantEntryPoint> entry_point,
                      base::Optional<AssistantExitPoint> exit_point);
 
-  void NotifyUiModeChanged();
+  void NotifyUiModeChanged(bool due_to_interaction);
   void NotifyUiVisibilityChanged(
       AssistantVisibility old_visibility,
       base::Optional<AssistantEntryPoint> entry_point,

@@ -342,7 +342,8 @@ void AssistantContainerView::Init() {
   AddChildView(assistant_web_view_);
 
   // Update the view state based on the current UI mode.
-  OnUiModeChanged(delegate_->GetUiModel()->ui_mode());
+  OnUiModeChanged(delegate_->GetUiModel()->ui_mode(),
+                  /*due_to_interaction=*/false);
 }
 
 void AssistantContainerView::RequestFocus() {
@@ -379,7 +380,8 @@ void AssistantContainerView::UpdateAnchor() {
   SetArrow(views::BubbleBorder::Arrow::BOTTOM_CENTER);
 }
 
-void AssistantContainerView::OnUiModeChanged(AssistantUiMode ui_mode) {
+void AssistantContainerView::OnUiModeChanged(AssistantUiMode ui_mode,
+                                             bool due_to_interaction) {
   for (auto* child : children())
     child->SetVisible(false);
 

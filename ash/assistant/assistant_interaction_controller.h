@@ -70,7 +70,8 @@ class AssistantInteractionController
   void OnCommittedQueryChanged(const AssistantQuery& assistant_query) override;
 
   // AssistantUiModelObserver:
-  void OnUiModeChanged(AssistantUiMode ui_mode) override;
+  void OnUiModeChanged(AssistantUiMode ui_mode,
+                       bool due_to_interaction) override;
   void OnUiVisibilityChanged(
       AssistantVisibility new_visibility,
       AssistantVisibility old_visibility,

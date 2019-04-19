@@ -48,7 +48,8 @@ class APP_LIST_EXPORT AssistantPageView : public AppListPage,
   views::View* GetLastFocusableView() override;
 
   // AssistantUiModelObserver:
-  void OnUiModeChanged(ash::AssistantUiMode ui_mode) override;
+  void OnUiModeChanged(ash::AssistantUiMode ui_mode,
+                       bool due_to_interaction) override;
   void OnUiVisibilityChanged(
       ash::AssistantVisibility new_visibility,
       ash::AssistantVisibility old_visibility,

@@ -46,7 +46,8 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantContainerView
   void RequestFocus() override;
 
   // AssistantUiModelObserver:
-  void OnUiModeChanged(AssistantUiMode ui_mode) override;
+  void OnUiModeChanged(AssistantUiMode ui_mode,
+                       bool due_to_interaction) override;
   void OnUsableWorkAreaChanged(const gfx::Rect& usable_work_area) override;
 
   // Returns the first focusable view or nullptr to defer to views::FocusSearch.

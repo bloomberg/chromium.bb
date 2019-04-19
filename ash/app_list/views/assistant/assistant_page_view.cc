@@ -81,7 +81,8 @@ void AssistantPageView::InitLayout() {
     AddChildView(assistant_web_view_);
 
     // Update the view state based on the current UI mode.
-    OnUiModeChanged(assistant_view_delegate_->GetUiModel()->ui_mode());
+    OnUiModeChanged(assistant_view_delegate_->GetUiModel()->ui_mode(),
+                    /*due_to_interaction=*/false);
   }
 }
 
@@ -178,7 +179,8 @@ views::View* AssistantPageView::GetLastFocusableView() {
       this, GetWidget(), /*reverse=*/true, /*dont_loop=*/false);
 }
 
-void AssistantPageView::OnUiModeChanged(ash::AssistantUiMode ui_mode) {
+void AssistantPageView::OnUiModeChanged(ash::AssistantUiMode ui_mode,
+                                        bool due_to_interaction) {
   for (auto* child : children())
     child->SetVisible(false);
 

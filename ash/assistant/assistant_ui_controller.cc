@@ -122,6 +122,15 @@ void AssistantUiController::OnInteractionStateChanged(
   // not already showing. We don't have enough information here to know what
   // the interaction source is.
   ShowUi(AssistantEntryPoint::kUnspecified);
+
+  // We also need to ensure that we're in the appropriate UI mode if we aren't
+  // already so that the interaction is visible to the user. Note that we
+  // indicate that this UI mode change is occurring due to an interaction so
+  // that we won't inadvertently stop the interaction due to the UI mode change.
+  UpdateUiMode(app_list_features::IsEmbeddedAssistantUIEnabled()
+                   ? AssistantUiMode::kLauncherEmbeddedUi
+                   : AssistantUiMode::kMainUi,
+               /*due_to_interaction=*/true);
 }
 
 void AssistantUiController::OnMicStateChanged(MicState mic_state) {
@@ -428,7 +437,8 @@ void AssistantUiController::ToggleUi(
 }
 
 void AssistantUiController::UpdateUiMode(
-    base::Optional<AssistantUiMode> ui_mode) {
+    base::Optional<AssistantUiMode> ui_mode,
+    bool due_to_interaction) {
   // If a UI mode is provided, we will use it in lieu of updating UI mode on the
   // basis of interaction/widget visibility state.
   if (ui_mode.has_value()) {
@@ -436,12 +446,12 @@ void AssistantUiController::UpdateUiMode(
     // TODO(wutao): Behavior is not defined.
     if (model_.ui_mode() == AssistantUiMode::kLauncherEmbeddedUi)
       DCHECK_NE(AssistantUiMode::kMiniUi, mode);
-    model_.SetUiMode(mode);
+    model_.SetUiMode(mode, due_to_interaction);
     return;
   }
 
   if (app_list_features::IsEmbeddedAssistantUIEnabled()) {
-    model_.SetUiMode(AssistantUiMode::kLauncherEmbeddedUi);
+    model_.SetUiMode(AssistantUiMode::kLauncherEmbeddedUi, due_to_interaction);
     return;
   }
 
@@ -453,7 +463,8 @@ void AssistantUiController::UpdateUiMode(
   // Otherwise we fall back to main UI mode.
   model_.SetUiMode(input_modality == InputModality::kStylus
                        ? AssistantUiMode::kMiniUi
-                       : AssistantUiMode::kMainUi);
+                       : AssistantUiMode::kMainUi,
+                   due_to_interaction);
 }
 
 void AssistantUiController::OnKeyboardWorkspaceOccludedBoundsChanged(

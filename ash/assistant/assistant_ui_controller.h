@@ -131,8 +131,10 @@ class ASH_EXPORT AssistantUiController
 
  private:
   // Updates UI mode to |ui_mode| if specified. Otherwise UI mode is updated on
-  // the basis of interaction/widget visibility state.
-  void UpdateUiMode(base::Optional<AssistantUiMode> ui_mode = base::nullopt);
+  // the basis of interaction/widget visibility state. If |due_to_interaction|
+  // is true, the UI mode changed because of an Assistant interaction.
+  void UpdateUiMode(base::Optional<AssistantUiMode> ui_mode = base::nullopt,
+                    bool due_to_interaction = false);
 
   // Calculate and update the usable work area.
   void UpdateUsableWorkArea(aura::Window* root_window);
