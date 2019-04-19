@@ -27,6 +27,8 @@
 
 namespace android_webview {
 
+constexpr unsigned int kCrashDumpPercentageForStable = 1;
+
 namespace {
 
 class AwCrashReporterClient : public crash_reporter::CrashReporterClient {
@@ -75,6 +77,9 @@ class AwCrashReporterClient : public crash_reporter::CrashReporterClient {
             switches::kEnableCrashReporterForTesting)) {
       return 100;
     }
+
+    if (version_info::android::GetChannel() == version_info::Channel::STABLE)
+      return kCrashDumpPercentageForStable;
 
     return 100;
   }
