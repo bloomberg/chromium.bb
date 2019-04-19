@@ -12,10 +12,8 @@
 // Protocol to communicate with the Infobar container.
 @protocol InfobarContainerConsumer
 
-// Adds |infoBarDelegate|'s Infobar to the InfobarContainer at position
-// |position|.
-- (void)addInfoBarWithDelegate:(id<InfobarUIDelegate>)infoBarDelegate
-                      position:(NSInteger)position;
+// Adds |infoBarDelegate|'s Infobar to the InfobarContainer.
+- (void)addInfoBarWithDelegate:(id<InfobarUIDelegate>)infoBarDelegate;
 
 // Sets the Infobar container user interaction to |enabled|.
 - (void)setUserInteractionEnabled:(BOOL)enabled;
