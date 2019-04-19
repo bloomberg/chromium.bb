@@ -50,10 +50,10 @@ namespace content {
 
 namespace {
 
-base::Optional<EmbeddedWorkerInstance::CreateNetworkFactoryCallback>&
+EmbeddedWorkerInstance::CreateNetworkFactoryCallback&
 GetNetworkFactoryCallbackForTest() {
   static base::NoDestructor<
-      base::Optional<EmbeddedWorkerInstance::CreateNetworkFactoryCallback>>
+      EmbeddedWorkerInstance::CreateNetworkFactoryCallback>
       callback;
   return *callback;
 }
@@ -974,16 +974,16 @@ EmbeddedWorkerInstance::CreateFactoryBundleOnUI(RenderProcessHost* rph,
         rph, routing_id, &default_factory_request);
   }
 
-  if (!GetNetworkFactoryCallbackForTest()) {
+  if (GetNetworkFactoryCallbackForTest().is_null()) {
     rph->CreateURLLoaderFactory(origin, std::move(default_header_client),
                                 std::move(default_factory_request));
   } else {
     network::mojom::URLLoaderFactoryPtr original_factory;
     rph->CreateURLLoaderFactory(origin, std::move(default_header_client),
                                 mojo::MakeRequest(&original_factory));
-    GetNetworkFactoryCallbackForTest()->Run(std::move(default_factory_request),
-                                            rph->GetID(),
-                                            original_factory.PassInterface());
+    GetNetworkFactoryCallbackForTest().Run(std::move(default_factory_request),
+                                           rph->GetID(),
+                                           original_factory.PassInterface());
   }
 
   factory_bundle->set_bypass_redirect_checks(bypass_redirect_checks);

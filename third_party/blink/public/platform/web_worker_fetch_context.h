@@ -112,7 +112,7 @@ class WebWorkerFetchContext : public base::RefCounted<WebWorkerFetchContext> {
 
   // The top-frame-origin for the worker. For a dedicated worker this is the
   // top-frame origin of the page that created the worker. For a shared worker
-  // this is unset.
+  // or a service worker this is unset.
   virtual base::Optional<WebSecurityOrigin> TopFrameOrigin() const = 0;
 
   // Reports the certificate error to the browser process.

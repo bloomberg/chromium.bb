@@ -55,8 +55,7 @@ scoped_refptr<const SecurityOrigin> WorkerFetchContext::GetTopFrameOrigin()
   base::Optional<WebSecurityOrigin> top_frame_origin =
       web_context_->TopFrameOrigin();
 
-  // TODO(crbug.com/918868) The top frame origin of shared and service
-  // workers is unknown.
+  // The top frame origin of shared and service workers is null.
   if (!top_frame_origin) {
     DCHECK(global_scope_->IsSharedWorkerGlobalScope() ||
            global_scope_->IsServiceWorkerGlobalScope());

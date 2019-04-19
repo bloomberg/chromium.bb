@@ -72,6 +72,7 @@
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_utils.h"
+#include "content/public/test/url_loader_interceptor.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "content/test/test_content_browser_client.h"
@@ -1696,6 +1697,64 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, FetchWithoutSaveData) {
   InstallTestHelper("/service_worker/fetch_in_install.js",
                     blink::ServiceWorkerStatusCode::kOk);
   SetBrowserClientForTesting(old_client);
+}
+
+// Tests the |top_frame_origin| and |request_initiator| on the main resource and
+// subresource requests from service workers, in order to ensure proper handling
+// by the SplitCache. See https://crbug.com/918868.
+IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, RequestOrigin) {
+  embedded_test_server()->StartAcceptingConnections();
+
+  // To make things tricky about |top_frame_origin|, this test navigates to a
+  // page on |embedded_test_server()| which has a cross-origin iframe that
+  // registers the service worker.
+  net::EmbeddedTestServer cross_origin_server;
+  cross_origin_server.ServeFilesFromSourceDirectory(GetTestDataFilePath());
+  ASSERT_TRUE(cross_origin_server.Start());
+
+  // There are three requests to test:
+  // 1) The request for the worker itself ("request_origin_worker.js").
+  // 2) importScripts("empty.js") from the service worker.
+  // 3) fetch("empty.html") from the service worker.
+  std::set<GURL> expected_request_urls = {
+      cross_origin_server.GetURL("/service_worker/request_origin_worker.js"),
+      cross_origin_server.GetURL("/service_worker/empty.js"),
+      cross_origin_server.GetURL("/service_worker/empty.html")};
+
+  base::RunLoop request_origin_expectation_waiter;
+  URLLoaderInterceptor request_listener(base::BindLambdaForTesting(
+      [&](URLLoaderInterceptor::RequestParams* params) {
+        auto it = expected_request_urls.find(params->url_request.url);
+        if (it != expected_request_urls.end()) {
+          EXPECT_TRUE(params->url_request.originated_from_service_worker);
+          EXPECT_FALSE(params->url_request.top_frame_origin.has_value());
+          EXPECT_TRUE(params->url_request.request_initiator.has_value());
+          EXPECT_EQ(params->url_request.request_initiator->GetURL(),
+                    cross_origin_server.base_url());
+          expected_request_urls.erase(it);
+        }
+        if (expected_request_urls.empty())
+          request_origin_expectation_waiter.Quit();
+        return false;
+      }));
+
+  NavigateToURLBlockUntilNavigationsComplete(
+      shell(),
+      embedded_test_server()->GetURL(
+          "/service_worker/one_subframe.html?subframe_url=" +
+          cross_origin_server
+              .GetURL("/service_worker/create_service_worker.html")
+              .spec()),
+      1);
+  RenderFrameHost* subframe_rfh = FrameMatchingPredicate(
+      shell()->web_contents(),
+      base::BindRepeating(&FrameMatchesName, "subframe_name"));
+  DCHECK(subframe_rfh);
+
+  EXPECT_EQ("DONE",
+            EvalJs(subframe_rfh, "register('request_origin_worker.js');"));
+
+  request_origin_expectation_waiter.Run();
 }
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, FetchPageWithSaveData) {

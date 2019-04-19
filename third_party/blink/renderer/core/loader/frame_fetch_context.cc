@@ -396,7 +396,14 @@ void FrameFetchContext::PrepareRequest(
        ResourceRequest::RedirectStatus::kFollowedRedirect);
 
   SetFirstPartyCookie(request);
-  request.SetTopFrameOrigin(GetTopFrameOrigin());
+  if (request.GetRequestContext() ==
+      mojom::RequestContextType::SERVICE_WORKER) {
+    // The top frame origin is defined to be null for service worker main
+    // resource requests.
+    DCHECK(!request.TopFrameOrigin());
+  } else {
+    request.SetTopFrameOrigin(GetTopFrameOrigin());
+  }
 
   String user_agent = GetUserAgent();
   request.SetHTTPUserAgent(AtomicString(user_agent));
