@@ -433,13 +433,12 @@ bool HttpUtil::IsMethodIdempotent(base::StringPiece method) {
 
 // static
 bool HttpUtil::IsSafeHeader(base::StringPiece name) {
-  std::string lower_name(base::ToLowerASCII(name));
-  if (base::StartsWith(lower_name, "proxy-", base::CompareCase::SENSITIVE) ||
-      base::StartsWith(lower_name, "sec-", base::CompareCase::SENSITIVE))
+  if (base::StartsWith(name, "proxy-", base::CompareCase::INSENSITIVE_ASCII) ||
+      base::StartsWith(name, "sec-", base::CompareCase::INSENSITIVE_ASCII))
     return false;
 
   for (const char* field : kForbiddenHeaderFields) {
-    if (lower_name == field)
+    if (base::LowerCaseEqualsASCII(name, field))
       return false;
   }
   return true;
