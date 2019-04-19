@@ -85,15 +85,8 @@ declare_args() {
   # are combined and we could override more logging than expected.
   enable_logging_override = !use_jumbo_build && is_chromecast
 
-  if (is_win && target_cpu == "arm64") {
-    # TODO: Enable dav1d for Windows ARM64. https://crbug.com/941022
-    enable_dav1d_decoder = false
-  } else if (is_fuchsia) {
-    # TODO: Fix media_unittests for fuchsia X64. https://crbug.com/930300
-    enable_dav1d_decoder = false
-  } else {
-    enable_dav1d_decoder = !is_android && !is_ios
-  }
+  # TODO(crbug.com/930300): Fix media_unittests for fuchsia X64.
+  enable_dav1d_decoder = !is_android && !is_ios && !is_fuchsia
 }
 
 declare_args() {

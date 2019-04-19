@@ -21,6 +21,8 @@
 
 // #define CONFIG_LOG 1 -- Logging is controlled by Chromium
 
+#define ENDIANNESS_BIG 0
+
 #define HAVE_ASM 0
 
 #define HAVE_POSIX_MEMALIGN 1
