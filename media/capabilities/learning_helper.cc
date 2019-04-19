@@ -25,6 +25,9 @@ using learning::TargetValue;
 // update histograms.xml if you change them!
 // Dropped frame ratio, default features, regression tree.
 const char* const kDroppedFrameRatioBaseTreeTaskName = "BaseTree";
+// Same as BaseTree, but with unweighted examples.
+const char* const kDroppedFrameRatioBaseUnweightedTreeTaskName =
+    "BaseUnweightedTree";
 // Dropped frame ratio, default+FeatureLibrary features, regression tree.
 const char* const kDroppedFrameRatioEnhancedTreeTaskName = "EnhancedTree";
 // Dropped frame ratio, default+FeatureLibrary features, regression tree,
@@ -37,6 +40,9 @@ const char* const kBinarySmoothnessEnhancedUnweightedTreeTaskName =
     "BinarySmoothnessTree";
 // Dropped frame ratio, default features, lookup table.
 const char* const kDroppedFrameRatioBaseTableTaskName = "BaseTable";
+// Same as BaseTable, but with unweighted examples.
+const char* const kDroppedFrameRatioBaseUnweightedTableTaskName =
+    "BaseUnweightedTable";
 
 // Threshold for the dropped frame to total frame ratio, at which we'll decide
 // that the playback was not smooth.
@@ -82,6 +88,7 @@ LearningHelper::LearningHelper(FeatureProviderFactoryCB feature_factory) {
   // So, we multiply by about 20 to approximate the number of buckets to keep
   // it about the same as the size of the cross product.
   const double weighted_reporting_max = 49999.;
+  const double unweighted_reporting_max = 99.;
   dropped_frame_task.max_reporting_weight = weighted_reporting_max;
 
   learning_session_->RegisterTask(dropped_frame_task,
@@ -89,17 +96,35 @@ LearningHelper::LearningHelper(FeatureProviderFactoryCB feature_factory) {
   base_table_controller_ =
       learning_session_->GetController(dropped_frame_task.name);
 
+  // Unweighted table
+  dropped_frame_task.name = kDroppedFrameRatioBaseUnweightedTableTaskName;
+  dropped_frame_task.max_reporting_weight = unweighted_reporting_max;
+  learning_session_->RegisterTask(dropped_frame_task,
+                                  SequenceBoundFeatureProvider());
+  base_unweighted_table_controller_ =
+      learning_session_->GetController(dropped_frame_task.name);
+
   // Modify the task to use ExtraTrees.
   dropped_frame_task.name = kDroppedFrameRatioBaseTreeTaskName;
   dropped_frame_task.model = LearningTask::Model::kExtraTrees;
+  dropped_frame_task.max_reporting_weight = weighted_reporting_max;
   learning_session_->RegisterTask(dropped_frame_task,
                                   SequenceBoundFeatureProvider());
   base_tree_controller_ =
       learning_session_->GetController(dropped_frame_task.name);
 
+  // Unweighted base tree.
+  dropped_frame_task.name = kDroppedFrameRatioBaseUnweightedTreeTaskName;
+  dropped_frame_task.max_reporting_weight = unweighted_reporting_max;
+  learning_session_->RegisterTask(dropped_frame_task,
+                                  SequenceBoundFeatureProvider());
+  base_unweighted_tree_controller_ =
+      learning_session_->GetController(dropped_frame_task.name);
+
   // Add common features, if we have a factory.
   if (feature_factory) {
     dropped_frame_task.name = kDroppedFrameRatioEnhancedTreeTaskName;
+    dropped_frame_task.max_reporting_weight = weighted_reporting_max;
     dropped_frame_task.feature_descriptions.push_back(
         {"origin", ::media::learning::LearningTask::Ordering::kUnordered});
     dropped_frame_task.feature_descriptions.push_back(
@@ -115,10 +140,10 @@ LearningHelper::LearningHelper(FeatureProviderFactoryCB feature_factory) {
     // unweighted examples to it to see which one does better.
     dropped_frame_task.name = kDroppedFrameRatioEnhancedUnweightedTreeTaskName;
     // Adjust the reporting weight since we'll have 100 or fewer examples.
-    dropped_frame_task.max_reporting_weight = 99.;
+    dropped_frame_task.max_reporting_weight = unweighted_reporting_max;
     learning_session_->RegisterTask(dropped_frame_task,
                                     feature_factory.Run(dropped_frame_task));
-    unweighted_tree_controller_ =
+    enhanced_unweighted_tree_controller_ =
         learning_session_->GetController(dropped_frame_task.name);
 
     // Set up the binary smoothness task.  This has a nominal target, with
@@ -136,7 +161,7 @@ LearningHelper::LearningHelper(FeatureProviderFactoryCB feature_factory) {
     // want to pick the majority.  Note that I have no idea if this is actually
     // the best threshold, but it seems like a good place to start.
     dropped_frame_task.smoothness_threshold = 0.5;
-    dropped_frame_task.max_reporting_weight = weighted_reporting_max;
+    dropped_frame_task.max_reporting_weight = unweighted_reporting_max;
     learning_session_->RegisterTask(dropped_frame_task,
                                     feature_factory.Run(dropped_frame_task));
     binary_tree_controller_ =
@@ -178,18 +203,24 @@ void LearningHelper::AppendStats(
   // the examples is the right thing to do.
   example.target_value = TargetValue(
       static_cast<double>(new_stats.frames_dropped) / new_stats.frames_decoded);
-  example.weight = new_stats.frames_decoded;
 
   // Add this example to all tasks.
+  example.weight = 1u;
+  AddExample(base_unweighted_table_controller_.get(), example);
+  AddExample(base_unweighted_tree_controller_.get(), example);
+
+  example.weight = new_stats.frames_decoded;
   AddExample(base_table_controller_.get(), example);
   AddExample(base_tree_controller_.get(), example);
+
   if (enhanced_tree_controller_) {
     example.features.push_back(origin);
+    example.weight = new_stats.frames_decoded;
     AddExample(enhanced_tree_controller_.get(), example);
 
     // Also add to the unweighted model.
     example.weight = 1u;
-    AddExample(unweighted_tree_controller_.get(), example);
+    AddExample(enhanced_unweighted_tree_controller_.get(), example);
 
     // Threshold the target to 0 for "smooth", and 1 for "not smooth".
     example.target_value =

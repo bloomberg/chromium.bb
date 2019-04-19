@@ -47,8 +47,13 @@ class MEDIA_EXPORT LearningHelper {
   // Controllers for each task.
   std::unique_ptr<learning::LearningTaskController> base_table_controller_;
   std::unique_ptr<learning::LearningTaskController> base_tree_controller_;
+  std::unique_ptr<learning::LearningTaskController>
+      base_unweighted_table_controller_;
+  std::unique_ptr<learning::LearningTaskController>
+      base_unweighted_tree_controller_;
   std::unique_ptr<learning::LearningTaskController> enhanced_tree_controller_;
-  std::unique_ptr<learning::LearningTaskController> unweighted_tree_controller_;
+  std::unique_ptr<learning::LearningTaskController>
+      enhanced_unweighted_tree_controller_;
   std::unique_ptr<learning::LearningTaskController> binary_tree_controller_;
 };
 
