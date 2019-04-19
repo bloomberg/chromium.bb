@@ -11,12 +11,34 @@
 #include "ash/public/interfaces/assistant_setup.mojom.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/arc/voice_interaction/voice_interaction_controller_client.h"
-#include "chrome/browser/chromeos/login/screens/assistant_optin_flow_screen_view.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chromeos/services/assistant/public/mojom/settings.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace chromeos {
+
+class AssistantOptInFlowScreen;
+
+// Interface for dependency injection between AssistantOptInFlowScreen
+// and its WebUI representation.
+class AssistantOptInFlowScreenView {
+ public:
+  constexpr static OobeScreen kScreenId =
+      OobeScreen::SCREEN_ASSISTANT_OPTIN_FLOW;
+
+  virtual ~AssistantOptInFlowScreenView() = default;
+
+  virtual void Bind(AssistantOptInFlowScreen* screen) = 0;
+  virtual void Unbind() = 0;
+  virtual void Show() = 0;
+  virtual void Hide() = 0;
+
+ protected:
+  AssistantOptInFlowScreenView() = default;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(AssistantOptInFlowScreenView);
+};
 
 // TODO(updowndota): Refactor to reuse AssistantOptInHandler methods.
 class AssistantOptInFlowScreenHandler

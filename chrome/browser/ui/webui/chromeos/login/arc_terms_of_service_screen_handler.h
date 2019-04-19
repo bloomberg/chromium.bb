@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/arc/optin/arc_optin_preference_handler_observer.h"
-#include "chrome/browser/chromeos/login/screens/arc_terms_of_service_screen_view.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chromeos/network/network_state_handler_observer.h"
@@ -24,6 +23,35 @@ class ArcOptInPreferenceHandler;
 namespace chromeos {
 
 class ArcTermsOfServiceScreen;
+class ArcTermsOfServiceScreenViewObserver;
+
+class ArcTermsOfServiceScreenView {
+ public:
+  constexpr static OobeScreen kScreenId =
+      OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE;
+
+  virtual ~ArcTermsOfServiceScreenView() = default;
+
+  // Adds/Removes observer for view.
+  virtual void AddObserver(ArcTermsOfServiceScreenViewObserver* observer) = 0;
+  virtual void RemoveObserver(
+      ArcTermsOfServiceScreenViewObserver* observer) = 0;
+
+  // Shows the contents of the screen.
+  virtual void Show() = 0;
+
+  // Hides the contents of the screen.
+  virtual void Hide() = 0;
+
+  // Sets view and screen.
+  virtual void Bind(ArcTermsOfServiceScreen* screen) = 0;
+
+ protected:
+  ArcTermsOfServiceScreenView() = default;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ArcTermsOfServiceScreenView);
+};
 
 // The sole implementation of the ArcTermsOfServiceScreenView, using WebUI.
 class ArcTermsOfServiceScreenHandler
