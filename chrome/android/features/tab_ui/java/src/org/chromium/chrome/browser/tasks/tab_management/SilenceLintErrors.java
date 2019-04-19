@@ -29,7 +29,12 @@ import org.chromium.chrome.R;
             R.dimen.tab_list_card_padding, R.dimen.tab_list_mini_card_text_size,
             R.dimen.tab_list_mini_card_frame_size, R.dimen.tab_list_mini_card_radius,
             R.drawable.tabstrip_favicon_background, R.dimen.swipe_to_dismiss_threshold,
-            R.dimen.tab_grid_thumbnail_card_default_size, R.dimen.tab_list_selected_inset_kitkat};
+            R.dimen.tab_grid_thumbnail_card_default_size, R.dimen.tab_list_selected_inset_kitkat,
+            R.dimen.tab_grid_thumbnail_favicon_padding,
+            R.dimen.tab_grid_thumbnail_favicon_frame_padding,
+            R.dimen.tab_grid_thumbnail_favicon_background_radius,
+            R.dimen.tab_grid_thumbnail_favicon_background_padding,
+            R.dimen.tab_grid_thumbnail_favicon_background_down_shift};
 
     private SilenceLintErrors() {}
 }

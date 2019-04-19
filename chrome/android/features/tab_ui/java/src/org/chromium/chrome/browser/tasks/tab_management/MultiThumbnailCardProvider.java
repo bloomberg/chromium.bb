@@ -13,12 +13,14 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.graphics.drawable.Drawable;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
@@ -35,13 +37,17 @@ public class MultiThumbnailCardProvider implements TabListMediator.ThumbnailProv
     private final TabContentManager mTabContentManager;
     private final TabModelSelector mTabModelSelector;
 
-    private final float mPadding;
     private final float mRadius;
+    private final float mFaviconCirclePadding;
+    private final int mSize;
     private final Paint mEmptyThumbnailPaint;
     private final Paint mThumbnailFramePaint;
     private final Paint mTextPaint;
-    private final int mSize;
-    private final List<RectF> mRects = new ArrayList<>(4);
+    private final Paint mFaviconBackgroundPaint;
+    private final List<Rect> mFaviconRects = new ArrayList<>(4);
+    private final List<RectF> mThumbnailRects = new ArrayList<>(4);
+    private final List<RectF> mFaviconBackgroundRects = new ArrayList<>(4);
+    private final TabListFaviconProvider mTabListFaviconProvider;
 
     private class MultiThumbnailFetcher {
         private final Tab mInitialTab;
@@ -98,19 +104,28 @@ public class MultiThumbnailCardProvider implements TabListMediator.ThumbnailProv
             for (int i = 0; i < 4; i++) {
                 if (mTabs.get(i) != null) {
                     final int index = i;
-                    mTabContentManager.getTabThumbnailWithCallback(mTabs.get(i), result -> {
-                        drawBitmapOnCanvasWithFrame(result, index, mEmptyThumbnailPaint);
-                        if (mThumbnailsToFetch.decrementAndGet() == 0) {
-                            PostTask.postTask(UiThreadTaskTraits.USER_VISIBLE,
-                                    () -> mFinalCallback.onResult(mMultiThumbnailBitmap));
-                        }
+                    final String url = mTabs.get(i).getUrl();
+                    final boolean isIncognito = mTabs.get(i).isIncognito();
+                    mTabContentManager.getTabThumbnailWithCallback(mTabs.get(i), thumbnail -> {
+                        drawThumbnailBitmapOnCanvasWithFrame(thumbnail, index);
+                        mTabListFaviconProvider.getFaviconForUrlAsync(
+                                url, isIncognito, (Drawable favicon) -> {
+                                    drawFaviconDrawableOnCanvasWithFrame(favicon, index);
+                                    if (mThumbnailsToFetch.decrementAndGet() == 0) {
+                                        PostTask.postTask(UiThreadTaskTraits.USER_VISIBLE,
+                                                ()
+                                                        -> mFinalCallback.onResult(
+                                                                mMultiThumbnailBitmap));
+                                    }
+                                });
                     }, mForceUpdate && i == 0);
                 } else {
-                    drawBitmapOnCanvasWithFrame(null, i, mEmptyThumbnailPaint);
+                    drawThumbnailBitmapOnCanvasWithFrame(null, i);
                     if (mText != null && i == 3) {
                         // Draw the text exactly centered on the thumbnail rect.
-                        mCanvas.drawText(mText, (mRects.get(i).left + mRects.get(i).right) / 2,
-                                (mRects.get(i).top + mRects.get(i).bottom) / 2
+                        mCanvas.drawText(mText,
+                                (mThumbnailRects.get(i).left + mThumbnailRects.get(i).right) / 2,
+                                (mThumbnailRects.get(i).top + mThumbnailRects.get(i).bottom) / 2
                                         - ((mTextPaint.descent() + mTextPaint.ascent()) / 2),
                                 mTextPaint);
                     }
@@ -118,24 +133,35 @@ public class MultiThumbnailCardProvider implements TabListMediator.ThumbnailProv
             }
         }
 
-        private void drawBitmapOnCanvasWithFrame(
-                Bitmap result, int index, Paint emptyThumbnailPaint) {
+        private void drawThumbnailBitmapOnCanvasWithFrame(Bitmap thumbnail, int index) {
             // Draw the rounded rect. If Bitmap is not null, this is used for XferMode.
-            mCanvas.drawRoundRect(mRects.get(index), mRadius, mRadius, emptyThumbnailPaint);
+            mCanvas.drawRoundRect(
+                    mThumbnailRects.get(index), mRadius, mRadius, mEmptyThumbnailPaint);
 
-            if (result == null) return;
+            if (thumbnail == null) return;
 
-            result = Bitmap.createScaledBitmap(result, (int) mRects.get(index).width(),
-                    (int) mRects.get(index).height(), true);
+            thumbnail =
+                    Bitmap.createScaledBitmap(thumbnail, (int) mThumbnailRects.get(index).width(),
+                            (int) mThumbnailRects.get(index).height(), true);
 
-            emptyThumbnailPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
-            mCanvas.drawBitmap(result, new Rect(0, 0, result.getWidth(), result.getHeight()),
-                    mRects.get(index), emptyThumbnailPaint);
-            result.recycle();
+            mEmptyThumbnailPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
+            mCanvas.drawBitmap(thumbnail,
+                    new Rect(0, 0, thumbnail.getWidth(), thumbnail.getHeight()),
+                    mThumbnailRects.get(index), mEmptyThumbnailPaint);
+            thumbnail.recycle();
 
-            emptyThumbnailPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_OVER));
+            mEmptyThumbnailPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_OVER));
 
-            mCanvas.drawRoundRect(mRects.get(index), mRadius, mRadius, mThumbnailFramePaint);
+            mCanvas.drawRoundRect(
+                    mThumbnailRects.get(index), mRadius, mRadius, mThumbnailFramePaint);
+        }
+
+        private void drawFaviconDrawableOnCanvasWithFrame(Drawable favicon, int index) {
+            RectF rectF = mFaviconBackgroundRects.get(index);
+            mCanvas.drawCircle((rectF.left + rectF.right) / 2, (rectF.bottom + rectF.top) / 2,
+                    rectF.width() / 2 - mFaviconCirclePadding, mFaviconBackgroundPaint);
+            favicon.setBounds(mFaviconRects.get(index));
+            favicon.draw(mCanvas);
         }
 
         private void fetch() {
@@ -147,10 +173,12 @@ public class MultiThumbnailCardProvider implements TabListMediator.ThumbnailProv
             TabModelSelector tabModelSelector) {
         mTabContentManager = tabContentManager;
         mTabModelSelector = tabModelSelector;
-        mPadding = context.getResources().getDimension(R.dimen.tab_list_card_padding);
         mRadius = context.getResources().getDimension(R.dimen.tab_list_mini_card_radius);
         mSize = (int) context.getResources().getDimension(
                 R.dimen.tab_grid_thumbnail_card_default_size);
+        mFaviconCirclePadding = context.getResources().getDimension(
+                R.dimen.tab_grid_thumbnail_favicon_background_padding);
+        mTabListFaviconProvider = new TabListFaviconProvider(context, Profile.getLastUsedProfile());
 
         // Initialize Paints to use.
         mEmptyThumbnailPaint = new Paint();
@@ -174,15 +202,49 @@ public class MultiThumbnailCardProvider implements TabListMediator.ThumbnailProv
         mTextPaint.setAntiAlias(true);
         mTextPaint.setTextAlign(Paint.Align.CENTER);
 
-        // Initialize Rects.
-        mRects.add(
-                new RectF(mPadding, mPadding, mSize / 2 - mPadding / 2, mSize / 2 - mPadding / 2));
-        mRects.add(new RectF(
-                mSize / 2 + mPadding / 2, mPadding, mSize - mPadding, mSize / 2 - mPadding / 2));
-        mRects.add(new RectF(
-                mPadding, mSize / 2 + mPadding / 2, mSize / 2 - mPadding / 2, mSize - mPadding));
-        mRects.add(new RectF(mSize / 2 + mPadding / 2, mSize / 2 + mPadding / 2, mSize - mPadding,
-                mSize - mPadding));
+        mFaviconBackgroundPaint = new Paint();
+        mFaviconBackgroundPaint.setAntiAlias(true);
+        mFaviconBackgroundPaint.setColor(Color.WHITE);
+        mFaviconBackgroundPaint.setStyle(Paint.Style.FILL);
+        mFaviconBackgroundPaint.setShadowLayer(
+                context.getResources().getDimension(
+                        R.dimen.tab_grid_thumbnail_favicon_background_radius),
+                0,
+                context.getResources().getDimension(
+                        R.dimen.tab_grid_thumbnail_favicon_background_down_shift),
+                context.getResources().getColor(R.color.modern_grey_800_alpha_38));
+
+        // Initialize Rects for thumbnails.
+        float thumbnailPadding = context.getResources().getDimension(R.dimen.tab_list_card_padding);
+        float thumbnailFaviconPadding =
+                context.getResources().getDimension(R.dimen.tab_grid_thumbnail_favicon_padding);
+        float thumbnailFaviconBackgroundPadding = context.getResources().getDimension(
+                R.dimen.tab_grid_thumbnail_favicon_frame_padding);
+
+        mThumbnailRects.add(new RectF(thumbnailPadding, thumbnailPadding,
+                mSize / 2 - thumbnailPadding / 2, mSize / 2 - thumbnailPadding / 2));
+        mThumbnailRects.add(new RectF(mSize / 2 + thumbnailPadding / 2, thumbnailPadding,
+                mSize - thumbnailPadding, mSize / 2 - thumbnailPadding / 2));
+        mThumbnailRects.add(new RectF(thumbnailPadding, mSize / 2 + thumbnailPadding / 2,
+                mSize / 2 - thumbnailPadding / 2, mSize - thumbnailPadding));
+        mThumbnailRects.add(
+                new RectF(mSize / 2 + thumbnailPadding / 2, mSize / 2 + thumbnailPadding / 2,
+                        mSize - thumbnailPadding, mSize - thumbnailPadding));
+
+        // Initialize Rects for favicons and favicon backgrounds.
+        for (int i = 0; i < 4; i++) {
+            RectF thumbnailRect = mThumbnailRects.get(i);
+            mFaviconBackgroundRects.add(
+                    new RectF(thumbnailRect.left + thumbnailFaviconBackgroundPadding,
+                            thumbnailRect.top + thumbnailFaviconBackgroundPadding,
+                            thumbnailRect.right - thumbnailFaviconBackgroundPadding,
+                            thumbnailRect.bottom - thumbnailFaviconBackgroundPadding));
+
+            mFaviconRects.add(new Rect(Math.round(thumbnailRect.left + thumbnailFaviconPadding),
+                    Math.round(thumbnailRect.top + thumbnailFaviconPadding),
+                    Math.round(thumbnailRect.right - thumbnailFaviconPadding),
+                    Math.round(thumbnailRect.bottom - thumbnailFaviconPadding)));
+        }
     }
 
     @Override
