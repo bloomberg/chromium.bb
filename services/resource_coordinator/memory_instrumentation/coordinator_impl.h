@@ -87,6 +87,9 @@ class CoordinatorImpl : public Coordinator,
   // virtual for testing.
   virtual base::ProcessId GetProcessIdForClientIdentity(
       service_manager::Identity identity) const;
+  // virtual for testing.
+  virtual std::map<base::ProcessId, std::vector<std::string>>
+  ComputePidToServiceNamesMap() const;
   ~CoordinatorImpl() override;
 
  private:

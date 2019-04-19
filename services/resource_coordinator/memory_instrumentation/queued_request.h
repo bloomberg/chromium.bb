@@ -64,10 +64,12 @@ struct QueuedRequest {
 
   struct Response {
     Response();
+    Response(Response&& other);
     ~Response();
 
     base::ProcessId process_id = base::kNullProcessId;
     mojom::ProcessType process_type = mojom::ProcessType::OTHER;
+    std::vector<std::string> service_names;
     std::unique_ptr<base::trace_event::ProcessMemoryDump> chrome_dump;
     OSMemDumpMap os_dumps;
   };

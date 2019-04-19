@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/test/trace_event_analyzer.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
@@ -38,6 +39,7 @@ using ::testing::NotNull;
 using ::testing::Pointee;
 using ::testing::Property;
 using ::testing::Return;
+using ::testing::UnorderedElementsAre;
 
 using GetVmRegionsForHeapProfilerCallback = memory_instrumentation::
     CoordinatorImpl::GetVmRegionsForHeapProfilerCallback;
@@ -69,6 +71,8 @@ class FakeCoordinatorImpl : public CoordinatorImpl {
                      service_manager::Identity());
   MOCK_CONST_METHOD1(GetProcessIdForClientIdentity,
                      base::ProcessId(service_manager::Identity));
+  MOCK_CONST_METHOD0(ComputePidToServiceNamesMap,
+                     std::map<base::ProcessId, std::vector<std::string>>());
 };
 
 class CoordinatorImplTest : public testing::Test {
@@ -83,14 +87,22 @@ class CoordinatorImplTest : public testing::Test {
   void RegisterClientProcess(mojom::ClientProcessPtr client_process,
                              base::ProcessId pid,
                              mojom::ProcessType process_type) {
-    service_manager::Identity identity(std::to_string(pid), base::Token{1, 1},
-                                       base::Token{}, base::Token{1, 1});
+    service_manager::Identity identity(base::NumberToString(pid),
+                                       base::Token{1, 1}, base::Token{},
+                                       base::Token{1, 1});
 
     ON_CALL(*coordinator_, GetClientIdentityForCurrentRequest())
         .WillByDefault(Return(identity));
 
     ON_CALL(*coordinator_, GetProcessIdForClientIdentity(identity))
         .WillByDefault(Return(pid));
+
+    ON_CALL(*coordinator_, ComputePidToServiceNamesMap())
+        .WillByDefault(
+            Return(std::map<base::ProcessId, std::vector<std::string>>(
+                {{1, {"bootup_helper", "1"}},
+                 {2, {"bootup_helper", "2"}},
+                 {3, {"bootup_helper", "3"}}})));
 
     coordinator_->RegisterClientProcess(std::move(client_process),
                                         process_type);
@@ -685,6 +697,11 @@ TEST_F(CoordinatorImplTest, GlobalMemoryDumpStruct) {
         mojom::ProcessMemoryDumpPtr browser_dump = nullptr;
         mojom::ProcessMemoryDumpPtr renderer_dump = nullptr;
         for (mojom::ProcessMemoryDumpPtr& dump : global_dump->process_dumps) {
+          // Service names should match what ComputePidToServiceNamesMap
+          // provides.
+          EXPECT_THAT(dump->service_names,
+                      UnorderedElementsAre("bootup_helper",
+                                           base::NumberToString(dump->pid)));
           if (dump->process_type == mojom::ProcessType::BROWSER) {
             browser_dump = std::move(dump);
           } else if (dump->process_type == mojom::ProcessType::RENDERER) {
@@ -937,15 +954,24 @@ TEST_F(CoordinatorImplTest, DumpByPidSuccess) {
       .WillOnce(Invoke([](bool success, GlobalMemoryDump* global_dump) {
         EXPECT_EQ(1U, global_dump->process_dumps.size());
         EXPECT_EQ(global_dump->process_dumps[0]->pid, kBrowserPid);
+        EXPECT_THAT(global_dump->process_dumps[0]->service_names,
+                    UnorderedElementsAre("bootup_helper",
+                                         base::NumberToString(kBrowserPid)));
       }))
       .WillOnce(Invoke([](bool success, GlobalMemoryDump* global_dump) {
         EXPECT_EQ(1U, global_dump->process_dumps.size());
         EXPECT_EQ(global_dump->process_dumps[0]->pid, kRendererPid);
+        EXPECT_THAT(global_dump->process_dumps[0]->service_names,
+                    UnorderedElementsAre("bootup_helper",
+                                         base::NumberToString(kRendererPid)));
       }))
       .WillOnce(
           Invoke([&run_loop](bool success, GlobalMemoryDump* global_dump) {
             EXPECT_EQ(1U, global_dump->process_dumps.size());
             EXPECT_EQ(global_dump->process_dumps[0]->pid, kGpuPid);
+            EXPECT_THAT(global_dump->process_dumps[0]->service_names,
+                        UnorderedElementsAre("bootup_helper",
+                                             base::NumberToString(kGpuPid)));
             run_loop.Quit();
           }));
 

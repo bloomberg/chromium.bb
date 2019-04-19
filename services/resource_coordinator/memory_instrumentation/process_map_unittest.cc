@@ -9,6 +9,7 @@
 #include "services/resource_coordinator/memory_instrumentation/process_map.h"
 #include "services/service_manager/public/cpp/identity.h"
 #include "services/service_manager/public/mojom/service_manager.mojom.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace memory_instrumentation {
@@ -16,6 +17,7 @@ namespace memory_instrumentation {
 using RunningServiceInfoPtr = service_manager::mojom::RunningServiceInfoPtr;
 using ServiceManagerListenerRequest =
     service_manager::mojom::ServiceManagerListenerRequest;
+using testing::ElementsAre;
 
 service_manager::Identity MakeFakeId(const std::string& service_name) {
   // The details of this Identity don't really matter. Name is used for test
@@ -92,6 +94,13 @@ TEST(ProcessMapTest, TypicalCase) {
   process_map.OnServicePIDReceived(id2, 2 /* pid */);
   EXPECT_EQ(static_cast<base::ProcessId>(1), process_map.GetProcessId(id1));
   EXPECT_EQ(static_cast<base::ProcessId>(2), process_map.GetProcessId(id2));
+  std::map<base::ProcessId, std::vector<std::string>> pid_to_names =
+      process_map.ComputePidToServiceNamesMap();
+  EXPECT_EQ(2u, pid_to_names.size());
+  EXPECT_THAT(pid_to_names[static_cast<base::ProcessId>(1)],
+              ElementsAre("id1"));
+  EXPECT_THAT(pid_to_names[static_cast<base::ProcessId>(2)],
+              ElementsAre("id2"));
 
   // Once the service is stopped, searching for its id should return a null pid.
   process_map.OnServiceStopped(id1);
@@ -101,6 +110,21 @@ TEST(ProcessMapTest, TypicalCase) {
   // Unknown identities return a null pid.
   service_manager::Identity id3 = MakeFakeId("id3");
   EXPECT_EQ(base::kNullProcessId, process_map.GetProcessId(id3));
+
+  // Can have multiple identities under same pid.
+  service_manager::Identity id4 = MakeFakeId("id4");
+  process_map.OnServiceCreated(MakeTestServiceInfo(id4, 2 /* pid */));
+  process_map.OnServicePIDReceived(id4, 2 /* pid */);
+
+  // Can get the pid for both, and the computed service map should have both.
+  EXPECT_EQ(static_cast<base::ProcessId>(2), process_map.GetProcessId(id2));
+  EXPECT_EQ(static_cast<base::ProcessId>(2), process_map.GetProcessId(id4));
+
+  std::map<base::ProcessId, std::vector<std::string>> pid_to_names2 =
+      process_map.ComputePidToServiceNamesMap();
+  EXPECT_EQ(1u, pid_to_names2.size());
+  EXPECT_THAT(pid_to_names2[static_cast<base::ProcessId>(2)],
+              ElementsAre("id2", "id4"));
 }
 
 }  // namespace memory_instrumentation

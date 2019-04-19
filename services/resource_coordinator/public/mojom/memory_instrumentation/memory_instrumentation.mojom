@@ -189,6 +189,11 @@ struct ProcessMemoryDump {
   // less in flux, they will probably be merged into a single service, and this
   // parameter can be removed.
   mojo_base.mojom.ProcessId pid;
+
+  // Shows which services the given process is running, to help separate out
+  // the statistics for a given service.  Clients should look through the entire
+  // list since there may be other entities used internally listed, too.
+  array<string> service_names;
 };
 
 // Metrics aggregated across all processes.
