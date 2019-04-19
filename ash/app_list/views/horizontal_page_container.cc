@@ -4,13 +4,14 @@
 
 #include "ash/app_list/views/horizontal_page_container.h"
 
-#include "ash/app_list/pagination_controller.h"
+#include "ash/app_list/app_list_metrics.h"
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/app_list/views/apps_container_view.h"
 #include "ash/app_list/views/contents_view.h"
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/app_list/views/search_result_page_view.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
+#include "ash/public/cpp/pagination/pagination_controller.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/chromeos/search_box/search_box_constants.h"
 #include "ui/views/controls/label.h"
@@ -24,8 +25,9 @@ HorizontalPageContainer::HorizontalPageContainer(ContentsView* contents_view,
       AppListConfig::instance().page_transition_duration_ms(),
       AppListConfig::instance().overscroll_page_transition_duration_ms());
   pagination_model_.AddObserver(this);
-  pagination_controller_ = std::make_unique<PaginationController>(
-      &pagination_model_, PaginationController::SCROLL_AXIS_HORIZONTAL);
+  pagination_controller_ = std::make_unique<ash::PaginationController>(
+      &pagination_model_, ash::PaginationController::SCROLL_AXIS_HORIZONTAL,
+      base::BindRepeating(&RecordPageSwitcherSourceMetrics));
 
   // Add horizontal pages.
   apps_container_view_ = new AppsContainerView(contents_view_, model);
@@ -141,7 +143,7 @@ void HorizontalPageContainer::TransitionChanged() {
   // Transition the search box opacity.
   const int current_page = pagination_model_.selected_page();
   DCHECK(pagination_model_.is_valid_page(current_page));
-  const PaginationModel::Transition& transition =
+  const ash::PaginationModel::Transition& transition =
       pagination_model_.transition();
   const bool is_valid = pagination_model_.is_valid_page(transition.target_page);
   float search_box_opacity =
@@ -190,7 +192,7 @@ const HorizontalPage* HorizontalPageContainer::GetSelectedPage() const {
 gfx::Vector2d HorizontalPageContainer::GetOffsetForPageIndex(int index) const {
   const int current_page = pagination_model_.selected_page();
   DCHECK(pagination_model_.is_valid_page(current_page));
-  const PaginationModel::Transition& transition =
+  const ash::PaginationModel::Transition& transition =
       pagination_model_.transition();
   const bool is_valid = pagination_model_.is_valid_page(transition.target_page);
   const int dir = transition.target_page > current_page ? -1 : 1;

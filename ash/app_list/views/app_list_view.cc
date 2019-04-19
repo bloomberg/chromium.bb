@@ -933,7 +933,7 @@ void AppListView::SetChildViewsForStateTransition(
 
   if (target_state == ash::mojom::AppListViewState::kPeeking) {
     // Set the apps to the initial page when PEEKING.
-    PaginationModel* pagination_model = GetAppsPaginationModel();
+    ash::PaginationModel* pagination_model = GetAppsPaginationModel();
     if (pagination_model->total_pages() > 0 &&
         pagination_model->selected_page() != 0) {
       pagination_model->SelectPage(0, false /* animate */);
@@ -1520,7 +1520,7 @@ void AppListView::OffsetYPositionOfAppList(int offset) {
   native_view->SetTransform(transform);
 }
 
-PaginationModel* AppListView::GetAppsPaginationModel() {
+ash::PaginationModel* AppListView::GetAppsPaginationModel() {
   return GetRootAppsGridView()->pagination_model();
 }
 

@@ -34,13 +34,15 @@ class AnimationMetricsReporter;
 }  // namespace ui
 
 namespace ash {
+class PaginationModel;
+
 FORWARD_DECLARE_TEST(AppListControllerImplTest,
                      CheckAppListViewBoundsWhenVKeyboardEnabled);
 FORWARD_DECLARE_TEST(AppListControllerImplTest,
                      CheckAppListViewBoundsWhenDismissVKeyboard);
 FORWARD_DECLARE_TEST(AppListControllerImplMetricsTest,
                      PresentationTimeRecordedForDragInTabletMode);
-}
+}  // namespace ash
 
 namespace app_list {
 class AppsContainerView;
@@ -50,7 +52,6 @@ class AppListMainView;
 class AppListModel;
 class AppsGridView;
 class HideViewAnimationObserver;
-class PaginationModel;
 class SearchBoxView;
 class SearchModel;
 class TransitionAnimationObserver;
@@ -227,7 +228,7 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   void SetIsInDrag(bool is_in_drag);
 
   // Gets the PaginationModel owned by this view's apps grid.
-  PaginationModel* GetAppsPaginationModel();
+  ash::PaginationModel* GetAppsPaginationModel();
 
   // Gets the content bounds of the app info dialog of the app list in the
   // screen coordinates.

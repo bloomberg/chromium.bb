@@ -2,17 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/app_list/pagination_model.h"
+#include "ash/public/cpp/pagination/pagination_model.h"
 
 #include <algorithm>
 
-#include "ash/app_list/pagination_model_observer.h"
+#include "ash/public/cpp/pagination/pagination_model_observer.h"
 #include "ui/gfx/animation/slide_animation.h"
 
-namespace app_list {
+namespace ash {
 
+namespace {
 // Dampening value for PaginationModel's SlideAnimation.
 constexpr int kPageTransitionDurationDampening = 3;
+}  // namespace
 
 PaginationModel::PaginationModel()
     : total_pages_(-1),
@@ -304,4 +306,4 @@ void PaginationModel::AnimationEnded(const gfx::Animation* animation) {
     SelectPage(next_target, true);
 }
 
-}  // namespace app_list
+}  // namespace ash

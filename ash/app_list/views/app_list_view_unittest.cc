@@ -14,7 +14,6 @@
 #include <vector>
 
 #include "ash/app_list/model/search/search_box_model.h"
-#include "ash/app_list/pagination_model.h"
 #include "ash/app_list/test/app_list_test_model.h"
 #include "ash/app_list/test/app_list_test_view_delegate.h"
 #include "ash/app_list/test/test_search_result.h"
@@ -39,6 +38,7 @@
 #include "ash/app_list/views/test/apps_grid_view_test_api.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
+#include "ash/public/cpp/pagination/pagination_model.h"
 #include "ash/public/cpp/presentation_time_recorder.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
@@ -188,7 +188,7 @@ class AppListViewTest : public views::ViewsTestBase,
   }
 
   // Gets the PaginationModel owned by |view_|.
-  PaginationModel* GetPaginationModel() const {
+  ash::PaginationModel* GetPaginationModel() const {
     return view_->GetAppsPaginationModel();
   }
 

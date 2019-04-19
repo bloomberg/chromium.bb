@@ -2,16 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/app_list/pagination_controller.h"
+#include "ash/public/cpp/pagination/pagination_controller.h"
 
-#include "ash/app_list/app_list_metrics.h"
-#include "ash/app_list/pagination_model.h"
-#include "base/metrics/histogram_macros.h"
-#include "ui/events/event.h"
+#include "ash/public/cpp/pagination/pagination_model.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/vector2d.h"
 
-namespace app_list {
+namespace ash {
 
 namespace {
 
@@ -24,8 +21,15 @@ const double kFinishTransitionThreshold = 0.33;
 }  // namespace
 
 PaginationController::PaginationController(PaginationModel* model,
-                                           ScrollAxis scroll_axis)
-    : pagination_model_(model), scroll_axis_(scroll_axis) {}
+                                           ScrollAxis scroll_axis,
+                                           const RecordMetrics& record_metrics)
+    : pagination_model_(model),
+      scroll_axis_(scroll_axis),
+      record_metrics_(record_metrics) {
+  DCHECK(record_metrics_);
+}
+
+PaginationController::~PaginationController() = default;
 
 bool PaginationController::OnScroll(const gfx::Vector2d& offset,
                                     ui::EventType type) {
@@ -47,11 +51,7 @@ bool PaginationController::OnScroll(const gfx::Vector2d& offset,
       !pagination_model_->has_transition()) {
     const int delta = offset_magnitude > 0 ? -1 : 1;
     if (pagination_model_->IsValidPageRelative(delta)) {
-      UMA_HISTOGRAM_ENUMERATION(kAppListPageSwitcherSourceHistogram,
-                                type == ui::EventType::ET_MOUSEWHEEL
-                                    ? kMouseWheelScroll
-                                    : kMousePadScroll,
-                                kMaxAppListPageSwitcherSource);
+      record_metrics_.Run(type);
     }
     pagination_model_->SelectPageRelative(delta, true);
     return true;
@@ -94,8 +94,7 @@ bool PaginationController::OnGestureEvent(const ui::GestureEvent& event,
           pagination_model_->transition().progress < kFinishTransitionThreshold;
       pagination_model_->EndScroll(cancel_transition);
       if (!cancel_transition) {
-        UMA_HISTOGRAM_ENUMERATION(kAppListPageSwitcherSourceHistogram,
-                                  kSwipeAppGrid, kMaxAppListPageSwitcherSource);
+        record_metrics_.Run(event.type());
       }
       return true;
     }
@@ -108,9 +107,7 @@ bool PaginationController::OnGestureEvent(const ui::GestureEvent& event,
       if (fabs(velocity) > kMinHorizVelocityToSwitchPage) {
         const int delta = velocity < 0 ? 1 : -1;
         if (pagination_model_->IsValidPageRelative(delta)) {
-          UMA_HISTOGRAM_ENUMERATION(kAppListPageSwitcherSourceHistogram,
-                                    kFlingAppGrid,
-                                    kMaxAppListPageSwitcherSource);
+          record_metrics_.Run(event.type());
         }
         pagination_model_->SelectPageRelative(delta, true);
       }
@@ -121,4 +118,4 @@ bool PaginationController::OnGestureEvent(const ui::GestureEvent& event,
   }
 }
 
-}  // namespace app_list
+}  // namespace ash

@@ -310,7 +310,7 @@ void ContentsView::UpdatePageBounds() {
   int target_page = current_page;
   double progress = 1;
   if (pagination_model_.has_transition()) {
-    const PaginationModel::Transition& transition =
+    const ash::PaginationModel::Transition& transition =
         pagination_model_.transition();
     if (pagination_model_.is_valid_page(transition.target_page)) {
       target_page = transition.target_page;
@@ -421,7 +421,7 @@ void ContentsView::UpdateSearchBoxVisibility(ash::AppListState current_state) {
   }
 }
 
-PaginationModel* ContentsView::GetAppsPaginationModel() {
+ash::PaginationModel* ContentsView::GetAppsPaginationModel() {
   return GetAppsContainerView()->apps_grid_view()->pagination_model();
 }
 
@@ -492,7 +492,7 @@ bool ContentsView::Back() {
   ash::AppListState state = view_to_state_[GetActivePageIndex()];
   switch (state) {
     case ash::AppListState::kStateApps: {
-      PaginationModel* pagination_model =
+      ash::PaginationModel* pagination_model =
           GetAppsContainerView()->apps_grid_view()->pagination_model();
       if (GetAppsContainerView()->IsInFolderView()) {
         GetAppsContainerView()->app_list_folder_view()->CloseFolderPage();

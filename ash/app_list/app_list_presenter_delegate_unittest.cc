@@ -5,7 +5,6 @@
 #include <algorithm>
 #include <memory>
 
-#include "ash/app_list/pagination_model.h"
 #include "ash/app_list/presenter/app_list_presenter_impl.h"
 #include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/app_list/test/app_list_test_model.h"

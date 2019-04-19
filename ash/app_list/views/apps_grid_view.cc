@@ -16,7 +16,6 @@
 #include "ash/app_list/app_list_view_delegate.h"
 #include "ash/app_list/model/app_list_folder_item.h"
 #include "ash/app_list/model/app_list_item.h"
-#include "ash/app_list/pagination_controller.h"
 #include "ash/app_list/views/app_list_drag_and_drop_host.h"
 #include "ash/app_list/views/app_list_folder_view.h"
 #include "ash/app_list/views/app_list_item_view.h"
@@ -31,6 +30,7 @@
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
+#include "ash/public/cpp/pagination/pagination_controller.h"
 #include "base/guid.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
@@ -336,11 +336,11 @@ AppsGridView::AppsGridView(ContentsView* contents_view,
       AppListConfig::instance().overscroll_page_transition_duration_ms());
 
   pagination_model_.AddObserver(this);
-
-  pagination_controller_ = std::make_unique<PaginationController>(
-      &pagination_model_, folder_delegate_
-                              ? PaginationController::SCROLL_AXIS_HORIZONTAL
-                              : PaginationController::SCROLL_AXIS_VERTICAL);
+  pagination_controller_ = std::make_unique<ash::PaginationController>(
+      &pagination_model_,
+      folder_delegate_ ? ash::PaginationController::SCROLL_AXIS_HORIZONTAL
+                       : ash::PaginationController::SCROLL_AXIS_VERTICAL,
+      base::BindRepeating(&RecordPageSwitcherSourceMetrics));
 }
 
 AppsGridView::~AppsGridView() {
@@ -1205,7 +1205,7 @@ const gfx::Vector2d AppsGridView::CalculateTransitionOffset(
 
   // If there is a transition, calculates offset for current and target page.
   const int current_page = pagination_model_.selected_page();
-  const PaginationModel::Transition& transition =
+  const ash::PaginationModel::Transition& transition =
       pagination_model_.transition();
   const bool is_valid = pagination_model_.is_valid_page(transition.target_page);
 
@@ -1216,7 +1216,7 @@ const gfx::Vector2d AppsGridView::CalculateTransitionOffset(
   int y_offset = 0;
 
   if (pagination_controller_->scroll_axis() ==
-      PaginationController::SCROLL_AXIS_HORIZONTAL) {
+      ash::PaginationController::SCROLL_AXIS_HORIZONTAL) {
     // Page size including padding pixels. A tile.x + page_width means the same
     // tile slot in the next page.
     const int page_width =
@@ -2023,7 +2023,7 @@ void AppsGridView::MaybeStartPageFlipTimer(const gfx::Point& drag_point) {
 
   // Drag zones are at the edges of the scroll axis.
   if (pagination_controller_->scroll_axis() ==
-      PaginationController::SCROLL_AXIS_VERTICAL) {
+      ash::PaginationController::SCROLL_AXIS_VERTICAL) {
     if (drag_point.y() <
         AppListConfig::instance().page_flip_zone_size() + GetInsets().top()) {
       new_page_flip_target = pagination_model_.selected_page() - 1;
@@ -2551,7 +2551,7 @@ void AppsGridView::TransitionStarted() {
 void AppsGridView::TransitionChanged() {
   // Update layout for valid page transition only since over-scroll no longer
   // animates app icons.
-  const PaginationModel::Transition& transition =
+  const ash::PaginationModel::Transition& transition =
       pagination_model_.transition();
   if (pagination_model_.is_valid_page(transition.target_page))
     Layout();

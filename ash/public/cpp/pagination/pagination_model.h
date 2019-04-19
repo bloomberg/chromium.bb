@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_APP_LIST_PAGINATION_MODEL_H_
-#define ASH_APP_LIST_PAGINATION_MODEL_H_
+#ifndef ASH_PUBLIC_CPP_PAGINATION_PAGINATION_MODEL_H_
+#define ASH_PUBLIC_CPP_PAGINATION_PAGINATION_MODEL_H_
 
 #include <memory>
 
-#include "ash/app_list/app_list_export.h"
+#include "ash/public/cpp/ash_public_export.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
@@ -17,15 +17,13 @@
 namespace gfx {
 class SlideAnimation;
 }
-
-namespace app_list {
+namespace ash {
 
 class PaginationModelObserver;
-
 // A simple pagination model that consists of two numbers: the total pages and
 // the currently selected page. The model is a single selection model that at
 // the most one page can become selected at any time.
-class APP_LIST_EXPORT PaginationModel : public gfx::AnimationDelegate {
+class ASH_PUBLIC_EXPORT PaginationModel : public gfx::AnimationDelegate {
  public:
   // Holds info for transition animation and touch scroll.
   struct Transition {
@@ -151,6 +149,6 @@ class APP_LIST_EXPORT PaginationModel : public gfx::AnimationDelegate {
   DISALLOW_COPY_AND_ASSIGN(PaginationModel);
 };
 
-}  // namespace app_list
+}  // namespace ash
 
-#endif  // ASH_APP_LIST_PAGINATION_MODEL_H_
+#endif  // ASH_PUBLIC_CPP_PAGINATION_PAGINATION_MODEL_H_

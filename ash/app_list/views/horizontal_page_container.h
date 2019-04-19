@@ -9,21 +9,25 @@
 #include <vector>
 
 #include "ash/app_list/app_list_export.h"
-#include "ash/app_list/pagination_model.h"
-#include "ash/app_list/pagination_model_observer.h"
 #include "ash/app_list/views/app_list_page.h"
+#include "ash/public/cpp/pagination/pagination_model.h"
+#include "ash/public/cpp/pagination/pagination_model_observer.h"
 #include "base/macros.h"
+
+namespace ash {
+class PaginationController;
+}
 
 namespace app_list {
 
 class AppsContainerView;
-class PaginationController;
 class HorizontalPage;
 
 // HorizontalPageContainer contains a list of HorizontalPage that are
 // horizontally laid out. These pages can be switched with gesture scrolling.
-class APP_LIST_EXPORT HorizontalPageContainer : public AppListPage,
-                                                public PaginationModelObserver {
+class APP_LIST_EXPORT HorizontalPageContainer
+    : public AppListPage,
+      public ash::PaginationModelObserver {
  public:
   HorizontalPageContainer(ContentsView* contents_view, AppListModel* model);
   ~HorizontalPageContainer() override;
@@ -70,10 +74,10 @@ class APP_LIST_EXPORT HorizontalPageContainer : public AppListPage,
   gfx::Vector2d GetOffsetForPageIndex(int index) const;
 
   // Manages the pagination for the horizontal pages.
-  PaginationModel pagination_model_;
+  ash::PaginationModel pagination_model_;
 
   // Must appear after |pagination_model_|.
-  std::unique_ptr<PaginationController> pagination_controller_;
+  std::unique_ptr<ash::PaginationController> pagination_controller_;
 
   ContentsView* contents_view_;  // Not owned
 

@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_APP_LIST_PAGINATION_CONTROLLER_H_
-#define ASH_APP_LIST_PAGINATION_CONTROLLER_H_
+#ifndef ASH_PUBLIC_CPP_PAGINATION_PAGINATION_CONTROLLER_H_
+#define ASH_PUBLIC_CPP_PAGINATION_PAGINATION_CONTROLLER_H_
 
-#include "ash/app_list/app_list_export.h"
+#include "ash/public/cpp/ash_public_export.h"
 #include "base/macros.h"
+#include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 
 namespace gfx {
@@ -14,24 +15,24 @@ class Vector2d;
 class Rect;
 }  // namespace gfx
 
-namespace ui {
-class GestureEvent;
-}
-
-namespace app_list {
+namespace ash {
 
 class PaginationModel;
-
 // Receives user scroll events from various sources (mouse wheel, touchpad,
 // touch gestures) and manipulates a PaginationModel as necessary.
-class APP_LIST_EXPORT PaginationController {
+class ASH_PUBLIC_EXPORT PaginationController {
  public:
   enum ScrollAxis { SCROLL_AXIS_HORIZONTAL, SCROLL_AXIS_VERTICAL };
+
+  using RecordMetrics = base::RepeatingCallback<void(ui::EventType)>;
 
   // Creates a PaginationController. Does not take ownership of |model|. The
   // |model| is required to outlive this PaginationController. |scroll_axis|
   // specifies the axis in which the pages will scroll.
-  PaginationController(PaginationModel* model, ScrollAxis scroll_axis);
+  PaginationController(PaginationModel* model,
+                       ScrollAxis scroll_axis,
+                       const RecordMetrics& record_metrics);
+  ~PaginationController();
 
   ScrollAxis scroll_axis() const { return scroll_axis_; }
 
@@ -48,9 +49,11 @@ class APP_LIST_EXPORT PaginationController {
   PaginationModel* pagination_model_;  // Not owned.
   ScrollAxis scroll_axis_;
 
+  const RecordMetrics record_metrics_;
+
   DISALLOW_COPY_AND_ASSIGN(PaginationController);
 };
 
-}  // namespace app_list
+}  // namespace ash
 
-#endif  // ASH_APP_LIST_PAGINATION_CONTROLLER_H_
+#endif  // ASH_PUBLIC_CPP_PAGINATION_PAGINATION_CONTROLLER_H_

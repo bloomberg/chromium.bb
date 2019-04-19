@@ -10,11 +10,11 @@
 #include "ash/app_list/app_list_view_delegate.h"
 #include "ash/app_list/model/app_list_model.h"
 #include "ash/app_list/model/search/search_result.h"
-#include "ash/app_list/pagination_model.h"
 #include "ash/app_list/views/app_list_item_view.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/vector_icons/vector_icons.h"
+#include "ash/public/cpp/pagination/pagination_model.h"
 #include "ash/public/interfaces/app_list.mojom.h"
 #include "ash/public/interfaces/app_list_view.mojom.h"
 #include "base/bind.h"
@@ -74,7 +74,7 @@ constexpr SkColor kSearchRatingStarColor = gfx::kGoogleGrey700;
 
 SearchResultTileItemView::SearchResultTileItemView(
     AppListViewDelegate* view_delegate,
-    PaginationModel* pagination_model,
+    ash::PaginationModel* pagination_model,
     bool show_in_apps_page)
     : view_delegate_(view_delegate),
       pagination_model_(pagination_model),

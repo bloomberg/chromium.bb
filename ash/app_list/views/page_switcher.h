@@ -5,22 +5,24 @@
 #ifndef ASH_APP_LIST_VIEWS_PAGE_SWITCHER_H_
 #define ASH_APP_LIST_VIEWS_PAGE_SWITCHER_H_
 
-#include "ash/app_list/pagination_model_observer.h"
+#include "ash/public/cpp/pagination/pagination_model_observer.h"
 #include "base/macros.h"
 #include "ui/views/controls/button/button.h"
 
-namespace app_list {
-
+namespace ash {
 class PaginationModel;
+}
+
+namespace app_list {
 
 // PageSwitcher represents its underlying PaginationModel with a button
 // strip. Each page in the PageinationModel has a button in the strip and
 // when the button is clicked, the corresponding page becomes selected.
 class PageSwitcher : public views::View,
                      public views::ButtonListener,
-                     public PaginationModelObserver {
+                     public ash::PaginationModelObserver {
  public:
-  PageSwitcher(PaginationModel* model, bool vertical);
+  PageSwitcher(ash::PaginationModel* model, bool vertical);
   ~PageSwitcher() override;
 
   // Overridden from views::View:
@@ -40,7 +42,7 @@ class PageSwitcher : public views::View,
   void TransitionChanged() override;
   void TransitionEnded() override;
 
-  PaginationModel* model_;  // Owned by AppsGridView.
+  ash::PaginationModel* model_;  // Owned by AppsGridView.
   views::View* buttons_;    // Owned by views hierarchy.
 
   // True if the page switcher button strip should grow vertically.

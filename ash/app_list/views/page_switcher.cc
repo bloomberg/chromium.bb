@@ -9,7 +9,7 @@
 #include <utility>
 
 #include "ash/app_list/app_list_metrics.h"
-#include "ash/app_list/pagination_model.h"
+#include "ash/public/cpp/pagination/pagination_model.h"
 #include "base/i18n/number_formatting.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
@@ -183,7 +183,7 @@ PageSwitcherButton* GetButtonByIndex(views::View* buttons, int index) {
 
 }  // namespace
 
-PageSwitcher::PageSwitcher(PaginationModel* model, bool vertical)
+PageSwitcher::PageSwitcher(ash::PaginationModel* model, bool vertical)
     : model_(model), buttons_(new views::View), vertical_(vertical) {
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);

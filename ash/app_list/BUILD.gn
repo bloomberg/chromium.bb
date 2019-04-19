@@ -17,11 +17,6 @@ component("app_list") {
     "app_list_view_delegate.h",
     "paged_view_structure.cc",
     "paged_view_structure.h",
-    "pagination_controller.cc",
-    "pagination_controller.h",
-    "pagination_model.cc",
-    "pagination_model.h",
-    "pagination_model_observer.h",
     "views/app_list_drag_and_drop_host.h",
     "views/app_list_folder_view.cc",
     "views/app_list_folder_view.h",
@@ -206,7 +201,6 @@ executable("app_list_demo") {
 test("app_list_unittests") {
   sources = [
     "folder_image_unittest.cc",
-    "pagination_model_unittest.cc",
     "test/run_all_unittests.cc",
     "views/app_list_main_view_unittest.cc",
     "views/app_list_menu_model_adapter_unittest.cc",

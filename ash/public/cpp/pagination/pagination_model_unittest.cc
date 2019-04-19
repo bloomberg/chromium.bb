@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/app_list/pagination_model.h"
+#include "ash/public/cpp/pagination/pagination_model.h"
 
 #include <string>
 
-#include "ash/app_list/pagination_model_observer.h"
+#include "ash/public/cpp/pagination/pagination_model_observer.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
@@ -14,7 +14,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace app_list {
+namespace ash {
 namespace test {
 
 class TestPaginationModelObserver : public PaginationModelObserver {
@@ -461,4 +461,4 @@ TEST_F(PaginationModelTest, SelectPageRelativeMiddle) {
 }
 
 }  // namespace test
-}  // namespace app_list
+}  // namespace ash

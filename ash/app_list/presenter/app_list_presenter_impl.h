@@ -10,9 +10,9 @@
 #include <memory>
 
 #include "ash/app_list/app_list_metrics.h"
-#include "ash/app_list/pagination_model_observer.h"
 #include "ash/app_list/presenter/app_list_presenter_delegate.h"
 #include "ash/app_list/presenter/app_list_presenter_export.h"
+#include "ash/public/cpp/pagination/pagination_model_observer.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/interfaces/app_list_view.mojom.h"
 #include "base/callback.h"
@@ -35,7 +35,7 @@ class APP_LIST_PRESENTER_EXPORT AppListPresenterImpl
     : public aura::client::FocusChangeObserver,
       public ui::ImplicitAnimationObserver,
       public views::WidgetObserver,
-      public PaginationModelObserver {
+      public ash::PaginationModelObserver {
  public:
   // Callback which fills out the passed settings object. Used by
   // UpdateYPositionAndOpacityForHomeLauncher so different callers can do

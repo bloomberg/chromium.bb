@@ -127,6 +127,31 @@ void RecordPaginationAnimationSmoothness(int actual_frames,
   }
 }
 
+void RecordPageSwitcherSourceMetrics(ui::EventType type) {
+  AppListPageSwitcherSource source;
+
+  switch (type) {
+    case ui::ET_MOUSEWHEEL:
+      source = kMouseWheelScroll;
+      break;
+    case ui::ET_SCROLL:
+      source = kMousePadScroll;
+      break;
+    case ui::ET_GESTURE_SCROLL_END:
+      source = kSwipeAppGrid;
+      break;
+    case ui::ET_SCROLL_FLING_START:
+      source = kFlingAppGrid;
+      break;
+    default:
+      NOTREACHED();
+      return;
+  }
+
+  UMA_HISTOGRAM_ENUMERATION(kAppListPageSwitcherSourceHistogram, source,
+                            kMaxAppListPageSwitcherSource);
+}
+
 APP_LIST_EXPORT void RecordSearchResultOpenSource(
     const SearchResult* result,
     const AppListModel* model,

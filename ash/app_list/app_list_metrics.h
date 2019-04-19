@@ -8,6 +8,7 @@
 #include "ash/app_list/app_list_export.h"
 #include "ash/public/interfaces/app_list.mojom.h"
 #include "ash/public/interfaces/app_list_view.mojom.h"
+#include "ui/events/event.h"
 
 namespace app_list {
 
@@ -209,6 +210,8 @@ enum SearchResultLaunchLocation {
 void RecordFolderShowHideAnimationSmoothness(int actual_frames,
                                              int ideal_duration_ms,
                                              float refresh_rate);
+
+void RecordPageSwitcherSourceMetrics(ui::EventType type);
 
 void RecordPaginationAnimationSmoothness(int actual_frames,
                                          int ideal_duration_ms,

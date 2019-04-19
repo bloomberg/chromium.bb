@@ -15,6 +15,10 @@
 #include "base/macros.h"
 #include "ui/views/context_menu_controller.h"
 
+namespace ash {
+class PaginationModel;
+}
+
 namespace views {
 class ImageView;
 class Label;
@@ -24,7 +28,6 @@ namespace app_list {
 
 class AppListViewDelegate;
 class SearchResult;
-class PaginationModel;
 
 // A tile view that displays a search result. It hosts view for search result
 // that has SearchResult::DisplayType DISPLAY_TILE or DISPLAY_RECOMMENDATION.
@@ -34,7 +37,7 @@ class APP_LIST_EXPORT SearchResultTileItemView
       public AppListMenuModelAdapter::Delegate {
  public:
   SearchResultTileItemView(AppListViewDelegate* view_delegate,
-                           PaginationModel* pagination_model,
+                           ash::PaginationModel* pagination_model,
                            bool show_in_apps_page);
   ~SearchResultTileItemView() override;
 
@@ -106,7 +109,7 @@ class APP_LIST_EXPORT SearchResultTileItemView
   base::string16 GetTooltipText(const gfx::Point& p) const override;
 
   AppListViewDelegate* const view_delegate_;           // Owned by AppListView.
-  PaginationModel* const pagination_model_;            // Owned by AppsGridView.
+  ash::PaginationModel* const pagination_model_;       // Owned by AppsGridView.
 
   views::ImageView* icon_ = nullptr;         // Owned by views hierarchy.
   views::ImageView* badge_ = nullptr;        // Owned by views hierarchy.
