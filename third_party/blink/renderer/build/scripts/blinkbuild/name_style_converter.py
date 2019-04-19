@@ -47,6 +47,7 @@ SPECIAL_TOKENS = [
     'SPv2',
     'UTF8',
     'sRGB',
+    'URLs',
     'API',
     'CSS',
     'DNS',
