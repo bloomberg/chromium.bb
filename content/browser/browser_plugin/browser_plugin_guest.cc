@@ -226,6 +226,10 @@ RenderWidgetHostImpl* BrowserPluginGuest::GetOwnerRenderWidgetHost() const {
       delegate_->GetOwnerRenderWidgetHost());
 }
 
+RenderFrameHostImpl* BrowserPluginGuest::GetEmbedderFrame() const {
+  return static_cast<RenderFrameHostImpl*>(delegate_->GetEmbedderFrame());
+}
+
 void BrowserPluginGuest::Init() {
   if (initialized_)
     return;

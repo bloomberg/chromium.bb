@@ -88,6 +88,7 @@ class MimeHandlerViewGuest
   bool CanBeEmbeddedInsideCrossProcessFrames() override;
   content::RenderWidgetHost* GetOwnerRenderWidgetHost() override;
   content::SiteInstance* GetOwnerSiteInstance() override;
+  content::RenderFrameHost* GetEmbedderFrame() const override;
 
   void SetEmbedderFrame(int process_id, int routing_id);
 
@@ -98,8 +99,6 @@ class MimeHandlerViewGuest
 
   // Asks the plugin to do save.
   bool PluginDoSave();
-
-  content::RenderFrameHost* GetEmbedderFrame() const;
 
  protected:
   explicit MimeHandlerViewGuest(content::WebContents* owner_web_contents);

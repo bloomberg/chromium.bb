@@ -69,6 +69,7 @@ class LocalSurfaceIdAllocation;
 namespace content {
 
 class BrowserPluginGuestManager;
+class RenderFrameHostImpl;
 class RenderViewHostImpl;
 class RenderWidgetHost;
 class RenderWidgetHostImpl;
@@ -176,6 +177,9 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
   // Returns the embedder's RenderWidgetHostView if it is available.
   // Returns nullptr otherwise.
   RenderWidgetHostView* GetOwnerRenderWidgetHostView();
+
+  // Returns the embedder frame.
+  RenderFrameHostImpl* GetEmbedderFrame() const;
 
   bool focused() const { return focused_; }
   bool visible() const { return guest_visible_; }

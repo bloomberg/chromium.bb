@@ -297,6 +297,33 @@ IN_PROC_BROWSER_TEST_F(ChromeMimeHandlerViewBrowserPluginTest,
                                      std::move(callback));
 }
 
+IN_PROC_BROWSER_TEST_F(ChromeMimeHandlerViewBrowserPluginTest,
+                       UnderChildFrame) {
+  // Create this frame tree structure.
+  // main_frame_node
+  //   |
+  // middle_node -> is child of |main_frame_node|
+  //   |
+  // mime_node  -> is inner web contents of |middle_node|
+  InitializeTestPage(
+      embedded_test_server()->GetURL("/find_in_page_one_frame.html"));
+  int ordinal;
+  EXPECT_EQ(2, ui_test_utils::FindInPage(embedder_web_contents(),
+                                         base::ASCIIToUTF16("two"), true, true,
+                                         &ordinal, nullptr));
+  EXPECT_EQ(1, ordinal);
+  // Go to next result.
+  EXPECT_EQ(2, ui_test_utils::FindInPage(embedder_web_contents(),
+                                         base::ASCIIToUTF16("two"), true, true,
+                                         &ordinal, nullptr));
+  EXPECT_EQ(2, ordinal);
+  // Go to next result, should wrap back to #1.
+  EXPECT_EQ(2, ui_test_utils::FindInPage(embedder_web_contents(),
+                                         base::ASCIIToUTF16("two"), true, true,
+                                         &ordinal, nullptr));
+  EXPECT_EQ(1, ordinal);
+}
+
 // Flaky under MSan: https://crbug.com/837757
 #if defined(MEMORY_SANITIZER)
 #define MAYBE_BP_AutoResizeMessages DISABLED_AutoResizeMessages

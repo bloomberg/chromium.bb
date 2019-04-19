@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/containers/queue.h"
+#include "content/browser/browser_plugin/browser_plugin_guest.h"
 #include "content/browser/find_in_page_client.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -30,23 +31,28 @@ namespace {
 
 // Returns all child frames of |node|.
 std::vector<FrameTreeNode*> GetChildren(FrameTreeNode* node) {
-  std::vector<FrameTreeNode*> children(node->child_count());
-  for (size_t i = 0; i != node->child_count(); ++i)
-    children[i] = node->child_at(i);
-
-  if (auto* contents = WebContentsImpl::FromOuterFrameTreeNode(node)) {
-    children.push_back(contents->GetMainFrame()->frame_tree_node());
-  } else {
-    contents = WebContentsImpl::FromFrameTreeNode(node);
-    if (node->IsMainFrame() && contents->GetBrowserPluginEmbedder()) {
-      for (auto* inner_contents : contents->GetInnerWebContents()) {
-        children.push_back(static_cast<WebContentsImpl*>(inner_contents)
-                               ->GetMainFrame()
-                               ->frame_tree_node());
-      }
+  std::vector<FrameTreeNode*> children;
+  for (size_t i = 0; i != node->child_count(); ++i) {
+    if (auto* contents = static_cast<WebContentsImpl*>(
+            WebContentsImpl::FromOuterFrameTreeNode(node->child_at(i)))) {
+      // If the child is used for an inner WebContents then add the inner
+      // WebContents.
+      children.push_back(contents->GetFrameTree()->root());
+    } else {
+      children.push_back(node->child_at(i));
     }
   }
 
+  for (auto* contents :
+       WebContentsImpl::FromFrameTreeNode(node)->GetInnerWebContents()) {
+    auto* contents_impl = static_cast<WebContentsImpl*>(contents);
+    auto* guest = contents_impl->GetBrowserPluginGuest();
+    if (!GuestMode::IsCrossProcessFrameGuest(contents) && guest &&
+        guest->GetEmbedderFrame() &&
+        guest->GetEmbedderFrame()->frame_tree_node() == node) {
+      children.push_back(contents_impl->GetFrameTree()->root());
+    }
+  }
   return children;
 }
 
@@ -83,21 +89,25 @@ RenderFrameHost* GetDeepestLastChild(RenderFrameHost* rfh) {
 // Returns the parent FrameTreeNode of |node|, if |node| has a parent, or
 // nullptr otherwise.
 FrameTreeNode* GetParent(FrameTreeNode* node) {
+  if (!node)
+    return nullptr;
   if (node->parent())
     return node->parent();
 
-  // The parent frame may be in another WebContents.
-  if (node->IsMainFrame()) {
-    auto* contents = WebContentsImpl::FromFrameTreeNode(node);
-    if (GuestMode::IsCrossProcessFrameGuest(contents)) {
-      int node_id = contents->GetOuterDelegateFrameTreeNodeId();
-      if (node_id != FrameTreeNode::kFrameTreeNodeInvalidId)
-        return FrameTreeNode::GloballyFindByID(node_id);
-    } else if (auto* outer_contents = contents->GetOuterWebContents()) {
-      return outer_contents->GetMainFrame()->frame_tree_node();
+  auto* contents = WebContentsImpl::FromFrameTreeNode(node);
+
+  if (node->IsMainFrame() && contents->GetOuterWebContents()) {
+    if (!GuestMode::IsCrossProcessFrameGuest(contents) &&
+        contents->GetBrowserPluginGuest() &&
+        contents->GetBrowserPluginGuest()->GetEmbedderFrame()) {
+      return contents->GetBrowserPluginGuest()
+          ->GetEmbedderFrame()
+          ->frame_tree_node();
+    } else {
+      return GetParent(FrameTreeNode::GloballyFindByID(
+          contents->GetOuterDelegateFrameTreeNodeId()));
     }
   }
-
   return nullptr;
 }
 
