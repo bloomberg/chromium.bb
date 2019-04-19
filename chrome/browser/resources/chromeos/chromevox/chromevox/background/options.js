@@ -76,7 +76,7 @@ cvox.OptionsPage.init = function() {
     $('virtual-braille-display-rows-input').value = items['virtualBrailleRows'];
   });
   chrome.storage.local.get({'virtualBrailleColumns': 40}, function(items) {
-    $('virtual_braille_display_columns_input').value =
+    $('virtual-braille-display-columns-input').value =
         items['virtualBrailleColumns'];
   });
   var changeToInterleave =
