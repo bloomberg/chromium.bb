@@ -279,7 +279,6 @@ class ChromeLauncher(BrowserLauncher):
             '--no-first-run',
             '--no-default-browser-check',
             '--log-level=1',
-            '--safebrowsing-disable-auto-update',
             '--disable-default-apps',
             # Suppress metrics reporting.  This prevents misconfigured bots,
             # people testing at their desktop, etc from poisoning the UMA data.
