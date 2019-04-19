@@ -91,6 +91,7 @@ void ExtensionsMenuButton::UpdateState() {
   SetTitleTextWithHintRange(controller_->GetActionName(),
                             gfx::Range::InvalidRange());
   SetTooltipText(controller_->GetTooltip(GetCurrentWebContents()));
+  SetEnabled(controller_->IsEnabled(GetCurrentWebContents()));
 }
 
 bool ExtensionsMenuButton::IsMenuRunning() const {
