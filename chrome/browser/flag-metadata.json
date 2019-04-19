@@ -71,7 +71,9 @@
   {
     "name": "allow-sxg-certs-without-extension",
     "owners": [ "//content/browser/web_package/OWNERS" ],
-    "expiry_milestone": 76
+    // Used by developers for testing signed exchange loading using normal
+    // certs. See https://crbug.com/862003
+    "expiry_milestone": 83
   },
   {
     "name": "android-files-in-files-app",
