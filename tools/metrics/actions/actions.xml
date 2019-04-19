@@ -4073,8 +4073,12 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="ClickedBookmarkBarURLButton">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>dfried@chromium.org</owner>
+  <description>
+    User clicks a bookmark to open it, either in the bookmarks bar or in a
+    bookmarks bar folder or overflow menu. (Changed in M75 to include
+    non-top-level bookmarks.)
+  </description>
 </action>
 
 <action name="ClickToPlay_AllowAlways">
