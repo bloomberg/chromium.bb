@@ -245,8 +245,7 @@ ui::EventDispatchDetails InputMethodWinBase::DispatchKeyEvent(
   // 1) |char_msgs| is empty when the event is non-character key.
   // 2) |char_msgs|.size() == 1 when the event is character key and the WM_CHAR
   // messages have been combined in the event processing flow.
-  if (char_msgs.size() <= 1 && GetEngine() &&
-      GetEngine()->IsInterestedInKeyEvent()) {
+  if (char_msgs.size() <= 1 && GetEngine()) {
     ui::IMEEngineHandlerInterface::KeyEventDoneCallback callback =
         base::BindOnce(&InputMethodWinBase::ProcessKeyEventDone,
                        weak_ptr_factory_.GetWeakPtr(),

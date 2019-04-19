@@ -338,9 +338,7 @@ void InputMethodWinImm32::UpdateIMEState() {
   // We disable input method in password field.
   const HWND window_handle = toplevel_window_handle_;
   const TextInputType text_input_type =
-      (GetEngine() && GetEngine()->IsInterestedInKeyEvent())
-          ? TEXT_INPUT_TYPE_NONE
-          : GetTextInputType();
+      GetEngine() ? TEXT_INPUT_TYPE_NONE : GetTextInputType();
   const TextInputMode text_input_mode = GetTextInputMode();
   switch (text_input_type) {
     case ui::TEXT_INPUT_TYPE_NONE:

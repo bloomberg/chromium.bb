@@ -230,26 +230,18 @@ ui::EventDispatchDetails InputMethodChromeOS::DispatchKeyEventInternal(
   }
 
   handling_key_event_ = true;
+  auto callback = base::BindOnce(&InputMethodChromeOS::KeyEventDoneCallback,
+                                 weak_ptr_factory_.GetWeakPtr(),
+                                 // Pass the ownership of the new copied event.
+                                 base::Owned(new ui::KeyEvent(*event)),
+                                 std::move(result_callback));
   if (mojo_helper_->connected()) {
-    mojo_helper_->ime_engine()->ProcessKeyEvent(
-        ui::Event::Clone(*event),
-        base::BindOnce(&InputMethodChromeOS::KeyEventDoneCallback,
-                       weak_ptr_factory_.GetWeakPtr(),
-                       // Pass the ownership of the new copied event.
-                       base::Owned(new ui::KeyEvent(*event)),
-                       std::move(result_callback)));
-    return ui::EventDispatchDetails();
+    mojo_helper_->ime_engine()->ProcessKeyEvent(ui::Event::Clone(*event),
+                                                std::move(callback));
+  } else {
+    GetEngine()->ProcessKeyEvent(*event, std::move(callback));
   }
-  if (GetEngine()->IsInterestedInKeyEvent()) {
-    GetEngine()->ProcessKeyEvent(
-        *event, base::BindOnce(&InputMethodChromeOS::KeyEventDoneCallback,
-                               weak_ptr_factory_.GetWeakPtr(),
-                               // Pass the ownership of the new copied event.
-                               base::Owned(new ui::KeyEvent(*event)),
-                               std::move(result_callback)));
-    return ui::EventDispatchDetails();
-  }
-  return ProcessKeyEventDone(event, std::move(result_callback), false);
+  return ui::EventDispatchDetails();
 }
 
 void InputMethodChromeOS::KeyEventDoneCallback(ui::KeyEvent* event,

@@ -262,10 +262,6 @@ void InputMethodEngineBase::SetCompositionBounds(
   observer_->OnCompositionBoundsChanged(bounds);
 }
 
-bool InputMethodEngineBase::IsInterestedInKeyEvent() const {
-  return observer_->IsInterestedInKeyEvent();
-}
-
 const std::string& InputMethodEngineBase::GetActiveComponentId() const {
   return active_component_id_;
 }
