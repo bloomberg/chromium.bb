@@ -196,6 +196,10 @@ std::vector<std::string> GetAvailableModules(
   return available_modules;
 }
 
+bool DoesOnboardingHaveModulesToShow(Profile* profile) {
+  return !GetAvailableModules(GetPoliciesFromProfile(profile)).empty();
+}
+
 std::string FilterModules(const std::string& requested_modules,
                           const std::vector<std::string>& available_modules) {
   std::vector<std::string> requested_list = base::SplitString(

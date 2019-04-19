@@ -64,6 +64,10 @@
 #include "rlz/buildflags/buildflags.h"
 #include "ui/base/buildflags.h"
 
+#if !defined(OS_CHROMEOS)
+#include "chrome/browser/ui/webui/welcome/nux_helper.h"
+#endif  // !defined(OS_CHROMEOS)
+
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
 #import "chrome/browser/mac/dock.h"
@@ -602,6 +606,12 @@ void StartupBrowserCreatorImpl::DetermineURLsAndLaunch(
         !SessionStartupPref::TypeIsManaged(profile_->GetPrefs()) &&
         !SessionStartupPref::TypeHasRecommendedValue(profile_->GetPrefs());
   }
+
+#if !defined(OS_CHROMEOS)
+  // No promo if we *could* onboard, but have no modules to show.
+  if (nux::IsNuxOnboardingEnabled(profile_))
+    promotional_tabs_enabled &= nux::DoesOnboardingHaveModulesToShow(profile_);
+#endif  // !defined(OS_CHROMEOS)
 
   StartupTabs tabs = DetermineStartupTabs(
       StartupTabProviderImpl(), cmd_line_tabs, process_startup,
