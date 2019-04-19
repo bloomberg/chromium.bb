@@ -93,10 +93,7 @@ void OAuthTokenGetterImpl::OnRefreshTokenResponse(
   if (!authorization_credentials_->is_service_account && !email_verified_) {
     gaia_oauth_client_->GetUserEmail(access_token, kMaxRetries, this);
   } else {
-    response_pending_ = false;
-    NotifyTokenCallbacks(OAuthTokenGetterImpl::SUCCESS,
-                         authorization_credentials_->login,
-                         oauth_access_token_);
+    ExchangeAccessToken();
   }
 }
 
@@ -119,12 +116,10 @@ void OAuthTokenGetterImpl::OnGetUserEmailResponse(
   }
 
   email_verified_ = true;
-  response_pending_ = false;
 
   // Now that we've refreshed the token and verified that it's for the correct
-  // user account, try to connect using the new token.
-  NotifyTokenCallbacks(OAuthTokenGetterImpl::SUCCESS, user_email,
-                       oauth_access_token_);
+  // user account, exchange the token if needed.
+  ExchangeAccessToken();
 }
 
 void OAuthTokenGetterImpl::UpdateAccessToken(const std::string& access_token,
@@ -268,6 +263,14 @@ void OAuthTokenGetterImpl::RefreshAccessToken() {
   gaia_oauth_client_->RefreshToken(client_info,
                                    authorization_credentials_->refresh_token,
                                    empty_scope_list, kMaxRetries, this);
+}
+
+void OAuthTokenGetterImpl::ExchangeAccessToken() {
+  // Not yet implemented - return the current access token immediately.
+  // TODO(lambroslambrou): Fetch scopes and exchange the token.
+  response_pending_ = false;
+  NotifyTokenCallbacks(OAuthTokenGetterImpl::SUCCESS,
+                       authorization_credentials_->login, oauth_access_token_);
 }
 
 }  // namespace remoting

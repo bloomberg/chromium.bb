@@ -65,6 +65,11 @@ class OAuthTokenGetterImpl : public OAuthTokenGetter,
   void GetOauthTokensFromAuthCode();
   void RefreshAccessToken();
 
+  // Fetches the OAuth scopes for |oauth_access_token_|. If it is missing the
+  // new scopes required by FTL signaling, it exchanges it for a new access
+  // token from a token-exchange service, before notifying the token callbacks.
+  void ExchangeAccessToken();
+
   std::unique_ptr<OAuthIntermediateCredentials> intermediate_credentials_;
   std::unique_ptr<OAuthAuthorizationCredentials> authorization_credentials_;
   std::unique_ptr<gaia::GaiaOAuthClient> gaia_oauth_client_;
