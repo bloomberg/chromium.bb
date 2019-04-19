@@ -3603,6 +3603,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableAssistantAppSupportName,
      flag_descriptions::kEnableAssistantAppSupportDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::assistant::features::kAssistantAppSupport)},
+
+    {"enable-assistant-key-remapping",
+     flag_descriptions::kEnableAssistantKeyRemappingName,
+     flag_descriptions::kEnableAssistantKeyRemappingDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::assistant::features::kAssistantKeyRemapping)},
 #endif  // defined(OS_CHROMEOS)
 
     {"enable-filesystem-in-incognito",
