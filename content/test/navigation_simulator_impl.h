@@ -147,6 +147,8 @@ class NavigationSimulatorImpl : public NavigationSimulator,
     block_on_before_unload_ack_ = block_on_before_unload_ack;
   }
 
+  void set_page_state(const PageState& page_state) { page_state_ = page_state; }
+
  private:
   NavigationSimulatorImpl(const GURL& original_url,
                           bool browser_initiated,
@@ -271,6 +273,7 @@ class NavigationSimulatorImpl : public NavigationSimulator,
   net::HttpResponseInfo::ConnectionInfo http_connection_info_ =
       net::HttpResponseInfo::CONNECTION_INFO_UNKNOWN;
   base::Optional<net::SSLInfo> ssl_info_;
+  base::Optional<PageState> page_state_;
 
   bool auto_advance_ = true;
   bool drop_swap_out_ack_ = false;

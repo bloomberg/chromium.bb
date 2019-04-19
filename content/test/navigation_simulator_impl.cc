@@ -1271,9 +1271,10 @@ NavigationSimulatorImpl::BuildDidCommitProvisionalLoadParams(
     params->document_sequence_number = ++g_unique_identifier;
   }
 
-  params->page_state = PageState::CreateForTestingWithSequenceNumbers(
-      navigation_url_, params->item_sequence_number,
-      params->document_sequence_number);
+  params->page_state =
+      page_state_.value_or(PageState::CreateForTestingWithSequenceNumbers(
+          navigation_url_, params->item_sequence_number,
+          params->document_sequence_number));
 
   return params;
 }
