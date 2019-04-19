@@ -88,6 +88,7 @@ public class StatusBarColorController
     private float mStatusBarScrimFraction;
 
     private float mToolbarUrlExpansionPercentage;
+    private boolean mShouldUpdateStatusBarColorForNTP;
 
     /**
      * @param chromeActivity The {@link ChromeActivity} that this class is attached to.
@@ -99,7 +100,7 @@ public class StatusBarColorController
         mStatusBarColorProvider = chromeActivity;
         mStatusBarScrimDelegate = (fraction) -> {
             mStatusBarScrimFraction = fraction;
-            updateStatusBarColor(null);
+            updateStatusBarColor(mCurrentTab);
         };
 
         Resources resources = chromeActivity.getResources();
@@ -121,8 +122,30 @@ public class StatusBarColorController
             }
 
             @Override
+            public void onContentChanged(Tab tab) {
+                final boolean newShouldUpdateStatusBarColorForNTP = isStandardNTP();
+                // Also update the status bar color if the content was previously an NTP, because an
+                // NTP can use a different status bar color than the default theme color. In this
+                // case, the theme color might not change, and thus #onDidChangeThemeColor might
+                // not get called.
+                if (mShouldUpdateStatusBarColorForNTP || newShouldUpdateStatusBarColorForNTP) {
+                    updateStatusBarColor(tab);
+                }
+                mShouldUpdateStatusBarColorForNTP = newShouldUpdateStatusBarColorForNTP;
+            }
+
+            @Override
+            public void onDestroyed(Tab tab) {
+                // Make sure that #mCurrentTab is cleared because #onObservingDifferentTab() might
+                // not be notified early enough when #onUrlExpansionPercentageChanged() is called.
+                mCurrentTab = null;
+                mShouldUpdateStatusBarColorForNTP = false;
+            }
+
+            @Override
             protected void onObservingDifferentTab(Tab tab) {
                 mCurrentTab = tab;
+                mShouldUpdateStatusBarColorForNTP = isStandardNTP();
 
                 // |tab == null| means we're switching tabs - by the tab switcher or by swiping
                 // on the omnibox. These cases are dealt with differently, elsewhere.
@@ -180,7 +203,7 @@ public class StatusBarColorController
     @Override
     public void onUrlExpansionPercentageChanged(float percentage) {
         mToolbarUrlExpansionPercentage = percentage;
-        if (isStandardNTP()) updateStatusBarColor(mCurrentTab);
+        if (mShouldUpdateStatusBarColorForNTP) updateStatusBarColor(mCurrentTab);
     }
 
     /**
