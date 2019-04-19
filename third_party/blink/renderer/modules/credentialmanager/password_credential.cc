@@ -61,7 +61,7 @@ PasswordCredential* PasswordCredential::Create(
     ToHTMLElement(submittable_element)
         ->FastGetAttribute(html_names::kAutocompleteAttr)
         .GetString()
-        .DeprecatedLower()
+        .LowerASCII()
         .Split(' ', autofill_tokens);
     for (const auto& token : autofill_tokens) {
       if (token == "current-password" || token == "new-password") {
