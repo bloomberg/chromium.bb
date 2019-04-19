@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.touchless;
 
 import android.support.annotation.Nullable;
 import android.view.View;
+import android.view.ViewGroup;
 
 import org.chromium.base.Callback;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
@@ -45,6 +46,17 @@ public class TouchlessNewTabPageAdapter extends NewTabPageAdapter {
             ContextMenuManager contextMenuManager, PropertyModel model) {
         super(uiDelegate, aboveTheFoldView, uiConfig, offlinePageBridge, contextMenuManager);
         mModel = model;
+    }
+
+    @Override
+    public NewTabPageViewHolder onCreateViewHolder(ViewGroup parent, @ItemViewType int viewType) {
+        switch (viewType) {
+            case ItemViewType.ACTION:
+                return new TouchlessActionItemViewHolder(
+                        mRecyclerView, mContextMenuManager, mUiDelegate, mUiConfig);
+            default:
+                return super.onCreateViewHolder(parent, viewType);
+        }
     }
 
     @Override

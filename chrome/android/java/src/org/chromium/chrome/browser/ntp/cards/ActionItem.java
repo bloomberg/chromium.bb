@@ -8,7 +8,6 @@ import android.support.annotation.IntDef;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.Nullable;
 import android.view.View;
-import android.widget.Button;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
@@ -157,17 +156,26 @@ public class ActionItem extends OptionalLeaf {
     /** ViewHolder associated to {@link ItemViewType#ACTION}. */
     public static class ViewHolder extends CardViewHolder implements ContextMenuManager.Delegate {
         private ActionItem mActionListItem;
+        protected View mButton;
+
         private final ProgressIndicatorView mProgressIndicator;
-        private final Button mButton;
         private final SuggestionsUiDelegate mUiDelegate;
 
         public ViewHolder(SuggestionsRecyclerView recyclerView,
                 ContextMenuManager contextMenuManager, final SuggestionsUiDelegate uiDelegate,
                 UiConfig uiConfig) {
-            super(getLayout(), recyclerView, uiConfig, contextMenuManager);
+            this(getLayout(), recyclerView, contextMenuManager, uiDelegate, uiConfig);
+        }
+
+        public ViewHolder(int layoutId, SuggestionsRecyclerView recyclerView,
+                ContextMenuManager contextMenuManager, final SuggestionsUiDelegate uiDelegate,
+                UiConfig uiConfig) {
+            super(layoutId, recyclerView, uiConfig, contextMenuManager);
 
             mProgressIndicator = itemView.findViewById(R.id.progress_indicator);
             mButton = itemView.findViewById(R.id.action_button);
+            // If we fail to find it under the action_button id, fallback to the top-level view.
+            if (mButton == null) mButton = itemView;
             mUiDelegate = uiDelegate;
             mButton.setOnClickListener(v -> mActionListItem.performAction(uiDelegate,
                     this::showFetchFailureSnackbar, this::showNoNewSuggestionsSnackbar));
@@ -204,7 +212,7 @@ public class ActionItem extends OptionalLeaf {
             return R.layout.content_suggestions_action_card_modern;
         }
 
-        private void setState(@State int state) {
+        protected void setState(@State int state) {
             assert state != State.HIDDEN;
 
             // When hiding children, we keep them invisible rather than GONE to make sure the
