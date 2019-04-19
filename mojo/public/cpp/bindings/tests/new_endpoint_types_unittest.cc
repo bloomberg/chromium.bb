@@ -8,11 +8,15 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/no_destructor.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/associated_receiver_set.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -121,6 +125,55 @@ class ObserverImpl : public mojom::WidgetObserver {
   DISALLOW_COPY_AND_ASSIGN(ObserverImpl);
 };
 
+class PingerImpl : public mojom::Pinger {
+ public:
+  PingerImpl() = default;
+  ~PingerImpl() override = default;
+
+  int ping_count() const { return ping_count_; }
+
+  void AddReceiver(mojo::PendingAssociatedReceiver<mojom::Pinger> receiver) {
+    receivers_.Add(this, std::move(receiver));
+  }
+
+ private:
+  // mojom::Ping:
+  void Ping(PingCallback callback) override {
+    ++ping_count_;
+    std::move(callback).Run();
+  }
+
+  mojo::AssociatedReceiverSet<mojom::Pinger> receivers_;
+  int ping_count_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(PingerImpl);
+};
+
+class AssociatedPingerHostImpl : public mojom::AssociatedPingerHost {
+ public:
+  explicit AssociatedPingerHostImpl(
+      mojo::PendingReceiver<mojom::AssociatedPingerHost> receiver)
+      : receiver_(this, std::move(receiver)) {}
+  ~AssociatedPingerHostImpl() override = default;
+
+  int ping_count() const { return pinger_.ping_count(); }
+
+ private:
+  // mojom::AssociatedPingerHost:
+  void AddEndpoints(
+      mojo::PendingAssociatedReceiver<mojom::Pinger> receiver,
+      mojo::PendingAssociatedRemote<mojom::Pinger> remote) override {
+    mojo::AssociatedRemote<mojom::Pinger> pinger(std::move(remote));
+    pinger->Ping(base::DoNothing());
+    pinger_.AddReceiver(std::move(receiver));
+  }
+
+  mojo::Receiver<mojom::AssociatedPingerHost> receiver_;
+  PingerImpl pinger_;
+
+  DISALLOW_COPY_AND_ASSIGN(AssociatedPingerHostImpl);
+};
+
 TEST(NewEndpointTypesTest, BasicUsage) {
   // A simple smoke/compile test for new bindings endpoint types. Used to
   // demonstrate look & feel as well as to ensure basic completeness and
@@ -207,6 +260,44 @@ TEST(NewEndpointTypesTest, BasicUsage) {
   // instances' disconnection handlers. We wait for that to happen here.
   observer1.WaitForDisconnect();
   observer2.WaitForDisconnect();
+}
+
+TEST(NewEndpointTypesTest, AssociatedTypes) {
+  base::test::ScopedTaskEnvironment task_environment;
+
+  mojo::Remote<mojom::AssociatedPingerHost> host;
+  AssociatedPingerHostImpl host_impl(host.BindNewPipeAndPassReceiver());
+
+  PingerImpl test_pinger_impl;
+  mojo::PendingAssociatedRemote<mojom::Pinger> test_pinger1;
+  mojo::PendingAssociatedRemote<mojom::Pinger> test_pinger2;
+  test_pinger_impl.AddReceiver(
+      test_pinger1.InitWithNewEndpointAndPassReceiver());
+  test_pinger_impl.AddReceiver(
+      test_pinger2.InitWithNewEndpointAndPassReceiver());
+
+  mojo::AssociatedRemote<mojom::Pinger> host_pinger1;
+  mojo::AssociatedRemote<mojom::Pinger> host_pinger2;
+
+  // Both of these calls should result in a single ping each to |pinger_impl|.
+  host->AddEndpoints(host_pinger1.BindNewEndpointAndPassReceiver(),
+                     std::move(test_pinger1));
+  host->AddEndpoints(host_pinger2.BindNewEndpointAndPassReceiver(),
+                     std::move(test_pinger2));
+
+  // Ping each host pinger twice, should result in a total of 4 pings to
+  // |host|'s PingerImpl.
+  host_pinger1->Ping(base::DoNothing());
+  host_pinger1->Ping(base::DoNothing());
+  host_pinger2->Ping(base::DoNothing());
+  host_pinger2->Ping(base::DoNothing());
+
+  // Should be sufficient to flush all interesting operations, since they all
+  // run on the same pipe.
+  host.FlushForTesting();
+
+  EXPECT_EQ(4, host_impl.ping_count());
+  EXPECT_EQ(2, test_pinger_impl.ping_count());
 }
 
 }  // namespace new_endpoint_types

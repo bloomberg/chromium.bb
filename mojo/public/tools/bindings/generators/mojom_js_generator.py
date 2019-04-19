@@ -401,10 +401,12 @@ class Generator(generator.Generator):
     if mojom.IsInterfaceRequestKind(kind) or mojom.IsPendingReceiverKind(kind):
       return "mojo.InterfaceRequest"
     # TODO(calamity): Support associated interfaces properly.
-    if mojom.IsAssociatedInterfaceKind(kind):
+    if (mojom.IsAssociatedInterfaceKind(kind) or
+        mojom.IsPendingAssociatedRemoteKind(kind)):
       return "mojo.AssociatedInterfacePtrInfo"
     # TODO(calamity): Support associated interface requests properly.
-    if mojom.IsAssociatedInterfaceRequestKind(kind):
+    if (mojom.IsAssociatedInterfaceRequestKind(kind) or
+        mojom.IsPendingAssociatedReceiverKind(kind)):
       return "mojo.AssociatedInterfaceRequest"
     # TODO(calamity): Support enums properly.
 
@@ -459,10 +461,12 @@ class Generator(generator.Generator):
     if mojom.IsInterfaceRequestKind(kind) or mojom.IsPendingReceiverKind(kind):
       return name + "Request"
     # TODO(calamity): Support associated interfaces properly.
-    if mojom.IsAssociatedInterfaceKind(kind):
+    if (mojom.IsAssociatedInterfaceKind(kind) or
+        mojom.IsPendingAssociatedRemoteKind(kind)):
       return "Object"
     # TODO(calamity): Support associated interface requests properly.
-    if mojom.IsAssociatedInterfaceRequestKind(kind):
+    if (mojom.IsAssociatedInterfaceRequestKind(kind) or
+        mojom.IsPendingAssociatedReceiverKind(kind)):
       return "Object"
 
     raise Exception("No valid closure type: %s" % kind)
@@ -553,11 +557,13 @@ class Generator(generator.Generator):
       return "mojo.internal.InterfaceProxy(%sProxy)" % name
     if mojom.IsInterfaceRequestKind(kind) or mojom.IsPendingReceiverKind(kind):
       return "mojo.internal.InterfaceRequest(%sRequest)" % name
-    if mojom.IsAssociatedInterfaceKind(kind):
+    if (mojom.IsAssociatedInterfaceKind(kind) or
+        mojom.IsPendingAssociatedRemoteKind(kind)):
       # TODO(rockot): Implement associated interfaces.
       return "mojo.internal.AssociatedInterfaceProxy(%sProxy)" % (
           name)
-    if mojom.IsAssociatedInterfaceRequestKind(kind):
+    if (mojom.IsAssociatedInterfaceRequestKind(kind) or
+        mojom.IsPendingAssociatedReceiverKind(kind)):
       return "mojo.internal.AssociatedInterfaceRequest(%s)" % name
 
     return name
@@ -594,9 +600,11 @@ class Generator(generator.Generator):
     if (mojom.IsInterfaceRequestKind(field.kind) or
         mojom.IsPendingReceiverKind(field.kind)):
       return "new bindings.InterfaceRequest()"
-    if mojom.IsAssociatedInterfaceKind(field.kind):
+    if (mojom.IsAssociatedInterfaceKind(field.kind) or
+        mojom.IsPendingAssociatedRemoteKind(field.kind)):
       return "new associatedBindings.AssociatedInterfacePtrInfo()"
-    if mojom.IsAssociatedInterfaceRequestKind(field.kind):
+    if (mojom.IsAssociatedInterfaceRequestKind(field.kind) or
+        mojom.IsPendingAssociatedReceiverKind(field.kind)):
       return "new associatedBindings.AssociatedInterfaceRequest()"
     if mojom.IsEnumKind(field.kind):
       return "0"
@@ -641,10 +649,12 @@ class Generator(generator.Generator):
       return "codec.%s" % (
           "NullableInterfaceRequest" if mojom.IsNullableKind(kind)
                                      else "InterfaceRequest")
-    if mojom.IsAssociatedInterfaceKind(kind):
+    if (mojom.IsAssociatedInterfaceKind(kind) or
+        mojom.IsPendingAssociatedRemoteKind(kind)):
       return "codec.%s" % ("NullableAssociatedInterfacePtrInfo"
           if mojom.IsNullableKind(kind) else "AssociatedInterfacePtrInfo")
-    if mojom.IsAssociatedInterfaceRequestKind(kind):
+    if (mojom.IsAssociatedInterfaceRequestKind(kind) or
+        mojom.IsPendingAssociatedReceiverKind(kind)):
       return "codec.%s" % ("NullableAssociatedInterfaceRequest"
           if mojom.IsNullableKind(kind) else "AssociatedInterfaceRequest")
     if mojom.IsEnumKind(kind):
@@ -812,10 +822,12 @@ class Generator(generator.Generator):
     elif mojom.IsPendingRemoteKind(kind):
       return '{0}.{1}Ptr'.format(kind.kind.module.namespace,
                                  kind.kind.name)
-    elif mojom.IsAssociatedInterfaceRequestKind(kind):
+    elif (mojom.IsAssociatedInterfaceRequestKind(kind) or
+          mojom.IsPendingAssociatedReceiverKind(kind)):
       return '{0}.{1}AssociatedRequest'.format(kind.kind.module.namespace,
                                                kind.kind.name)
-    elif mojom.IsAssociatedInterfaceKind(kind):
+    elif (mojom.IsAssociatedInterfaceKind(kind) or
+          mojom.IsPendingAssociatedRemoteKind(kind)):
       return '{0}.{1}AssociatedPtr'.format(kind.kind.module.namespace,
                                            kind.kind.name)
     elif mojom.IsSharedBufferKind(kind):

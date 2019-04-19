@@ -31,6 +31,7 @@ struct ReceiverSetTraits;
 template <typename Interface, typename ImplRefTraits>
 struct ReceiverSetTraits<Receiver<Interface, ImplRefTraits>> {
   using InterfaceType = Interface;
+  using PendingType = PendingReceiver<Interface>;
   using ImplPointerType = typename ImplRefTraits::PointerType;
 };
 
@@ -87,6 +88,7 @@ class ReceiverSetBase {
  public:
   using Traits = ReceiverSetTraits<ReceiverType>;
   using Interface = typename Traits::InterfaceType;
+  using PendingType = typename Traits::PendingType;
   using ImplPointerType = typename Traits::ImplPointerType;
   using ContextTraits = ReceiverSetContextTraits<ContextType>;
   using Context = typename ContextTraits::Type;
@@ -112,7 +114,7 @@ class ReceiverSetBase {
   // will be used to run scheduled tasks for the receiver.
   ReceiverId Add(
       ImplPointerType impl,
-      PendingReceiver<Interface> receiver,
+      PendingType receiver,
       scoped_refptr<base::SequencedTaskRunner> task_runner = nullptr) {
     static_assert(!ContextTraits::SupportsContext(),
                   "Context value required for non-void context type.");
@@ -124,7 +126,7 @@ class ReceiverSetBase {
   // other (identical) details.
   ReceiverId Add(
       ImplPointerType impl,
-      PendingReceiver<Interface> receiver,
+      PendingType receiver,
       Context context,
       scoped_refptr<base::SequencedTaskRunner> task_runner = nullptr) {
     static_assert(ContextTraits::SupportsContext(),
@@ -226,7 +228,7 @@ class ReceiverSetBase {
   class Entry {
    public:
     Entry(ImplPointerType impl,
-          PendingReceiver<Interface> receiver,
+          PendingType receiver,
           ReceiverSetBase* receiver_set,
           ReceiverId receiver_id,
           Context context,
@@ -283,7 +285,7 @@ class ReceiverSetBase {
   }
 
   ReceiverId AddImpl(ImplPointerType impl,
-                     PendingReceiver<Interface> receiver,
+                     PendingType receiver,
                      Context context,
                      scoped_refptr<base::SequencedTaskRunner> task_runner) {
     ReceiverId id = next_receiver_id_++;

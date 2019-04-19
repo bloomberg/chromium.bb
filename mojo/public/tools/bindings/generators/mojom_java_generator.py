@@ -221,9 +221,11 @@ def DecodeMethod(context, kind, offset, bit):
       return 'readInterfaceRequest'
     if mojom.IsInterfaceKind(kind) or mojom.IsPendingRemoteKind(kind):
       return 'readServiceInterface'
-    if mojom.IsAssociatedInterfaceRequestKind(kind):
+    if (mojom.IsAssociatedInterfaceRequestKind(kind) or
+        mojom.IsPendingAssociatedReceiverKind(kind)):
       return 'readAssociatedInterfaceRequestNotSupported'
-    if mojom.IsAssociatedInterfaceKind(kind):
+    if (mojom.IsAssociatedInterfaceKind(kind) or
+        mojom.IsPendingAssociatedRemoteKind(kind)):
       return 'readAssociatedServiceInterfaceNotSupported'
     return _spec_to_decode_method[kind.spec]
   methodName = _DecodeMethodName(kind)
@@ -282,9 +284,11 @@ def GetJavaType(context, kind, boxed=False, with_generics=True):
   if mojom.IsInterfaceRequestKind(kind) or mojom.IsPendingReceiverKind(kind):
     return ('org.chromium.mojo.bindings.InterfaceRequest<%s>' %
             GetNameForKind(context, kind.kind))
-  if mojom.IsAssociatedInterfaceKind(kind):
+  if (mojom.IsAssociatedInterfaceKind(kind) or
+      mojom.IsPendingAssociatedRemoteKind(kind)):
     return 'org.chromium.mojo.bindings.AssociatedInterfaceNotSupported'
-  if mojom.IsAssociatedInterfaceRequestKind(kind):
+  if (mojom.IsAssociatedInterfaceRequestKind(kind) or
+      mojom.IsPendingAssociatedReceiverKind(kind)):
     return 'org.chromium.mojo.bindings.AssociatedInterfaceRequestNotSupported'
   if mojom.IsMapKind(kind):
     if with_generics:
@@ -425,7 +429,8 @@ def TempDir():
 def EnumCoversContinuousRange(kind):
   if not kind.fields:
     return False
-  number_of_unique_keys = len(set(map(lambda field: field.numeric_value, kind.fields)))
+  number_of_unique_keys = len(set(map(
+      lambda field: field.numeric_value, kind.fields)))
   if kind.max_value - kind.min_value + 1 != number_of_unique_keys:
     return False
   return True
