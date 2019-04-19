@@ -168,9 +168,9 @@ class PLATFORM_EXPORT EncodedFormData : public RefCounted<EncodedFormData> {
   }
 
   static EncodingType ParseEncodingType(const String& type) {
-    if (DeprecatedEqualIgnoringCase(type, "text/plain"))
+    if (EqualIgnoringASCIICase(type, "text/plain"))
       return kTextPlain;
-    if (DeprecatedEqualIgnoringCase(type, "multipart/form-data"))
+    if (EqualIgnoringASCIICase(type, "multipart/form-data"))
       return kMultipartFormData;
     return kFormURLEncoded;
   }
