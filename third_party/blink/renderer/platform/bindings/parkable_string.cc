@@ -493,15 +493,12 @@ String ParkableStringImpl::UnparkInternal() const {
         base::StringPiece(reinterpret_cast<const char*>(data), size);
   }
 
-  // If the buffer size is incorrect, then we have a corrupted data issue,
-  // and in such case there is nothing else to do than crash.
-  CHECK_EQ(compression::GetUncompressedSize(compressed_string_piece),
-           uncompressed_string_piece.size());
   // If decompression fails, this is either because:
-  // 1. Compressed data is corrupted
-  // 2. Cannot allocate memory in zlib
+  // 1. The output buffer is too small
+  // 2. Compressed data is corrupted
+  // 3. Cannot allocate memory in zlib
   //
-  // (1) is data corruption, and (2) is OOM. In all cases, we cannot
+  // (1-2) are data corruption, and (3) is OOM. In all cases, we cannot
   // recover the string we need, nothing else to do than to abort.
   //
   // Stability sheriffs: If you see this, this is likely an OOM.
