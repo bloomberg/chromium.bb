@@ -986,9 +986,6 @@ extern const char kQueryInOmniboxDescription[];
 extern const char kQuicName[];
 extern const char kQuicDescription[];
 
-extern const char kRecurrentInterstitialName[];
-extern const char kRecurrentInterstitialDescription[];
-
 extern const char kReducedReferrerGranularityName[];
 extern const char kReducedReferrerGranularityDescription[];
 

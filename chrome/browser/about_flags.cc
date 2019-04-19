@@ -3262,11 +3262,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kTouchpadOverscrollHistoryNavigation)},
 #endif
 
-    {"enable-recurrent-interstitial",
-     flag_descriptions::kRecurrentInterstitialName,
-     flag_descriptions::kRecurrentInterstitialDescription, kOsAll,
-     FEATURE_VALUE_TYPE(kRecurrentInterstitialFeature)},
-
     {"disallow-unsafe-http-downloads",
      flag_descriptions::kDisallowUnsafeHttpDownloadsName,
      flag_descriptions::kDisallowUnsafeHttpDownloadsNameDescription, kOsAll,
