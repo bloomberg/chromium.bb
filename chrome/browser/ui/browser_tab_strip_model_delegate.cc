@@ -44,7 +44,7 @@ BrowserTabStripModelDelegate::~BrowserTabStripModelDelegate() {}
 void BrowserTabStripModelDelegate::AddTabAt(const GURL& url,
                                             int index,
                                             bool foreground,
-                                            base::Optional<int> group) {
+                                            const TabGroupData* group) {
   chrome::AddTabAt(browser_, url, index, foreground, group);
 }
 

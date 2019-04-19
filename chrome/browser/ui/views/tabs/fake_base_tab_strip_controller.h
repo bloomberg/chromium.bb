@@ -11,8 +11,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/optional.h"
-#include "chrome/browser/ui/tabs/tab_group_data.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
 #include "ui/base/models/list_selection_model.h"
 
@@ -25,8 +23,8 @@ class FakeBaseTabStripController : public TabStripController {
   void AddPinnedTab(int index, bool is_active);
   void RemoveTab(int index);
 
-  int CreateTabGroup();
-  void MoveTabIntoGroup(int index, base::Optional<int> new_group);
+  TabGroupData* CreateTabGroup();
+  void MoveTabIntoGroup(int index, TabGroupData* new_group);
 
   ui::ListSelectionModel* selection_model() { return &selection_model_; }
 
@@ -57,8 +55,7 @@ class FakeBaseTabStripController : public TabStripController {
   void StackedLayoutMaybeChanged() override;
   void OnStartedDraggingTabs() override;
   void OnStoppedDraggingTabs() override;
-  const TabGroupData* GetDataForGroup(int group_id) const override;
-  std::vector<int> ListTabsInGroup(int group_id) const override;
+  std::vector<int> ListTabsInGroup(const TabGroupData* group) const override;
   bool IsFrameCondensed() const override;
   bool HasVisibleBackgroundTabShapes() const override;
   bool EverHasVisibleBackgroundTabShapes() const override;
@@ -82,9 +79,8 @@ class FakeBaseTabStripController : public TabStripController {
   int num_tabs_ = 0;
   int active_index_ = -1;
 
-  TabGroupData fake_group_data_;
-  int num_groups_ = 0;
-  std::map<int, int> tab_to_group_;
+  std::vector<std::unique_ptr<TabGroupData>> groups_;
+  std::map<int, TabGroupData*> tab_to_group_;
 
   ui::ListSelectionModel selection_model_;
 

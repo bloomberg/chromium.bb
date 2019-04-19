@@ -21,9 +21,9 @@ ExistingTabGroupSubMenuModel::ExistingTabGroupSubMenuModel(TabStripModel* model,
 void ExistingTabGroupSubMenuModel::Build() {
   // Start command ids after the parent menu's ids to avoid collisions.
   int group_index = kFirstCommandIndex;
-  for (int group : model_->ListTabGroups()) {
+  for (TabGroupData* group : model_->ListTabGroups()) {
     if (ShouldShowGroup(model_, context_index_, group)) {
-      AddItem(group_index, model_->GetDataForGroup(group)->title());
+      AddItem(group_index, group->title());
     }
     group_index++;
   }
@@ -39,18 +39,18 @@ bool ExistingTabGroupSubMenuModel::IsCommandIdEnabled(int command_id) const {
 
 void ExistingTabGroupSubMenuModel::ExecuteCommand(int command_id,
                                                   int event_flags) {
-  const int group_index = command_id - kFirstCommandIndex;
-  // TODO(https://crbug.com/922736): If a group has been deleted, |group_index|
-  // may refer to a different group than it did when the menu was created.
-  DCHECK_LT(size_t{group_index}, model_->ListTabGroups().size());
-  model_->ExecuteAddToExistingGroupCommand(
-      context_index_, model_->ListTabGroups()[group_index]);
+  const int groupId = command_id - kFirstCommandIndex;
+  // TODO(https://crbug.com/922736): If a group has been deleted, groupId may
+  // refer to a different group than it did when the menu was created.
+  DCHECK((size_t)groupId < model_->ListTabGroups().size());
+  model_->ExecuteAddToExistingGroupCommand(context_index_,
+                                           model_->ListTabGroups()[groupId]);
 }
 
 // static
 bool ExistingTabGroupSubMenuModel::ShouldShowSubmenu(TabStripModel* model,
                                                      int context_index) {
-  for (int group : model->ListTabGroups()) {
+  for (TabGroupData* group : model->ListTabGroups()) {
     if (ShouldShowGroup(model, context_index, group)) {
       return true;
     }
@@ -61,13 +61,14 @@ bool ExistingTabGroupSubMenuModel::ShouldShowSubmenu(TabStripModel* model,
 // static
 bool ExistingTabGroupSubMenuModel::ShouldShowGroup(TabStripModel* model,
                                                    int context_index,
-                                                   int group) {
+                                                   TabGroupData* group) {
   if (!model->IsTabSelected(context_index)) {
-    if (group != model->GetTabGroupForTab(context_index))
+    if (group != nullptr && group != model->GetTabGroupForTab(context_index)) {
       return true;
+    }
   } else {
     for (int index : model->selection_model().selected_indices()) {
-      if (group != model->GetTabGroupForTab(index)) {
+      if (group != nullptr && group != model->GetTabGroupForTab(index)) {
         return true;
       }
     }

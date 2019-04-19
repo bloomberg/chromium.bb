@@ -8,10 +8,10 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/optional.h"
 #include "chrome/browser/ui/tabs/tab_change_type.h"
 #include "ui/base/models/list_selection_model.h"
 
+class TabGroupData;
 class TabStripModel;
 
 namespace content {
@@ -78,26 +78,16 @@ class TabStripModelChange {
     int index;
   };
 
-  // A WebContents' group affiliation changed from |old_group| to |new_group|.
+  // A WebContents' group affiliation changed from |old_group_data| to
+  // |new_group_data|.
   struct GroupChange {
-    // Constructor and destructor required due to Optional.
-    GroupChange(content::WebContents* contents,
-                int index,
-                base::Optional<int> old_group,
-                base::Optional<int> new_group);
-    ~GroupChange();
-
     content::WebContents* contents;
     int index;
-    base::Optional<int> old_group;
-    base::Optional<int> new_group;
+    const TabGroupData* old_group_data;
+    const TabGroupData* new_group_data;
   };
 
   struct Delta {
-    // Constructor and destructor required due to GroupChange.
-    Delta();
-    ~Delta();
-
     union {
       Insert insert;
       Remove remove;
@@ -120,8 +110,8 @@ class TabStripModelChange {
                                   int index);
   static Delta CreateGroupChangeDelta(content::WebContents* contents,
                                       int index,
-                                      base::Optional<int> old_group,
-                                      base::Optional<int> new_group);
+                                      const TabGroupData* old_group_data,
+                                      const TabGroupData* new_group_data);
 
   TabStripModelChange();
   TabStripModelChange(Type type, const Delta& delta);

@@ -399,12 +399,8 @@ void BrowserTabStripController::OnStoppedDraggingTabs() {
     source_browser_view->TabDraggingStatusChanged(/*is_dragging=*/false);
 }
 
-const TabGroupData* BrowserTabStripController::GetDataForGroup(
-    int group) const {
-  return model_->GetDataForGroup(group);
-}
-
-std::vector<int> BrowserTabStripController::ListTabsInGroup(int group) const {
+std::vector<int> BrowserTabStripController::ListTabsInGroup(
+    const TabGroupData* group) const {
   return model_->ListTabsInGroup(group);
 }
 
@@ -504,8 +500,8 @@ void BrowserTabStripController::OnTabStripModelChanged(
     case TabStripModelChange::kGroupChanged: {
       for (const auto& delta : change.deltas()) {
         tabstrip_->ChangeTabGroup(delta.group_change.index,
-                                  delta.group_change.old_group,
-                                  delta.group_change.new_group);
+                                  delta.group_change.old_group_data,
+                                  delta.group_change.new_group_data);
       }
       break;
     }
