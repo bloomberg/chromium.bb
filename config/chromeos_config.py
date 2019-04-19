@@ -1259,6 +1259,25 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       # TODO: Add a schedule to start daily or weekly
   )
 
+  # This config is manually run when we want to generate a 'release' AFDO
+  # profile, which is a mixture of CWP/benchmark profiles. This is done
+  # manually once per branch, since these are (currently) hand-rolled into
+  # branches for Android and Linux builds of Chrome. See crbug.com/858856 for
+  # context (comment #4 in particular).
+  #
+  # FIXME(gbiv): Ideally, this should be done as a part of the regular AFDO
+  # pipeline if Chrome OS finds these profiles useful.
+  site_config.Add(
+      'release-afdo-profile-generate',
+      # No board is necessary; this just runs a few commands inside of the SDK.
+      boards=[],
+      build_type=constants.TOOLCHAIN_TYPE,
+      builder_class_name='release_profile_builders.ReleaseProfileMergeBuilder',
+      chrome_sdk=False,
+      description='Generates merged AFDO profiles for select Chrome releases',
+      display_label=config_lib.DISPLAY_LABEL_TOOLCHAIN,
+  )
+
 
 def PreCqBuilders(site_config, boards_dict, ge_build_config):
   """Create all build configs associated with the PreCQ.

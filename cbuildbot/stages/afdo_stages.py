@@ -7,6 +7,8 @@
 
 from __future__ import print_function
 
+import time
+
 from chromite.cbuildbot import afdo
 from chromite.lib import constants
 from chromite.lib import alerts
@@ -212,3 +214,33 @@ class AFDOUpdateKernelEbuildStage(generic_stages.BuilderStage):
 
     if expire_soon:
       self._WarnSheriff(expire_soon)
+
+
+class AFDOReleaseProfileMergerStage(generic_stages.BuilderStage):
+  """Merges CWP and Benchmark AFDO profiles into 'Release' profiles."""
+
+  def PerformStage(self):
+    version_info = self._run.GetVersionInfo()
+    chrome_major_version = int(version_info.chrome_branch)
+
+    # Generate these for the last few Chrome versions. the number was
+    # arbitrarily selected, but we probably don't care after that point (and if
+    # we do, we can just run a tryjob with a locally patched value of N).
+    milestones = range(chrome_major_version - 2, chrome_major_version)
+    gs_context = gs.GSContext()
+
+    skipped, merge_plan = afdo.GenerateReleaseProfileMergePlan(
+        gs_context, milestones)
+    for skip in skipped:
+      logging.warning('Can\'t merge profile(s) for M%s at this time', skip)
+
+    if not merge_plan:
+      raise ValueError('No mergeable profiles. Fail.')
+
+    logging.info('Merge plan: %s', merge_plan)
+    merge_results = afdo.ExecuteReleaseProfileMergePlan(
+        gs_context, self._build_root, merge_plan)
+
+    assert len(merge_results) == len(merge_plan), 'Missing results?'
+    run_id = str(int(time.time()))
+    afdo.UploadReleaseProfiles(gs_context, run_id, merge_plan, merge_results)

@@ -3510,6 +3510,7 @@
   reks-tot-chrome-pfq-informational-tryjob
   reks-tot-chromium-pfq-informational-tryjob
   reks-unittest-stress
+  release-afdo-profile-generate-tryjob
   relm-chrome-pfq-tryjob
   relm-chromium-pfq-tryjob
   relm-compile-only-pre-cq

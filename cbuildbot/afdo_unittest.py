@@ -3,12 +3,18 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# Sometimes we poke 'private' AFDO methods, since that's the most direct way to
+# test what we're looking to test. That's OK.
+#
+# pylint: disable=protected-access
+
 """Unit tests for afdo module."""
 
 from __future__ import print_function
 
 import collections
 import datetime
+import json
 import mock
 import os
 import time
@@ -22,8 +28,236 @@ from chromite.lib import path_util
 from chromite.lib import portage_util
 
 
+MockGsFile = collections.namedtuple('MockGsFile', ['url', 'creation_time'])
+
 class AfdoTest(cros_test_lib.MockTempDirTestCase):
   """Unit test of afdo module."""
+
+  def testEnumerateMostRecentProfilesRaisesOnNoListing(self):
+    mock_gs = mock.Mock()
+    mock_gs.List = lambda *args, **kwargs: []
+    with self.assertRaises(ValueError):
+      afdo._EnumerateMostRecentProfiles(mock_gs, [1, 2, 3], 'some_url', None)
+
+  def testEnumerateMostRecentProfilesFindsTheNewestProfiles(self):
+
+    def mock_list(*_args, **_kwargs):
+      return [
+          MockGsFile(url='gs://foo/1_1', creation_time=None),
+          MockGsFile(url='gs://foo/2_2', creation_time=None),
+          MockGsFile(url='gs://foo/2_1', creation_time=None),
+          MockGsFile(url='gs://foo/1_2', creation_time=None),
+          MockGsFile(url='gs://foo/3_1', creation_time=None),
+      ]
+
+    mock_gs = mock.Mock()
+    mock_gs.List = mock_list
+
+    Version = collections.namedtuple('Version', ['major', 'minor'])
+
+    def parse_name(name):
+      major, minor = name.split('_')
+      # Note that the version key uses the *negative* minor number. So _1
+      # should be considered the newest. This is to be sure that we're ordering
+      # using these Version keys, rather than the strings.
+      return Version(int(major), -int(minor))
+
+    milestones = (1, 2, 4)
+    most_recent = afdo._EnumerateMostRecentProfiles(mock_gs, milestones, '',
+                                                    parse_name)
+    self.assertDictEqual(most_recent, {
+        1: 'gs://foo/1_1',
+        2: 'gs://foo/2_1',
+    })
+
+  def testEnumerateBenchmarkProfilesMatchesRealWorldNames(self):
+    enumerate_profiles = self.PatchObject(afdo, '_EnumerateMostRecentProfiles')
+    afdo._EnumerateMostRecentBenchmarkProfiles(object(), [1])
+    enumerate_profiles.assert_called_once()
+    parse_profile = enumerate_profiles.call_args_list[0][0][-1]
+
+    parsed = parse_profile('chromeos-chrome-amd64-57.0.2958.0_rc-r1.afdo.bz2')
+    self.assertEqual(parsed.major, 57)
+    parsed = parse_profile('chromeos-chrome-amd64-58.0.2959.0_rc-r1.afdo.bz2')
+    self.assertEqual(parsed.major, 58)
+
+    # ...Note that not all profiles have the _rc.
+    no_rc = parse_profile('chromeos-chrome-amd64-58.0.2959.0-r1.afdo.bz2')
+    self.assertEqual(no_rc, parsed)
+
+    # ...And we don't like merged profiles.
+    merged_profile = parse_profile(
+        'chromeos-chrome-amd64-58.0.2959.0-r1-merged.afdo.bz2')
+    self.assertIsNone(merged_profile)
+
+    profile_order = [
+        'chromeos-chrome-amd64-10.9.9.9_rc-r9.afdo.bz2',
+        'chromeos-chrome-amd64-9.10.9.9_rc-r9.afdo.bz2',
+        'chromeos-chrome-amd64-9.9.10.9_rc-r9.afdo.bz2',
+        'chromeos-chrome-amd64-9.9.9.10_rc-r9.afdo.bz2',
+        'chromeos-chrome-amd64-9.9.9.9_rc-r10.afdo.bz2',
+        'chromeos-chrome-amd64-9.9.9.9_rc-r9.afdo.bz2',
+    ]
+
+    for higher, lower in zip(profile_order, profile_order[1:]):
+      self.assertGreater(parse_profile(higher), parse_profile(lower))
+
+  def testEnumerateCWPProfilesMatchesRealWorldNames(self):
+    enumerate_profiles = self.PatchObject(afdo, '_EnumerateMostRecentProfiles')
+    afdo._EnumerateMostRecentCWPProfiles(object(), [1])
+    enumerate_profiles.assert_called_once()
+    parse_profile = enumerate_profiles.call_args_list[0][0][-1]
+
+    parsed = parse_profile('R75-3759.4-1555926322.afdo.xz')
+    self.assertEqual(parsed.major, 75)
+    parsed = parse_profile('R76-3759.4-1555926322.afdo.xz')
+    self.assertEqual(parsed.major, 76)
+
+    profile_order = [
+        'R10-9.9-9.afdo.xz',
+        'R9-10.9-9.afdo.xz',
+        'R9-9.10-9.afdo.xz',
+        'R9-9.9-10.afdo.xz',
+        'R9-9.9-9.afdo.xz',
+    ]
+
+    for higher, lower in zip(profile_order, profile_order[1:]):
+      self.assertGreater(parse_profile(higher), parse_profile(lower))
+
+  def testGenerateMergePlanMatchesProfilesAppropriately(self):
+    milestones = (1, 2, 3, 4)
+    gs_ctx = object()
+
+    def mock_enumerate(gs_context, milestones2, glob_url, _parse_profile_name):
+      self.assertIs(milestones, milestones2)
+      self.assertIs(gs_context, gs_ctx)
+
+      if afdo.GSURL_BASE_CWP in glob_url:
+        return {
+            1: 'gs://cwp/1',
+            2: 'gs://cwp/2',
+            4: 'gs://cwp/4',
+        }
+      assert afdo.GSURL_BASE_BENCH in glob_url
+      return {
+          1: 'gs://bench/1',
+          2: 'gs://bench/2',
+          3: 'gs://bench/3',
+      }
+
+    self.PatchObject(afdo, '_EnumerateMostRecentProfiles', mock_enumerate)
+    skipped, to_merge = afdo.GenerateReleaseProfileMergePlan(gs_ctx, milestones)
+    self.assertEqual(skipped, [3, 4])
+    self.assertDictEqual(to_merge, {
+        1: ('gs://cwp/1', 'gs://bench/1'),
+        2: ('gs://cwp/2', 'gs://bench/2'),
+    })
+
+  def testExecuteMergePlanWorks(self):
+    mock_gs = mock.Mock()
+    gs_copy = mock_gs.Copy
+    compress_file = self.PatchObject(cros_build_lib, 'CompressFile')
+    uncompress_file = self.PatchObject(cros_build_lib, 'UncompressFile')
+    merge_afdo_profiles = self.PatchObject(afdo, '_MergeAFDOProfiles')
+
+    # The only way to know for sure that we created a sufficient set of
+    # directories is a tryjob. Just make sure there are no side-effects.
+    self.PatchObject(osutils, 'SafeMakedirs')
+
+    merge_plan = {
+        1: ('gs://cwp/1.afdo.xz', 'gs://bench/1.afdo.bz2'),
+    }
+
+    build_root = '/build/root'
+    chroot = os.path.join(build_root, 'chroot')
+    merged_files = afdo.ExecuteReleaseProfileMergePlan(mock_gs, build_root,
+                                                       merge_plan)
+
+    self.assertSetEqual(set(merged_files.keys()), {1})
+    merged_output = merged_files[1]
+
+    def assert_call_args(the_mock, call_args):
+      self.assertEqual(the_mock.call_count, len(call_args))
+      the_mock.assert_has_calls(call_args)
+
+    assert_call_args(gs_copy, [
+        mock.call('gs://bench/1.afdo.bz2',
+                  chroot + '/tmp/afdo_data_merge/benchmark.afdo.bz2'),
+        mock.call('gs://cwp/1.afdo.xz',
+                  chroot + '/tmp/afdo_data_merge/cwp.afdo.xz'),
+    ])
+
+    assert_call_args(uncompress_file, [
+        mock.call(chroot + '/tmp/afdo_data_merge/benchmark.afdo.bz2',
+                  chroot + '/tmp/afdo_data_merge/benchmark.afdo'),
+        mock.call(chroot + '/tmp/afdo_data_merge/cwp.afdo.xz',
+                  chroot + '/tmp/afdo_data_merge/cwp.afdo'),
+    ])
+
+    uncompressed_merged_output = os.path.splitext(merged_output)[0]
+    uncompressed_chroot_merged_output = uncompressed_merged_output[len(chroot):]
+    assert_call_args(merge_afdo_profiles, [
+        mock.call([('/tmp/afdo_data_merge/cwp.afdo', 75),
+                   ('/tmp/afdo_data_merge/benchmark.afdo', 25)],
+                  uncompressed_chroot_merged_output,
+                  use_compbinary=True),
+    ])
+
+    assert_call_args(compress_file, [
+        mock.call(uncompressed_merged_output, merged_output),
+    ])
+
+  def testUploadReleaseProfilesUploadsAsExpected(self):
+    mock_gs = mock.Mock()
+    gs_copy = mock_gs.Copy
+    write_file = self.PatchObject(osutils, 'WriteFile')
+
+    global_tmpdir = '/global/tmp'
+    self.PatchObject(osutils, 'GetGlobalTempDir', returns=global_tmpdir)
+
+    merge_plan = {
+        1: ('gs://cwp/1.afdo.xz', 'gs://bench/1.afdo.bz2'),
+        2: ('gs://cwp/2.afdo.xz', 'gs://bench/2.afdo.bz2'),
+    }
+
+    merge_results = {
+        1: '/tmp/foo.afdo.bz2',
+        2: '/tmp/bar.afdo.bz2',
+    }
+
+    run_id = '1234'
+    afdo.UploadReleaseProfiles(mock_gs, run_id, merge_plan, merge_results)
+
+    write_file.assert_called_once()
+    meta_file_local_location, meta_file_data = write_file.call_args_list[0][0]
+    self.assertEqual(meta_file_data, json.dumps(merge_plan))
+
+    self.assertTrue(meta_file_local_location.startswith(global_tmpdir))
+
+    def expected_upload_location(profile_version):
+      return os.path.join(afdo.GSURL_BASE_RELEASE, run_id,
+                          'profiles/m%d.afdo.bz2' % profile_version)
+
+    expected_copy_calls = [
+        mock.call(
+            merge_results[1],
+            expected_upload_location(1),
+            acl='public-read',
+            version=0),
+        mock.call(
+            merge_results[2],
+            expected_upload_location(2),
+            acl='public-read',
+            version=0),
+        mock.call(
+            meta_file_local_location,
+            os.path.join(afdo.GSURL_BASE_RELEASE, run_id, 'meta.json'),
+            acl='public-read',
+            version=0),
+    ]
+
+    gs_copy.assert_has_calls(expected_copy_calls)
+    self.assertEqual(gs_copy.call_count, len(expected_copy_calls))
 
   def runCreateAndUploadMergedAFDOProfileOnce(self, upload_ok=True, **kwargs):
     if 'unmerged_name' not in kwargs:
@@ -39,8 +273,6 @@ class AfdoTest(cros_test_lib.MockTempDirTestCase):
     ])
 
     def MockList(*_args, **_kwargs):
-      MockGsFile = collections.namedtuple('MockGsFile',
-                                          ['url', 'creation_time'])
       num_files = 7
       results = []
       for i in range(1, num_files+1):
