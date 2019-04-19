@@ -421,18 +421,18 @@ const char* const kForbiddenHeaderFields[] = {
 }  // namespace
 
 // static
-bool HttpUtil::IsMethodSafe(const std::string& method) {
+bool HttpUtil::IsMethodSafe(base::StringPiece method) {
   return method == "GET" || method == "HEAD" || method == "OPTIONS" ||
          method == "TRACE";
 }
 
 // static
-bool HttpUtil::IsMethodIdempotent(const std::string& method) {
+bool HttpUtil::IsMethodIdempotent(base::StringPiece method) {
   return IsMethodSafe(method) || method == "PUT" || method == "DELETE";
 }
 
 // static
-bool HttpUtil::IsSafeHeader(const std::string& name) {
+bool HttpUtil::IsSafeHeader(base::StringPiece name) {
   std::string lower_name(base::ToLowerASCII(name));
   if (base::StartsWith(lower_name, "proxy-", base::CompareCase::SENSITIVE) ||
       base::StartsWith(lower_name, "sec-", base::CompareCase::SENSITIVE))
@@ -446,13 +446,13 @@ bool HttpUtil::IsSafeHeader(const std::string& name) {
 }
 
 // static
-bool HttpUtil::IsValidHeaderName(const base::StringPiece& name) {
+bool HttpUtil::IsValidHeaderName(base::StringPiece name) {
   // Check whether the header name is RFC 2616-compliant.
   return HttpUtil::IsToken(name);
 }
 
 // static
-bool HttpUtil::IsValidHeaderValue(const base::StringPiece& value) {
+bool HttpUtil::IsValidHeaderValue(base::StringPiece value) {
   // Just a sanity check: disallow NUL, CR and LF.
   for (char c : value) {
     if (c == '\0' || c == '\r' || c == '\n')

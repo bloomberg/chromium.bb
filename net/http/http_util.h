@@ -87,22 +87,22 @@ class NET_EXPORT HttpUtil {
 
   // Returns true if the request method is "safe" (per section 4.2.1 of
   // RFC 7231).
-  static bool IsMethodSafe(const std::string& method);
+  static bool IsMethodSafe(base::StringPiece method);
 
   // Returns true if the request method is idempotent (per section 4.2.2 of
   // RFC 7231).
-  static bool IsMethodIdempotent(const std::string& method);
+  static bool IsMethodIdempotent(base::StringPiece method);
 
   // Returns true if it is safe to allow users and scripts to specify the header
   // named |name|.
-  static bool IsSafeHeader(const std::string& name);
+  static bool IsSafeHeader(base::StringPiece name);
 
   // Returns true if |name| is a valid HTTP header name.
-  static bool IsValidHeaderName(const base::StringPiece& name);
+  static bool IsValidHeaderName(base::StringPiece name);
 
   // Returns false if |value| contains NUL or CRLF. This method does not perform
   // a fully RFC-2616-compliant header value validation.
-  static bool IsValidHeaderValue(const base::StringPiece& value);
+  static bool IsValidHeaderValue(base::StringPiece value);
 
   // Multiple occurances of some headers cannot be coalesced into a comma-
   // separated list since their values are (or contain) unquoted HTTP-date
