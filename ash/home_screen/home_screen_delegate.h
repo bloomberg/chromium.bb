@@ -56,6 +56,12 @@ class HomeScreenDelegate {
   // Note: Visibility of the shelf and status area are independent, but the
   // variant with shelf visible and status area hidden is currently unsupported.
   virtual bool ShouldShowStatusAreaOnHomeScreen() const = 0;
+
+  // Triggered when dragging launcher in tablet mode starts/proceeds/ends. They
+  // cover both dragging launcher to show and hide.
+  virtual void OnHomeLauncherDragStart() {}
+  virtual void OnHomeLauncherDragInProgress() {}
+  virtual void OnHomeLauncherDragEnd() {}
 };
 
 }  // namespace ash

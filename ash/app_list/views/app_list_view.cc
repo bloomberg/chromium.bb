@@ -99,12 +99,17 @@ constexpr float kAppListBlurQuality = 0.33f;
 // TODO(oshima): Use ui::ScopedAnimationDurationScaleMode instead.
 bool short_animations_for_testing;
 
-// Histogram for the app list dragging. The suffix ClamshellMode is added
-// in case a similar UI is added to TabletMode in the future.
+// Histogram for the app list dragging in clamshell mode.
 constexpr char kAppListDragInClamshellHistogram[] =
     "Apps.StateTransition.Drag.PresentationTime.ClamshellMode";
 constexpr char kAppListDragInClamshellMaxLatencyHistogram[] =
     "Apps.StateTransition.Drag.PresentationTime.MaxLatency.ClamshellMode";
+
+// Histogram for the app list dragging in tablet mode.
+constexpr char kAppListDragInTabletHistogram[] =
+    "Apps.StateTransition.Drag.PresentationTime.TabletMode";
+constexpr char kAppListDragInTabletMaxLatencyHistogram[] =
+    "Apps.StateTransition.Drag.PresentationTime.MaxLatency.TabletMode";
 
 // This view forwards the focus to the search box widget by providing it as a
 // FocusTraversable when a focus search is provided.
@@ -1527,7 +1532,9 @@ gfx::Rect AppListView::GetAppInfoDialogBounds() const {
 }
 
 void AppListView::SetIsInDrag(bool is_in_drag) {
-  if (!is_in_drag)
+  // In tablet mode, |presentation_time_recorder_| is constructed/reset by
+  // HomeLauncherGestureHandler.
+  if (!is_in_drag && !is_tablet_mode_)
     presentation_time_recorder_.reset();
 
   if (app_list_state_ == ash::mojom::AppListViewState::kClosed)
@@ -1536,14 +1543,11 @@ void AppListView::SetIsInDrag(bool is_in_drag) {
   if (is_in_drag == is_in_drag_)
     return;
 
-  if (is_in_drag) {
+  if (is_in_drag && !is_tablet_mode_) {
     DCHECK(!presentation_time_recorder_);
-    if (!is_tablet_mode_) {
-      presentation_time_recorder_ =
-          ash::CreatePresentationTimeHistogramRecorder(
-              GetWidget()->GetCompositor(), kAppListDragInClamshellHistogram,
-              kAppListDragInClamshellMaxLatencyHistogram);
-    }
+    presentation_time_recorder_ = ash::CreatePresentationTimeHistogramRecorder(
+        GetWidget()->GetCompositor(), kAppListDragInClamshellHistogram,
+        kAppListDragInClamshellMaxLatencyHistogram);
   }
 
   is_in_drag_ = is_in_drag;
@@ -1640,6 +1644,22 @@ ash::mojom::AppListViewState AppListView::CalculateStateAfterShelfDrag(
 ui::AnimationMetricsReporter* AppListView::GetStateTransitionMetricsReporter() {
   state_animation_metrics_reporter_->Start();
   return state_animation_metrics_reporter_.get();
+}
+
+void AppListView::OnHomeLauncherDragStart() {
+  DCHECK(!presentation_time_recorder_);
+  presentation_time_recorder_ = ash::CreatePresentationTimeHistogramRecorder(
+      GetWidget()->GetCompositor(), kAppListDragInTabletHistogram,
+      kAppListDragInTabletMaxLatencyHistogram);
+}
+
+void AppListView::OnHomeLauncherDragInProgress() {
+  DCHECK(presentation_time_recorder_);
+  presentation_time_recorder_->RequestNext();
+}
+
+void AppListView::OnHomeLauncherDragEnd() {
+  presentation_time_recorder_.reset();
 }
 
 void AppListView::OnWindowDestroying(aura::Window* window) {

@@ -304,6 +304,11 @@ class ASH_EXPORT AppListControllerImpl
       base::Optional<mojom::AppListViewState> recorded_app_list_view_state);
 
  private:
+  // HomeScreenDelegate:
+  void OnHomeLauncherDragStart() override;
+  void OnHomeLauncherDragInProgress() override;
+  void OnHomeLauncherDragEnd() override;
+
   syncer::StringOrdinal GetOemFolderPos();
   std::unique_ptr<app_list::AppListItem> CreateAppListItem(
       AppListItemMetadataPtr metadata);
