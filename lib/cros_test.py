@@ -221,6 +221,9 @@ class CrOSTest(object):
           '-remoterunner=%s' % remote_runner_path,
           '-remotebundledir=%s' % remote_bundle_dir,
           '-remotedatadir=%s' % remote_data_dir,
+          # The dev server has trouble downloading assets from Google Storage
+          # from outside the chroot.
+          '-ephemeraldevserver=false',
       ]
       if self._device.private_key:
         cmd += ['-keyfile', self._device.private_key]
