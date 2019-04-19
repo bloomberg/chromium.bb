@@ -278,6 +278,39 @@ def _BuildrootToWorkDirs(buildroot):
   return chroot_root, local_dir, in_chroot_local_dir
 
 
+def _MergeAFDOProfiles(chroot_profile_list, chroot_output_profile):
+  """Merges the given profile list.
+
+  Args:
+    chroot_profile_list: a list of (profile_path, profile_weight).
+      Profile_weight is an int that tells us how to weight the profile compared
+      to everything else.
+    chroot_output_profile: where to store the result profile.
+  """
+  if not chroot_profile_list:
+    raise ValueError('Need profiles to merge')
+
+  # A regular llvm-profdata command looks like:
+  # llvm-profdata merge [-sample] -output=/path/to/output input1 [input2
+  #                                                               [input3 ...]]
+  #
+  # Alternatively, we can specify inputs by `-weighted-input=A,file`, where A
+  # is a multiplier of the sample counts in the profile.
+  merge_command = [
+      'llvm-profdata',
+      'merge',
+      '-sample',
+      '-output=' + chroot_output_profile,
+  ]
+
+  merge_command += ['-weighted-input=%d,%s' % (weight, name)
+                    for name, weight in chroot_profile_list]
+
+  cros_build_lib.RunCommand(merge_command, enter_chroot=True,
+                            capture_output=True, print_cmd=True)
+
+
+
 def CreateAndUploadMergedAFDOProfile(gs_context, buildroot, unmerged_name,
                                      recent_to_merge=5, max_age_days=14):
   """Create a merged AFDO profile from recent AFDO profiles and upload it.
@@ -370,22 +403,10 @@ def CreateAndUploadMergedAFDOProfile(gs_context, buildroot, unmerged_name,
 
   merged_output_path = os.path.join(work_dir, merged_basename)
   chroot_merged_output_path = os.path.join(chroot_work_dir, merged_basename)
-  # A regular llvm-profdata command looks like:
-  # llvm-profdata merge [-sample] -output=/path/to/output input1 [input2
-  #                                                               [input3 ...]]
-  #
-  # -sample implies that we're working with AFDO profiles. Without explicitly
-  # specifying weights, we're merging all profiles in equally.
-  merge_command = [
-      'llvm-profdata',
-      'merge',
-      '-sample',
-      '-output=' + chroot_merged_output_path,
-  ]
-  merge_command.extend(chroot_afdo_files)
 
-  cros_build_lib.RunCommand(merge_command, enter_chroot=True,
-                            capture_output=True, print_cmd=True)
+  # Weight all profiles equally.
+  _MergeAFDOProfiles([(profile, 1) for profile in chroot_afdo_files],
+                     chroot_merged_output_path)
 
   compressed_path = CompressAFDOFile(merged_output_path, buildroot)
   compressed_basename = os.path.basename(compressed_path)

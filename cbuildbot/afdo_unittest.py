@@ -84,11 +84,11 @@ class AfdoTest(cros_test_lib.MockTempDirTestCase):
     expected_ordered_args = ['llvm-profdata', 'merge', '-sample']
     expected_unordered_args = [
         '-output=/tmp/foo-7-merged' + afdo.AFDO_SUFFIX,
-        '/tmp/foo-3' + afdo.AFDO_SUFFIX,
-        '/tmp/foo-4' + afdo.AFDO_SUFFIX,
-        '/tmp/foo-5' + afdo.AFDO_SUFFIX,
-        '/tmp/foo-6' + afdo.AFDO_SUFFIX,
-        '/tmp/foo-7' + afdo.AFDO_SUFFIX,
+        '-weighted-input=1,/tmp/foo-3' + afdo.AFDO_SUFFIX,
+        '-weighted-input=1,/tmp/foo-4' + afdo.AFDO_SUFFIX,
+        '-weighted-input=1,/tmp/foo-5' + afdo.AFDO_SUFFIX,
+        '-weighted-input=1,/tmp/foo-6' + afdo.AFDO_SUFFIX,
+        '-weighted-input=1,/tmp/foo-7' + afdo.AFDO_SUFFIX,
     ]
 
     args = mocks.run_command.call_args[0][0]
@@ -173,9 +173,9 @@ class AfdoTest(cros_test_lib.MockTempDirTestCase):
     expected_ordered_args = ['llvm-profdata', 'merge', '-sample']
     expected_unordered_args = [
         '-output=/tmp/foo-3-merged' + afdo.AFDO_SUFFIX,
-        '/tmp/foo-1' + afdo.AFDO_SUFFIX,
-        '/tmp/foo-2' + afdo.AFDO_SUFFIX,
-        '/tmp/foo-3' + afdo.AFDO_SUFFIX,
+        '-weighted-input=1,/tmp/foo-1' + afdo.AFDO_SUFFIX,
+        '-weighted-input=1,/tmp/foo-2' + afdo.AFDO_SUFFIX,
+        '-weighted-input=1,/tmp/foo-3' + afdo.AFDO_SUFFIX,
     ]
 
     args = mocks.run_command.call_args[0][0]
