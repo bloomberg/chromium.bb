@@ -974,6 +974,84 @@ TEST_F(ResourceFetcherTest, CachedResourceShouldNotCrashByNullURL) {
   ASSERT_EQ(fetcher->CachedResource(KURL()), nullptr);
 }
 
+TEST_F(ResourceFetcherTest, DeprioritizeSubframe) {
+  auto& properties = *MakeGarbageCollected<TestResourceFetcherProperties>();
+  auto* fetcher = CreateFetcher(properties);
+  ResourceRequest request(KURL("https://www.example.com/"));
+
+  {
+    // Subframe depriotization is disabled (main frame case).
+    properties.SetIsMainFrame(true);
+    properties.SetIsSubframeDeprioritizationEnabled(false);
+    const auto priority = fetcher->ComputeLoadPriorityForTesting(
+        ResourceType::kScript, request, ResourcePriority::kNotVisible,
+        FetchParameters::DeferOption::kNoDefer,
+        FetchParameters::SpeculativePreloadType::kNotSpeculative,
+        false /* is_link_preload */, false /* is_stale_revalidation */);
+    EXPECT_EQ(priority, ResourceLoadPriority::kHigh);
+  }
+
+  {
+    // Subframe depriotization is disabled (nested frame case).
+    properties.SetIsMainFrame(false);
+    properties.SetIsSubframeDeprioritizationEnabled(false);
+    const auto priority = fetcher->ComputeLoadPriorityForTesting(
+        ResourceType::kScript, request, ResourcePriority::kNotVisible,
+        FetchParameters::DeferOption::kNoDefer,
+        FetchParameters::SpeculativePreloadType::kNotSpeculative,
+        false /* is_link_preload */, false /* is_stale_revalidation */);
+    EXPECT_EQ(priority, ResourceLoadPriority::kHigh);
+  }
+
+  {
+    // Subframe depriotization is enabled (main frame case), kHigh.
+    properties.SetIsMainFrame(true);
+    properties.SetIsSubframeDeprioritizationEnabled(true);
+    const auto priority = fetcher->ComputeLoadPriorityForTesting(
+        ResourceType::kScript, request, ResourcePriority::kNotVisible,
+        FetchParameters::DeferOption::kNoDefer,
+        FetchParameters::SpeculativePreloadType::kNotSpeculative,
+        false /* is_link_preload */, false /* is_stale_revalidation */);
+    EXPECT_EQ(priority, ResourceLoadPriority::kHigh);
+  }
+
+  {
+    // Subframe depriotization is enabled (nested frame case), kHigh => kLow.
+    properties.SetIsMainFrame(false);
+    properties.SetIsSubframeDeprioritizationEnabled(true);
+    const auto priority = fetcher->ComputeLoadPriorityForTesting(
+        ResourceType::kScript, request, ResourcePriority::kNotVisible,
+        FetchParameters::DeferOption::kNoDefer,
+        FetchParameters::SpeculativePreloadType::kNotSpeculative,
+        false /* is_link_preload */, false /* is_stale_revalidation */);
+    EXPECT_EQ(priority, ResourceLoadPriority::kLow);
+  }
+  {
+    // Subframe depriotization is enabled (main frame case), kMedium.
+    properties.SetIsMainFrame(true);
+    properties.SetIsSubframeDeprioritizationEnabled(true);
+    const auto priority = fetcher->ComputeLoadPriorityForTesting(
+        ResourceType::kMock, request, ResourcePriority::kNotVisible,
+        FetchParameters::DeferOption::kNoDefer,
+        FetchParameters::SpeculativePreloadType::kNotSpeculative,
+        false /* is_link_preload */, false /* is_stale_revalidation */);
+    EXPECT_EQ(priority, ResourceLoadPriority::kMedium);
+  }
+
+  {
+    // Subframe depriotization is enabled (nested frame case), kMedium =>
+    // kLowest.
+    properties.SetIsMainFrame(false);
+    properties.SetIsSubframeDeprioritizationEnabled(true);
+    const auto priority = fetcher->ComputeLoadPriorityForTesting(
+        ResourceType::kMock, request, ResourcePriority::kNotVisible,
+        FetchParameters::DeferOption::kNoDefer,
+        FetchParameters::SpeculativePreloadType::kNotSpeculative,
+        false /* is_link_preload */, false /* is_stale_revalidation */);
+    EXPECT_EQ(priority, ResourceLoadPriority::kLowest);
+  }
+}
+
 TEST_F(ResourceFetcherTest, DetachedPropertiesWithDefaultValues) {
   const auto& original_client_settings_object =
       *MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
@@ -1003,6 +1081,7 @@ TEST_F(ResourceFetcherTest, DetachedPropertiesWithDefaultValues) {
   EXPECT_FALSE(properties.IsDetached());
   EXPECT_FALSE(properties.IsLoadComplete());
   EXPECT_FALSE(properties.ShouldBlockLoadingSubResource());
+  EXPECT_FALSE(properties.IsSubframeDeprioritizationEnabled());
   EXPECT_EQ(scheduler::FrameStatus::kNone, properties.GetFrameStatus());
 
   fetcher->ClearContext();
@@ -1021,6 +1100,7 @@ TEST_F(ResourceFetcherTest, DetachedPropertiesWithDefaultValues) {
   EXPECT_TRUE(properties.IsDetached());
   EXPECT_FALSE(properties.IsLoadComplete());
   EXPECT_TRUE(properties.ShouldBlockLoadingSubResource());
+  EXPECT_FALSE(properties.IsSubframeDeprioritizationEnabled());
   EXPECT_EQ(scheduler::FrameStatus::kNone, properties.GetFrameStatus());
 }
 
@@ -1049,6 +1129,7 @@ TEST_F(ResourceFetcherTest, DetachedPropertiesWithNonDefaultValues) {
   original_properties.SetIsPaused(true);
   original_properties.SetIsLoadComplete(true);
   original_properties.SetShouldBlockLoadingSubResource(true);
+  original_properties.SetIsSubframeDeprioritizationEnabled(true);
   original_properties.SetFrameStatus(scheduler::FrameStatus::kMainFrameVisible);
 
   const auto& client_settings_object =
@@ -1062,6 +1143,7 @@ TEST_F(ResourceFetcherTest, DetachedPropertiesWithNonDefaultValues) {
   EXPECT_FALSE(properties.IsDetached());
   EXPECT_TRUE(properties.IsLoadComplete());
   EXPECT_TRUE(properties.ShouldBlockLoadingSubResource());
+  EXPECT_TRUE(properties.IsSubframeDeprioritizationEnabled());
   EXPECT_EQ(scheduler::FrameStatus::kMainFrameVisible,
             properties.GetFrameStatus());
 
@@ -1081,6 +1163,7 @@ TEST_F(ResourceFetcherTest, DetachedPropertiesWithNonDefaultValues) {
   EXPECT_TRUE(properties.IsDetached());
   EXPECT_TRUE(properties.IsLoadComplete());
   EXPECT_TRUE(properties.ShouldBlockLoadingSubResource());
+  EXPECT_TRUE(properties.IsSubframeDeprioritizationEnabled());
   EXPECT_EQ(scheduler::FrameStatus::kNone, properties.GetFrameStatus());
 }
 

@@ -262,78 +262,6 @@ ResourceFetcherInit::ResourceFetcherInit(
   DCHECK(loader_factory || properties.IsDetached());
 }
 
-ResourceLoadPriority ResourceFetcher::ComputeLoadPriority(
-    ResourceType type,
-    const ResourceRequest& resource_request,
-    ResourcePriority::VisibilityStatus visibility,
-    FetchParameters::DeferOption defer_option,
-    FetchParameters::SpeculativePreloadType speculative_preload_type,
-    bool is_link_preload,
-    bool is_stale_revalidation) {
-  // Stale revalidation resource requests should be very low regardless of
-  // the |type|.
-  if (is_stale_revalidation)
-    return ResourceLoadPriority::kVeryLow;
-
-  ResourceLoadPriority priority = TypeToPriority(type);
-
-  // Visible resources (images in practice) get a boost to High priority.
-  if (visibility == ResourcePriority::kVisible)
-    priority = ResourceLoadPriority::kHigh;
-
-  // Resources before the first image are considered "early" in the document and
-  // resources after the first image are "late" in the document.  Important to
-  // note that this is based on when the preload scanner discovers a resource
-  // for the most part so the main parser may not have reached the image element
-  // yet.
-  if (type == ResourceType::kImage && !is_link_preload)
-    image_fetched_ = true;
-
-  // A preloaded font should not take precedence over critical CSS or
-  // parser-blocking scripts.
-  if (type == ResourceType::kFont && is_link_preload)
-    priority = ResourceLoadPriority::kHigh;
-
-  if (FetchParameters::kIdleLoad == defer_option) {
-    priority = ResourceLoadPriority::kVeryLow;
-  } else if (type == ResourceType::kScript) {
-    // Special handling for scripts.
-    // Default/Parser-Blocking/Preload early in document: High (set in
-    // typeToPriority)
-    // Async/Defer: Low Priority (applies to both preload and parser-inserted)
-    // Preload late in document: Medium
-    if (FetchParameters::kLazyLoad == defer_option) {
-      priority = ResourceLoadPriority::kLow;
-    } else if (speculative_preload_type ==
-                   FetchParameters::SpeculativePreloadType::kInDocument &&
-               image_fetched_) {
-      // Speculative preload is used as a signal for scripts at the bottom of
-      // the document.
-      priority = ResourceLoadPriority::kMedium;
-    }
-  } else if (FetchParameters::kLazyLoad == defer_option) {
-    priority = ResourceLoadPriority::kVeryLow;
-  } else if (resource_request.GetRequestContext() ==
-                 mojom::RequestContextType::BEACON ||
-             resource_request.GetRequestContext() ==
-                 mojom::RequestContextType::PING ||
-             resource_request.GetRequestContext() ==
-                 mojom::RequestContextType::CSP_REPORT) {
-    priority = ResourceLoadPriority::kVeryLow;
-  }
-
-  priority = AdjustPriorityWithPriorityHint(priority, type, resource_request,
-                                            defer_option, is_link_preload);
-
-  // A manually set priority acts as a floor. This is used to ensure that
-  // synchronous requests are always given the highest possible priority, as
-  // well as to ensure that there isn't priority churn if images move in and out
-  // of the viewport, or are displayed more than once, both in and out of the
-  // viewport.
-  return std::max(Context().ModifyPriorityForExperiments(priority),
-                  resource_request.Priority());
-}
-
 mojom::RequestContextType ResourceFetcher::DetermineRequestContext(
     ResourceType type,
     IsImageSet is_image_set) {
@@ -424,6 +352,8 @@ class ResourceFetcher::DetachableProperties final
     is_main_frame_ = properties_->IsMainFrame();
     paused_ = properties_->IsPaused();
     load_complete_ = properties_->IsLoadComplete();
+    is_subframe_deprioritization_enabled_ =
+        properties_->IsSubframeDeprioritizationEnabled();
 
     properties_ = nullptr;
   }
@@ -465,6 +395,11 @@ class ResourceFetcher::DetachableProperties final
     // Returns true when detached in order to preserve the existing behavior.
     return properties_ ? properties_->ShouldBlockLoadingSubResource() : true;
   }
+  bool IsSubframeDeprioritizationEnabled() const override {
+    return properties_ ? properties_->IsSubframeDeprioritizationEnabled()
+                       : is_subframe_deprioritization_enabled_;
+  }
+
   scheduler::FrameStatus GetFrameStatus() const override {
     return properties_ ? properties_->GetFrameStatus()
                        : scheduler::FrameStatus::kNone;
@@ -479,7 +414,105 @@ class ResourceFetcher::DetachableProperties final
   bool is_main_frame_ = false;
   bool paused_ = false;
   bool load_complete_ = false;
+  bool is_subframe_deprioritization_enabled_ = false;
 };
+
+ResourceLoadPriority ResourceFetcher::ComputeLoadPriority(
+    ResourceType type,
+    const ResourceRequest& resource_request,
+    ResourcePriority::VisibilityStatus visibility,
+    FetchParameters::DeferOption defer_option,
+    FetchParameters::SpeculativePreloadType speculative_preload_type,
+    bool is_link_preload,
+    bool is_stale_revalidation) {
+  // Stale revalidation resource requests should be very low regardless of
+  // the |type|.
+  if (is_stale_revalidation)
+    return ResourceLoadPriority::kVeryLow;
+
+  ResourceLoadPriority priority = TypeToPriority(type);
+
+  // Visible resources (images in practice) get a boost to High priority.
+  if (visibility == ResourcePriority::kVisible)
+    priority = ResourceLoadPriority::kHigh;
+
+  // Resources before the first image are considered "early" in the document and
+  // resources after the first image are "late" in the document.  Important to
+  // note that this is based on when the preload scanner discovers a resource
+  // for the most part so the main parser may not have reached the image element
+  // yet.
+  if (type == ResourceType::kImage && !is_link_preload)
+    image_fetched_ = true;
+
+  // A preloaded font should not take precedence over critical CSS or
+  // parser-blocking scripts.
+  if (type == ResourceType::kFont && is_link_preload)
+    priority = ResourceLoadPriority::kHigh;
+
+  if (FetchParameters::kIdleLoad == defer_option) {
+    priority = ResourceLoadPriority::kVeryLow;
+  } else if (type == ResourceType::kScript) {
+    // Special handling for scripts.
+    // Default/Parser-Blocking/Preload early in document: High (set in
+    // typeToPriority)
+    // Async/Defer: Low Priority (applies to both preload and parser-inserted)
+    // Preload late in document: Medium
+    if (FetchParameters::kLazyLoad == defer_option) {
+      priority = ResourceLoadPriority::kLow;
+    } else if (speculative_preload_type ==
+                   FetchParameters::SpeculativePreloadType::kInDocument &&
+               image_fetched_) {
+      // Speculative preload is used as a signal for scripts at the bottom of
+      // the document.
+      priority = ResourceLoadPriority::kMedium;
+    }
+  } else if (FetchParameters::kLazyLoad == defer_option) {
+    priority = ResourceLoadPriority::kVeryLow;
+  } else if (resource_request.GetRequestContext() ==
+                 mojom::RequestContextType::BEACON ||
+             resource_request.GetRequestContext() ==
+                 mojom::RequestContextType::PING ||
+             resource_request.GetRequestContext() ==
+                 mojom::RequestContextType::CSP_REPORT) {
+    priority = ResourceLoadPriority::kVeryLow;
+  }
+
+  priority = AdjustPriorityWithPriorityHint(priority, type, resource_request,
+                                            defer_option, is_link_preload);
+
+  if (properties_->IsSubframeDeprioritizationEnabled()) {
+    if (properties_->IsMainFrame()) {
+      DEFINE_STATIC_LOCAL(
+          EnumerationHistogram, main_frame_priority_histogram,
+          ("LowPriorityIframes.MainFrameRequestPriority",
+           static_cast<int>(ResourceLoadPriority::kHighest) + 1));
+      main_frame_priority_histogram.Count(static_cast<int>(priority));
+    } else {
+      DEFINE_STATIC_LOCAL(
+          EnumerationHistogram, iframe_priority_histogram,
+          ("LowPriorityIframes.IframeRequestPriority",
+           static_cast<int>(ResourceLoadPriority::kHighest) + 1));
+      iframe_priority_histogram.Count(static_cast<int>(priority));
+      // When enabled, the priority of all resources in subframe is dropped.
+      // Non-delayable resources are assigned a priority of kLow, and the rest
+      // of them are assigned a priority of kLowest. This ensures that if the
+      // webpage fetches most of its primary content using iframes, then high
+      // priority requests within the iframe go on the network first.
+      if (priority >= ResourceLoadPriority::kHigh) {
+        priority = ResourceLoadPriority::kLow;
+      } else {
+        priority = ResourceLoadPriority::kLowest;
+      }
+    }
+  }
+
+  // A manually set priority acts as a floor. This is used to ensure that
+  // synchronous requests are always given the highest possible priority, as
+  // well as to ensure that there isn't priority churn if images move in and out
+  // of the viewport, or are displayed more than once, both in and out of the
+  // viewport.
+  return std::max(resource_request.Priority(), priority);
+}
 
 ResourceFetcher::ResourceFetcher(const ResourceFetcherInit& init)
     : properties_(

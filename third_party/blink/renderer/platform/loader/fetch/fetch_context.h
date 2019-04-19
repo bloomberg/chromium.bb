@@ -171,13 +171,6 @@ class PLATFORM_EXPORT FetchContext
     return context;
   }
 
-  // Returns the updated priority of the resource based on the experiments that
-  // may be currently enabled.
-  virtual ResourceLoadPriority ModifyPriorityForExperiments(
-      ResourceLoadPriority priority) const {
-    return priority;
-  }
-
   // Determine if the request is on behalf of an advertisement. If so, return
   // true.
   virtual bool CalculateIfAdSubresource(const ResourceRequest& resource_request,

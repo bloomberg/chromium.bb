@@ -253,6 +253,19 @@ class PLATFORM_EXPORT ResourceFetcher
 
   FrameScheduler* GetFrameScheduler();
 
+  ResourceLoadPriority ComputeLoadPriorityForTesting(
+      ResourceType type,
+      const ResourceRequest& request,
+      ResourcePriority::VisibilityStatus visibility_statue,
+      FetchParameters::DeferOption defer_option,
+      FetchParameters::SpeculativePreloadType speculative_preload_type,
+      bool is_link_preload,
+      bool is_stale_revalidation) {
+    return ComputeLoadPriority(type, request, visibility_statue, defer_option,
+                               speculative_preload_type, is_link_preload,
+                               is_stale_revalidation);
+  }
+
  private:
   friend class ResourceCacheValidationSuppressor;
   class DetachableConsoleLogger;

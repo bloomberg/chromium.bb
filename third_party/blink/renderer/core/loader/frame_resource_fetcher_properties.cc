@@ -5,14 +5,17 @@
 #include "third_party/blink/renderer/core/loader/frame_resource_fetcher_properties.h"
 
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
+#include "third_party/blink/public/platform/web_effective_connection_type.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/frame_or_imported_document.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/script/fetch_client_settings_object_impl.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
+#include "third_party/blink/renderer/platform/network/network_state_notifier.h"
 
 namespace blink {
 
@@ -69,6 +72,33 @@ bool FrameResourceFetcherProperties::ShouldBlockLoadingSubResource() const {
 
   FrameLoader& loader = frame_or_imported_document_->GetFrame().Loader();
   return document_loader != loader.GetDocumentLoader();
+}
+
+bool FrameResourceFetcherProperties::IsSubframeDeprioritizationEnabled() const {
+  Settings* settings = frame_or_imported_document_->GetFrame().GetSettings();
+  if (!settings) {
+    return false;
+  }
+
+  const WebEffectiveConnectionType max_effective_connection_type_threshold =
+      settings->GetLowPriorityIframesThreshold();
+  if (max_effective_connection_type_threshold <=
+      WebEffectiveConnectionType::kTypeOffline) {
+    return false;
+  }
+
+  const WebEffectiveConnectionType effective_connection_type =
+      GetNetworkStateNotifier().EffectiveType();
+  if (effective_connection_type <= WebEffectiveConnectionType::kTypeOffline) {
+    return false;
+  }
+
+  if (effective_connection_type > max_effective_connection_type_threshold) {
+    // Network is not slow enough.
+    return false;
+  }
+
+  return true;
 }
 
 scheduler::FrameStatus FrameResourceFetcherProperties::GetFrameStatus() const {

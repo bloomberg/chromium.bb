@@ -79,21 +79,6 @@ namespace blink {
 
 using Checkpoint = testing::StrictMock<testing::MockFunction<void(int)>>;
 
-class StubLocalFrameClientWithParent final : public EmptyLocalFrameClient {
- public:
-  explicit StubLocalFrameClientWithParent(Frame* parent) : parent_(parent) {}
-
-  void Trace(blink::Visitor* visitor) override {
-    visitor->Trace(parent_);
-    EmptyLocalFrameClient::Trace(visitor);
-  }
-
-  Frame* Parent() const override { return parent_.Get(); }
-
- private:
-  Member<Frame> parent_;
-};
-
 class FrameFetchContextMockLocalFrameClient : public EmptyLocalFrameClient {
  public:
   FrameFetchContextMockLocalFrameClient() : EmptyLocalFrameClient() {}
@@ -141,25 +126,6 @@ class FrameFetchContextTest : public testing::Test {
     owner = MakeGarbageCollected<DummyFrameOwner>();
   }
 
-  void TearDown() override {
-    if (child_frame)
-      child_frame->Detach(FrameDetachType::kRemove);
-  }
-
-  FrameFetchContext* CreateChildFrame() {
-    child_client = MakeGarbageCollected<StubLocalFrameClientWithParent>(
-        document->GetFrame());
-    child_frame = LocalFrame::Create(
-        child_client.Get(), *document->GetFrame()->GetPage(), owner.Get());
-    child_frame->SetView(
-        LocalFrameView::Create(*child_frame, IntSize(500, 500)));
-    child_frame->Init();
-    child_document = child_frame->GetDocument();
-    FrameFetchContext* child_fetch_context =
-        static_cast<FrameFetchContext*>(&child_document->Fetcher()->Context());
-    return child_fetch_context;
-  }
-
   FrameFetchContext* GetFetchContext() {
     return static_cast<FrameFetchContext*>(&document->Fetcher()->Context());
   }
@@ -180,9 +146,6 @@ class FrameFetchContextTest : public testing::Test {
   // usage.
   Persistent<Document> document;
 
-  Persistent<StubLocalFrameClientWithParent> child_client;
-  Persistent<LocalFrame> child_frame;
-  Persistent<Document> child_document;
   Persistent<DummyFrameOwner> owner;
 };
 
@@ -982,57 +945,6 @@ TEST_F(FrameFetchContextTest, SubResourceCachePolicy) {
   EXPECT_EQ(mojom::FetchCacheMode::kForceCache,
             GetFetchContext()->ResourceRequestCachePolicy(
                 conditional, ResourceType::kMock, FetchParameters::kNoDefer));
-}
-
-TEST_F(FrameFetchContextTest, ModifyPriorityForLowPriorityIframes) {
-  Settings* settings = document->GetSettings();
-  FrameFetchContext* childFetchContext = CreateChildFrame();
-  GetNetworkStateNotifier().SetNetworkConnectionInfoOverride(
-      true, WebConnectionType::kWebConnectionTypeCellular3G,
-      WebEffectiveConnectionType::kType3G, 1 /* http_rtt_msec */,
-      10.0 /* max_bandwidth_mbps */);
-
-  // Experiment is not enabled, expect default values.
-  EXPECT_EQ(ResourceLoadPriority::kVeryHigh,
-            GetFetchContext()->ModifyPriorityForExperiments(
-                ResourceLoadPriority::kVeryHigh));
-  EXPECT_EQ(ResourceLoadPriority::kVeryHigh,
-            childFetchContext->ModifyPriorityForExperiments(
-                ResourceLoadPriority::kVeryHigh));
-  EXPECT_EQ(ResourceLoadPriority::kMedium,
-            childFetchContext->ModifyPriorityForExperiments(
-                ResourceLoadPriority::kMedium));
-
-  // Low priority iframes enabled but network is not slow enough. Expect default
-  // values.
-  settings->SetLowPriorityIframesThreshold(WebEffectiveConnectionType::kType2G);
-  EXPECT_EQ(ResourceLoadPriority::kVeryHigh,
-            GetFetchContext()->ModifyPriorityForExperiments(
-                ResourceLoadPriority::kVeryHigh));
-  EXPECT_EQ(ResourceLoadPriority::kVeryHigh,
-            childFetchContext->ModifyPriorityForExperiments(
-                ResourceLoadPriority::kVeryHigh));
-  EXPECT_EQ(ResourceLoadPriority::kMedium,
-            childFetchContext->ModifyPriorityForExperiments(
-                ResourceLoadPriority::kMedium));
-
-  // Low priority iframes enabled and network is slow, main frame request's
-  // priorities should not change.
-  GetNetworkStateNotifier().SetNetworkConnectionInfoOverride(
-      true, WebConnectionType::kWebConnectionTypeCellular3G,
-      WebEffectiveConnectionType::kType2G, 1 /* http_rtt_msec */,
-      10.0 /* max_bandwidth_mbps */);
-  EXPECT_EQ(ResourceLoadPriority::kVeryHigh,
-            GetFetchContext()->ModifyPriorityForExperiments(
-                ResourceLoadPriority::kVeryHigh));
-  // Low priority iframes enabled, everything in child frame should be low
-  // priority.
-  EXPECT_EQ(ResourceLoadPriority::kLow,
-            childFetchContext->ModifyPriorityForExperiments(
-                ResourceLoadPriority::kVeryHigh));
-  EXPECT_EQ(ResourceLoadPriority::kVeryLow,
-            childFetchContext->ModifyPriorityForExperiments(
-                ResourceLoadPriority::kMedium));
 }
 
 // Tests if "Save-Data" header is correctly added on the first load and reload.

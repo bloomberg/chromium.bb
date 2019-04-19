@@ -70,6 +70,11 @@ class PLATFORM_EXPORT ResourceFetcherProperties
   // Returns whether we should disallow a sub resource loading.
   virtual bool ShouldBlockLoadingSubResource() const = 0;
 
+  // Returns whether we should de-prioritize requests in sub frames.
+  // TODO(yhirano): Make this ShouldDepriotizeRequest once the related
+  // histograms get deprecated. See https://crbug.com/800035.
+  virtual bool IsSubframeDeprioritizationEnabled() const = 0;
+
   // Returns the scheduling status of the associated frame. Returns |kNone|
   // if there is no such a frame.
   virtual scheduler::FrameStatus GetFrameStatus() const = 0;

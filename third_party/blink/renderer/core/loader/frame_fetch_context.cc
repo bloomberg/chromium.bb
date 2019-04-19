@@ -937,53 +937,6 @@ void FrameFetchContext::Trace(blink::Visitor* visitor) {
   BaseFetchContext::Trace(visitor);
 }
 
-ResourceLoadPriority FrameFetchContext::ModifyPriorityForExperiments(
-    ResourceLoadPriority priority) const {
-  if (!GetSettings())
-    return priority;
-
-  WebEffectiveConnectionType max_effective_connection_type_threshold =
-      GetSettings()->GetLowPriorityIframesThreshold();
-
-  if (max_effective_connection_type_threshold <=
-      WebEffectiveConnectionType::kTypeOffline) {
-    return priority;
-  }
-
-  WebEffectiveConnectionType effective_connection_type =
-      GetNetworkStateNotifier().EffectiveType();
-
-  if (effective_connection_type <= WebEffectiveConnectionType::kTypeOffline) {
-    return priority;
-  }
-
-  if (effective_connection_type > max_effective_connection_type_threshold) {
-    // Network is not slow enough.
-    return priority;
-  }
-
-  if (GetFrame()->IsMainFrame()) {
-    DEFINE_STATIC_LOCAL(EnumerationHistogram, main_frame_priority_histogram,
-                        ("LowPriorityIframes.MainFrameRequestPriority",
-                         static_cast<int>(ResourceLoadPriority::kHighest) + 1));
-    main_frame_priority_histogram.Count(static_cast<int>(priority));
-    return priority;
-  }
-
-  DEFINE_STATIC_LOCAL(EnumerationHistogram, iframe_priority_histogram,
-                      ("LowPriorityIframes.IframeRequestPriority",
-                       static_cast<int>(ResourceLoadPriority::kHighest) + 1));
-  iframe_priority_histogram.Count(static_cast<int>(priority));
-  // When enabled, the priority of all resources in subframe is dropped.
-  // Non-delayable resources are assigned a priority of kLow, and the rest of
-  // them are assigned a priority of kLowest. This ensures that if the webpage
-  // fetches most of its primary content using iframes, then high priority
-  // requests within the iframe go on the network first.
-  if (priority >= ResourceLoadPriority::kHigh)
-    return ResourceLoadPriority::kLow;
-  return ResourceLoadPriority::kLowest;
-}
-
 bool FrameFetchContext::CalculateIfAdSubresource(
     const ResourceRequest& resource_request,
     ResourceType type) {
