@@ -179,7 +179,7 @@ TEST_F(PerfettoIntegrationTest, CommitDataRequestIsMaybeComplete) {
   client_enabled_callback.Run();
 
   base::RunLoop wait_for_packet_write;
-  client->GetTaskRunner()->task_runner()->PostTaskAndReply(
+  client->GetTaskRunner()->GetOrCreateTaskRunner()->PostTaskAndReply(
       FROM_HERE,
       base::BindOnce(&TestDataSource::WritePacketBigly,
                      base::Unretained(client->data_source())),

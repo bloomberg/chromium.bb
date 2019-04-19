@@ -110,8 +110,9 @@ class ArcTracingDataSource : public tracing::ProducerClient::DataSourceBase {
 
   ArcTracingDataSource()
       : DataSourceBase(tracing::mojom::kArcTraceDataSourceName),
-        perfetto_task_runner_(
-            tracing::ProducerClient::Get()->GetTaskRunner()->task_runner()) {
+        perfetto_task_runner_(tracing::ProducerClient::Get()
+                                  ->GetTaskRunner()
+                                  ->GetOrCreateTaskRunner()) {
     tracing::ProducerClient::Get()->AddDataSource(this);
   }
 
@@ -258,7 +259,7 @@ class ArcTracingDataSource : public tracing::ProducerClient::DataSourceBase {
     return true;
   }
 
-  base::SequencedTaskRunner* perfetto_task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> perfetto_task_runner_;
   std::set<ArcTracingBridge*> bridges_;
   // In case StopTracing() is called before tracing was started for all bridges,
   // this stores a callback to StopTracing() that's executed when all bridges

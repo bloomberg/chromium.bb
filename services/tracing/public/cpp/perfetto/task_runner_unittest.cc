@@ -165,7 +165,7 @@ TEST_F(PerfettoTaskRunnerTest, SequentialDeferredTasksByTimer) {
   // Start the timer which eventually will tick and post the previously
   // deferred tasks. Note that this is posted directly to the taskqueue
   // rather than the Perfetto wrapper, so it won't be deferred.
-  task_runner()->task_runner()->PostTask(
+  task_runner()->GetOrCreateTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(&PerfettoTaskRunner::StartDeferredTasksDrainTimer,
                      base::Unretained(task_runner())));

@@ -19,15 +19,6 @@
 
 namespace tracing {
 
-namespace {
-
-scoped_refptr<base::SequencedTaskRunner> CreateTaskRunner() {
-  return base::CreateSequencedTaskRunnerWithTraits(
-      {base::MayBlock(), base::TaskPriority::USER_BLOCKING});
-}
-
-}  // namespace
-
 ScopedPerfettoPostTaskBlocker::ScopedPerfettoPostTaskBlocker(bool enable)
     : enabled_(enable) {
   if (enabled_) {
@@ -75,8 +66,8 @@ ProducerClient::~ProducerClient() {
 // static
 void ProducerClient::DeleteSoonForTesting(
     std::unique_ptr<ProducerClient> producer_client) {
-  GetTaskRunner()->task_runner()->DeleteSoon(FROM_HERE,
-                                             std::move(producer_client));
+  GetTaskRunner()->GetOrCreateTaskRunner()->DeleteSoon(
+      FROM_HERE, std::move(producer_client));
 }
 
 // We never destroy the taskrunner as we may need it for cleanup
@@ -84,14 +75,14 @@ void ProducerClient::DeleteSoonForTesting(
 // is deleted.
 // static
 PerfettoTaskRunner* ProducerClient::GetTaskRunner() {
-  static base::NoDestructor<PerfettoTaskRunner> task_runner(CreateTaskRunner());
+  static base::NoDestructor<PerfettoTaskRunner> task_runner(nullptr);
   return task_runner.get();
 }
 
 // static
 void ProducerClient::ResetTaskRunnerForTesting() {
   DETACH_FROM_SEQUENCE(ProducerClient::Get()->sequence_checker_);
-  GetTaskRunner()->ResetTaskRunnerForTesting(CreateTaskRunner());
+  GetTaskRunner()->ResetTaskRunnerForTesting(nullptr);
 }
 
 void ProducerClient::Connect(mojom::PerfettoServicePtr perfetto_service) {
@@ -110,7 +101,7 @@ void ProducerClient::CreateMojoMessagepipes(
   auto origin_task_runner = base::SequencedTaskRunnerHandle::Get();
   DCHECK(origin_task_runner);
   mojom::ProducerClientPtr producer_client;
-  GetTaskRunner()->task_runner()->PostTask(
+  GetTaskRunner()->GetOrCreateTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(&ProducerClient::CreateMojoMessagepipesOnSequence,
                      base::Unretained(this), origin_task_runner,
@@ -160,7 +151,7 @@ void ProducerClient::CreateMojoMessagepipesOnSequence(
 }
 
 void ProducerClient::AddDataSource(DataSourceBase* data_source) {
-  GetTaskRunner()->task_runner()->PostTask(
+  GetTaskRunner()->GetOrCreateTaskRunner()->PostTask(
       FROM_HERE, base::BindOnce(&ProducerClient::AddDataSourceOnSequence,
                                 base::Unretained(this), data_source));
 }

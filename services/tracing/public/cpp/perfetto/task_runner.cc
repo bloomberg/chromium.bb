@@ -8,6 +8,8 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/task/post_task.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_local_storage.h"
 
@@ -27,20 +29,21 @@ void PerfettoTaskRunner::PostTask(std::function<void()> task) {
   // sequence as we're now posting a new task from.
   {
     base::AutoLock lock(lock_);
-    if (posttask_is_blocked_for_thread_.Get()) {
+    if (!base::ThreadPool::GetInstance() ||
+        posttask_is_blocked_for_thread_.Get()) {
       deferred_tasks_.emplace_back(std::move(task));
       return;
     }
 
     while (!deferred_tasks_.empty()) {
-      task_runner_->PostTask(
+      GetOrCreateTaskRunner()->PostTask(
           FROM_HERE, base::BindOnce([](std::function<void()> task) { task(); },
                                     deferred_tasks_.front()));
       deferred_tasks_.pop_front();
     }
   }
 
-  task_runner_->PostTask(
+  GetOrCreateTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce([](std::function<void()> task) { task(); }, task));
 }
@@ -56,13 +59,14 @@ void PerfettoTaskRunner::PostDelayedTask(std::function<void()> task,
   // side, where PostTask sometimes requires blocking. If this DCHECK ever
   // triggers, support for deferring delayed tasks need to be added.
   DCHECK(!posttask_is_blocked_for_thread_.Get());
-  task_runner_->PostDelayedTask(
+  GetOrCreateTaskRunner()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce([](std::function<void()> task) { task(); }, task),
       base::TimeDelta::FromMilliseconds(delay_ms));
 }
 
 bool PerfettoTaskRunner::RunsTasksOnCurrentThread() const {
+  DCHECK(task_runner_);
   return task_runner_->RunsTasksInCurrentSequence();
 }
 
@@ -117,6 +121,17 @@ void PerfettoTaskRunner::OnDeferredTasksDrainTimer() {
                                   deferred_tasks_.front()));
     deferred_tasks_.pop_front();
   }
+}
+
+scoped_refptr<base::SequencedTaskRunner>
+PerfettoTaskRunner::GetOrCreateTaskRunner() {
+  if (!task_runner_) {
+    DCHECK(base::ThreadPool::GetInstance());
+    task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
+        {base::MayBlock(), base::TaskPriority::USER_BLOCKING});
+  }
+
+  return task_runner_;
 }
 
 }  // namespace tracing

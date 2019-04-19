@@ -37,11 +37,12 @@ class COMPONENT_EXPORT(TRACING_CPP) PerfettoTaskRunner
   // use case.
   bool RunsTasksOnCurrentThread() const override;
 
+  scoped_refptr<base::SequencedTaskRunner> GetOrCreateTaskRunner();
+
   // Not used in Chrome.
   void AddFileDescriptorWatch(int fd, std::function<void()>) override;
   void RemoveFileDescriptorWatch(int fd) override;
 
-  base::SequencedTaskRunner* task_runner() { return task_runner_.get(); }
 
   // Tests will shut down all task runners in between runs, so we need
   // to re-create any static instances on each SetUp();

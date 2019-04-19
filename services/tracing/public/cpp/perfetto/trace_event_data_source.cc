@@ -528,7 +528,7 @@ void TraceEventDataSource::ReturnTraceWriter(
     // shutdown and we can't safely call TaskRunnerHandle::Get() at that point
     // (which can happen as the TraceWriter destructor might make a Mojo call
     // and trigger it).
-    ProducerClient::GetTaskRunner()->task_runner()->DeleteSoon(
+    ProducerClient::GetTaskRunner()->GetOrCreateTaskRunner()->DeleteSoon(
         FROM_HERE, std::move(trace_writer));
   }
 }
