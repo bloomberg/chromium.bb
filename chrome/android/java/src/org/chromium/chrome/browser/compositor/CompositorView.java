@@ -74,6 +74,8 @@ public class CompositorView
     private boolean mPreloadedResources;
     private List<Runnable> mDrawingFinishedCallbacks;
 
+    private boolean mIsInVr;
+
     /**
      * Creates a {@link CompositorView}. This can be called only after the native library is
      * properly loaded.
@@ -446,6 +448,8 @@ public class CompositorView
      */
     public void replaceSurfaceManagerForVr(
             CompositorSurfaceManager vrCompositorSurfaceManager, WindowAndroid window) {
+        mIsInVr = true;
+
         mCompositorSurfaceManager.shutDown();
         nativeSetCompositorWindow(mNativeCompositorView, window);
         mCompositorSurfaceManager = vrCompositorSurfaceManager;
@@ -461,6 +465,8 @@ public class CompositorView
      * @param windowToRestore The non-VR WindowAndroid to restore.
      */
     public void onExitVr(WindowAndroid windowToRestore) {
+        mIsInVr = false;
+
         if (mNativeCompositorView == 0) return;
         setWindowAndroid(windowToRestore);
         mCompositorSurfaceManager.shutDown();
