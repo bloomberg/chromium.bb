@@ -56,12 +56,18 @@ HintUpdateData::HintUpdateData(base::Optional<base::Version> component_version,
   } else {
     NOTREACHED();
   }
+  // |this| may be modified on another thread after construction but all
+  // future modifications, from that call forward, must be made on the same
+  // thread.
+  DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
 HintUpdateData::~HintUpdateData() {}
 
 void HintUpdateData::MoveHintIntoUpdateData(
     optimization_guide::proto::Hint&& hint) {
+  // All future modifications must be made by the same thread. Note, |this| may
+  // have been constructed on another thread.
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!hint_entry_key_prefix_.empty());
 
@@ -75,7 +81,8 @@ void HintUpdateData::MoveHintIntoUpdateData(
 }
 
 std::unique_ptr<EntryVector> HintUpdateData::TakeUpdateEntries() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // TakeUpdateEntries is not be sequence checked as it only gives up ownership
+  // of the entries_to_save_ and does not modify any state.
   DCHECK(entries_to_save_);
 
   return std::move(entries_to_save_);

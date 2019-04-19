@@ -14,6 +14,7 @@
 #include "base/strings/stringprintf.h"
 #include "components/optimization_guide/hints_component_info.h"
 #include "components/optimization_guide/hints_component_util.h"
+#include "components/previews/content/hint_update_data.h"
 #include "components/previews/core/bloom_filter.h"
 #include "components/previews/core/previews_features.h"
 #include "components/previews/core/previews_switches.h"
@@ -171,7 +172,7 @@ net::EffectiveConnectionType ConvertProtoEffectiveConnectionType(
 
 PreviewsProcessHintsResult ProcessConfigurationHints(
     optimization_guide::proto::Configuration* config,
-    HintCacheStore::ComponentUpdateData* component_update_data) {
+    HintUpdateData* component_update_data) {
   DCHECK(config);
   // If there's no component update data, then there's nothing to do. This
   // component is not newer than the one contained within the hint cache.
@@ -241,7 +242,7 @@ void RecordOptimizationFilterStatus(PreviewsType previews_type,
 }  // namespace
 
 PreviewsHints::PreviewsHints(
-    std::unique_ptr<HintCacheStore::ComponentUpdateData> component_update_data)
+    std::unique_ptr<HintUpdateData> component_update_data)
     : hint_cache_(nullptr),
       component_update_data_(std::move(component_update_data)) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
@@ -254,8 +255,7 @@ PreviewsHints::~PreviewsHints() {
 // static
 std::unique_ptr<PreviewsHints> PreviewsHints::CreateFromHintsComponent(
     const optimization_guide::HintsComponentInfo& info,
-    std::unique_ptr<HintCacheStore::ComponentUpdateData>
-        component_update_data) {
+    std::unique_ptr<HintUpdateData> component_update_data) {
   std::unique_ptr<optimization_guide::proto::Configuration> config =
       ProcessHintsComponent(info);
   if (!config) {
@@ -280,8 +280,7 @@ std::unique_ptr<PreviewsHints> PreviewsHints::CreateFromHintsComponent(
 // static
 std::unique_ptr<PreviewsHints> PreviewsHints::CreateFromHintsConfiguration(
     std::unique_ptr<optimization_guide::proto::Configuration> config,
-    std::unique_ptr<HintCacheStore::ComponentUpdateData>
-        component_update_data) {
+    std::unique_ptr<HintUpdateData> component_update_data) {
   // Process the hints within the configuration. This will move the hints from
   // |config| into |component_update_data|.
   PreviewsProcessHintsResult process_hints_result =
@@ -309,8 +308,8 @@ void PreviewsHints::Initialize(HintCache* hint_cache,
   DCHECK(hint_cache);
   hint_cache_ = hint_cache;
   if (component_update_data_) {
-    hint_cache_->UpdateComponentData(std::move(component_update_data_),
-                                     std::move(callback));
+    hint_cache_->UpdateComponentHints(std::move(component_update_data_),
+                                      std::move(callback));
   } else {
     std::move(callback).Run();
   }

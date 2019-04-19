@@ -18,6 +18,7 @@
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/previews/content/hint_cache.h"
 #include "components/previews/content/hint_cache_store.h"
+#include "components/previews/content/hint_update_data.h"
 #include "components/previews/content/previews_hints_util.h"
 #include "components/previews/core/previews_features.h"
 #include "components/previews/core/previews_switches.h"
@@ -104,7 +105,8 @@ class PreviewsHintsTest : public testing::Test {
         temp_dir_.GetPath().Append(FILE_PATH_LITERAL("somefile.pb")));
     ASSERT_NO_FATAL_FAILURE(WriteConfigToFile(config, info.path));
     previews_hints_ = PreviewsHints::CreateFromHintsComponent(
-        info, hint_cache_->MaybeCreateComponentUpdateData(info.version));
+        info,
+        hint_cache_->MaybeCreateUpdateDataForComponentHints(info.version));
 
     are_previews_hints_initialized_ = false;
     previews_hints_->Initialize(

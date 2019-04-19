@@ -266,7 +266,7 @@ void PreviewsOptimizationGuide::OnHintCacheInitialized() {
     UpdateHints(base::OnceClosure(),
                 PreviewsHints::CreateFromHintsConfiguration(
                     std::move(manual_config),
-                    hint_cache_->MaybeCreateComponentUpdateData(
+                    hint_cache_->MaybeCreateUpdateDataForComponentHints(
                         base::Version(kManualConfigComponentVersion))));
   }
 
@@ -289,16 +289,17 @@ void PreviewsOptimizationGuide::OnHintsComponentAvailable(
   }
 
   // Create PreviewsHints from the newly available component on a background
-  // thread, providing a ComponentUpdateData from the hint cache, so that each
-  // hint within the component can be moved into it. In the case where the
-  // component's version is not newer than the hint cache store's component
-  // version, ComponentUpdateData will be a nullptr and hint processing will be
-  // skipped. After PreviewsHints::Create() returns the newly created
-  // PreviewsHints, it is initialized in UpdateHints() on the UI thread.
+  // thread, providing a HintUpdateData for component update from the hint
+  // cache, so that each hint within the component can be moved into it. In the
+  // case where the component's version is not newer than the hint cache store's
+  // component version, HintUpdateData will be a nullptr and hint
+  // processing will be skipped. After PreviewsHints::Create() returns the newly
+  // created PreviewsHints, it is initialized in UpdateHints() on the UI thread.
   base::PostTaskAndReplyWithResult(
       background_task_runner_.get(), FROM_HERE,
-      base::BindOnce(&PreviewsHints::CreateFromHintsComponent, info,
-                     hint_cache_->MaybeCreateComponentUpdateData(info.version)),
+      base::BindOnce(
+          &PreviewsHints::CreateFromHintsComponent, info,
+          hint_cache_->MaybeCreateUpdateDataForComponentHints(info.version)),
       base::BindOnce(&PreviewsOptimizationGuide::UpdateHints,
                      ui_weak_ptr_factory_.GetWeakPtr(),
                      std::move(next_update_closure_)));
@@ -332,7 +333,7 @@ void PreviewsOptimizationGuide::OnHintsFetched(
   // TODO(mcrouse): this will be dropped into a backgroundtask as it will likely
   // be intensive/slow storing hints.
   if (get_hints_response) {
-    hint_cache_->StoreFetchedHints(
+    hint_cache_->UpdateFetchedHints(
         std::move(*get_hints_response),
         time_clock_->Now() + kUpdateFetchedHintsDelay,
         base::BindOnce(&PreviewsOptimizationGuide::OnFetchedHintsStored,

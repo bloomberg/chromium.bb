@@ -17,6 +17,7 @@
 #include "base/sequence_checker.h"
 #include "base/version.h"
 #include "components/leveldb_proto/public/proto_database.h"
+#include "components/previews/content/hint_update_data.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -62,35 +63,6 @@ class HintCacheStore {
     kMaxValue = kFailed,
   };
 
-  // Abstract base class for storing hint component update data. The data itself
-  // is populated by moving component hints into it on a background thread; it
-  // is then used to update the store's component data on the UI thread.
-  class ComponentUpdateData {
-   public:
-    explicit ComponentUpdateData(const base::Version& version)
-        : version_(version) {
-      DCHECK(version_.IsValid());
-    }
-    explicit ComponentUpdateData(base::Time update_time)
-        : update_time_(update_time) {}
-    virtual ~ComponentUpdateData() = default;
-
-    const base::Version& version() const { return version_; }
-    base::Time update_time() const { return update_time_; }
-
-    // Pure virtual function for moving a hint into ComponentUpdateData. After
-    // MoveHintIntoUpdateData() is called, |hint| is no longer valid.
-    virtual void MoveHintIntoUpdateData(
-        optimization_guide::proto::Hint&& hint) = 0;
-
-   private:
-    // The component version of the update data.
-    base::Version version_;
-
-    // The time when hints in the update data need to be updated.
-    base::Time update_time_;
-  };
-
   HintCacheStore(const base::FilePath& database_dir,
                  scoped_refptr<base::SequencedTaskRunner> store_task_runner);
   HintCacheStore(const base::FilePath& database_dir,
@@ -102,45 +74,43 @@ class HintCacheStore {
   // When initialization completes, the provided callback is run asynchronously.
   void Initialize(bool purge_existing_data, base::OnceClosure callback);
 
-  // Creates and returns a ComponentUpdateData object. This object is used to
-  // collect hints within a component in a format usable on a background
-  // thread and is later returned to the store in UpdateComponentData(). The
-  // ComponentUpdateData object is only created when the provided component
-  // version is newer than the store's version, indicating fresh hints. If the
-  // component's version is not newer than the store's version, then no
-  // ComponentUpdateData is created and nullptr is returned. This prevents
-  // unnecessary processing of the component's hints by the caller.
-  std::unique_ptr<ComponentUpdateData> MaybeCreateComponentUpdateData(
+  // Creates and returns a HintUpdateData object for component hints. This
+  // object is used to collect hints within a component in a format usable on a
+  // background thread and is later returned to the store in
+  // UpdateComponentHints(). The HintUpdateData object is only created when the
+  // provided component version is newer than the store's version, indicating
+  // fresh hints. If the component's version is not newer than the store's
+  // version, then no HintUpdateData is created and nullptr is returned. This
+  // prevents unnecessary processing of the component's hints by the caller.
+  std::unique_ptr<HintUpdateData> MaybeCreateUpdateDataForComponentHints(
       const base::Version& version) const;
 
-  // Creates and returns an UpdateData object for Fetched Hints.
+  // Creates and returns a HintsUpdateData object for Fetched Hints.
   // This object is used to collect a batch of hints in a format that is usable
   // to update the store on a background thread. This is always created when
   // hints have been successfully fetched from the remote Optimization Guide
   // Service so the store can expire old hints, remove hints specified by the
   // server, and store the fresh hints.
-  std::unique_ptr<HintCacheStore::ComponentUpdateData>
-  CreateUpdateDataForFetchedHints(base::Time update_time) const;
+  std::unique_ptr<HintUpdateData> CreateUpdateDataForFetchedHints(
+      base::Time update_time) const;
 
-  // Updates the component data (both version and hints) contained within the
-  // store. When this is called, all pre-existing component data within the
-  // store is purged and only the new data is retained. After the store is
-  // fully updated with the new component data, the callback is run
-  // asynchronously.
-  void UpdateComponentData(std::unique_ptr<ComponentUpdateData> component_data,
-                           base::OnceClosure callback);
+  // Updates the component hints and version contained within the store. When
+  // this is called, all pre-existing component hints within the store is purged
+  // and only the new hints are retained. After the store is fully updated with
+  // the new component hints, the callback is run asynchronously.
+  void UpdateComponentHints(std::unique_ptr<HintUpdateData> component_data,
+                            base::OnceClosure callback);
 
-  // Updates the fetched hints data contained in the store, including the
+  // Updates the fetched hints contained in the store, including the
   // metadata entry. The callback is run asynchronously after the database
   // stores the hints.
   //
-  // TODO(mcrouse): When called, fetched hint data in the store that has expired
+  // TODO(mcrouse): When called, fetched hints in the store that have expired
   // specified by |expiry_time_secs| will be purged and only the new hints and
   // non-expired hints are retained.
 
-  void UpdateFetchedHintsData(
-      std::unique_ptr<ComponentUpdateData> fetched_hints_data,
-      base::OnceClosure callback);
+  void UpdateFetchedHints(std::unique_ptr<HintUpdateData> fetched_hints_data,
+                          base::OnceClosure callback);
 
   // Finds a hint entry key associated with the specified host suffix. Returns
   // true if a hint entry key is found, in which case |out_hint_entry_key| is
@@ -202,40 +172,6 @@ class HintCacheStore {
     kSchema = 1,
     kComponent = 2,
     kFetched = 3,
-  };
-
-  // HintCacheStore's concrete implementation of ComponentUpdateData.
-  // LevelDBComponentUpdateData is private within HintCacheStore. All classes
-  // outside of HintCacheStore can only interact with the ComponentUpdateData
-  // base class. LevelDBComponentUpdateData is created by HintCacheStore when
-  // MaybeCreateComponentUpdateData() is called and used to update the store's
-  // component data during UpdateComponentData().
-  //
-  // TODO(mcrouse): Bug: 932707.
-  // This class should be refactored so that there is a single constructor and
-  // the base class removed. The class will also be moved out of |this|.
-  class LevelDBComponentUpdateData : public ComponentUpdateData {
-   public:
-    explicit LevelDBComponentUpdateData(const base::Version& version);
-    explicit LevelDBComponentUpdateData(base::Time update_time);
-    ~LevelDBComponentUpdateData() override;
-
-    // ComponentUpdateData overrides:
-    void MoveHintIntoUpdateData(
-        optimization_guide::proto::Hint&& hint) override;
-
-   private:
-    friend class HintCacheStore;
-
-    // The prefix to add to the key of every component hint entry. It is set
-    // during construction, using the provided component version.
-    const EntryKeyPrefix component_hint_entry_key_prefix_;
-
-    // The vector of entries to save. This contains both the metadata component
-    // entry, which is created during construction, using the provided component
-    // version, and the hint entries from the component, which are individually
-    // moved into |entries_to_save_| during calls to MoveHintIntoUpdateData().
-    std::unique_ptr<EntryVector> entries_to_save_;
   };
 
   // Current schema version of the hint cache store. When this is changed,
@@ -312,10 +248,10 @@ class HintCacheStore {
   // Callback that runs after the database is purged during initialization.
   void OnPurgeDatabase(base::OnceClosure callback, bool success);
 
-  // Callback that runs after the component data within the store is fully
+  // Callback that runs after the hints data within the store is fully
   // updated. If the update was successful, it attempts to load all of the hint
   // entry keys contained within the database.
-  void OnUpdateComponentData(base::OnceClosure callback, bool success);
+  void OnUpdateHints(base::OnceClosure callback, bool success);
 
   // Callback that runs after the hint entry keys are fully loaded. If there's
   // currently an in-flight component update, then the hint entry keys will be
@@ -361,7 +297,7 @@ class HintCacheStore {
 
   // If a component data update is in the middle of being processed; when this
   // is true, keys and hints will not be returned by the store.
-  bool component_data_update_in_flight_;
+  bool data_update_in_flight_;
 
   // The next update time for the fetched hints that are currently in the
   // store.

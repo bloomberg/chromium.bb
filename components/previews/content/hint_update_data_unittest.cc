@@ -18,7 +18,7 @@ namespace previews {
 
 namespace {
 
-TEST(HintUpdateDataTest, BuildComponentUpdateData) {
+TEST(HintUpdateDataTest, BuildComponentHintUpdateData) {
   // Verify creating a Component Hint update package.
   base::Version v1("1.2.3.4");
   optimization_guide::proto::Hint hint1;

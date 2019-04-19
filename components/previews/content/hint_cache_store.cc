@@ -94,7 +94,7 @@ HintCacheStore::HintCacheStore(
     : database_dir_(database_dir),
       database_(std::move(database)),
       status_(Status::kUninitialized),
-      component_data_update_in_flight_(false),
+      data_update_in_flight_(false),
       weak_ptr_factory_(this) {
   RecordStatusChange(status_);
 }
@@ -128,8 +128,8 @@ void HintCacheStore::Initialize(bool purge_existing_data,
                                  purge_existing_data, std::move(callback)));
 }
 
-std::unique_ptr<HintCacheStore::ComponentUpdateData>
-HintCacheStore::MaybeCreateComponentUpdateData(
+std::unique_ptr<HintUpdateData>
+HintCacheStore::MaybeCreateUpdateDataForComponentHints(
     const base::Version& version) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(version.IsValid());
@@ -144,27 +144,28 @@ HintCacheStore::MaybeCreateComponentUpdateData(
     return nullptr;
   }
 
-  // Create and return a LevelDBComponentUpdateData object. This object has
+  // Create and return a HintUpdateData object. This object has
   // hints from the component moved into it and organizes them in a format
   // usable by the store; the object will returned to the store in
-  // UpdateComponentData().
-  return std::make_unique<LevelDBComponentUpdateData>(version);
+  // StoreComponentHints().
+  return HintUpdateData::CreateComponentHintUpdateData(version);
 }
 
-std::unique_ptr<HintCacheStore::ComponentUpdateData>
-HintCacheStore::CreateUpdateDataForFetchedHints(base::Time update_time) const {
-  // TODO(mcrouse): Currently returns a LevelDBComponentUpdateData, future
-  // refactor will enable the construction of UpdateData with the settings
-  // necessary for the type of hint being updated, fetched or component.
-  return std::make_unique<LevelDBComponentUpdateData>(update_time);
+std::unique_ptr<HintUpdateData> HintCacheStore::CreateUpdateDataForFetchedHints(
+    base::Time update_time) const {
+  // Create and returns a HintUpdateData object. This object has has hints
+  // from the GetHintsResponse moved into and organizes them in a format
+  // usable by the store. The object will be store with UpdateFetchedData().
+  return HintUpdateData::CreateFetchedHintUpdateData(update_time);
 }
 
-void HintCacheStore::UpdateComponentData(
-    std::unique_ptr<HintCacheStore::ComponentUpdateData> component_data,
+void HintCacheStore::UpdateComponentHints(
+    std::unique_ptr<HintUpdateData> component_data,
     base::OnceClosure callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(component_data);
-  DCHECK(!component_data_update_in_flight_);
+  DCHECK(!data_update_in_flight_);
+  DCHECK(component_data->component_version());
 
   if (!IsAvailable()) {
     std::move(callback).Run();
@@ -174,28 +175,25 @@ void HintCacheStore::UpdateComponentData(
   // If this isn't a newer component version than the store's current one, then
   // the simply return. There's nothing to update.
   if (component_version_.has_value() &&
-      component_data->version() <= component_version_) {
+      component_data->component_version() <= component_version_) {
     std::move(callback).Run();
     return;
   }
 
   // Mark that there's now a component data update in-flight. While this is
   // true, keys and hints will not be returned by the store.
-  component_data_update_in_flight_ = true;
+  data_update_in_flight_ = true;
 
   // Set the component version prior to requesting the update. This ensures that
   // a second update request for the same component version won't be allowed. In
   // the case where the update fails, the store will become unavailable, so it's
   // safe to treat component version in the update as the new one.
-  SetComponentVersion(component_data->version());
+  SetComponentVersion(*component_data->component_version());
 
   // The current keys are about to be removed, so clear out the keys available
   // within the store. The keys will be populated after the component data
   // update completes.
   hint_entry_keys_.reset();
-
-  LevelDBComponentUpdateData* leveldb_component_data =
-      static_cast<LevelDBComponentUpdateData*>(component_data.get());
 
   // Purge any component hints that are missing the new component version
   // prefix.
@@ -204,10 +202,10 @@ void HintCacheStore::UpdateComponentData(
   EntryKeyPrefix filter_prefix = GetComponentHintEntryKeyPrefixWithoutVersion();
 
   // Add the new component data and purge any old component hints from the db.
-  // After processing finishes, OnUpdateComponentData() is called, which loads
+  // After processing finishes, OnUpdateHints() is called, which loads
   // the updated hint entry keys from the database.
   database_->UpdateEntriesWithRemoveFilter(
-      std::move(leveldb_component_data->entries_to_save_),
+      component_data->TakeUpdateEntries(),
       base::BindRepeating(
           [](const EntryKeyPrefix& retain_prefix,
              const EntryKeyPrefix& filter_prefix, const std::string& key) {
@@ -215,38 +213,36 @@ void HintCacheStore::UpdateComponentData(
                    key.compare(0, filter_prefix.length(), filter_prefix) == 0;
           },
           retain_prefix, filter_prefix),
-      base::BindOnce(&HintCacheStore::OnUpdateComponentData,
+      base::BindOnce(&HintCacheStore::OnUpdateHints,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void HintCacheStore::UpdateFetchedHintsData(
-    std::unique_ptr<ComponentUpdateData> fetched_hints_data,
+void HintCacheStore::UpdateFetchedHints(
+    std::unique_ptr<HintUpdateData> fetched_hints_data,
     base::OnceClosure callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(fetched_hints_data);
-  DCHECK(!component_data_update_in_flight_);
+  DCHECK(!data_update_in_flight_);
+  DCHECK(fetched_hints_data->fetch_update_time());
 
   if (!IsAvailable()) {
     std::move(callback).Run();
     return;
   }
 
-  fetched_update_time_ = fetched_hints_data->update_time();
+  fetched_update_time_ = *fetched_hints_data->fetch_update_time();
 
-  component_data_update_in_flight_ = true;
+  data_update_in_flight_ = true;
 
   hint_entry_keys_.reset();
-
-  LevelDBComponentUpdateData* leveldb_fetched_hints_data =
-      static_cast<LevelDBComponentUpdateData*>(fetched_hints_data.get());
 
   // This will remove the fetched metadata entry and insert all the entries
   // currently in |leveldb_fetched_hints_data|.
   database_->UpdateEntriesWithRemoveFilter(
-      std::move(leveldb_fetched_hints_data->entries_to_save_),
+      fetched_hints_data->TakeUpdateEntries(),
       base::BindRepeating(&DatabasePrefixFilter,
                           GetMetadataTypeEntryKey(MetadataType::kFetched)),
-      base::BindOnce(&HintCacheStore::OnUpdateComponentData,
+      base::BindOnce(&HintCacheStore::OnUpdateHints,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
@@ -287,50 +283,6 @@ base::Time HintCacheStore::FetchedHintsUpdateTime() const {
   if (!IsAvailable())
     return base::Time();
   return fetched_update_time_;
-}
-
-HintCacheStore::LevelDBComponentUpdateData::LevelDBComponentUpdateData(
-    const base::Version& version)
-    : ComponentUpdateData(version),
-      component_hint_entry_key_prefix_(GetComponentHintEntryKeyPrefix(version)),
-      entries_to_save_(std::make_unique<EntryVector>()) {
-  // Add a component metadata entry to the update data with the component's
-  // version.
-  previews::proto::StoreEntry metadata_component_entry;
-  metadata_component_entry.set_version(version.GetString());
-  entries_to_save_->emplace_back(
-      GetMetadataTypeEntryKey(MetadataType::kComponent),
-      std::move(metadata_component_entry));
-}
-
-HintCacheStore::LevelDBComponentUpdateData::LevelDBComponentUpdateData(
-    base::Time update_time)
-    : ComponentUpdateData(update_time),
-      component_hint_entry_key_prefix_(GetFetchedHintEntryKeyPrefix()),
-      entries_to_save_(std::make_unique<EntryVector>()) {
-  // Add fetched metadata entry
-  previews::proto::StoreEntry metadata_fetched_entry;
-  metadata_fetched_entry.set_update_time_secs(
-      update_time.ToDeltaSinceWindowsEpoch().InSeconds());
-
-  entries_to_save_->emplace_back(
-      GetMetadataTypeEntryKey(MetadataType::kFetched),
-      std::move(metadata_fetched_entry));
-}
-
-HintCacheStore::LevelDBComponentUpdateData::~LevelDBComponentUpdateData() =
-    default;
-
-void HintCacheStore::LevelDBComponentUpdateData::MoveHintIntoUpdateData(
-    optimization_guide::proto::Hint&& hint) {
-  // Add a component hint entry to the update data. To avoid any unnecessary
-  // copying, the hint is moved into proto::StoreEntry.
-  EntryKey hint_entry_key = component_hint_entry_key_prefix_ + hint.key();
-  previews::proto::StoreEntry entry_proto;
-  entry_proto.set_allocated_hint(
-      new optimization_guide::proto::Hint(std::move(hint)));
-  entries_to_save_->emplace_back(std::move(hint_entry_key),
-                                 std::move(entry_proto));
 }
 
 // static
@@ -445,7 +397,7 @@ void HintCacheStore::MaybeLoadHintEntryKeys(base::OnceClosure callback) {
 
   // If the database is unavailable or if there's an in-flight component data
   // update, then don't load the hint keys. Simply run the callback.
-  if (!IsAvailable() || component_data_update_in_flight_) {
+  if (!IsAvailable() || data_update_in_flight_) {
     std::move(callback).Run();
     return;
   }
@@ -597,12 +549,11 @@ void HintCacheStore::OnPurgeDatabase(base::OnceClosure callback, bool success) {
   std::move(callback).Run();
 }
 
-void HintCacheStore::OnUpdateComponentData(base::OnceClosure callback,
-                                           bool success) {
+void HintCacheStore::OnUpdateHints(base::OnceClosure callback, bool success) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(component_data_update_in_flight_);
+  DCHECK(data_update_in_flight_);
 
-  component_data_update_in_flight_ = false;
+  data_update_in_flight_ = false;
   if (!success) {
     UpdateStatus(Status::kFailed);
     std::move(callback).Run();
@@ -629,7 +580,7 @@ void HintCacheStore::OnLoadHintEntryKeys(
   // there's an in-flight component data update, which means the keys are about
   // to be invalidated, then the loaded keys should not be considered valid.
   // Reset the keys so that they are cleared.
-  if (!IsAvailable() || component_data_update_in_flight_) {
+  if (!IsAvailable() || data_update_in_flight_) {
     hint_entry_keys.reset();
   }
 
@@ -649,7 +600,7 @@ void HintCacheStore::OnLoadHint(
   // means the entry is about to be invalidated, then the loaded hint should not
   // be considered valid. Reset the entry so that no hint is returned to the
   // requester.
-  if (!success || !IsAvailable() || component_data_update_in_flight_) {
+  if (!success || !IsAvailable() || data_update_in_flight_) {
     entry.reset();
   }
 

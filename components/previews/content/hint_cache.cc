@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/bind.h"
+#include "components/previews/content/hint_update_data.h"
 #include "url/gurl.h"
 
 namespace previews {
@@ -25,7 +26,7 @@ const size_t kDefaultMaxMemoryCacheHints = 20;
 // there are applicable hints moved into UpdateData that can be stored.
 bool ProcessGetHintsResponse(
     optimization_guide::proto::GetHintsResponse* get_hints_response,
-    HintCacheStore::ComponentUpdateData* fetched_hints_update_data) {
+    HintUpdateData* fetched_hints_update_data) {
   std::unordered_set<std::string> seen_host_suffixes;
 
   bool has_processed_hints = false;
@@ -80,20 +81,21 @@ void HintCache::Initialize(bool purge_existing_data,
                      std::move(callback)));
 }
 
-std::unique_ptr<HintCacheStore::ComponentUpdateData>
-HintCache::MaybeCreateComponentUpdateData(const base::Version& version) const {
+std::unique_ptr<HintUpdateData>
+HintCache::MaybeCreateUpdateDataForComponentHints(
+    const base::Version& version) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return hint_store_->MaybeCreateComponentUpdateData(version);
+  return hint_store_->MaybeCreateUpdateDataForComponentHints(version);
 }
 
-std::unique_ptr<HintCacheStore::ComponentUpdateData>
-HintCache::CreateUpdateDataForFetchedHints(base::Time update_time) const {
+std::unique_ptr<HintUpdateData> HintCache::CreateUpdateDataForFetchedHints(
+    base::Time update_time) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return hint_store_->CreateUpdateDataForFetchedHints(update_time);
 }
 
-void HintCache::UpdateComponentData(
-    std::unique_ptr<HintCacheStore::ComponentUpdateData> component_data,
+void HintCache::UpdateComponentHints(
+    std::unique_ptr<HintUpdateData> component_data,
     base::OnceClosure callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(component_data);
@@ -102,21 +104,21 @@ void HintCache::UpdateComponentData(
   // data.
   memory_cache_.Clear();
 
-  hint_store_->UpdateComponentData(std::move(component_data),
-                                   std::move(callback));
+  hint_store_->UpdateComponentHints(std::move(component_data),
+                                    std::move(callback));
 }
 
-bool HintCache::StoreFetchedHints(
+bool HintCache::UpdateFetchedHints(
     std::unique_ptr<optimization_guide::proto::GetHintsResponse>
         get_hints_response,
     base::Time update_time,
     base::OnceClosure callback) {
-  std::unique_ptr<HintCacheStore::ComponentUpdateData>
-      fetched_hints_update_data = CreateUpdateDataForFetchedHints(update_time);
+  std::unique_ptr<HintUpdateData> fetched_hints_update_data =
+      CreateUpdateDataForFetchedHints(update_time);
   if (ProcessGetHintsResponse(get_hints_response.get(),
                               fetched_hints_update_data.get())) {
-    hint_store_->UpdateFetchedHintsData(std::move(fetched_hints_update_data),
-                                        std::move(callback));
+    hint_store_->UpdateFetchedHints(std::move(fetched_hints_update_data),
+                                    std::move(callback));
     return true;
   }
   return false;
