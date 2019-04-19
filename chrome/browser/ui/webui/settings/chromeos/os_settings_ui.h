@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_SETTINGS_CHROMEOS_OS_SETTINGS_UI_H_
 #define CHROME_BROWSER_UI_WEBUI_SETTINGS_CHROMEOS_OS_SETTINGS_UI_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -14,10 +16,6 @@ namespace content {
 class WebUIMessageHandler;
 }
 
-namespace user_prefs {
-class PrefRegistrySyncable;
-}
-
 namespace chromeos {
 namespace settings {
 
@@ -25,8 +23,6 @@ namespace settings {
 class OSSettingsUI : public content::WebUIController,
                      public content::WebContentsObserver {
  public:
-  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
-
   explicit OSSettingsUI(content::WebUI* web_ui);
   ~OSSettingsUI() override;
 

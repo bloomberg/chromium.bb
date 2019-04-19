@@ -43,13 +43,11 @@
 #include "chrome/browser/ui/webui/settings/settings_ui.h"
 #include "chrome/browser/ui/webui/settings/site_settings_handler.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/os_settings_resources.h"
 #include "chrome/grit/os_settings_resources_map.h"
 #include "components/password_manager/core/common/password_manager_features.h"
-#include "components/pref_registry/pref_registry_syncable.h"
 #include "components/unified_consent/feature.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -62,16 +60,6 @@
 
 namespace chromeos {
 namespace settings {
-
-// static
-void OSSettingsUI::RegisterProfilePrefs(
-    user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterBooleanPref(::prefs::kImportDialogAutofillFormData, true);
-  registry->RegisterBooleanPref(::prefs::kImportDialogBookmarks, true);
-  registry->RegisterBooleanPref(::prefs::kImportDialogHistory, true);
-  registry->RegisterBooleanPref(::prefs::kImportDialogSavedPasswords, true);
-  registry->RegisterBooleanPref(::prefs::kImportDialogSearchEngine, true);
-}
 
 OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
     : content::WebUIController(web_ui),
