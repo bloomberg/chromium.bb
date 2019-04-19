@@ -84,7 +84,11 @@ const CGFloat kBannerOverlapWithOmnibox = 5.0;
   self.bannerViewController.transitioningDelegate = self.bannerTransitionDriver;
   [self.baseViewController presentViewController:self.bannerViewController
                                         animated:animated
-                                      completion:completion];
+                                      completion:^{
+                                        self.presentingInfobarBanner = YES;
+                                        if (completion)
+                                          completion();
+                                      }];
 }
 
 - (void)presentInfobarModal {
@@ -154,6 +158,7 @@ const CGFloat kBannerOverlapWithOmnibox = 5.0;
     [self.baseViewController
         dismissViewControllerAnimated:animated
                            completion:^{
+                             weakSelf.presentingInfobarBanner = NO;
                              [weakSelf.badgeDelegate infobarBannerWasDismissed];
                              weakSelf.bannerTransitionDriver = nil;
                              animatedFullscreenDisabler_ = nullptr;

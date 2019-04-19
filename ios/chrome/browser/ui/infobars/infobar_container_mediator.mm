@@ -57,8 +57,15 @@
 }
 
 - (void)dealloc {
-  _webStateList->RemoveObserver(_webStateListObserver.get());
-  _webStateListObserver.reset();
+  [self disconnect];
+}
+
+- (void)disconnect {
+  if (_webStateList) {
+    _webStateList->RemoveObserver(_webStateListObserver.get());
+    _webStateListObserver.reset();
+    _webStateList = nullptr;
+  }
 }
 
 #pragma mark - WebStateListObserver

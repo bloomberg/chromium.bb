@@ -61,14 +61,14 @@ const CGFloat kAlphaChangeAnimationDuration = 0.35;
   [super viewDidAppear:animated];
   self.visible = YES;
 
-  if (!_fullscreenObserver) {
+  if (!_fullscreenObserver && !self.disableFullscreenSupport) {
     _fullscreenObserver = std::make_unique<FullscreenUIUpdater>(self);
     self.fullscreenController->AddObserver(_fullscreenObserver.get());
   }
 }
 
 - (void)viewDidDisappear:(BOOL)animated {
-  if (_fullscreenObserver) {
+  if (_fullscreenObserver && !self.disableFullscreenSupport) {
     self.fullscreenController->RemoveObserver(_fullscreenObserver.get());
     _fullscreenObserver = nullptr;
   }

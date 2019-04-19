@@ -80,6 +80,10 @@ class InfoBarDelegate;
 // baseViewController will be set on init.
 @property(nonatomic, weak) UIViewController* baseViewController;
 
+// YES if an InfobarBanner is being presented.
+@property(nonatomic, assign, getter=isPresentingInfobarBanner)
+    BOOL presentingInfobarBanner;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_INFOBARS_COORDINATORS_INFOBAR_COORDINATOR_H_
