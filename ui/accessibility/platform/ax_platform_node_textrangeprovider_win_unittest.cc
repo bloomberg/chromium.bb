@@ -641,6 +641,13 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
         TextPatternRangeEndpoint_Start, text_range_provider.Get(),
         TextPatternRangeEndpoint_Start, &compare_endpoints_result));
 
+    VARIANT attr_val;
+    V_VT(&attr_val) = VT_BOOL;
+    V_BOOL(&attr_val) = VARIANT_TRUE;
+    ComPtr<ITextRangeProvider> matched_range_provider;
+    EXPECT_UIA_ELEMENTNOTAVAILABLE(text_range_provider->FindAttribute(
+        UIA_IsHiddenAttributeId, attr_val, true, &matched_range_provider));
+
     EXPECT_UIA_ELEMENTNOTAVAILABLE(text_range_provider->MoveEndpointByRange(
         TextPatternRangeEndpoint_Start, text_range_provider.Get(),
         TextPatternRangeEndpoint_Start));
@@ -2072,6 +2079,576 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   EXPECT_HRESULT_SUCCEEDED(
       text_range_provider_found->Compare(text_node3_range.Get(), &range_equal));
   EXPECT_TRUE(range_equal);
+}
+
+TEST_F(AXPlatformNodeTextRangeProviderTest,
+       TestITextRangeProviderFindAttribute) {
+  // document - visible
+  //  [empty]
+  //
+  // Search forward, look for IsHidden=true.
+  // Expected: nullptr
+  // Search forward, look for IsHidden=false.
+  // Expected: ""
+  // Note: returns "" rather than nullptr here because document root web area by
+  //       default set to visible. So the text range represents document matches
+  //       our searching criteria. And we return a degenerate range.
+  //
+  // Search backward, look for IsHidden=true.
+  // Expected: nullptr
+  // Search backward, look for IsHidden=false.
+  // Expected: ""
+  // Note: returns "" rather than nullptr here because document root web area by
+  //       default set to visible. So the text range represents document matches
+  //       our searching criteria. And we return a degenerate range.
+  {
+    ui::AXNodeData root_data;
+    root_data.id = 1;
+    root_data.role = ax::mojom::Role::kRootWebArea;
+
+    ui::AXTreeUpdate update;
+    ui::AXTreeData tree_data;
+    tree_data.tree_id = ui::AXTreeID::CreateNewAXTreeID();
+    update.tree_data = tree_data;
+    update.has_tree_data = true;
+    update.root_id = root_data.id;
+    update.nodes = {root_data};
+
+    Init(update);
+
+    AXNodePosition::SetTreeForTesting(tree_.get());
+
+    ComPtr<ITextProvider> document_provider;
+    ComPtr<ITextRangeProvider> document_range_provider;
+    ComPtr<ITextRangeProvider> matched_range_provider;
+    base::win::ScopedBstr matched_text_content;
+    VARIANT is_hidden_attr_val;
+    V_VT(&is_hidden_attr_val) = VT_BOOL;
+    bool is_search_backward;
+
+    EXPECT_HRESULT_SUCCEEDED(
+        GetRootIRawElementProviderSimple()->GetPatternProvider(
+            UIA_TextPatternId, &document_provider));
+    EXPECT_HRESULT_SUCCEEDED(
+        document_provider->get_DocumentRange(&document_range_provider));
+
+    // Search forward, look for IsHidden=true.
+    // Expected: nullptr
+    V_BOOL(&is_hidden_attr_val) = VARIANT_TRUE;
+    is_search_backward = false;
+    document_range_provider->FindAttribute(
+        UIA_IsHiddenAttributeId, is_hidden_attr_val, is_search_backward,
+        &matched_range_provider);
+    ASSERT_EQ(nullptr, matched_range_provider.Get());
+
+    // Search forward, look for IsHidden=false.
+    // Expected: ""
+    // Note: returns "" rather than nullptr here because document root web area
+    //       by default set to visible. So the text range represents document
+    //       matches our searching criteria. And we return a degenerate range.
+    V_BOOL(&is_hidden_attr_val) = VARIANT_FALSE;
+    is_search_backward = false;
+    document_range_provider->FindAttribute(
+        UIA_IsHiddenAttributeId, is_hidden_attr_val, is_search_backward,
+        &matched_range_provider);
+    ASSERT_NE(nullptr, matched_range_provider.Get());
+    EXPECT_HRESULT_SUCCEEDED(
+        matched_range_provider->GetText(-1, matched_text_content.Receive()));
+    EXPECT_STREQ(matched_text_content, L"");
+    matched_range_provider.Reset();
+    matched_text_content.Reset();
+
+    // Search backward, look for IsHidden=true.
+    // Expected: nullptr
+    V_BOOL(&is_hidden_attr_val) = VARIANT_TRUE;
+    is_search_backward = true;
+    document_range_provider->FindAttribute(
+        UIA_IsHiddenAttributeId, is_hidden_attr_val, is_search_backward,
+        &matched_range_provider);
+    ASSERT_EQ(nullptr, matched_range_provider.Get());
+
+    // Search backward, look for IsHidden=false.
+    // Expected: ""
+    // Note: returns "" rather than nullptr here because document root web area
+    //       by default set to visible. So the text range represents document
+    //       matches our searching criteria. And we return a degenerate range.
+    V_BOOL(&is_hidden_attr_val) = VARIANT_FALSE;
+    is_search_backward = true;
+    document_range_provider->FindAttribute(
+        UIA_IsHiddenAttributeId, is_hidden_attr_val, is_search_backward,
+        &matched_range_provider);
+    ASSERT_NE(nullptr, matched_range_provider.Get());
+    EXPECT_HRESULT_SUCCEEDED(
+        matched_range_provider->GetText(-1, matched_text_content.Receive()));
+    EXPECT_STREQ(matched_text_content, L"");
+
+    AXNodePosition::SetTreeForTesting(nullptr);
+  }
+
+  // document - visible
+  //  text1 - invisible
+  //
+  // Search forward, look for IsHidden=true.
+  // Expected: "text1"
+  // Search forward, look for IsHidden=false.
+  // Expected: nullptr
+  // Search backward, look for IsHidden=true.
+  // Expected: "text1"
+  // Search backward, look for IsHidden=false.
+  // Expected: nullptr
+  {
+    ui::AXNodeData text_data1;
+    text_data1.id = 2;
+    text_data1.role = ax::mojom::Role::kStaticText;
+    text_data1.AddState(ax::mojom::State::kInvisible);
+    text_data1.SetName("text1");
+
+    ui::AXNodeData root_data;
+    root_data.id = 1;
+    root_data.role = ax::mojom::Role::kRootWebArea;
+    root_data.child_ids = {2};
+
+    ui::AXTreeUpdate update;
+    ui::AXTreeData tree_data;
+    tree_data.tree_id = ui::AXTreeID::CreateNewAXTreeID();
+    update.tree_data = tree_data;
+    update.has_tree_data = true;
+    update.root_id = root_data.id;
+    update.nodes = {root_data, text_data1};
+
+    Init(update);
+
+    AXNodePosition::SetTreeForTesting(tree_.get());
+
+    ComPtr<ITextProvider> document_provider;
+    ComPtr<ITextRangeProvider> document_range_provider;
+    ComPtr<ITextRangeProvider> matched_range_provider;
+    base::win::ScopedBstr matched_text_content;
+    VARIANT is_hidden_attr_val;
+    V_VT(&is_hidden_attr_val) = VT_BOOL;
+    bool is_search_backward;
+
+    EXPECT_HRESULT_SUCCEEDED(
+        GetRootIRawElementProviderSimple()->GetPatternProvider(
+            UIA_TextPatternId, &document_provider));
+    EXPECT_HRESULT_SUCCEEDED(
+        document_provider->get_DocumentRange(&document_range_provider));
+
+    // Search forward, look for IsHidden=true.
+    // Expected: "text1"
+    V_BOOL(&is_hidden_attr_val) = VARIANT_TRUE;
+    is_search_backward = false;
+    document_range_provider->FindAttribute(
+        UIA_IsHiddenAttributeId, is_hidden_attr_val, is_search_backward,
+        &matched_range_provider);
+    ASSERT_NE(nullptr, matched_range_provider.Get());
+    EXPECT_HRESULT_SUCCEEDED(
+        matched_range_provider->GetText(-1, matched_text_content.Receive()));
+    EXPECT_STREQ(matched_text_content, L"text1");
+    matched_range_provider.Reset();
+    matched_text_content.Reset();
+
+    // Search forward, look for IsHidden=false.
+    // Expected: nullptr
+    V_BOOL(&is_hidden_attr_val) = VARIANT_FALSE;
+    is_search_backward = false;
+    document_range_provider->FindAttribute(
+        UIA_IsHiddenAttributeId, is_hidden_attr_val, is_search_backward,
+        &matched_range_provider);
+    ASSERT_EQ(nullptr, matched_range_provider.Get());
+
+    // Search backward, look for IsHidden=true.
+    // Expected: "text1"
+    V_BOOL(&is_hidden_attr_val) = VARIANT_TRUE;
+    is_search_backward = true;
+    document_range_provider->FindAttribute(
+        UIA_IsHiddenAttributeId, is_hidden_attr_val, is_search_backward,
+        &matched_range_provider);
+    ASSERT_NE(nullptr, matched_range_provider.Get());
+    EXPECT_HRESULT_SUCCEEDED(
+        matched_range_provider->GetText(-1, matched_text_content.Receive()));
+    EXPECT_STREQ(matched_text_content, L"text1");
+    matched_range_provider.Reset();
+    matched_text_content.Reset();
+
+    // Search backward, look for IsHidden=false.
+    // Expected: nullptr
+    V_BOOL(&is_hidden_attr_val) = VARIANT_FALSE;
+    is_search_backward = true;
+    document_range_provider->FindAttribute(
+        UIA_IsHiddenAttributeId, is_hidden_attr_val, is_search_backward,
+        &matched_range_provider);
+    ASSERT_EQ(nullptr, matched_range_provider.Get());
+
+    AXNodePosition::SetTreeForTesting(nullptr);
+  }
+
+  // document - visible
+  //  text1 - visible
+  //  text2 - visible
+  //
+  // Search forward, look for IsHidden=true.
+  // Expected: nullptr
+  // Search forward, look for IsHidden=false.
+  // Expected: "text1text2"
+  // Search backward, look for IsHidden=true.
+  // Expected: nullptr
+  // Search backward, look for IsHidden=false.
+  // Expected: "text1text2"
+  {
+    ui::AXNodeData text_data1;
+    text_data1.id = 2;
+    text_data1.role = ax::mojom::Role::kStaticText;
+    text_data1.SetName("text1");
+
+    ui::AXNodeData text_data2;
+    text_data2.id = 3;
+    text_data2.role = ax::mojom::Role::kStaticText;
+    text_data2.SetName("text2");
+
+    ui::AXNodeData root_data;
+    root_data.id = 1;
+    root_data.role = ax::mojom::Role::kRootWebArea;
+    root_data.child_ids = {2, 3};
+
+    ui::AXTreeUpdate update;
+    ui::AXTreeData tree_data;
+    tree_data.tree_id = ui::AXTreeID::CreateNewAXTreeID();
+    update.tree_data = tree_data;
+    update.has_tree_data = true;
+    update.root_id = root_data.id;
+    update.nodes = {root_data, text_data1, text_data2};
+
+    Init(update);
+
+    AXNodePosition::SetTreeForTesting(tree_.get());
+
+    ComPtr<ITextProvider> document_provider;
+    ComPtr<ITextRangeProvider> document_range_provider;
+    ComPtr<ITextRangeProvider> matched_range_provider;
+    base::win::ScopedBstr matched_text_content;
+    VARIANT is_hidden_attr_val;
+    V_VT(&is_hidden_attr_val) = VT_BOOL;
+    bool is_search_backward;
+
+    EXPECT_HRESULT_SUCCEEDED(
+        GetRootIRawElementProviderSimple()->GetPatternProvider(
+            UIA_TextPatternId, &document_provider));
+    EXPECT_HRESULT_SUCCEEDED(
+        document_provider->get_DocumentRange(&document_range_provider));
+
+    // Search forward, look for IsHidden=true.
+    // Expected: nullptr
+    V_BOOL(&is_hidden_attr_val) = VARIANT_TRUE;
+    is_search_backward = false;
+    document_range_provider->FindAttribute(
+        UIA_IsHiddenAttributeId, is_hidden_attr_val, is_search_backward,
+        &matched_range_provider);
+    ASSERT_EQ(nullptr, matched_range_provider.Get());
+
+    // Search forward, look for IsHidden=false.
+    // Expected: "text1text2"
+    V_BOOL(&is_hidden_attr_val) = VARIANT_FALSE;
+    is_search_backward = false;
+    document_range_provider->FindAttribute(
+        UIA_IsHiddenAttributeId, is_hidden_attr_val, is_search_backward,
+        &matched_range_provider);
+    ASSERT_NE(nullptr, matched_range_provider.Get());
+    EXPECT_HRESULT_SUCCEEDED(
+        matched_range_provider->GetText(-1, matched_text_content.Receive()));
+    EXPECT_STREQ(matched_text_content, L"text1text2");
+    matched_range_provider.Reset();
+    matched_text_content.Reset();
+
+    // Search backward, look for IsHidden=true.
+    // Expected: nullptr
+    V_BOOL(&is_hidden_attr_val) = VARIANT_TRUE;
+    is_search_backward = true;
+    document_range_provider->FindAttribute(
+        UIA_IsHiddenAttributeId, is_hidden_attr_val, is_search_backward,
+        &matched_range_provider);
+    ASSERT_EQ(nullptr, matched_range_provider.Get());
+
+    // Search backward, look for IsHidden=false.
+    // Expected: "text1text2"
+    V_BOOL(&is_hidden_attr_val) = VARIANT_FALSE;
+    is_search_backward = true;
+    document_range_provider->FindAttribute(
+        UIA_IsHiddenAttributeId, is_hidden_attr_val, is_search_backward,
+        &matched_range_provider);
+    ASSERT_NE(nullptr, matched_range_provider.Get());
+    EXPECT_HRESULT_SUCCEEDED(
+        matched_range_provider->GetText(-1, matched_text_content.Receive()));
+    EXPECT_STREQ(matched_text_content, L"text1text2");
+
+    AXNodePosition::SetTreeForTesting(nullptr);
+  }
+
+  // document - visible
+  //  text1 - visible
+  //  text2 - invisible
+  //  text3 - invisible
+  //  text4 - visible
+  //  text5 - invisible
+  //
+  // Search forward, look for IsHidden=true.
+  // Expected: "text2text3"
+  // Search forward, look for IsHidden=false.
+  // Expected: "text1"
+  // Search backward, look for IsHidden=true.
+  // Expected: "text5"
+  // Search backward, look for IsHidden=false.
+  // Expected: "text4"
+  {
+    ui::AXNodeData text_data1;
+    text_data1.id = 2;
+    text_data1.role = ax::mojom::Role::kStaticText;
+    text_data1.SetName("text1");
+
+    ui::AXNodeData text_data2;
+    text_data2.id = 3;
+    text_data2.role = ax::mojom::Role::kStaticText;
+    text_data2.AddState(ax::mojom::State::kInvisible);
+    text_data2.SetName("text2");
+
+    ui::AXNodeData text_data3;
+    text_data3.id = 4;
+    text_data3.role = ax::mojom::Role::kStaticText;
+    text_data3.AddState(ax::mojom::State::kInvisible);
+    text_data3.SetName("text3");
+
+    ui::AXNodeData text_data4;
+    text_data4.id = 5;
+    text_data4.role = ax::mojom::Role::kStaticText;
+    text_data4.SetName("text4");
+
+    ui::AXNodeData text_data5;
+    text_data5.id = 6;
+    text_data5.role = ax::mojom::Role::kStaticText;
+    text_data5.AddState(ax::mojom::State::kInvisible);
+    text_data5.SetName("text5");
+
+    ui::AXNodeData root_data;
+    root_data.id = 1;
+    root_data.role = ax::mojom::Role::kRootWebArea;
+    root_data.child_ids = {2, 3, 4, 5, 6};
+
+    ui::AXTreeUpdate update;
+    ui::AXTreeData tree_data;
+    tree_data.tree_id = ui::AXTreeID::CreateNewAXTreeID();
+    update.tree_data = tree_data;
+    update.has_tree_data = true;
+    update.root_id = root_data.id;
+    update.nodes = {root_data,  text_data1, text_data2,
+                    text_data3, text_data4, text_data5};
+
+    Init(update);
+
+    AXNodePosition::SetTreeForTesting(tree_.get());
+
+    ComPtr<ITextProvider> document_provider;
+    ComPtr<ITextRangeProvider> document_range_provider;
+    ComPtr<ITextRangeProvider> matched_range_provider;
+    base::win::ScopedBstr matched_text_content;
+    VARIANT is_hidden_attr_val;
+    V_VT(&is_hidden_attr_val) = VT_BOOL;
+    bool is_search_backward;
+
+    EXPECT_HRESULT_SUCCEEDED(
+        GetRootIRawElementProviderSimple()->GetPatternProvider(
+            UIA_TextPatternId, &document_provider));
+    EXPECT_HRESULT_SUCCEEDED(
+        document_provider->get_DocumentRange(&document_range_provider));
+
+    // Search forward, look for IsHidden=true.
+    // Expected: "text2text3"
+    V_BOOL(&is_hidden_attr_val) = VARIANT_TRUE;
+    is_search_backward = false;
+    document_range_provider->FindAttribute(
+        UIA_IsHiddenAttributeId, is_hidden_attr_val, is_search_backward,
+        &matched_range_provider);
+    ASSERT_NE(nullptr, matched_range_provider.Get());
+    EXPECT_HRESULT_SUCCEEDED(
+        matched_range_provider->GetText(-1, matched_text_content.Receive()));
+    EXPECT_STREQ(matched_text_content, L"text2text3");
+    matched_range_provider.Reset();
+    matched_text_content.Reset();
+
+    // Search forward, look for IsHidden=false.
+    // Expected: "text1"
+    V_BOOL(&is_hidden_attr_val) = VARIANT_FALSE;
+    is_search_backward = false;
+    document_range_provider->FindAttribute(
+        UIA_IsHiddenAttributeId, is_hidden_attr_val, is_search_backward,
+        &matched_range_provider);
+    ASSERT_NE(nullptr, matched_range_provider.Get());
+    EXPECT_HRESULT_SUCCEEDED(
+        matched_range_provider->GetText(-1, matched_text_content.Receive()));
+    EXPECT_STREQ(matched_text_content, L"text1");
+    matched_range_provider.Reset();
+    matched_text_content.Reset();
+
+    // Search backward, look for IsHidden=true.
+    // Expected: "text5"
+    V_BOOL(&is_hidden_attr_val) = VARIANT_TRUE;
+    is_search_backward = true;
+    document_range_provider->FindAttribute(
+        UIA_IsHiddenAttributeId, is_hidden_attr_val, is_search_backward,
+        &matched_range_provider);
+    ASSERT_NE(nullptr, matched_range_provider.Get());
+    EXPECT_HRESULT_SUCCEEDED(
+        matched_range_provider->GetText(-1, matched_text_content.Receive()));
+    EXPECT_STREQ(matched_text_content, L"text5");
+    matched_range_provider.Reset();
+    matched_text_content.Reset();
+
+    // Search backward, look for IsHidden=false.
+    // Expected: "text4"
+    V_BOOL(&is_hidden_attr_val) = VARIANT_FALSE;
+    is_search_backward = true;
+    document_range_provider->FindAttribute(
+        UIA_IsHiddenAttributeId, is_hidden_attr_val, is_search_backward,
+        &matched_range_provider);
+    ASSERT_NE(nullptr, matched_range_provider.Get());
+    EXPECT_HRESULT_SUCCEEDED(
+        matched_range_provider->GetText(-1, matched_text_content.Receive()));
+    EXPECT_STREQ(matched_text_content, L"text4");
+
+    AXNodePosition::SetTreeForTesting(nullptr);
+  }
+
+  // document - visible
+  //  text1 - visible
+  //  text2 - invisible
+  //  text3 - invisible
+  //  text4 - invisible
+  //  text5 - visible
+  //
+  // Search forward, look for IsHidden=true.
+  // Expected: "text2text3text4"
+  // Search forward, look for IsHidden=false.
+  // Expected: "text1"
+  // Search backward, look for IsHidden=true.
+  // Expected: "text2text3text4"
+  // Search backward, look for IsHidden=false.
+  // Expected: "text5"
+  {
+    ui::AXNodeData text_data1;
+    text_data1.id = 2;
+    text_data1.role = ax::mojom::Role::kStaticText;
+    text_data1.SetName("text1");
+
+    ui::AXNodeData text_data2;
+    text_data2.id = 3;
+    text_data2.role = ax::mojom::Role::kStaticText;
+    text_data2.AddState(ax::mojom::State::kInvisible);
+    text_data2.SetName("text2");
+
+    ui::AXNodeData text_data3;
+    text_data3.id = 4;
+    text_data3.role = ax::mojom::Role::kStaticText;
+    text_data3.AddState(ax::mojom::State::kInvisible);
+    text_data3.SetName("text3");
+
+    ui::AXNodeData text_data4;
+    text_data4.id = 5;
+    text_data4.role = ax::mojom::Role::kStaticText;
+    text_data4.AddState(ax::mojom::State::kInvisible);
+    text_data4.SetName("text4");
+
+    ui::AXNodeData text_data5;
+    text_data5.id = 6;
+    text_data5.role = ax::mojom::Role::kStaticText;
+    text_data5.SetName("text5");
+
+    ui::AXNodeData root_data;
+    root_data.id = 1;
+    root_data.role = ax::mojom::Role::kRootWebArea;
+    root_data.child_ids = {2, 3, 4, 5, 6};
+
+    ui::AXTreeUpdate update;
+    ui::AXTreeData tree_data;
+    tree_data.tree_id = ui::AXTreeID::CreateNewAXTreeID();
+    update.tree_data = tree_data;
+    update.has_tree_data = true;
+    update.root_id = root_data.id;
+    update.nodes = {root_data,  text_data1, text_data2,
+                    text_data3, text_data4, text_data5};
+
+    Init(update);
+
+    AXNodePosition::SetTreeForTesting(tree_.get());
+
+    ComPtr<ITextProvider> document_provider;
+    ComPtr<ITextRangeProvider> document_range_provider;
+    ComPtr<ITextRangeProvider> matched_range_provider;
+    base::win::ScopedBstr matched_text_content;
+    VARIANT is_hidden_attr_val;
+    V_VT(&is_hidden_attr_val) = VT_BOOL;
+    bool is_search_backward;
+
+    EXPECT_HRESULT_SUCCEEDED(
+        GetRootIRawElementProviderSimple()->GetPatternProvider(
+            UIA_TextPatternId, &document_provider));
+    EXPECT_HRESULT_SUCCEEDED(
+        document_provider->get_DocumentRange(&document_range_provider));
+
+    // Search forward, look for IsHidden=true.
+    // Expected: "text2text3text4"
+    V_BOOL(&is_hidden_attr_val) = VARIANT_TRUE;
+    is_search_backward = false;
+    document_range_provider->FindAttribute(
+        UIA_IsHiddenAttributeId, is_hidden_attr_val, is_search_backward,
+        &matched_range_provider);
+    ASSERT_NE(nullptr, matched_range_provider.Get());
+    EXPECT_HRESULT_SUCCEEDED(
+        matched_range_provider->GetText(-1, matched_text_content.Receive()));
+    EXPECT_STREQ(matched_text_content, L"text2text3text4");
+    matched_range_provider.Reset();
+    matched_text_content.Reset();
+
+    // Search forward, look for IsHidden=false.
+    // Expected: "text1"
+    V_BOOL(&is_hidden_attr_val) = VARIANT_FALSE;
+    is_search_backward = false;
+    document_range_provider->FindAttribute(
+        UIA_IsHiddenAttributeId, is_hidden_attr_val, is_search_backward,
+        &matched_range_provider);
+    ASSERT_NE(nullptr, matched_range_provider.Get());
+    EXPECT_HRESULT_SUCCEEDED(
+        matched_range_provider->GetText(-1, matched_text_content.Receive()));
+    EXPECT_STREQ(matched_text_content, L"text1");
+    matched_range_provider.Reset();
+    matched_text_content.Reset();
+
+    // Search backward, look for IsHidden=true.
+    // Expected: "text2text3text4"
+    V_BOOL(&is_hidden_attr_val) = VARIANT_TRUE;
+    is_search_backward = true;
+    document_range_provider->FindAttribute(
+        UIA_IsHiddenAttributeId, is_hidden_attr_val, is_search_backward,
+        &matched_range_provider);
+    ASSERT_NE(nullptr, matched_range_provider.Get());
+    EXPECT_HRESULT_SUCCEEDED(
+        matched_range_provider->GetText(-1, matched_text_content.Receive()));
+    EXPECT_STREQ(matched_text_content, L"text2text3text4");
+    matched_range_provider.Reset();
+    matched_text_content.Reset();
+
+    // Search backward, look for IsHidden=false.
+    // Expected: "text5"
+    V_BOOL(&is_hidden_attr_val) = VARIANT_FALSE;
+    is_search_backward = true;
+    document_range_provider->FindAttribute(
+        UIA_IsHiddenAttributeId, is_hidden_attr_val, is_search_backward,
+        &matched_range_provider);
+    ASSERT_NE(nullptr, matched_range_provider.Get());
+    EXPECT_HRESULT_SUCCEEDED(
+        matched_range_provider->GetText(-1, matched_text_content.Receive()));
+    EXPECT_STREQ(matched_text_content, L"text5");
+
+    AXNodePosition::SetTreeForTesting(nullptr);
+  }
 }
 
 }  // namespace ui

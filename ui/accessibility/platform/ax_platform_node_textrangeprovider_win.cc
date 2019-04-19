@@ -158,11 +158,121 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::ExpandToEnclosingUnit(
 
 STDMETHODIMP AXPlatformNodeTextRangeProviderWin::FindAttribute(
     TEXTATTRIBUTEID text_attribute_id,
-    VARIANT val,
-    BOOL backward,
+    VARIANT attribute_val,
+    BOOL is_backward,
     ITextRangeProvider** result) {
+  // Algorithm description:
+  // Performs linear search. Expand forward or backward to fetch the first
+  // instance of a sub text range that matches the attribute and its value.
+  // |is_backward| determines the direction of our search.
+  // |is_backward=true|, we search from the end of this text range to its
+  // beginning.
+  // |is_backward=false|, we search from the beginning of this text range to its
+  // end.
+  //
+  // 1. Iterate through the vector of AXRanges in this text range in the
+  //    direction denoted by |is_backward|.
+  // 2. The |matched_range| is initially denoted as null since no range
+  //    currently matches. We initialize |matched_range| to non-null value when
+  //    we encounter the first AXRange instance that matches in attribute and
+  //    value. We then set the |matched_range_start| to be the start (anchor) of
+  //    the current AXRange, and |matched_range_end| to be the end (focus) of
+  //    the current AXRange.
+  // 3. If the current AXRange we are iterating on continues to match attribute
+  //    and value, we extend |matched_range| in one of the two following ways:
+  //    - If |is_backward=true|, we extend the |matched_range| by moving
+  //      |matched_range_start| backward. We do so by setting
+  //      |matched_range_start| to the start (anchor) of the current AXRange.
+  //    - If |is_backward=false|, we extend the |matched_range| by moving
+  //      |matched_range_end| forward. We do so by setting |matched_range_end|
+  //      to the end (focus) of the current AXRange.
+  // 4. We found a match when the current AXRange we are iterating on does not
+  //    match the attribute and value and there is a previously matched range.
+  //    The previously matched range is the final match we found.
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXTRANGE_FINDATTRIBUTE);
-  return E_NOTIMPL;
+  UIA_VALIDATE_TEXTRANGEPROVIDER_CALL();
+
+  *result = nullptr;
+  AXNodeRange range(start_->Clone(), end_->Clone());
+  std::vector<AXNodeRange> anchors = range.GetAnchors();
+  AXPositionInstance matched_range_start = nullptr, matched_range_end = nullptr;
+
+  auto expand_match = [&matched_range_start, &matched_range_end, is_backward](
+                          auto& current_start, auto& current_end) {
+    // The current AXRange has the attribute and its value that we are looking
+    // for, we expand the matched text range if a previously matched exists,
+    // otherwise initialize a newly matched text range.
+    if (matched_range_start != nullptr && matched_range_end != nullptr) {
+      // Continue expanding the matched text range forward/backward based on
+      // the search direction.
+      if (is_backward)
+        matched_range_start = current_start->Clone();
+      else
+        matched_range_end = current_end->Clone();
+    } else {
+      // Initialize the matched text range. The first AXRange instance that
+      // matches the attribute and its value encountered.
+      matched_range_start = current_start->Clone();
+      matched_range_end = current_end->Clone();
+    }
+  };
+
+  HRESULT hr_result =
+      is_backward
+          ? FindAttributeRange(text_attribute_id, attribute_val,
+                               anchors.crbegin(), anchors.crend(), expand_match)
+          : FindAttributeRange(text_attribute_id, attribute_val,
+                               anchors.cbegin(), anchors.cend(), expand_match);
+  if (FAILED(hr_result))
+    return E_FAIL;
+
+  if (matched_range_start != nullptr && matched_range_end != nullptr)
+    return CreateTextRangeProvider(owner(), std::move(matched_range_start),
+                                   std::move(matched_range_end), result);
+  return S_OK;
+}
+
+template <typename AnchorIterator, typename ExpandMatchLambda>
+HRESULT AXPlatformNodeTextRangeProviderWin::FindAttributeRange(
+    const TEXTATTRIBUTEID text_attribute_id,
+    VARIANT attribute_val,
+    const AnchorIterator first,
+    const AnchorIterator last,
+    ExpandMatchLambda expand_match) {
+  AXPlatformNodeWin* current_platform_node;
+  bool is_match_found = false;
+
+  for (auto it = first; it != last; ++it) {
+    const auto& current_start = it->anchor();
+    const auto& current_end = it->focus();
+
+    DCHECK(current_start->GetAnchor() == current_end->GetAnchor());
+
+    current_platform_node =
+        static_cast<AXPlatformNodeWin*>(owner()->GetDelegate()->GetFromNodeID(
+            current_start->GetAnchor()->id()));
+
+    base::win::ScopedVariant current_attribute_value;
+    if (FAILED(current_platform_node->GetTextAttributeValue(
+            text_attribute_id, current_attribute_value.Receive())))
+      return E_FAIL;
+
+    if (VARCMP_EQ == VarCmp(&attribute_val, current_attribute_value.AsInput(),
+                            LOCALE_USER_DEFAULT, 0)) {
+      // When we encounter an AXRange instance that matches the attribute
+      // and its value which we are looking for and no previously matched text
+      // range exists, we expand or initialize the matched range.
+      is_match_found = true;
+      expand_match(current_start, current_end);
+    } else if (is_match_found) {
+      // When we encounter an AXRange instance that does not match the attribute
+      // and its value which we are looking for and a previously matched text
+      // range exists, the previously matched text range is the result we found.
+      break;
+    }
+  }
+
+  return S_OK;
 }
 
 STDMETHODIMP AXPlatformNodeTextRangeProviderWin::FindText(

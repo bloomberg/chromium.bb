@@ -50,8 +50,8 @@ class __declspec(uuid("3071e40d-a10d-45ff-a59f-6e8e1138e2c1"))
   STDMETHODIMP ExpandToEnclosingUnit(TextUnit unit) override;
   STDMETHODIMP
   FindAttribute(TEXTATTRIBUTEID attribute_id,
-                VARIANT val,
-                BOOL backward,
+                VARIANT attribute_val,
+                BOOL is_backward,
                 ITextRangeProvider** result) override;
   STDMETHODIMP
   FindText(BSTR string,
@@ -92,6 +92,12 @@ class __declspec(uuid("3071e40d-a10d-45ff-a59f-6e8e1138e2c1"))
   friend class AXPlatformNodeTextProviderTest;
   base::string16 GetString();
   ui::AXPlatformNodeWin* owner() const;
+  template <typename AnchorIterator, typename ExpandMatchLambda>
+  HRESULT FindAttributeRange(const TEXTATTRIBUTEID text_attribute_id,
+                             VARIANT attribute_val,
+                             const AnchorIterator first,
+                             const AnchorIterator last,
+                             ExpandMatchLambda expand_match);
 
   AXPositionInstance MoveEndpointByCharacter(const AXPositionInstance& endpoint,
                                              const int count,
