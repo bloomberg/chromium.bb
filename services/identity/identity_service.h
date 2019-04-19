@@ -6,12 +6,17 @@
 #define SERVICES_IDENTITY_IDENTITY_SERVICE_H_
 
 #include "components/signin/core/browser/signin_manager_base.h"
+#include "mojo/public/cpp/bindings/strong_binding_set.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #include "services/identity/public/mojom/identity_accessor.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_binding.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
+
+namespace mojom {
+class IdentityAccessor;
+}
 
 namespace identity {
 
@@ -38,6 +43,8 @@ class IdentityService : public service_manager::Service {
   service_manager::ServiceBinding service_binding_;
 
   IdentityManager* identity_manager_;
+
+  mojo::StrongBindingSet<mojom::IdentityAccessor> identity_accessor_bindings_;
 
   service_manager::BinderRegistry registry_;
 

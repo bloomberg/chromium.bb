@@ -11,7 +11,6 @@
 #include "base/callback_list.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "services/identity/public/cpp/account_state.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #include "services/identity/public/cpp/scope_set.h"
@@ -22,11 +21,7 @@ namespace identity {
 class IdentityAccessorImpl : public mojom::IdentityAccessor,
                              public IdentityManager::Observer {
  public:
-  static void Create(mojom::IdentityAccessorRequest request,
-                     IdentityManager* identity_manager);
-
-  IdentityAccessorImpl(mojom::IdentityAccessorRequest request,
-                       IdentityManager* identity_manager);
+  explicit IdentityAccessorImpl(IdentityManager* identity_manager);
   ~IdentityAccessorImpl() override;
 
  private:
@@ -64,11 +59,6 @@ class IdentityAccessorImpl : public mojom::IdentityAccessor,
   // Gets the current state of the account represented by |account_info|.
   AccountState GetStateOfAccount(const CoreAccountInfo& account_info);
 
-  // Called when |binding_| hits a connection error. Destroys this instance,
-  // since it's no longer needed.
-  void OnConnectionError();
-
-  mojo::Binding<mojom::IdentityAccessor> binding_;
   IdentityManager* identity_manager_;
 
   // The set of pending requests for access tokens.

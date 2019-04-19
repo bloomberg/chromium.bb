@@ -36,6 +36,7 @@ void IdentityService::ShutDown() {
     return;
 
   identity_manager_ = nullptr;
+  identity_accessor_bindings_.CloseAllBindings();
 }
 
 bool IdentityService::IsShutDown() {
@@ -47,7 +48,9 @@ void IdentityService::Create(mojom::IdentityAccessorRequest request) {
   if (IsShutDown())
     return;
 
-  IdentityAccessorImpl::Create(std::move(request), identity_manager_);
+  identity_accessor_bindings_.AddBinding(
+      std::make_unique<IdentityAccessorImpl>(identity_manager_),
+      std::move(request));
 }
 
 }  // namespace identity
