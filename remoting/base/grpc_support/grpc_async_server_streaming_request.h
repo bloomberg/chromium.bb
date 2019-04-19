@@ -49,11 +49,17 @@ class GrpcAsyncServerStreamingRequestBase : public GrpcAsyncRequest {
     CLOSED,
   };
 
+  void set_run_task_callback(const RunTaskCallback& callback) {
+    run_task_callback_ = callback;
+  }
+
+  // Schedules a task with |run_task_callback_|. Drops it if the scoped stream
+  // has been deleted right before it is being executed.
+  void RunTask(base::OnceClosure task);
+
   virtual void ResolveIncomingMessage() = 0;
   virtual void WaitForIncomingMessage(void* event_tag) = 0;
   virtual void FinishStream(void* event_tag) = 0;
-
-  RunTaskCallback run_task_callback_;
 
  private:
   // GrpcAsyncRequest implementations.
@@ -65,6 +71,9 @@ class GrpcAsyncServerStreamingRequestBase : public GrpcAsyncRequest {
 
   base::OnceCallback<void(const grpc::Status&)> on_channel_closed_;
   State state_ = State::STARTING;
+
+  RunTaskCallback run_task_callback_;
+  base::WeakPtr<ScopedGrpcServerStream> scoped_stream_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
@@ -104,13 +113,12 @@ class GrpcAsyncServerStreamingRequest
              grpc::CompletionQueue* cq,
              void* event_tag) override {
     reader_ = std::move(create_reader_callback_).Run(cq, event_tag);
-    run_task_callback_ = run_task_cb;
+    set_run_task_callback(run_task_cb);
   }
 
   // GrpcAsyncServerStreamingRequestBase implementations.
   void ResolveIncomingMessage() override {
-    DCHECK(run_task_callback_);
-    run_task_callback_.Run(base::BindOnce(on_incoming_msg_, response_));
+    RunTask(base::BindOnce(on_incoming_msg_, response_));
   }
 
   void WaitForIncomingMessage(void* event_tag) override {

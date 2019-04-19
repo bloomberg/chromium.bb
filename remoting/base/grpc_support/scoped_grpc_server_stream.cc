@@ -10,12 +10,16 @@ namespace remoting {
 
 ScopedGrpcServerStream::ScopedGrpcServerStream(
     base::WeakPtr<GrpcAsyncServerStreamingRequestBase> request)
-    : request_(request) {}
+    : request_(request), weak_factory_(this) {}
 
 ScopedGrpcServerStream::~ScopedGrpcServerStream() {
   if (request_) {
     request_->CancelRequest();
   }
+}
+
+base::WeakPtr<ScopedGrpcServerStream> ScopedGrpcServerStream::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
 }
 
 }  // namespace remoting

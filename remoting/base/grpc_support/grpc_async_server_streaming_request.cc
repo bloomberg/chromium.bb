@@ -8,6 +8,18 @@
 
 namespace remoting {
 
+namespace {
+
+void RunTaskIfScopedStreamIsAlive(
+    base::WeakPtr<ScopedGrpcServerStream> scoped_stream,
+    base::OnceClosure task) {
+  if (scoped_stream) {
+    std::move(task).Run();
+  }
+}
+
+}  // namespace
+
 GrpcAsyncServerStreamingRequestBase::GrpcAsyncServerStreamingRequestBase(
     std::unique_ptr<grpc::ClientContext> context,
     base::OnceCallback<void(const grpc::Status&)> on_channel_closed,
@@ -18,10 +30,18 @@ GrpcAsyncServerStreamingRequestBase::GrpcAsyncServerStreamingRequestBase(
   on_channel_closed_ = std::move(on_channel_closed);
   *scoped_stream =
       std::make_unique<ScopedGrpcServerStream>(weak_factory_.GetWeakPtr());
+  scoped_stream_ = (*scoped_stream)->GetWeakPtr();
 }
 
 GrpcAsyncServerStreamingRequestBase::~GrpcAsyncServerStreamingRequestBase() =
     default;
+
+void GrpcAsyncServerStreamingRequestBase::RunTask(base::OnceClosure task) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(run_task_callback_);
+  run_task_callback_.Run(base::BindOnce(&RunTaskIfScopedStreamIsAlive,
+                                        scoped_stream_, std::move(task)));
+}
 
 bool GrpcAsyncServerStreamingRequestBase::OnDequeue(bool operation_succeeded) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -45,10 +65,13 @@ bool GrpcAsyncServerStreamingRequestBase::OnDequeue(bool operation_succeeded) {
     state_ = State::STREAMING;
     return true;
   }
-  DCHECK_EQ(State::STREAMING, state_);
-  VLOG(1) << "Streaming call received message: " << this;
-  ResolveIncomingMessage();
-  return true;
+  if (state_ == State::STREAMING) {
+    VLOG(1) << "Streaming call received message: " << this;
+    ResolveIncomingMessage();
+    return true;
+  }
+  NOTREACHED();
+  return false;
 }
 
 void GrpcAsyncServerStreamingRequestBase::Reenqueue(void* event_tag) {
@@ -68,9 +91,6 @@ void GrpcAsyncServerStreamingRequestBase::Reenqueue(void* event_tag) {
 
 void GrpcAsyncServerStreamingRequestBase::OnRequestCanceled() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (state_ == State::CLOSED) {
-    return;
-  }
   state_ = State::CLOSED;
   status_ = grpc::Status::CANCELLED;
   weak_factory_.InvalidateWeakPtrs();
@@ -83,9 +103,7 @@ bool GrpcAsyncServerStreamingRequestBase::CanStartRequest() const {
 
 void GrpcAsyncServerStreamingRequestBase::ResolveChannelClosed() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(run_task_callback_);
-  run_task_callback_.Run(
-      base::BindOnce(std::move(on_channel_closed_), status_));
+  RunTask(base::BindOnce(std::move(on_channel_closed_), status_));
 }
 
 }  // namespace remoting
