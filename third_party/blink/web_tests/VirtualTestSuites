@@ -292,21 +292,6 @@
     "args": ["--enable-threaded-compositing"]
   },
   {
-    "prefix": "nobinary-for-devtools",
-    "base": "http/tests/devtools",
-    "args": ["--disable-internal-devtools-binary-protocol"]
-  },
-  {
-    "prefix": "nobinary-for-http-inspector-protocol",
-    "base": "http/tests/inspector-protocol",
-    "args": ["--disable-internal-devtools-binary-protocol"]
-  },
-  {
-    "prefix": "nobinary-for-inspector-protocol",
-    "base": "inspector-protocol",
-    "args": ["--disable-internal-devtools-binary-protocol"]
-  },
-  {
     "prefix": "composite-after-paint",
     "base": "compositing",
     "args": ["--enable-blink-features=CompositeAfterPaint"]
