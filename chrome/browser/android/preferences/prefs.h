@@ -17,6 +17,7 @@
 #include "components/feed/core/pref_names.h"
 #endif  // BUILDFLAG(ENABLE_FEED_IN_CHROME)
 #include "components/ntp_snippets/pref_names.h"
+#include "components/offline_pages/core/prefetch/prefetch_prefs.h"
 #include "components/payments/core/payment_prefs.h"
 
 // A preference exposed to Java.
@@ -36,6 +37,7 @@ enum Pref {
   AUTOFILL_PROFILE_ENABLED,
   AUTOFILL_CREDIT_CARD_ENABLED,
   USAGE_STATS_ENABLED,
+  OFFLINE_PREFETCH_USER_SETTING_ENABLED,
   // PREF_NUM_PREFS must be the last entry.
   PREF_NUM_PREFS
 };
@@ -63,6 +65,7 @@ const char* const kPrefsExposedToJava[] = {
     autofill::prefs::kAutofillProfileEnabled,
     autofill::prefs::kAutofillCreditCardEnabled,
     prefs::kUsageStatsEnabled,
+    offline_pages::prefetch_prefs::kUserSettingEnabled,
 };
 
 #endif  // CHROME_BROWSER_ANDROID_PREFERENCES_PREFS_H_
