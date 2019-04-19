@@ -118,6 +118,7 @@
 #if BUILDFLAG(ENABLE_REPORTING)
 #include "net/network_error_logging/network_error_logging_service.h"
 #include "net/reporting/reporting_cache.h"
+#include "net/reporting/reporting_context.h"
 #include "net/reporting/reporting_report.h"
 #include "net/reporting/reporting_service.h"
 #include "net/reporting/reporting_test_util.h"
@@ -1862,21 +1863,19 @@ TEST_F(NetworkContextTest, ClearReportingCacheClients) {
       reporting_service.get());
 
   GURL domain("https://google.com");
-  reporting_cache->SetClient(url::Origin::Create(domain), domain,
-                             net::ReportingClient::Subdomains::EXCLUDE, "group",
-                             base::TimeTicks::Max(), 0, 1);
+  reporting_cache->SetEndpointForTesting(url::Origin::Create(domain), "group",
+                                         domain, net::OriginSubdomains::DEFAULT,
+                                         base::Time::Max(), 1 /* priority */,
+                                         1 /* weight */);
 
-  std::vector<const net::ReportingClient*> clients;
-  reporting_cache->GetClients(&clients);
-  ASSERT_EQ(1u, clients.size());
+  ASSERT_EQ(1u, reporting_cache->GetEndpointCount());
 
   base::RunLoop run_loop;
   network_context->ClearReportingCacheClients(nullptr /* filter */,
                                               run_loop.QuitClosure());
   run_loop.Run();
 
-  reporting_cache->GetClients(&clients);
-  EXPECT_EQ(0u, clients.size());
+  EXPECT_EQ(0u, reporting_cache->GetEndpointCount());
 }
 
 TEST_F(NetworkContextTest, ClearReportingCacheClientsWithFilter) {
@@ -1893,17 +1892,17 @@ TEST_F(NetworkContextTest, ClearReportingCacheClientsWithFilter) {
       reporting_service.get());
 
   GURL domain1("https://google.com");
-  reporting_cache->SetClient(url::Origin::Create(domain1), domain1,
-                             net::ReportingClient::Subdomains::EXCLUDE, "group",
-                             base::TimeTicks::Max(), 0, 1);
+  reporting_cache->SetEndpointForTesting(
+      url::Origin::Create(domain1), "group", domain1,
+      net::OriginSubdomains::DEFAULT, base::Time::Max(), 1 /* priority */,
+      1 /* weight */);
   GURL domain2("https://chromium.org");
-  reporting_cache->SetClient(url::Origin::Create(domain2), domain2,
-                             net::ReportingClient::Subdomains::EXCLUDE, "group",
-                             base::TimeTicks::Max(), 0, 1);
+  reporting_cache->SetEndpointForTesting(
+      url::Origin::Create(domain2), "group", domain2,
+      net::OriginSubdomains::DEFAULT, base::Time::Max(), 1 /* priority */,
+      1 /* weight */);
 
-  std::vector<const net::ReportingClient*> clients;
-  reporting_cache->GetClients(&clients);
-  ASSERT_EQ(2u, clients.size());
+  ASSERT_EQ(2u, reporting_cache->GetEndpointCount());
 
   mojom::ClearDataFilterPtr filter = mojom::ClearDataFilter::New();
   filter->type = mojom::ClearDataFilter_Type::KEEP_MATCHES;
@@ -1914,9 +1913,11 @@ TEST_F(NetworkContextTest, ClearReportingCacheClientsWithFilter) {
                                               run_loop.QuitClosure());
   run_loop.Run();
 
-  reporting_cache->GetClients(&clients);
-  EXPECT_EQ(1u, clients.size());
-  EXPECT_EQ(domain2, clients.front()->endpoint);
+  EXPECT_EQ(1u, reporting_cache->GetEndpointCount());
+  EXPECT_TRUE(reporting_cache->GetEndpointForTesting(
+      url::Origin::Create(domain2), "group", domain2));
+  EXPECT_FALSE(reporting_cache->GetEndpointForTesting(
+      url::Origin::Create(domain1), "group", domain1));
 }
 
 TEST_F(NetworkContextTest, ClearEmptyReportingCacheClients) {
@@ -1932,17 +1933,14 @@ TEST_F(NetworkContextTest, ClearEmptyReportingCacheClients) {
   network_context->url_request_context()->set_reporting_service(
       reporting_service.get());
 
-  std::vector<const net::ReportingClient*> clients;
-  reporting_cache->GetClients(&clients);
-  ASSERT_TRUE(clients.empty());
+  ASSERT_EQ(0u, reporting_cache->GetEndpointCount());
 
   base::RunLoop run_loop;
   network_context->ClearReportingCacheClients(nullptr /* filter */,
                                               run_loop.QuitClosure());
   run_loop.Run();
 
-  reporting_cache->GetClients(&clients);
-  EXPECT_TRUE(clients.empty());
+  ASSERT_EQ(0u, reporting_cache->GetEndpointCount());
 }
 
 TEST_F(NetworkContextTest, ClearReportingCacheClientsWithNoService) {

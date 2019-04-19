@@ -35,64 +35,68 @@ class ReportingEndpointManagerImpl : public ReportingEndpointManager {
 
   ~ReportingEndpointManagerImpl() override = default;
 
-  const ReportingClient* FindClientForOriginAndGroup(
+  const ReportingClient FindEndpointForDelivery(
       const url::Origin& origin,
       const std::string& group) override {
-    std::vector<const ReportingClient*> clients;
-    cache()->GetClientsForOriginAndGroup(origin, group, &clients);
+    // Get unexpired endpoints that apply to a delivery to |origin| and |group|.
+    // May have been configured by a superdomain of |origin|.
+    std::vector<ReportingClient> endpoints =
+        cache()->GetCandidateEndpointsForDelivery(origin, group);
 
-    // Highest-priority client(s) that are not expired, pending, failing, or
+    // Highest-priority endpoint(s) that are not expired, failing, or
     // forbidden for use by the ReportingDelegate.
-    std::vector<const ReportingClient*> available_clients;
-    // Total weight of clients in available_clients.
+    std::vector<ReportingClient> available_endpoints;
+    // Total weight of endpoints in |available_endpoints|.
     int total_weight = 0;
 
-    base::TimeTicks now = tick_clock()->NowTicks();
-    for (const ReportingClient* client : clients) {
-      if (client->expires < now)
-        continue;
-      if (base::ContainsKey(endpoint_backoff_, client->endpoint) &&
-          endpoint_backoff_[client->endpoint]->ShouldRejectRequest()) {
+    for (const ReportingClient endpoint : endpoints) {
+      if (base::ContainsKey(endpoint_backoff_, endpoint.info.url) &&
+          endpoint_backoff_[endpoint.info.url]->ShouldRejectRequest()) {
         continue;
       }
-      if (!delegate()->CanUseClient(client->origin, client->endpoint))
+      if (!delegate()->CanUseClient(endpoint.group_key.origin,
+                                    endpoint.info.url)) {
         continue;
+      }
 
       // If this client is lower priority than the ones we've found, skip it.
-      if (!available_clients.empty() &&
-          client->priority > available_clients[0]->priority) {
+      if (!available_endpoints.empty() &&
+          endpoint.info.priority > available_endpoints[0].info.priority) {
         continue;
       }
 
       // If this client is higher priority than the ones we've found (or we
       // haven't found any), forget about those ones and remember this one.
-      if (available_clients.empty() ||
-          client->priority < available_clients[0]->priority) {
-        available_clients.clear();
+      if (available_endpoints.empty() ||
+          endpoint.info.priority < available_endpoints[0].info.priority) {
+        available_endpoints.clear();
         total_weight = 0;
       }
 
-      available_clients.push_back(client);
-      total_weight += client->weight;
+      available_endpoints.push_back(endpoint);
+      total_weight += endpoint.info.weight;
     }
 
-    if (available_clients.empty()) {
-      return nullptr;
+    if (available_endpoints.empty()) {
+      return ReportingClient();
     }
 
+    // TODO(chlily): This will DCHECK if all the endpoints with the desired
+    // priority have a weight of 0. Also does not give endpoints with weight 0
+    // any chance of being selected.
     int random_index = rand_callback_.Run(0, total_weight - 1);
     int weight_so_far = 0;
-    for (size_t i = 0; i < available_clients.size(); ++i) {
-      const ReportingClient* client = available_clients[i];
-      weight_so_far += client->weight;
+    for (size_t i = 0; i < available_endpoints.size(); ++i) {
+      const ReportingClient& endpoint = available_endpoints[i];
+      weight_so_far += endpoint.info.weight;
       if (random_index < weight_so_far) {
-        return client;
+        return endpoint;
       }
     }
 
     // TODO(juliatuttle): Can we reach this in some weird overflow case?
     NOTREACHED();
-    return nullptr;
+    return ReportingClient();
   }
 
   void InformOfEndpointRequest(const GURL& endpoint, bool succeeded) override {
@@ -116,6 +120,8 @@ class ReportingEndpointManagerImpl : public ReportingEndpointManager {
   // Note: Currently the ReportingBrowsingDataRemover does not clear this data
   // because it's not persisted to disk. If it's ever persisted, it will need
   // to be cleared as well.
+  // TODO(chlily): clear this data when endpoints are deleted to avoid unbounded
+  // growth of this map.
   std::map<GURL, std::unique_ptr<net::BackoffEntry>> endpoint_backoff_;
 
   DISALLOW_COPY_AND_ASSIGN(ReportingEndpointManagerImpl);

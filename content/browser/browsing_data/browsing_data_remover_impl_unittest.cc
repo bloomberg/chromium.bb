@@ -1438,19 +1438,17 @@ TEST_F(BrowsingDataRemoverImplTest, RemoveReportingCache) {
       ->set_reporting_service(reporting_service.get());
 
   GURL domain("https://google.com");
-  reporting_cache->SetClient(url::Origin::Create(domain), domain,
-                             net::ReportingClient::Subdomains::EXCLUDE, "group",
-                             base::TimeTicks::Max(), 0, 1);
+  reporting_cache->SetEndpointForTesting(url::Origin::Create(domain), "group",
+                                         domain, net::OriginSubdomains::DEFAULT,
+                                         base::Time::Max(), 1 /* priority */,
+                                         1 /* weight */);
 
-  std::vector<const net::ReportingClient*> clients;
-  reporting_cache->GetClients(&clients);
-  ASSERT_EQ(1u, clients.size());
+  ASSERT_EQ(1u, reporting_cache->GetEndpointCount());
 
   BlockUntilBrowsingDataRemoved(base::Time(), base::Time::Max(),
                                 BrowsingDataRemover::DATA_TYPE_COOKIES, false);
 
-  reporting_cache->GetClients(&clients);
-  EXPECT_TRUE(clients.empty());
+  EXPECT_EQ(0u, reporting_cache->GetEndpointCount());
 }
 
 TEST_F(BrowsingDataRemoverImplTest, RemoveReportingCache_SpecificOrigins) {
@@ -1467,25 +1465,27 @@ TEST_F(BrowsingDataRemoverImplTest, RemoveReportingCache_SpecificOrigins) {
       ->set_reporting_service(reporting_service.get());
 
   GURL domain1("https://google.com");
-  reporting_cache->SetClient(url::Origin::Create(domain1), domain1,
-                             net::ReportingClient::Subdomains::EXCLUDE, "group",
-                             base::TimeTicks::Max(), 0, 1);
+  reporting_cache->SetEndpointForTesting(
+      url::Origin::Create(domain1), "group", domain1,
+      net::OriginSubdomains::DEFAULT, base::Time::Max(), 1 /* priority */,
+      1 /* weight */);
   GURL domain2("https://host2.com");
-  reporting_cache->SetClient(url::Origin::Create(domain2), domain2,
-                             net::ReportingClient::Subdomains::EXCLUDE, "group",
-                             base::TimeTicks::Max(), 0, 1);
+  reporting_cache->SetEndpointForTesting(
+      url::Origin::Create(domain2), "group", domain2,
+      net::OriginSubdomains::DEFAULT, base::Time::Max(), 1 /* priority */,
+      1 /* weight */);
   GURL domain3("https://host3.com");
-  reporting_cache->SetClient(url::Origin::Create(domain3), domain3,
-                             net::ReportingClient::Subdomains::EXCLUDE, "group",
-                             base::TimeTicks::Max(), 0, 1);
+  reporting_cache->SetEndpointForTesting(
+      url::Origin::Create(domain3), "group", domain3,
+      net::OriginSubdomains::DEFAULT, base::Time::Max(), 1 /* priority */,
+      1 /* weight */);
   GURL domain4("https://host4.com");
-  reporting_cache->SetClient(url::Origin::Create(domain4), domain4,
-                             net::ReportingClient::Subdomains::EXCLUDE, "group",
-                             base::TimeTicks::Max(), 0, 1);
+  reporting_cache->SetEndpointForTesting(
+      url::Origin::Create(domain4), "group", domain4,
+      net::OriginSubdomains::EXCLUDE, base::Time::Max(), 1 /* priority */,
+      1 /* weight */);
 
-  std::vector<const net::ReportingClient*> clients;
-  reporting_cache->GetClients(&clients);
-  ASSERT_EQ(4u, clients.size());
+  ASSERT_EQ(4u, reporting_cache->GetEndpointCount());
 
   std::unique_ptr<BrowsingDataFilterBuilder> filter_builder(
       BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::WHITELIST));
@@ -1495,13 +1495,10 @@ TEST_F(BrowsingDataRemoverImplTest, RemoveReportingCache_SpecificOrigins) {
                               BrowsingDataRemover::DATA_TYPE_COOKIES,
                               std::move(filter_builder));
 
-  reporting_cache->GetClients(&clients);
-  EXPECT_EQ(2u, clients.size());
-  std::vector<GURL> origins;
-  for (const net::ReportingClient* client : clients) {
-    origins.push_back(client->endpoint);
-  }
-  EXPECT_THAT(origins, UnorderedElementsAre(domain2, domain4));
+  EXPECT_EQ(2u, reporting_cache->GetEndpointCount());
+  std::vector<url::Origin> origins = reporting_cache->GetAllOrigins();
+  EXPECT_THAT(origins, UnorderedElementsAre(url::Origin::Create(domain2),
+                                            url::Origin::Create(domain4)));
 }
 
 TEST_F(BrowsingDataRemoverImplTest, RemoveReportingCache_NoService) {

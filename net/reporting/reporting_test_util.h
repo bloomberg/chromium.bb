@@ -13,13 +13,13 @@
 #include "base/macros.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "net/reporting/reporting_cache.h"
 #include "net/reporting/reporting_context.h"
 #include "net/reporting/reporting_delegate.h"
 #include "net/reporting/reporting_uploader.h"
 #include "net/test/test_with_scoped_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-class GURL;
+#include "url/gurl.h"
 
 namespace base {
 class MockOneShotTimer;
@@ -34,16 +34,9 @@ class Origin;
 
 namespace net {
 
-class ReportingCache;
 struct ReportingClient;
 class ReportingGarbageCollector;
 class TestURLRequestContext;
-
-// Finds a particular client (by origin and endpoint) in the cache and returns
-// it (or nullptr if not found).
-const ReportingClient* FindClientInCache(const ReportingCache* cache,
-                                         const url::Origin& origin,
-                                         const GURL& endpoint);
 
 // A test implementation of ReportingUploader that holds uploads for tests to
 // examine and complete with a specified outcome.
@@ -177,6 +170,50 @@ class ReportingTestBase : public TestWithScopedTaskEnvironment {
   ~ReportingTestBase() override;
 
   void UsePolicy(const ReportingPolicy& policy);
+
+  // Finds a particular endpoint (by origin, group, url) in the cache and
+  // returns it (or ReportingClient with invalid url, if not found).
+  const ReportingClient FindEndpointInCache(const url::Origin& origin,
+                                            const std::string& group_name,
+                                            const GURL& url);
+
+  // Sets an endpoint with the given properties in a group with the given
+  // properties, bypassing header parsing. Note that the endpoint is not
+  // guaranteed to exist in the cache after calling this function, if endpoint
+  // eviction is triggered. Returns whether the endpoint was successfully set.
+  bool SetEndpointInCache(
+      const url::Origin& origin,
+      const std::string& group_name,
+      const GURL& url,
+      base::Time expires,
+      OriginSubdomains include_subdomains = OriginSubdomains::DEFAULT,
+      int priority = ReportingClient::EndpointInfo::kDefaultPriority,
+      int weight = ReportingClient::EndpointInfo::kDefaultWeight);
+
+  // Returns whether an endpoint with the given properties exists in the cache.
+  bool EndpointExistsInCache(const url::Origin& origin,
+                             const std::string& group_name,
+                             const GURL& url);
+
+  // Gets the statistics for a given endpoint, if it exists.
+  ReportingClient::Statistics GetEndpointStatistics(
+      const url::Origin& origin,
+      const std::string& group_name,
+      const GURL& url);
+
+  // Returns whether an endpoint group with exactly the given properties exists
+  // in the cache. |expires| can be omitted, in which case it will not be
+  // checked.
+  bool EndpointGroupExistsInCache(const url::Origin& origin,
+                                  const std::string& group_name,
+                                  OriginSubdomains include_subdomains,
+                                  base::Time expires = base::Time());
+
+  // Returns whether a client for the given origin exists in the cache.
+  bool OriginClientExistsInCache(const url::Origin& origin);
+
+  // Makes a unique URL with the provided index.
+  GURL MakeURL(size_t index);
 
   // Simulates an embedder restart, preserving the ReportingPolicy.
   //

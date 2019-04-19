@@ -18321,14 +18321,12 @@ TEST_F(HttpNetworkTransactionReportingTest, DontProcessReportToHeaderHttp) {
 
 TEST_F(HttpNetworkTransactionReportingTest, ProcessReportToHeaderHttps) {
   RequestPolicy();
-  std::vector<const ReportingClient*> clients;
-  reporting_context()->cache()->GetClients(&clients);
-  ASSERT_EQ(1u, clients.size());
-  const auto* client = clients[0];
-  EXPECT_EQ(url::Origin::Create(GURL("https://www.example.org/")),
-            client->origin);
-  EXPECT_EQ(GURL("https://www.example.org/upload/"), client->endpoint);
-  EXPECT_EQ("nel", client->group);
+  ASSERT_EQ(1u, reporting_context()->cache()->GetEndpointCount());
+  const ReportingClient endpoint =
+      reporting_context()->cache()->GetEndpointForTesting(
+          url::Origin::Create(GURL("https://www.example.org/")), "nel",
+          GURL("https://www.example.org/upload/"));
+  EXPECT_TRUE(endpoint);
 }
 
 TEST_F(HttpNetworkTransactionReportingTest,

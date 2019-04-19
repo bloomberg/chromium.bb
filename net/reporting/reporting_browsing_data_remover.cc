@@ -34,17 +34,10 @@ void ReportingBrowsingDataRemover::RemoveBrowsingData(
   }
 
   if ((data_type_mask & DATA_TYPE_CLIENTS) != 0) {
-    std::vector<const ReportingClient*> all_clients;
-    cache->GetClients(&all_clients);
-
-    std::vector<const ReportingClient*> clients_to_remove;
-    for (const ReportingClient* client : all_clients) {
-      // TODO(juliatuttle): Examine client endpoint as well?
-      if (origin_filter.Run(client->origin.GetURL()))
-        clients_to_remove.push_back(client);
+    for (const url::Origin& origin : cache->GetAllOrigins()) {
+      if (origin_filter.Run(origin.GetURL()))
+        cache->RemoveClient(origin);
     }
-
-    cache->RemoveClients(clients_to_remove);
   }
 }
 

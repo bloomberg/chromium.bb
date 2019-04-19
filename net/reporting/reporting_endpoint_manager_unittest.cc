@@ -35,9 +35,14 @@ class ReportingEndpointManagerTest : public ReportingTestBase {
   }
 
  protected:
-  void SetClient(const GURL& endpoint, int priority, int weight) {
-    cache()->SetClient(kOrigin_, endpoint, ReportingClient::Subdomains::EXCLUDE,
-                       kGroup_, tomorrow(), priority, weight);
+  void SetEndpoint(
+      const GURL& endpoint,
+      int priority = ReportingClient::EndpointInfo::kDefaultPriority,
+      int weight = ReportingClient::EndpointInfo::kDefaultWeight) {
+    ASSERT_TRUE(
+        SetEndpointInCache(kOrigin_, kGroup_, endpoint,
+                           base::Time::Now() + base::TimeDelta::FromDays(1),
+                           OriginSubdomains::DEFAULT, priority, weight));
   }
 
   const url::Origin kOrigin_ = url::Origin::Create(GURL("https://origin/"));
@@ -46,31 +51,29 @@ class ReportingEndpointManagerTest : public ReportingTestBase {
 };
 
 TEST_F(ReportingEndpointManagerTest, NoEndpoint) {
-  const ReportingClient* client =
-      endpoint_manager()->FindClientForOriginAndGroup(kOrigin_, kGroup_);
-  EXPECT_TRUE(client == nullptr);
+  ReportingClient endpoint =
+      endpoint_manager()->FindEndpointForDelivery(kOrigin_, kGroup_);
+  EXPECT_FALSE(endpoint);
 }
 
 TEST_F(ReportingEndpointManagerTest, Endpoint) {
-  SetClient(kEndpoint_, ReportingClient::kDefaultPriority,
-            ReportingClient::kDefaultWeight);
+  SetEndpoint(kEndpoint_);
 
-  const ReportingClient* client =
-      endpoint_manager()->FindClientForOriginAndGroup(kOrigin_, kGroup_);
-  ASSERT_TRUE(client != nullptr);
-  EXPECT_EQ(kEndpoint_, client->endpoint);
+  ReportingClient endpoint =
+      endpoint_manager()->FindEndpointForDelivery(kOrigin_, kGroup_);
+  ASSERT_TRUE(endpoint);
+  EXPECT_EQ(kEndpoint_, endpoint.info.url);
 }
 
 TEST_F(ReportingEndpointManagerTest, ExpiredEndpoint) {
-  SetClient(kEndpoint_, ReportingClient::kDefaultPriority,
-            ReportingClient::kDefaultWeight);
+  SetEndpoint(kEndpoint_);
 
   // Default expiration is "tomorrow", so make sure we're past that.
-  tick_clock()->Advance(base::TimeDelta::FromDays(2));
+  clock()->Advance(base::TimeDelta::FromDays(2));
 
-  const ReportingClient* client =
-      endpoint_manager()->FindClientForOriginAndGroup(kOrigin_, kGroup_);
-  EXPECT_TRUE(client == nullptr);
+  ReportingClient endpoint =
+      endpoint_manager()->FindEndpointForDelivery(kOrigin_, kGroup_);
+  EXPECT_FALSE(endpoint);
 }
 
 TEST_F(ReportingEndpointManagerTest, BackedOffEndpoint) {
@@ -79,41 +82,44 @@ TEST_F(ReportingEndpointManagerTest, BackedOffEndpoint) {
   base::TimeDelta initial_delay = base::TimeDelta::FromMilliseconds(
       policy().endpoint_backoff_policy.initial_delay_ms);
 
-  SetClient(kEndpoint_, ReportingClient::kDefaultPriority,
-            ReportingClient::kDefaultWeight);
+  SetEndpoint(kEndpoint_);
 
   endpoint_manager()->InformOfEndpointRequest(kEndpoint_, false);
 
   // After one failure, endpoint is in exponential backoff.
-  const ReportingClient* client =
-      endpoint_manager()->FindClientForOriginAndGroup(kOrigin_, kGroup_);
-  EXPECT_TRUE(client == nullptr);
+  ReportingClient endpoint =
+      endpoint_manager()->FindEndpointForDelivery(kOrigin_, kGroup_);
+  EXPECT_FALSE(endpoint);
 
   // After initial delay, endpoint is usable again.
   tick_clock()->Advance(initial_delay);
 
-  client = endpoint_manager()->FindClientForOriginAndGroup(kOrigin_, kGroup_);
-  ASSERT_TRUE(client != nullptr);
-  EXPECT_EQ(kEndpoint_, client->endpoint);
+  ReportingClient endpoint2 =
+      endpoint_manager()->FindEndpointForDelivery(kOrigin_, kGroup_);
+  ASSERT_TRUE(endpoint2);
+  EXPECT_EQ(kEndpoint_, endpoint2.info.url);
 
   endpoint_manager()->InformOfEndpointRequest(kEndpoint_, false);
 
   // After a second failure, endpoint is backed off again.
-  client = endpoint_manager()->FindClientForOriginAndGroup(kOrigin_, kGroup_);
-  EXPECT_TRUE(client == nullptr);
+  ReportingClient endpoint3 =
+      endpoint_manager()->FindEndpointForDelivery(kOrigin_, kGroup_);
+  EXPECT_FALSE(endpoint3);
 
   tick_clock()->Advance(initial_delay);
 
   // Next backoff is longer -- 2x the first -- so endpoint isn't usable yet.
-  client = endpoint_manager()->FindClientForOriginAndGroup(kOrigin_, kGroup_);
-  EXPECT_TRUE(client == nullptr);
+  ReportingClient endpoint4 =
+      endpoint_manager()->FindEndpointForDelivery(kOrigin_, kGroup_);
+  EXPECT_FALSE(endpoint4);
 
   tick_clock()->Advance(initial_delay);
 
   // After 2x the initial delay, the endpoint is usable again.
-  client = endpoint_manager()->FindClientForOriginAndGroup(kOrigin_, kGroup_);
-  ASSERT_TRUE(client != nullptr);
-  EXPECT_EQ(kEndpoint_, client->endpoint);
+  ReportingClient endpoint5 =
+      endpoint_manager()->FindEndpointForDelivery(kOrigin_, kGroup_);
+  ASSERT_TRUE(endpoint5);
+  EXPECT_EQ(kEndpoint_, endpoint5.info.url);
 
   endpoint_manager()->InformOfEndpointRequest(kEndpoint_, true);
   endpoint_manager()->InformOfEndpointRequest(kEndpoint_, true);
@@ -122,13 +128,15 @@ TEST_F(ReportingEndpointManagerTest, BackedOffEndpoint) {
   // again.
   endpoint_manager()->InformOfEndpointRequest(kEndpoint_, false);
 
-  client = endpoint_manager()->FindClientForOriginAndGroup(kOrigin_, kGroup_);
-  EXPECT_TRUE(client == nullptr);
+  ReportingClient endpoint6 =
+      endpoint_manager()->FindEndpointForDelivery(kOrigin_, kGroup_);
+  EXPECT_FALSE(endpoint6);
 
   tick_clock()->Advance(initial_delay);
 
-  client = endpoint_manager()->FindClientForOriginAndGroup(kOrigin_, kGroup_);
-  EXPECT_TRUE(client != nullptr);
+  ReportingClient endpoint7 =
+      endpoint_manager()->FindEndpointForDelivery(kOrigin_, kGroup_);
+  EXPECT_TRUE(endpoint7);
 }
 
 // Make sure that multiple endpoints will all be returned at some point, to
@@ -138,24 +146,22 @@ TEST_F(ReportingEndpointManagerTest, RandomEndpoint) {
   static const GURL kEndpoint2("https://endpoint2/");
   static const int kMaxAttempts = 20;
 
-  SetClient(kEndpoint1, ReportingClient::kDefaultPriority,
-            ReportingClient::kDefaultWeight);
-  SetClient(kEndpoint2, ReportingClient::kDefaultPriority,
-            ReportingClient::kDefaultWeight);
+  SetEndpoint(kEndpoint1);
+  SetEndpoint(kEndpoint2);
 
   bool endpoint1_seen = false;
   bool endpoint2_seen = false;
 
   for (int i = 0; i < kMaxAttempts; ++i) {
-    const ReportingClient* client =
-        endpoint_manager()->FindClientForOriginAndGroup(kOrigin_, kGroup_);
-    ASSERT_TRUE(client != nullptr);
-    ASSERT_TRUE(client->endpoint == kEndpoint1 ||
-                client->endpoint == kEndpoint2);
+    ReportingClient endpoint =
+        endpoint_manager()->FindEndpointForDelivery(kOrigin_, kGroup_);
+    ASSERT_TRUE(endpoint);
+    ASSERT_TRUE(endpoint.info.url == kEndpoint1 ||
+                endpoint.info.url == kEndpoint2);
 
-    if (client->endpoint == kEndpoint1)
+    if (endpoint.info.url == kEndpoint1)
       endpoint1_seen = true;
-    else if (client->endpoint == kEndpoint2)
+    else if (endpoint.info.url == kEndpoint2)
       endpoint2_seen = true;
 
     if (endpoint1_seen && endpoint2_seen)
@@ -170,28 +176,32 @@ TEST_F(ReportingEndpointManagerTest, Priority) {
   static const GURL kPrimaryEndpoint("https://endpoint1/");
   static const GURL kBackupEndpoint("https://endpoint2/");
 
-  SetClient(kPrimaryEndpoint, 10, ReportingClient::kDefaultWeight);
-  SetClient(kBackupEndpoint, 20, ReportingClient::kDefaultWeight);
+  SetEndpoint(kPrimaryEndpoint, 10 /* priority */,
+              ReportingClient::EndpointInfo::kDefaultWeight);
+  SetEndpoint(kBackupEndpoint, 20 /* priority */,
+              ReportingClient::EndpointInfo::kDefaultWeight);
 
-  const ReportingClient* client =
-      endpoint_manager()->FindClientForOriginAndGroup(kOrigin_, kGroup_);
-  ASSERT_TRUE(client != nullptr);
-  EXPECT_EQ(kPrimaryEndpoint, client->endpoint);
+  ReportingClient endpoint =
+      endpoint_manager()->FindEndpointForDelivery(kOrigin_, kGroup_);
+  ASSERT_TRUE(endpoint);
+  EXPECT_EQ(kPrimaryEndpoint, endpoint.info.url);
 
   // The backoff policy we set up in the constructor means that a single failed
   // upload will take the primary endpoint out of contention.  This should cause
   // us to choose the backend endpoint.
   endpoint_manager()->InformOfEndpointRequest(kPrimaryEndpoint, false);
-  client = endpoint_manager()->FindClientForOriginAndGroup(kOrigin_, kGroup_);
-  ASSERT_TRUE(client != nullptr);
-  EXPECT_EQ(kBackupEndpoint, client->endpoint);
+  ReportingClient endpoint2 =
+      endpoint_manager()->FindEndpointForDelivery(kOrigin_, kGroup_);
+  ASSERT_TRUE(endpoint2);
+  EXPECT_EQ(kBackupEndpoint, endpoint2.info.url);
 
   // Advance the current time far enough to clear out the primary endpoint's
   // backoff clock.  This should bring the primary endpoint back into play.
   tick_clock()->Advance(base::TimeDelta::FromMinutes(2));
-  client = endpoint_manager()->FindClientForOriginAndGroup(kOrigin_, kGroup_);
-  ASSERT_TRUE(client != nullptr);
-  EXPECT_EQ(kPrimaryEndpoint, client->endpoint);
+  ReportingClient endpoint3 =
+      endpoint_manager()->FindEndpointForDelivery(kOrigin_, kGroup_);
+  ASSERT_TRUE(endpoint3);
+  EXPECT_EQ(kPrimaryEndpoint, endpoint3.info.url);
 }
 
 // Note: This test depends on the deterministic mock RandIntCallback set up in
@@ -205,22 +215,24 @@ TEST_F(ReportingEndpointManagerTest, Weight) {
   static const int kEndpoint2Weight = 2;
   static const int kTotalEndpointWeight = kEndpoint1Weight + kEndpoint2Weight;
 
-  SetClient(kEndpoint1, ReportingClient::kDefaultPriority, kEndpoint1Weight);
-  SetClient(kEndpoint2, ReportingClient::kDefaultPriority, kEndpoint2Weight);
+  SetEndpoint(kEndpoint1, ReportingClient::EndpointInfo::kDefaultPriority,
+              kEndpoint1Weight);
+  SetEndpoint(kEndpoint2, ReportingClient::EndpointInfo::kDefaultPriority,
+              kEndpoint2Weight);
 
   int endpoint1_count = 0;
   int endpoint2_count = 0;
 
   for (int i = 0; i < kTotalEndpointWeight; ++i) {
-    const ReportingClient* client =
-        endpoint_manager()->FindClientForOriginAndGroup(kOrigin_, kGroup_);
-    ASSERT_TRUE(client != nullptr);
-    ASSERT_TRUE(client->endpoint == kEndpoint1 ||
-                client->endpoint == kEndpoint2);
+    ReportingClient endpoint =
+        endpoint_manager()->FindEndpointForDelivery(kOrigin_, kGroup_);
+    ASSERT_TRUE(endpoint);
+    ASSERT_TRUE(endpoint.info.url == kEndpoint1 ||
+                endpoint.info.url == kEndpoint2);
 
-    if (client->endpoint == kEndpoint1)
+    if (endpoint.info.url == kEndpoint1)
       ++endpoint1_count;
-    else if (client->endpoint == kEndpoint2)
+    else if (endpoint.info.url == kEndpoint2)
       ++endpoint2_count;
   }
 

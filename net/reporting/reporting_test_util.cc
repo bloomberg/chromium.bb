@@ -12,6 +12,7 @@
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/timer/mock_timer.h"
@@ -83,18 +84,6 @@ void ErasePendingUpload(
 }
 
 }  // namespace
-
-const ReportingClient* FindClientInCache(const ReportingCache* cache,
-                                         const url::Origin& origin,
-                                         const GURL& endpoint) {
-  std::vector<const ReportingClient*> clients;
-  cache->GetClients(&clients);
-  for (const ReportingClient* client : clients) {
-    if (client->origin == origin && client->endpoint == endpoint)
-      return client;
-  }
-  return nullptr;
-}
 
 TestReportingUploader::PendingUpload::~PendingUpload() = default;
 TestReportingUploader::PendingUpload::PendingUpload() = default;
@@ -204,6 +193,67 @@ ReportingTestBase::~ReportingTestBase() = default;
 
 void ReportingTestBase::UsePolicy(const ReportingPolicy& new_policy) {
   CreateContext(new_policy, clock()->Now(), tick_clock()->NowTicks());
+}
+
+const ReportingClient ReportingTestBase::FindEndpointInCache(
+    const url::Origin& origin,
+    const std::string& group_name,
+    const GURL& url) {
+  return cache()->GetEndpointForTesting(origin, group_name, url);
+}
+
+bool ReportingTestBase::SetEndpointInCache(const url::Origin& origin,
+                                           const std::string& group_name,
+                                           const GURL& url,
+                                           base::Time expires,
+                                           OriginSubdomains include_subdomains,
+                                           int priority,
+                                           int weight) {
+  cache()->SetEndpointForTesting(origin, group_name, url, include_subdomains,
+                                 expires, priority, weight);
+  const ReportingClient endpoint = FindEndpointInCache(origin, group_name, url);
+  return endpoint.is_valid();
+}
+
+bool ReportingTestBase::EndpointExistsInCache(const url::Origin& origin,
+                                              const std::string& group_name,
+                                              const GURL& url) {
+  ReportingClient endpoint =
+      cache()->GetEndpointForTesting(origin, group_name, url);
+  return endpoint.is_valid();
+}
+
+ReportingClient::Statistics ReportingTestBase::GetEndpointStatistics(
+    const url::Origin& origin,
+    const std::string& group_name,
+    const GURL& url) {
+  ReportingClient endpoint =
+      cache()->GetEndpointForTesting(origin, group_name, url);
+  if (endpoint)
+    return endpoint.stats;
+  return ReportingClient::Statistics();
+}
+
+bool ReportingTestBase::EndpointGroupExistsInCache(
+    const url::Origin& origin,
+    const std::string& group_name,
+    OriginSubdomains include_subdomains,
+    base::Time expires) {
+  return cache()->EndpointGroupExistsForTesting(origin, group_name,
+                                                include_subdomains, expires);
+}
+
+bool ReportingTestBase::OriginClientExistsInCache(const url::Origin& origin) {
+  std::vector<url::Origin> all_origins = cache()->GetAllOrigins();
+  for (const url::Origin& cur_origin : all_origins) {
+    if (cur_origin == origin)
+      return true;
+  }
+  return false;
+}
+
+GURL ReportingTestBase::MakeURL(size_t index) {
+  return GURL(base::StringPrintf("https://example%zd.test", index));
 }
 
 void ReportingTestBase::SimulateRestart(base::TimeDelta delta,
