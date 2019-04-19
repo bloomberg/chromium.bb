@@ -644,7 +644,7 @@ public class CronetUrlRequestContext extends CronetEngineBase {
         }
     }
 
-    void reportFinished(final RequestFinishedInfo requestInfo) {
+    void reportRequestFinished(final RequestFinishedInfo requestInfo) {
         ArrayList<VersionSafeCallbacks.RequestFinishedInfoListener> currentListeners;
         synchronized (mFinishedListenerLock) {
             if (mFinishedListenerMap.isEmpty()) return;
