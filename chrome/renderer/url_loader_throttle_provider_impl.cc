@@ -22,7 +22,6 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_throttle_manager.h"
 #include "components/safe_browsing/features.h"
 #include "components/safe_browsing/renderer/renderer_url_loader_throttle.h"
-#include "components/subresource_filter/content/renderer/ad_delay_renderer_metadata_provider.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/renderer/render_frame.h"
@@ -259,19 +258,6 @@ URLLoaderThrottleProviderImpl::CreateThrottles(
       throttles.push_back(std::move(throttle));
   }
 #endif
-
-  // Initialize the factory here rather than in the constructor, since metrics
-  // does not support registering field trials (as opposed to Features) before
-  // Blink is initialized (after this class).
-  if (!ad_delay_factory_) {
-    ad_delay_factory_ =
-        std::make_unique<subresource_filter::AdDelayThrottle::Factory>();
-  }
-  if (auto ad_throttle = ad_delay_factory_->MaybeCreate(
-          std::make_unique<subresource_filter::AdDelayRendererMetadataProvider>(
-              request, type_, render_frame_id))) {
-    throttles.push_back(std::move(ad_throttle));
-  }
 
   throttles.push_back(std::make_unique<GoogleURLLoaderThrottle>(
       ChromeRenderThreadObserver::is_incognito_process(),
