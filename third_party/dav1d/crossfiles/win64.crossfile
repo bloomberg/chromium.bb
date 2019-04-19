@@ -1,10 +1,8 @@
 [binaries]
 c = 'clang-cl'
 ar = 'llvm-ar'
-exe_wrapper = 'wine'
 
 [properties]
-needs_exe_wrapper = true
 c_args = ['-fuse-ld=lld',]
 
 [host_machine]
@@ -12,4 +10,4 @@ system = 'win'
 cpu_family = 'x86_64'
 cpu = 'x86_64'
 endian = 'little'
-cpp_winlibs = ['adsg']
+cpp_winlibs = []
