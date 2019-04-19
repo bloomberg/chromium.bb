@@ -80,15 +80,31 @@ DisplayLockUtilities::ScopedChainForcedUpdate::ScopedChainForcedUpdate(
   }
 }
 
-Element* DisplayLockUtilities::NearestLockedInclusiveAncestor(
+Element* DisplayLockUtilities::NearestLockedInclusiveAncestor(Node& node) {
+  if (!RuntimeEnabledFeatures::DisplayLockingEnabled() ||
+      node.GetDocument().LockedDisplayLockCount() == 0 ||
+      !node.CanParticipateInFlatTree()) {
+    return nullptr;
+  }
+  if (!node.IsElementNode())
+    return NearestLockedExclusiveAncestor(node);
+  if (auto* context = ToElement(node).GetDisplayLockContext()) {
+    if (context->IsLocked())
+      return &ToElement(node);
+  }
+  return NearestLockedExclusiveAncestor(node);
+}
+
+Element* DisplayLockUtilities::NearestLockedExclusiveAncestor(
     const Node& node) {
   if (!RuntimeEnabledFeatures::DisplayLockingEnabled() ||
-      node.GetDocument().LockedDisplayLockCount() == 0) {
+      node.GetDocument().LockedDisplayLockCount() == 0 ||
+      !node.CanParticipateInFlatTree()) {
     return nullptr;
   }
   // TODO(crbug.com/924550): Once we figure out a more efficient way to
   // determine whether we're inside a locked subtree or not, change this.
-  for (Node& ancestor : FlatTreeTraversal::InclusiveAncestorsOf(node)) {
+  for (Node& ancestor : FlatTreeTraversal::AncestorsOf(node)) {
     if (!ancestor.IsElementNode())
       continue;
     if (auto* context = ToElement(ancestor).GetDisplayLockContext()) {
@@ -96,6 +112,37 @@ Element* DisplayLockUtilities::NearestLockedInclusiveAncestor(
         return &ToElement(ancestor);
     }
   }
+  return nullptr;
+}
+
+Element* DisplayLockUtilities::HighestLockedInclusiveAncestor(
+    const Node& node) {
+  if (!RuntimeEnabledFeatures::DisplayLockingEnabled() ||
+      node.GetDocument().LockedDisplayLockCount() == 0 ||
+      !node.CanParticipateInFlatTree()) {
+    return nullptr;
+  }
+  Element* locked_ancestor = nullptr;
+  for (Node& ancestor : FlatTreeTraversal::InclusiveAncestorsOf(node)) {
+    if (!ancestor.IsElementNode())
+      continue;
+    if (auto* context = ToElement(ancestor).GetDisplayLockContext()) {
+      if (context->IsLocked())
+        locked_ancestor = &ToElement(ancestor);
+    }
+  }
+  return locked_ancestor;
+}
+
+Element* DisplayLockUtilities::HighestLockedExclusiveAncestor(
+    const Node& node) {
+  if (!RuntimeEnabledFeatures::DisplayLockingEnabled() ||
+      node.GetDocument().LockedDisplayLockCount() == 0 ||
+      !node.CanParticipateInFlatTree()) {
+    return nullptr;
+  }
+  if (Node* parent = FlatTreeTraversal::Parent(node))
+    return HighestLockedInclusiveAncestor(*parent);
   return nullptr;
 }
 

@@ -477,6 +477,9 @@ function _createElementDescription(elementInfo)
     const style = elementInfo.style || {};
     let elementInfoBodyElement;
 
+    if (elementInfo.isLockedAncestor)
+       addTextRow("Showing the locked ancestor", "");
+
     const color = style["color"];
     if (color && color !== "#00000000")
         addColorRow("Color", color);

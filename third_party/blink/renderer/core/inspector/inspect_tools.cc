@@ -11,6 +11,7 @@
 #include "third_party/blink/public/platform/web_pointer_event.h"
 #include "third_party/blink/renderer/core/css/css_color_value.h"
 #include "third_party/blink/renderer/core/css/css_computed_style_declaration.h"
+#include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/dom/static_node_list.h"
@@ -127,7 +128,7 @@ void SearchingForNodeTool::Draw(float scale) {
                              node->GetLayoutObject() &&
                              node->GetDocument().GetFrame();
   InspectorHighlight highlight(node, *highlight_config_, contrast_info_,
-                               append_element_info);
+                               append_element_info, is_locked_ancestor_);
   if (event_target_node_) {
     highlight.AppendEventTargetQuads(event_target_node_.Get(),
                                      *highlight_config_);
@@ -169,6 +170,16 @@ bool SearchingForNodeTool::HandleMouseMove(const WebMouseEvent& event) {
 
   if (!node)
     return true;
+
+  // If |node| is in a display locked subtree, highlight the highest locked
+  // element instead.
+  if (Node* locked_ancestor =
+          DisplayLockUtilities::HighestLockedExclusiveAncestor(*node)) {
+    node = locked_ancestor;
+    is_locked_ancestor_ = true;
+  } else {
+    is_locked_ancestor_ = false;
+  }
 
   if (auto* frame_owner = DynamicTo<HTMLFrameOwnerElement>(node)) {
     if (!IsA<LocalFrame>(frame_owner->ContentFrame())) {
@@ -263,9 +274,15 @@ NodeHighlightTool::NodeHighlightTool(
     Member<Node> node,
     String selector_list,
     std::unique_ptr<InspectorHighlightConfig> highlight_config)
-    : node_(node),
-      selector_list_(selector_list),
+    : selector_list_(selector_list),
       highlight_config_(std::move(highlight_config)) {
+  if (Node* locked_ancestor =
+          DisplayLockUtilities::HighestLockedExclusiveAncestor(*node)) {
+    is_locked_ancestor_ = true;
+    node_ = locked_ancestor;
+  } else {
+    node_ = node;
+  }
   contrast_info_ = FetchContrast(node);
 }
 
@@ -288,7 +305,7 @@ void NodeHighlightTool::DrawNode() {
                              node_->GetLayoutObject() &&
                              node_->GetDocument().GetFrame();
   InspectorHighlight highlight(node_.Get(), *highlight_config_, contrast_info_,
-                               append_element_info);
+                               append_element_info, is_locked_ancestor_);
   std::unique_ptr<protocol::DictionaryValue> highlight_json =
       highlight.AsProtocolValue();
   overlay_->EvaluateInOverlay("drawHighlight", std::move(highlight_json));
@@ -308,8 +325,12 @@ void NodeHighlightTool::DrawMatchingSelector() {
 
   for (unsigned i = 0; i < elements->length(); ++i) {
     Element* element = elements->item(i);
+    // Skip elements in locked subtrees.
+    if (DisplayLockUtilities::NearestLockedExclusiveAncestor(*element))
+      continue;
     InspectorHighlight highlight(element, *highlight_config_, contrast_info_,
-                                 false);
+                                 false /* append_element_info */,
+                                 false /* is_locked_ancestor */);
     overlay_->EvaluateInOverlay("drawHighlight", highlight.AsProtocolValue());
   }
 }

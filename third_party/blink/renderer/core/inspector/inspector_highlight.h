@@ -53,7 +53,8 @@ class CORE_EXPORT InspectorHighlight {
   InspectorHighlight(Node*,
                      const InspectorHighlightConfig&,
                      const InspectorHighlightContrastInfo&,
-                     bool append_element_info);
+                     bool append_element_info,
+                     bool is_locked_ancestor);
   explicit InspectorHighlight(float scale);
   ~InspectorHighlight();
 

@@ -45,6 +45,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_inspector_overlay_host.h"
+#include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/dom/static_node_list.h"
@@ -601,8 +602,20 @@ Response InspectorOverlayAgent::getHighlightObjectForTest(
   Response response = dom_agent_->AssertNode(node_id, node);
   if (!response.isSuccess())
     return response;
+  bool is_locked_ancestor = false;
+
+  // If |node| is in a display locked subtree, highlight the highest locked
+  // ancestor element instead.
+  if (Node* locked_ancestor =
+          DisplayLockUtilities::HighestLockedExclusiveAncestor(*node)) {
+    node = locked_ancestor;
+    is_locked_ancestor = true;
+  }
+
   InspectorHighlight highlight(node, InspectorHighlight::DefaultConfig(),
-                               InspectorHighlightContrastInfo(), true);
+                               InspectorHighlightContrastInfo(),
+                               true /* append_element_info */,
+                               is_locked_ancestor);
   *result = highlight.AsProtocolValue();
   return Response::OK();
 }

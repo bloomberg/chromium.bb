@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/css/css_color_value.h"
 #include "third_party/blink/renderer/core/css/css_computed_style_declaration.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
+#include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/dom/pseudo_element.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
@@ -289,6 +290,18 @@ std::unique_ptr<protocol::DictionaryValue> BuildElementInfo(Element* element) {
   if (!layout_object || !containing_view)
     return element_info;
 
+  if (auto* context = element->GetDisplayLockContext()) {
+    if (context->IsLocked()) {
+      // If it's a locked element, use the values from the locked frame rect.
+      const LayoutRect& locked_rect = context->GetLockedFrameRect();
+      element_info->setString("nodeWidth",
+                              String::Number((double)locked_rect.Width()));
+      element_info->setString("nodeHeight",
+                              String::Number((double)locked_rect.Height()));
+    }
+    return element_info;
+  }
+
   // layoutObject the getBoundingClientRect() data in the tooltip
   // to be consistent with the rulers (see http://crbug.com/262338).
   DOMRect* bounding_box = element->getBoundingClientRect();
@@ -398,11 +411,13 @@ InspectorHighlight::InspectorHighlight(
     Node* node,
     const InspectorHighlightConfig& highlight_config,
     const InspectorHighlightContrastInfo& node_contrast,
-    bool append_element_info)
+    bool append_element_info,
+    bool is_locked_ancestor)
     : highlight_paths_(protocol::ListValue::create()),
       show_rulers_(highlight_config.show_rulers),
       show_extension_lines_(highlight_config.show_extension_lines),
       scale_(1.f) {
+  DCHECK(!DisplayLockUtilities::NearestLockedExclusiveAncestor(*node));
   LocalFrameView* frame_view = node->GetDocument().View();
   if (frame_view)
     scale_ = 1.f / frame_view->GetChromeClient()->WindowToViewportScalar(1.f);
@@ -414,6 +429,9 @@ InspectorHighlight::InspectorHighlight(
     element_info_ = BuildTextNodeInfo(ToText(node));
   if (element_info_ && highlight_config.show_styles)
     AppendStyleInfo(node, element_info_.get(), node_contrast);
+
+  if (element_info_ && is_locked_ancestor)
+    element_info_->setString("isLockedAncestor", "true");
 }
 
 InspectorHighlight::~InspectorHighlight() = default;
