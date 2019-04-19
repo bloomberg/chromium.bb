@@ -18,6 +18,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/hammerd/hammerd_client.h"
+#include "chromeos/dbus/initialize_dbus_client.h"
 #include "chromeos/dbus/power/power_policy_controller.h"
 #include "chromeos/dbus/shill/shill_clients.h"
 #include "chromeos/dbus/system_clock/system_clock_client.h"
@@ -158,23 +159,13 @@ void AshService::InitForMash() {
 void AshService::InitializeDBusClients() {
   dbus::Bus* bus = ash_dbus_helper_->bus();
 
-  if (bus) {
-    chromeos::CrasAudioClient::Initialize(bus);
-    chromeos::HammerdClient::Initialize(bus);
-    chromeos::PowerManagerClient::Initialize(bus);
-    chromeos::SystemClockClient::Initialize(bus);
-    chromeos::shill_clients::Initialize(bus);
-    // TODO(ortuno): Eliminate BluezDBusManager code from Ash, crbug.com/830893.
-    bluez::BluezDBusManager::Initialize(bus);
-  } else {
-    chromeos::CrasAudioClient::InitializeFake();
-    chromeos::HammerdClient::InitializeFake();
-    chromeos::PowerManagerClient::InitializeFake();
-    chromeos::SystemClockClient::InitializeFake();
-    chromeos::shill_clients::InitializeFakes();
-    // TODO(ortuno): Eliminate BluezDBusManager code from Ash, crbug.com/830893.
-    bluez::BluezDBusManager::InitializeFake();
-  }
+  chromeos::InitializeDBusClient<chromeos::CrasAudioClient>(bus);
+  chromeos::InitializeDBusClient<chromeos::HammerdClient>(bus);
+  chromeos::InitializeDBusClient<chromeos::PowerManagerClient>(bus);
+  chromeos::InitializeDBusClient<chromeos::SystemClockClient>(bus);
+  // TODO(ortuno): Eliminate BluezDBusManager code from Ash, crbug.com/830893.
+  chromeos::InitializeDBusClient<bluez::BluezDBusManager>(bus);
+  chromeos::shill_clients::Initialize(bus);
 
   // TODO(https://crbug.com/644336): Initialize real audio handler.
   chromeos::CrasAudioHandler::InitializeForTesting();

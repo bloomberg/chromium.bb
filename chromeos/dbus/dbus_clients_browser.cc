@@ -47,22 +47,29 @@
 
 namespace chromeos {
 
+// CREATE_DBUS_CLIENT creates the appropriate version of D-Bus client.
+#if defined(USE_REAL_DBUS_CLIENTS)
+// Create the real D-Bus client. use_real_clients is ignored.
+#define CREATE_DBUS_CLIENT(type, use_real_clients) type::Create()
+#else
+// Create a fake if use_real_clients == false.
+// TODO(hashimoto): Always use fakes after adding
+// use_real_dbus_clients=true to where needed. crbug.com/952745
+#define CREATE_DBUS_CLIENT(type, use_real_clients) \
+  (use_real_clients ? type::Create() : std::make_unique<Fake##type>())
+#endif  // USE_REAL_DBUS_CLIENTS
+
 DBusClientsBrowser::DBusClientsBrowser(bool use_real_clients) {
+  // TODO(hashimoto): Use CREATE_DBUS_CLIENT for all clients after removing
+  // DBusClientImplementationType and converting all Create() methods to return
+  // std::unique_ptr. crbug.com/952745
   const DBusClientImplementationType client_impl_type =
       use_real_clients ? REAL_DBUS_CLIENT_IMPLEMENTATION
                        : FAKE_DBUS_CLIENT_IMPLEMENTATION;
 
-  if (use_real_clients) {
-    arc_appfuse_provider_client_ = ArcAppfuseProviderClient::Create();
-  } else {
-    arc_appfuse_provider_client_ =
-        std::make_unique<FakeArcAppfuseProviderClient>();
-  }
-
-  if (use_real_clients)
-    arc_midis_client_ = ArcMidisClient::Create();
-  else
-    arc_midis_client_.reset(new FakeArcMidisClient);
+  arc_appfuse_provider_client_ =
+      CREATE_DBUS_CLIENT(ArcAppfuseProviderClient, use_real_clients);
+  arc_midis_client_ = CREATE_DBUS_CLIENT(ArcMidisClient, use_real_clients);
 
   if (use_real_clients)
     arc_obb_mounter_client_.reset(ArcObbMounterClient::Create());
@@ -78,10 +85,7 @@ DBusClientsBrowser::DBusClientsBrowser(bool use_real_clients) {
 
   cros_disks_client_.reset(CrosDisksClient::Create(client_impl_type));
 
-  if (use_real_clients)
-    cicerone_client_ = CiceroneClient::Create();
-  else
-    cicerone_client_ = std::make_unique<FakeCiceroneClient>();
+  cicerone_client_ = CREATE_DBUS_CLIENT(CiceroneClient, use_real_clients);
 
   if (use_real_clients)
     concierge_client_.reset(ConciergeClient::Create());
@@ -93,10 +97,8 @@ DBusClientsBrowser::DBusClientsBrowser(bool use_real_clients) {
   else
     debug_daemon_client_.reset(new FakeDebugDaemonClient);
 
-  if (use_real_clients)
-    diagnosticsd_client_ = DiagnosticsdClient::Create();
-  else
-    diagnosticsd_client_ = std::make_unique<FakeDiagnosticsdClient>();
+  diagnosticsd_client_ =
+      CREATE_DBUS_CLIENT(DiagnosticsdClient, use_real_clients);
 
   if (use_real_clients)
     easy_unlock_client_.reset(EasyUnlockClient::Create());
@@ -118,20 +120,11 @@ DBusClientsBrowser::DBusClientsBrowser(bool use_real_clients) {
   else
     lorgnette_manager_client_.reset(new FakeLorgnetteManagerClient);
 
-  if (use_real_clients)
-    oobe_configuration_client_ = OobeConfigurationClient::Create();
-  else
-    oobe_configuration_client_.reset(new FakeOobeConfigurationClient);
-
-  if (use_real_clients)
-    runtime_probe_client_ = RuntimeProbeClient::Create();
-  else
-    runtime_probe_client_ = std::make_unique<FakeRuntimeProbeClient>();
-
-  if (use_real_clients)
-    seneschal_client_ = SeneschalClient::Create();
-  else
-    seneschal_client_ = std::make_unique<FakeSeneschalClient>();
+  oobe_configuration_client_ =
+      CREATE_DBUS_CLIENT(OobeConfigurationClient, use_real_clients);
+  runtime_probe_client_ =
+      CREATE_DBUS_CLIENT(RuntimeProbeClient, use_real_clients);
+  seneschal_client_ = CREATE_DBUS_CLIENT(SeneschalClient, use_real_clients);
 
   if (use_real_clients)
     smb_provider_client_.reset(SmbProviderClient::Create());

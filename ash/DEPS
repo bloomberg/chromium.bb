@@ -61,6 +61,7 @@ include_rules = [
   "+chromeos/components/multidevice/logging/logging.h",
   "+chromeos/constants",
   # TODO(https://crbug.com/940810): Eliminate this.
+  "+chromeos/dbus/initialize_dbus_client.h",
   "+chromeos/dbus/audio",
   "+chromeos/dbus/hammerd",
   # TODO(https://crbug.com/644348): Eliminate this.

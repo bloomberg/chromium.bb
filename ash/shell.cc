@@ -175,6 +175,7 @@
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/trace_event/trace_event.h"
+#include "chromeos/dbus/initialize_dbus_client.h"
 #include "chromeos/dbus/power/power_policy_controller.h"
 #include "chromeos/system/devicemode.h"
 #include "components/exo/file_helper.h"
@@ -995,13 +996,9 @@ void Shell::Init(
   if (!::features::IsMultiProcessMash()) {
     // DBus clients only needed in Ash. For MultiProcessMash these are
     // initialized in AshService::InitializeDBusClients.
-    if (dbus_bus) {
-      // Required by DetachableBaseHandler.
-      chromeos::HammerdClient::Initialize(dbus_bus.get());
-    } else {
-      // Required by DetachableBaseHandler.
-      chromeos::HammerdClient::InitializeFake();
-    }
+
+    // Required by DetachableBaseHandler.
+    chromeos::InitializeDBusClient<chromeos::HammerdClient>(dbus_bus.get());
   }
 
   // This creates the MessageCenter object which is used by some other objects

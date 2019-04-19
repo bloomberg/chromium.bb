@@ -7,6 +7,11 @@ import("//third_party/protobuf/proto_library.gni")
 
 assert(is_chromeos, "Non-Chrome-OS builds must not depend on //chromeos")
 
+declare_args() {
+  # Instantiate real D-Bus clients instead of fakes.
+  use_real_dbus_clients = false
+}
+
 component("dbus") {
   output_name = "chromeos_dbus"  # Avoid conflict with //dbus
   defines = [ "IS_CHROMEOS_DBUS_IMPL" ]
@@ -129,10 +134,17 @@ component("dbus") {
   ]
 }
 
+config("use_real_dbus_clients_config") {
+  if (use_real_dbus_clients) {
+    defines = [ "USE_REAL_DBUS_CLIENTS" ]
+  }
+}
+
 component("common") {
   output_name = "chromeos_dbus_common"
   defines = [ "IS_CHROMEOS_DBUS_IMPL" ]
 
+  all_dependent_configs = [ ":use_real_dbus_clients_config" ]
   public_deps = [
     "//chromeos/dbus/constants",
   ]
@@ -148,6 +160,7 @@ component("common") {
     "blocking_method_caller.h",
     "dbus_method_call_status.cc",
     "dbus_method_call_status.h",
+    "initialize_dbus_client.h",
     "pipe_reader.cc",
     "pipe_reader.h",
   ]

@@ -245,10 +245,7 @@ void DBusThreadManager::InitializeClients() {
 
   // TODO(stevenjb): Move these to dbus_helper.cc in src/chrome and any tests
   // that require Shill clients. https://crbug.com/948390.
-  if (use_real_clients_)
-    shill_clients::Initialize(GetSystemBus());
-  else
-    shill_clients::InitializeFakes();
+  shill_clients::Initialize(GetSystemBus());
 
   if (clients_browser_)
     clients_browser_->Initialize(GetSystemBus());
@@ -271,9 +268,15 @@ void DBusThreadManager::Initialize(ClientSet client_set) {
     return;
 
   CHECK(!g_dbus_thread_manager);
+#if defined(USE_REAL_DBUS_CLIENTS)
+  bool use_real_clients = true;
+#else
+  // TODO(hashimoto): Always use fakes after adding
+  // use_real_dbus_clients=true to where needed. crbug.com/952745
   bool use_real_clients = base::SysInfo::IsRunningOnChromeOS() &&
                           !base::CommandLine::ForCurrentProcess()->HasSwitch(
                               chromeos::switches::kDbusStub);
+#endif
   g_dbus_thread_manager = new DBusThreadManager(client_set, use_real_clients);
   g_dbus_thread_manager->InitializeClients();
 }

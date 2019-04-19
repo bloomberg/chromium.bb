@@ -18,6 +18,10 @@ namespace chromeos {
 namespace shill_clients {
 
 void Initialize(dbus::Bus* system_bus) {
+#if !defined(USE_REAL_DBUS_CLIENTS)
+  if (!system_bus)
+    return InitializeFakes();
+#endif
   DCHECK(system_bus);
   GsmSMSClient::Initialize(system_bus);
   ModemMessagingClient::Initialize(system_bus);
