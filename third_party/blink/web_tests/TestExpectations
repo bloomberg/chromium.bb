@@ -2705,13 +2705,9 @@ crbug.com/591500 [ Win10 ] virtual/threaded/printing/simultaneous-position-float
 crbug.com/591500 [ Win10 ] virtual/threaded/printing/webgl-repeated-printing-preservedrawingbuffer.html [ Failure ]
 crbug.com/591500 [ Win10 ] virtual/threaded/printing/webgl-repeated-printing.html [ Failure ]
 crbug.com/591500 [ Win10 ] printing/quirks-percentage-height-body.html [ Failure ]
-crbug.com/591500 [ Win10 ] printing/quirks-percentage-height.html [ Failure ]
 crbug.com/591500 [ Win10 ] printing/standards-percentage-heights.html [ Failure ]
-crbug.com/591500 [ Win10 ] printing/subframes-percentage-height.html [ Failure ]
 crbug.com/591500 [ Win10 ] virtual/threaded/printing/quirks-percentage-height-body.html [ Failure ]
-crbug.com/591500 [ Win10 ] virtual/threaded/printing/quirks-percentage-height.html [ Failure ]
 crbug.com/591500 [ Win10 ] virtual/threaded/printing/standards-percentage-heights.html [ Failure ]
-crbug.com/591500 [ Win10 ] virtual/threaded/printing/subframes-percentage-height.html [ Failure ]
 
 # TODO(chrishtr) uncomment ones marked crbug.com/591500 after fixing crbug.com/665259.
 crbug.com/591500 [ Win10 ] printing/fixed-positioned-headers-and-footers-absolute-covering-some-pages.html [ Failure ]
@@ -2725,7 +2721,6 @@ crbug.com/591500 [ Win10 ] virtual/threaded/printing/fixed-positioned-headers-an
 crbug.com/591500 [ Win10 ] virtual/threaded/printing/fixed-positioned-headers-and-footers-inside-transform.html [ Skip ]
 crbug.com/591500 [ Win10 ] virtual/threaded/printing/fixed-positioned-headers-and-footers-larger-than-page.html [ Skip ]
 crbug.com/591500 [ Win10 ] virtual/threaded/printing/fixed-positioned-headers-and-footers.html [ Skip ]
-crbug.com/591500 [ Win10 ] printing/list-item-with-empty-first-line.html [ Failure ]
 crbug.com/591500 [ Win10 ] virtual/threaded/printing/list-item-with-empty-first-line.html [ Failure ]
 
 crbug.com/591500 [ Win10 ] printing/fixed-positioned-headers-and-footers-clipped.html [ Skip ]
