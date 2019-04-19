@@ -490,9 +490,8 @@ var addTile = function(args) {
     }
 
     data.tid = data.rid;
-    // Use a dark icon if dark mode is enabled. Keep value in sync with
-    // NtpIconSource.
-    data.dark = args.darkMode ? 'dark/' : '';
+    // Use a dark icon if dark mode is enabled.
+    data.dark = args.darkMode;
     if (!data.faviconUrl) {
       data.faviconUrl = 'chrome-search://favicon/size/16@' +
           window.devicePixelRatio + 'x/' + data.renderViewId + '/' + data.tid;
@@ -746,8 +745,11 @@ function renderMaterialDesignTile(data) {
     // Set title and alt to empty so screen readers won't say the image name.
     fi.title = '';
     fi.alt = '';
-    fi.src = 'chrome-search://ntpicon/size/24@' + window.devicePixelRatio +
-        'x/' + data.dark + data.url;
+    const url = new URL('chrome-search://ntpicon/');
+    url.searchParams.set('dark', data.dark);
+    url.searchParams.set('size', '24@' + window.devicePixelRatio + 'x');
+    url.searchParams.set('url', data.url);
+    fi.src = url.toString();
     loadedCounter += 1;
     fi.addEventListener('load', function(ev) {
       // Store the type for a potential later navigation.
