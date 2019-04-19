@@ -10,6 +10,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/ui/webui/chromeos/login/device_disabled_screen_handler.h"
 
 namespace chromeos {
 
@@ -27,6 +28,23 @@ DeviceDisabledScreen::DeviceDisabledScreen(DeviceDisabledScreenView* view)
 DeviceDisabledScreen::~DeviceDisabledScreen() {
   if (view_)
     view_->SetDelegate(nullptr);
+}
+
+void DeviceDisabledScreen::OnViewDestroyed(DeviceDisabledScreenView* view) {
+  if (view_ == view)
+    view_ = nullptr;
+}
+
+const std::string& DeviceDisabledScreen::GetEnrollmentDomain() const {
+  return DeviceDisablingManager()->enrollment_domain();
+}
+
+const std::string& DeviceDisabledScreen::GetMessage() const {
+  return DeviceDisablingManager()->disabled_message();
+}
+
+const std::string& DeviceDisabledScreen::GetSerialNumber() const {
+  return DeviceDisablingManager()->serial_number();
 }
 
 void DeviceDisabledScreen::Show() {
@@ -48,23 +66,6 @@ void DeviceDisabledScreen::Hide() {
   if (view_)
     view_->Hide();
   DeviceDisablingManager()->RemoveObserver(this);
-}
-
-void DeviceDisabledScreen::OnViewDestroyed(DeviceDisabledScreenView* view) {
-  if (view_ == view)
-    view_ = nullptr;
-}
-
-const std::string& DeviceDisabledScreen::GetEnrollmentDomain() const {
-  return DeviceDisablingManager()->enrollment_domain();
-}
-
-const std::string& DeviceDisabledScreen::GetMessage() const {
-  return DeviceDisablingManager()->disabled_message();
-}
-
-const std::string& DeviceDisabledScreen::GetSerialNumber() const {
-  return DeviceDisablingManager()->serial_number();
 }
 
 void DeviceDisabledScreen::OnDisabledMessageChanged(

@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_MOCK_ENABLE_DEBUGGING_SCREEN_H_
 
 #include "chrome/browser/chromeos/login/screens/enable_debugging_screen.h"
-#include "chrome/browser/chromeos/login/screens/enable_debugging_screen_view.h"
+#include "chrome/browser/ui/webui/chromeos/login/enable_debugging_screen_handler.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "testing/gmock/include/gmock/gmock.h"
 

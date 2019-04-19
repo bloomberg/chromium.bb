@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "chrome/browser/chromeos/customization/customization_document.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/ui/webui/chromeos/login/kiosk_autolaunch_screen_handler.h"
 
 namespace chromeos {
 
@@ -26,11 +27,6 @@ KioskAutolaunchScreen::~KioskAutolaunchScreen() {
     view_->SetDelegate(NULL);
 }
 
-void KioskAutolaunchScreen::Show() {
-  if (view_)
-    view_->Show();
-}
-
 void KioskAutolaunchScreen::OnExit(bool confirmed) {
   exit_callback_.Run(confirmed ? Result::COMPLETED : Result::CANCELED);
 }
@@ -39,5 +35,12 @@ void KioskAutolaunchScreen::OnViewDestroyed(KioskAutolaunchScreenView* view) {
   if (view_ == view)
     view_ = NULL;
 }
+
+void KioskAutolaunchScreen::Show() {
+  if (view_)
+    view_->Show();
+}
+
+void KioskAutolaunchScreen::Hide() {}
 
 }  // namespace chromeos

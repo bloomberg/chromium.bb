@@ -12,6 +12,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
+#include "chrome/browser/chromeos/login/screens/kiosk_autolaunch_screen.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/constants/chromeos_switches.h"
@@ -48,7 +49,8 @@ void KioskAutolaunchScreenHandler::Show() {
   ShowScreen(kScreenId);
 }
 
-void KioskAutolaunchScreenHandler::SetDelegate(Delegate* delegate) {
+void KioskAutolaunchScreenHandler::SetDelegate(
+    KioskAutolaunchScreen* delegate) {
   delegate_ = delegate;
   if (page_is_ready())
     Initialize();

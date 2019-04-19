@@ -11,14 +11,14 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
-#include "chrome/browser/chromeos/login/screens/kiosk_autolaunch_screen_view.h"
 
 namespace chromeos {
 
+class KioskAutolaunchScreenView;
+
 // Representation independent class that controls screen showing auto launch
 // warning to users.
-class KioskAutolaunchScreen : public BaseScreen,
-                              public KioskAutolaunchScreenView::Delegate {
+class KioskAutolaunchScreen : public BaseScreen {
  public:
   enum class Result { COMPLETED, CANCELED };
 
@@ -27,13 +27,16 @@ class KioskAutolaunchScreen : public BaseScreen,
                         const ScreenExitCallback& exit_callback);
   ~KioskAutolaunchScreen() override;
 
+  // Called when screen is exited.
+  void OnExit(bool confirmed);
+
+  // This method is called, when view is being destroyed. Note, if Delegate
+  // is destroyed earlier then it has to call SetDelegate(nullptr).
+  void OnViewDestroyed(KioskAutolaunchScreenView* view);
+
   // BaseScreen implementation:
   void Show() override;
-  void Hide() override {}
-
-  // KioskAutolaunchScreenActor::Delegate implementation:
-  void OnExit(bool confirmed) override;
-  void OnViewDestroyed(KioskAutolaunchScreenView* view) override;
+  void Hide() override;
 
  private:
   KioskAutolaunchScreenView* view_;
