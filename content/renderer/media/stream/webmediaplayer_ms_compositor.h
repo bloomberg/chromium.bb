@@ -58,10 +58,6 @@ class CONTENT_EXPORT WebMediaPlayerMSCompositor
     : public cc::VideoFrameProvider,
       public base::RefCountedDeleteOnSequence<WebMediaPlayerMSCompositor> {
  public:
-  // This |url| represents the media stream we are rendering. |url| is used to
-  // find out what web stream this WebMediaPlayerMSCompositor is playing, and
-  // together with flag "--disable-rtc-smoothness-algorithm" determine whether
-  // we enable algorithm or not.
   WebMediaPlayerMSCompositor(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
@@ -105,13 +101,6 @@ class CONTENT_EXPORT WebMediaPlayerMSCompositor
   bool HasCurrentFrame() override;
   scoped_refptr<media::VideoFrame> GetCurrentFrame() override;
   void PutCurrentFrame() override;
-
-  // Return the current frame being rendered.
-  // Difference between GetCurrentFrame(): GetCurrentFrame() is designed for
-  // chrome compositor to pull frame from WebMediaPlayerMSCompositor, and thus
-  // calling GetCurrentFrame() will affect statistics like |dropped_frames_|
-  // etc. Calling this function has no side effect.
-  scoped_refptr<media::VideoFrame> GetCurrentFrameWithoutUpdatingStatistics();
 
   void StartRendering();
   void StopRendering();

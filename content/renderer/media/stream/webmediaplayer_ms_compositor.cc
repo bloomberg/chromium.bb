@@ -386,7 +386,6 @@ bool WebMediaPlayerMSCompositor::HasCurrentFrame() {
 
 scoped_refptr<media::VideoFrame> WebMediaPlayerMSCompositor::GetCurrentFrame() {
   DVLOG(3) << __func__;
-  DCHECK(video_frame_compositor_task_runner_->BelongsToCurrentThread());
   base::AutoLock auto_lock(current_frame_lock_);
   TRACE_EVENT_INSTANT1("media", "WebMediaPlayerMSCompositor::GetCurrentFrame",
                        TRACE_EVENT_SCOPE_THREAD, "Timestamp",
@@ -401,16 +400,6 @@ void WebMediaPlayerMSCompositor::PutCurrentFrame() {
   DVLOG(3) << __func__;
   DCHECK(video_frame_compositor_task_runner_->BelongsToCurrentThread());
   current_frame_rendered_ = true;
-}
-
-scoped_refptr<media::VideoFrame>
-WebMediaPlayerMSCompositor::GetCurrentFrameWithoutUpdatingStatistics() {
-  DVLOG(3) << __func__;
-  base::AutoLock auto_lock(current_frame_lock_);
-  if (!render_started_)
-    return nullptr;
-
-  return current_frame_;
 }
 
 void WebMediaPlayerMSCompositor::StartRendering() {

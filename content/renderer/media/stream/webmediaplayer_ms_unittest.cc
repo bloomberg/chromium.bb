@@ -979,10 +979,10 @@ TEST_P(WebMediaPlayerMSTest, PlayThenPause) {
     EXPECT_CALL(*this, DoStopRendering());
 
   player_->Pause();
-  auto prev_frame = compositor_->GetCurrentFrameWithoutUpdatingStatistics();
+  auto prev_frame = compositor_->GetCurrentFrame();
   message_loop_controller_.RunAndWaitForStatus(
       media::PipelineStatus::PIPELINE_OK);
-  auto after_frame = compositor_->GetCurrentFrameWithoutUpdatingStatistics();
+  auto after_frame = compositor_->GetCurrentFrame();
   EXPECT_EQ(prev_frame->timestamp(), after_frame->timestamp());
   testing::Mock::VerifyAndClearExpectations(this);
 
@@ -1030,10 +1030,10 @@ TEST_P(WebMediaPlayerMSTest, PlayThenPauseThenPlay) {
     EXPECT_CALL(*this, DoStopRendering());
 
   player_->Pause();
-  auto prev_frame = compositor_->GetCurrentFrameWithoutUpdatingStatistics();
+  auto prev_frame = compositor_->GetCurrentFrame();
   message_loop_controller_.RunAndWaitForStatus(
       media::PipelineStatus::PIPELINE_OK);
-  auto after_frame = compositor_->GetCurrentFrameWithoutUpdatingStatistics();
+  auto after_frame = compositor_->GetCurrentFrame();
   EXPECT_EQ(prev_frame->timestamp(), after_frame->timestamp());
   testing::Mock::VerifyAndClearExpectations(this);
 
@@ -1044,10 +1044,10 @@ TEST_P(WebMediaPlayerMSTest, PlayThenPauseThenPlay) {
     EXPECT_CALL(*this, DoStartRendering());
 
   player_->Play();
-  prev_frame = compositor_->GetCurrentFrameWithoutUpdatingStatistics();
+  prev_frame = compositor_->GetCurrentFrame();
   message_loop_controller_.RunAndWaitForStatus(
       media::PipelineStatus::PIPELINE_OK);
-  after_frame = compositor_->GetCurrentFrameWithoutUpdatingStatistics();
+  after_frame = compositor_->GetCurrentFrame();
   EXPECT_NE(prev_frame->timestamp(), after_frame->timestamp());
   testing::Mock::VerifyAndClearExpectations(this);
 
@@ -1232,18 +1232,18 @@ TEST_P(WebMediaPlayerMSTest, BackgroundRendering) {
     EXPECT_CALL(*this, DoDidReceiveFrame()).Times(testing::AtLeast(1));
 
   SetBackgroundRendering(true);
-  auto prev_frame = compositor_->GetCurrentFrameWithoutUpdatingStatistics();
+  auto prev_frame = compositor_->GetCurrentFrame();
   message_loop_controller_.RunAndWaitForStatus(
       media::PipelineStatus::PIPELINE_OK);
-  auto after_frame = compositor_->GetCurrentFrameWithoutUpdatingStatistics();
+  auto after_frame = compositor_->GetCurrentFrame();
   EXPECT_NE(prev_frame->timestamp(), after_frame->timestamp());
 
   // Switch to foreground rendering.
   SetBackgroundRendering(false);
-  prev_frame = compositor_->GetCurrentFrameWithoutUpdatingStatistics();
+  prev_frame = compositor_->GetCurrentFrame();
   message_loop_controller_.RunAndWaitForStatus(
       media::PipelineStatus::PIPELINE_OK);
-  after_frame = compositor_->GetCurrentFrameWithoutUpdatingStatistics();
+  after_frame = compositor_->GetCurrentFrame();
   EXPECT_NE(prev_frame->timestamp(), after_frame->timestamp());
   testing::Mock::VerifyAndClearExpectations(this);
 
@@ -1324,7 +1324,7 @@ TEST_P(WebMediaPlayerMSTest, CreateHardwareFrames) {
   std::move(frame_ready_cbs_[0]).Run();
   base::RunLoop().RunUntilIdle();
 
-  auto frame = compositor_->GetCurrentFrameWithoutUpdatingStatistics();
+  auto frame = compositor_->GetCurrentFrame();
   ASSERT_TRUE(frame != nullptr);
   testing::Mock::VerifyAndClearExpectations(this);
 

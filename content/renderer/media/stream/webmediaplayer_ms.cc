@@ -699,8 +699,7 @@ blink::WebSize WebMediaPlayerMS::NaturalSize() const {
 
 blink::WebSize WebMediaPlayerMS::VisibleRect() const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  scoped_refptr<media::VideoFrame> video_frame =
-      compositor_->GetCurrentFrameWithoutUpdatingStatistics();
+  scoped_refptr<media::VideoFrame> video_frame = compositor_->GetCurrentFrame();
   if (!video_frame)
     return blink::WebSize();
 
@@ -781,8 +780,7 @@ void WebMediaPlayerMS::Paint(cc::PaintCanvas* canvas,
   DVLOG(3) << __func__;
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  const scoped_refptr<media::VideoFrame> frame =
-      compositor_->GetCurrentFrameWithoutUpdatingStatistics();
+  const scoped_refptr<media::VideoFrame> frame = compositor_->GetCurrentFrame();
 
   media::Context3D context_3d;
   gpu::ContextSupport* context_support = nullptr;
@@ -954,8 +952,7 @@ bool WebMediaPlayerMS::CopyVideoTextureToPlatformTexture(
   TRACE_EVENT0("media", "copyVideoTextureToPlatformTexture");
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  scoped_refptr<media::VideoFrame> video_frame =
-      compositor_->GetCurrentFrameWithoutUpdatingStatistics();
+  scoped_refptr<media::VideoFrame> video_frame = compositor_->GetCurrentFrame();
 
   if (!video_frame.get() || !video_frame->HasTextures())
     return false;
@@ -989,8 +986,7 @@ bool WebMediaPlayerMS::CopyVideoYUVDataToPlatformTexture(
   TRACE_EVENT0("media", "copyVideoYUVDataToPlatformTexture");
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  scoped_refptr<media::VideoFrame> video_frame =
-      compositor_->GetCurrentFrameWithoutUpdatingStatistics();
+  scoped_refptr<media::VideoFrame> video_frame = compositor_->GetCurrentFrame();
 
   if (!video_frame)
     return false;
@@ -1028,7 +1024,7 @@ bool WebMediaPlayerMS::TexImageImpl(TexImageFunctionID functionID,
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   const scoped_refptr<media::VideoFrame> video_frame =
-      compositor_->GetCurrentFrameWithoutUpdatingStatistics();
+      compositor_->GetCurrentFrame();
   if (!video_frame || !video_frame->IsMappable() ||
       video_frame->HasTextures() ||
       video_frame->format() != media::PIXEL_FORMAT_Y16) {
