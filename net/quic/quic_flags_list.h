@@ -274,12 +274,6 @@ QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_rpm_decides_when_to_send_acks,
           false)
 
-// If true, instead of send encryption none termination packets, send stateless
-// reset in reponse to short headers.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_always_reset_short_header_packets,
-          true)
-
 // In QUIC, do not close connection if received an in-order ACK with decreased
 // largest_acked.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_tolerate_reneging, false)
