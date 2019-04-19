@@ -88,12 +88,8 @@ constexpr CGFloat kMinimumMargin = 4;
 
 - (void)loadView {
   [super loadView];
-  UIView* grayBackground = [[UIView alloc] init];
-  grayBackground.backgroundColor =
+  self.view.backgroundColor =
       [[UIColor blackColor] colorWithAlphaComponent:kBackgroundAlpha];
-  grayBackground.translatesAutoresizingMaskIntoConstraints = NO;
-  [self.view addSubview:grayBackground];
-  AddSameConstraints(grayBackground, self.view.safeAreaLayoutGuide);
 
   self.contentView = [[UIView alloc] init];
   self.contentView.backgroundColor = [UIColor whiteColor];
