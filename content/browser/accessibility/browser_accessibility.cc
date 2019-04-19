@@ -1111,12 +1111,12 @@ const ui::AXUniqueId& BrowserAccessibility::GetUniqueId() const {
 }
 
 base::Optional<int> BrowserAccessibility::FindTextBoundary(
-    ui::TextBoundaryType boundary_type,
+    ui::AXTextBoundary boundary,
     int offset,
     ui::TextBoundaryDirection direction,
     ax::mojom::TextAffinity affinity) const {
-  switch (boundary_type) {
-    case ui::WORD_BOUNDARY: {
+  switch (boundary) {
+    case ui::AXTextBoundary::kWordStart: {
       BrowserAccessibilityPositionInstance position =
           CreatePositionAt(static_cast<int>(offset), affinity);
       switch (direction) {
@@ -1132,7 +1132,23 @@ base::Optional<int> BrowserAccessibility::FindTextBoundary(
               ->text_offset();
       }
     }
-    case ui::LINE_BOUNDARY: {
+    case ui::AXTextBoundary::kWordStartOrEnd: {
+      BrowserAccessibilityPositionInstance position =
+          CreatePositionAt(static_cast<int>(offset), affinity);
+      switch (direction) {
+        case ui::BACKWARDS_DIRECTION:
+          return position
+              ->CreatePreviousWordStartPosition(
+                  ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary)
+              ->text_offset();
+        case ui::FORWARDS_DIRECTION:
+          return position
+              ->CreateNextWordEndPosition(
+                  ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary)
+              ->text_offset();
+      }
+    }
+    case ui::AXTextBoundary::kLineStart: {
       BrowserAccessibilityPositionInstance position =
           CreatePositionAt(static_cast<int>(offset), affinity);
       switch (direction) {
@@ -1148,14 +1164,11 @@ base::Optional<int> BrowserAccessibility::FindTextBoundary(
               ->text_offset();
       }
     }
-    case ui::CHAR_BOUNDARY:
-    case ui::SENTENCE_BOUNDARY:
-    case ui::PARAGRAPH_BOUNDARY:
-    case ui::ALL_BOUNDARY:
+    default:
       // TODO(nektar): |AXPosition| can handle other types of boundaries as
       // well.
       return ui::FindAccessibleTextBoundary(GetText(), GetLineStartOffsets(),
-                                            boundary_type, offset, direction,
+                                            boundary, offset, direction,
                                             affinity);
   }
 }

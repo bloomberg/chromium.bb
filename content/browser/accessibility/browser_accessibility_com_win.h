@@ -38,8 +38,9 @@ const GUID GUID_IAccessibleContentDocument = {
     {0x95, 0x21, 0x07, 0xed, 0x28, 0xfb, 0x07, 0x2e}};
 
 namespace ui {
+
 enum TextBoundaryDirection;
-enum TextBoundaryType;
+
 }  // namespace ui
 
 namespace content {

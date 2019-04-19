@@ -2162,7 +2162,7 @@ LONG BrowserAccessibilityComWin::FindIA2Boundary(
   if (selection_end >= 0 && start_offset == selection_end)
     affinity = Manager()->GetTreeData().sel_focus_affinity;
 
-  ui::TextBoundaryType boundary = IA2TextBoundaryToTextBoundary(ia2_boundary);
+  ui::AXTextBoundary boundary = ui::FromIA2TextBoundary(ia2_boundary);
   return static_cast<LONG>(
       FindTextBoundary(boundary, start_offset, direction, affinity));
 }

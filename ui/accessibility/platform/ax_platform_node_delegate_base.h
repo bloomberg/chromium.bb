@@ -121,7 +121,7 @@ class AX_EXPORT AXPlatformNodeDelegateBase : public AXPlatformNodeDelegate {
   const AXUniqueId& GetUniqueId() const override;
 
   base::Optional<int> FindTextBoundary(
-      TextBoundaryType boundary_type,
+      AXTextBoundary boundary,
       int offset,
       TextBoundaryDirection direction,
       ax::mojom::TextAffinity affinity) const override;

@@ -16,6 +16,7 @@
 #include "ui/accessibility/ax_node_position.h"
 #include "ui/accessibility/ax_offscreen_result.h"
 #include "ui/accessibility/ax_position.h"
+#include "ui/accessibility/ax_text_boundary.h"
 #include "ui/accessibility/ax_text_utils.h"
 #include "ui/accessibility/platform/ax_unique_id.h"
 #include "ui/gfx/geometry/vector2d.h"
@@ -162,7 +163,7 @@ class AX_EXPORT AXPlatformNodeDelegate {
   // this value and it is the responsibility of the AXPlatformNode itself to
   // to calculate it.
   virtual base::Optional<int> FindTextBoundary(
-      TextBoundaryType boundary_type,
+      AXTextBoundary boundary,
       int offset,
       TextBoundaryDirection direction,
       ax::mojom::TextAffinity affinity) const = 0;

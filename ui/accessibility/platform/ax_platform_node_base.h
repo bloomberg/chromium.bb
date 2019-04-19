@@ -14,6 +14,7 @@
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_text_utils.h"
 #include "ui/accessibility/platform/ax_platform_node.h"
+#include "ui/accessibility/platform/ax_platform_text_boundary.h"
 #include "ui/base/buildflags.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
@@ -227,7 +228,7 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   // This method finds text boundaries in the text used for platform text APIs.
   // Implementations may use side-channel data such as line or word indices to
   // produce appropriate results.
-  virtual int FindTextBoundary(TextBoundaryType boundary_type,
+  virtual int FindTextBoundary(AXTextBoundary boundary,
                                int offset,
                                TextBoundaryDirection direction,
                                ax::mojom::TextAffinity affinity =

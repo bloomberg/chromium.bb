@@ -25,6 +25,7 @@
 #include "ui/accessibility/ax_export.h"
 #include "ui/accessibility/ax_text_utils.h"
 #include "ui/accessibility/platform/ax_platform_node_base.h"
+#include "ui/accessibility/platform/ax_platform_text_boundary.h"
 #include "ui/gfx/range/range.h"
 
 // IMPORTANT!
@@ -1071,9 +1072,6 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   // If offset is a member of IA2TextSpecialOffsets this function updates the
   // value of offset and returns, otherwise offset remains unchanged.
   void HandleSpecialTextOffset(LONG* offset);
-
-  // Convert from a IA2TextBoundaryType to a TextBoundaryType.
-  TextBoundaryType IA2TextBoundaryToTextBoundary(IA2TextBoundaryType type);
 
   // A helper to add the given string value to |attributes|.
   void AddAttributeToList(const char* name,

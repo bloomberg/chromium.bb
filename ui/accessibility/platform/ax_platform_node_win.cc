@@ -6646,33 +6646,12 @@ void AXPlatformNodeWin::HandleSpecialTextOffset(LONG* offset) {
   }
 }
 
-TextBoundaryType AXPlatformNodeWin::IA2TextBoundaryToTextBoundary(
-    IA2TextBoundaryType ia2_boundary) {
-  switch (ia2_boundary) {
-    case IA2_TEXT_BOUNDARY_CHAR:
-      return CHAR_BOUNDARY;
-    case IA2_TEXT_BOUNDARY_WORD:
-      return WORD_BOUNDARY;
-    case IA2_TEXT_BOUNDARY_LINE:
-      return LINE_BOUNDARY;
-    case IA2_TEXT_BOUNDARY_SENTENCE:
-      return SENTENCE_BOUNDARY;
-    case IA2_TEXT_BOUNDARY_PARAGRAPH:
-      return PARAGRAPH_BOUNDARY;
-    case IA2_TEXT_BOUNDARY_ALL:
-      return ALL_BOUNDARY;
-    default:
-      NOTREACHED();
-      return CHAR_BOUNDARY;
-  }
-}
-
 LONG AXPlatformNodeWin::FindBoundary(const base::string16& text,
                                      IA2TextBoundaryType ia2_boundary,
                                      LONG start_offset,
                                      TextBoundaryDirection direction) {
   HandleSpecialTextOffset(&start_offset);
-  TextBoundaryType boundary = IA2TextBoundaryToTextBoundary(ia2_boundary);
+  AXTextBoundary boundary = FromIA2TextBoundary(ia2_boundary);
   std::vector<int32_t> line_breaks;
   return static_cast<LONG>(FindAccessibleTextBoundary(
       text, line_breaks, boundary, start_offset, direction,

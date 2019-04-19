@@ -33,6 +33,7 @@
 #include "ui/accessibility/platform/ax_platform_atk_hyperlink.h"
 #include "ui/accessibility/platform/ax_platform_node_delegate.h"
 #include "ui/accessibility/platform/ax_platform_node_delegate_base.h"
+#include "ui/accessibility/platform/ax_platform_text_boundary.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
 #if defined(ATK_CHECK_VERSION) && ATK_CHECK_VERSION(2, 12, 0)
@@ -955,7 +956,7 @@ char* GetCharacter(AtkText* atk_text,
 
 char* GetTextWithBoundaryType(AtkText* atk_text,
                               int offset,
-                              TextBoundaryType boundary_type,
+                              AXTextBoundary boundary,
                               int* start_offset_ptr,
                               int* end_offset_ptr) {
   AtkObject* atk_object = ATK_OBJECT(atk_text);
@@ -972,9 +973,8 @@ char* GetTextWithBoundaryType(AtkText* atk_text,
   offset = obj->UnicodeToUTF16OffsetInText(offset);
 
   int start_offset =
-      obj->FindTextBoundary(boundary_type, offset, BACKWARDS_DIRECTION);
-  int end_offset =
-      obj->FindTextBoundary(boundary_type, offset, FORWARDS_DIRECTION);
+      obj->FindTextBoundary(boundary, offset, BACKWARDS_DIRECTION);
+  int end_offset = obj->FindTextBoundary(boundary, offset, FORWARDS_DIRECTION);
 
   DCHECK_LE(start_offset, end_offset)
       << "Start offset should be less than or equal the end offset.";
@@ -991,75 +991,26 @@ char* GetTextWithBoundaryType(AtkText* atk_text,
   return g_strdup(base::UTF16ToUTF8(substr).c_str());
 }
 
-base::Optional<TextBoundaryType> AtkTextBoundaryToTextBoundary(
-    AtkTextBoundary atk_boundary) {
-  // These are listed in order of their definition in the ATK header.
-  switch (atk_boundary) {
-    case ATK_TEXT_BOUNDARY_CHAR:
-      return CHAR_BOUNDARY;
-    case ATK_TEXT_BOUNDARY_WORD_START:
-      return WORD_BOUNDARY;
-    case ATK_TEXT_BOUNDARY_WORD_END:
-      return base::nullopt;
-    case ATK_TEXT_BOUNDARY_SENTENCE_START:
-      return SENTENCE_BOUNDARY;
-    case ATK_TEXT_BOUNDARY_SENTENCE_END:
-      return base::nullopt;
-    case ATK_TEXT_BOUNDARY_LINE_START:
-      return LINE_BOUNDARY;
-    case ATK_TEXT_BOUNDARY_LINE_END:
-      return base::nullopt;
-  }
-  NOTREACHED();
-  return base::nullopt;
-}
-
-base::Optional<TextBoundaryType> AtkTextGranularityToTextBoundary(
-    AtkTextGranularity granularity) {
-  // These are listed in order of their definition in the ATK header.
-  switch (granularity) {
-    case ATK_TEXT_GRANULARITY_CHAR:
-      return CHAR_BOUNDARY;
-    case ATK_TEXT_GRANULARITY_WORD:
-      return WORD_BOUNDARY;
-    case ATK_TEXT_GRANULARITY_SENTENCE:
-      return SENTENCE_BOUNDARY;
-    case ATK_TEXT_GRANULARITY_LINE:
-      return LINE_BOUNDARY;
-    case ATK_TEXT_GRANULARITY_PARAGRAPH:
-      return PARAGRAPH_BOUNDARY;
-  }
-
-  return base::nullopt;
-}
-
 char* GetTextAtOffset(AtkText* atk_text,
                       int offset,
-                      AtkTextBoundary atk_boundary_type,
+                      AtkTextBoundary atk_boundary,
                       int* start_offset,
                       int* end_offset) {
-  if (atk_boundary_type == ATK_TEXT_BOUNDARY_CHAR) {
+  if (atk_boundary == ATK_TEXT_BOUNDARY_CHAR) {
     return GetCharacter(atk_text, offset, start_offset, end_offset);
   }
 
-  base::Optional<TextBoundaryType> boundary_type =
-      AtkTextBoundaryToTextBoundary(atk_boundary_type);
-  if (boundary_type.has_value()) {
-    return GetTextWithBoundaryType(atk_text, offset, *boundary_type,
-                                   start_offset, end_offset);
-  }
-
-  *start_offset = -1;
-  *end_offset = -1;
-  return nullptr;
+  AXTextBoundary boundary = FromAtkTextBoundary(atk_boundary);
+  return GetTextWithBoundaryType(atk_text, offset, boundary, start_offset,
+                                 end_offset);
 }
 
 char* GetTextAfterOffset(AtkText* atk_text,
                          int offset,
-                         AtkTextBoundary boundary_type,
+                         AtkTextBoundary boundary,
                          int* start_offset,
                          int* end_offset) {
-  if (boundary_type != ATK_TEXT_BOUNDARY_CHAR) {
+  if (boundary != ATK_TEXT_BOUNDARY_CHAR) {
     *start_offset = -1;
     *end_offset = -1;
     return nullptr;
@@ -1070,10 +1021,10 @@ char* GetTextAfterOffset(AtkText* atk_text,
 
 char* GetTextBeforeOffset(AtkText* atk_text,
                           int offset,
-                          AtkTextBoundary boundary_type,
+                          AtkTextBoundary boundary,
                           int* start_offset,
                           int* end_offset) {
-  if (boundary_type != ATK_TEXT_BOUNDARY_CHAR) {
+  if (boundary != ATK_TEXT_BOUNDARY_CHAR) {
     *start_offset = -1;
     *end_offset = -1;
     return nullptr;
@@ -1171,18 +1122,11 @@ char* GetStringAtOffset(AtkText* atk_text,
     return GetCharacter(atk_text, offset, start_offset, end_offset);
   }
 
-  base::Optional<TextBoundaryType> granularity =
-      AtkTextGranularityToTextBoundary(atk_granularity);
-  if (granularity.has_value()) {
-    return GetTextWithBoundaryType(atk_text, offset, *granularity, start_offset,
-                                   end_offset);
-  }
-
-  *start_offset = -1;
-  *end_offset = -1;
-  return nullptr;
+  AXTextBoundary boundary = FromAtkTextGranularity(atk_granularity);
+  return GetTextWithBoundaryType(atk_text, offset, boundary, start_offset,
+                                 end_offset);
 }
-#endif
+#endif  // ATK_CHECK_VERSION(2, 10, 0)
 
 gfx::Rect GetUnclippedParentRangeBoundsRect(
     AXPlatformNodeDelegate* ax_platform_node_delegate,

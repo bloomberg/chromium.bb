@@ -987,9 +987,9 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkTextWordGranularity) {
     char* content = atk_text_get_text_at_offset(atk_text, tests[i].offset,
                                                 ATK_TEXT_BOUNDARY_WORD_START,
                                                 &start_offset, &end_offset);
-    ASSERT_STREQ(content, tests[i].content) << "with test index=" << i;
-    ASSERT_EQ(start_offset, tests[i].start_offset) << "with test index=" << i;
-    ASSERT_EQ(end_offset, tests[i].end_offset) << "with test index=" << i;
+    EXPECT_STREQ(content, tests[i].content) << "with test index=" << i;
+    EXPECT_EQ(start_offset, tests[i].start_offset) << "with test index=" << i;
+    EXPECT_EQ(end_offset, tests[i].end_offset) << "with test index=" << i;
     g_free(content);
   }
 

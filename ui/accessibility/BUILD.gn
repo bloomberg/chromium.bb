@@ -71,6 +71,8 @@ jumbo_component("accessibility") {
     "ax_serializable_tree.h",
     "ax_table_info.cc",
     "ax_table_info.h",
+    "ax_text_boundary.cc",
+    "ax_text_boundary.h",
     "ax_text_utils.cc",
     "ax_text_utils.h",
     "ax_tree.cc",
@@ -128,6 +130,8 @@ jumbo_component("accessibility") {
       "platform/ax_platform_node_win.h",
       "platform/ax_platform_relation_win.cc",
       "platform/ax_platform_relation_win.h",
+      "platform/ax_platform_text_boundary.cc",
+      "platform/ax_platform_text_boundary.h",
       "platform/ax_system_caret_win.cc",
       "platform/ax_system_caret_win.h",
     ]
