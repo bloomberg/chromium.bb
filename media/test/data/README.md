@@ -830,8 +830,15 @@ ffmpeg -i red.webm -i a500hz.webm -map 0 -map 1 red-a500hz.webm
 ### JPEG Test Files
 
 #### pixel-1280x720.jpg
-Single MJEPG encoded frame of 1280x720, captured on Chromebook Pixel. This image
+Single MJPEG encoded frame of 1280x720, captured on Chromebook Pixel. This image
 does not have Huffman table.
+
+#### pixel-1280x720-trailing-zeros.jpg
+A version of pixel-1280x720.jpg with five trailing zero bytes after the EOI
+marker. The command used to generated it was:
+```
+echo -e "`xxd -g1 -p -c1 pixel-1280x720.jpg`" "\n00\n00\n00\n00\n00" | xxd -r -g1 -p -c1 > pixel-1280x720-trailing-zeros.jpg
+```
 
 #### pixel-1280x720-grayscale.jpg
 A version of pixel-1280x720.jpg converted to grayscale using:
