@@ -144,8 +144,8 @@ class LinuxPtraceDumperChildTest : public testing::Test {
     if (child_pid_ == 0) {
       // child process
       RealTestBody();
-      exit(HasFatalFailure() ? kFatalFailure :
-           (HasNonfatalFailure() ? kNonFatalFailure : 0));
+      _exit(HasFatalFailure() ? kFatalFailure :
+            (HasNonfatalFailure() ? kNonFatalFailure : 0));
     }
 
     ASSERT_TRUE(child_pid_ > 0);
@@ -250,7 +250,7 @@ void LinuxPtraceDumperMappingsTest::SetUp() {
   helper_path_ = GetHelperBinary();
   if (helper_path_.empty()) {
     FAIL() << "Couldn't find helper binary";
-    exit(1);
+    _exit(1);
   }
 
   // mmap two segments out of the helper binary, one
