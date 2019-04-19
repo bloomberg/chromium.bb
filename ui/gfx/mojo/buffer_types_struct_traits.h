@@ -49,7 +49,7 @@ struct EnumTraits<gfx::mojom::BufferFormat, gfx::BufferFormat> {
         return gfx::mojom::BufferFormat::UYVY_422;
     }
     NOTREACHED();
-    return gfx::mojom::BufferFormat::LAST;
+    return gfx::mojom::BufferFormat::kMinValue;
   }
 
   static bool FromMojom(gfx::mojom::BufferFormat input,
@@ -126,7 +126,7 @@ struct EnumTraits<gfx::mojom::BufferUsage, gfx::BufferUsage> {
         return gfx::mojom::BufferUsage::GPU_READ_CPU_READ_WRITE;
     }
     NOTREACHED();
-    return gfx::mojom::BufferUsage::LAST;
+    return gfx::mojom::BufferUsage::kMinValue;
   }
 
   static bool FromMojom(gfx::mojom::BufferUsage input, gfx::BufferUsage* out) {
