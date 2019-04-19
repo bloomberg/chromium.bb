@@ -281,7 +281,6 @@
 <translation id="305593374596241526">La ubicación está desactivada; actívala en <ph name="BEGIN_LINK" />Configuración de Android<ph name="END_LINK" />.</translation>
 <translation id="3058498974290601450">Puedes activar la sincronización en la configuración en cualquier momento</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> favorito}other{<ph name="BOOKMARKS_COUNT_MANY" /> favoritos}}</translation>
-<translation id="307908932405420782">Pronto se mostrarán más artículos. Disfruta tu mañana.</translation>
 <translation id="3089395242580810162">Abrir en pestaña de incógnito</translation>
 <translation id="311456632243022227">Varios vínculos abiertos en Chrome</translation>
 <translation id="3115898365077584848">Mostrar información</translation>
@@ -686,7 +685,6 @@ Para cambiar esta configuración, <ph name="BEGIN_LINK" />restablece la sincroni
 <translation id="605721222689873409">AA</translation>
 <translation id="6075798973483050474">Editar la Página principal</translation>
 <translation id="60923314841986378"><ph name="HOURS" /> horas restantes</translation>
-<translation id="60924377787140961">Pronto se mostrarán más artículos. Disfruta tu tarde.</translation>
 <translation id="6099151465289169210">Se seleccionaron las pestañas privadas</translation>
 <translation id="6108923351542677676">Configuración en curso…</translation>
 <translation id="6111020039983847643">de datos utilizados</translation>
@@ -1039,7 +1037,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="8562452229998620586">Las contraseñas guardadas aparecerán aquí.</translation>
 <translation id="8569404424186215731">desde el <ph name="DATE" /></translation>
 <translation id="8571213806525832805">Últimas cuatro semanas</translation>
-<translation id="857509777403223202">Pronto se mostrarán más artículos. Disfruta tu tarde.</translation>
 <translation id="857943718398505171">Permitido (recomendado)</translation>
 <translation id="8582216581279205169">Pestañas abiertas en pantalla completa</translation>
 <translation id="8583805026567836021">Borrando datos de cuenta</translation>

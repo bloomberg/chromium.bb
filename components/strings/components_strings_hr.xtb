@@ -776,7 +776,7 @@
 <translation id="5252000469029418751">C7 (omotnica)</translation>
 <translation id="5254958791078852567">E1</translation>
 <translation id="5283044957620376778">B1</translation>
-<translation id="528468243742722775">End</translation>
+<translation id="528468243742722775">Završi</translation>
 <translation id="5284909709419567258">Mrežne adrese</translation>
 <translation id="5285570108065881030">Prikaži sve spremljene zaporke</translation>
 <translation id="5287240709317226393">Pokaži kolačiće</translation>
@@ -1288,7 +1288,6 @@ Dodatne pojedinosti:
 <translation id="8100588592594801589">Nevažeće su kartice uklonjene</translation>
 <translation id="8103161714697287722">Način plaćanja</translation>
 <translation id="8118489163946903409">Način plaćanja</translation>
-<translation id="8123836779274890062">Uređajem <ph name="DEVICE_TYPE" /> upravlja <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="8127301229239896662">Softver "<ph name="SOFTWARE_NAME" />" nije ispravno instaliran na vašem računalu ili mreži. Obratite se IT administratoru za rješavanje tog problema.</translation>
 <translation id="8131740175452115882">Potvrdi</translation>
 <translation id="8149426793427495338">Računalo je u stanju mirovanja.</translation>

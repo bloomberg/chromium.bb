@@ -281,7 +281,6 @@
 <translation id="305593374596241526">Posisjon er slått av. Slå den på i <ph name="BEGIN_LINK" />Android-innstillingene<ph name="END_LINK" />.</translation>
 <translation id="3058498974290601450">Du kan når som helst slå på synkronisering i innstillingene</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> bokmerke}other{<ph name="BOOKMARKS_COUNT_MANY" /> bokmerker}}</translation>
-<translation id="307908932405420782">Flere artikler kommer snart. Ha en fin dag.</translation>
 <translation id="3089395242580810162">Åpne i inkognitofane</translation>
 <translation id="311456632243022227">Flere linker er åpnet i Chrome</translation>
 <translation id="3115898365077584848">Vis informasjon</translation>
@@ -686,7 +685,6 @@ For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkronis
 <translation id="605721222689873409">ÅÅ</translation>
 <translation id="6075798973483050474">Endre startsiden</translation>
 <translation id="60923314841986378"><ph name="HOURS" /> timer igjen</translation>
-<translation id="60924377787140961">Flere artikler kommer snart. Ha en fin ettermiddag.</translation>
 <translation id="6099151465289169210">Bytt til privatfaner</translation>
 <translation id="6108923351542677676">Konfigurasjon pågår …</translation>
 <translation id="6111020039983847643">data brukt</translation>
@@ -1039,7 +1037,6 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="8562452229998620586">Lagrede passord listes opp her.</translation>
 <translation id="8569404424186215731">siden <ph name="DATE" /></translation>
 <translation id="8571213806525832805">Siste 4 uker</translation>
-<translation id="857509777403223202">Flere artikler kommer snart. Ha en fin kveld.</translation>
 <translation id="857943718398505171">Tillatt (anbefales)</translation>
 <translation id="8582216581279205169">Åpnede faner i full høyde</translation>
 <translation id="8583805026567836021">Fjerner kontodata …</translation>

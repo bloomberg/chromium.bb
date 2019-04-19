@@ -405,7 +405,6 @@
 <translation id="1639239467298939599">טוען</translation>
 <translation id="163993578339087550">‏<ph name="SERVICE_NAME" /> רוצה לבדוק אם יש ברשותך מכשיר Chrome OS כשיר.</translation>
 <translation id="1640283014264083726">‏PKCS #1 MD4 עם הצפנת RSA</translation>
-<translation id="1641113438599504367">גלישה בטוחה</translation>
 <translation id="1642494467033190216">‏דרושות הסרה של הגנת rootfs והפעלה מחדש לפני שתפעיל תכונות אחרות של ניפוי באגים.</translation>
 <translation id="1643050526526937107">רק לסנכרן</translation>
 <translation id="1643072738649235303">‏חתימת X9.62 ECDSA עם SHA-1</translation>
@@ -785,7 +784,6 @@
 <translation id="2230051135190148440">CHAP</translation>
 <translation id="223106756035922488">לצפייה בדודל היומי</translation>
 <translation id="2231238007119540260">אם אתה מוחק אישור שרת, אתה משחזר את בדיקות האבטחה הרגילות לשרת זה ודורש שהוא ישתמש באישור חוקי.</translation>
-<translation id="2232379019872353004">‏שליחת חלק מפרטי המערכת ותוכן הדף אל Google</translation>
 <translation id="2232876851878324699">הקובץ הכיל אישור אחד, שלא יובא:</translation>
 <translation id="2233502537820838181">&amp;מידע נוסף</translation>
 <translation id="2234876718134438132">‏סנכרון ושירותי Google</translation>
@@ -3693,6 +3691,7 @@
 <translation id="6841186874966388268">שגיאות</translation>
 <translation id="6843423766595476978">‏התכונה Ok Google מוכנה</translation>
 <translation id="6845038076637626672">פתח בגודל מרבי</translation>
+<translation id="6845325883481699275">‏עזרה בשיפור האבטחה של Chrome</translation>
 <translation id="6848388270925200958">נכון לעכשיו, יש לך כרטיסים שאפשר להשתמש בהם רק במכשיר הזה.</translation>
 <translation id="6851497530878285708">האפליקציה הופעלה</translation>
 <translation id="6853388645642883916">המעדכן במצב שינה</translation>
@@ -4253,7 +4252,6 @@
 <translation id="7730449930968088409">צילום של תוכן המסך</translation>
 <translation id="7732111077498238432">הרשת כפופה למדיניות</translation>
 <translation id="7737238973539693982">‏מחיקת Linux (בטא)</translation>
-<translation id="773905249182896430">הגנה מפני אתרים שעלולים לסכן אותך ואת המכשיר</translation>
 <translation id="7740996059027112821">רגילה</translation>
 <translation id="7750228210027921155">תמונה בתוך תמונה</translation>
 <translation id="7751260505918304024">הצג הכל</translation>
@@ -5065,7 +5063,6 @@
 <translation id="8978154919215542464">פועל - סנכרון הכול</translation>
 <translation id="897939795688207351">ב-<ph name="ORIGIN" /></translation>
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> - קרס</translation>
-<translation id="8983677657449185470">עזרה בשיפור של גלישה בטוחה</translation>
 <translation id="8986362086234534611">שכח</translation>
 <translation id="8986494364107987395">‏שליחה אוטומטית של דוחות קריסה וסטטיסטיקות שימוש ל-Google</translation>
 <translation id="8987927404178983737">חודש</translation>

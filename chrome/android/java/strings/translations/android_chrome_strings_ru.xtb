@@ -281,7 +281,6 @@
 <translation id="305593374596241526">Определение местоположения отключено. Включите его в <ph name="BEGIN_LINK" />настройках Android<ph name="END_LINK" />.</translation>
 <translation id="3058498974290601450">Ее можно включить в настройках в любой момент.</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> закладка}one{<ph name="BOOKMARKS_COUNT_MANY" /> закладка}few{<ph name="BOOKMARKS_COUNT_MANY" /> закладки}many{<ph name="BOOKMARKS_COUNT_MANY" /> закладок}other{<ph name="BOOKMARKS_COUNT_MANY" /> закладки}}</translation>
-<translation id="307908932405420782">Скоро появятся другие статьи. Хорошего утра!</translation>
 <translation id="3089395242580810162">Открыть в режиме инкогнито</translation>
 <translation id="311456632243022227">Ссылки открыты в Chrome</translation>
 <translation id="3115898365077584848">Показать информацию</translation>
@@ -686,7 +685,6 @@
 <translation id="605721222689873409">ГГ</translation>
 <translation id="6075798973483050474">Изменение главной страницы</translation>
 <translation id="60923314841986378">Осталось <ph name="HOURS" /> ч.</translation>
-<translation id="60924377787140961">Скоро появятся другие статьи. Хорошего дня!</translation>
 <translation id="6099151465289169210">Переключено на вкладки инкогнито</translation>
 <translation id="6108923351542677676">Настройка…</translation>
 <translation id="6111020039983847643">использовано</translation>
@@ -1039,7 +1037,6 @@
 <translation id="8562452229998620586">Здесь будут показаны сохраненные пароли.</translation>
 <translation id="8569404424186215731">с <ph name="DATE" /></translation>
 <translation id="8571213806525832805">Последние 4 недели</translation>
-<translation id="857509777403223202">Скоро появятся другие статьи. Хорошего вечера!</translation>
 <translation id="857943718398505171">Разрешено (рекомендуется)</translation>
 <translation id="8582216581279205169">Вкладки открыты на весь экран</translation>
 <translation id="8583805026567836021">Удаление данных аккаунта</translation>

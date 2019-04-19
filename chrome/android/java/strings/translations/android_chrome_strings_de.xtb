@@ -45,6 +45,7 @@
 <translation id="1285320974508926690">Diese Website nie übersetzen</translation>
 <translation id="1291207594882862231">Verlauf, Cookies, Websitedaten, Cache leeren…</translation>
 <translation id="129553762522093515">Kürzlich geschlossen</translation>
+<translation id="1303507811548703290"><ph name="DOMAIN" />: gesendet von <ph name="DEVICE_NAME" /></translation>
 <translation id="1326317727527857210">Melden Sie sich in Chrome an, um Tabs von Ihren anderen Geräten abzurufen.</translation>
 <translation id="1331212799747679585">Chrome kann nicht aktualisiert werden. Weitere Optionen</translation>
 <translation id="1332501820983677155">Tastenkombinationen für Google Chrome-Funktionen</translation>
@@ -171,6 +172,7 @@
 <translation id="2154484045852737596">Karte bearbeiten</translation>
 <translation id="2154710561487035718">URL kopieren</translation>
 <translation id="2156074688469523661">Restliche Websites (<ph name="NUMBER_OF_SITES" />)</translation>
+<translation id="218608176142494674">Freigabe</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, Web-App. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Als <ph name="USER_FULL_NAME" /> fortfahren</translation>
 <translation id="2232379019872353004">Einige Systeminformationen und Seiteninhalte werden an Google gesendet</translation>
@@ -281,7 +283,6 @@
 <translation id="305593374596241526">Die Standortermittlung ist deaktiviert. Sie können sie in den <ph name="BEGIN_LINK" />Android-Einstellungen<ph name="END_LINK" /> aktivieren.</translation>
 <translation id="3058498974290601450">Sie können die Synchronisierung jederzeit in den Einstellungen aktivieren</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> Lesezeichen}other{<ph name="BOOKMARKS_COUNT_MANY" /> Lesezeichen}}</translation>
-<translation id="307908932405420782">Weitere Artikel werden in Kürze erscheinen. Schönen Tag noch!</translation>
 <translation id="3089395242580810162">In Inkognito-Tab öffnen</translation>
 <translation id="311456632243022227">Mehrere Links in Chrome geöffnet</translation>
 <translation id="3115898365077584848">Informationen anzeigen</translation>
@@ -651,6 +652,7 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="5797070761912323120">Anhand Ihres Verlaufs kann Google die Google-Suche, Werbung und andere Google-Dienste personalisieren</translation>
 <translation id="5804241973901381774">Berechtigungen</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{Vor # Stunde}other{Vor # Stunden}}</translation>
+<translation id="5810288467834065221">Copyright <ph name="YEAR" /> Google LLC Alle Rechte vorbehalten.</translation>
 <translation id="5817918615728894473">Koppeln</translation>
 <translation id="583281660410589416">Unbekannt</translation>
 <translation id="5833984609253377421">Link teilen</translation>
@@ -686,7 +688,6 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="605721222689873409">JJ</translation>
 <translation id="6075798973483050474">Startseite bearbeiten</translation>
 <translation id="60923314841986378"><ph name="HOURS" /> Stunden übrig</translation>
-<translation id="60924377787140961">Weitere Artikel werden in Kürze erscheinen. Schönen Tag noch!</translation>
 <translation id="6099151465289169210">Zu privaten Tabs gewechselt</translation>
 <translation id="6108923351542677676">Einrichtung läuft...</translation>
 <translation id="6111020039983847643">genutzte Datenmenge</translation>
@@ -903,6 +904,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="756809126120519699">Gelöschte Chrome-Daten</translation>
 <translation id="757524316907819857">Wiedergabe von geschützten Inhalten für Websites blockieren</translation>
 <translation id="757855969265046257">{FILES,plural, =1{<ph name="FILES_DOWNLOADED_ONE" /> Datei heruntergeladen}other{<ph name="FILES_DOWNLOADED_MANY" /> Dateien heruntergeladen}}</translation>
+<translation id="7588219262685291874">Dunkles Design verwenden, wenn Energiesparmodus des Geräts aktiviert ist</translation>
 <translation id="7589445247086920869">Für die aktuelle Suchmaschine blockieren</translation>
 <translation id="7593557518625677601">Einstellungen öffnen und Systemsynchr. aktivieren, um Chrome-Synchr. zu starten</translation>
 <translation id="7596558890252710462">Betriebssystem</translation>
@@ -1002,6 +1004,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="8266862848225348053">Downloadpfad</translation>
 <translation id="8274165955039650276">Downloads aufrufen</translation>
 <translation id="8283853025636624853">Synchronisierung mit <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
+<translation id="8300705686683892304">Von App verwaltet</translation>
 <translation id="8310344678080805313">Standard-Tabs</translation>
 <translation id="8313455859591948645">"Beim Start"-Seite bearbeiten</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> und weitere Websites</translation>
@@ -1039,7 +1042,6 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="8562452229998620586">Gespeicherte Passwörter erscheinen hier.</translation>
 <translation id="8569404424186215731">seit <ph name="DATE" /></translation>
 <translation id="8571213806525832805">Letzte 4 Wochen</translation>
-<translation id="857509777403223202">Weitere Artikel werden in Kürze erscheinen. Schönen Abend!</translation>
 <translation id="857943718398505171">Zugelassen (empfohlen)</translation>
 <translation id="8582216581279205169">Geöffnete Tabs ganz geöffnet</translation>
 <translation id="8583805026567836021">Kontodaten werden gelöscht</translation>

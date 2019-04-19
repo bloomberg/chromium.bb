@@ -277,7 +277,6 @@
 <translation id="305593374596241526">இருப்பிடம் முடக்கப்பட்டுள்ளது; அதை <ph name="BEGIN_LINK" />Android அமைப்புகளில்<ph name="END_LINK" /> இயக்கவும்.</translation>
 <translation id="3058498974290601450">அமைப்புகளில் ஒத்திசைவை எந்த நேரத்திலும் இயக்கலாம்</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> புக்மார்க்}other{<ph name="BOOKMARKS_COUNT_MANY" /> புக்மார்க்குகள்}}</translation>
-<translation id="307908932405420782">விரைவில் அதிகக் கட்டுரைகள் காட்டப்படும். காலைப்பொழுது இனிதாக அமையட்டும்!</translation>
 <translation id="3089395242580810162">மறைநிலை தாவலில் திற</translation>
 <translation id="311456632243022227">Chrome இல் பல இணைப்பு திறந்தன</translation>
 <translation id="3115898365077584848">தகவலைக் காட்டு</translation>
@@ -677,7 +676,6 @@
 <translation id="605721222689873409">YY</translation>
 <translation id="6075798973483050474">முகப்புப் பக்கத்தைத் திருத்து</translation>
 <translation id="60923314841986378"><ph name="HOURS" /> மணிநேரம் மீதமுள்ளது</translation>
-<translation id="60924377787140961">விரைவில் அதிகக் கட்டுரைகள் காட்டப்படும். மதியப்பொழுதை மகிழ்ச்சியுடன் கழியுங்கள்!</translation>
 <translation id="6099151465289169210">மறைநிலைத் தாவல்களுக்கு மாறியது</translation>
 <translation id="6108923351542677676">அமைவு செயலிலுள்ளது...</translation>
 <translation id="6111020039983847643">பயன்படுத்திய டேட்டா</translation>
@@ -1027,7 +1025,6 @@
 <translation id="8562452229998620586">சேமிக்கப்பட்ட கடவுச்சொற்கள் இங்கு காண்பிக்கப்படும்.</translation>
 <translation id="8569404424186215731"><ph name="DATE" /> முதல்</translation>
 <translation id="8571213806525832805">கடந்த 4 வாரங்கள்</translation>
-<translation id="857509777403223202">விரைவில் அதிகக் கட்டுரைகள் காட்டப்படும். இனிய மாலைப்பொழுதை அனுபவியுங்கள்!</translation>
 <translation id="857943718398505171">அனுமதிக்கப்பட்டது (பரிந்துரைத்தது)</translation>
 <translation id="8582216581279205169">முழு உயரத்தில் திறந்துள்ள தாவல்கள்</translation>
 <translation id="8583805026567836021">கணக்குத் தரவை அழிக்கிறது</translation>

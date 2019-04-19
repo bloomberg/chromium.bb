@@ -348,7 +348,7 @@
        <ph name="LINE_BREAKS" />
        Jeśli to zrobisz w trakcie pracy, możesz spowodować utratę danych. Poczekaj na zakończenie operacji, a następnie odłącz urządzenie, używając aplikacji Pliki.</translation>
 <translation id="5163869187418756376">Niepowodzenie udostępniania. Sprawdź połączenie i spróbuj ponownie później.</translation>
-<translation id="516592729076796170">Amerykańska programisty (Dvorak)</translation>
+<translation id="516592729076796170">Amerykańska dewelopera (Dvorak)</translation>
 <translation id="5167131699331641907">Klawiatura niderlandzka</translation>
 <translation id="5170477580121653719">Na Dysku Google pozostało <ph name="SPACE_AVAILABLE" /> wolnego miejsca.</translation>
 <translation id="5177526793333269655">Widok miniatur</translation>
@@ -516,7 +516,7 @@
 <translation id="7172053773111046550">Klawiatura estońska</translation>
 <translation id="7180611975245234373">Odśwież</translation>
 <translation id="7189874332498648577"><ph name="NUMBER_OF_GB" /> GB</translation>
-<translation id="719009910964971313">Klawiatura amerykańska programisty (Dvorak)</translation>
+<translation id="719009910964971313">Klawiatura amerykańska dewelopera (Dvorak)</translation>
 <translation id="7191454237977785534">Zapisz plik jako</translation>
 <translation id="7222624196722476520">Klawiatura bułgarska fonetyczna</translation>
 <translation id="7248671827512403053">Aplikacja</translation>

@@ -2,14 +2,14 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="hi">
 <translation id="104962181688258143">फ़ाइल ऐप्लिकेशन खोलें</translation>
-<translation id="1122869341872663659"><ph name="QUERY" /> के लिए <ph name="N" /> सर्च नतीजे दिखाए जा रहे हैं</translation>
+<translation id="1122869341872663659"><ph name="QUERY" /> के लिए <ph name="N" /> खोज नतीजे दिखाए जा रहे हैं</translation>
 <translation id="1195667586424773550">लिंक को टैब के पता बार में खींचें और छोड़ें</translation>
 <translation id="1204450209689312104">गुप्त मोड में नई विंडो खोलें</translation>
 <translation id="1251638888133819822">फ़ुलस्क्रीन पर सामग्री को बड़ा दिखाने की सुविधा चालू या बंद करें</translation>
 <translation id="1290373024480130896"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="MODIFIER3" /><ph name="SEPARATOR3" /><ph name="KEY" /></translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1299858300159559687">अपना अभी वाला पेज प्रिंट करें</translation>
-<translation id="1383876407941801731">खोज</translation>
+<translation id="1383876407941801731">खोजें</translation>
 <translation id="1454364489140280055"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT1" /><ph name="SEPARATOR2" /><ph name="G" /> या <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="ENTER" /></translation>
 <translation id="1477442857810932985">लाइन के आखिर में जाएं</translation>
 <translation id="1510238584712386396">लॉन्चर</translation>
@@ -34,7 +34,7 @@
 <translation id="2194790690264064655"><ph name="CTRL" /> दबाएं और किसी लिंक पर क्लिक करें</translation>
 <translation id="2246352309084894470">फ़ुलस्क्रीन लॉन्चर खोलें/बंद करें</translation>
 <translation id="2382644247745281995">मौजूदा कीबोर्ड लेआउट के साथ काम नहीं करता है</translation>
-<translation id="2397416548179033562">Chrome मेनू दिखाएं</translation>
+<translation id="2397416548179033562">Chrome मेन्यू दिखाएं</translation>
 <translation id="2424073332829844142">Caps Lock को चालू और बंद करें</translation>
 <translation id="2441202986792279177">अलग-अलग विंडो के बीच तेज़ी से स्विच करें</translation>
 <translation id="2454251766545114447">'ज़ूम घटाएं' दिखाएं</translation>
@@ -44,8 +44,8 @@
 <translation id="2574014812750545982">पेज पर ज़ूम लेवल को रीसेट करें</translation>
 <translation id="2596078834055697711">विंडो का स्क्रीनशॉट लें</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, फिर <ph name="TAB" /> या <ph name="RIGHT" /></translation>
-<translation id="2699509451653686398">अपना अभी वाला वेबपेज बुकमार्क के रूप में सेव करें</translation>
-<translation id="2750942583782703988">अपना अभी वाला पेज फिर लोड करें</translation>
+<translation id="2699509451653686398">अपना मौजूदा वेबपेज बुकमार्क के रूप में सेव करें</translation>
+<translation id="2750942583782703988">अपना मौजूदा पेज फिर से लोड करें</translation>
 <translation id="2764005613199379871">खोज पता बार में फ़ोकस रखें</translation>
 <translation id="2789868185375229787">पेज पर ज़ूम घटाएं</translation>
 <translation id="2804480015716812239"><ph name="ALT" /> दबाएं और किसी लिंक पर क्लिक करें</translation>
@@ -55,7 +55,7 @@
 <translation id="2914313326123580426">डेवलपर टूल पैनल दिखाएं या छिपाएं</translation>
 <translation id="292495055542441795">फ़ुलस्‍क्रीन टॉगल करें</translation>
 <translation id="3020183492814296499">शॉर्टकट</translation>
-<translation id="3084301071537457911">अपनी अलमारी पर अगला आइटम हाइलाइट करें</translation>
+<translation id="3084301071537457911">अपनी शेल्फ़ पर अगला आइटम हाइलाइट करें</translation>
 <translation id="309173601632226815">अपनी अलमारी पर लॉन्चर बटन हाइलाइट करें</translation>
 <translation id="3105917916468784889">स्क्रीनशॉट लें</translation>
 <translation id="3126026824346185272">Ctrl</translation>
@@ -65,7 +65,7 @@
 <translation id="3407560819924487926">काम का प्रबंधक सामने लाएं</translation>
 <translation id="3422679037938588196">अपनी खोज के पिछले मिलान पर जाएं</translation>
 <translation id="344577624355799426"><ph name="ALT" /> या <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
-<translation id="353037708190149633">अपनी अभी वाली विंडो में खुले सभी पेज नए फ़ोल्डर में बुकमार्क के रूप में सेव करें</translation>
+<translation id="353037708190149633">अपनी मौजूदा विंडो में खुले सभी पेजों को नए फ़ोल्डर में बुकमार्क के रूप में सेव करें</translation>
 <translation id="355103131818127604">लिंक को बैकग्राउंड में नए टैब में खोलें</translation>
 <translation id="3622741593887335780">ज़ूम इन करें (डॉक किए जाने या फ़ुलस्क्रीन पर सामग्री को बड़ा दिखाने की सुविधा चालू किए जाने पर)</translation>
 <translation id="3649256019230929621">विंडो को छोटा करें</translation>
@@ -78,20 +78,20 @@
 <translation id="3792178297143798024">अपने शेल्फ़ पर हाइलाइट किया गया आइटम खोलें</translation>
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> 1 से 8 तक</translation>
 <translation id="3837047332182291558">कीबोर्ड की रोशनी बढ़ाएं (सिर्फ़ बैकलिट कीबोर्ड के लिए)</translation>
-<translation id="3976863468609830880">अपनी शेल्फ़ पर आखिरी आइकॉन पर क्लिक करें</translation>
+<translation id="3976863468609830880">अपनी शेल्फ़ के आखिरी आइकॉन पर क्लिक करें</translation>
 <translation id="3994783594793697310">ज़ूम लेवल को रीसेट करें</translation>
 <translation id="4026843240379844265">कार्रवाई विंडो को डिसप्ले के बीच ले जाएं</translation>
 <translation id="4035482366624727273">पेज पर सब कुछ चुनें</translation>
 <translation id="4060703249685950734">अपना बंद किया गया आखिरी टैब या विंडो फिर से खोलें</translation>
 <translation id="4090342722461256974">जब तक आप उस विंडो पर नहीं पहुंच जाते जिसे आप खोलना चाहते हैं, तब तक <ph name="ALT" /><ph name="SEPARATOR" /><ph name="SHIFT" /> को दबाकर रखें और <ph name="TAB" /> पर टैप करें, फिर छोड़ दें.</translation>
 <translation id="4092538597492297615">चुनी गई सामग्री को क्लिपबोर्ड पर कॉपी करें</translation>
-<translation id="4101772068965291327">मुख्यपृष्ठ खोलें</translation>
+<translation id="4101772068965291327">होम पेज खोलें</translation>
 <translation id="4123108089450197101">लिंक को बुकमार्क के रूप में सेव करें</translation>
 <translation id="4141203561740478845">पता बार वाली पंक्‍ति हाइलाइट करें</translation>
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> या <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">खास जानकारी मोड</translation>
 <translation id="4382340674111381977">पिछले पेज पर वापस जाएं</translation>
-<translation id="4472417192667361414">सिस्टम और डिसप्ले सेटिंग</translation>
+<translation id="4472417192667361414">सिस्टम और डिसप्ले की सेटिंग</translation>
 <translation id="4556221320735744018">कीबोर्ड शॉर्टकट सहायक देखें</translation>
 <translation id="4628718545549558538">हाल बताने वाली जगह खोलें (जहां आपके खाते की तस्वीर दिखाई देती है)</translation>
 <translation id="4642092649622328492">आंशिक स्क्रीनशॉट लें</translation>
@@ -101,16 +101,16 @@
 <translation id="5030659775136592441">बुकमार्क मैनेजर दिखाएं</translation>
 <translation id="5034421018520995080">पेज के सबसे ऊपर जाएं</translation>
 <translation id="5042305953558921026">खास जानकारी मोड कुंजी</translation>
-<translation id="5104462712192763270">अपना अभी वाला पेज सेव करें</translation>
+<translation id="5104462712192763270">अपना मौजूदा पेज सेव करें</translation>
 <translation id="5121628974188116412">पेज में सबसे नीचे जाएं</translation>
 <translation id="5222676887888702881">साइन आउट करें</translation>
-<translation id="5236674127086649162">कैश की गई सामग्री का इस्तेमाल किए बिना अपना अभी वाला पेज फिर लोड करें</translation>
+<translation id="5236674127086649162">कैश की गई सामग्री का इस्तेमाल किए बिना अपना मौजूदा पेज फिर लोड करें</translation>
 <translation id="526651782186312376">पंक्‍ति की शुरुआत तक का लेख चुनें</translation>
 <translation id="5316716239522500219">मॉनीटर मिरर करें</translation>
 <translation id="539072479502328326">सामग्री को बड़ा दिखाने की डॉक की गई सुविधा चालू या बंद करें</translation>
 <translation id="5541719484267030947">टैब को खींचकर रखते समय, <ph name="ESC" /> दबाएं</translation>
 <translation id="5554139136362089836">अभी वाले पेज में खोजें</translation>
-<translation id="5563050856984839829"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" /> दबाएं फिर किसी लिंक पर क्लिक करें</translation>
+<translation id="5563050856984839829"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" /> दबाएं और किसी लिंक पर क्लिक करें</translation>
 <translation id="561814908794220892">वेबपेज को नए टैब में खोलें</translation>
 <translation id="5710621673935162997"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="L" /> या <ph name="ALT" /><ph name="SEPARATOR2" /><ph name="D" /></translation>
 <translation id="5757111373163288447">लिंक को टैब में खोलें</translation>
@@ -133,7 +133,7 @@
 <translation id="6395172954772765143">पंक्‍ति के आखिर तक का लेख चुनें</translation>
 <translation id="6419237577786823024"><ph name="CTRL1" /><ph name="SEPARATOR1" /><ph name="LEFT" /> या <ph name="CTRL2" /><ph name="SEPARATOR2" /><ph name="RIGHT" /></translation>
 <translation id="6425378783626925378">अपनी अलमारी पर 1-8 आइकॉन पर क्लिक करें</translation>
-<translation id="6435207348963613811">अपनी अलमारी पर पिछला आइटम हाइलाइट करें</translation>
+<translation id="6435207348963613811">अपनी शेल्‍फ़ पर पिछला आइटम हाइलाइट करें</translation>
 <translation id="6445033640292336367">टैब को उसकी मूल जगह पर वापस ले जाएं</translation>
 <translation id="6474744297082284761">ज़ूम घटाएं (डॉक किए जाने या फ़ुलस्क्रीन पर सामग्री को बड़ा दिखाने की सुविधा चालू किए जाने पर)</translation>
 <translation id="649811797655257835">फ़ाइल चुनें, फिर <ph name="SPACE" /> दबाएं</translation>
@@ -180,7 +180,7 @@
 <translation id="8537650670971624753">खोज मोड से बाहर निकलें</translation>
 <translation id="85690795166292698">लिंक को नए टैब में खोलें</translation>
 <translation id="8609384513243082612">नया टैब खोलें</translation>
-<translation id="8644639153978066712">फ़ाइल ऐप्लिकेशन में छिपी हुई फ़ाइलें दिखाएं</translation>
+<translation id="8644639153978066712">'फ़ाइल ऐप्लिकेशन' में छिपी हुई फ़ाइलें दिखाएं</translation>
 <translation id="8717459106217102612">पिछला शब्द या अक्षर चुनें</translation>
 <translation id="8727232706774971183">अपनी सूचनाएं देखें</translation>
 <translation id="8855885154700222542">फ़ुलस्क्रीन कुंजी</translation>
@@ -191,7 +191,7 @@
 <translation id="8990356943438003669"><ph name="ALT" /><ph name="SEPARATOR" /> 1 से 8 तक</translation>
 <translation id="9005984960510803406">Crosh विंडो खोलें</translation>
 <translation id="9041599225465145264">क्लिपबोर्ड से सामग्री चिपकाएं</translation>
-<translation id="9052808072970550123">अगले उपयोगकर्ता पर जाएं</translation>
+<translation id="9052808072970550123">अगले उपयोगकर्ता पर स्विच करें</translation>
 <translation id="906458777597946297">विंडो को बड़ा करें</translation>
 <translation id="9091855755813503076">लाइन के शुरू में जाएं</translation>
 <translation id="9106898733795143799">पेज और वेब ब्राउज़र</translation>

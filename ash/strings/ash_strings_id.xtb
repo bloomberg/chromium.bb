@@ -86,6 +86,7 @@
 <translation id="225680501294068881">Memindai perangkat...</translation>
 <translation id="2268130516524549846">Bluetooth dinonaktifkan</translation>
 <translation id="2268813581635650749">Keluarkan semua pengguna</translation>
+<translation id="2277103315734023688">Cari Maju</translation>
 <translation id="2292698582925480719">Skala layar</translation>
 <translation id="2302092602801625023">Akun ini dikelola oleh Family Link</translation>
 <translation id="2303600792989757991">Beralih ikhtisar jendela</translation>
@@ -166,6 +167,7 @@
 <translation id="3371140690572404006">Perangkat USB-C (port depan sebelah kanan)</translation>
 <translation id="3400357268283240774">Setelan tambahan</translation>
 <translation id="3413817803639110246">Belum ada notifikasi</translation>
+<translation id="343571671045587506">Edit pengingat</translation>
 <translation id="3445925074670675829">Perangkat USB-C</translation>
 <translation id="3454224730401036106">Sambungan Anda dialihkan ke jaringan yang lebih aman</translation>
 <translation id="3465223694362104965">Keyboard lain telah tersambung ke perangkat ini sejak terakhir kali Anda login. Pastikan Anda memercayai keyboard ini sebelum menggunakannya.</translation>
@@ -198,12 +200,14 @@
 <translation id="3900355044994618856">Sesi akan berakhir dalam <ph name="SESSION_TIME_REMAINING" /></translation>
 <translation id="3901991538546252627">Menyambung ke <ph name="NAME" /></translation>
 <translation id="394485226368336402">Setelan audio</translation>
+<translation id="3962859241508114581">Lagu Sebelumnya</translation>
 <translation id="397105322502079400">Menghitung...</translation>
 <translation id="3995138139523574647">Perangkat USB-C (port belakang sebelah kanan)</translation>
 <translation id="4017989525502048489">Penunjuk laser</translation>
 <translation id="4042660782729322247">Anda membagikan layar Anda</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Nonaktif untuk 1 aplikasi}other{Nonaktif untuk # aplikasi}}</translation>
 <translation id="4072264167173457037">Sinyal sedang</translation>
+<translation id="4112140312785995938">Cari Mundur</translation>
 <translation id="4129129681837227511">Untuk melihat notifikasi di layar kunci, buka kunci untuk mengubah setelan</translation>
 <translation id="4146833061457621061">Putar musik</translation>
 <translation id="4181841719683918333">Bahasa</translation>
@@ -227,6 +231,7 @@
 <translation id="4421231901400348175">Berbagi kontrol layar dengan <ph name="HELPER_NAME" /> via Remote Assistance.</translation>
 <translation id="4430019312045809116">Volume</translation>
 <translation id="4450893287417543264">Jangan tampilkan lagi</translation>
+<translation id="4477350412780666475">Lagu Berikutnya</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4481530544597605423">Perangkat tidak tersambung</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: Menyambung...</translation>
@@ -392,6 +397,7 @@
 <translation id="7222902781030499995">Hentikan timer</translation>
 <translation id="7256634071279256947">Mikrofon belakang</translation>
 <translation id="726276584504105859">Tarik ke sini untuk menggunakan layar terpisah</translation>
+<translation id="7262906531272962081">Buat pengingat</translation>
 <translation id="7303365578352795231">Menjawab di perangkat lain.</translation>
 <translation id="7305884605064981971">EDGE</translation>
 <translation id="7348093485538360975">Keyboard di layar</translation>

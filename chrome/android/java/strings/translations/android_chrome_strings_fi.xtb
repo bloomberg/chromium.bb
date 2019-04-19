@@ -281,7 +281,6 @@
 <translation id="305593374596241526">Sijainti on pois käytöstä. Voit ottaa sen käyttöön <ph name="BEGIN_LINK" />Android-asetuksista<ph name="END_LINK" />.</translation>
 <translation id="3058498974290601450">Voit ottaa synkronoinnin käyttöön milloin tahansa asetuksista.</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> kirjanmerkki}other{<ph name="BOOKMARKS_COUNT_MANY" /> kirjanmerkkiä}}</translation>
-<translation id="307908932405420782">Muita artikkeleita ilmestyy pian. Nauti aamustasi!</translation>
 <translation id="3089395242580810162">Avaa incognito-välilehdellä</translation>
 <translation id="311456632243022227">Useita linkkejä avattu Chromessa</translation>
 <translation id="3115898365077584848">Näytä tiedot</translation>
@@ -686,7 +685,6 @@ Jos haluat muokata asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name
 <translation id="605721222689873409">VV</translation>
 <translation id="6075798973483050474">Muokkaa etusivua</translation>
 <translation id="60923314841986378"><ph name="HOURS" /> tuntia jäljellä</translation>
-<translation id="60924377787140961">Muita artikkeleita ilmestyy pian. Nauti iltapäivästäsi!</translation>
 <translation id="6099151465289169210">Yksityiset välilehdet valittu</translation>
 <translation id="6108923351542677676">Synkronointia valmistellaan…</translation>
 <translation id="6111020039983847643">dataa käytetty</translation>
@@ -1039,7 +1037,6 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="8562452229998620586">Tässä näytetään tallennetut salasanasi.</translation>
 <translation id="8569404424186215731"><ph name="DATE" /> alkaen</translation>
 <translation id="8571213806525832805">Viimeiset neljä viikkoa</translation>
-<translation id="857509777403223202">Muita artikkeleita ilmestyy pian. Nauti illastasi!</translation>
 <translation id="857943718398505171">Sallittu (suositus)</translation>
 <translation id="8582216581279205169">Avatut välilehdet koko näytön korkuisina</translation>
 <translation id="8583805026567836021">Poistetaan tilin tietoja</translation>

@@ -281,7 +281,6 @@
 <translation id="305593374596241526">Местоположението е изключено. Включете го от <ph name="BEGIN_LINK" />настройките на Android<ph name="END_LINK" />.</translation>
 <translation id="3058498974290601450">Можете по всяко време да включите синхронизирането в настройките</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> отметка}other{<ph name="BOOKMARKS_COUNT_MANY" /> отметки}}</translation>
-<translation id="307908932405420782">Скоро ще се покажат още статии. Приятна сутрин!</translation>
 <translation id="3089395242580810162">Отваряне в раздел „инкогнито“</translation>
 <translation id="311456632243022227">Няколко връзки са отв. в Chrome</translation>
 <translation id="3115898365077584848">Показване на информацията</translation>
@@ -687,7 +686,6 @@
 <translation id="605721222689873409">ГГ</translation>
 <translation id="6075798973483050474">Редактиране на началната страница</translation>
 <translation id="60923314841986378">Остават <ph name="HOURS" /> часа</translation>
-<translation id="60924377787140961">Скоро ще се покажат още статии. Приятен следобед!</translation>
 <translation id="6099151465289169210">Превключихте към разделите в режим на частно сърфиране</translation>
 <translation id="6108923351542677676">Извършва се настройване…</translation>
 <translation id="6111020039983847643">използвани данни</translation>
@@ -1040,7 +1038,6 @@
 <translation id="8562452229998620586">Запазените пароли ще се покажат тук.</translation>
 <translation id="8569404424186215731">от <ph name="DATE" /></translation>
 <translation id="8571213806525832805">Последните 4 седмици</translation>
-<translation id="857509777403223202">Скоро ще се покажат още статии. Приятна вечер!</translation>
 <translation id="857943718398505171">Разрешено (препоръчително)</translation>
 <translation id="8582216581279205169">Секцията „Отворени раздели“ се показва на цялата височина</translation>
 <translation id="8583805026567836021">Данните от профила се изчистват</translation>

@@ -281,7 +281,6 @@
 <translation id="305593374596241526">Atrašanās vietu noteikšana ir izslēgta. Ieslēdziet to <ph name="BEGIN_LINK" />Android iestatījumos<ph name="END_LINK" />.</translation>
 <translation id="3058498974290601450">Jebkurā brīdī varat ieslēgt sinhronizāciju iestatījumos.</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> grāmatzīme}zero{<ph name="BOOKMARKS_COUNT_MANY" /> grāmatzīmju}one{<ph name="BOOKMARKS_COUNT_MANY" /> grāmatzīme}other{<ph name="BOOKMARKS_COUNT_MANY" /> grāmatzīmes}}</translation>
-<translation id="307908932405420782">Drīzumā būs pieejami citi raksti. Jauku rītu!</translation>
 <translation id="3089395242580810162">Atvērt inkognito režīma cilnē</translation>
 <translation id="311456632243022227">Vairākas saites atvērtas pārlūkā Chrome</translation>
 <translation id="3115898365077584848">Rādīt informāciju</translation>
@@ -686,7 +685,6 @@ Lai mainītu šo iestatījumu, <ph name="BEGIN_LINK" />atiestatiet sinhronizāci
 <translation id="605721222689873409">GG</translation>
 <translation id="6075798973483050474">Sākumlapas rediģēšana</translation>
 <translation id="60923314841986378">Atlikušas <ph name="HOURS" /> h</translation>
-<translation id="60924377787140961">Drīzumā būs pieejami citi raksti. Jauku pēcpusdienu!</translation>
 <translation id="6099151465289169210">Notika pārslēgšanās uz privātajām cilnēm</translation>
 <translation id="6108923351542677676">Notiek iestatīšana...</translation>
 <translation id="6111020039983847643">Izmantotie dati</translation>
@@ -1039,7 +1037,6 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="8562452229998620586">Šeit tiks parādītas saglabātās paroles.</translation>
 <translation id="8569404424186215731">kopš šāda datuma: <ph name="DATE" /></translation>
 <translation id="8571213806525832805">Pēdējās 4 nedēļas</translation>
-<translation id="857509777403223202">Drīzumā būs pieejami citi raksti. Jauku vakaru!</translation>
 <translation id="857943718398505171">Atļauta (ieteicams)</translation>
 <translation id="8582216581279205169">Atvērtās cilnes pilna ekrāna augstumā</translation>
 <translation id="8583805026567836021">Konta datu dzēšana</translation>

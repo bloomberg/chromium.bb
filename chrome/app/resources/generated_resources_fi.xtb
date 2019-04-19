@@ -408,7 +408,6 @@
 <translation id="1639239467298939599">Ladataan</translation>
 <translation id="163993578339087550"><ph name="SERVICE_NAME" /> haluaa tarkistaa, että käytät yhteensopivaa Chrome-laitetta.</translation>
 <translation id="1640283014264083726">PKCS #1 MD4 ja RSA-salaus</translation>
-<translation id="1641113438599504367">Selaussuoja</translation>
 <translation id="1642494467033190216">Rootfs-suojauksen poisto ja uudelleenkäynnistys vaaditaan, ennen kuin muut virheenkorjausominaisuudet voidaan ottaa käyttöön.</translation>
 <translation id="1643050526526937107">Pelkkä synkronointi</translation>
 <translation id="1643072738649235303">X9.62 ECDSA ‑allekirjoitus, jossa on SHA-1</translation>
@@ -788,7 +787,6 @@
 <translation id="2230051135190148440">CHAP</translation>
 <translation id="223106756035922488">Katso päivän Doodle klikkaamalla.</translation>
 <translation id="2231238007119540260">Jos poistat palvelimen varmenteen, palautat käyttöön palvelimen tavalliset turvatarkastukset ja edellytät siltä kelvollista varmennetta.</translation>
-<translation id="2232379019872353004">Lähettää joitain järjestelmän tietoja ja sivujen sisältöjä Googlelle</translation>
 <translation id="2232876851878324699">Tiedosto sisälsi yhden varmenteen, jota ei tuotu:</translation>
 <translation id="2233502537820838181">&amp;Lisätietoja</translation>
 <translation id="2234876718134438132">Synkronointi ja Google-palvelut</translation>
@@ -3696,6 +3694,7 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="6841186874966388268">Virheet</translation>
 <translation id="6843423766595476978">Ok Google on valmiina</translation>
 <translation id="6845038076637626672">Avaa suuressa koossa</translation>
+<translation id="6845325883481699275">Auttaa parantamaan Chromen suojausta.</translation>
 <translation id="6848388270925200958">Joitakin korttejasi voi juuri nyt käyttää vain tällä laitteella</translation>
 <translation id="6851497530878285708">Sovellus käytössä</translation>
 <translation id="6853388645642883916">Päivittäjä on lepotilassa</translation>
@@ -4258,7 +4257,6 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="7730449930968088409">Ota ruutukaappaus</translation>
 <translation id="7732111077498238432">Tämän verkon toimintaa ohjataan käytännöillä.</translation>
 <translation id="7737238973539693982">Poista Linux (beta)</translation>
-<translation id="773905249182896430">Suojaa sinua ja laitettasi vaarallisilta sivustoilta</translation>
 <translation id="7740996059027112821">Vakio</translation>
 <translation id="7750228210027921155">Kuva kuvassa</translation>
 <translation id="7751260505918304024">Näytä kaikki</translation>
@@ -5068,7 +5066,6 @@ Tallenna avaintiedosto suojattuun sijaintiin. Tarvitset sitä, jos haluat luoda 
 <translation id="8978154919215542464">Käytössä – synkronoi kaikki</translation>
 <translation id="897939795688207351">Osoitteessa <ph name="ORIGIN" /></translation>
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> – kaatunut</translation>
-<translation id="8983677657449185470">Auta parantamaan selaussuojaa</translation>
 <translation id="8986362086234534611">Unohda</translation>
 <translation id="8986494364107987395">Lähetä Googlelle käyttötilastoja ja virheraportteja automaattisesti</translation>
 <translation id="8987927404178983737">Kuukausi</translation>

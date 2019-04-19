@@ -405,7 +405,6 @@
 <translation id="1639239467298939599">正在加载</translation>
 <translation id="163993578339087550"><ph name="SERVICE_NAME" />想检查您使用的是否为符合条件的 Chrome 操作系统设备。</translation>
 <translation id="1640283014264083726">PKCS #1，带有 RSA 加密的 MD4</translation>
-<translation id="1641113438599504367">安全浏览</translation>
 <translation id="1642494467033190216">要启用其他调试功能，必须先取消根文件系统保护并重启设备。</translation>
 <translation id="1643050526526937107">仅开启同步</translation>
 <translation id="1643072738649235303">采用 SHA-1 算法的 X9.62 ECDSA 签名</translation>
@@ -785,7 +784,6 @@
 <translation id="2230051135190148440">CHAP</translation>
 <translation id="223106756035922488">点击即可查看今日的涂鸦</translation>
 <translation id="2231238007119540260">如果您删除了某个服务器的证书，则会恢复对该服务器的常规安全检查，并要求其使用有效证书。</translation>
-<translation id="2232379019872353004">将一些系统信息和网页内容发送至 Google</translation>
 <translation id="2232876851878324699">该文件包含一个证书，但未导入：</translation>
 <translation id="2233502537820838181">详细信息(&amp;M)</translation>
 <translation id="2234876718134438132">同步功能和 Google 服务</translation>
@@ -3688,6 +3686,7 @@
 <translation id="6841186874966388268">错误</translation>
 <translation id="6843423766595476978">Ok Google 已设置完毕</translation>
 <translation id="6845038076637626672">以最大化模式打开</translation>
+<translation id="6845325883481699275">帮助我们改善 Chrome 安全性</translation>
 <translation id="6848388270925200958">此刻，您有一些卡只能在这部设备上使用</translation>
 <translation id="6851497530878285708">已启用此应用</translation>
 <translation id="6853388645642883916">更新程序处于休眠模式</translation>
@@ -4248,7 +4247,6 @@
 <translation id="7730449930968088409">截取您屏幕上的内容</translation>
 <translation id="7732111077498238432">网络受政策控制</translation>
 <translation id="7737238973539693982">删除 Linux（测试版）</translation>
-<translation id="773905249182896430">保护您和您的设备不受危险网站的侵害</translation>
 <translation id="7740996059027112821">标准</translation>
 <translation id="7750228210027921155">画中画</translation>
 <translation id="7751260505918304024">全部显示</translation>
@@ -5058,7 +5056,6 @@
 <translation id="8978154919215542464">开启 - 同步所有内容</translation>
 <translation id="897939795688207351">在 <ph name="ORIGIN" /> 上</translation>
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> - 已崩溃</translation>
-<translation id="8983677657449185470">帮助我们改进安全浏览功能</translation>
 <translation id="8986362086234534611">不保存</translation>
 <translation id="8986494364107987395">将使用情况统计信息和崩溃报告自动发送给 Google</translation>
 <translation id="8987927404178983737">月</translation>

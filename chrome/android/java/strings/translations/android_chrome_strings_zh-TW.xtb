@@ -281,7 +281,6 @@
 <translation id="305593374596241526">定位功能已關閉，請在 <ph name="BEGIN_LINK" />Android 設定<ph name="END_LINK" />中開啟這項功能。</translation>
 <translation id="3058498974290601450">你隨時可以在設定中開啟同步功能</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> 個書籤}other{<ph name="BOOKMARKS_COUNT_MANY" /> 個書籤}}</translation>
-<translation id="307908932405420782">系統即將顯示更多文章供你閱覽，陪你度過美好的早晨！</translation>
 <translation id="3089395242580810162">在無痕式分頁中開啟</translation>
 <translation id="311456632243022227">多個連結已在 Chrome 中開啟</translation>
 <translation id="3115898365077584848">顯示資訊</translation>
@@ -686,7 +685,6 @@
 <translation id="605721222689873409">年</translation>
 <translation id="6075798973483050474">編輯首頁</translation>
 <translation id="60923314841986378">還剩 <ph name="HOURS" /> 小時</translation>
-<translation id="60924377787140961">系統即將顯示更多文章供你閱覽，陪你度過美好的午後時光！</translation>
 <translation id="6099151465289169210">已切換成私密分頁</translation>
 <translation id="6108923351542677676">設定中…</translation>
 <translation id="6111020039983847643">數據用量</translation>
@@ -1039,7 +1037,6 @@
 <translation id="8562452229998620586">已儲存的密碼會顯示在這裡。</translation>
 <translation id="8569404424186215731">(<ph name="DATE" />起)</translation>
 <translation id="8571213806525832805">過去 4 週</translation>
-<translation id="857509777403223202">系統即將顯示更多文章供你閱覽，陪你度過美好的夜晚！</translation>
 <translation id="857943718398505171">已允許 (建議)</translation>
 <translation id="8582216581279205169">已使用整個畫面顯示「開啟的分頁」工作表</translation>
 <translation id="8583805026567836021">正在清除帳戶資料</translation>

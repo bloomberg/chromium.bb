@@ -281,7 +281,6 @@
 <translation id="305593374596241526">ตอนนี้ตำแหน่งปิดอยู่ เปิดตำแหน่งได้ใน<ph name="BEGIN_LINK" />การตั้งค่า Android<ph name="END_LINK" /></translation>
 <translation id="3058498974290601450">คุณเปิดการซิงค์ได้ทุกเมื่อในการตั้งค่า</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{บุ๊กมาร์ก <ph name="BOOKMARKS_COUNT_ONE" /> รายการ}other{บุ๊กมาร์ก <ph name="BOOKMARKS_COUNT_MANY" /> รายการ}}</translation>
-<translation id="307908932405420782">บทความอื่นๆ จะปรากฏขึ้นในอีกไม่ช้า ขอให้เพลิดเพลินกับยามเช้า</translation>
 <translation id="3089395242580810162">เปิดในแท็บไม่ระบุตัวตน</translation>
 <translation id="311456632243022227">เปิดหลายลิงก์ใน Chrome แล้ว</translation>
 <translation id="3115898365077584848">แสดงข้อมูล</translation>
@@ -686,7 +685,6 @@
 <translation id="605721222689873409">ปป</translation>
 <translation id="6075798973483050474">แก้ไขหน้าแรก</translation>
 <translation id="60923314841986378">เหลือ <ph name="HOURS" /> ชั่วโมง</translation>
-<translation id="60924377787140961">บทความอื่นๆ จะปรากฏขึ้นในอีกไม่ช้า ขอให้เพลิดเพลินกับยามบ่าย</translation>
 <translation id="6099151465289169210">เปลี่ยนเป็นแท็บส่วนตัวแล้ว</translation>
 <translation id="6108923351542677676">กำลังดำเนินการตั้งค่า…</translation>
 <translation id="6111020039983847643">อินเทอร์เน็ตที่ใช้</translation>
@@ -1039,7 +1037,6 @@
 <translation id="8562452229998620586">รหัสผ่านที่บันทึกไว้จะแสดงที่นี่</translation>
 <translation id="8569404424186215731">ตั้งแต่วันที่ <ph name="DATE" /></translation>
 <translation id="8571213806525832805">4 สัปดาห์ที่แล้ว</translation>
-<translation id="857509777403223202">บทความอื่นๆ จะปรากฏขึ้นในอีกไม่ช้า ขอให้เพลิดเพลินกับยามค่ำ</translation>
 <translation id="857943718398505171">อนุญาตแล้ว (แนะนำ)</translation>
 <translation id="8582216581279205169">แท็บที่เปิดไว้เต็มความสูง</translation>
 <translation id="8583805026567836021">กำลังล้างข้อมูลบัญชี</translation>

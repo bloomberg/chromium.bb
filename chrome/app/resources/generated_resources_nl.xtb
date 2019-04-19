@@ -408,7 +408,6 @@
 <translation id="1639239467298939599">Laden</translation>
 <translation id="163993578339087550"><ph name="SERVICE_NAME" /> wil controleren of je een geschikt Chrome OS-apparaat gebruikt.</translation>
 <translation id="1640283014264083726">PKCS nr. 1 MD4 met RSA-encryptie</translation>
-<translation id="1641113438599504367">Safe Browsing</translation>
 <translation id="1642494467033190216">Je moet rootfs-beveiliging verwijderen en opnieuw opstarten voordat je andere foutopsporingsfuncties kunt inschakelen.</translation>
 <translation id="1643050526526937107">Alleen synchroniseren</translation>
 <translation id="1643072738649235303">X9.62 ECDSA-handtekening met SHA-1</translation>
@@ -788,7 +787,6 @@
 <translation id="2230051135190148440">CHAP</translation>
 <translation id="223106756035922488">Klik om de doodle van vandaag te bekijken</translation>
 <translation id="2231238007119540260">Als je een servercertificaat verwijdert, herstel je de gebruikelijke beveiligingscontroles voor de server en verplicht je de server een geldig certificaat te gebruiken.</translation>
-<translation id="2232379019872353004">Hiermee verzend je bepaalde systeeminformatie en paginacontent naar Google</translation>
 <translation id="2232876851878324699">Het bestand bevat één certificaat. Dit certificaat is niet geïmporteerd:</translation>
 <translation id="2233502537820838181">&amp;Meer informatie</translation>
 <translation id="2234876718134438132">Synchronisatie &amp; Google-services</translation>
@@ -3696,6 +3694,7 @@
 <translation id="6841186874966388268">Fouten</translation>
 <translation id="6843423766595476978">'Oké Google' is helemaal ingesteld</translation>
 <translation id="6845038076637626672">Gemaximaliseerd openen</translation>
+<translation id="6845325883481699275">Help de beveiliging van Chrome te verbeteren</translation>
 <translation id="6848388270925200958">Je hebt momenteel enkele passen die alleen op dit apparaat kunnen worden gebruikt</translation>
 <translation id="6851497530878285708">App ingeschakeld</translation>
 <translation id="6853388645642883916">Updater in slaapstand</translation>
@@ -4258,7 +4257,6 @@
 <translation id="7730449930968088409">De content van je scherm vastleggen</translation>
 <translation id="7732111077498238432">Netwerk wordt beheerd op basis van beleid</translation>
 <translation id="7737238973539693982">Linux (bèta) verwijderen</translation>
-<translation id="773905249182896430">Beschermt jou en je apparaat tegen gevaarlijke sites</translation>
 <translation id="7740996059027112821">Standaard</translation>
 <translation id="7750228210027921155">Scherm-in-scherm</translation>
 <translation id="7751260505918304024">Alles weergeven</translation>
@@ -5069,7 +5067,6 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="8978154919215542464">Aan: alles synchroniseren</translation>
 <translation id="897939795688207351">Op <ph name="ORIGIN" /></translation>
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" />: gecrasht</translation>
-<translation id="8983677657449185470">Help 'Safe Browsing' te verbeteren</translation>
 <translation id="8986362086234534611">Vergeten</translation>
 <translation id="8986494364107987395">Automatisch gebruiksstatistieken en crashrapporten naar Google verzenden</translation>
 <translation id="8987927404178983737">Maand</translation>

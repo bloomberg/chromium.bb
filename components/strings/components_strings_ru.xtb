@@ -1277,7 +1277,6 @@
 <translation id="8100588592594801589">Недействительные карты удалены.</translation>
 <translation id="8103161714697287722">Способ оплаты</translation>
 <translation id="8118489163946903409">Способ оплаты</translation>
-<translation id="8123836779274890062">Устройство <ph name="DEVICE_TYPE" /> управляется <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="8127301229239896662">Программа "<ph name="SOFTWARE_NAME" />" была установлена неправильно. Обратитесь за помощью к системному администратору.</translation>
 <translation id="8131740175452115882">Подтвердить</translation>
 <translation id="8149426793427495338">Ваш компьютер перешел в спящий режим.</translation>
@@ -1410,7 +1409,7 @@
 <translation id="8996941253935762404">Сайт содержит нежелательное ПО</translation>
 <translation id="8997023839087525404">Предоставленный сервером сертификат не проходил проверку безопасности. Она необходима в некоторых случаях, чтобы доказать, что сертификат надежен и защищает от злоумышленников.</translation>
 <translation id="9001074447101275817">Для доступа на прокси-сервер <ph name="DOMAIN" /> требуется указать имя пользователя и пароль.</translation>
-<translation id="9004367719664099443">Сеанс VR активен</translation>
+<translation id="9004367719664099443">Сеанс VR запущен</translation>
 <translation id="9005998258318286617">Не удалось загрузить PDF-документ.</translation>
 <translation id="9008201768610948239">Пропустить</translation>
 <translation id="9011424611726486705">Открыть настройки сайта</translation>

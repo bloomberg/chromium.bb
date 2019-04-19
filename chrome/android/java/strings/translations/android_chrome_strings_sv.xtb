@@ -281,7 +281,6 @@
 <translation id="305593374596241526">Plats har inaktiverats. Aktivera det i <ph name="BEGIN_LINK" />Android-inställningarna<ph name="END_LINK" />.</translation>
 <translation id="3058498974290601450">Du kan när som helst inaktivera synkroniseringen i inställningarna</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> bokmärke}other{<ph name="BOOKMARKS_COUNT_MANY" /> bokmärken}}</translation>
-<translation id="307908932405420782">Fler artiklar visas snart. Ha en bra förmiddag!</translation>
 <translation id="3089395242580810162">Öppna i inkognitoflik</translation>
 <translation id="311456632243022227">Flera länkar öppnades i Chrome</translation>
 <translation id="3115898365077584848">Visa info</translation>
@@ -686,7 +685,6 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="605721222689873409">ÅÅ</translation>
 <translation id="6075798973483050474">Redigera startsidan</translation>
 <translation id="60923314841986378"><ph name="HOURS" /> timmar kvar</translation>
-<translation id="60924377787140961">Fler artiklar visas snart. Ha en bra eftermiddag!</translation>
 <translation id="6099151465289169210">Du har bytt till privata flikar</translation>
 <translation id="6108923351542677676">Konfigurationen pågår ...</translation>
 <translation id="6111020039983847643">Använd data</translation>
@@ -1039,7 +1037,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="8562452229998620586">Sparade lösenord visas här.</translation>
 <translation id="8569404424186215731">sedan <ph name="DATE" /></translation>
 <translation id="8571213806525832805">Senaste fyra veckorna</translation>
-<translation id="857509777403223202">Fler artiklar visas snart. Trevlig kväll!</translation>
 <translation id="857943718398505171">Tillåten (rekommenderas)</translation>
 <translation id="8582216581279205169">Öppnade flikar med full höjd</translation>
 <translation id="8583805026567836021">Rensar kontouppgifter</translation>

@@ -281,7 +281,6 @@
 <translation id="305593374596241526">位置信息功能现处于关闭状态；请在 <ph name="BEGIN_LINK" />Android 设置<ph name="END_LINK" />中开启此项功能。</translation>
 <translation id="3058498974290601450">您随时可在“设置”中开启同步功能</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> 个书签}other{<ph name="BOOKMARKS_COUNT_MANY" /> 个书签}}</translation>
-<translation id="307908932405420782">我们很快将会为您奉上更多文章，伴您度过美好的晨间时光！</translation>
 <translation id="3089395242580810162">在隐身标签页中打开</translation>
 <translation id="311456632243022227">已在 Chrome 中打开多个链接</translation>
 <translation id="3115898365077584848">显示信息</translation>
@@ -686,7 +685,6 @@
 <translation id="605721222689873409">YY</translation>
 <translation id="6075798973483050474">修改主页</translation>
 <translation id="60923314841986378">还剩 <ph name="HOURS" /> 小时</translation>
-<translation id="60924377787140961">我们很快将会为您奉上更多文章，伴您度过美好的午后时光！</translation>
 <translation id="6099151465289169210">已切换到私密标签页</translation>
 <translation id="6108923351542677676">正在设置…</translation>
 <translation id="6111020039983847643">已耗用的流量</translation>
@@ -1039,7 +1037,6 @@
 <translation id="8562452229998620586">已保存的密码将显示在这里。</translation>
 <translation id="8569404424186215731">自 <ph name="DATE" />以来</translation>
 <translation id="8571213806525832805">近 4 周</translation>
-<translation id="857509777403223202">我们很快将会为您奉上更多文章，伴您度过美好的夜晚时光！</translation>
 <translation id="857943718398505171">允许（推荐）</translation>
 <translation id="8582216581279205169">已全屏打开“已打开的标签页”工作表</translation>
 <translation id="8583805026567836021">清除帐号数据</translation>

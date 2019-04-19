@@ -281,7 +281,6 @@
 <translation id="305593374596241526">Asukoht on välja lülitatud. Lülitage see sisse <ph name="BEGIN_LINK" />Androidi seadetes<ph name="END_LINK" />.</translation>
 <translation id="3058498974290601450">Saate sünkroonimise seadetes alati sisse lülitada</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> järjehoidja}other{<ph name="BOOKMARKS_COUNT_MANY" /> järjehoidjat}}</translation>
-<translation id="307908932405420782">Peagi kuvatakse rohkem artikleid. Head hommikut!</translation>
 <translation id="3089395242580810162">Ava inkognito vahelehel</translation>
 <translation id="311456632243022227">Mitu linki on Chrome'is avatud</translation>
 <translation id="3115898365077584848">Kuva teave</translation>
@@ -686,7 +685,6 @@ Seade muutmiseks <ph name="BEGIN_LINK" />lähtestage sünkroonimine<ph name="END
 <translation id="605721222689873409">aa</translation>
 <translation id="6075798973483050474">Avalehe muutmine</translation>
 <translation id="60923314841986378">Jäänud on <ph name="HOURS" /> tundi</translation>
-<translation id="60924377787140961">Peagi kuvatakse rohkem artikleid. Head pärastlõunat!</translation>
 <translation id="6099151465289169210">Aktiveeriti privaatsed vahelehed</translation>
 <translation id="6108923351542677676">Seadistamine on pooleli ...</translation>
 <translation id="6111020039983847643">kasutatud andmemaht</translation>
@@ -1039,7 +1037,6 @@ Näiteks võivad mõned veebisaidid taotlusele reageerida nii, et näitavad teil
 <translation id="8562452229998620586">Salvestatud paroolid ilmuvad siin.</translation>
 <translation id="8569404424186215731">alates kuupäevast <ph name="DATE" /></translation>
 <translation id="8571213806525832805">Viimased 4 nädalat</translation>
-<translation id="857509777403223202">Peagi kuvatakse rohkem artikleid. Head õhtut!</translation>
 <translation id="857943718398505171">Lubatud (soovitatav)</translation>
 <translation id="8582216581279205169">Avatud vahekaardid täiskõrgusega</translation>
 <translation id="8583805026567836021">Kontoandmete kustutamine</translation>

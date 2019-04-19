@@ -281,7 +281,6 @@
 <translation id="305593374596241526">‏مکان خاموش است، آن را در <ph name="BEGIN_LINK" />تنظیمات Android<ph name="END_LINK" /> روشن کنید.</translation>
 <translation id="3058498974290601450">هرزمان خواستید می‌توانید همگام‌سازی را در تنظیمات روشن کنید</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> نشانک}one{<ph name="BOOKMARKS_COUNT_MANY" /> نشانک}other{<ph name="BOOKMARKS_COUNT_MANY" /> نشانک}}</translation>
-<translation id="307908932405420782">مقاله‌های بیشتر به‌زودی نشان داده می‌شوند. از صبحتان لذت ببرید!</translation>
 <translation id="3089395242580810162">باز کردن در برگه ناشناس</translation>
 <translation id="311456632243022227">‏چند پیوند در Chrome باز شد</translation>
 <translation id="3115898365077584848">نمایش دادن اطلاعات</translation>
@@ -686,7 +685,6 @@
 <translation id="605721222689873409">سال</translation>
 <translation id="6075798973483050474">ویرایش صفحه اصلی</translation>
 <translation id="60923314841986378"><ph name="HOURS" /> ساعت باقی‌مانده است</translation>
-<translation id="60924377787140961">مقاله‌های بیشتر به‌زودی نشان داده می‌شوند. از بعدازظهرتان لذت ببرید!</translation>
 <translation id="6099151465289169210">جابه‌جایی به برگه‌های خصوصی</translation>
 <translation id="6108923351542677676">تنظیم در حال انجام است...</translation>
 <translation id="6111020039983847643">داده مصرف‌شده</translation>
@@ -1039,7 +1037,6 @@
 <translation id="8562452229998620586">گذرواژه‌های ذخیره شده در اینجا ظاهر می‌شود.</translation>
 <translation id="8569404424186215731">از <ph name="DATE" /></translation>
 <translation id="8571213806525832805">۴ هفته گذشته</translation>
-<translation id="857509777403223202">مقاله‌های بیشتر به‌زودی نشان داده می‌شوند. از غروبتان لذت ببرید!</translation>
 <translation id="857943718398505171">مجاز (توصیه می‌شود)</translation>
 <translation id="8582216581279205169">برگه‌های باز با ارتفاع کامل</translation>
 <translation id="8583805026567836021">پاک‌سازی داده‌های حساب</translation>

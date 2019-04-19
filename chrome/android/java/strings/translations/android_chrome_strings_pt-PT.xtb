@@ -281,7 +281,6 @@
 <translation id="305593374596241526">A localização está desativada. Ative-a nas <ph name="BEGIN_LINK" />Definições do Android<ph name="END_LINK" />.</translation>
 <translation id="3058498974290601450">Pode ativar a sincronização em qualquer altura nas definições.</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> marcador}other{<ph name="BOOKMARKS_COUNT_MANY" /> marcadores}}</translation>
-<translation id="307908932405420782">Serão apresentados mais artigos em breve. Desfrute da sua manhã!</translation>
 <translation id="3089395242580810162">Abrir no separador anónimo</translation>
 <translation id="311456632243022227">Vários links abertos no Chrome</translation>
 <translation id="3115898365077584848">Mostrar informações</translation>
@@ -686,7 +685,6 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 <translation id="605721222689873409">AA</translation>
 <translation id="6075798973483050474">Editar página inicial</translation>
 <translation id="60923314841986378">Faltam <ph name="HOURS" /> horas</translation>
-<translation id="60924377787140961">Serão apresentados mais artigos em breve. Desfrute da sua tarde!</translation>
 <translation id="6099151465289169210">Alterado para separadores privados</translation>
 <translation id="6108923351542677676">Configuração em curso…</translation>
 <translation id="6111020039983847643">dados utilizados</translation>
@@ -1039,7 +1037,6 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="8562452229998620586">As palavras-passe guardadas aparecem aqui.</translation>
 <translation id="8569404424186215731">desde <ph name="DATE" /></translation>
 <translation id="8571213806525832805">Últimas 4 semanas</translation>
-<translation id="857509777403223202">Serão apresentados mais artigos em breve. Desfrute do seu serão!</translation>
 <translation id="857943718398505171">Permitido (recomendado)</translation>
 <translation id="8582216581279205169">Separadores abertos à altura total.</translation>
 <translation id="8583805026567836021">A limpar os dados da conta</translation>

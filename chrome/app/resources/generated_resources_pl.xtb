@@ -408,7 +408,6 @@
 <translation id="1639239467298939599">Wczytuję</translation>
 <translation id="163993578339087550"><ph name="SERVICE_NAME" /> chce sprawdzić, czy używasz odpowiedniego urządzenia z Chrome OS.</translation>
 <translation id="1640283014264083726">PKCS #1, MD4 z szyfrowaniem RSA</translation>
-<translation id="1641113438599504367">Bezpieczne przeglądanie</translation>
 <translation id="1642494467033190216">Zanim włączysz inne funkcje debugowania, musisz wyłączyć zabezpieczenie rootfs i ponownie uruchomić urządzenie.</translation>
 <translation id="1643050526526937107">Tylko synchronizacja</translation>
 <translation id="1643072738649235303">Podpis X9.62 ECDSA z SHA-1</translation>
@@ -436,7 +435,7 @@
 <translation id="1670399744444387456">Podstawowe</translation>
 <translation id="167160931442925455">Najgłośniej</translation>
 <translation id="1673137583248014546"><ph name="URL" /> chce odczytać markę i model Twojego klucza bezpieczeństwa</translation>
-<translation id="1679068421605151609">Narzędzia dla programistów</translation>
+<translation id="1679068421605151609">Narzędzia dla deweloperów</translation>
 <translation id="167983332380191032">Usługa zarządzania wysłała błędny kod HTTP.</translation>
 <translation id="1680849702532889074">Podczas instalowania aplikacji na Linuksa wystąpił błąd.</translation>
 <translation id="16815041330799488">Nie zezwalaj stronom na dostęp do tekstu i obrazów skopiowanych do schowka</translation>
@@ -788,7 +787,6 @@
 <translation id="2230051135190148440">CHAP</translation>
 <translation id="223106756035922488">Kliknij, by zobaczyć doodle dnia</translation>
 <translation id="2231238007119540260">Jeśli usuniesz certyfikat serwera, przywrócisz zwykłe sprawdzenia zabezpieczeń w odniesieniu do tego serwera z wymogiem używania przez niego ważnego certyfikatu.</translation>
-<translation id="2232379019872353004">Wysyła do Google pewne informacje o systemie i część zawartości stron</translation>
 <translation id="2232876851878324699">Plik zawierał jeden certyfikat, który nie został zaimportowany:</translation>
 <translation id="2233502537820838181">&amp;Więcej informacji</translation>
 <translation id="2234876718134438132">Synchronizacja i usługi Google</translation>
@@ -999,7 +997,7 @@
 <translation id="255747371423522804">Dodaj do istniejącej grupy</translation>
 <translation id="2558896001721082624">Zawsze pokazuj opcje ułatwień dostępu w menu systemowym</translation>
 <translation id="2562743677925229011">Nie jesteś zalogowany(a) do <ph name="SHORT_PRODUCT_NAME" />.</translation>
-<translation id="2564520396658920462">Wykonywanie kodu JavaScript przy użyciu AppleScript jest wyłączone. Aby włączyć tę funkcję, na pasku menu kliknij Widok &gt; Programista &gt; Zezwól na kod JavaScript z Apple Events. Więcej informacji: https://support.google.com/chrome/?p=applescript</translation>
+<translation id="2564520396658920462">Wykonywanie kodu JavaScript przy użyciu AppleScript jest wyłączone. Aby włączyć tę funkcję, na pasku menu kliknij Widok &gt; Deweloper &gt; Zezwól na kod JavaScript z Apple Events. Więcej informacji: https://support.google.com/chrome/?p=applescript</translation>
 <translation id="2564653188463346023">Ulepszone sprawdzanie pisowni</translation>
 <translation id="2566124945717127842">Wykonaj Powerwash, by zresetować urządzenie z <ph name="IDS_SHORT_PRODUCT_NAME" /> do ustawień fabrycznych.</translation>
 <translation id="2568774940984945469">Kontener paska informacji</translation>
@@ -1443,7 +1441,7 @@
 <translation id="3281892622610078515">Pliki i programy do kwarantanny:</translation>
 <translation id="3282568296779691940">Zaloguj się w Chrome</translation>
 <translation id="3285322247471302225">Nowa &amp;karta</translation>
-<translation id="3288047731229977326">Rozszerzenia działające w trybie programisty mogą uszkodzić Twój komputer. Jeśli nie jesteś programistą, wyłącz je dla bezpieczeństwa.</translation>
+<translation id="3288047731229977326">Rozszerzenia działające w trybie dewelopera mogą uszkodzić Twój komputer. Jeśli nie jesteś deweloperem, wyłącz je dla bezpieczeństwa.</translation>
 <translation id="3289856944988573801">Jeśli chcesz sprawdzić aktualizacje, użyj Ethernetu lub Wi-Fi.</translation>
 <translation id="32939749466444286">Kontener Linuksa nie uruchomił się. Spróbuj ponownie.</translation>
 <translation id="3294437725009624529">Gość</translation>
@@ -1775,7 +1773,7 @@
 <translation id="3777806571986431400">Włączono rozszerzenie</translation>
 <translation id="3778152852029592020">Pobieranie zostało anulowane.</translation>
 <translation id="3778208826288864398">Klucz bezpieczeństwa jest zablokowany z powodu wprowadzenia nieprawidłowego kodu PIN zbyt wiele razy. Musisz zresetować klucz bezpieczeństwa.</translation>
-<translation id="3778740492972734840">&amp;Narzędzia dla programistów</translation>
+<translation id="3778740492972734840">&amp;Narzędzia dla deweloperów</translation>
 <translation id="3778868487658107119">Zadawaj mu pytania i wydawaj polecenia. To Twój osobisty asystent, zawsze gotowy do pomocy.</translation>
 <translation id="378312418865624974">Odczyt unikalnego identyfikatora tego komputera</translation>
 <translation id="3785071023202624850">{NUM_TABS,plural, =1{Wycisz kartę}few{Wycisz karty}many{Wycisz karty}other{Wycisz karty}}</translation>
@@ -1996,7 +1994,7 @@
 <translation id="4095264805865317199">Otwórz interfejs aktywacji sieci komórkowej</translation>
 <translation id="4095507791297118304">Ekran główny</translation>
 <translation id="409579654357498729">Dodaj do Cloud Print</translation>
-<translation id="4096508467498758490">Wyłącz rozszerzenia trybu programisty</translation>
+<translation id="4096508467498758490">Wyłącz rozszerzenia trybu dewelopera</translation>
 <translation id="4096824249111507322">Czekaj, moduł zabezpieczeń jest przygotowywany (może to potrwać kilka minut)…</translation>
 <translation id="4099060993766194518">Przywrócić domyślną wyszukiwarkę?</translation>
 <translation id="4099874310852108874">Wystąpił błąd sieci.</translation>
@@ -2114,7 +2112,7 @@
 <translation id="431076611119798497">&amp;Szczegóły</translation>
 <translation id="4312866146174492540">Blokuj (domyślnie)</translation>
 <translation id="4314815835985389558">Zarządzanie synchronizacją</translation>
-<translation id="4316850752623536204">Witryna programisty</translation>
+<translation id="4316850752623536204">Witryna dewelopera</translation>
 <translation id="4320177379694898372">Brak połączenia z internetem</translation>
 <translation id="4321442524549817090">P&amp;okaż URL</translation>
 <translation id="4322394346347055525">Zamknij inne karty</translation>
@@ -2584,7 +2582,7 @@
 <translation id="5109044022078737958">Mia</translation>
 <translation id="5111646998522066203">Zamknij tryb incognito</translation>
 <translation id="5111692334209731439">&amp;Menedżer zakładek</translation>
-<translation id="5112577000029535889">&amp;Narzędzia dla programistów</translation>
+<translation id="5112577000029535889">&amp;Narzędzia dla deweloperów</translation>
 <translation id="5113739826273394829">Jeśli klikniesz tę ikonę, <ph name="DEVICE_TYPE" /> zostanie zablokowany ręcznie. Następnym razem trzeba będzie wpisać hasło, by go odblokować.</translation>
 <translation id="51143538739122961">Włóż klucz bezpieczeństwa i dotknij go</translation>
 <translation id="5115309401544567011">Podłącz urządzenie <ph name="DEVICE_TYPE" /> do źródła zasilania.</translation>
@@ -3578,7 +3576,7 @@
 <translation id="665061930738760572">Otwórz w &amp;nowym oknie</translation>
 <translation id="6651237644330755633">Ufaj temu certyfikatowi przy identyfikowaniu witryn internetowych</translation>
 <translation id="665355505818177700">Integracja Chrome <ph name="MS_AD_NAME" /> jest obsługiwana tylko na platformach x86_64. Chromebooki zbudowane na platformach ARM lub x86 nie obsługują tej funkcji.</translation>
-<translation id="6655190889273724601">Tryb programisty</translation>
+<translation id="6655190889273724601">Tryb dewelopera</translation>
 <translation id="6655458902729017087">Ukryj konta</translation>
 <translation id="6657585470893396449">Hasło</translation>
 <translation id="6659213950629089752">Powiększenie strony zostało zmienione przez rozszerzenie „<ph name="NAME" />”</translation>
@@ -3696,6 +3694,7 @@
 <translation id="6841186874966388268">Błędy</translation>
 <translation id="6843423766595476978">Ukończono konfigurację OK Google</translation>
 <translation id="6845038076637626672">Otwórz zmaksymalizowane</translation>
+<translation id="6845325883481699275">Pomóż zwiększyć bezpieczeństwo Chrome</translation>
 <translation id="6848388270925200958">Obecnie niektórych Twoich kart można używać tylko na tym urządzeniu</translation>
 <translation id="6851497530878285708">Aplikacja włączona</translation>
 <translation id="6853388645642883916">Aktualizator jest uśpiony</translation>
@@ -4071,7 +4070,7 @@
 <translation id="7427315641433634153">MSCHAP</translation>
 <translation id="7427348830195639090">Strona w tle: <ph name="BACKGROUND_PAGE_URL" /></translation>
 <translation id="7433692219247014412">{COUNT,plural, =0{Otwórz wszystkie w &amp;nowym oknie}=1{Otwórz w &amp;nowym oknie}few{Otwórz wszystkie (#) w &amp;nowym oknie}many{Otwórz wszystkie (#) w &amp;nowym oknie}other{Otwórz wszystkie (#) w &amp;nowym oknie}}</translation>
-<translation id="7434509671034404296">Programista</translation>
+<translation id="7434509671034404296">Deweloper</translation>
 <translation id="7436921188514130341">Kurza twarz! Podczas zmiany nazwy wystąpił błąd.</translation>
 <translation id="7438976808740265764">Z końcem grudnia 2020 roku Flash Player nie będzie już obsługiwany.</translation>
 <translation id="7441736921018636843">Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph name="END_LINK" />, by usunąć hasło synchronizacji</translation>
@@ -4258,7 +4257,6 @@
 <translation id="7730449930968088409">Przechwytywanie zawartości ekranu</translation>
 <translation id="7732111077498238432">W sieci obowiązują zasady</translation>
 <translation id="7737238973539693982">Usuń Linuksa (Beta)</translation>
-<translation id="773905249182896430">Chroni Ciebie i Twoje urządzenie przed niebezpiecznymi witrynami</translation>
 <translation id="7740996059027112821">Standardowa</translation>
 <translation id="7750228210027921155">Obraz w obrazie</translation>
 <translation id="7751260505918304024">Pokaż wszystkie</translation>
@@ -4502,7 +4500,7 @@ Przechowuj plik klucza w bezpiecznym miejscu. Będzie on potrzebny do utworzenia
 <translation id="8068253693380742035">Kliknij, by się zalogować</translation>
 <translation id="8069615408251337349">Google Cloud Print</translation>
 <translation id="8071432093239591881">Drukuj jako grafikę</translation>
-<translation id="8073499153683482226"><ph name="BEGIN_PARAGRAPH1" />Dane aplikacji obejmują wszystkie dane zapisane przez aplikację (zgodnie z ustawieniami programisty). Mogą to być między innymi kontakty, wiadomości i zdjęcia.<ph name="END_PARAGRAPH1" />
+<translation id="8073499153683482226"><ph name="BEGIN_PARAGRAPH1" />Dane aplikacji obejmują wszystkie dane zapisane przez aplikację (zgodnie z ustawieniami dewelopera). Mogą to być między innymi kontakty, wiadomości i zdjęcia.<ph name="END_PARAGRAPH1" />
     <ph name="BEGIN_PARAGRAPH2" />Dane kopii zapasowej nie wliczają się do limitu miejsca na Dysku Twojego dziecka.<ph name="END_PARAGRAPH2" />
     <ph name="BEGIN_PARAGRAPH3" />Możesz wyłączyć tę usługę w Ustawieniach.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="8074127646604999664">Zezwól niedawno zamkniętym stronom na dokończenie wysyłania i odbierania danych</translation>
@@ -4514,7 +4512,7 @@ Przechowuj plik klucza w bezpiecznym miejscu. Będzie on potrzebny do utworzenia
 <translation id="8093359998839330381"><ph name="PLUGIN_NAME" /> nie odpowiada</translation>
 <translation id="8095105960962832018"><ph name="BEGIN_PARAGRAPH1" />Zapisuj kopie zapasowe na Dysku Google, by móc łatwo i wygodnie przywrócić dane lub zmienić urządzenie. Kopie zapasowe zawierają dane aplikacji.<ph name="END_PARAGRAPH1" />
     <ph name="BEGIN_PARAGRAPH2" />Kopie zapasowe są szyfrowane za pomocą hasła do Twojego konta Google i przesyłane do Google.<ph name="END_PARAGRAPH2" />
-    <ph name="BEGIN_PARAGRAPH3" />Dane aplikacji obejmują wszystkie dane zapisane przez aplikację (zgodnie z ustawieniami programisty). Mogą to być między innymi kontakty, wiadomości i zdjęcia.<ph name="END_PARAGRAPH3" />
+    <ph name="BEGIN_PARAGRAPH3" />Dane aplikacji obejmują wszystkie dane zapisane przez aplikację (zgodnie z ustawieniami dewelopera). Mogą to być między innymi kontakty, wiadomości i zdjęcia.<ph name="END_PARAGRAPH3" />
     <ph name="BEGIN_PARAGRAPH4" />Dane kopii zapasowej nie wliczają się do Twojego limitu miejsca na Dysku.<ph name="END_PARAGRAPH4" />
     <ph name="BEGIN_PARAGRAPH5" />Możesz wyłączyć tę usługę w Ustawieniach.<ph name="END_PARAGRAPH5" /></translation>
 <translation id="80974698889265265">Kody PIN są różne</translation>
@@ -4657,7 +4655,7 @@ Przechowuj plik klucza w bezpiecznym miejscu. Będzie on potrzebny do utworzenia
 <translation id="8327039559959785305">Błąd podczas montowania plików Linuksa. Spróbuj ponownie.</translation>
 <translation id="8335587457941836791">Odepnij z półki</translation>
 <translation id="8337047789441383384">Ten klucz bezpieczeństwa jest już zarejestrowany. Nie musisz rejestrować go ponownie.</translation>
-<translation id="8338952601723052325">Witryna programisty</translation>
+<translation id="8338952601723052325">Witryna dewelopera</translation>
 <translation id="8339059274628563283">Lokalnie zapisane dane z <ph name="SITE" /></translation>
 <translation id="833986336429795709">Aby otworzyć ten link, wybierz aplikację</translation>
 <translation id="8342861492835240085">Wybierz kolekcję</translation>
@@ -5070,7 +5068,6 @@ Osoby z wolnym połączeniem mogą nie zobaczyć treści, które przesyłasz.</
 <translation id="8978154919215542464">Włączono synchronizację wszystkich danych</translation>
 <translation id="897939795688207351">Na <ph name="ORIGIN" /></translation>
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> – awaria</translation>
-<translation id="8983677657449185470">Pomóż ulepszyć Bezpieczne przeglądanie</translation>
 <translation id="8986362086234534611">Zapomnij</translation>
 <translation id="8986494364107987395">Automatycznie przesyłaj do Google statystyki użytkowania i raporty o awariach</translation>
 <translation id="8987927404178983737">Miesiąc</translation>

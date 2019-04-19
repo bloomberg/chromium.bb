@@ -408,7 +408,6 @@
 <translation id="1639239467298939599">Завантаження</translation>
 <translation id="163993578339087550"><ph name="SERVICE_NAME" /> хоче перевірити, чи ви користуєтеся придатним пристроєм з ОС Chrome.</translation>
 <translation id="1640283014264083726">PKCS #1 MD4 із шифруванням RSA</translation>
-<translation id="1641113438599504367">Безпечний перегляд</translation>
 <translation id="1642494467033190216">Перш ніж увімкнути інші функції налагодження, потрібно видалити захист rootfs і перезавантажити пристрій.</translation>
 <translation id="1643050526526937107">Лише синхронізувати</translation>
 <translation id="1643072738649235303">Алгоритм ECDSA X9.62 з підписом SHA-1</translation>
@@ -788,7 +787,6 @@
 <translation id="2230051135190148440">CHAP</translation>
 <translation id="223106756035922488">Натисніть, щоб переглянути сьогоднішній дудл</translation>
 <translation id="2231238007119540260">Якщо видалити сертифікат сервера, відновлюються звичайні перевірки безпеки для цього сервера, що вимагає використання дійсного сертифіката.</translation>
-<translation id="2232379019872353004">Надсилати в Google деяку інформацію про систему та вміст сторінок</translation>
 <translation id="2232876851878324699">Файл містив сертифікат, який не було імпортовано:</translation>
 <translation id="2233502537820838181">&amp;Докладніше</translation>
 <translation id="2234876718134438132">Синхронізація та сервіси Google</translation>
@@ -3696,6 +3694,7 @@
 <translation id="6841186874966388268">Помилки</translation>
 <translation id="6843423766595476978">Команду "Ok Google" налаштовано</translation>
 <translation id="6845038076637626672">Відкрити в розгорнутому вигляді</translation>
+<translation id="6845325883481699275">Допоможіть покращити безпеку Chrome</translation>
 <translation id="6848388270925200958">Зараз у вас є кілька карток, які можна використовувати лише на цьому пристрої</translation>
 <translation id="6851497530878285708">Додаток увімкнено</translation>
 <translation id="6853388645642883916">Оновлення в режимі сну</translation>
@@ -4258,7 +4257,6 @@
 <translation id="7730449930968088409">Робити знімки вмісту екрана</translation>
 <translation id="7732111077498238432">Мережа контролюється правилами</translation>
 <translation id="7737238973539693982">Видалення Linux (бета-версія)</translation>
-<translation id="773905249182896430">Захищає вас і ваш пристрій від небезпечних сайтів</translation>
 <translation id="7740996059027112821">Стандартно</translation>
 <translation id="7750228210027921155">Картинка в картинці</translation>
 <translation id="7751260505918304024">Показати все</translation>
@@ -5069,7 +5067,6 @@
 <translation id="8978154919215542464">Увімкнено – синхронізувати все</translation>
 <translation id="897939795688207351">На сайті <ph name="ORIGIN" /></translation>
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> – аварійне завершення роботи</translation>
-<translation id="8983677657449185470">Допоможіть покращити безпечний перегляд</translation>
 <translation id="8986362086234534611">Видалити</translation>
 <translation id="8986494364107987395">Автоматично надсилати статистику використання та звіти про аварійне завершення роботи в Google</translation>
 <translation id="8987927404178983737">Місяць</translation>

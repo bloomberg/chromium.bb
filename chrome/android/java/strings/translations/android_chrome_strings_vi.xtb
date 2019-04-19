@@ -119,7 +119,7 @@
 <translation id="1891331835972267886"><ph name="APP_NAME" /> sẽ mở trong Chrome. Bằng việc tiếp tục, bạn đồng ý với <ph name="BEGIN_LINK1" />Điều khoản dịch vụ<ph name="END_LINK1" /> và <ph name="BEGIN_LINK2" />Thông báo bảo mật<ph name="END_LINK2" /> của Chrome.</translation>
 <translation id="1919345977826869612">Quảng cáo</translation>
 <translation id="1919950603503897840">Chọn mục liên hệ</translation>
-<translation id="1922076542920281912">Để cho phép Chrome truy cập vào vị trí của bạn, hãy bật cả vị trí trong phần <ph name="BEGIN_LINK" />Cài đặt Android<ph name="END_LINK" />.</translation>
+<translation id="1922076542920281912">Để cho phép Chrome truy cập vào vị trí của bạn, hãy bật cả vị trí trong phần <ph name="BEGIN_LINK" />Cài đặt của Android<ph name="END_LINK" />.</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/<ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="19288952978244135">Mở lại Chrome.</translation>
 <translation id="1933845786846280168">Tab được chọn</translation>
@@ -145,7 +145,7 @@
 <translation id="2018707881002649255">Những người liên hệ bạn chọn bên dưới sẽ được chia sẻ với trang web <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="2021896219286479412">Kiểm soát trang toàn màn hình</translation>
 <translation id="2038563949887743358">Bật Yêu cầu trang web cho máy tính</translation>
-<translation id="2041019821020695769">Để Chrome có thể gửi cho bạn thông báo, hãy bật cả thông báo trong phần <ph name="BEGIN_LINK" />Cài đặt Android<ph name="END_LINK" />.</translation>
+<translation id="2041019821020695769">Để Chrome có thể gửi cho bạn thông báo, hãy bật cả thông báo trong phần <ph name="BEGIN_LINK" />Cài đặt của Android<ph name="END_LINK" />.</translation>
 <translation id="204321170514947529"><ph name="APP_NAME" /> cũng có dữ liệu trong Chrome</translation>
 <translation id="2045104531052923016">Các ứng dụng khác chiếm <ph name="GIGABYTES" /> GB</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
@@ -281,7 +281,6 @@
 <translation id="305593374596241526">Đã tắt vị trí; hãy bật vị trí trong mục <ph name="BEGIN_LINK" />Cài đặt Android<ph name="END_LINK" />.</translation>
 <translation id="3058498974290601450">Bạn có thể bật tính năng đồng bộ hóa bất cứ lúc nào trong phần cài đặt</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> dấu trang}other{<ph name="BOOKMARKS_COUNT_MANY" /> dấu trang}}</translation>
-<translation id="307908932405420782">Các bài viết khác sẽ sớm xuất hiện. Chúc bạn buổi sáng vui vẻ!</translation>
 <translation id="3089395242580810162">Mở trong tab ẩn danh</translation>
 <translation id="311456632243022227">Đã mở nhiều liên kết trong Chrome</translation>
 <translation id="3115898365077584848">Hiển thị thông tin</translation>
@@ -359,7 +358,7 @@
 <translation id="3712575778697986964">Đặt lại Trình tiết kiệm dữ liệu?</translation>
 <translation id="3714981814255182093">Mở thanh Tìm kiếm</translation>
 <translation id="3716182511346448902">Chrome đã tạm dừng trang này vì trang dùng quá nhiều bộ nhớ.</translation>
-<translation id="3730075448226062617">Để cho phép Chrome truy cập vào micrô của bạn, hãy bật cả micrô trong phần <ph name="BEGIN_LINK" />Cài đặt Android<ph name="END_LINK" />.</translation>
+<translation id="3730075448226062617">Để cho phép Chrome truy cập vào micrô của bạn, hãy bật cả micrô trong phần <ph name="BEGIN_LINK" />Cài đặt của Android<ph name="END_LINK" />.</translation>
 <translation id="3739899004075612870">Đã đánh dấu trang trong <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534">Các ứng dụng khác chiếm <ph name="MEGABYTES" /> MB</translation>
 <translation id="3744111561329211289">Đồng bộ hóa dưới nền</translation>
@@ -686,7 +685,6 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="605721222689873409">YY</translation>
 <translation id="6075798973483050474">Chỉnh sửa trang chủ</translation>
 <translation id="60923314841986378">Còn <ph name="HOURS" /> giờ</translation>
-<translation id="60924377787140961">Các bài viết khác sẽ sớm xuất hiện. Chúc bạn buổi chiều vui vẻ!</translation>
 <translation id="6099151465289169210">Đã chuyển sang tab riêng tư</translation>
 <translation id="6108923351542677676">Đang thiết lập…</translation>
 <translation id="6111020039983847643">dữ liệu đã dùng</translation>
@@ -703,7 +701,7 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="618993374665929060">Nội dung tương tự đã mở trên toàn màn hình</translation>
 <translation id="6192333916571137726">Tải tệp xuống</translation>
 <translation id="6192792657125177640">Ngoại lệ</translation>
-<translation id="6194112207524046168">Để cho phép Chrome truy cập vào máy ảnh của bạn, hãy bật cả máy ảnh trong phần <ph name="BEGIN_LINK" />Cài đặt Android<ph name="END_LINK" />.</translation>
+<translation id="6194112207524046168">Để cho phép Chrome truy cập vào máy ảnh của bạn, hãy bật cả máy ảnh trong phần <ph name="BEGIN_LINK" />Cài đặt của Android<ph name="END_LINK" />.</translation>
 <translation id="6196640612572343990">Chặn cookie của bên thứ ba</translation>
 <translation id="6206551242102657620">Kết nối an toàn. Thông tin trang web</translation>
 <translation id="6210748933810148297">Không phải là <ph name="EMAIL" />?</translation>
@@ -1039,7 +1037,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="8562452229998620586">Mật khẩu đã lưu của bạn sẽ xuất hiện tại đây.</translation>
 <translation id="8569404424186215731">kể từ <ph name="DATE" /></translation>
 <translation id="8571213806525832805">4 tuần qua</translation>
-<translation id="857509777403223202">Các bài viết khác sẽ sớm xuất hiện. Chúc bạn buổi tối vui vẻ!</translation>
 <translation id="857943718398505171">Được phép (được đề xuất)</translation>
 <translation id="8582216581279205169">Các tab đã mở trên toàn màn hình</translation>
 <translation id="8583805026567836021">Xóa dữ liệu tài khoản</translation>

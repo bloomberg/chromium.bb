@@ -408,7 +408,6 @@
 <translation id="1639239467298939599">読み込み中</translation>
 <translation id="163993578339087550"><ph name="SERVICE_NAME" /> により、お使いの Chrome OS デバイスが対象かどうかの確認が行われます。</translation>
 <translation id="1640283014264083726">PKCS #1 MD4 with RSA 暗号化</translation>
-<translation id="1641113438599504367">セーフ ブラウジング</translation>
 <translation id="1642494467033190216">他のデバッグ機能を有効にするには、その前に rootfs の保護を削除して再起動する必要があります。</translation>
 <translation id="1643050526526937107">同期のみ</translation>
 <translation id="1643072738649235303">X9.62 ECDSA 署名（SHA-1）</translation>
@@ -788,7 +787,6 @@
 <translation id="2230051135190148440">CHAP</translation>
 <translation id="223106756035922488">クリックして今日の Doodle を表示</translation>
 <translation id="2231238007119540260">サーバー証明書を削除すると、そのサーバーの通常のセキュリティ チェックを復活させることになり、サーバーは正当な証明書を使用することが必要となります。</translation>
-<translation id="2232379019872353004">一部のシステム情報とページのコンテンツを Google に送信します</translation>
 <translation id="2232876851878324699">ファイルに含まれる 1 件の証明書をインポートできませんでした:</translation>
 <translation id="2233502537820838181">詳細情報(&amp;M)</translation>
 <translation id="2234876718134438132">同期と Google サービス</translation>
@@ -3249,7 +3247,7 @@
 <translation id="6122095009389448667">このサイトによるクリップボードへのアクセスを引き続きブロックする</translation>
 <translation id="6122875415561139701">「<ph name="DEVICE_NAME" />」での書き込み操作は許可されていません。</translation>
 <translation id="6124650939968185064">次の拡張機能は、この拡張機能に依存しています:</translation>
-<translation id="6124698108608891449">このサイトから追加の許可がリクエストされています。</translation>
+<translation id="6124698108608891449">このサイトが追加の権限をリクエストしています。</translation>
 <translation id="6125479973208104919">アカウントをもう一度この <ph name="DEVICE_TYPE" /> に追加する必要があります。</translation>
 <translation id="6129691635767514872">選択したデータが Chrome から削除され、同期されたデバイスからも削除されました。他の Google サービスでの検索や操作など、Google アカウントの他の形式の閲覧履歴が <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> に残ることがあります。</translation>
 <translation id="6129938384427316298">Netscape 証明書コメント</translation>
@@ -3696,6 +3694,7 @@
 <translation id="6841186874966388268">エラー</translation>
 <translation id="6843423766595476978">OK Google の設定が完了しました</translation>
 <translation id="6845038076637626672">最大化して開く</translation>
+<translation id="6845325883481699275">Chrome のセキュリティ改善に協力する</translation>
 <translation id="6848388270925200958">現在、このデバイスでのみ使用できるカードがいくつかあります</translation>
 <translation id="6851497530878285708">アプリは有効です</translation>
 <translation id="6853388645642883916">アップデータのスリープ中</translation>
@@ -4259,7 +4258,6 @@
 <translation id="7730449930968088409">画面のコンテンツをキャプチャする</translation>
 <translation id="7732111077498238432">ネットワークはポリシーによって管理されています</translation>
 <translation id="7737238973539693982">Linux（ベータ版）の削除</translation>
-<translation id="773905249182896430">危険なサイトからユーザーとデバイスを保護します</translation>
 <translation id="7740996059027112821">標準</translation>
 <translation id="7750228210027921155">ピクチャー イン ピクチャー</translation>
 <translation id="7751260505918304024">すべて表示</translation>
@@ -5070,7 +5068,6 @@
 <translation id="8978154919215542464">オン - すべて同期</translation>
 <translation id="897939795688207351"><ph name="ORIGIN" /></translation>
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> - クラッシュしました</translation>
-<translation id="8983677657449185470">セーフ ブラウジングの改善への協力</translation>
 <translation id="8986362086234534611">削除</translation>
 <translation id="8986494364107987395">使用統計データと障害レポートを Google に自動送信します</translation>
 <translation id="8987927404178983737">月</translation>

@@ -409,7 +409,6 @@
 <translation id="1639239467298939599">ಲೋಡ್ ಆಗುತ್ತಿದೆ</translation>
 <translation id="163993578339087550">ನೀವು ಅರ್ಹವಾದ Chrome OS ಸಾಧನವನ್ನು ಬಳಸುತ್ತಿರುವಿರಾ ಎಂಬುದನ್ನು <ph name="SERVICE_NAME" /> ಪರಿಶೀಲಿಸಲು ಬಯಸುತ್ತದೆ.</translation>
 <translation id="1640283014264083726">RSA ಎನ್‌ಕ್ರಿಪ್ಶನ್‌ನೊಂದಿಗೆ PKCS #1 MD4</translation>
-<translation id="1641113438599504367">ಸುರಕ್ಷಿತ ಬ್ರೌಸಿಂಗ್</translation>
 <translation id="1642494467033190216">Rootfs ರಕ್ಷಣೆ ಮತ್ತು ಪುನರಾರಂಭಿಸುವ ಮೊದಲು ಇತರ ದೋಷ ನಿವಾರಣಾ ವೈಶಿಷ್ಟ್ಯಗಳನ್ನು ಸಕ್ರಿಯಗೊಳಿಸುವ ಅಗತ್ಯವಿದೆ.</translation>
 <translation id="1643050526526937107">ಸಿಂಕ್ ಮಾಡಿ</translation>
 <translation id="1643072738649235303">SHA-1 ಮೂಲಕ X9.62 ECDSA ಸಹಿ</translation>
@@ -789,7 +788,6 @@
 <translation id="2230051135190148440">CHAP</translation>
 <translation id="223106756035922488">ಇಂದಿನ ಡೂಡಲ್ ಅನ್ನು ವೀಕ್ಷಿಸಲು ಕ್ಲಿಕ್ ಮಾಡಿ</translation>
 <translation id="2231238007119540260">ನೀವು ಸರ್ವರ್ ಪ್ರಮಾಣಪತ್ರವನ್ನು ಅಳಿಸಿದರೆ, ನೀವು ಸಾಮಾನ್ಯ ಭದ್ರತೆ ಪರಿಶೀಲನೆಗಳನ್ನು ಆ ಸರ್ವರ್‌ಗಾಗಿ ನೀವು ಮರುಸಂಗ್ರಹಿಸುತ್ತೀರಿ ಮತ್ತು ಅದು ಮಾನ್ಯ ಪ್ರಮಾಣಪತ್ರವನ್ನು ಬಳಸುವುದು ಅಗತ್ಯವಾಗಿರುತ್ತದೆ.</translation>
-<translation id="2232379019872353004">ಸಿಸ್ಟಂ ಕುರಿತಾದ ಕೆಲವು ಮಾಹಿತಿ ಮತ್ತು ಪುಟದ ವಿಷಯವನ್ನು Google ಗೆ ಕಳುಹಿಸುತ್ತದೆ</translation>
 <translation id="2232876851878324699">ಫೈಲ್ ಆಮದು ಮಾಡದೆ ಇರುವಂತಹ ಒಂದು ಪ್ರಮಾಣಪತ್ರವನ್ನು ಒಳಗೊಂಡಿದೆ:</translation>
 <translation id="2233502537820838181">&amp;ಹೆಚ್ಚಿನ ಮಾಹಿತಿ</translation>
 <translation id="2234876718134438132">ಸಿಂಕ್ ಮತ್ತು Google ಸೇವೆಗಳು</translation>
@@ -3699,6 +3697,7 @@
 <translation id="6841186874966388268">ದೋಷಗಳು</translation>
 <translation id="6843423766595476978">ಓಕೆ Google ಸಿದ್ಧವಾಗಿದೆ</translation>
 <translation id="6845038076637626672">ಗರಿಷ್ಠಗೊಳಿಸುವಿಕೆಯಲ್ಲಿ ತೆರೆಯಿರಿ</translation>
+<translation id="6845325883481699275">Chrome ಭದ್ರತೆಯನ್ನು ಸುಧಾರಿಸಲು ಸಹಾಯ ಮಾಡಿ</translation>
 <translation id="6848388270925200958">ಸದ್ಯಕ್ಕೆ, ಈ ಸಾಧನದಲ್ಲಿ ಮಾತ್ರವೇ ಬಳಸಬಹುದಾದ ಕೆಲವು ಕಾರ್ಡ್‌ಗಳನ್ನು ನೀವು ಹೊಂದಿದ್ದೀರಿ</translation>
 <translation id="6851497530878285708">ಅಪ್ಲಿಕೇಶನ್ ಅನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ</translation>
 <translation id="6853388645642883916">ನವೀಕರಣವು ನಿದ್ರೆಯಲ್ಲಿದೆ</translation>
@@ -4262,7 +4261,6 @@
 <translation id="7730449930968088409">ನಿಮ್ಮ ಪರದೆಯ ವಿಷಯವನ್ನು ಸೆರೆಹಿಡಿಯಿರಿ</translation>
 <translation id="7732111077498238432">ನೆಟ್‌ವರ್ಕ್‌ ನೀತಿಯ ನಿಯಂತ್ರಣದಲ್ಲಿದೆ</translation>
 <translation id="7737238973539693982">Linux (ಬೀಟಾ) ಅಳಿಸಿ</translation>
-<translation id="773905249182896430">ಅಪಾಯಕಾರಿ ಸೈಟ್‌ಗಳಿಂದ ನಿಮ್ಮನ್ನು ಮತ್ತು ನಿಮ್ಮ ಸಾಧನವನ್ನು ರಕ್ಷಿಸುತ್ತದೆ</translation>
 <translation id="7740996059027112821">ಪ್ರಮಾಣಿತ</translation>
 <translation id="7750228210027921155">ಚಿತ್ರದಲ್ಲಿ ಚಿತ್ರ</translation>
 <translation id="7751260505918304024">ಎಲ್ಲ ತೋರಿಸು</translation>
@@ -5073,7 +5071,6 @@
 <translation id="8978154919215542464">ಆನ್- ಎಲ್ಲವನ್ನೂ ಸಿಂಕ್ ಮಾಡಿ</translation>
 <translation id="897939795688207351"><ph name="ORIGIN" /> ನಲ್ಲಿ</translation>
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> - ಕ್ರ್ಯಾಶ್ ಮಾಡಲಾಗಿದೆ</translation>
-<translation id="8983677657449185470">ಸುರಕ್ಷಿತ ಬ್ರೌಸಿಂಗ್ ಸುಧಾರಿಸಲು ಸಹಾಯ ಮಾಡಿ</translation>
 <translation id="8986362086234534611">ಮರೆತುಹೋಗು</translation>
 <translation id="8986494364107987395">ಬಳಕೆಯ ಅಂಕಿಅಂಶಗಳನ್ನು ಮತ್ತು ಕ್ರಾಶ್ ವರದಿಗಳನ್ನು Google ಗೆ ಸ್ವಯಂಚಾಲಿತವಾಗಿ ರವಾನಿಸು</translation>
 <translation id="8987927404178983737">ತಿಂಗಳು</translation>

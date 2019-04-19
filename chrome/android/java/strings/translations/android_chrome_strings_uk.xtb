@@ -281,7 +281,6 @@
 <translation id="305593374596241526">Геодані вимкнено. Увімкніть їх у <ph name="BEGIN_LINK" />налаштуваннях Android<ph name="END_LINK" />.</translation>
 <translation id="3058498974290601450">Ви можете будь-коли ввімкнути синхронізацію в налаштуваннях</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> закладка}one{<ph name="BOOKMARKS_COUNT_MANY" /> закладка}few{<ph name="BOOKMARKS_COUNT_MANY" /> закладки}many{<ph name="BOOKMARKS_COUNT_MANY" /> закладок}other{<ph name="BOOKMARKS_COUNT_MANY" /> закладки}}</translation>
-<translation id="307908932405420782">Згодом тут з’являться інші статті. Гарного ранку.</translation>
 <translation id="3089395242580810162">Відкрити в анонімній вкладці</translation>
 <translation id="311456632243022227">Кілька посилань відкрито в Chrome</translation>
 <translation id="3115898365077584848">Показати інформацію</translation>
@@ -686,7 +685,6 @@
 <translation id="605721222689873409">РР</translation>
 <translation id="6075798973483050474">Змінити домашню сторінку</translation>
 <translation id="60923314841986378">Залишилося <ph name="HOURS" /> год</translation>
-<translation id="60924377787140961">Згодом тут з’являться інші статті. Гарного дня.</translation>
 <translation id="6099151465289169210">Ви перейшли на приватні вкладки</translation>
 <translation id="6108923351542677676">Виконується налаштування…</translation>
 <translation id="6111020039983847643">використаний трафік</translation>
@@ -1039,7 +1037,6 @@
 <translation id="8562452229998620586">Тут відображатимуться збережені паролі.</translation>
 <translation id="8569404424186215731">з <ph name="DATE" /></translation>
 <translation id="8571213806525832805">Останні 4 тижні</translation>
-<translation id="857509777403223202">Згодом тут з’являться інші статті. Гарного вечора.</translation>
 <translation id="857943718398505171">Дозволено (рекомендується)</translation>
 <translation id="8582216581279205169">Вкладки відкрито на повну висоту</translation>
 <translation id="8583805026567836021">Очищення даних облікового запису</translation>

@@ -408,7 +408,6 @@
 <translation id="1639239467298939599">Prebieha načítavanie</translation>
 <translation id="163993578339087550"><ph name="SERVICE_NAME" /> chce overiť, či používate vhodné zariadenie so systémom Chrome OS.</translation>
 <translation id="1640283014264083726">Štandard PKCS #1 MD4 so šifrovaním RSA</translation>
-<translation id="1641113438599504367">Bezpečné prehliadanie</translation>
 <translation id="1642494467033190216">Pred aktiváciou ďalších funkcií ladenia je potrebné odstrániť ochranu rootfs a reštartovať zariadenie.</translation>
 <translation id="1643050526526937107">Len synchronizovať</translation>
 <translation id="1643072738649235303">Podpis X9.62 ECDSA s SHA-1</translation>
@@ -788,7 +787,6 @@
 <translation id="2230051135190148440">CHAP</translation>
 <translation id="223106756035922488">Kliknutím zobrazíte dnešný doodle</translation>
 <translation id="2231238007119540260">Ak odstránite certifikát servera, obnovíte zvyčajné bezpečnostné kontroly servera a server bude musieť používať platný certifikát.</translation>
-<translation id="2232379019872353004">Odosielať niektoré informácie o systéme a obsah stránok Googlu</translation>
 <translation id="2232876851878324699">Súbor obsahoval jeden certifikát, ktorý nebol importovaný:</translation>
 <translation id="2233502537820838181">Ďalšie &amp;informácie</translation>
 <translation id="2234876718134438132">Synchronizácia a služby Googlu</translation>
@@ -3694,6 +3692,7 @@
 <translation id="6841186874966388268">Chyby</translation>
 <translation id="6843423766595476978">Výraz „Ok Google“ je nastavený</translation>
 <translation id="6845038076637626672">Otvoriť maximalizované</translation>
+<translation id="6845325883481699275">Pomoc so zlepšením zabezpečenia Chromu</translation>
 <translation id="6848388270925200958">Momentálne máte niekoľko kariet, ktoré je možné použiť iba v tomto zariadení</translation>
 <translation id="6851497530878285708">Aplikácia je povolená</translation>
 <translation id="6853388645642883916">Služba Updater je v režime spánku</translation>
@@ -4256,7 +4255,6 @@
 <translation id="7730449930968088409">Zachytiť obsah obrazovky</translation>
 <translation id="7732111077498238432">Sieť je riadená pravidlami</translation>
 <translation id="7737238973539693982">Odstrániť Linux (beta)</translation>
-<translation id="773905249182896430">Chráni vás aj vaše zariadenie pred nebezpečnými webmi</translation>
 <translation id="7740996059027112821">Štandardne</translation>
 <translation id="7750228210027921155">Obraz v obraze</translation>
 <translation id="7751260505918304024">Zobraziť všetky</translation>
@@ -5066,7 +5064,6 @@ Súbor kľúča uložte na bezpečné miesto. Budete ho potrebovať na vytvoreni
 <translation id="8978154919215542464">Zapnuté – synchronizovať všetko</translation>
 <translation id="897939795688207351">Na <ph name="ORIGIN" /></translation>
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> – Zlyhanie</translation>
-<translation id="8983677657449185470">Pomáhať zlepšovať Bezpečné prehliadanie</translation>
 <translation id="8986362086234534611">Odstrániť</translation>
 <translation id="8986494364107987395">Automaticky odosielať Googlu štatistiky používania a správy o zlyhaní</translation>
 <translation id="8987927404178983737">Mesiac</translation>

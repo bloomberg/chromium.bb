@@ -281,7 +281,6 @@
 <translation id="305593374596241526">La ubicació està desactivada; activa-la a la <ph name="BEGIN_LINK" />configuració d'Android<ph name="END_LINK" />.</translation>
 <translation id="3058498974290601450">Pots activar la sincronització en qualsevol moment des de la configuració</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> adreça d'interès}other{<ph name="BOOKMARKS_COUNT_MANY" /> adreces d'interès}}</translation>
-<translation id="307908932405420782">Aviat es mostraran més articles. Que tinguis un bon matí.</translation>
 <translation id="3089395242580810162">Obre en pestanya d'incògnit</translation>
 <translation id="311456632243022227">Diversos enllaços oberts a Chrome</translation>
 <translation id="3115898365077584848">Mostra la informació</translation>
@@ -686,7 +685,6 @@ Per canviar aquesta opció, <ph name="BEGIN_LINK" />restableix la sincronitzaci�
 <translation id="605721222689873409">AA</translation>
 <translation id="6075798973483050474">Editar la pàgina d'inici</translation>
 <translation id="60923314841986378">Queden <ph name="HOURS" /> hores</translation>
-<translation id="60924377787140961">Aviat es mostraran més articles. Que tinguis una bona tarda.</translation>
 <translation id="6099151465289169210">S'ha canviat a les pestanyes privades</translation>
 <translation id="6108923351542677676">Configuració en curs...</translation>
 <translation id="6111020039983847643">dades utilitzades</translation>
@@ -1039,7 +1037,6 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="8562452229998620586">Les contrasenyes desades apareixeran aquí.</translation>
 <translation id="8569404424186215731">des del dia <ph name="DATE" /></translation>
 <translation id="8571213806525832805">4 darreres setmanes</translation>
-<translation id="857509777403223202">Aviat es mostraran més articles. Que tinguis un bon vespre.</translation>
 <translation id="857943718398505171">Permès (opció recomanada)</translation>
 <translation id="8582216581279205169">El full Pestanyes obertes ocupa tota la pantalla</translation>
 <translation id="8583805026567836021">S'estan esborrant les dades del compte</translation>

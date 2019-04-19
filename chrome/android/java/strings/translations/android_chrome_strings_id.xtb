@@ -45,6 +45,7 @@
 <translation id="1285320974508926690">Jangan pernah terjemahkan situs ini</translation>
 <translation id="1291207594882862231">Menghapus histori, cookie, data situs, cache...</translation>
 <translation id="129553762522093515">Baru saja ditutup</translation>
+<translation id="1303507811548703290"><ph name="DOMAIN" /> - Dikirim dari <ph name="DEVICE_NAME" /></translation>
 <translation id="1326317727527857210">Untuk mengakses tab Anda dari perangkat lainnya, login ke Chrome.</translation>
 <translation id="1331212799747679585">Chrome tidak dapat diupdate. Opsi lainnya</translation>
 <translation id="1332501820983677155">Pintasan fitur Google Chrome</translation>
@@ -171,6 +172,7 @@
 <translation id="2154484045852737596">Edit kartu</translation>
 <translation id="2154710561487035718">Salin URL</translation>
 <translation id="2156074688469523661">Situs yang tersisa (<ph name="NUMBER_OF_SITES" />)</translation>
+<translation id="218608176142494674">Berbagi</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, aplikasi web. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Lanjutkan sebagai <ph name="USER_FULL_NAME" /></translation>
 <translation id="2232379019872353004">Mengirimkan beberapa informasi sistem dan konten halaman ke Google</translation>
@@ -281,7 +283,6 @@
 <translation id="305593374596241526">Lokasi nonaktif, aktifkan di <ph name="BEGIN_LINK" />Setelan Android<ph name="END_LINK" />.</translation>
 <translation id="3058498974290601450">Anda dapat mengaktifkan sinkronisasi kapan saja di setelan</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> bookmark}other{<ph name="BOOKMARKS_COUNT_MANY" /> bookmark}}</translation>
-<translation id="307908932405420782">Artikel lainnya akan segera muncul. Selamat beraktivitas pagi!</translation>
 <translation id="3089395242580810162">Buka di tab penyamaran</translation>
 <translation id="311456632243022227">Beberapa link dibuka di Chrome</translation>
 <translation id="3115898365077584848">Tampilkan Info</translation>
@@ -651,6 +652,7 @@ Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />setel ulang sinkronisasi<ph 
 <translation id="5797070761912323120">Google dapat menggunakan histori Anda untuk mempersonalisasi Penelusuran, iklan, dan layanan Google lainnya</translation>
 <translation id="5804241973901381774">Izin</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{# jam yang lalu}other{# jam yang lalu}}</translation>
+<translation id="5810288467834065221">Copyright <ph name="YEAR" /> Google LLC. Semua hak dilindungi undang-undang.</translation>
 <translation id="5817918615728894473">Sandingkan</translation>
 <translation id="583281660410589416">Tidak dikenal</translation>
 <translation id="5833984609253377421">Bagikan link</translation>
@@ -686,7 +688,6 @@ Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />setel ulang sinkronisasi<ph 
 <translation id="605721222689873409">TT</translation>
 <translation id="6075798973483050474">Edit halaman beranda</translation>
 <translation id="60923314841986378"><ph name="HOURS" /> jam lagi</translation>
-<translation id="60924377787140961">Artikel lainnya akan segera muncul. Selamat beraktivitas siang!</translation>
 <translation id="6099151465289169210">Beralih ke tab rahasia</translation>
 <translation id="6108923351542677676">Penyiapan sedang berlangsung...</translation>
 <translation id="6111020039983847643">data digunakan</translation>
@@ -903,6 +904,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="756809126120519699">Data Chrome telah dihapus</translation>
 <translation id="757524316907819857">Blokir situs agar tidak memutar konten yang dilindungi</translation>
 <translation id="757855969265046257">{FILES,plural, =1{<ph name="FILES_DOWNLOADED_ONE" /> file didownload}other{<ph name="FILES_DOWNLOADED_MANY" /> file didownload}}</translation>
+<translation id="7588219262685291874">Aktifkan tema gelap saat Penghemat Daya di perangkat diaktifkan</translation>
 <translation id="7589445247086920869">Blokir mesin telusur saat ini</translation>
 <translation id="7593557518625677601">Buka setelan Android dan aktifkan kembali sinkronisasi sistem Android untuk memulai Sinkronisasi Chrome</translation>
 <translation id="7596558890252710462">Sistem operasi</translation>
@@ -1002,6 +1004,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="8266862848225348053">Lokasi download</translation>
 <translation id="8274165955039650276">Lihat hasil download</translation>
 <translation id="8283853025636624853">Menyinkronkan dengan <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
+<translation id="8300705686683892304">Managed by app</translation>
 <translation id="8310344678080805313">Tab standar</translation>
 <translation id="8313455859591948645">Edit halaman awal</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> dan situs lainnya</translation>
@@ -1039,7 +1042,6 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="8562452229998620586">Sandi yang disimpan akan muncul di sini.</translation>
 <translation id="8569404424186215731">sejak <ph name="DATE" /></translation>
 <translation id="8571213806525832805">4 minggu terakhir</translation>
-<translation id="857509777403223202">Artikel lainnya akan segera muncul. Nikmati malam Anda!</translation>
 <translation id="857943718398505171">Diizinkan (disarankan)</translation>
 <translation id="8582216581279205169">Tab yang terbuka dalam layar penuh</translation>
 <translation id="8583805026567836021">Menghapus data akun</translation>

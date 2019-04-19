@@ -281,7 +281,6 @@
 <translation id="305593374596241526">አካባቢ ጠፍቷል፤ በ<ph name="BEGIN_LINK" />Android ቅንብሮች<ph name="END_LINK" /> ውስጥ ያብሩት።</translation>
 <translation id="3058498974290601450">ስምረትን በማንኛውም ጊዜ በቅንብሮች ውስጥ ማብራት ይችላሉ።</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> ዕልባት}one{<ph name="BOOKMARKS_COUNT_MANY" /> ዕልባቶች}other{<ph name="BOOKMARKS_COUNT_MANY" /> ዕልባቶች}}</translation>
-<translation id="307908932405420782">ተጨማሪ ጽሑፎች በቅርቡ ይታያሉ። የእርስዎን ጥዋት ይዝናኑበት!</translation>
 <translation id="3089395242580810162">ማንነትን በማያሳውቅ ትር ክፈት</translation>
 <translation id="311456632243022227">በርካታ አገናኞች በChrome ውስጥ ተከፍተዋል</translation>
 <translation id="3115898365077584848">መረጃ አሳይ</translation>
@@ -686,7 +685,6 @@
 <translation id="605721222689873409">ዓዓ</translation>
 <translation id="6075798973483050474">መነሻ ገጽን ያርትዑ</translation>
 <translation id="60923314841986378"><ph name="HOURS" /> ሰዓቶች ይቀራሉ</translation>
-<translation id="60924377787140961">ተጨማሪ ጽሑፎች በቅርቡ ይታያሉ። የእርስዎን ከሰዓት በኋላ ጊዜ ይዝናኑበት!</translation>
 <translation id="6099151465289169210">ወደ የግል ትሮች ተቀይሯል</translation>
 <translation id="6108923351542677676">ማዋቀር በሂደት ላይ…</translation>
 <translation id="6111020039983847643">ጥቅም ላይ የዋለው ውሂብ</translation>
@@ -1039,7 +1037,6 @@
 <translation id="8562452229998620586">የተቀመጡ ይለፍ ቃላት እዚህ ይመጣሉ።</translation>
 <translation id="8569404424186215731">ከ<ph name="DATE" /> ጀምሮ</translation>
 <translation id="8571213806525832805">ባለፉት 4 ሳምንቶች</translation>
-<translation id="857509777403223202">ተጨማሪ ጽሑፎች በቅርቡ ይታያሉ። የእርስዎን ምሽት ይዝናኑበት!</translation>
 <translation id="857943718398505171">ተፈቅዷል (የሚመከር)</translation>
 <translation id="8582216581279205169">ትሮችን በሙሉ ቁመት ተከፍተዋል</translation>
 <translation id="8583805026567836021">የመለያ ውሂብን በማጽዳት ላይ</translation>

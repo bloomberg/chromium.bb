@@ -408,7 +408,6 @@
 <translation id="1639239467298939599">Memuatkan</translation>
 <translation id="163993578339087550"><ph name="SERVICE_NAME" /> mahu menyemak sama ada anda menggunakan peranti OS Chrome yang layak.</translation>
 <translation id="1640283014264083726">PKCS #1 MD4 Dengan Penyulitan RSA</translation>
-<translation id="1641113438599504367">Penyemakan Imbas Selamat</translation>
 <translation id="1642494467033190216">Pengalihan keluar perlindungan rootfs dan pemulaan semula diperlukan sebelum mendayakan ciri penyahpepijatan lain.</translation>
 <translation id="1643050526526937107">Penyegerakan sahaja</translation>
 <translation id="1643072738649235303">Tandatangan X9.62 ECDSA dengan SHA-1</translation>
@@ -788,7 +787,6 @@
 <translation id="2230051135190148440">CHAP</translation>
 <translation id="223106756035922488">Klik untuk melihat coretan hari ini</translation>
 <translation id="2231238007119540260">Jika anda memadamkan sijil pelayan, anda memulihkan pemeriksaan keselamatan biasa untuk pelayan tersebut dan memerlukannya untuk menggunakan sijil yang sah.</translation>
-<translation id="2232379019872353004">Menghantar beberapa maklumat sistem dan kandungan halaman kepada Google</translation>
 <translation id="2232876851878324699">Fail ini mengandungi satu sijil, yang tidak diimport:</translation>
 <translation id="2233502537820838181">&amp;Maklumat lanjut</translation>
 <translation id="2234876718134438132">Segerak dan perkhidmatan Google</translation>
@@ -3697,6 +3695,7 @@
 <translation id="6841186874966388268">Ralat</translation>
 <translation id="6843423766595476978">Ok Google sudah disediakan</translation>
 <translation id="6845038076637626672">Buka dimaksimumkan</translation>
+<translation id="6845325883481699275">Bantu tingkatkan keselamatan Chrome</translation>
 <translation id="6848388270925200958">Sekarang, anda mempunyai beberapa kad yang boleh digunakan pada peranti ini sahaja</translation>
 <translation id="6851497530878285708">Apl Didayakan</translation>
 <translation id="6853388645642883916">Pengemaskinian tidur</translation>
@@ -4259,7 +4258,6 @@
 <translation id="7730449930968088409">Abadikan kandungan skrin anda</translation>
 <translation id="7732111077498238432">Rangkaian dikawal oleh dasar</translation>
 <translation id="7737238973539693982">Padamkan Linux (Beta)</translation>
-<translation id="773905249182896430">Melindungi anda dan peranti anda daripada tapak yang berbahaya</translation>
 <translation id="7740996059027112821">Standard</translation>
 <translation id="7750228210027921155">Gambar dalam gambar</translation>
 <translation id="7751260505918304024">Paparkan semua</translation>
@@ -5071,7 +5069,6 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="8978154919215542464">Hidup - segerakkan semuanya</translation>
 <translation id="897939795688207351">Di <ph name="ORIGIN" /></translation>
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> - Mengalami ranap sistem</translation>
-<translation id="8983677657449185470">Bantu meningkatkan Penyemakan Imbas Selamat</translation>
 <translation id="8986362086234534611">Lupa</translation>
 <translation id="8986494364107987395">Hantar statistik penggunaan dan laporan nahas kepada Google secara automatik</translation>
 <translation id="8987927404178983737">Bulan</translation>

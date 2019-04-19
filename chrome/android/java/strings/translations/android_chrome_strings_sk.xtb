@@ -281,7 +281,6 @@
 <translation id="305593374596241526">Poloha je vypnutá. Zapnite ju v <ph name="BEGIN_LINK" />Nastaveniach Androidu<ph name="END_LINK" />.</translation>
 <translation id="3058498974290601450">Synchronizáciu môžete kedykoľvek zapnúť v nastaveniach</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> záložka}few{<ph name="BOOKMARKS_COUNT_MANY" /> záložky}many{<ph name="BOOKMARKS_COUNT_MANY" /> bookmarks}other{<ph name="BOOKMARKS_COUNT_MANY" /> záložiek}}</translation>
-<translation id="307908932405420782">Čoskoro sa zobrazia ďalšie články. Dobré ráno!</translation>
 <translation id="3089395242580810162">Otvoriť na karte inkognito</translation>
 <translation id="311456632243022227">Otvorené odkazy v Chrome</translation>
 <translation id="3115898365077584848">Zobraziť informácie</translation>
@@ -686,7 +685,6 @@ Ak chcete toto nastavenie zmeniť, <ph name="BEGIN_LINK" />resetujte synchroniz�
 <translation id="605721222689873409">RR</translation>
 <translation id="6075798973483050474">Úprava domovskej stránky</translation>
 <translation id="60923314841986378">Zostáva: <ph name="HOURS" /> h</translation>
-<translation id="60924377787140961">Čoskoro sa zobrazia ďalšie články. Príjemné popoludnie!</translation>
 <translation id="6099151465289169210">Prepnuté na súkromné karty</translation>
 <translation id="6108923351542677676">Inštaluje sa...</translation>
 <translation id="6111020039983847643">využité dáta</translation>
@@ -1039,7 +1037,6 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="8562452229998620586">Tu sa zobrazia uložené heslá.</translation>
 <translation id="8569404424186215731">od <ph name="DATE" /></translation>
 <translation id="8571213806525832805">Posledné 4 týždne</translation>
-<translation id="857509777403223202">Čoskoro sa zobrazia ďalšie články. Príjemný večer!</translation>
 <translation id="857943718398505171">Povolené (odporúčané)</translation>
 <translation id="8582216581279205169">Otvorené karty v plnej výške</translation>
 <translation id="8583805026567836021">Prebieha vymazávanie údajov účtu</translation>

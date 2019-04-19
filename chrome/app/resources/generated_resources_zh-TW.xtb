@@ -408,7 +408,6 @@
 <translation id="1639239467298939599">載入中</translation>
 <translation id="163993578339087550">「<ph name="SERVICE_NAME" />」要求確認你所使用的裝置是否為合格的 Chrome 作業系統裝置。</translation>
 <translation id="1640283014264083726">PKCS #1 MD4 (使用 RSA 加密)</translation>
-<translation id="1641113438599504367">安全瀏覽</translation>
 <translation id="1642494467033190216">必須先移除 rootfs 保護並重新啟動，才能啟用其他偵錯功能。</translation>
 <translation id="1643050526526937107">基本同步處理</translation>
 <translation id="1643072738649235303">使用 SHA-1 的 X9.62 ECDSA 簽章</translation>
@@ -788,7 +787,6 @@
 <translation id="2230051135190148440">CHAP</translation>
 <translation id="223106756035922488">按一下即可瀏覽今日 doodle</translation>
 <translation id="2231238007119540260">如果你刪除了伺服器憑證，系統便會還原對該伺服器的定期安全性檢查，並要求使用有效的憑證。</translation>
-<translation id="2232379019872353004">將部分系統資訊和網頁內容傳送給 Google</translation>
 <translation id="2232876851878324699">檔案含有一個憑證，但無法匯入：</translation>
 <translation id="2233502537820838181">更多資訊(&amp;M)</translation>
 <translation id="2234876718134438132">同步處理和 Google 服務</translation>
@@ -3427,7 +3425,7 @@
 <translation id="641081527798843608">主題比對</translation>
 <translation id="6412931879992742813">新增無痕式視窗</translation>
 <translation id="6415900369006735853">透過手機連上網際網路</translation>
-<translation id="6416743254476733475">請透過電腦允許或封鎖相關權限要求。</translation>
+<translation id="6416743254476733475">請透過電腦允許或封鎖相關要求。</translation>
 <translation id="6417265370957905582">Google 助理</translation>
 <translation id="6418160186546245112">還原至先前安裝的 <ph name="IDS_SHORT_PRODUCT_NAME" /> 版本</translation>
 <translation id="6418481728190846787">永久移除所有應用程式的存取權</translation>
@@ -3694,6 +3692,7 @@
 <translation id="6841186874966388268">錯誤</translation>
 <translation id="6843423766595476978">Ok Google 設定完成</translation>
 <translation id="6845038076637626672">最大化開啟</translation>
+<translation id="6845325883481699275">協助改善 Chrome 安全性</translation>
 <translation id="6848388270925200958">目前你有一些卡片只能在這部裝置上使用</translation>
 <translation id="6851497530878285708">應用程式已啟用</translation>
 <translation id="6853388645642883916">更新程式休眠中</translation>
@@ -4255,7 +4254,6 @@
 <translation id="7730449930968088409">擷取你的畫面內容</translation>
 <translation id="7732111077498238432">網路受到政策控制</translation>
 <translation id="7737238973539693982">刪除 Linux (測試版)</translation>
-<translation id="773905249182896430">保護你和你的裝置不受危險網站攻擊</translation>
 <translation id="7740996059027112821">標準</translation>
 <translation id="7750228210027921155">子母畫面</translation>
 <translation id="7751260505918304024">全部顯示</translation>
@@ -5065,7 +5063,6 @@
 <translation id="8978154919215542464">開啟 - 同步處理所有資料</translation>
 <translation id="897939795688207351">在 <ph name="ORIGIN" /> 上</translation>
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> - 已當機</translation>
-<translation id="8983677657449185470">協助改善「安全瀏覽」的品質</translation>
 <translation id="8986362086234534611">清除</translation>
 <translation id="8986494364107987395">自動傳送使用統計資料及當機報告給 Google</translation>
 <translation id="8987927404178983737">月</translation>

@@ -281,7 +281,6 @@
 <translation id="305593374596241526">La localisation est désactivée. Activez-la dans les <ph name="BEGIN_LINK" />paramètres Android<ph name="END_LINK" />.</translation>
 <translation id="3058498974290601450">Vous pouvez activer la synchronisation à tout moment dans les paramètres</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> favori}one{<ph name="BOOKMARKS_COUNT_MANY" /> favori}other{<ph name="BOOKMARKS_COUNT_MANY" /> favoris}}</translation>
-<translation id="307908932405420782">D'autres articles vous seront bientôt proposés. Bonne matinée !</translation>
 <translation id="3089395242580810162">Ouvrir onglet navig. privée</translation>
 <translation id="311456632243022227">Liens ouverts dans Chrome</translation>
 <translation id="3115898365077584848">Afficher les informations</translation>
@@ -686,7 +685,6 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="605721222689873409">AA</translation>
 <translation id="6075798973483050474">Modifier la page d'accueil</translation>
 <translation id="60923314841986378"><ph name="HOURS" /> heures restantes</translation>
-<translation id="60924377787140961">D'autres articles vous seront bientôt proposés. Bon après-midi !</translation>
 <translation id="6099151465289169210">Vous êtes passé aux onglets privés</translation>
 <translation id="6108923351542677676">Configuration en cours…</translation>
 <translation id="6111020039983847643">de données utilisées</translation>
@@ -1039,7 +1037,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="8562452229998620586">Les mots de passe enregistrés s'affichent ici.</translation>
 <translation id="8569404424186215731">depuis le <ph name="DATE" /></translation>
 <translation id="8571213806525832805">4 dernières semaines</translation>
-<translation id="857509777403223202">D'autres articles vous seront bientôt proposés. Bonne soirée !</translation>
 <translation id="857943718398505171">Autorisé (recommandé)</translation>
 <translation id="8582216581279205169">Onglets ouverts à hauteur maximale</translation>
 <translation id="8583805026567836021">Suppression des données du compte</translation>

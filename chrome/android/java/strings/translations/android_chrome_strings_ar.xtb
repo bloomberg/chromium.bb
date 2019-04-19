@@ -281,7 +281,6 @@
 <translation id="305593374596241526">‏تحديد الموقع الجغرافي متوقف، يمكنك تفعيله من <ph name="BEGIN_LINK" />إعدادات Android<ph name="END_LINK" />.</translation>
 <translation id="3058498974290601450">يمكنك تفعيل المزامنة في أي وقت في الإعدادات.</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{إشارة مرجعية <ph name="BOOKMARKS_COUNT_ONE" />}zero{<ph name="BOOKMARKS_COUNT_MANY" /> إشارات مرجعية}two{إشارتان مرجعيتان (<ph name="BOOKMARKS_COUNT_MANY" />)}few{<ph name="BOOKMARKS_COUNT_MANY" /> إشارات مرجعية}many{<ph name="BOOKMARKS_COUNT_MANY" /> إشارةً مرجعيةً}other{<ph name="BOOKMARKS_COUNT_MANY" /> إشارة مرجعية}}</translation>
-<translation id="307908932405420782">ستظهر المزيد من المقالات قريبًا. استمتع بصباحك!</translation>
 <translation id="3089395242580810162">الفتح في علامة تبويب تصفّح متخفي</translation>
 <translation id="311456632243022227">‏تم فتح عدّة روابط في Chrome</translation>
 <translation id="3115898365077584848">عرض المعلومات</translation>
@@ -686,7 +685,6 @@
 <translation id="605721222689873409">العام</translation>
 <translation id="6075798973483050474">تعديل الصفحة الرئيسية</translation>
 <translation id="60923314841986378">عدد الساعات المتبقية: <ph name="HOURS" /></translation>
-<translation id="60924377787140961">ستظهر المزيد من المقالات قريبًا. استمتع بقضاء وقت الظهيرة!</translation>
 <translation id="6099151465289169210">تم التبديل إلى علامات التبويب الخاصة</translation>
 <translation id="6108923351542677676">الإعداد قيد التقدّم…</translation>
 <translation id="6111020039983847643">حجم البيانات المستخدَمة</translation>
@@ -1039,7 +1037,6 @@
 <translation id="8562452229998620586">ستظهر هنا كلمات المرور المحفوظة.</translation>
 <translation id="8569404424186215731">منذ <ph name="DATE" /></translation>
 <translation id="8571213806525832805">الأسابيع الـ4 الأخيرة</translation>
-<translation id="857509777403223202">ستظهر المزيد من المقالات قريبًا. استمتع بليلتك!</translation>
 <translation id="857943718398505171">مسموح بها (موصى بها)</translation>
 <translation id="8582216581279205169">علامات تبويب مفتوحة بارتفاع كامل</translation>
 <translation id="8583805026567836021">محو بيانات الحساب</translation>

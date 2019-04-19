@@ -281,7 +281,6 @@
 <translation id="305593374596241526">Vieta išjungta; įjunkite <ph name="BEGIN_LINK" />„Android“ nustatymuose<ph name="END_LINK" />.</translation>
 <translation id="3058498974290601450">Galite bet kada įjungti sinchronizavimą „Nustatymų“ skiltyje</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> žymė}one{<ph name="BOOKMARKS_COUNT_MANY" /> žymė}few{<ph name="BOOKMARKS_COUNT_MANY" /> žymės}many{<ph name="BOOKMARKS_COUNT_MANY" /> žymės}other{<ph name="BOOKMARKS_COUNT_MANY" /> žymių}}</translation>
-<translation id="307908932405420782">Netrukus bus rodoma daugiau straipsnių. Gero ryto!</translation>
 <translation id="3089395242580810162">Atidaryti inkognito skirtuko lape</translation>
 <translation id="311456632243022227">Kel. nuor. at. narš. „Chrome“</translation>
 <translation id="3115898365077584848">Rodyti informaciją</translation>
@@ -686,7 +685,6 @@ Jei norite pakeisti šį nustatymą, <ph name="BEGIN_LINK" />iš naujo nustatyki
 <translation id="605721222689873409">MM</translation>
 <translation id="6075798973483050474">Redaguoti pagrindinį puslapį</translation>
 <translation id="60923314841986378">Liko <ph name="HOURS" /> val.</translation>
-<translation id="60924377787140961">Netrukus bus rodoma daugiau straipsnių. Geros popietės!</translation>
 <translation id="6099151465289169210">Perjungta į privačius skirtukus</translation>
 <translation id="6108923351542677676">Nustatoma…</translation>
 <translation id="6111020039983847643">išnaudoti duomenys</translation>
@@ -1039,7 +1037,6 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="8562452229998620586">Čia bus rodomi išsaugoti slaptažodžiai.</translation>
 <translation id="8569404424186215731">nuo <ph name="DATE" /></translation>
 <translation id="8571213806525832805">Pastarosios 4 savaitės</translation>
-<translation id="857509777403223202">Netrukus bus rodoma daugiau straipsnių. Gero vakaro!</translation>
 <translation id="857943718398505171">Leidžiama (rekomenduojama)</translation>
 <translation id="8582216581279205169">Atidaryti skirtukai (visas aukštis)</translation>
 <translation id="8583805026567836021">Valomi paskyros duomenys</translation>

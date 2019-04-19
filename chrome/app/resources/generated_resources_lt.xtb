@@ -408,7 +408,6 @@
 <translation id="1639239467298939599">Įkeliama</translation>
 <translation id="163993578339087550">„<ph name="SERVICE_NAME" />“ nori patikrinti, ar naudojate tinkamą „Chrome“ OS įrenginį.</translation>
 <translation id="1640283014264083726">PKCS Nr. 1 MD4 su RSA šifruote</translation>
-<translation id="1641113438599504367">Saugus naršymas</translation>
 <translation id="1642494467033190216">Prieš įgalinant kitas derinimo funkcijas reikia pašalinti „rootfs“ apsaugą ir paleisti įrenginį iš naujo.</translation>
 <translation id="1643050526526937107">Tik sinchronizuoti</translation>
 <translation id="1643072738649235303">X9.62 ECDSA parašas naudojant SHA-1</translation>
@@ -788,7 +787,6 @@
 <translation id="2230051135190148440">CHAP</translation>
 <translation id="223106756035922488">Spustelėkite ir peržiūrėkite šiandienos papuoštą logotipą</translation>
 <translation id="2231238007119540260">Jei ištrinsite serverio sertifikatą, atnaujinsite įprastas to serverio saugos patikras ir reikės naudoti galiojantį sertifikatą.</translation>
-<translation id="2232379019872353004">Siunčia tam tikrą sistemos informaciją ir puslapio turinį „Google“</translation>
 <translation id="2232876851878324699">Faile buvo vienas sertifikatas, kuris nebuvo importuotas:</translation>
 <translation id="2233502537820838181">Daugiau informacijos</translation>
 <translation id="2234876718134438132">Sinchron. ir „Google“ paslaugos</translation>
@@ -3697,6 +3695,7 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="6841186874966388268">Klaidos</translation>
 <translation id="6843423766595476978">„Ok Google“ visiškai nustatyta</translation>
 <translation id="6845038076637626672">Atidaryti padidintą</translation>
+<translation id="6845325883481699275">Padėkite tobulinti „Chrome“ saugą</translation>
 <translation id="6848388270925200958">Šiuo metu turite kelias korteles, kurias galima naudoti tik šiuo įrenginiu</translation>
 <translation id="6851497530878285708">Programa įgalinta</translation>
 <translation id="6853388645642883916">Atnaujinimo priemonė yra miego būsenos</translation>
@@ -4259,7 +4258,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="7730449930968088409">Fiksuokite savo ekrano turinį</translation>
 <translation id="7732111077498238432">Tinklą valdo politika</translation>
 <translation id="7737238973539693982">„Linux“ (beta vers.) ištrynimas</translation>
-<translation id="773905249182896430">Apsaugo jus ir jūsų įrenginį nuo pavojingų svetainių</translation>
 <translation id="7740996059027112821">Standartinis</translation>
 <translation id="7750228210027921155">Vaizdas vaizde</translation>
 <translation id="7751260505918304024">Rodyti visas</translation>
@@ -5070,7 +5068,6 @@ Rakto failą laikykite saugioje vietoje. Jo reikės, kai norėsite sukurti nauja
 <translation id="8978154919215542464">Įjungta – sinchronizuoti viską</translation>
 <translation id="897939795688207351"><ph name="ORIGIN" /></translation>
 <translation id="8980951173413349704">„<ph name="WINDOW_TITLE" />“ – užstrigo</translation>
-<translation id="8983677657449185470">Padėti tobulinti Saugų naršymą</translation>
 <translation id="8986362086234534611">Pamiršti</translation>
 <translation id="8986494364107987395">Automatiškai siųsti naudojimo statistiką ir strigčių ataskaitas „Google“</translation>
 <translation id="8987927404178983737">Mėnuo</translation>

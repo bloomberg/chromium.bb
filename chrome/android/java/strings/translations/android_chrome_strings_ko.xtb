@@ -281,7 +281,6 @@
 <translation id="305593374596241526">위치가 사용 중지되었습니다. <ph name="BEGIN_LINK" />Android 설정<ph name="END_LINK" />에서 사용 설정하세요.</translation>
 <translation id="3058498974290601450">언제든지 설정에서 동기화를 사용 설정할 수 있습니다.</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{북마크 <ph name="BOOKMARKS_COUNT_ONE" />개}other{북마크 <ph name="BOOKMARKS_COUNT_MANY" />개}}</translation>
-<translation id="307908932405420782">더 많은 콘텐츠가 표시될 예정이니 기대해 주세요. 즐거운 아침 시간 보내세요.</translation>
 <translation id="3089395242580810162">시크릿 탭에서 열기</translation>
 <translation id="311456632243022227">여러 개의 링크가 Chrome에서 열림</translation>
 <translation id="3115898365077584848">정보 표시</translation>
@@ -686,7 +685,6 @@
 <translation id="605721222689873409">YY</translation>
 <translation id="6075798973483050474">홈 페이지 수정</translation>
 <translation id="60923314841986378"><ph name="HOURS" />시간 남음</translation>
-<translation id="60924377787140961">더 많은 콘텐츠가 표시될 예정이니 기대해주세요. 즐거운 오후 보내세요.</translation>
 <translation id="6099151465289169210">비공개 탭으로 전환됨</translation>
 <translation id="6108923351542677676">설정 진행 중...</translation>
 <translation id="6111020039983847643">데이터 사용됨</translation>
@@ -1039,7 +1037,6 @@
 <translation id="8562452229998620586">저장한 비밀번호가 여기에 표시됩니다.</translation>
 <translation id="8569404424186215731"><ph name="DATE" />부터</translation>
 <translation id="8571213806525832805">지난 4주</translation>
-<translation id="857509777403223202">더 많은 콘텐츠가 표시될 예정이니 기대해주세요. 즐거운 저녁 시간 보내세요.</translation>
 <translation id="857943718398505171">허용(권장)</translation>
 <translation id="8582216581279205169">탭이 전체 높이로 열림</translation>
 <translation id="8583805026567836021">계정 데이터 지우기</translation>

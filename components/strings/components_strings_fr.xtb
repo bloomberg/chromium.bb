@@ -1278,7 +1278,6 @@ Informations supplémentaires :
 <translation id="8100588592594801589">Les cartes non valides ont été supprimées</translation>
 <translation id="8103161714697287722">Mode de paiement</translation>
 <translation id="8118489163946903409">Mode de paiement</translation>
-<translation id="8123836779274890062"><ph name="DEVICE_TYPE" /> géré par <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="8127301229239896662">Le logiciel "<ph name="SOFTWARE_NAME" />" n'a pas été installé correctement sur votre ordinateur ou sur votre réseau. Demandez à l'administrateur informatique de résoudre le problème.</translation>
 <translation id="8131740175452115882">Confirmer</translation>
 <translation id="8149426793427495338">Votre ordinateur s'est mis en veille.</translation>

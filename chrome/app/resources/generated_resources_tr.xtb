@@ -408,7 +408,6 @@
 <translation id="1639239467298939599">Yükleniyor</translation>
 <translation id="163993578339087550"><ph name="SERVICE_NAME" /> uygun bir Chrome OS cihazı kullanıp kullanmadığınızı kontrol etmek istiyor.</translation>
 <translation id="1640283014264083726">PKCS #1 RSA Şifrelemeli MD4</translation>
-<translation id="1641113438599504367">Güvenli Tarama</translation>
 <translation id="1642494467033190216">Diğer hata ayıklama özelliklerinin etkinleştirilebilmesi için rootfs korumasının kaldırılması ve cihazın yeniden başlatılması gerekir.</translation>
 <translation id="1643050526526937107">Yalnızca senkronize et</translation>
 <translation id="1643072738649235303">SHA-1 ile X9.62 ECDSA İmzası</translation>
@@ -788,7 +787,6 @@
 <translation id="2230051135190148440">CHAP</translation>
 <translation id="223106756035922488">Bugünün doodle'ını görüntülemek için tıklayın</translation>
 <translation id="2231238007119540260">Bir sunucu sertifikasını silerseniz, söz konusu sunucuya yönelik olağan güvenlik denetimlerini geri yükler ve sunucunun geçerli bir sertifika kullanmasını gerekli kılarsınız.</translation>
-<translation id="2232379019872353004">Bazı sistem bilgilerini ve sayfa içeriğini Google'a gönderir</translation>
 <translation id="2232876851878324699">Dosya bir sertifika içeriyordu ve bu sertifika içe aktarılmadı:</translation>
 <translation id="2233502537820838181">&amp;Daha fazla bilgi</translation>
 <translation id="2234876718134438132">Senkronizasyon ve Google hizmetleri</translation>
@@ -3697,6 +3695,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="6841186874966388268">Hatalar</translation>
 <translation id="6843423766595476978">Ok Google hazır</translation>
 <translation id="6845038076637626672">Ekranı Kaplayacak Şekilde Aç</translation>
+<translation id="6845325883481699275">Chrome güvenliğini iyileştirmeye yardımcı olun</translation>
 <translation id="6848388270925200958">Şu anda, yalnızca bu cihazda kullanılabilen kartlarınız var</translation>
 <translation id="6851497530878285708">Uygulama Etkinleştirildi</translation>
 <translation id="6853388645642883916">Güncelleyici uyku modunda</translation>
@@ -4259,7 +4258,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="7730449930968088409">Ekranınızın içeriğini yakalama</translation>
 <translation id="7732111077498238432">Ağ, politika ile denetleniyor</translation>
 <translation id="7737238973539693982">Linux'u (Beta) silin</translation>
-<translation id="773905249182896430">Kendinizi ve cihazınızı tehlikeli sitelerden korur</translation>
 <translation id="7740996059027112821">Standart</translation>
 <translation id="7750228210027921155">Pencere içinde pencere</translation>
 <translation id="7751260505918304024">Tümünü göster</translation>
@@ -5069,7 +5067,6 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8978154919215542464">Açık - her şeyi senkronize et</translation>
 <translation id="897939795688207351"><ph name="ORIGIN" /> üzerinde</translation>
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> - Kilitlendi</translation>
-<translation id="8983677657449185470">Güvenli Tarama'yı iyileştirmeye yardımcı ol</translation>
 <translation id="8986362086234534611">Unut</translation>
 <translation id="8986494364107987395">Kullanım istatistiklerini ve çökme raporlarını otomatik olarak Google'a gönder</translation>
 <translation id="8987927404178983737">Ay</translation>

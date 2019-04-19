@@ -281,7 +281,6 @@
 <translation id="305593374596241526">Naka-off ang lokasyon; i-on ito sa <ph name="BEGIN_LINK" />Mga Setting ng Android<ph name="END_LINK" />.</translation>
 <translation id="3058498974290601450">Maaari mong i-on ang pag-sync anumang oras sa mga setting.</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> bookmark}one{<ph name="BOOKMARKS_COUNT_MANY" /> bookmark}other{<ph name="BOOKMARKS_COUNT_MANY" /> na bookmark}}</translation>
-<translation id="307908932405420782">Marami pang artikulo ang malapit nang lumabas. I-enjoy ang iyong umaga!</translation>
 <translation id="3089395242580810162">Buksan sa tab na incognito</translation>
 <translation id="311456632243022227">Nagbukas ng marami sa Chrome</translation>
 <translation id="3115898365077584848">Ipakita ang Impormasyon</translation>
@@ -686,7 +685,6 @@ Para baguhin ang setting na ito, <ph name="BEGIN_LINK" />i-reset ang pag-sync<ph
 <translation id="605721222689873409">YY</translation>
 <translation id="6075798973483050474">I-edit ang home page</translation>
 <translation id="60923314841986378"><ph name="HOURS" /> (na) oras na lang ang natitira</translation>
-<translation id="60924377787140961">Marami pang artikulo ang malapit nang lumabas. I-enjoy ang iyong hapon!</translation>
 <translation id="6099151465289169210">Lumipat sa mga pribadong tab</translation>
 <translation id="6108923351542677676">Kasalukuyang sine-setup…</translation>
 <translation id="6111020039983847643">nagamit na data</translation>
@@ -1039,7 +1037,6 @@ Halimbawa, puwedeng tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="8562452229998620586">Lalabas dito ang mga naka-save na password.</translation>
 <translation id="8569404424186215731">simula noong <ph name="DATE" /></translation>
 <translation id="8571213806525832805">Huling 4 na linggo</translation>
-<translation id="857509777403223202">Marami pang artikulo ang malapit nang lumabas. I-enjoy ang iyong gabi!</translation>
 <translation id="857943718398505171">Pinapayagan (inirerekomenda)</translation>
 <translation id="8582216581279205169">Nakabukas ang mga binuksang tab nang buo ang taas</translation>
 <translation id="8583805026567836021">Kini-clear ang data ng account</translation>

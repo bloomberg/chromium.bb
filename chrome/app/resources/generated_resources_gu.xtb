@@ -404,7 +404,6 @@
 <translation id="1639239467298939599">લોડ કરી રહ્યું છે</translation>
 <translation id="163993578339087550"><ph name="SERVICE_NAME" /> તપાસવા માગે છે કે તમે યોગ્ય Chrome OS ઉપકરણનો ઉપયોગ કઈ રહ્યા છો કે નહીં.</translation>
 <translation id="1640283014264083726">RSA એન્ક્રિપ્શનવાળું PKCS #1 MD4</translation>
-<translation id="1641113438599504367">સલામત બ્રાઉઝિંગ</translation>
 <translation id="1642494467033190216">અન્ય ડિબગિંગ સુવિધાઓ સક્ષમ કરતાં પહેલાં rootfs રક્ષણ દૂર કરી અને પુનઃપ્રારંભ કરવું જરૂરી છે.</translation>
 <translation id="1643050526526937107">ફક્ત સિંક કરો</translation>
 <translation id="1643072738649235303">SHA-1 સાથે X9.62 ECDSA સહી</translation>
@@ -784,7 +783,6 @@
 <translation id="2230051135190148440">CHAP</translation>
 <translation id="223106756035922488">આજનું ડૂડલ જોવા માટે ક્લિક કરો</translation>
 <translation id="2231238007119540260">જો તમે કોઈ સર્વર પ્રમાણપત્રને ડિલીટ કરો છો, તો તમે એ સર્વર માટેની સામાન્ય સુરક્ષા તપાસોને પાછી મેળવો છો અને જરૂરી છે કે એ માન્ય પ્રમાણપત્રનો ઉપયોગ કરે છે.</translation>
-<translation id="2232379019872353004">Googleને અમુક સિસ્ટમ માહિતી અને પેજ કન્ટેન્ટ મોકલે છે</translation>
 <translation id="2232876851878324699">ફાઇલમાં એક પ્રમાણપત્ર શામેલ છે કે જે આયાત કર્યું ન હતું:</translation>
 <translation id="2233502537820838181">&amp;વધુ માહિતી</translation>
 <translation id="2234876718134438132">સિંક અને Google સેવાઓ</translation>
@@ -3694,6 +3692,7 @@ USB ડિવાઇસ</translation>
 <translation id="6841186874966388268">ભૂલો</translation>
 <translation id="6843423766595476978">ઓકે Google તૈયાર છે</translation>
 <translation id="6845038076637626672">મહત્તમ ખોલો</translation>
+<translation id="6845325883481699275">Chrome સુરક્ષાને વધુ સારી બનાવવામાં સહાય કરો</translation>
 <translation id="6848388270925200958">હમણાં, તમારી પાસે કેટલાક કાર્ડ છે, જેનો માત્ર આ ડિવાઇસ પર ઉપયોગ કરી શકાય છે</translation>
 <translation id="6851497530878285708">ઍપ ચાલુ કરી</translation>
 <translation id="6853388645642883916">અપડેટકર્તા નિષ્ક્રિય છે</translation>
@@ -4256,7 +4255,6 @@ USB ડિવાઇસ</translation>
 <translation id="7730449930968088409">તમારી સ્ક્રીનની કન્ટેન્ટ કેપ્ચર કરો</translation>
 <translation id="7732111077498238432">નેટવર્ક નીતિ દ્વારા નિયંત્રિત છે</translation>
 <translation id="7737238973539693982">Linux (બીટા) ડિલીટ કરો</translation>
-<translation id="773905249182896430">તમને તથા તમારા ઉપકરણને જોખમી સાઇટથી સુરક્ષિત કરે છે</translation>
 <translation id="7740996059027112821">માનક</translation>
 <translation id="7750228210027921155">ચિત્રમાં ચિત્ર</translation>
 <translation id="7751260505918304024">બધું બતાવો</translation>
@@ -5061,7 +5059,6 @@ USB ડિવાઇસ</translation>
 <translation id="8978154919215542464">ચાલુ - દરેક વસ્તુ સમન્વયિત કરો</translation>
 <translation id="897939795688207351"><ph name="ORIGIN" /> પર</translation>
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> - ક્રેશ થયું</translation>
-<translation id="8983677657449185470">સુરક્ષિત બ્રાઉઝિંગને બહેતર બનાવવામાં સહાય કરો</translation>
 <translation id="8986362086234534611">ભૂલી ગયા</translation>
 <translation id="8986494364107987395">ઉપયોગિતા આંકડાઓ અને ક્રૅશ રિપોર્ટ Googleને ઑટોમૅટિક રીતે મોકલો</translation>
 <translation id="8987927404178983737">મહિનો</translation>

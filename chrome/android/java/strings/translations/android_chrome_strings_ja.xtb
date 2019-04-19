@@ -281,7 +281,6 @@
 <translation id="305593374596241526">位置情報が OFF になっています。<ph name="BEGIN_LINK" />Android の設定<ph name="END_LINK" />で ON にしてください。</translation>
 <translation id="3058498974290601450">同期は設定でいつでもオンにできます。</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> 個のブックマーク}other{<ph name="BOOKMARKS_COUNT_MANY" /> 個のブックマーク}}</translation>
-<translation id="307908932405420782">記事は随時更新されます。また後でご覧ください。</translation>
 <translation id="3089395242580810162">シークレット タブで開く</translation>
 <translation id="311456632243022227">複数のリンクが Chrome で開かれました</translation>
 <translation id="3115898365077584848">情報を表示</translation>
@@ -686,7 +685,6 @@
 <translation id="605721222689873409">YY</translation>
 <translation id="6075798973483050474">ホームページの編集</translation>
 <translation id="60923314841986378">残り <ph name="HOURS" /> 時間</translation>
-<translation id="60924377787140961">記事は随時更新されます。また後でご覧ください。</translation>
 <translation id="6099151465289169210">プライベート タブに切り替えました</translation>
 <translation id="6108923351542677676">設定しています...</translation>
 <translation id="6111020039983847643">データ使用量</translation>
@@ -1039,7 +1037,6 @@
 <translation id="8562452229998620586">保存したパスワードはこちらに表示されます。</translation>
 <translation id="8569404424186215731">（<ph name="DATE" />以降）</translation>
 <translation id="8571213806525832805">過去 4 週間</translation>
-<translation id="857509777403223202">記事は随時更新されます。また後でご覧ください。</translation>
 <translation id="857943718398505171">許可（推奨）</translation>
 <translation id="8582216581279205169">開いているタブは画面いっぱいの高さで表示されています</translation>
 <translation id="8583805026567836021">アカウント データをクリア中</translation>

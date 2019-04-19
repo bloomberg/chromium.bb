@@ -51,8 +51,8 @@
 <translation id="1049138910114524876">Umożliwia skonfigurowanie ustawień regionalnych wymuszanych na ekranie logowania systemu <ph name="PRODUCT_OS_NAME" />. Jeśli ta zasada jest skonfigurowana, ekran logowania będzie zawsze wyświetlany z zastosowaniem ustawień regionalnych podanych jako pierwsza wartość tej zasady (aby zapewnić zgodność w przyszłości, zasada jest zdefiniowana jako lista). Jeśli zasada jest nieskonfigurowana lub jej wartością jest pusta lista, ekran logowania będzie wyświetlany z zastosowaniem ustawień regionalnych ostatniej sesji użytkownika. Jeśli zasada będzie mieć wartość, która nie określa prawidłowych ustawień regionalnych, ekran logowania będzie wyświetlany z zastosowaniem zastępczych ustawień regionalnych (obecnie en-US).</translation>
 <translation id="1062011392452772310">Włącz zaświadczanie zdalne dla urządzenia</translation>
 <translation id="1062407476771304334">Zastąp</translation>
-<translation id="1079801999187584280">Zablokuj używanie narzędzi dla programistów</translation>
-<translation id="1087437665304381368">Ta zasada ma wpływ tylko na tryb programisty <ph name="PRODUCT_OS_NAME" />. Aby zablokować dostęp do Opcji programisty aplikacji na Androida, skonfiguruj zasadę <ph name="DEVELOPER_TOOLS_DISABLED_POLICY_NAME" />.</translation>
+<translation id="1079801999187584280">Zablokuj używanie narzędzi dla deweloperów</translation>
+<translation id="1087437665304381368">Ta zasada ma wpływ tylko na tryb dewelopera <ph name="PRODUCT_OS_NAME" />. Aby zablokować dostęp do Opcji dewelopera aplikacji na Androida, skonfiguruj zasadę <ph name="DEVELOPER_TOOLS_DISABLED_POLICY_NAME" />.</translation>
 <translation id="1093082332347834239">Jeśli to ustawienie jest włączone, host pomocy zdalnej będzie uruchamiany w procesie z uprawnieniami <ph name="UIACCESS_PERMISSION_NAME" />. Dzięki temu użytkownicy zdalni będą mieć dostęp do okien z podwyższonym poziomem uprawnień na komputerze użytkownika lokalnego.
 
           Jeśli to ustawienie jest wyłączone lub nieskonfigurowane, host pomocy zdalnej będzie uruchamiany w kontekście użytkownika, a użytkownicy zdalni nie będą mieć dostępu do okien z podwyższonym poziomem uprawnień na komputerze.</translation>
@@ -128,9 +128,9 @@
 
       Zmienne środowiskowe są rozwijane. W Windows ciąg %ABC% jest zastępowany wartością zmiennej środowiskowej ABC.</translation>
 <translation id="1151353063931113432">Zezwalaj na grafiki w tych witrynach</translation>
-<translation id="1152117524387175066">Zgłasza stan przełącznika trybu programisty podczas uruchomienia urządzenia.
+<translation id="1152117524387175066">Zgłasza stan przełącznika trybu dewelopera podczas uruchomienia urządzenia.
 
-      Jeśli ta zasada ma wartość Fałsz, stan przełącznika trybu programisty nie jest zgłaszany.</translation>
+      Jeśli ta zasada ma wartość Fałsz, stan przełącznika trybu dewelopera nie jest zgłaszany.</translation>
 <translation id="1160479894929412407">Zezwalaj na protokół QUIC</translation>
 <translation id="1160939557934457296">Wyłącz możliwość kontynuacji na stronie ostrzeżenia Bezpiecznego przeglądania</translation>
 <translation id="1189817621108632689">Pozwala na ustawienie listy wzorców adresów URL określających witryny, którym nie wolno wyświetlać obrazów.
@@ -171,7 +171,7 @@
 <translation id="1243570869342663665">Ustaw filtrowanie treści dla dorosłych SafeSites.</translation>
 <translation id="1257550411839719984">Ustaw domyślny katalog pobierania</translation>
 <translation id="1265053460044691532">Ograniczenie czasu, przez który użytkownik uwierzytelniony za pomocą SAML może logować się offline</translation>
-<translation id="1290634681382861275">Kontroluje inne ustawienia, w tym USB, Bluetooth, odświeżanie zasad, tryb programisty itp.</translation>
+<translation id="1290634681382861275">Kontroluje inne ustawienia, w tym USB, Bluetooth, odświeżanie zasad, tryb dewelopera itp.</translation>
 <translation id="1291880496936992484">Ostrzeżenie: RC4 zostanie całkowicie usunięty z <ph name="PRODUCT_NAME" /> po wersji 52 (około września 2016 r.) i wtedy ta zasada przestanie działać.
 
       Jeśli ta zasada nie jest ustawiona lub jest wyłączona, to mechanizmy szyfrowania RC4 w TLS będą wyłączone. Można ją włączyć dla zachowania zgodności z przestarzałym serwerem. Jest to rozwiązanie tymczasowe i konieczna jest zmiana konfiguracji serwera.</translation>
@@ -253,7 +253,7 @@
 
       Jeśli z tej listy zostanie usunięta aplikacja, której instalacja została wcześniej wymuszona, <ph name="PRODUCT_NAME" /> automatycznie ją odinstaluje.
 
-Każdy element na liście tej zasady jest ciągiem zawierającym identyfikator rozszerzenia i URL „aktualizacji” oddzielony średnikiem (<ph name="SEMICOLON" />). Identyfikator rozszerzenia to 32-znakowy ciąg, który znajdziesz np. w sekcji <ph name="CHROME_EXTENSIONS_LINK" /> w trybie programisty. URL „aktualizacji” powinien wskazywać plik manifestu aktualizacji w postaci dokumentu XML, zgodnie z opisem podanym na <ph name="LINK_TO_EXTENSION_DOC1" />. Uwaga: URL „aktualizacji” określony przez tę zasadę jest używany tylko podczas pierwszej instalacji. Późniejsze aktualizacje rozszerzenia korzystają z adresu URL aktualizacji wskazanego w pliku manifestu.
+Każdy element na liście tej zasady jest ciągiem zawierającym identyfikator rozszerzenia i URL „aktualizacji” oddzielony średnikiem (<ph name="SEMICOLON" />). Identyfikator rozszerzenia to 32-znakowy ciąg, który znajdziesz np. w sekcji <ph name="CHROME_EXTENSIONS_LINK" /> w trybie dewelopera. URL „aktualizacji” powinien wskazywać plik manifestu aktualizacji w postaci dokumentu XML, zgodnie z opisem podanym na <ph name="LINK_TO_EXTENSION_DOC1" />. Uwaga: URL „aktualizacji” określony przez tę zasadę jest używany tylko podczas pierwszej instalacji. Późniejsze aktualizacje rozszerzenia korzystają z adresu URL aktualizacji wskazanego w pliku manifestu.
 
       Na przykład <ph name="EXTENSION_POLICY_EXAMPLE" /> instaluje aplikację <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> ze standardowego adresu URL „aktualizacji” w Chrome Web Store. Więcej informacji o hostowaniu rozszerzeń znajdziesz na <ph name="LINK_TO_EXTENSION_DOC2" /></translation>
 <translation id="1435659902881071157">Konfiguracja sieci na poziomie urządzenia</translation>
@@ -418,7 +418,7 @@ Każdy element na liście tej zasady jest ciągiem zawierającym identyfikator r
 
       Zasada powinna określać URL, z którego <ph name="PRODUCT_OS_NAME" /> może pobrać Warunki korzystania z usługi. Dokument ten musi mieć postać zwykłego tekstu (MIME) bez żadnych znaczników.</translation>
 <translation id="1750315445671978749">Blokuj pobieranie wszystkich plików</translation>
-<translation id="1781356041596378058">Ta zasada kontroluje też dostęp do Opcji programisty Androida. Jej włączenie powoduje odebranie użytkownikom dostępu do Opcji programisty. Gdy jest wyłączona lub nieskonfigurowana, użytkownicy mogą uzyskać dostęp do Opcji programisty, klikając siedem razy numer kompilacji w aplikacji Ustawienia Androida.</translation>
+<translation id="1781356041596378058">Ta zasada kontroluje też dostęp do Opcji dewelopera Androida. Jej włączenie powoduje odebranie użytkownikom dostępu do Opcji dewelopera. Gdy jest wyłączona lub nieskonfigurowana, użytkownicy mogą uzyskać dostęp do Opcji dewelopera, klikając siedem razy numer kompilacji w aplikacji Ustawienia Androida.</translation>
 <translation id="1793346220873697538">Wyłącz drukowanie domyślnie z kodem PIN</translation>
 <translation id="1797233582739332495">Wyświetlaj cyklicznie komunikat o tym, że wymagane jest ponowne uruchomienie</translation>
 <translation id="1798559516913615713">Czas przechowywania obiektów zasad grupy w pamięci podręcznej</translation>
@@ -1324,11 +1324,11 @@ Jeśli nie podasz wartości albo wybierzesz ustawienie „Wyłącz”, stosowani
 <translation id="3524204464536655762">Nie zezwalaj żadnym stronom na wysyłanie próśb o dostęp do urządzeń USB przez interfejs API WebUSB</translation>
 <translation id="3526752951628474302">Tylko drukowanie monochromatyczne</translation>
 <translation id="3528000905991875314">Włącz alternatywne strony błędów</translation>
-<translation id="3545457887306538845">Określa, gdzie można używać narzędzi dla programistów.
+<translation id="3545457887306538845">Określa, gdzie można używać narzędzi dla deweloperów.
 
-      Jeśli ta zasada jest ustawiona na wartość „DeveloperToolsDisallowedForForceInstalledExtensions” (wartość 0, która jest domyślną), narzędzia dla programistów i konsola JavaScript są dostępne wszędzie z wyjątkiem kontekstu rozszerzeń zainstalowanych przez zasady przedsiębiorstwa.
-      Jeśli ta zasada jest ustawiona na wartość „DeveloperToolsAllowed” (wartość 1), narzędzia dla programistów i konsola JavaScript są dostępne we wszystkich kontekstach, również w kontekście rozszerzeń zainstalowanych przez zasady przedsiębiorstwa.
-      Jeśli ta zasada jest ustawiona na wartość „DeveloperToolsDisallowed” (wartość 2), narzędzia dla programistów są niedostępne i nie można badać elementów na stronach. Wyłączone będą wszystkie skróty klawiszowe oraz pozycje menu i menu kontekstowego, które otwierają narzędzia dla programistów i konsolę JavaScript.</translation>
+      Jeśli ta zasada jest ustawiona na wartość „DeveloperToolsDisallowedForForceInstalledExtensions” (wartość 0, która jest domyślną), narzędzia dla deweloperów i konsola JavaScript są dostępne wszędzie z wyjątkiem kontekstu rozszerzeń zainstalowanych przez zasady przedsiębiorstwa.
+      Jeśli ta zasada jest ustawiona na wartość „DeveloperToolsAllowed” (wartość 1), narzędzia dla deweloperów i konsola JavaScript są dostępne we wszystkich kontekstach, również w kontekście rozszerzeń zainstalowanych przez zasady przedsiębiorstwa.
+      Jeśli ta zasada jest ustawiona na wartość „DeveloperToolsDisallowed” (wartość 2), narzędzia dla deweloperów są niedostępne i nie można badać elementów na stronach. Wyłączone będą wszystkie skróty klawiszowe oraz pozycje menu i menu kontekstowego, które otwierają narzędzia dla deweloperów i konsolę JavaScript.</translation>
 <translation id="3547954654003013442">Ustawienia serwera proxy</translation>
 <translation id="355118380775352753">Witryny otwierane w alternatywnej przeglądarce</translation>
 <translation id="3554984410014457319">Zezwól Asystentowi Google nasłuchiwać wyrażenia aktywującego obsługę komend głosowych</translation>
@@ -1379,7 +1379,7 @@ Jeśli nie podasz wartości albo wybierzesz ustawienie „Wyłącz”, stosowani
 <translation id="375266612405883748">Ogranicza zakres portów UDP używanych przez hosta dostępu zdalnego na tym komputerze.
 
 Jeśli nie skonfigurujesz tej zasady lub jej wartość będzie pustym ciągiem, host dostępu zdalnego będzie mógł korzystać z dowolnego dostępnego portu, chyba że wyłączona jest zasada <ph name="REMOTE_ACCESS_HOST_FIREWALL_TRAVERSAL_POLICY_NAME" /> – wtedy host dostępu zdalnego będzie używać portów z zakresu 12 400–12 409.</translation>
-<translation id="3756011779061588474">Zablokuj tryb programisty</translation>
+<translation id="3756011779061588474">Zablokuj tryb dewelopera</translation>
 <translation id="3758089716224084329">Pozwala określić serwer proxy używany przez <ph name="PRODUCT_NAME" /> i uniemożliwia użytkownikom zmianę ustawień serwera proxy.
 
       Jeśli wybierzesz nieużywanie serwera proxy i łączenie się zawsze bezpośrednio, wszystkie inne opcje będą ignorowane.
@@ -1392,7 +1392,7 @@ Jeśli nie skonfigurujesz tej zasady lub jej wartość będzie pustym ciągiem, 
       Jeśli włączysz to ustawienie, <ph name="PRODUCT_NAME" /> i aplikacje ARC będą ignorować wszystkie opcje dotyczące serwera proxy podane w wierszu poleceń.
 
       Pozostawienie tej zasady nieskonfigurowanej pozwoli użytkownikom samodzielnie wybrać ustawienia serwera proxy.</translation>
-<translation id="3758249152301468420">Wyłącz narzędzia dla programistów</translation>
+<translation id="3758249152301468420">Wyłącz narzędzia dla deweloperów</translation>
 <translation id="3764248359515129699">Wyłącza egzekwowanie wymogów protokołu Certificate Transparency w odniesieniu do listy starych urzędów certyfikacji.
 
       Ta zasada umożliwia wyłączenie wymogów ujawnienia protokołu Certificate Transparency w odniesieniu do łańcuchów certyfikatów zawierających certyfikaty z jednym z określonych skrótów subjectPublicKeyInfo. Umożliwia to dalsze stosowanie certyfikatów, które w przeciwnym razie byłyby niezaufane (ponieważ nie zostały odpowiednio ujawnione publicznie), na potrzeby hostów korporacyjnych.
@@ -1847,7 +1847,7 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
       Jeśli zasada pozostanie nieskonfigurowana, będzie domyślnie wyłączona dla użytkowników zarządzanych przez firmę i włączona dla użytkowników niezarządzanych.</translation>
 <translation id="4555850956567117258">Włącz zaświadczanie zdalne dla użytkownika</translation>
 <translation id="4557134566541205630">URL strony nowej karty domyślnego dostawcy wyszukiwania</translation>
-<translation id="4567137030726189378">Zezwól na używanie narzędzi dla programistów</translation>
+<translation id="4567137030726189378">Zezwól na używanie narzędzi dla deweloperów</translation>
 <translation id="4578265298946081589">Nie uruchamiaj ponownie po wylogowaniu użytkownika.</translation>
 <translation id="4578912515887794133">Po włączeniu tej zasady host dostępu zdalnego porównuje nazwę użytkownika lokalnego (z którym host jest skojarzony) z nazwą konta Google zarejestrowaną jako właściciel hosta (np. „jankowalski”, jeśli właścicielem jest konto Google „jankowalski@example.com”).  Host dostępu zdalnego nie uruchomi się, jeśli nazwa właściciela hosta będzie się różniła od nazwy użytkownika lokalnego, z którym host jest skojarzony.  Zasadę RemoteAccessHostMatchUsername należy stosować w połączeniu z zasadą RemoteAccessHostDomain, by wymusić też weryfikowanie, czy konto Google właściciela hosta jest skojarzone z wybraną domeną (np. „example.com”).
 
@@ -1858,7 +1858,7 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 <translation id="4617338332148204752">Pomiń sprawdzanie metatagów w <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="4625915093043961294">Konfiguruj białą listę instalacji rozszerzeń</translation>
 <translation id="4632343302005518762">Zezwalaj <ph name="PRODUCT_FRAME_NAME" /> na obsługę poniższych typów treści</translation>
-<translation id="4632566332417930481">Zablokuj używanie narzędzi dla programistów w odniesieniu do rozszerzeń zainstalowanych przez zasady przedsiębiorstwa, zezwól na używanie narzędzi dla programistów w pozostałych kontekstach</translation>
+<translation id="4632566332417930481">Zablokuj używanie narzędzi dla deweloperów w odniesieniu do rozszerzeń zainstalowanych przez zasady przedsiębiorstwa, zezwól na używanie narzędzi dla deweloperów w pozostałych kontekstach</translation>
 <translation id="4633786464238689684">Zmienia domyślne działanie górnego rzędu klawiszy na klawisze funkcyjne.
 
           Jeśli ustawisz dla tej zasady wartość prawda, górny rząd klawiszy na klawiaturze będzie domyślnie umożliwiał korzystanie z poleceń klawiszy funkcyjnych. Aby przywrócić standardowe funkcje klawiszy multimediów, należy nacisnąć klawisz wyszukiwania.
@@ -2076,11 +2076,11 @@ Po włączeniu tej zasady <ph name="PRODUCT_NAME" /> ignoruje wszystkie opcje zw
 <translation id="5183383917553127163">Umożliwia określenie rozszerzeń, których nie obejmuje czarna lista. Wartość * na czarnej liście oznacza dodanie do niej wszystkich rozszerzeń i zezwolenie użytkownikom na instalowanie wyłącznie rozszerzeń wymienionych na białej liście. Domyślnie wszystkie rozszerzenia znajdują się na białej liście, jeśli jednak za pomocą zasady wszystkie rozszerzenia dodano do czarnej listy, białej listy można użyć do zmodyfikowania tej zasady.</translation>
 <translation id="519247340330463721">Skonfiguruj zasady związane z funkcją Bezpieczne przeglądanie.</translation>
 <translation id="5192837635164433517">Włącza alternatywne strony błędów wbudowane w przeglądarkę <ph name="PRODUCT_NAME" /> (np. dotyczące nieznalezienia strony) i uniemożliwia użytkownikom zmianę tego ustawienia. Jeśli włączysz ustawienie, alternatywne strony błędów będą używane. W przypadku wyłączenia ustawienia alternatywne strony błędów nigdy nie są używane. Jeśli ustawienie jest włączone lub wyłączone, użytkownicy nie mogą go zmienić ani zastąpić w przeglądarce <ph name="PRODUCT_NAME" />. W przypadku nieskonfigurowania zasady ustawienie zostanie włączone, ale użytkownik będzie mógł je zmienić.</translation>
-<translation id="5196805177499964601">Zablokuj tryb programisty.
+<translation id="5196805177499964601">Zablokuj tryb dewelopera.
 
-      Kiedy ta zasada jest włączona, <ph name="PRODUCT_OS_NAME" /> uniemożliwia urządzeniu uruchomienie się w trybie programisty. Gdy tryb przełączania programisty zostanie włączony, system zablokuje uruchomienie i wyświetli ekran błędu.
+      Kiedy ta zasada jest włączona, <ph name="PRODUCT_OS_NAME" /> uniemożliwia urządzeniu uruchomienie się w trybie dewelopera. Gdy tryb przełączania dewelopera zostanie włączony, system zablokuje uruchomienie i wyświetli ekran błędu.
 
-      Kiedy ta zasada jest wyłączona, tryb programisty jest normalnie dostępny na urządzeniu.</translation>
+      Kiedy ta zasada jest wyłączona, tryb dewelopera jest normalnie dostępny na urządzeniu.</translation>
 <translation id="520403427390290017">Funkcja cykli życia kart odzyskuje zasoby procesora, a później zasoby pamięci powiązane z działającymi kartami, które nie były używane od długiego czasu. Najpierw ogranicza szybkość działania kart, później zamraża je, a na koniec zamyka.
 
       Jeśli zasada ma ustawienie fałsz, to cykle życia kart są wyłączone i wszystkie karty będą cały czas działać normalnie.
@@ -2216,7 +2216,7 @@ Jeśli ta zasada pozostanie nieskonfigurowana, użytkownik może wyłączyć ka�
       Wyłączenie tej zasady pozwala na zapisywanie plików cookie przez te elementy i uniemożliwia użytkownikom zmianę tego ustawienia.
 
       Jeśli zasada pozostanie nieskonfigurowana, zapisywanie plików cookie przez elementy stron będzie dozwolone, ale użytkownik będzie mógł zmienić to ustawienie.</translation>
-<translation id="5442026853063570579">Ta zasada kontroluje też dostęp do Opcji programisty aplikacji na Androida. Gdy jest ustawiona na wartość „DeveloperToolsDisallowed” (wartość 2), użytkownicy nie mają dostępu do Opcji programisty. Gdy jest ustawiona na inną wartość lub nieskonfigurowana, użytkownicy mogą uzyskać dostęp do Opcji programisty, klikając siedem razy numer kompilacji w aplikacji Ustawienia Androida.</translation>
+<translation id="5442026853063570579">Ta zasada kontroluje też dostęp do Opcji dewelopera aplikacji na Androida. Gdy jest ustawiona na wartość „DeveloperToolsDisallowed” (wartość 2), użytkownicy nie mają dostępu do Opcji dewelopera. Gdy jest ustawiona na inną wartość lub nieskonfigurowana, użytkownicy mogą uzyskać dostęp do Opcji dewelopera, klikając siedem razy numer kompilacji w aplikacji Ustawienia Androida.</translation>
 <translation id="544342220587994947">Umożliwia określenie listy wzorców adresów URL definiujących strony, dla których <ph name="PRODUCT_NAME" /> automatycznie wybiera certyfikat klienta, jeśli dana strona żąda takiego certyfikatu.
 
           Wartość musi być tablicą słowników JSON odwzorowanych na ciąg. Każdy słownik musi mieć postać { "pattern": "$URL_PATTERN", "filter" : $FILTER }, gdzie $URL_PATTERN jest wzorcem ustawienia treści. $FILTER ogranicza certyfikaty klienta, spośród których przeglądarka może dokonać automatycznego wyboru. Niezależnie od filtra wybierane mogą być tylko te certyfikaty, które są zgodne z żądaniem certyfikatu wysłanym z serwera. Na przykład jeśli $FILTER ma postać { "ISSUER": { "CN": "$ISSUER_CN" } }, dodatkowo wybierane będą tylko te certyfikaty klienta, które zostały wydane przez certyfikat z parametrem CommonName $ISSUER_CN. Jeśli $FILTER zawiera sekcje „ISSUER” i „SUBJECT”, certyfikat klienta musi spełnić oba warunki, by mógł być wybrany. Jeśli $FILTER wskazuje organizację („O”), certyfikat musi mieć przynajmniej jedną organizację odpowiadającą określonej wartości, by mógł być wybrany. Jeśli $FILTER wskazuje jednostkę organizacyjną („OU”), certyfikat musi mieć przynajmniej jedną organizację odpowiadającą określonej wartości, by mógł być wybrany. Jeśli $FILTER jest pustym słownikiem {}, wybór certyfikatów klienta nie jest dodatkowo ograniczany.
@@ -3143,11 +3143,11 @@ Jeśli ta zasada nie zostanie skonfigurowana, nie będą obowiązywały żadne o
 <translation id="7261252191178797385">Tapeta na urządzeniu</translation>
 <translation id="7264704483008663819">Ta zasada została wycofana z użycia w wersji M68. Zamiast niej użyj DeveloperToolsAvailability.
 
-      Wyłącza Narzędzia dla programistów i konsolę JavaScript.
+      Wyłącza Narzędzia dla deweloperów i konsolę JavaScript.
 
-      Gdy to ustawienie jest włączone, Narzędzia dla programistów są niedostępne i niemożliwe jest zbadanie elementów na stronie. Wszystkie skróty klawiszowe oraz pozycje w menu aplikacji i menu kontekstowym umożliwiające otwarcie Narzędzi dla programistów lub konsoli JavaScript będą wyłączone.
+      Gdy to ustawienie jest włączone, Narzędzia dla deweloperów są niedostępne i niemożliwe jest zbadanie elementów na stronie. Wszystkie skróty klawiszowe oraz pozycje w menu aplikacji i menu kontekstowym umożliwiające otwarcie Narzędzi dla deweloperów lub konsoli JavaScript będą wyłączone.
 
-      Wyłączenie lub nieskonfigurowanie tej opcji umożliwi korzystanie z Narzędzi dla programistów i konsoli JavaScript.
+      Wyłączenie lub nieskonfigurowanie tej opcji umożliwi korzystanie z Narzędzi dla deweloperów i konsoli JavaScript.
 
       Jeśli zasada DeveloperToolsAvailability zostanie skonfigurowana, wartość zasady DeveloperToolsDisabled zostanie zignorowana.</translation>
 <translation id="7266471712301230894">Począwszy od <ph name="PRODUCT_NAME" /> 64, ta zasada jest usunięta.
@@ -3626,7 +3626,7 @@ Zalecamy skonfigurowanie zasady w systemie Windows przy użyciu obiektu zasad gr
 <translation id="8300455783946254851">Po ustawieniu wartości prawda wyłącza synchronizację Dysku Google w aplikacji Pliki w <ph name="PRODUCT_OS_NAME" />, gdy użytkownik korzysta z połączenia komórkowego. Dane są synchronizowane z Dyskiem Google tylko przez Wi-Fi lub Ethernet.
 
           Jeśli nie ustawisz tej zasady lub wybierzesz wartość fałsz, użytkownicy mogą przesyłać dane na Dysk Google przez sieć komórkową.</translation>
-<translation id="8300992833374611099">Gdzie można używać narzędzi dla programistów</translation>
+<translation id="8300992833374611099">Gdzie można używać narzędzi dla deweloperów</translation>
 <translation id="8306117673860983372">Ustawienia logowania</translation>
 <translation id="8312129124898414409">Umożliwia określenie, czy w witrynach mogą być generowane klucze. Generowanie kluczy może być dozwolone lub zabronione we wszystkich witrynach.
 

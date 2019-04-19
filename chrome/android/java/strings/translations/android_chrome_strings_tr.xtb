@@ -119,7 +119,7 @@
 <translation id="1891331835972267886"><ph name="APP_NAME" /> Chrome'da açılacak. Devam ederek Chrome'un <ph name="BEGIN_LINK1" />Hizmet Şartları<ph name="END_LINK1" />'nı ve <ph name="BEGIN_LINK2" />Gizlilik Uyarısı<ph name="END_LINK2" />'nı kabul etmiş olursunuz.</translation>
 <translation id="1919345977826869612">Reklamlar</translation>
 <translation id="1919950603503897840">Kişi seçin</translation>
-<translation id="1922076542920281912">Chrome'un konumunuza erişebilmesi için <ph name="BEGIN_LINK" />Android Ayarları<ph name="END_LINK" />'ında da konumu açın.</translation>
+<translation id="1922076542920281912">Chrome'un konumunuza erişebilmesi için <ph name="BEGIN_LINK" />Android Ayarları<ph name="END_LINK" />'nda da konumu açın.</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="19288952978244135">Chrome'u yeniden açın.</translation>
 <translation id="1933845786846280168">Seçili Sekme</translation>
@@ -145,7 +145,7 @@
 <translation id="2018707881002649255">Aşağıda seçtiğiniz kişiler <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> web sitesiyle paylaşılacak.</translation>
 <translation id="2021896219286479412">Tam ekran site kontrolleri</translation>
 <translation id="2038563949887743358">Masaüstü sitesi iste işlevini etkinleştir</translation>
-<translation id="2041019821020695769">Chrome'un size bildirim gönderebilmesi için <ph name="BEGIN_LINK" />Android Ayarları<ph name="END_LINK" />'ında da bildirimleri açın.</translation>
+<translation id="2041019821020695769">Chrome'un size bildirim gönderebilmesi için <ph name="BEGIN_LINK" />Android Ayarları<ph name="END_LINK" />'nda da bildirimleri açın.</translation>
 <translation id="204321170514947529"><ph name="APP_NAME" /> uygulamasına ait veriler Chrome'da da mevcut</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB diğer uygulamalar</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
@@ -281,7 +281,6 @@
 <translation id="305593374596241526">Konum özelliği kapalı. <ph name="BEGIN_LINK" />Android Ayarları<ph name="END_LINK" />'ndan açın.</translation>
 <translation id="3058498974290601450">Senkronizasyonu istediğiniz zaman ayarlardan açabilirsiniz</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> yer işareti}other{<ph name="BOOKMARKS_COUNT_MANY" /> yer işareti}}</translation>
-<translation id="307908932405420782">Yakında daha fazla seçenek gösterilecek. Güzel bir sabah geçirmenizi dileriz.</translation>
 <translation id="3089395242580810162">Gizli sekmede aç</translation>
 <translation id="311456632243022227">Chrome'da birden fazla bağlantı açıldı</translation>
 <translation id="3115898365077584848">Bilgileri Göster</translation>
@@ -359,7 +358,7 @@
 <translation id="3712575778697986964">Veri Tasarrufu sıfırlansın mı?</translation>
 <translation id="3714981814255182093">Bulma Çubuğu'nu açar</translation>
 <translation id="3716182511346448902">Bu sayfa, bellekte çok fazla yer kapladığından Chrome tarafından duraklatıldı.</translation>
-<translation id="3730075448226062617">Chrome'un mikrofonunuza erişebilmesi için <ph name="BEGIN_LINK" />Android Ayarları<ph name="END_LINK" />'ında da mikrofonu açın.</translation>
+<translation id="3730075448226062617">Chrome'un mikrofonunuza erişebilmesi için <ph name="BEGIN_LINK" />Android Ayarları<ph name="END_LINK" />'nda da mikrofonu açın.</translation>
 <translation id="3739899004075612870"><ph name="PRODUCT_NAME" /> üzerinde yer işareti koyuldu</translation>
 <translation id="3744111309925758534">Diğer uygulamalar <ph name="MEGABYTES" /> MB</translation>
 <translation id="3744111561329211289">Arka plan senkronizasyonu</translation>
@@ -686,7 +685,6 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="605721222689873409">YY</translation>
 <translation id="6075798973483050474">Ana sayfayı düzenle</translation>
 <translation id="60923314841986378"><ph name="HOURS" /> saat kaldı</translation>
-<translation id="60924377787140961">Yakında daha fazla seçenek gösterilecek. Güzel bir öğleden sonra geçirmenizi dileriz.</translation>
 <translation id="6099151465289169210">Gizli sekmelere geçildi</translation>
 <translation id="6108923351542677676">Kurulum devam ediyor…</translation>
 <translation id="6111020039983847643">kullanılan veri miktarı</translation>
@@ -1039,7 +1037,6 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="8562452229998620586">Kayıtlı şifreleriniz burada görünür.</translation>
 <translation id="8569404424186215731"><ph name="DATE" /> tarihinden bu yana</translation>
 <translation id="8571213806525832805">Son 4 hafta</translation>
-<translation id="857509777403223202">Yakında daha fazla seçenek gösterilecek. Güzel bir akşam geçirmenizi dileriz.</translation>
 <translation id="857943718398505171">İzin verildi (önerilir)</translation>
 <translation id="8582216581279205169">Sekmeler tamamen açıldı</translation>
 <translation id="8583805026567836021">Hesap verileri temizleniyor</translation>

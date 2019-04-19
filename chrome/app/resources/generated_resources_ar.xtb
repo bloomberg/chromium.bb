@@ -408,7 +408,6 @@
 <translation id="1639239467298939599">جارٍ التحميل.</translation>
 <translation id="163993578339087550">‏تريد خدمة <ph name="SERVICE_NAME" /> التحقق من أنك تستخدم جهازًا مؤهلاً يعمل بنظام التشغيل Chrome.</translation>
 <translation id="1640283014264083726">‏PKCS #1 MD4 مع تشفير RSA</translation>
-<translation id="1641113438599504367">التصفح الآمن</translation>
 <translation id="1642494467033190216">‏مطلوب إزالة الحماية من rootfs وإعادة التشغيل قبل تفعيل ميزات التصحيح الأخرى.</translation>
 <translation id="1643050526526937107">المزامنة فقط</translation>
 <translation id="1643072738649235303">‏توقيع X9.62 ECDSA باستخدام SHA-1</translation>
@@ -788,7 +787,6 @@
 <translation id="2230051135190148440">CHAP</translation>
 <translation id="223106756035922488">انقر لعرض رسومات الشعار المبتكرة لهذا اليوم.</translation>
 <translation id="2231238007119540260">في حالة حذف شهادة الخادم، تتم استعادة العمليات المعتادة للتحقق من الأمان لذلك الخادم وسيتطلب الأمر استخدامه لشهادة صالحة.</translation>
-<translation id="2232379019872353004">‏يتم إرسال بعض معلومات النظام ومحتوى الصفحات إلى Google.</translation>
 <translation id="2232876851878324699">احتوى الملف على شهادة واحدة، لم يتم استيرادها:</translation>
 <translation id="2233502537820838181">&amp;مزيد من المعلومات</translation>
 <translation id="2234876718134438132">‏خدمات Google والمزامنة</translation>
@@ -3692,6 +3690,7 @@
 <translation id="6841186874966388268">أخطاء</translation>
 <translation id="6843423766595476978">‏Ok Google جاهز تمامًا</translation>
 <translation id="6845038076637626672">فتح في وضع التكبير</translation>
+<translation id="6845325883481699275">‏المساعدة في تحسين أمان Chrome</translation>
 <translation id="6848388270925200958">تمتلك الآن بعض البطاقات التي يمكن استخدامها فقط على هذا الجهاز</translation>
 <translation id="6851497530878285708">تم تفعيل التطبيق</translation>
 <translation id="6853388645642883916">خدمة التحديث خاملة</translation>
@@ -4254,7 +4253,6 @@
 <translation id="7730449930968088409">التقاط محتوى الشاشة</translation>
 <translation id="7732111077498238432">هناك سياسة تحكم هذه الشبكة</translation>
 <translation id="7737238973539693982">‏حذف Linux (إصدار تجريبي)</translation>
-<translation id="773905249182896430">تتم حمايتك وحماية جهازك من المواقع الخطرة.</translation>
 <translation id="7740996059027112821">قياسي</translation>
 <translation id="7750228210027921155">نافذة ضمن النافذة</translation>
 <translation id="7751260505918304024">عرض الكل</translation>
@@ -5065,7 +5063,6 @@
 <translation id="8978154919215542464">تشغيل - مزامنة كل شيء</translation>
 <translation id="897939795688207351">على <ph name="ORIGIN" /></translation>
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> - تعطُّل</translation>
-<translation id="8983677657449185470">المساعدة في تحسين التصفُّح الآمن</translation>
 <translation id="8986362086234534611">حذف</translation>
 <translation id="8986494364107987395">‏إرسال إحصاءات الاستخدام وتقارير الأعطال إلى Google تلقائيًا</translation>
 <translation id="8987927404178983737">شهر</translation>

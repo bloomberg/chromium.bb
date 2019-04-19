@@ -281,7 +281,6 @@
 <translation id="305593374596241526">‏הגישה למיקום כבויה. יש להפעיל אותה ב<ph name="BEGIN_LINK" />הגדרות Android<ph name="END_LINK" />.</translation>
 <translation id="3058498974290601450">אפשר להפעיל את הסנכרון בכל זמן דרך ההגדרות</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{סימניה אחת (<ph name="BOOKMARKS_COUNT_ONE" />)}two{<ph name="BOOKMARKS_COUNT_MANY" /> סימניות}many{<ph name="BOOKMARKS_COUNT_MANY" /> סימניות}other{<ph name="BOOKMARKS_COUNT_MANY" /> סימניות}}</translation>
-<translation id="307908932405420782">בקרוב יופיעו מאמרים נוספים. שיהיה לך בוקר נפלא!</translation>
 <translation id="3089395242580810162">פתיחה בכרטיסיית גלישה בסתר</translation>
 <translation id="311456632243022227">‏קישורים מרובים נפתחו ב-Chrome</translation>
 <translation id="3115898365077584848">הצג פרטים</translation>
@@ -686,7 +685,6 @@
 <translation id="605721222689873409">YY</translation>
 <translation id="6075798973483050474">עריכת דף הבית</translation>
 <translation id="60923314841986378">נותרו <ph name="HOURS" /> שעות</translation>
-<translation id="60924377787140961">בקרוב יופיעו מאמרים נוספים. שיהיה לך המשך יום נפלא!</translation>
 <translation id="6099151465289169210">עברת לכרטיסיות פרטיות</translation>
 <translation id="6108923351542677676">ההגדרה מתבצעת…</translation>
 <translation id="6111020039983847643">נתונים שנצרכו</translation>
@@ -1039,7 +1037,6 @@
 <translation id="8562452229998620586">הסיסמאות השמורות יופיעו כאן.</translation>
 <translation id="8569404424186215731">מאז <ph name="DATE" /></translation>
 <translation id="8571213806525832805">מארבעת השבועות האחרונים</translation>
-<translation id="857509777403223202">בקרוב יופיעו מאמרים נוספים. שיהיה לך ערב נפלא!</translation>
 <translation id="857943718398505171">מותרת (מומלץ)</translation>
 <translation id="8582216581279205169">כרטיסיות שנפתחו בגובה מלא</translation>
 <translation id="8583805026567836021">מנקה נתוני חשבון</translation>

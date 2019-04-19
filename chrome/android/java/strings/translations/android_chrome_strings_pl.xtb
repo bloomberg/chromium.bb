@@ -281,7 +281,6 @@
 <translation id="305593374596241526">Lokalizacja jest wyłączona. Włącz ją w <ph name="BEGIN_LINK" />Ustawieniach Androida<ph name="END_LINK" />.</translation>
 <translation id="3058498974290601450">W każdej chwili możesz włączyć synchronizację w ustawieniach</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> zakładka}few{<ph name="BOOKMARKS_COUNT_MANY" /> zakładki}many{<ph name="BOOKMARKS_COUNT_MANY" /> zakładek}other{<ph name="BOOKMARKS_COUNT_MANY" /> zakładki}}</translation>
-<translation id="307908932405420782">Wkrótce pojawi się więcej artykułów. Życzymy miłego poranka.</translation>
 <translation id="3089395242580810162">Otwórz w karcie incognito</translation>
 <translation id="311456632243022227">Wiele linków otwartych w Chrome</translation>
 <translation id="3115898365077584848">Pokaż informacje</translation>
@@ -686,7 +685,6 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="605721222689873409">RR</translation>
 <translation id="6075798973483050474">Edytuj stronę główną</translation>
 <translation id="60923314841986378">Pozostało: <ph name="HOURS" /> godz.</translation>
-<translation id="60924377787140961">Wkrótce pojawi się więcej artykułów. Życzymy miłego popołudnia.</translation>
 <translation id="6099151465289169210">Przełączono do kart prywatnych</translation>
 <translation id="6108923351542677676">Trwa konfigurowanie…</translation>
 <translation id="6111020039983847643">użytych danych</translation>
@@ -1039,7 +1037,6 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="8562452229998620586">Tutaj pojawią się zapisane hasła.</translation>
 <translation id="8569404424186215731">od <ph name="DATE" /></translation>
 <translation id="8571213806525832805">Ostatnie 4 tygodnie</translation>
-<translation id="857509777403223202">Wkrótce pojawi się więcej artykułów. Życzymy miłego wieczoru.</translation>
 <translation id="857943718398505171">Dozwolone (zalecane)</translation>
 <translation id="8582216581279205169">Otwarte karty – pełna wysokość</translation>
 <translation id="8583805026567836021">Usuwam dane konta</translation>

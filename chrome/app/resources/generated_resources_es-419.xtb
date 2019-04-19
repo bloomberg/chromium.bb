@@ -405,7 +405,6 @@
 <translation id="1639239467298939599">Cargando</translation>
 <translation id="163993578339087550"><ph name="SERVICE_NAME" /> quiere comprobar si estás usando un dispositivo apto para el Sistema operativo Chrome.</translation>
 <translation id="1640283014264083726">PKCS N. º 1 MD4 con encriptación RSA</translation>
-<translation id="1641113438599504367">Navegación segura</translation>
 <translation id="1642494467033190216">Se requiere una eliminación de la protección de rootfs y el reinicio antes de habilitar otras funciones de depuración.</translation>
 <translation id="1643050526526937107">Solo sincronizar</translation>
 <translation id="1643072738649235303">Firma X9.62 ECDSA con SHA-1</translation>
@@ -785,7 +784,6 @@
 <translation id="2230051135190148440">CHAP</translation>
 <translation id="223106756035922488">Haz clic para ver el doodle de hoy</translation>
 <translation id="2231238007119540260">Al eliminar un certificado de servidor, restableces las verificaciones de seguridad normales para ese servidor, y solicitas que utilice un certificado válido.</translation>
-<translation id="2232379019872353004">Envía información del sistema y contenido de la página a Google</translation>
 <translation id="2232876851878324699">El archivo contenía un certificado que no fue importado:</translation>
 <translation id="2233502537820838181">&amp;Más información</translation>
 <translation id="2234876718134438132">Sincronización y servicios</translation>
@@ -3693,6 +3691,7 @@
 <translation id="6841186874966388268">Errores</translation>
 <translation id="6843423766595476978">Ok Google ya está configurado</translation>
 <translation id="6845038076637626672">Abrir de forma maximizada</translation>
+<translation id="6845325883481699275">Ayudar a mejorar la seguridad de Chrome</translation>
 <translation id="6848388270925200958">En este momento, tienes algunas tarjetas que solo se pueden usar en este dispositivo</translation>
 <translation id="6851497530878285708">App habilitada</translation>
 <translation id="6853388645642883916">Actualizador suspendido</translation>
@@ -4255,7 +4254,6 @@
 <translation id="7730449930968088409">Capturar contenido de la pantalla</translation>
 <translation id="7732111077498238432">La red está controlada por políticas</translation>
 <translation id="7737238973539693982">Borrar Linux (Beta)</translation>
-<translation id="773905249182896430">Te protege a ti y tu dispositivo de sitios peligrosos</translation>
 <translation id="7740996059027112821">Estándar</translation>
 <translation id="7750228210027921155">Pantalla en pantalla</translation>
 <translation id="7751260505918304024">Mostrar todo</translation>
@@ -5067,7 +5065,6 @@ Es posible que los usuarios con conexiones lentas no puedan ver tu contenido.</t
 <translation id="8978154919215542464">Activada: sincronizar todo</translation>
 <translation id="897939795688207351">En <ph name="ORIGIN" /></translation>
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" />: Falló</translation>
-<translation id="8983677657449185470">Ayudar a mejorar la Navegación segura</translation>
 <translation id="8986362086234534611">Borrar</translation>
 <translation id="8986494364107987395">Enviar automáticamente estadísticas de uso e informes sobre fallos a Google</translation>
 <translation id="8987927404178983737">Mes</translation>

@@ -405,7 +405,6 @@
 <translation id="1639239467298939599">Inapakia</translation>
 <translation id="163993578339087550"><ph name="SERVICE_NAME" /> inataka kuthibitisha kuwa unatumia kifaa kinachostahiki cha Mfumo wa Uendeshaji wa Chrome.</translation>
 <translation id="1640283014264083726">PKCS #1 MD4 Na Usimbaji wa RSA</translation>
-<translation id="1641113438599504367">Kuvinjari Salama</translation>
 <translation id="1642494467033190216">Kuondoa ulinzi na kuzima na kuwasha rootfs kunahitajika kabla ya kuwasha vipengele vya kutatua.</translation>
 <translation id="1643050526526937107">Sawazisha tu</translation>
 <translation id="1643072738649235303">Sahihi ya X9.62 ECDSA yenye SHA-1</translation>
@@ -785,7 +784,6 @@
 <translation id="2230051135190148440">CHAP</translation>
 <translation id="223106756035922488">Bofya ili uangalie doodle ya leo</translation>
 <translation id="2231238007119540260">Ukifuta cheti cha seva, unarejesha upya ukaguzi salama wa kawaida kwa seva hiyo na unaihitaji kutumia cheti halali.</translation>
-<translation id="2232379019872353004">Hutuma baadhi ya maelezo ya mfumo na maudhui ya ukurasa kwa Google</translation>
 <translation id="2232876851878324699">Faili ilikuwa na cheti kimoja, ambacho hakikuwa kimeletwa:</translation>
 <translation id="2233502537820838181">&amp;Maelezo Zaidi</translation>
 <translation id="2234876718134438132">Huduma za Google na usawazishaji</translation>
@@ -3420,7 +3418,7 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="641081527798843608">Mada inalingana</translation>
 <translation id="6412931879992742813">Dirisha fiche jipya</translation>
 <translation id="6415900369006735853">Unganisha kwenye intaneti kupitia simu yako</translation>
-<translation id="6416743254476733475">Ruhusu au uzuie kwenye kompyuta yako.</translation>
+<translation id="6416743254476733475">Ruhusu au zuia kwenye kompyuta yako.</translation>
 <translation id="6417265370957905582">Mratibu wa Google</translation>
 <translation id="6418160186546245112">Kurejesha toleo lililosakinishwa la <ph name="IDS_SHORT_PRODUCT_NAME" /></translation>
 <translation id="6418481728190846787">Ondoa upatikanaji wa programu zote kabisa</translation>
@@ -3687,6 +3685,7 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="6841186874966388268">Hitilafu</translation>
 <translation id="6843423766595476978">Imemaliza kuweka mipangilio ya Ok Google</translation>
 <translation id="6845038076637626672">Fungua Iliyoongezwa</translation>
+<translation id="6845325883481699275">Tusaidie kuboresha usalama wa Chrome</translation>
 <translation id="6848388270925200958">Sasa hivi, baadhi ya kadi zako zinaweza kutumika kwenye kifaa hiki pekee</translation>
 <translation id="6851497530878285708">Programu Imewashwa</translation>
 <translation id="6853388645642883916">Kisasishaji kimetulia</translation>
@@ -4249,7 +4248,6 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="7730449930968088409">Piga picha maudhui ya skrini yako</translation>
 <translation id="7732111077498238432">Mtandao unadhibitiwa na sera</translation>
 <translation id="7737238973539693982">Futa Linux (Beta)</translation>
-<translation id="773905249182896430">Hukulinda wewe na vifaa vyako dhidi ya tovuti hatari</translation>
 <translation id="7740996059027112821">Wastani</translation>
 <translation id="7750228210027921155">Picha ndani ya picha</translation>
 <translation id="7751260505918304024">Onyesha zote</translation>
@@ -5063,7 +5061,6 @@ Huenda watu wengine wenye miunganisho ya polepole hawataona maudhui yako.</trans
 <translation id="8978154919215542464">Imewashwa - sawazisha kila kitu</translation>
 <translation id="897939795688207351">Kwenye <ph name="ORIGIN" /></translation>
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> - Imeacha kufanya kazi</translation>
-<translation id="8983677657449185470">Tusaidie tuboreshe huduma ya Kuvinjari Salama</translation>
 <translation id="8986362086234534611">Sahau</translation>
 <translation id="8986494364107987395">Tumia Google takwimu za matumizi na ripoti za mara ambazo kivinjari kinaacha kufanya kazi, moja kwa moja</translation>
 <translation id="8987927404178983737">Mwezi</translation>

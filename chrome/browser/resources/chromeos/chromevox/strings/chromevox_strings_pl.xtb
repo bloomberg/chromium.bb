@@ -458,7 +458,7 @@ Jeśli nie korzystasz już z samouczka, użyj czytnika ChromeVox, by przejść 
 <translation id="4221071177874897997">Wskaż pogrubienie:</translation>
 <translation id="4229646983878045487">data i godzina</translation>
 <translation id="4230834257931120629">Jasny szaroniebieski</translation>
-<translation id="4231102694147661229">Włącz opcje programisty</translation>
+<translation id="4231102694147661229">Włącz opcje dewelopera</translation>
 <translation id="423334822609210999">Brak komórki z lewej strony.</translation>
 <translation id="4243624244759495699"><ph name="LOCALE" />, klasa <ph name="GRADE" /></translation>
 <translation id="4246217262268234757">Stalowy błękit</translation>
@@ -911,7 +911,7 @@ Aby otworzyć menu przeglądarki Chrome, naciśnij Alt + F.</translation>
 <translation id="7408482676469142474">tbl</translation>
 <translation id="7420313809195758138">Wyświetlaj kontekst elementu przed innymi informacjami (np. nazwą).</translation>
 <translation id="7425395583360211003">powrót</translation>
-<translation id="7434509671034404296">Programista</translation>
+<translation id="7434509671034404296">Deweloper</translation>
 <translation id="743783356331413498">Przykład</translation>
 <translation id="7439060726180460871">Katalog</translation>
 <translation id="744163271241493234">pwded</translation>
@@ -1088,7 +1088,7 @@ Aby otworzyć menu przeglądarki Chrome, naciśnij Alt + F.</translation>
 <translation id="8202174735952881587">Błękit</translation>
 <translation id="820417203470636242">Pusta komórka.</translation>
 <translation id="820469951249669083">Przejdź do następnego wiersza</translation>
-<translation id="8205922869661890178">Otwórz stronę dziennika dla programisty</translation>
+<translation id="8205922869661890178">Otwórz stronę dziennika dla dewelopera</translation>
 <translation id="8215202828671303819">Wybór wielokrotny</translation>
 <translation id="8249864170673238087"><ph name="COLOR" />, przezroczystość <ph name="OPACITY_PERCENTAGE" />%.</translation>
 <translation id="826825447994856889">Wprowadzenie</translation>

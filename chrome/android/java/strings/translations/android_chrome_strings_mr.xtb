@@ -281,7 +281,6 @@
 <translation id="305593374596241526">स्‍थान बंद आहे; <ph name="BEGIN_LINK" />Android सेटिंग्‍ज<ph name="END_LINK" /> मध्‍ये हे चालू करा.</translation>
 <translation id="3058498974290601450">तुम्ही सेटिंग्जमध्ये कधीही सिंक सुरू करू शकता</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> बुकमार्क}one{<ph name="BOOKMARKS_COUNT_MANY" /> बुकमार्क}other{<ph name="BOOKMARKS_COUNT_MANY" /> बुकमार्क}}</translation>
-<translation id="307908932405420782">आणखी लेख लवकरच दिसतील. आपल्या सकाळचा आनंद घ्या!</translation>
 <translation id="3089395242580810162">गुप्त टॅबमध्ये उघडा</translation>
 <translation id="311456632243022227">Chromeमध्ये अनेक लिंक उघडल्या</translation>
 <translation id="3115898365077584848">माहिती दाखवा</translation>
@@ -686,7 +685,6 @@
 <translation id="605721222689873409">YY</translation>
 <translation id="6075798973483050474">मुख्‍यपृष्‍ठ संपादित करा</translation>
 <translation id="60923314841986378"><ph name="HOURS" /> तास शिल्लक</translation>
-<translation id="60924377787140961">आणखी लेख लवकरच दिसतील. आपल्या दुपारचा आनंद घ्या!</translation>
 <translation id="6099151465289169210">खाजगी टॅबवर स्विच करा</translation>
 <translation id="6108923351542677676">सेटअप प्रगती पथावर आहे...</translation>
 <translation id="6111020039983847643">डेटा वापरला</translation>
@@ -1039,7 +1037,6 @@
 <translation id="8562452229998620586">सेव्ह केलेले पासवर्ड येथे दिसून येतील.</translation>
 <translation id="8569404424186215731"><ph name="DATE" /> पासून</translation>
 <translation id="8571213806525832805">मागील 4 आठवड्यांमधील</translation>
-<translation id="857509777403223202">आणखी लेख लवकरच दिसतील. आपल्या संध्याकाळचा आनंद घ्या!</translation>
 <translation id="857943718398505171">अनुमती दिली (शिफारस केलेले)</translation>
 <translation id="8582216581279205169">खुले टॅब पूर्ण स्क्रीनवर आहेत</translation>
 <translation id="8583805026567836021">खाते डेटा साफ करत आहे</translation>

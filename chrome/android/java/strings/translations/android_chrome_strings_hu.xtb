@@ -281,7 +281,6 @@
 <translation id="305593374596241526">A Helyadatok szolgáltatás ki van kapcsolva; bekapcsolhatja az <ph name="BEGIN_LINK" />Android-beállításokban<ph name="END_LINK" />.</translation>
 <translation id="3058498974290601450">A szinkronizálás bármikor bekapcsolható a beállításokban</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> könyvjelző}other{<ph name="BOOKMARKS_COUNT_MANY" /> könyvjelző}}</translation>
-<translation id="307908932405420782">Hamarosan további cikkek jelennek meg. Kellemes délelőttöt kívánunk!</translation>
 <translation id="3089395242580810162">Megnyitás inkognitólapon</translation>
 <translation id="311456632243022227">Több link Chrome-ban megnyitva</translation>
 <translation id="3115898365077584848">Információk megjelenítése</translation>
@@ -686,7 +685,6 @@ A beállítás módosításához <ph name="BEGIN_LINK" />állítsa vissza a szin
 <translation id="605721222689873409">ÉÉ</translation>
 <translation id="6075798973483050474">Kezdőoldal szerkesztése</translation>
 <translation id="60923314841986378"><ph name="HOURS" /> óra van hátra</translation>
-<translation id="60924377787140961">Hamarosan további cikkek jelennek meg. Kellemes délutánt kívánunk!</translation>
 <translation id="6099151465289169210">Privát lapokra váltva</translation>
 <translation id="6108923351542677676">A telepítés folyamatban...</translation>
 <translation id="6111020039983847643">használt adatmennyiség</translation>
@@ -1039,7 +1037,6 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="8562452229998620586">A mentett jelszavak itt jelennek meg.</translation>
 <translation id="8569404424186215731"><ph name="DATE" /> óta</translation>
 <translation id="8571213806525832805">Az elmúlt négy hétből</translation>
-<translation id="857509777403223202">Hamarosan további cikkek jelennek meg. Kellemes estét kívánunk!</translation>
 <translation id="857943718398505171">Engedélyezve (ajánlott)</translation>
 <translation id="8582216581279205169">Teljes magasságban megnyitott lapok</translation>
 <translation id="8583805026567836021">Fiókadatok törlése</translation>

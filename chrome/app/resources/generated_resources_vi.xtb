@@ -92,7 +92,7 @@
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">Chỉnh sửa công cụ tìm kiếm</translation>
 <translation id="1134009406053225289">Mở trong cửa sổ ẩn danh</translation>
-<translation id="1136712381129578788">Khóa bảo mật bị khóa do bạn đã nhập sai mã PIN quá nhiều lần. Để mở khóa, hãy rút ra và cắm lại khóa bảo mật.</translation>
+<translation id="1136712381129578788">Khóa bảo mật đã bị khóa do bạn nhập sai mã PIN quá nhiều lần. Để mở khóa, hãy rút ra và cắm lại.</translation>
 <translation id="1137673463384776352">Mở liên kết trong <ph name="APP" /></translation>
 <translation id="1140351953533677694">Truy cập thiết bị tuần tự và Bluetooth của bạn</translation>
 <translation id="1140610710803014750">Để sử dụng dấu trang trên tất cả các thiết bị của bạn, hãy đăng nhập và bật đồng bộ hóa.</translation>
@@ -161,7 +161,7 @@
 <translation id="1227507814927581609">Xác thực không thành công trong khi kết nối với "<ph name="DEVICE_NAME" />".</translation>
 <translation id="1231733316453485619">Bạn muốn bật tính năng đồng bộ hóa?</translation>
 <translation id="1232569758102978740">Không tên</translation>
-<translation id="1233497634904001272">Chạm lại vào khóa bảo mật của bạn để hoàn tất yêu cầu.</translation>
+<translation id="1233497634904001272">Chạm lại vào khóa bảo mật để hoàn tất yêu cầu.</translation>
 <translation id="1233721473400465416">Ngôn ngữ</translation>
 <translation id="1234808891666923653">Service Workers</translation>
 <translation id="1235458158152011030">Mạng đã biết</translation>
@@ -203,7 +203,7 @@
 <translation id="1303671224831497365">Không tìm thấy thiết bị Bluetooth nào</translation>
 <translation id="130491383855577612">Đã thay thế thành công các ứng dụng và tệp Linux</translation>
 <translation id="1306606229401759371">Thay đổi cài đặt</translation>
-<translation id="1307165550267142340">Bạn đã tạo mã PIN của mình</translation>
+<translation id="1307165550267142340">Mã PIN của bạn đã được tạo</translation>
 <translation id="1307559529304613120">Rất tiếc! Hệ thống không lưu trữ được mã thông báo truy cập API dài hạn cho thiết bị này.</translation>
 <translation id="1313405956111467313">Cấu hình proxy tự động</translation>
 <translation id="131364520783682672">Caps Lock</translation>
@@ -258,7 +258,7 @@
 <translation id="1399511500114202393">Không có chứng chỉ người dùng</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (Được giám sát)</translation>
 <translation id="1406500794671479665">Đang xác minh...</translation>
-<translation id="140723521119632973">Kích hoạt thẻ SIM mạng di động</translation>
+<translation id="140723521119632973">Kích hoạt mạng di động</translation>
 <translation id="1407489512183974736">Cắt giữa</translation>
 <translation id="1408504635543854729">Khám phá nội dung của thiết bị trong ứng dụng Tệp. Quản trị viên đã hạn chế nội dung và bạn không thể sửa đổi nội dung này.</translation>
 <translation id="1408789165795197664">Nâng cao...</translation>
@@ -408,7 +408,6 @@
 <translation id="1639239467298939599">Đang tải</translation>
 <translation id="163993578339087550"><ph name="SERVICE_NAME" /> muốn kiểm tra xem thiết bị Chrome OS bạn đang sử dụng có đủ điều kiện hay không.</translation>
 <translation id="1640283014264083726">PKCS #1 MD4 Với Mã hóa RSA</translation>
-<translation id="1641113438599504367">Duyệt web an toàn</translation>
 <translation id="1642494467033190216">Yêu cầu xóa bảo vệ rootfs và khởi động lại trước khi bật các tính năng gỡ lỗi khác.</translation>
 <translation id="1643050526526937107">Chỉ đồng bộ hóa</translation>
 <translation id="1643072738649235303">Chữ ký X9.62 ECDSA với SHA-1</translation>
@@ -788,7 +787,6 @@
 <translation id="2230051135190148440">CHAP</translation>
 <translation id="223106756035922488">Hãy nhấp để xem doodle ngày hôm nay</translation>
 <translation id="2231238007119540260">Nếu bạn xóa chứng chỉ máy chủ, nghĩa là bạn đã khôi phục việc kiểm tra bảo mật thường xuyên cho máy chủ đó và yêu cầu sử dụng chứng chỉ hợp lệ.</translation>
-<translation id="2232379019872353004">Gửi một số thông tin hệ thống và nội dung trang cho Google</translation>
 <translation id="2232876851878324699">Tệp có chứa một chứng chỉ chưa được nhập:</translation>
 <translation id="2233502537820838181">&amp;Thông tin khác</translation>
 <translation id="2234876718134438132">Đồng bộ hóa và các dịch vụ của Google</translation>
@@ -1774,7 +1772,7 @@
 <translation id="3776796446459804932">Tiện ích này vi phạm chính sách của Cửa hàng Chrome trực tuyến.</translation>
 <translation id="3777806571986431400">Đã bật tiện ích</translation>
 <translation id="3778152852029592020">Đã hủy tải xuống.</translation>
-<translation id="3778208826288864398">Khóa bảo mật bị khóa do bạn đã nhập sai mã PIN quá nhiều lần. Bạn cần đặt lại khóa bảo mật.</translation>
+<translation id="3778208826288864398">Khóa bảo mật đã bị khóa do bạn nhập sai mã PIN quá nhiều lần. Bạn cần đặt lại khóa bảo mật.</translation>
 <translation id="3778740492972734840">Công cụ dành cho &amp;Nhà phát triển</translation>
 <translation id="3778868487658107119">Đặt câu hỏi cho Trợ lý. Yêu cầu Trợ lý làm mọi việc. Đó là Google của riêng bạn, luôn sẵn sàng trợ giúp bạn.</translation>
 <translation id="378312418865624974">Đọc mã số nhận dạng duy nhất dành cho máy tính này</translation>
@@ -1993,7 +1991,7 @@
 <translation id="4090947011087001172">Đặt lại quyền của trang web cho <ph name="SITE" />?</translation>
 <translation id="4091434297613116013">trang giấy</translation>
 <translation id="4093955363990068916">Tệp cục bộ:</translation>
-<translation id="4095264805865317199">Mở UI kích hoạt di động</translation>
+<translation id="4095264805865317199">Mở giao diện kích hoạt mạng di động</translation>
 <translation id="4095507791297118304">Màn hình chính</translation>
 <translation id="409579654357498729">Thêm vào Cloud Print</translation>
 <translation id="4096508467498758490">Vô hiệu hóa tiện ích chế độ nhà phát triển</translation>
@@ -2014,7 +2012,7 @@
 <translation id="4120388883569225797">Không thể đặt lại khóa bảo mật này</translation>
 <translation id="4120817667028078560">Đường dẫn quá dài</translation>
 <translation id="4121428309786185360">Hết hạn Vào</translation>
-<translation id="4124823734405044952">Bạn đã đặt lại khóa bảo mật của mình</translation>
+<translation id="4124823734405044952">Khóa bảo mật của bạn đã được đặt lại</translation>
 <translation id="4124935795427217608">Kỳ lân</translation>
 <translation id="412730574613779332">Spandex</translation>
 <translation id="412940972494182898">Chạy Flash lần này</translation>
@@ -3249,7 +3247,7 @@
 <translation id="6122095009389448667">Tiếp tục chặn trang web này xem khay nhớ tạm</translation>
 <translation id="6122875415561139701">Tác vụ ghi không được phép trên: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="6124650939968185064">Các tiện ích sau phụ thuộc vào tiện ích này:</translation>
-<translation id="6124698108608891449">Trang web này cần có thêm quyền.</translation>
+<translation id="6124698108608891449">Trang web này cần các quyền khác.</translation>
 <translation id="6125479973208104919">Rất tiếc, bạn sẽ cần phải thêm lại tài khoản của mình vào <ph name="DEVICE_TYPE" /> này.</translation>
 <translation id="6129691635767514872">Dữ liệu được chọn đã bị xóa khỏi Chrome và các thiết bị được đồng bộ hóa. Tài khoản Google của bạn có thể có các dạng lịch sử duyệt web khác, chẳng hạn như tìm kiếm và hoạt động từ các dịch vụ khác của Google tại <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="6129938384427316298">Nhận xét về Chứng chỉ Netscape</translation>
@@ -3429,7 +3427,7 @@
 <translation id="641081527798843608">Khớp với chủ đề</translation>
 <translation id="6412931879992742813">Cửa sổ ẩn danh mới</translation>
 <translation id="6415900369006735853">Kết nối Internet qua điện thoại</translation>
-<translation id="6416743254476733475">Cho phép hoặc chặn trên máy tính của bạn.</translation>
+<translation id="6416743254476733475">Hãy cho phép hoặc chặn trên máy tính của bạn.</translation>
 <translation id="6417265370957905582">Trợ lý Google</translation>
 <translation id="6418160186546245112">Hoàn nguyên về phiên bản được cài đặt trước của <ph name="IDS_SHORT_PRODUCT_NAME" /></translation>
 <translation id="6418481728190846787">Xóa vĩnh viễn quyền truy cập cho tất cả các ứng dụng</translation>
@@ -3696,6 +3694,7 @@
 <translation id="6841186874966388268">Lỗi</translation>
 <translation id="6843423766595476978">Đã thiết lập xong Ok Google</translation>
 <translation id="6845038076637626672">Mở ở dạng phóng to</translation>
+<translation id="6845325883481699275">Giúp cải thiện khả năng bảo mật của Chrome</translation>
 <translation id="6848388270925200958">Bạn hiện có một số thẻ chỉ dùng được trên thiết bị này</translation>
 <translation id="6851497530878285708">Đã bật ứng dụng</translation>
 <translation id="6853388645642883916">Trình cập nhật đang ở chế độ ngủ</translation>
@@ -4258,7 +4257,6 @@
 <translation id="7730449930968088409">Chụp nội dung trên màn hình của bạn</translation>
 <translation id="7732111077498238432">Mạng được kiểm soát bằng chính sách</translation>
 <translation id="7737238973539693982">Xóa Linux (Beta)</translation>
-<translation id="773905249182896430">Bảo vệ bạn cũng như thiết bị của bạn khỏi các trang web nguy hiểm</translation>
 <translation id="7740996059027112821">Chuẩn</translation>
 <translation id="7750228210027921155">Hình trong hình</translation>
 <translation id="7751260505918304024">Hiển thị tất cả</translation>
@@ -5069,7 +5067,6 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8978154919215542464">Bật - đồng bộ hóa mọi thứ</translation>
 <translation id="897939795688207351">Trên <ph name="ORIGIN" /></translation>
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> - Đã bị lỗi</translation>
-<translation id="8983677657449185470">Giúp cải thiện tính năng Duyệt web an toàn</translation>
 <translation id="8986362086234534611">Quên</translation>
 <translation id="8986494364107987395">Tự động gửi số liệu thống kê về việc sử dụng và báo cáo sự cố cho Google</translation>
 <translation id="8987927404178983737">Tháng</translation>

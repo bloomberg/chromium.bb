@@ -168,6 +168,7 @@ Weitere Informationen wurden per E-Mail an <ph name="ACCOUNT_EMAIL" /> gesendet.
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> ist möglicherweise schädlich und wurde daher von Chrome blockiert.</translation>
 <translation id="5686916850681061684">Sie können Google Chrome anpassen und Einstellungen festlegen. Etwas erfordert Ihre Aufmerksamkeit – klicken Sie, um mehr zu erfahren.</translation>
+<translation id="5690427481109656848">Google LLC</translation>
 <translation id="5715063361988620182">{SECONDS,plural, =1{Google Chrome wird in 1 Sekunde neu gestartet}other{Google Chrome wird in # Sekunden neu gestartet}}</translation>
 <translation id="573759479754913123">Über Chrome OS</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> – Google Chrome Canary</translation>
@@ -260,6 +261,7 @@ Weitere Informationen wurden per E-Mail an <ph name="ACCOUNT_EMAIL" /> gesendet.
 <translation id="8286862437124483331">Google Chrome möchte Passwörter anzeigen. Geben Sie Ihr Windows-Passwort ein, um dies zuzulassen.</translation>
 <translation id="8290100596633877290">Google Chrome ist abgestürzt. Jetzt neu starten?</translation>
 <translation id="8342675569599923794">Diese Datei ist schädlich und wurde von Chrome blockiert.</translation>
+<translation id="8370517070665726704">Copyright <ph name="YEAR" /> Google LLC Alle Rechte vorbehalten.</translation>
 <translation id="8380166467911888159">Um Tippfehler zu beheben, sendet Chrome den eingegebenen Text an Google</translation>
 <translation id="840084489713044809">Google Chrome möchte Ihre Passwörter exportieren.</translation>
 <translation id="8406086379114794905">Zur Verbesserung von Chrome beitragen</translation>

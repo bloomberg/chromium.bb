@@ -281,7 +281,6 @@
 <translation id="305593374596241526">Určování polohy je vypnuté, zapnete jej v <ph name="BEGIN_LINK" />nastavení zařízení Android<ph name="END_LINK" />.</translation>
 <translation id="3058498974290601450">Synchronizaci můžete kdykoliv zapnout v nastavení</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> záložka}few{<ph name="BOOKMARKS_COUNT_MANY" /> záložky}many{<ph name="BOOKMARKS_COUNT_MANY" /> záložky}other{<ph name="BOOKMARKS_COUNT_MANY" /> záložek}}</translation>
-<translation id="307908932405420782">Brzy se zobrazí další články. Užijte si ráno.</translation>
 <translation id="3089395242580810162">Otevřít na anonymní kartě</translation>
 <translation id="311456632243022227">V Chromu byly otevřeny odkazy</translation>
 <translation id="3115898365077584848">Zobrazit informace</translation>
@@ -686,7 +685,6 @@ Chcete-toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<
 <translation id="605721222689873409">RR</translation>
 <translation id="6075798973483050474">Upravit domovskou stránku</translation>
 <translation id="60923314841986378">Zbývá: <ph name="HOURS" /> h</translation>
-<translation id="60924377787140961">Brzy se zobrazí další články. Užijte si odpoledne.</translation>
 <translation id="6099151465289169210">Přepnuto na soukromé karty</translation>
 <translation id="6108923351542677676">Probíhá nastavování…</translation>
 <translation id="6111020039983847643">využitá data</translation>
@@ -1039,7 +1037,6 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="8562452229998620586">Zde se zobrazí uložená hesla.</translation>
 <translation id="8569404424186215731">od <ph name="DATE" /></translation>
 <translation id="8571213806525832805">Poslední 4 týdny</translation>
-<translation id="857509777403223202">Brzy se zobrazí další články. Užijte si večer.</translation>
 <translation id="857943718398505171">Povoleno (doporučeno)</translation>
 <translation id="8582216581279205169">Tabulka otevřených karet zabírá celou výšku</translation>
 <translation id="8583805026567836021">Mazání dat účtu</translation>

@@ -282,7 +282,6 @@
 <translation id="305593374596241526">ಸ್ಥಳ ಆಫ್ ಆಗಿದೆ; <ph name="BEGIN_LINK" />Android ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ<ph name="END_LINK" /> ಇದನ್ನು ಆನ್‌ ಮಾಡಿ.</translation>
 <translation id="3058498974290601450">ನೀವು ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ಯಾವಾಗ ಬೇಕಾದರೂ ಸಿಂಕ್ ಆನ್ ಮಾಡಬಹುದು</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> ಬುಕ್‌ಮಾರ್ಕ್‌}one{<ph name="BOOKMARKS_COUNT_MANY" /> ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು}other{<ph name="BOOKMARKS_COUNT_MANY" /> ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು}}</translation>
-<translation id="307908932405420782">ಶೀಘ್ರವೇ ಇನ್ನಷ್ಟು ಲೇಖನಗಳು ಕಂಡುಬರುತ್ತವೆ. ನಿಮ್ಮ ಬೆಳಿಗ್ಗೆ ಸಮಯವನ್ನು ಆನಂದಿಸಿ!</translation>
 <translation id="3089395242580810162">ಅಜ್ಞಾತ ಟ್ಯಾಬ್‌ನಲ್ಲಿ ತೆರೆಯಿರಿ</translation>
 <translation id="311456632243022227">Chrome ನಲ್ಲಿ ಹಲವು ಲಿಂಕ್‌ಗಳು ತೆರೆದುಕೊಂಡಿವೆ</translation>
 <translation id="3115898365077584848">ಮಾಹಿತಿಯನ್ನು ತೋರಿಸಿ</translation>
@@ -686,7 +685,6 @@
 <translation id="605721222689873409">YY</translation>
 <translation id="6075798973483050474">ಮುಖಪುಟ ಎಡಿಟ್ ಮಾಡಿ</translation>
 <translation id="60923314841986378"><ph name="HOURS" /> ಗಂಟೆಗಳು ಉಳಿದಿವೆ</translation>
-<translation id="60924377787140961">ಶೀಘ್ರವೇ ಇನ್ನಷ್ಟು ಲೇಖನಗಳು ಕಂಡುಬರುತ್ತವೆ. ನಿಮ್ಮ ಮಧ್ಯಾಹ್ನದ ಸಮಯವನ್ನು ಆನಂದಿಸಿ!</translation>
 <translation id="6099151465289169210">ಖಾಸಗಿ ಟ್ಯಾಬ್‌ಗಳಿಗೆ ಬದಲಾಯಿಸಲಾಗಿದೆ</translation>
 <translation id="6108923351542677676">ಸೆಟಪ್ ಪ್ರಗತಿಯಲ್ಲಿದೆ...</translation>
 <translation id="6111020039983847643">Chrome ನಿಂದ ಬಳಕೆಯಾಗಿರುವ ಡೇಟಾ</translation>
@@ -1040,7 +1038,6 @@
 <translation id="8562452229998620586">ಉಳಿಸಲಾದ ಪಾಸ್‌ವರ್ಡ್‌ಗಳು ಇಲ್ಲಿ ಗೋಚರಿಸುತ್ತವೆ.</translation>
 <translation id="8569404424186215731"><ph name="DATE" /> ರಿಂದ</translation>
 <translation id="8571213806525832805">ಕಳೆದ 4 ವಾರಗಳು</translation>
-<translation id="857509777403223202">ಶೀಘ್ರವೇ ಇನ್ನಷ್ಟು ಲೇಖನಗಳು ಕಂಡುಬರುತ್ತವೆ. ನಿಮ್ಮ ಸಂಜೆಯ ಸಮಯವನ್ನು ಆನಂದಿಸಿ!</translation>
 <translation id="857943718398505171">ಅನುಮತಿಸಲಾಗಿದೆ (ಶಿಫಾರಸು ಮಾಡಲಾಗಿದೆ)</translation>
 <translation id="8582216581279205169">ಪೂರ್ಣ ಎತ್ತರದಲ್ಲಿ ಟ್ಯಾಬ್‌ಗಳನ್ನು ತೆರೆಯಲಾಗಿದೆ</translation>
 <translation id="8583805026567836021">ಖಾತೆಯ ಡೇಟಾವನ್ನು ತೆರವುಗೊಳಿಸಲಾಗುತ್ತಿದೆ</translation>
