@@ -189,6 +189,11 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget,
   void set_side_volume_button_file_path_for_testing(base::FilePath path) {
     side_volume_button_location_file_path_ = path;
   }
+  void set_side_volume_button_location_for_testing(const std::string& region,
+                                                   const std::string& side) {
+    side_volume_button_location_.region = region;
+    side_volume_button_location_.side = side;
+  }
   SideVolumeButtonLocation side_volume_button_location_for_testing() {
     return side_volume_button_location_;
   }
@@ -238,6 +243,17 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget,
   AcceleratorProcessingStatus MaybeDeprecatedAcceleratorPressed(
       AcceleratorAction action,
       const ui::Accelerator& accelerator) const;
+
+  // Returns true if |source_device_id| corresponds to the side volume buttons.
+  bool IsSideVolumeButton(int source_device_id) const;
+
+  // Returns true if |side_volume_button_location_| is in agreed format and
+  // values.
+  bool IsValidSideVolumeButtonLocation() const;
+
+  // Returns true if the side volume buttons should be swapped. See
+  // SideVolumeButonLocation for the details.
+  bool ShouldSwapSideVolumeButtons(int source_device_id) const;
 
   std::unique_ptr<ui::AcceleratorManager> accelerator_manager_;
 
@@ -296,7 +312,7 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget,
   // set to different paths in test.
   base::FilePath side_volume_button_location_file_path_;
 
-  // Stores the location info of side volume button.
+  // Stores the location info of side volume buttons.
   SideVolumeButtonLocation side_volume_button_location_;
 
   DISALLOW_COPY_AND_ASSIGN(AcceleratorController);

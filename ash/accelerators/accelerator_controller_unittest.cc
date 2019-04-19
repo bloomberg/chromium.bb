@@ -13,6 +13,8 @@
 #include "ash/accessibility/test_accessibility_controller_client.h"
 #include "ash/app_list/app_list_metrics.h"
 #include "ash/app_list/test/app_list_test_helper.h"
+#include "ash/display/screen_orientation_controller.h"
+#include "ash/display/screen_orientation_controller_test_api.h"
 #include "ash/ime/ime_controller.h"
 #include "ash/ime/test_ime_controller_client.h"
 #include "ash/magnifier/docked_magnifier_controller.h"
@@ -32,6 +34,7 @@
 #include "ash/test_media_client.h"
 #include "ash/test_screenshot_delegate.h"
 #include "ash/wm/lock_state_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/test_session_state_animator.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_state.h"
@@ -48,6 +51,7 @@
 #include "media/base/media_switches.h"
 #include "services/media_session/public/cpp/test/test_media_controller.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
+#include "services/ws/public/cpp/input_devices/input_device_client_test_api.h"
 #include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/test_window_delegate.h"
@@ -59,6 +63,7 @@
 #include "ui/base/ime/chromeos/ime_keyboard.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
+#include "ui/display/test/display_manager_test_api.h"
 #include "ui/events/event.h"
 #include "ui/events/event_sink.h"
 #include "ui/events/keycodes/dom/dom_code.h"
@@ -1087,6 +1092,149 @@ TEST_F(AcceleratorControllerTest, SideVolumeButtonLocation) {
             GetController()->side_volume_button_location_for_testing().side);
   base::DeleteFile(file_path, false);
 }
+
+class SideVolumeButtonAcceleratorTest
+    : public AcceleratorControllerTest,
+      public testing::WithParamInterface<std::pair<std::string, std::string>> {
+ public:
+  // Input device id of the side volume button.
+  static constexpr int kSideVolumeButtonId = 7;
+
+  SideVolumeButtonAcceleratorTest()
+      : region_(GetParam().first), side_(GetParam().second) {}
+  ~SideVolumeButtonAcceleratorTest() override = default;
+
+  void SetUp() override {
+    AcceleratorControllerTest::SetUp();
+    Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+    AcceleratorController* controller = GetController();
+    DCHECK(controller);
+    controller->set_side_volume_button_location_for_testing(region_, side_);
+    ws::InputDeviceClientTestApi().SetUncategorizedDevices({ui::InputDevice(
+        kSideVolumeButtonId, ui::InputDeviceType::INPUT_DEVICE_INTERNAL,
+        "cros_ec_buttons")});
+  }
+
+  bool IsLeftOrRightSide() const {
+    return side_ == AcceleratorController::kVolumeButtonSideLeft ||
+           side_ == AcceleratorController::kVolumeButtonSideRight;
+  }
+
+  bool IsOnKeyboard() const {
+    return region_ == AcceleratorController::kVolumeButtonRegionKeyboard;
+  }
+
+ private:
+  std::string region_, side_;
+
+  DISALLOW_COPY_AND_ASSIGN(SideVolumeButtonAcceleratorTest);
+};
+
+// Tests the the action of side volume button will get flipped in corresponding
+// screen orientation.
+TEST_P(SideVolumeButtonAcceleratorTest, FlipSideVolumeButtonAction) {
+  display::test::ScopedSetInternalDisplayId set_internal(
+      display_manager(), GetPrimaryDisplay().id());
+
+  ScreenOrientationControllerTestApi test_api(
+      Shell::Get()->screen_orientation_controller());
+  // Set the screen orientation to LANDSCAPE_PRIMARY.
+  test_api.SetDisplayRotation(display::Display::ROTATE_0,
+                              display::Display::RotationSource::ACTIVE);
+  EXPECT_EQ(test_api.GetCurrentOrientation(),
+            OrientationLockType::kLandscapePrimary);
+
+  base::UserActionTester user_action_tester;
+  const ui::Accelerator volume_down(ui::VKEY_VOLUME_DOWN, ui::EF_NONE);
+  ASSERT_EQ(ui::ED_UNKNOWN_DEVICE, volume_down.source_device_id());
+  ProcessInController(volume_down);
+  // Tests that the VOLUME_DOWN accelerator always goes to decrease the volume
+  // if it is not from the side volume button.
+  EXPECT_EQ(1, user_action_tester.GetActionCount("Accel_VolumeDown_F9"));
+  user_action_tester.ResetCounts();
+
+  ui::KeyEvent event(ui::ET_KEY_PRESSED, ui::VKEY_VOLUME_DOWN,
+                     ui::DomCode::VOLUME_DOWN, /*flags=*/0, /*dom_key=*/2099727,
+                     base::TimeTicks::Now());
+  event.set_source_device_id(kSideVolumeButtonId);
+  const ui::Accelerator volume_down_from_side_volume_button(event);
+  ProcessInController(volume_down_from_side_volume_button);
+  // Tests that the action of side volume button will get flipped in landscape
+  // primary if the the button is at the left or right of keyboard.
+  if (IsOnKeyboard() && IsLeftOrRightSide())
+    EXPECT_EQ(1, user_action_tester.GetActionCount("Accel_VolumeUp_F10"));
+  else
+    EXPECT_EQ(1, user_action_tester.GetActionCount("Accel_VolumeDown_F9"));
+  user_action_tester.ResetCounts();
+
+  // Rotate the screen by 270 degree.
+  test_api.SetDisplayRotation(display::Display::ROTATE_270,
+                              display::Display::RotationSource::ACTIVE);
+  EXPECT_EQ(test_api.GetCurrentOrientation(),
+            OrientationLockType::kPortraitPrimary);
+  ProcessInController(volume_down_from_side_volume_button);
+  // Tests that the action of side volume button will not be flipped in portrait
+  // primary if the button is at the left or right of screen. Otherwise, the
+  // action will be flipped.
+  if (!IsOnKeyboard() && IsLeftOrRightSide())
+    EXPECT_EQ(1, user_action_tester.GetActionCount("Accel_VolumeDown_F9"));
+  else
+    EXPECT_EQ(1, user_action_tester.GetActionCount("Accel_VolumeUp_F10"));
+  user_action_tester.ResetCounts();
+
+  // Rotate the screen by 180 degree.
+  test_api.SetDisplayRotation(display::Display::ROTATE_180,
+                              display::Display::RotationSource::ACTIVE);
+  EXPECT_EQ(test_api.GetCurrentOrientation(),
+            OrientationLockType::kLandscapeSecondary);
+  ProcessInController(volume_down_from_side_volume_button);
+  // Tests that the action of side volume button will not be flipped in
+  // landscape secondary if the button is at the left or right of keyboard.
+  // Otherwise, the action will be flipped.
+  if (IsOnKeyboard() && IsLeftOrRightSide())
+    EXPECT_EQ(1, user_action_tester.GetActionCount("Accel_VolumeDown_F9"));
+  else
+    EXPECT_EQ(1, user_action_tester.GetActionCount("Accel_VolumeUp_F10"));
+  user_action_tester.ResetCounts();
+
+  // Rotate the screen by 90 degree.
+  test_api.SetDisplayRotation(display::Display::ROTATE_90,
+                              display::Display::RotationSource::ACTIVE);
+  EXPECT_EQ(test_api.GetCurrentOrientation(),
+            OrientationLockType::kPortraitSecondary);
+  ProcessInController(volume_down_from_side_volume_button);
+  // Tests that the action of side volume button will be flipped in portrait
+  // secondary if the buttonis at the left or right of screen.
+  if (!IsOnKeyboard() && IsLeftOrRightSide())
+    EXPECT_EQ(1, user_action_tester.GetActionCount("Accel_VolumeUp_F10"));
+  else
+    EXPECT_EQ(1, user_action_tester.GetActionCount("Accel_VolumeDown_F9"));
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    AshSideVolumeButton,
+    SideVolumeButtonAcceleratorTest,
+    testing::ValuesIn({std::make_pair<std::string, std::string>(
+                           AcceleratorController::kVolumeButtonRegionKeyboard,
+                           AcceleratorController::kVolumeButtonSideLeft),
+                       std::make_pair<std::string, std::string>(
+                           AcceleratorController::kVolumeButtonRegionKeyboard,
+                           AcceleratorController::kVolumeButtonSideRight),
+                       std::make_pair<std::string, std::string>(
+                           AcceleratorController::kVolumeButtonRegionKeyboard,
+                           AcceleratorController::kVolumeButtonSideBottom),
+                       std::make_pair<std::string, std::string>(
+                           AcceleratorController::kVolumeButtonRegionScreen,
+                           AcceleratorController::kVolumeButtonSideLeft),
+                       std::make_pair<std::string, std::string>(
+                           AcceleratorController::kVolumeButtonRegionScreen,
+                           AcceleratorController::kVolumeButtonSideRight),
+                       std::make_pair<std::string, std::string>(
+                           AcceleratorController::kVolumeButtonRegionScreen,
+                           AcceleratorController::kVolumeButtonSideTop),
+                       std::make_pair<std::string, std::string>(
+                           AcceleratorController::kVolumeButtonRegionScreen,
+                           AcceleratorController::kVolumeButtonSideBottom)}));
 
 namespace {
 

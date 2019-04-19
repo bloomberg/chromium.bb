@@ -125,7 +125,7 @@ class UI_BASE_EXPORT Accelerator {
   bool interrupted_by_mouse_event_;
 
   // The |source_device_id_| of the KeyEvent.
-  int source_device_id_ = -1;
+  int source_device_id_ = ui::ED_UNKNOWN_DEVICE;
 };
 
 // An interface that classes that want to register for keyboard accelerators

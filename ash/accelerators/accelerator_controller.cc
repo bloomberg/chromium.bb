@@ -20,6 +20,7 @@
 #include "ash/debug.h"
 #include "ash/display/display_configuration_controller.h"
 #include "ash/display/display_move_window_util.h"
+#include "ash/display/screen_orientation_controller.h"
 #include "ash/focus_cycler.h"
 #include "ash/ime/ime_controller.h"
 #include "ash/ime/ime_switch_type.h"
@@ -60,6 +61,7 @@
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/screen_pinning_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_cycle_controller.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_state.h"
@@ -87,6 +89,8 @@
 #include "ui/display/display.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/display/screen.h"
+#include "ui/events/devices/input_device.h"
+#include "ui/events/devices/input_device_manager.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/message_center/message_center.h"
@@ -964,10 +968,8 @@ void HandleToggleSpokenFeedback() {
                                        A11Y_NOTIFICATION_SHOW);
 }
 
-void HandleVolumeDown(mojom::VolumeController* volume_controller,
-                      const ui::Accelerator& accelerator) {
-  if (accelerator.key_code() == ui::VKEY_VOLUME_DOWN)
-    base::RecordAction(UserMetricsAction("Accel_VolumeDown_F9"));
+void HandleVolumeDown(mojom::VolumeController* volume_controller) {
+  base::RecordAction(UserMetricsAction("Accel_VolumeDown_F9"));
 
   if (volume_controller)
     volume_controller->VolumeDown();
@@ -982,10 +984,8 @@ void HandleVolumeMute(mojom::VolumeController* volume_controller,
     volume_controller->VolumeMute();
 }
 
-void HandleVolumeUp(mojom::VolumeController* volume_controller,
-                    const ui::Accelerator& accelerator) {
-  if (accelerator.key_code() == ui::VKEY_VOLUME_UP)
-    base::RecordAction(UserMetricsAction("Accel_VolumeUp_F10"));
+void HandleVolumeUp(mojom::VolumeController* volume_controller) {
+  base::RecordAction(UserMetricsAction("Accel_VolumeUp_F10"));
 
   if (volume_controller)
     volume_controller->VolumeUp();
@@ -1426,12 +1426,10 @@ void AcceleratorController::PerformAction(AcceleratorAction action,
   if (restriction != RESTRICTION_NONE)
     return;
 
-  // TODO(minch): For VOLUME_DOWN and VOLUME_UP. Check whether the action is
-  // from side volume button based on accelerator.source_device_id() and
-  // ui::InputDeviceManager::GetInstance()->GetUncategorizedDevices(). Do the
-  // calculation whether we need to flip its action on
-  // SideVolumeButtonLocation and current screen orientation.
-  // http://crbug.com/937907.
+  if ((action == VOLUME_DOWN || action == VOLUME_UP) &&
+      ShouldSwapSideVolumeButtons(accelerator.source_device_id())) {
+    action = action == VOLUME_DOWN ? VOLUME_UP : VOLUME_DOWN;
+  }
 
   // If your accelerator invokes more than one line of code, please either
   // implement it in your module's controller code or pull it into a HandleFoo()
@@ -1727,13 +1725,13 @@ void AcceleratorController::PerformAction(AcceleratorAction action,
       accelerators::UnpinWindow();
       break;
     case VOLUME_DOWN:
-      HandleVolumeDown(volume_controller_.get(), accelerator);
+      HandleVolumeDown(volume_controller_.get());
       break;
     case VOLUME_MUTE:
       HandleVolumeMute(volume_controller_.get(), accelerator);
       break;
     case VOLUME_UP:
-      HandleVolumeUp(volume_controller_.get(), accelerator);
+      HandleVolumeUp(volume_controller_.get());
       break;
     case WINDOW_CYCLE_SNAP_LEFT:
     case WINDOW_CYCLE_SNAP_RIGHT:
@@ -1871,6 +1869,66 @@ void AcceleratorController::ParseSideVolumeButtonLocationInfo() {
                           &side_volume_button_location_.region);
   info_in_dict->GetString(kVolumeButtonSide,
                           &side_volume_button_location_.side);
+}
+
+bool AcceleratorController::IsSideVolumeButton(int source_device_id) const {
+  if (source_device_id == ui::ED_UNKNOWN_DEVICE)
+    return false;
+
+  for (const ui::InputDevice& uncategorized_device :
+       ui::InputDeviceManager::GetInstance()->GetUncategorizedDevices()) {
+    if (uncategorized_device.id == source_device_id &&
+        uncategorized_device.type ==
+            ui::InputDeviceType::INPUT_DEVICE_INTERNAL) {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool AcceleratorController::IsValidSideVolumeButtonLocation() const {
+  const std::string region = side_volume_button_location_.region;
+  const std::string side = side_volume_button_location_.side;
+  if (region != kVolumeButtonRegionKeyboard &&
+      region != kVolumeButtonRegionScreen) {
+    return false;
+  }
+  if (side != kVolumeButtonSideLeft && side != kVolumeButtonSideRight &&
+      side != kVolumeButtonSideTop && side != kVolumeButtonSideBottom) {
+    return false;
+  }
+  return true;
+}
+
+bool AcceleratorController::ShouldSwapSideVolumeButtons(
+    int source_device_id) const {
+  if (!Shell::Get()
+           ->tablet_mode_controller()
+           ->IsTabletModeWindowManagerEnabled() ||
+      !IsSideVolumeButton(source_device_id)) {
+    return false;
+  }
+
+  if (!IsValidSideVolumeButtonLocation())
+    return false;
+
+  OrientationLockType screen_orientation =
+      Shell::Get()->screen_orientation_controller()->GetCurrentOrientation();
+  const std::string side = side_volume_button_location_.side;
+  const bool is_landscape_secondary_or_portrait_primary =
+      screen_orientation == OrientationLockType::kLandscapeSecondary ||
+      screen_orientation == OrientationLockType::kPortraitPrimary;
+
+  if (side_volume_button_location_.region == kVolumeButtonRegionKeyboard) {
+    if (side == kVolumeButtonSideLeft || side == kVolumeButtonSideRight)
+      return IsPrimaryOrientation(screen_orientation);
+    return is_landscape_secondary_or_portrait_primary;
+  }
+
+  DCHECK_EQ(kVolumeButtonRegionScreen, side_volume_button_location_.region);
+  if (side == kVolumeButtonSideLeft || side == kVolumeButtonSideRight)
+    return !IsPrimaryOrientation(screen_orientation);
+  return is_landscape_secondary_or_portrait_primary;
 }
 
 }  // namespace ash
