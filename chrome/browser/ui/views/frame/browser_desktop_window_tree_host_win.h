@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_DESKTOP_WINDOW_TREE_HOST_WIN_H_
 #define CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_DESKTOP_WINDOW_TREE_HOST_WIN_H_
 
+#include <shobjidl.h>
+#include <wrl/client.h>
+
 #include "base/macros.h"
 #include "chrome/browser/ui/views/frame/browser_desktop_window_tree_host.h"
 #include "chrome/browser/ui/views/frame/minimize_button_metrics_win.h"
@@ -38,6 +41,8 @@ class BrowserDesktopWindowTreeHostWin : public BrowserDesktopWindowTreeHost,
   bool UsesNativeSystemMenu() const override;
 
   // Overridden from DesktopWindowTreeHostWin:
+  void Init(const views::Widget::InitParams& params) override;
+  std::string GetWorkspace() const override;
   int GetInitialShowState() const override;
   bool GetClientAreaInsets(gfx::Insets* insets,
                            HMONITOR monitor) const override;
@@ -67,6 +72,16 @@ class BrowserDesktopWindowTreeHostWin : public BrowserDesktopWindowTreeHost,
 
   // The wrapped system menu itself.
   std::unique_ptr<views::NativeMenuWin> system_menu_;
+
+  // On Windows10, this is the virtual desktop the browser window was on,
+  // last we checked. This is used to tell if the window has moved to a
+  // different desktop, and notify listeners. It will only be set if
+  // we created |virtual_desktop_manager_|.
+  mutable base::Optional<std::string> workspace_;
+
+  // Only set on Windows10. Set by GetOrCreateVirtualDesktopManager().
+  mutable Microsoft::WRL::ComPtr<IVirtualDesktopManager>
+      virtual_desktop_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserDesktopWindowTreeHostWin);
 };
