@@ -505,7 +505,7 @@ void DOMWindow::DoPostMessage(scoped_refptr<SerializedScriptValue> message,
   if (RuntimeEnabledFeatures::UserActivationPostMessageTransferEnabled() &&
       options->transferUserActivation() &&
       LocalFrame::HasTransientUserActivation(source_frame)) {
-    GetFrame()->TransferActivationFrom(source_frame);
+    GetFrame()->TransferUserActivationFrom(source_frame);
   }
 
   SchedulePostMessage(event, std::move(target), source_document);

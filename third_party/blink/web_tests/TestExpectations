@@ -38,6 +38,7 @@ crbug.com/922725 virtual/user-activation-v2/fullscreen/full-screen-iframe-zIndex
 crbug.com/928838 external/wpt/html/user-activation/activation-transfer-with-click.tentative.html [ Failure ]
 crbug.com/928838 external/wpt/html/user-activation/activation-transfer-without-click.tentative.html [ Failure ]
 crbug.com/928838 external/wpt/html/user-activation/activation-transfer-cross-origin-with-click.sub.tentative.html [ Failure ]
+crbug.com/928838 external/wpt/html/user-activation/activation-transfer-cross-origin-with-click-two-child-frames.sub.tentative.html [ Failure ]
 
 crbug.com/898987 [ Android ] synthetic_gestures/smooth-scroll-tiny-delta.html [ Failure Pass Timeout ]
 

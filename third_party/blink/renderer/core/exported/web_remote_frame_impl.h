@@ -88,6 +88,7 @@ class CORE_EXPORT WebRemoteFrameImpl final
   bool IsIgnoredForHitTest() const override;
   void WillEnterFullscreen() override;
   void UpdateUserActivationState(UserActivationUpdateType) override;
+  void TransferUserActivationFrom(blink::WebRemoteFrame* source_frame) override;
   void ScrollRectToVisible(const WebRect&,
                            const WebScrollIntoViewParams&) override;
   void BubbleLogicalScroll(WebScrollDirection direction,

@@ -936,6 +936,21 @@ void RenderFrameHostManager::UpdateUserActivationState(
   }
 }
 
+void RenderFrameHostManager::TransferUserActivationFrom(
+    RenderFrameHostImpl* source_rfh) {
+  for (const auto& pair : proxy_hosts_) {
+    SiteInstance* site_instance = pair.second->GetSiteInstance();
+    if (site_instance != source_rfh->GetSiteInstance()) {
+      int32_t source_routing_id =
+          source_rfh->frame_tree_node()
+              ->render_manager()
+              ->GetRoutingIdForSiteInstance(site_instance);
+      pair.second->Send(new FrameMsg_TransferUserActivationFrom(
+          pair.second->GetRoutingID(), source_routing_id));
+    }
+  }
+}
+
 void RenderFrameHostManager::OnSetHasReceivedUserGestureBeforeNavigation(
     bool value) {
   for (const auto& pair : proxy_hosts_) {

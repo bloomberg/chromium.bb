@@ -453,6 +453,8 @@ bool RenderFrameProxy::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_WillEnterFullscreen, OnWillEnterFullscreen)
     IPC_MESSAGE_HANDLER(FrameMsg_UpdateUserActivationState,
                         OnUpdateUserActivationState)
+    IPC_MESSAGE_HANDLER(FrameMsg_TransferUserActivationFrom,
+                        OnTransferUserActivationFrom)
     IPC_MESSAGE_HANDLER(FrameMsg_ScrollRectToVisible, OnScrollRectToVisible)
     IPC_MESSAGE_HANDLER(FrameMsg_BubbleLogicalScroll, OnBubbleLogicalScroll)
     IPC_MESSAGE_HANDLER(FrameMsg_SetHasReceivedUserGestureBeforeNavigation,
@@ -609,6 +611,14 @@ void RenderFrameProxy::OnWillEnterFullscreen() {
 void RenderFrameProxy::OnUpdateUserActivationState(
     blink::UserActivationUpdateType update_type) {
   web_frame_->UpdateUserActivationState(update_type);
+}
+
+void RenderFrameProxy::OnTransferUserActivationFrom(int32_t source_routing_id) {
+  RenderFrameProxy* source_proxy =
+      RenderFrameProxy::FromRoutingID(source_routing_id);
+  if (!source_proxy)
+    return;
+  web_frame()->TransferUserActivationFrom(source_proxy->web_frame());
 }
 
 void RenderFrameProxy::OnScrollRectToVisible(
