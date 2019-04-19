@@ -106,7 +106,7 @@ void TaskSession::GroupCapturedContentByDocument(
 void TaskSession::OnNodeDetached(const cc::NodeHolder& node_holder) {
   if (const Node* node = GetNodeIf(true /* sent */, node_holder)) {
     EnsureDocumentSession(node->GetDocument())
-        .AddDetachedNode(reinterpret_cast<int64_t>(&node));
+        .AddDetachedNode(reinterpret_cast<int64_t>(node));
     has_unsent_data_ = true;
   }
 }
