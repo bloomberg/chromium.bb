@@ -18,7 +18,7 @@
     GPUPipelineLayout createPipelineLayout(GPUPipelineLayoutDescriptor descriptor);
 
     GPUShaderModule createShaderModule(GPUShaderModuleDescriptor descriptor);
-    GPURenderPipeline createRenderPipeline(GPURenderPipelineDescriptor descriptor);
+    [CallWith=ScriptState] GPURenderPipeline createRenderPipeline(GPURenderPipelineDescriptor descriptor);
     GPUComputePipeline createComputePipeline(GPUComputePipelineDescriptor descriptor);
 
     GPUCommandEncoder createCommandEncoder(GPUCommandEncoderDescriptor descriptor);

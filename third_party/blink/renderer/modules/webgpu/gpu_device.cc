@@ -87,8 +87,9 @@ GPUShaderModule* GPUDevice::createShaderModule(
 }
 
 GPURenderPipeline* GPUDevice::createRenderPipeline(
+    ScriptState* script_state,
     const GPURenderPipelineDescriptor* descriptor) {
-  return GPURenderPipeline::Create(this, descriptor);
+  return GPURenderPipeline::Create(script_state, this, descriptor);
 }
 
 GPUComputePipeline* GPUDevice::createComputePipeline(

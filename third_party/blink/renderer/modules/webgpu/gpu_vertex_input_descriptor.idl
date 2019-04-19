@@ -6,7 +6,8 @@
 
 dictionary GPUVertexInputDescriptor {
     required GPUIndexFormat indexFormat;
-    sequence<GPUVertexBufferDescriptor> vertexBuffers = [];
+    // TODO(crbug.com/951629): Make this a sequence of nullables.
+    object vertexBuffers; // We validate this is an array of nullable GPUVertexBufferDescriptor
 };
 
 enum GPUIndexFormat {

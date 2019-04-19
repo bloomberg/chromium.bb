@@ -34,6 +34,7 @@ class GPUShaderModule;
 class GPUShaderModuleDescriptor;
 class GPUTexture;
 class GPUTextureDescriptor;
+class ScriptState;
 
 class GPUDevice final : public DawnObject<DawnDevice> {
   DEFINE_WRAPPERTYPEINFO();
@@ -66,6 +67,7 @@ class GPUDevice final : public DawnObject<DawnDevice> {
   GPUShaderModule* createShaderModule(
       const GPUShaderModuleDescriptor* descriptor);
   GPURenderPipeline* createRenderPipeline(
+      ScriptState* script_state,
       const GPURenderPipelineDescriptor* descriptor);
   GPUComputePipeline* createComputePipeline(
       const GPUComputePipelineDescriptor* descriptor);
