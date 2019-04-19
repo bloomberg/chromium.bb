@@ -9609,7 +9609,7 @@ static int64_t motion_mode_rd(
             &est_residue_cost, &est_dist, NULL, &curr_sse, NULL, NULL, NULL);
       }
       est_rd = RDCOST(x->rdmult, rd_stats->rate + est_residue_cost, est_dist);
-      if (est_rd * 0.8 > *best_est_rd) {
+      if (est_rd * 0.80 > *best_est_rd) {
         mbmi->ref_frame[1] = ref_frame_1;
         continue;
       }
@@ -12598,7 +12598,6 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
                                 ref_costs_single, ref_costs_comp, yv12_mb);
 
   int64_t best_est_rd = INT64_MAX;
-  // TODO(angiebird): Turn this on when this speed feature is well tested
   const InterModeRdModel *md = &tile_data->inter_mode_rd_models[bsize];
   // If do_tx_search_global is 0, only estimated RD should be computed.
   // If do_tx_search_global is 1, all modes have TX search performed.
@@ -12606,7 +12605,7 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   const int do_tx_search_global =
       !((cpi->sf.inter_mode_rd_model_estimation == 1 && md->ready) ||
         (cpi->sf.inter_mode_rd_model_estimation == 2 &&
-         x->source_variance < 512));
+         num_pels_log2_lookup[bsize] >= 8));
   InterModesInfo *inter_modes_info = x->inter_modes_info;
   inter_modes_info->num = 0;
 
