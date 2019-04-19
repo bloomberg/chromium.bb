@@ -1111,6 +1111,8 @@ const char* ToString(ax::mojom::Action action) {
       return "showTooltip";
     case ax::mojom::Action::kHideTooltip:
       return "hideTooltip";
+    case ax::mojom::Action::kInternalInvalidateTree:
+      return "internalInvalidateTree";
   }
 
   return "";
@@ -1179,6 +1181,8 @@ ax::mojom::Action ParseAction(const char* action) {
     return ax::mojom::Action::kShowTooltip;
   if (0 == strcmp(action, "hideTooltip"))
     return ax::mojom::Action::kHideTooltip;
+  if (0 == strcmp(action, "internalInvalidateTree"))
+    return ax::mojom::Action::kInternalInvalidateTree;
   return ax::mojom::Action::kNone;
 }
 

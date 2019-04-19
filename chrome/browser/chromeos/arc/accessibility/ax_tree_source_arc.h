@@ -81,6 +81,9 @@ class AXTreeSourceArc : public ui::AXTreeSource<ArcAccessibilityInfoData*,
   const gfx::Rect GetBounds(ArcAccessibilityInfoData* info_data,
                             aura::Window* focused_window) const;
 
+  // Invalidates the tree serializer.
+  void InvalidateTree();
+
   bool is_notification() { return is_notification_; }
 
   bool is_input_method_window() { return is_input_method_window_; }

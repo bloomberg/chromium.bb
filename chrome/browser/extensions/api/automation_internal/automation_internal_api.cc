@@ -328,8 +328,22 @@ ExtensionFunction::ResponseAction AutomationInternalEnableFrameFunction::Run() {
   std::unique_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  content::RenderFrameHost* rfh = content::RenderFrameHost::FromAXTreeID(
-      ui::AXTreeID::FromString(params->tree_id));
+  ui::AXTreeID ax_tree_id = ui::AXTreeID::FromString(params->tree_id);
+  ui::AXTreeIDRegistry* registry = ui::AXTreeIDRegistry::GetInstance();
+  ui::AXActionHandler* action_handler = registry->GetActionHandler(ax_tree_id);
+  if (action_handler) {
+    // Explicitly invalidate the pre-existing source tree first. This ensures
+    // the source tree sends a complete tree when the next event occurs. This
+    // is required whenever the client extension is reloaded.
+    ui::AXActionData action;
+    action.target_tree_id = ax_tree_id;
+    action.source_extension_id = extension_id();
+    action.action = ax::mojom::Action::kInternalInvalidateTree;
+    action_handler->PerformAction(action);
+  }
+
+  content::RenderFrameHost* rfh =
+      content::RenderFrameHost::FromAXTreeID(ax_tree_id);
   if (!rfh)
     return RespondNow(Error("unable to load tab"));
 
@@ -506,6 +520,7 @@ AutomationInternalPerformActionFunction::ConvertToAXActionData(
       break;
     case api::automation::ACTION_TYPE_ANNOTATEPAGEIMAGES:
     case api::automation::ACTION_TYPE_SIGNALENDOFTEST:
+    case api::automation::ACTION_TYPE_INTERNALINVALIDATETREE:
     case api::automation::ACTION_TYPE_NONE:
       break;
   }
