@@ -28,7 +28,7 @@ std::unique_ptr<AudioDecoder> MojoMediaClient::CreateAudioDecoder(
   return nullptr;
 }
 
-std::vector<SupportedVideoDecoderConfig>
+SupportedVideoDecoderConfigMap
 MojoMediaClient::GetSupportedVideoDecoderConfigs() {
   return {};
 }
@@ -37,9 +37,9 @@ std::unique_ptr<VideoDecoder> MojoMediaClient::CreateVideoDecoder(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     MediaLog* media_log,
     mojom::CommandBufferIdPtr command_buffer_id,
+    VideoDecoderImplementation implementation,
     RequestOverlayInfoCB request_overlay_info_cb,
-    const gfx::ColorSpace& target_color_space,
-    mojom::VideoDecoderImplementation implementation) {
+    const gfx::ColorSpace& target_color_space) {
   return nullptr;
 }
 

@@ -44,6 +44,12 @@ class MediaLog;
 class Renderer;
 class VideoDecoder;
 
+// Map of mojo VideoDecoder implementations to the vector of configs that they
+// (probably) support.
+using SupportedVideoDecoderConfigMap =
+    base::flat_map<VideoDecoderImplementation,
+                   std::vector<SupportedVideoDecoderConfig>>;
+
 class MEDIA_MOJO_EXPORT MojoMediaClient {
  public:
   // Called before the host application is scheduled to quit.
@@ -58,16 +64,15 @@ class MEDIA_MOJO_EXPORT MojoMediaClient {
   virtual std::unique_ptr<AudioDecoder> CreateAudioDecoder(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
-  virtual std::vector<SupportedVideoDecoderConfig>
-  GetSupportedVideoDecoderConfigs();
+  virtual SupportedVideoDecoderConfigMap GetSupportedVideoDecoderConfigs();
 
   virtual std::unique_ptr<VideoDecoder> CreateVideoDecoder(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       MediaLog* media_log,
       mojom::CommandBufferIdPtr command_buffer_id,
+      VideoDecoderImplementation implementation,
       RequestOverlayInfoCB request_overlay_info_cb,
-      const gfx::ColorSpace& target_color_space,
-      mojom::VideoDecoderImplementation implementation);
+      const gfx::ColorSpace& target_color_space);
 
   // Returns the Renderer to be used by MojoRendererService.
   // TODO(hubbe): Find out whether we should pass in |target_color_space| here.

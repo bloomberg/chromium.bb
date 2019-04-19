@@ -25,6 +25,7 @@
 #include "media/mojo/interfaces/video_decoder.mojom.h"
 #include "media/mojo/interfaces/video_encode_accelerator.mojom.h"
 #include "media/video/gpu_video_accelerator_factories.h"
+#include "media/video/supported_video_decoder_config.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace gpu {
@@ -71,8 +72,10 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
   int32_t GetCommandBufferRouteId() override;
   std::unique_ptr<media::VideoDecoder> CreateVideoDecoder(
       media::MediaLog* media_log,
+      media::VideoDecoderImplementation implementation,
       const media::RequestOverlayInfoCB& request_overlay_info_cb) override;
   bool IsDecoderConfigSupported(
+      media::VideoDecoderImplementation implementation,
       const media::VideoDecoderConfig& config) override;
   std::unique_ptr<media::VideoDecodeAccelerator> CreateVideoDecodeAccelerator()
       override;
@@ -161,7 +164,7 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
   void SetContextProviderLostOnMainThread();
 
   void OnSupportedDecoderConfigs(
-      const std::vector<media::SupportedVideoDecoderConfig>& supported_configs);
+      const media::SupportedVideoDecoderConfigMap& supported_configs);
 
   const scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
@@ -198,7 +201,7 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
   // If the Optional is empty, then we have not yet gotten the configs.  If the
   // Optional contains an empty vector, then we have gotten the result and there
   // are no supported configs.
-  base::Optional<std::vector<media::SupportedVideoDecoderConfig>>
+  base::Optional<media::SupportedVideoDecoderConfigMap>
       supported_decoder_configs_ GUARDED_BY(supported_decoder_configs_lock_);
 
   // For sending requests to allocate shared memory in the Browser process.

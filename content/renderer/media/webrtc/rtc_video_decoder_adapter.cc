@@ -67,6 +67,12 @@ const int32_t kMaxDecodeHistory = 32;
 // requesting fallback to software decode.
 const int32_t kMaxConsecutiveErrors = 5;
 
+// Currently, RTCVideoDecoderAdapter only tries one VideoDecoderImplementation.
+// Since we use it in multiple places, memorize it here to make it clear that
+// they must be changed together.
+constexpr media::VideoDecoderImplementation kImplementation =
+    media::VideoDecoderImplementation::kDefault;
+
 // Map webrtc::VideoCodecType to media::VideoCodec.
 media::VideoCodec ToVideoCodec(webrtc::VideoCodecType video_codec_type) {
   switch (video_codec_type) {
@@ -156,7 +162,7 @@ std::unique_ptr<RTCVideoDecoderAdapter> RTCVideoDecoderAdapter::Create(
       media::VideoColorSpace(), media::VIDEO_ROTATION_0, kDefaultSize,
       gfx::Rect(kDefaultSize), kDefaultSize, media::EmptyExtraData(),
       media::Unencrypted());
-  if (!gpu_factories->IsDecoderConfigSupported(config))
+  if (!gpu_factories->IsDecoderConfigSupported(kImplementation, config))
     return nullptr;
 
   // Synchronously verify that the decoder can be initialized.
@@ -342,7 +348,8 @@ void RTCVideoDecoderAdapter::InitializeOnMediaThread(
     media_log_ = std::make_unique<media::NullMediaLog>();
 
     video_decoder_ = gpu_factories_->CreateVideoDecoder(
-        media_log_.get(), base::BindRepeating(&OnRequestOverlayInfo));
+        media_log_.get(), kImplementation,
+        base::BindRepeating(&OnRequestOverlayInfo));
 
     if (!video_decoder_) {
       media_task_runner_->PostTask(FROM_HERE,

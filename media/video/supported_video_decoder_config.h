@@ -5,6 +5,7 @@
 #ifndef MEDIA_VIDEO_SUPPORTED_VIDEO_DECODER_CONFIG_H_
 #define MEDIA_VIDEO_SUPPORTED_VIDEO_DECODER_CONFIG_H_
 
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "media/base/media_export.h"
 #include "media/base/video_codecs.h"
@@ -48,6 +49,19 @@ struct MEDIA_EXPORT SupportedVideoDecoderConfig {
 
   // Allow copy and assignment.
 };
+
+// Enumeration of possible implementations for (Mojo)VideoDecoders.
+enum class VideoDecoderImplementation {
+  kDefault = 0,
+  kAlternate = 1,
+  kMaxValue = kAlternate
+};
+
+// Map of mojo VideoDecoder implementations to the vector of configs that they
+// (probably) support.
+using SupportedVideoDecoderConfigMap =
+    base::flat_map<VideoDecoderImplementation,
+                   std::vector<SupportedVideoDecoderConfig>>;
 
 }  // namespace media
 

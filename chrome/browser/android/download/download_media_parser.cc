@@ -218,8 +218,8 @@ void DownloadMediaParser::DecodeVideoFrame() {
   DCHECK(gpu_factories_);
   auto mojo_decoder = std::make_unique<media::MojoVideoDecoder>(
       base::ThreadTaskRunnerHandle::Get(), gpu_factories_.get(), this,
-      std::move(video_decoder_ptr), base::BindRepeating(&OnRequestOverlayInfo),
-      gfx::ColorSpace());
+      std::move(video_decoder_ptr), media::VideoDecoderImplementation::kDefault,
+      base::BindRepeating(&OnRequestOverlayInfo), gfx::ColorSpace());
 
   decoder_ = std::make_unique<media::VideoThumbnailDecoder>(
       std::move(mojo_decoder), config_,

@@ -105,18 +105,20 @@ class RTCVideoDecoderAdapterTest : public ::testing::Test {
         .WillByDefault(Return(media_thread_.task_runner()));
     EXPECT_CALL(gpu_factories_, GetTaskRunner()).Times(AtLeast(0));
 
-    ON_CALL(gpu_factories_, IsDecoderConfigSupported(_))
+    ON_CALL(gpu_factories_, IsDecoderConfigSupported(_, _))
         .WillByDefault(Return(true));
-    EXPECT_CALL(gpu_factories_, IsDecoderConfigSupported(_)).Times(AtLeast(0));
+    EXPECT_CALL(gpu_factories_, IsDecoderConfigSupported(_, _))
+        .Times(AtLeast(0));
 
-    ON_CALL(gpu_factories_, CreateVideoDecoder(_, _))
+    ON_CALL(gpu_factories_, CreateVideoDecoder(_, _, _))
         .WillByDefault(
             [this](media::MediaLog* media_log,
+                   media::VideoDecoderImplementation impl,
                    const media::RequestOverlayInfoCB& request_overlay_info_cb) {
               DCHECK(this->owned_video_decoder_);
               return std::move(this->owned_video_decoder_);
             });
-    EXPECT_CALL(gpu_factories_, CreateVideoDecoder(_, _)).Times(AtLeast(0));
+    EXPECT_CALL(gpu_factories_, CreateVideoDecoder(_, _, _)).Times(AtLeast(0));
   }
 
   ~RTCVideoDecoderAdapterTest() {
@@ -246,7 +248,7 @@ TEST_F(RTCVideoDecoderAdapterTest, Create_UnknownFormat) {
 }
 
 TEST_F(RTCVideoDecoderAdapterTest, Create_UnsupportedFormat) {
-  EXPECT_CALL(gpu_factories_, IsDecoderConfigSupported(_))
+  EXPECT_CALL(gpu_factories_, IsDecoderConfigSupported(_, _))
       .WillOnce(Return(false));
   rtc_video_decoder_adapter_ = RTCVideoDecoderAdapter::Create(
       &gpu_factories_, webrtc::SdpVideoFormat(webrtc::CodecTypeToPayloadString(
