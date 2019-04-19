@@ -246,27 +246,24 @@ ScriptPromise DisplayLockContext::commit(ScriptState* script_state) {
   if (state_ == kUnlocked)
     return GetResolvedPromise(script_state);
 
-  // If we're already committing then return the promise.
-  if (state_ == kCommitting)
+  // If we're already committing and it's not because of activation,
+  // we would already have the commit promise and should just return it.
+  if (commit_resolver_) {
+    DCHECK(state_ == kUpdating || state_ == kCommitting);
     return commit_resolver_->Promise();
-
-  // Now that we've explicitly been requested to commit, we have cancel the
-  // timeout task.
-  CancelTimeoutTask();
+  }
 
   // Note that we don't resolve the update promise here, since it should still
   // finish updating before resolution. That is, calling update() and commit()
   // together will still wait until the lifecycle is clean before resolving any
   // of the promises.
-  DCHECK_NE(state_, kCommitting);
-  // We might already have a resolver if we called updateAndCommit() before
-  // this.
-  if (!commit_resolver_) {
-    commit_resolver_ =
-        MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-  }
+
+  commit_resolver_ = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   auto promise = commit_resolver_->Promise();
-  StartCommit();
+  // It's possible we are already committing due to activation. If not, we
+  // should start the commit.
+  if (state_ != kCommitting)
+    StartCommit();
   return promise;
 }
 
@@ -496,12 +493,13 @@ void DisplayLockContext::NotifyForcedUpdateScopeEnded() {
 }
 
 void DisplayLockContext::StartCommit() {
+  // Since we are starting a commit, cancel the timeout task.
+  CancelTimeoutTask();
   // If we don't have an element or we're not connected, then the process of
   // committing is the same as just unlocking the element.
   if (!element_ || !ConnectedToView()) {
     state_ = kUnlocked;
     update_budget_.reset();
-    CancelTimeoutTask();
     // Note that we reject the update, but resolve the commit.
     FinishUpdateResolver(kReject, rejection_names::kElementIsDisconnected);
     FinishCommitResolver(kResolve);
@@ -515,7 +513,6 @@ void DisplayLockContext::StartCommit() {
   if (acquire_resolver_) {
     FinishAcquireResolver(kReject, rejection_names::kLockCommitted);
     FinishCommitResolver(kResolve);
-    CancelTimeoutTask();
     state_ = kUnlocked;
   } else if (state_ != kUpdating) {
     ScheduleAnimation();
