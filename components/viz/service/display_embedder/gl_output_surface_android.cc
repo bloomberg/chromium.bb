@@ -10,10 +10,14 @@ namespace viz {
 
 GLOutputSurfaceAndroid::GLOutputSurfaceAndroid(
     scoped_refptr<VizProcessContextProvider> context_provider,
-    SyntheticBeginFrameSource* synthetic_begin_frame_source)
-    : GLOutputSurface(context_provider, synthetic_begin_frame_source),
-      overlay_candidate_validator_(
-          std::make_unique<CompositorOverlayCandidateValidatorAndroid>()) {}
+    SyntheticBeginFrameSource* synthetic_begin_frame_source,
+    bool allow_overlays)
+    : GLOutputSurface(context_provider, synthetic_begin_frame_source) {
+  if (allow_overlays) {
+    overlay_candidate_validator_ =
+        std::make_unique<CompositorOverlayCandidateValidatorAndroid>();
+  }
+}
 
 GLOutputSurfaceAndroid::~GLOutputSurfaceAndroid() = default;
 

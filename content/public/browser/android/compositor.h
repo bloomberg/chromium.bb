@@ -68,7 +68,7 @@ class CONTENT_EXPORT Compositor {
   virtual void SetWindowBounds(const gfx::Size& size) = 0;
 
   // Set the output surface which the compositor renders into.
-  virtual void SetSurface(jobject surface) = 0;
+  virtual void SetSurface(jobject surface, bool backed_by_surface_texture) = 0;
 
   // Set the background color used by the layer tree host.
   virtual void SetBackgroundColor(int color) = 0;

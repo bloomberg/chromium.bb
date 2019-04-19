@@ -271,7 +271,9 @@ public class CompositorView
     public void surfaceChanged(Surface surface, int format, int width, int height) {
         if (mNativeCompositorView == 0) return;
 
-        nativeSurfaceChanged(mNativeCompositorView, format, width, height, surface);
+        boolean backedBySurfaceTexture = mIsInVr;
+        nativeSurfaceChanged(
+                mNativeCompositorView, format, width, height, backedBySurfaceTexture, surface);
         mRenderHost.onSurfaceResized(width, height);
     }
 
@@ -475,8 +477,8 @@ public class CompositorView
     private native ResourceManager nativeGetResourceManager(long nativeCompositorView);
     private native void nativeSurfaceCreated(long nativeCompositorView);
     private native void nativeSurfaceDestroyed(long nativeCompositorView);
-    private native void nativeSurfaceChanged(
-            long nativeCompositorView, int format, int width, int height, Surface surface);
+    private native void nativeSurfaceChanged(long nativeCompositorView, int format, int width,
+            int height, boolean backedBySurfaceTexture, Surface surface);
     private native void nativeOnPhysicalBackingSizeChanged(
             long nativeCompositorView, WebContents webContents, int width, int height);
     private native void nativeFinalizeLayers(long nativeCompositorView);

@@ -35,6 +35,7 @@ bool StructTraits<viz::mojom::RendererSettingsDataView, viz::RendererSettings>::
 #if defined(OS_ANDROID)
   success = data.ReadInitialScreenSize(&out->initial_screen_size);
   success = data.ReadColorSpace(&out->color_space);
+  out->backed_by_surface_texture = data.backed_by_surface_texture();
 #endif
 
   return success;

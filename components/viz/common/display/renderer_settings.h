@@ -48,6 +48,7 @@ class VIZ_COMMON_EXPORT RendererSettings {
   gfx::Size initial_screen_size = gfx::Size(0, 0);
 
   gfx::ColorSpace color_space;
+  bool backed_by_surface_texture = false;
 #endif
 };
 
