@@ -356,6 +356,12 @@ ResourceLoader::ResourceLoader(ResourceFetcher* fetcher,
   DCHECK(resource_);
   DCHECK(fetcher_);
 
+  if (FrameScheduler* frame_scheduler = fetcher->GetFrameScheduler()) {
+    feature_handle_for_scheduler_ = frame_scheduler->RegisterFeature(
+        SchedulingPolicy::Feature::kOutstandingNetworkRequest,
+        {SchedulingPolicy::RecordMetricsForBackForwardCache()});
+  }
+
   resource_->SetLoader(this);
 }
 
@@ -547,6 +553,7 @@ void ResourceLoader::Release(
   bool released = scheduler_->Release(scheduler_client_id_, option, hints);
   DCHECK(released);
   scheduler_client_id_ = ResourceLoadScheduler::kInvalidClientId;
+  feature_handle_for_scheduler_.reset();
 }
 
 void ResourceLoader::Restart(const ResourceRequest& request) {
