@@ -6,13 +6,30 @@
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_DISCOVER_SCREEN_HANDLER_H_
 
 #include "base/macros.h"
-#include "chrome/browser/chromeos/login/screens/discover_screen_view.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/discover/discover_ui.h"
 
 namespace chromeos {
 
 class DiscoverScreen;
+
+// Interface for dependency injection between DiscoverScreen and its
+// WebUI representation.
+class DiscoverScreenView {
+ public:
+  constexpr static OobeScreen kScreenId = OobeScreen::SCREEN_DISCOVER;
+
+  virtual ~DiscoverScreenView() = default;
+
+  // Sets screen this view belongs to.
+  virtual void Bind(DiscoverScreen* screen) = 0;
+
+  // Shows the contents of the screen.
+  virtual void Show() = 0;
+
+  // Hides the contents of the screen.
+  virtual void Hide() = 0;
+};
 
 // The sole implementation of the DiscoverScreenView, using WebUI.
 class DiscoverScreenHandler : public BaseScreenHandler,

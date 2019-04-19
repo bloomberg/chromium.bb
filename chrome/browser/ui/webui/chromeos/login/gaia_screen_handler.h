@@ -13,7 +13,6 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/chromeos/authpolicy/authpolicy_helper.h"
 #include "chrome/browser/chromeos/login/screens/core_oobe_view.h"
-#include "chrome/browser/chromeos/login/screens/gaia_view.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
@@ -34,6 +33,36 @@ namespace chromeos {
 class ActiveDirectoryPasswordChangeScreenHandler;
 class Key;
 class SigninScreenHandler;
+
+class GaiaView {
+ public:
+  constexpr static OobeScreen kScreenId = OobeScreen::SCREEN_GAIA_SIGNIN;
+
+  GaiaView() = default;
+  virtual ~GaiaView() = default;
+
+  // Decides whether an auth extension should be pre-loaded. If it should,
+  // pre-loads it.
+  virtual void MaybePreloadAuthExtension() = 0;
+
+  virtual void DisableRestrictiveProxyCheckForTest() = 0;
+
+  // Show the sign-in screen. Depending on internal state, the screen will
+  // either be shown immediately or after an asynchronous clean-up process that
+  // cleans DNS cache and cookies. If available, |account_id| is used for
+  // prefilling information.
+  virtual void ShowGaiaAsync(const base::Optional<AccountId>& account_id) = 0;
+
+  // Show sign-in screen for the given credentials. |services| is a list of
+  // services returned by userInfo call as JSON array. Should be an empty array
+  // for a regular user: "[]".
+  virtual void ShowSigninScreenForTest(const std::string& username,
+                                       const std::string& password,
+                                       const std::string& services) = 0;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(GaiaView);
+};
 
 // A class that handles WebUI hooks in Gaia screen.
 class GaiaScreenHandler : public BaseScreenHandler,

@@ -6,12 +6,35 @@
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_DEMO_SETUP_SCREEN_HANDLER_H_
 
 #include "chrome/browser/chromeos/login/demo_mode/demo_setup_controller.h"
-#include "chrome/browser/chromeos/login/screens/demo_setup_screen_view.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 
 namespace chromeos {
 
 class DemoSetupScreen;
+
+// Interface of the demo mode setup screen view.
+class DemoSetupScreenView {
+ public:
+  constexpr static OobeScreen kScreenId = OobeScreen::SCREEN_OOBE_DEMO_SETUP;
+
+  virtual ~DemoSetupScreenView();
+
+  // Shows the contents of the screen.
+  virtual void Show() = 0;
+
+  // Hides the contents of the screen.
+  virtual void Hide() = 0;
+
+  // Sets view and screen.
+  virtual void Bind(DemoSetupScreen* screen) = 0;
+
+  // Handles successful setup.
+  virtual void OnSetupSucceeded() = 0;
+
+  // Handles setup failure.
+  virtual void OnSetupFailed(
+      const DemoSetupController::DemoSetupError& error) = 0;
+};
 
 // WebUI implementation of DemoSetupScreenView. It controlls UI, receives UI
 // events and notifies the Delegate.

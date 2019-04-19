@@ -14,6 +14,8 @@
 
 namespace chromeos {
 
+DemoSetupScreenView::~DemoSetupScreenView() = default;
+
 DemoSetupScreenHandler::DemoSetupScreenHandler(
     JSCallsContainer* js_calls_container)
     : BaseScreenHandler(kScreenId, js_calls_container) {

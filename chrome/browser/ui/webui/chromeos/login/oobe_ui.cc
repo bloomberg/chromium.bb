@@ -25,7 +25,6 @@
 #include "chrome/browser/chromeos/login/enrollment/auto_enrollment_check_screen_view.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen_view.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
-#include "chrome/browser/chromeos/login/screens/demo_setup_screen_view.h"
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/chromeos/login/screens/fingerprint_setup_screen_view.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
