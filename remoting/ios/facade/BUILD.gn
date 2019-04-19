@@ -8,6 +8,8 @@ import("//remoting/build/config/remoting_build.gni")
 
 source_set("facade") {
   sources = [
+    "ftl_device_id_provider_ios.h",
+    "ftl_device_id_provider_ios.mm",
     "host_info.cc",
     "host_info.h",
     "host_list_fetcher.cc",
@@ -33,6 +35,7 @@ source_set("facade") {
     "//remoting/ios/domain",
     "//remoting/ios/persistence",
     "//remoting/resources",
+    "//remoting/signaling",
     "//ui/base",
   ]
 
