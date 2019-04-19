@@ -230,19 +230,6 @@ var cr = cr || function(global) {
   }
 
   /**
-   * Returns a unique ID for the item. This mutates the item so it needs to be
-   * an object
-   * @param {!Object} item The item to get the unique ID for.
-   * @return {number} The unique ID for the item.
-   */
-  function getUid(item) {
-    if (item.hasOwnProperty('uid')) {
-      return item.uid;
-    }
-    return item.uid = createUid();
-  }
-
-  /**
    * Dispatches a simple event on an event target.
    * @param {!EventTarget} target The event target to dispatch the event on.
    * @param {string} type The type of the event.
@@ -304,28 +291,6 @@ var cr = cr || function(global) {
     ctor.getInstance = function() {
       return ctor.instance_ || (ctor.instance_ = new ctor());
     };
-  }
-
-  /**
-   * Forwards public APIs to private implementations.
-   * @param {Function} ctor Constructor that have private implementations in its
-   *     prototype.
-   * @param {Array<string>} methods List of public method names that have their
-   *     underscored counterparts in constructor's prototype.
-   * @param {string=} opt_target Selector for target node.
-   */
-  function makePublic(ctor, methods, opt_target) {
-    methods.forEach(function(method) {
-      ctor[method] = function() {
-        const target = opt_target ?
-            // Disable document.getElementById restriction since cr.js should
-            // not depend on util.js.
-            // eslint-disable-next-line no-restricted-properties
-            document.getElementById(opt_target) :
-            ctor.getInstance();
-        return target[method + '_'].apply(target, arguments);
-      };
-    });
   }
 
   /**
@@ -443,14 +408,11 @@ var cr = cr || function(global) {
 
   return {
     addSingletonGetter: addSingletonGetter,
-    createUid: createUid,
     define: define,
     defineProperty: defineProperty,
     dispatchPropertyChange: dispatchPropertyChange,
     dispatchSimpleEvent: dispatchSimpleEvent,
     exportPath: exportPath,
-    getUid: getUid,
-    makePublic: makePublic,
     PropertyKind: PropertyKind,
 
     // C++ <-> JS communication related methods.
