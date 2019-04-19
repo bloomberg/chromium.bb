@@ -652,8 +652,14 @@ void OverviewSession::OnWindowActivating(
     ::wm::ActivationChangeObserver::ActivationReason reason,
     aura::Window* gained_active,
     aura::Window* lost_active) {
-  if (ignore_activations_ || !gained_active ||
-      gained_active == GetOverviewFocusWindow()) {
+  if (ignore_activations_ || gained_active == GetOverviewFocusWindow())
+    return;
+
+  if (!gained_active) {
+    // Cancel overview session and do not restore focus when active window is
+    // set to nullptr. This happens when removing a display.
+    ResetFocusRestoreWindow(false);
+    CancelSelection();
     return;
   }
 
