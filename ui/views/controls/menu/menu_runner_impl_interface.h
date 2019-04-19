@@ -12,6 +12,7 @@
 #include "ui/views/controls/menu/menu_runner.h"
 
 namespace views {
+class MenuButtonController;
 
 namespace internal {
 
@@ -36,7 +37,7 @@ class MenuRunnerImplInterface {
 
   // Runs the menu. See MenuRunner::RunMenuAt for more details.
   virtual void RunMenuAt(Widget* parent,
-                         MenuButton* button,
+                         MenuButtonController* button_controller,
                          const gfx::Rect& bounds,
                          MenuAnchorPosition anchor,
                          int32_t run_types) = 0;

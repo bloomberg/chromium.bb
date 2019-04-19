@@ -24,7 +24,7 @@ class Browser;
 class ExtensionToolbarMenuView;
 
 namespace views {
-class MenuButton;
+class MenuButtonController;
 class MenuItemView;
 class MenuRunner;
 }
@@ -40,8 +40,8 @@ class AppMenu : public views::MenuDelegate,
 
   void Init(ui::MenuModel* model);
 
-  // Shows the menu relative to the specified view.
-  void RunMenu(views::MenuButton* host);
+  // Shows the menu relative to the specified controller's button.
+  void RunMenu(views::MenuButtonController* host);
 
   // Closes the menu if it is open, otherwise does nothing.
   void CloseMenu();

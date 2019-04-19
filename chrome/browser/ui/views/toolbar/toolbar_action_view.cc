@@ -348,7 +348,8 @@ void ToolbarActionView::DoShowContextMenu(ui::MenuSourceType source_type) {
   menu_ = menu_adapter_->CreateMenu();
   menu_runner_.reset(new views::MenuRunner(menu_, run_types));
 
-  menu_runner_->RunMenuAt(parent, this, GetAnchorBoundsInScreen(),
+  menu_runner_->RunMenuAt(parent, button_controller(),
+                          GetAnchorBoundsInScreen(),
                           views::MenuAnchorPosition::kTopLeft, source_type);
 }
 

@@ -104,12 +104,10 @@ class BrowserTabStripController::TabContextMenuContents
         views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU));
   }
 
-  void Cancel() {
-    controller_ = NULL;
-  }
+  void Cancel() { controller_ = nullptr; }
 
   void RunMenuAt(const gfx::Point& point, ui::MenuSourceType source_type) {
-    menu_runner_->RunMenuAt(tab_->GetWidget(), NULL,
+    menu_runner_->RunMenuAt(tab_->GetWidget(), nullptr,
                             gfx::Rect(point, gfx::Size()),
                             views::MenuAnchorPosition::kTopLeft, source_type);
   }
@@ -157,7 +155,7 @@ class BrowserTabStripController::TabContextMenuContents
 BrowserTabStripController::BrowserTabStripController(TabStripModel* model,
                                                      BrowserView* browser_view)
     : model_(model),
-      tabstrip_(NULL),
+      tabstrip_(nullptr),
       browser_view_(browser_view),
       hover_tab_selector_(model) {
   model_->SetTabStripUI(this);
@@ -352,7 +350,7 @@ void BrowserTabStripController::CreateNewTabWithLocation(
   AutocompleteMatch match;
   AutocompleteClassifierFactory::GetForProfile(GetProfile())
       ->Classify(location, false, false, metrics::OmniboxEventProto::BLANK,
-                 &match, NULL);
+                 &match, nullptr);
   if (match.destination_url.is_valid())
     model_->delegate()->AddTabAt(match.destination_url, -1, true);
 }

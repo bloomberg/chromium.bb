@@ -293,7 +293,7 @@ void ChromeNativeAppWindowViewsAuraAsh::ShowContextMenuForViewImpl(
         views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU,
         base::Bind(&ChromeNativeAppWindowViewsAuraAsh::OnMenuClosed,
                    base::Unretained(this)));
-    menu_runner_->RunMenuAt(source->GetWidget(), NULL,
+    menu_runner_->RunMenuAt(source->GetWidget(), nullptr,
                             gfx::Rect(p, gfx::Size(0, 0)),
                             views::MenuAnchorPosition::kTopLeft, source_type);
   } else {

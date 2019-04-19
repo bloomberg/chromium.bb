@@ -159,7 +159,7 @@ class ToolbarView : public views::AccessiblePaneView,
       override;
 
   // BrowserActionsContainer::Delegate:
-  views::MenuButton* GetOverflowReferenceView() override;
+  views::LabelButton* GetOverflowReferenceView() override;
   base::Optional<int> GetMaxBrowserActionsWidth() const override;
   std::unique_ptr<ToolbarActionsBar> CreateToolbarActionsBar(
       ToolbarActionsBarDelegate* delegate,

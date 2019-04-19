@@ -417,7 +417,7 @@ MenuController* MenuController::GetActiveInstance() {
 }
 
 void MenuController::Run(Widget* parent,
-                         MenuButton* button,
+                         MenuButtonController* button_controller,
                          MenuItemView* root,
                          const gfx::Rect& bounds,
                          MenuAnchorPosition position,
@@ -486,8 +486,8 @@ void MenuController::Run(Widget* parent,
   // Set the selection, which opens the initial menu.
   SetSelection(root, SELECTION_OPEN_SUBMENU | SELECTION_UPDATE_IMMEDIATELY);
 
-  if (button) {
-    pressed_lock_ = button->button_controller()->TakeLock(
+  if (button_controller) {
+    pressed_lock_ = button_controller->TakeLock(
         false, ui::LocatedEvent::FromIfValid(event));
   }
 

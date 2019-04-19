@@ -43,7 +43,7 @@ void DownloadShelfContextMenuView::Run(
   else
     position = Position::kTopLeft;
 
-  menu_runner_->RunMenuAt(parent_widget, NULL, rect, position, source_type);
+  menu_runner_->RunMenuAt(parent_widget, nullptr, rect, position, source_type);
 }
 
 void DownloadShelfContextMenuView::OnMenuClosed(

@@ -457,7 +457,7 @@ ToolbarView::GetContentSettingBubbleModelDelegate() {
 ////////////////////////////////////////////////////////////////////////////////
 // ToolbarView, BrowserActionsContainer::Delegate implementation:
 
-views::MenuButton* ToolbarView::GetOverflowReferenceView() {
+views::LabelButton* ToolbarView::GetOverflowReferenceView() {
   return app_menu_button_;
 }
 

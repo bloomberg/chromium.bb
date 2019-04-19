@@ -46,7 +46,7 @@ class ToolbarActionView : public views::MenuButton,
 
     // Returns the view of the toolbar actions overflow menu to use as a
     // reference point for a popup when this view isn't visible.
-    virtual views::MenuButton* GetOverflowReferenceView() = 0;
+    virtual views::LabelButton* GetOverflowReferenceView() = 0;
 
     // Returns the preferred size of the ToolbarActionView.
     virtual gfx::Size GetToolbarActionSize() = 0;

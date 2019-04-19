@@ -398,7 +398,7 @@ TEST_F(ShellTest, CreateLockScreenModalWindow) {
 
   // Modal dialog without parent, caused crash see crbug.com/226141
   views::Widget* modal_dialog = views::DialogDelegate::CreateDialogWidget(
-      new TestModalDialogDelegate(), CurrentContext(), NULL);
+      new TestModalDialogDelegate(), CurrentContext(), nullptr);
 
   modal_dialog->Show();
   EXPECT_FALSE(modal_dialog->GetNativeView()->HasFocus());
@@ -431,7 +431,7 @@ TEST_F(ShellTest, LockScreenClosesActiveMenu) {
   std::unique_ptr<views::MenuRunner> menu_runner(
       new views::MenuRunner(menu_model.get(), views::MenuRunner::CONTEXT_MENU));
 
-  menu_runner->RunMenuAt(widget, NULL, gfx::Rect(),
+  menu_runner->RunMenuAt(widget, nullptr, gfx::Rect(),
                          views::MenuAnchorPosition::kTopLeft,
                          ui::MENU_SOURCE_MOUSE);
   LockScreenAndVerifyMenuClosed();

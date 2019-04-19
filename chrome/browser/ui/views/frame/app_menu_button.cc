@@ -68,7 +68,7 @@ void AppMenuButton::RunMenu(std::unique_ptr<AppMenuModel> menu_model,
   menu_ = std::make_unique<AppMenu>(browser, run_flags, alert_reopen_tab_items);
   menu_->Init(menu_model_.get());
 
-  menu_->RunMenu(this);
+  menu_->RunMenu(button_controller());
 
   for (AppMenuButtonObserver& observer : observer_list_)
     observer.AppMenuShown();

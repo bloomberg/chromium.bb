@@ -8,7 +8,7 @@
 
 #include "build/build_config.h"
 #include "ui/native_theme/native_theme.h"
-#include "ui/views/controls/button/menu_button.h"
+#include "ui/views/controls/button/menu_button_controller.h"
 #include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/controls/menu/menu_delegate.h"
 #include "ui/views/controls/menu/menu_item_view.h"
@@ -81,7 +81,7 @@ void MenuRunnerImpl::Release() {
 }
 
 void MenuRunnerImpl::RunMenuAt(Widget* parent,
-                               MenuButton* button,
+                               MenuButtonController* button_controller,
                                const gfx::Rect& bounds,
                                MenuAnchorPosition anchor,
                                int32_t run_types) {
@@ -143,9 +143,9 @@ void MenuRunnerImpl::RunMenuAt(Widget* parent,
   controller_ = controller->AsWeakPtr();
   menu_->set_controller(controller_.get());
   menu_->PrepareForRun(owns_controller_, has_mnemonics,
-                       !for_drop_ && ShouldShowMnemonics(button, run_types));
+                       !for_drop_ && ShouldShowMnemonics(run_types));
 
-  controller->Run(parent, button, menu_, bounds, anchor,
+  controller->Run(parent, button_controller, menu_, bounds, anchor,
                   (run_types & MenuRunner::CONTEXT_MENU) != 0,
                   (run_types & MenuRunner::NESTED_DRAG) != 0);
 }
@@ -206,8 +206,7 @@ MenuRunnerImpl::~MenuRunnerImpl() {
     delete *i;
 }
 
-bool MenuRunnerImpl::ShouldShowMnemonics(MenuButton* button,
-                                         int32_t run_types) {
+bool MenuRunnerImpl::ShouldShowMnemonics(int32_t run_types) {
   bool show_mnemonics = run_types & MenuRunner::SHOULD_SHOW_MNEMONICS;
   // Show mnemonics if the button has focus or alt is pressed.
 #if defined(OS_WIN)

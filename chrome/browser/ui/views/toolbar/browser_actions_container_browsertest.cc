@@ -256,7 +256,7 @@ class ForwardingDelegate : public BrowserActionsContainer::Delegate {
 
  protected:
   // BrowserActionsContainer::Delegate:
-  views::MenuButton* GetOverflowReferenceView() override;
+  views::LabelButton* GetOverflowReferenceView() override;
   std::unique_ptr<ToolbarActionsBar> CreateToolbarActionsBar(
       ToolbarActionsBarDelegate* delegate,
       Browser* browser,
@@ -273,7 +273,7 @@ ForwardingDelegate::ForwardingDelegate(
     : forward_to_(forward_to),
       max_browser_actions_width_(forward_to->GetMaxBrowserActionsWidth()) {}
 
-views::MenuButton* ForwardingDelegate::GetOverflowReferenceView() {
+views::LabelButton* ForwardingDelegate::GetOverflowReferenceView() {
   return forward_to_->GetOverflowReferenceView();
 }
 

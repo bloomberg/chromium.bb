@@ -29,11 +29,11 @@ void MenuRunnerImplAdapter::Release() {
 }
 
 void MenuRunnerImplAdapter::RunMenuAt(Widget* parent,
-                                      MenuButton* button,
+                                      MenuButtonController* button_controller,
                                       const gfx::Rect& bounds,
                                       MenuAnchorPosition anchor,
                                       int32_t types) {
-  impl_->RunMenuAt(parent, button, bounds, anchor, types);
+  impl_->RunMenuAt(parent, button_controller, bounds, anchor, types);
 }
 
 void MenuRunnerImplAdapter::Cancel() {

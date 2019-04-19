@@ -153,7 +153,7 @@ void BrowserActionsContainer::OnToolbarActionViewDragDone() {
   toolbar_actions_bar_->OnDragEnded();
 }
 
-views::MenuButton* BrowserActionsContainer::GetOverflowReferenceView() {
+views::LabelButton* BrowserActionsContainer::GetOverflowReferenceView() {
   return delegate_->GetOverflowReferenceView();
 }
 

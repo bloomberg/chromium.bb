@@ -29,7 +29,7 @@ MenuRunner::~MenuRunner() {
 }
 
 void MenuRunner::RunMenuAt(Widget* parent,
-                           MenuButton* button,
+                           MenuButtonController* button_controller,
                            const gfx::Rect& bounds,
                            MenuAnchorPosition anchor,
                            ui::MenuSourceType source_type) {
@@ -40,8 +40,8 @@ void MenuRunner::RunMenuAt(Widget* parent,
     parent->GetRootView()->SetMouseHandler(nullptr);
 
   if (runner_handler_.get()) {
-    runner_handler_->RunMenuAt(parent, button, bounds, anchor, source_type,
-                               run_types_);
+    runner_handler_->RunMenuAt(parent, button_controller, bounds, anchor,
+                               source_type, run_types_);
     return;
   }
 
@@ -61,7 +61,7 @@ void MenuRunner::RunMenuAt(Widget* parent,
     }
   }
 
-  impl_->RunMenuAt(parent, button, bounds, anchor, run_types_);
+  impl_->RunMenuAt(parent, button_controller, bounds, anchor, run_types_);
 }
 
 bool MenuRunner::IsRunning() const {

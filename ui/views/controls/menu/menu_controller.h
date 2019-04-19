@@ -22,7 +22,6 @@
 #include "ui/events/event_constants.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/gfx/animation/throb_animation.h"
-#include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/button/menu_button_controller.h"
 #include "ui/views/controls/menu/menu_config.h"
 #include "ui/views/controls/menu/menu_delegate.h"
@@ -38,7 +37,7 @@ class OSExchangeData;
 }
 namespace views {
 
-class MenuButton;
+class Button;
 class MenuHostRootView;
 class MenuItemView;
 class MenuPreTargetHandler;
@@ -96,7 +95,7 @@ class VIEWS_EXPORT MenuController
 
   // Runs the menu at the specified location.
   void Run(Widget* parent,
-           MenuButton* button,
+           MenuButtonController* button_controller,
            MenuItemView* root,
            const gfx::Rect& bounds,
            MenuAnchorPosition position,

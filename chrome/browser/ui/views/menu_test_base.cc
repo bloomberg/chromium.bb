@@ -15,11 +15,7 @@
 #include "ui/views/widget/widget.h"
 
 MenuTestBase::MenuTestBase()
-    : ViewEventTestBase(),
-      button_(NULL),
-      menu_(NULL),
-      last_command_(0) {
-}
+    : ViewEventTestBase(), button_(nullptr), menu_(nullptr), last_command_(0) {}
 
 MenuTestBase::~MenuTestBase() {
 }
@@ -59,7 +55,7 @@ void MenuTestBase::TearDown() {
   menu_runner_->Cancel();
 
   menu_runner_.reset();
-  menu_ = NULL;
+  menu_ = nullptr;
   ViewEventTestBase::TearDown();
 }
 
@@ -81,8 +77,8 @@ void MenuTestBase::OnMenuButtonClicked(views::Button* source,
   gfx::Point screen_location;
   views::View::ConvertPointToScreen(source, &screen_location);
   gfx::Rect bounds(screen_location, source->size());
-  menu_runner_->RunMenuAt(source->GetWidget(), button_, bounds,
-                          views::MenuAnchorPosition::kTopLeft,
+  menu_runner_->RunMenuAt(source->GetWidget(), button_->button_controller(),
+                          bounds, views::MenuAnchorPosition::kTopLeft,
                           ui::MENU_SOURCE_NONE);
 }
 

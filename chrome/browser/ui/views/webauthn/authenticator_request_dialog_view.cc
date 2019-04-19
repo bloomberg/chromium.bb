@@ -280,7 +280,7 @@ void AuthenticatorRequestDialogView::ButtonPressed(views::Button* sender,
 
   gfx::Rect anchor_bounds = other_transports_button_->GetBoundsInScreen();
   other_transports_menu_runner_->RunMenuAt(
-      other_transports_button_->GetWidget(), nullptr /* menu_button */,
+      other_transports_button_->GetWidget(), nullptr /* MenuButtonController */,
       anchor_bounds, views::MenuAnchorPosition::kTopLeft,
       ui::MENU_SOURCE_MOUSE);
 }

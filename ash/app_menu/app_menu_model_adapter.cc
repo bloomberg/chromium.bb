@@ -57,8 +57,9 @@ void AppMenuModelAdapter::Run(const gfx::Rect& menu_anchor_rect,
         std::make_unique<NotificationMenuController>(app_id_, root_, this);
   }
   menu_runner_ = std::make_unique<views::MenuRunner>(root_, run_types);
-  menu_runner_->RunMenuAt(menu_owner_->GetWidget(), nullptr /* MenuButton */,
-                          menu_anchor_rect, menu_anchor_position, source_type_);
+  menu_runner_->RunMenuAt(menu_owner_->GetWidget(),
+                          nullptr /* MenuButtonController */, menu_anchor_rect,
+                          menu_anchor_position, source_type_);
 }
 
 bool AppMenuModelAdapter::IsShowingMenu() const {

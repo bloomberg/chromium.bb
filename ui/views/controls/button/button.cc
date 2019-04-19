@@ -456,45 +456,52 @@ void Button::AnimationProgressed(const gfx::Animation* animation) {
 ////////////////////////////////////////////////////////////////////////////////
 // ButtonControllerDelegate, protected:
 
-class Button::DefaultButtonControllerDelegate
-    : public ButtonControllerDelegate {
- public:
-  using ButtonControllerDelegate::ButtonControllerDelegate;
-  ~DefaultButtonControllerDelegate() override = default;
+Button::DefaultButtonControllerDelegate::DefaultButtonControllerDelegate(
+    Button* button)
+    : ButtonControllerDelegate(button) {}
 
-  // views::ButtonControllerDelegate:
-  void RequestFocusFromEvent() override { button()->RequestFocusFromEvent(); }
-  void NotifyClick(const ui::Event& event) override {
-    button()->NotifyClick(event);
-  }
-  void OnClickCanceled(const ui::Event& event) override {
-    button()->OnClickCanceled(event);
-  }
-  bool IsTriggerableEvent(const ui::Event& event) override {
-    return button()->IsTriggerableEvent(event);
-  }
-  bool ShouldEnterPushedState(const ui::Event& event) override {
-    return button()->ShouldEnterPushedState(event);
-  }
-  bool ShouldEnterHoveredState() override {
-    return button()->ShouldEnterHoveredState();
-  }
-  InkDrop* GetInkDrop() override { return button()->GetInkDrop(); }
-  int GetDragOperations(const gfx::Point& press_pt) override {
-    return button()->GetDragOperations(press_pt);
-  }
-  bool InDrag() override { return button()->InDrag(); }
+Button::DefaultButtonControllerDelegate::~DefaultButtonControllerDelegate() =
+    default;
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(DefaultButtonControllerDelegate);
-};
+void Button::DefaultButtonControllerDelegate::RequestFocusFromEvent() {
+  button()->RequestFocusFromEvent();
+}
+void Button::DefaultButtonControllerDelegate::NotifyClick(
+    const ui::Event& event) {
+  button()->NotifyClick(event);
+}
+void Button::DefaultButtonControllerDelegate::OnClickCanceled(
+    const ui::Event& event) {
+  button()->OnClickCanceled(event);
+}
+bool Button::DefaultButtonControllerDelegate::IsTriggerableEvent(
+    const ui::Event& event) {
+  return button()->IsTriggerableEvent(event);
+}
+bool Button::DefaultButtonControllerDelegate::ShouldEnterPushedState(
+    const ui::Event& event) {
+  return button()->ShouldEnterPushedState(event);
+}
+bool Button::DefaultButtonControllerDelegate::ShouldEnterHoveredState() {
+  return button()->ShouldEnterHoveredState();
+}
+InkDrop* Button::DefaultButtonControllerDelegate::GetInkDrop() {
+  return button()->GetInkDrop();
+}
+int Button::DefaultButtonControllerDelegate::GetDragOperations(
+    const gfx::Point& press_pt) {
+  return button()->GetDragOperations(press_pt);
+}
+bool Button::DefaultButtonControllerDelegate::InDrag() {
+  return button()->InDrag();
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Button, protected:
 
 std::unique_ptr<ButtonControllerDelegate>
 Button::CreateButtonControllerDelegate() {
-  return std::make_unique<DefaultButtonControllerDelegate>(this);
+  return std::make_unique<Button::DefaultButtonControllerDelegate>(this);
 }
 
 Button::Button(ButtonListener* listener)

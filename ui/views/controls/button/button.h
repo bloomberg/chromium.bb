@@ -15,6 +15,7 @@
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/animation/ink_drop_host_view.h"
 #include "ui/views/animation/ink_drop_state.h"
+#include "ui/views/controls/button/button_controller_delegate.h"
 #include "ui/views/controls/focus_ring.h"
 #include "ui/views/painter.h"
 #include "ui/views/widget/widget_observer.h"
@@ -26,7 +27,6 @@ class ButtonTestApi;
 
 class Button;
 class ButtonController;
-class ButtonControllerDelegate;
 class Event;
 
 // An interface implemented by an object to let it know that a button was
@@ -217,7 +217,25 @@ class VIEWS_EXPORT Button : public InkDropHostView,
 
  protected:
   // TODO(cyan): Consider having Button implement ButtonControllerDelegate.
-  class DefaultButtonControllerDelegate;
+  class DefaultButtonControllerDelegate : public ButtonControllerDelegate {
+   public:
+    DefaultButtonControllerDelegate(Button* button);
+    ~DefaultButtonControllerDelegate() override;
+
+    // views::ButtonControllerDelegate:
+    void RequestFocusFromEvent() override;
+    void NotifyClick(const ui::Event& event) override;
+    void OnClickCanceled(const ui::Event& event) override;
+    bool IsTriggerableEvent(const ui::Event& event) override;
+    bool ShouldEnterPushedState(const ui::Event& event) override;
+    bool ShouldEnterHoveredState() override;
+    InkDrop* GetInkDrop() override;
+    int GetDragOperations(const gfx::Point& press_pt) override;
+    bool InDrag() override;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(DefaultButtonControllerDelegate);
+  };
 
   std::unique_ptr<ButtonControllerDelegate> CreateButtonControllerDelegate();
 

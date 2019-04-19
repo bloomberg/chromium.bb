@@ -43,6 +43,7 @@ class TestMenuItemViewShown;
 class TestMenuItemViewNotShown;
 }
 
+class ImageView;
 class MenuController;
 class MenuDelegate;
 class Separator;

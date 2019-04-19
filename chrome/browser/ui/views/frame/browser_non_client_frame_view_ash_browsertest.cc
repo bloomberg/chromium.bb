@@ -777,7 +777,7 @@ class HostedAppNonClientFrameViewAshTest
   HostedAppButtonContainer* hosted_app_button_container_ = nullptr;
   const std::vector<ContentSettingImageView*>* content_setting_views_ = nullptr;
   BrowserActionsContainer* browser_actions_container_ = nullptr;
-  views::MenuButton* app_menu_button_ = nullptr;
+  views::Button* app_menu_button_ = nullptr;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     TopChromeMdParamTest<BrowserActionsBarBrowserTest>::SetUpCommandLine(

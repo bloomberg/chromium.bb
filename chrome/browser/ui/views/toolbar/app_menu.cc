@@ -813,12 +813,13 @@ void AppMenu::Init(ui::MenuModel* model) {
   menu_runner_.reset(new views::MenuRunner(root_, types));
 }
 
-void AppMenu::RunMenu(views::MenuButton* host) {
+void AppMenu::RunMenu(views::MenuButtonController* host) {
   base::RecordAction(UserMetricsAction("ShowAppMenu"));
 
-  menu_runner_->RunMenuAt(
-      host->GetWidget(), host, host->GetAnchorBoundsInScreen(),
-      views::MenuAnchorPosition::kTopRight, ui::MENU_SOURCE_NONE);
+  menu_runner_->RunMenuAt(host->button()->GetWidget(), host,
+                          host->button()->GetAnchorBoundsInScreen(),
+                          views::MenuAnchorPosition::kTopRight,
+                          ui::MENU_SOURCE_NONE);
 }
 
 void AppMenu::CloseMenu() {

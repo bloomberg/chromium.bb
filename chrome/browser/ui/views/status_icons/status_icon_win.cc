@@ -63,7 +63,7 @@ void StatusIconWin::HandleClickEvent(const gfx::Point& cursor_pos,
 
   menu_runner_.reset(new views::MenuRunner(menu_model_,
                                            views::MenuRunner::HAS_MNEMONICS));
-  menu_runner_->RunMenuAt(NULL, NULL, gfx::Rect(cursor_pos, gfx::Size()),
+  menu_runner_->RunMenuAt(nullptr, nullptr, gfx::Rect(cursor_pos, gfx::Size()),
                           views::MenuAnchorPosition::kTopLeft,
                           ui::MENU_SOURCE_MOUSE);
 }

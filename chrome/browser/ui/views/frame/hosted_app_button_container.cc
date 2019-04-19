@@ -300,7 +300,7 @@ const char* HostedAppButtonContainer::GetClassName() const {
   return kViewClassName;
 }
 
-views::MenuButton* HostedAppButtonContainer::GetOverflowReferenceView() {
+views::LabelButton* HostedAppButtonContainer::GetOverflowReferenceView() {
   return app_menu_button_;
 }
 

@@ -118,7 +118,7 @@ class BrowserActionsContainer : public views::View,
    public:
     // Returns the view of the toolbar actions overflow menu to use as a
     // reference point for a popup when this view isn't visible.
-    virtual views::MenuButton* GetOverflowReferenceView() = 0;
+    virtual views::LabelButton* GetOverflowReferenceView() = 0;
 
     // Returns the maximum width the browser actions container can have. An
     // empty value means there is no maximum.
@@ -226,7 +226,7 @@ class BrowserActionsContainer : public views::View,
   content::WebContents* GetCurrentWebContents() override;
   bool ShownInsideMenu() const override;
   void OnToolbarActionViewDragDone() override;
-  views::MenuButton* GetOverflowReferenceView() override;
+  views::LabelButton* GetOverflowReferenceView() override;
   gfx::Size GetToolbarActionSize() override;
 
   // ToolbarActionsBarDelegate:

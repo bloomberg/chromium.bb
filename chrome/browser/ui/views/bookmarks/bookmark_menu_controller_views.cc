@@ -57,7 +57,8 @@ void BookmarkMenuController::RunMenuAt(BookmarkBarView* bookmark_bar) {
   menu_delegate_->GetBookmarkModel()->AddObserver(this);
   // We only delete ourself after the menu completes, so we can safely ignore
   // the return value.
-  menu_runner_->RunMenuAt(menu_delegate_->parent(), menu_button, bounds, anchor,
+  menu_runner_->RunMenuAt(menu_delegate_->parent(),
+                          menu_button->button_controller(), bounds, anchor,
                           ui::MENU_SOURCE_NONE);
 }
 

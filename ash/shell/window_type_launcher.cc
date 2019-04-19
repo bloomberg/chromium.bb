@@ -139,7 +139,7 @@ class NonModalTransient : public views::WidgetDelegateView {
   }
   void DeleteDelegate() override {
     if (GetWidget() == non_modal_transient_)
-      non_modal_transient_ = NULL;
+      non_modal_transient_ = nullptr;
 
     delete this;
   }
@@ -153,7 +153,7 @@ class NonModalTransient : public views::WidgetDelegateView {
 };
 
 // static
-views::Widget* NonModalTransient::non_modal_transient_ = NULL;
+views::Widget* NonModalTransient::non_modal_transient_ = nullptr;
 
 void AddViewToLayout(views::GridLayout* layout, views::View* view) {
   layout->StartRow(0, 0);
@@ -339,7 +339,7 @@ void WindowTypeLauncher::ShowContextMenuForViewImpl(
   // MenuRunner takes ownership of root.
   menu_runner_.reset(new MenuRunner(
       root, MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU));
-  menu_runner_->RunMenuAt(GetWidget(), NULL, gfx::Rect(point, gfx::Size()),
+  menu_runner_->RunMenuAt(GetWidget(), nullptr, gfx::Rect(point, gfx::Size()),
                           views::MenuAnchorPosition::kTopLeft, source_type);
 }
 

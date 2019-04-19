@@ -68,7 +68,7 @@ MediaGalleriesDialogViews::MediaGalleriesDialogViews(
     MediaGalleriesDialogController* controller)
     : controller_(controller),
       contents_(new views::View()),
-      auxiliary_button_(NULL),
+      auxiliary_button_(nullptr),
       confirm_available_(false),
       accepted_(false) {
   InitChildViews();
@@ -314,13 +314,13 @@ void MediaGalleriesDialogViews::ShowContextMenu(const gfx::Point& point,
                           base::Unretained(this))));
 
   context_menu_runner_->RunMenuAt(
-      GetWidget(), NULL,
+      GetWidget(), nullptr,
       gfx::Rect(point.x(), point.y(), views::GridLayout::kFixedSize, 0),
       views::MenuAnchorPosition::kTopLeft, source_type);
 }
 
 bool MediaGalleriesDialogViews::ControllerHasWebContents() const {
-  return controller_->WebContents() != NULL;
+  return controller_->WebContents() != nullptr;
 }
 
 void MediaGalleriesDialogViews::OnMenuClosed() {

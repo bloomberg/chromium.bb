@@ -116,7 +116,8 @@ void ExtensionsMenuButton::ShowContextMenuForViewImpl(
 
   menu_runner_ = std::make_unique<views::MenuRunner>(
       model, views::MenuRunner::HAS_MNEMONICS);
-  menu_runner_->RunMenuAt(GetWidget(), context_menu_button_,
+  menu_runner_->RunMenuAt(GetWidget(),
+                          context_menu_button_->button_controller(),
                           context_menu_button_->GetAnchorBoundsInScreen(),
                           views::MenuAnchorPosition::kTopRight, source_type);
 }
