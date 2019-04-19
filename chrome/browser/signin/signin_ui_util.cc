@@ -189,7 +189,7 @@ std::vector<AccountInfo> GetAccountsForDicePromos(Profile* profile) {
   identity::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
   std::vector<AccountInfo> accounts_with_tokens =
-      identity_manager->GetAccountsWithRefreshTokens();
+      identity_manager->GetExtendedAccountInfoForAccountsWithRefreshToken();
 
   // Compute the default account.
   std::string default_account_id;
@@ -212,7 +212,7 @@ std::vector<AccountInfo> GetAccountsForDicePromos(Profile* profile) {
   // Fetch account information for each id and make sure that the first account
   // in the list matches the first account in the Gaia cookies (if available).
   std::vector<AccountInfo> accounts;
-  for (auto account_info : accounts_with_tokens) {
+  for (auto& account_info : accounts_with_tokens) {
     DCHECK(!account_info.IsEmpty());
     if (!identity::LegacyIsUsernameAllowedByPatternFromPrefs(
             g_browser_process->local_state(), account_info.email,
@@ -220,9 +220,9 @@ std::vector<AccountInfo> GetAccountsForDicePromos(Profile* profile) {
       continue;
     }
     if (account_info.account_id == default_account_id)
-      accounts.insert(accounts.begin(), account_info);
+      accounts.insert(accounts.begin(), std::move(account_info));
     else
-      accounts.push_back(account_info);
+      accounts.push_back(std::move(account_info));
   }
   return accounts;
 }

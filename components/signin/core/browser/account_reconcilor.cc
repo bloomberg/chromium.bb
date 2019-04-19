@@ -88,7 +88,7 @@ bool RevokeAllSecondaryTokens(
   if (revoke_option ==
       AccountReconcilorDelegate::RevokeTokenOption::kDoNotRevoke)
     return false;
-  for (const AccountInfo& account_info :
+  for (const CoreAccountInfo& account_info :
        identity_manager->GetAccountsWithRefreshTokens()) {
     std::string account(account_info.account_id);
     if (account == primary_account)

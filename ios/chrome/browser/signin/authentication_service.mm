@@ -217,10 +217,10 @@ void AuthenticationService::ComputeHaveAccountsChanged() {
   // While the AuthenticationService is in background, changes should be shown
   // to the user and |should_prompt| is true.
   ReloadCredentialsFromIdentities(!is_in_foreground_ /* should_prompt */);
-  std::vector<AccountInfo> new_accounts_info =
+  std::vector<CoreAccountInfo> new_accounts_info =
       identity_manager_->GetAccountsWithRefreshTokens();
   std::vector<std::string> new_accounts;
-  for (const AccountInfo& account_info : new_accounts_info)
+  for (const CoreAccountInfo& account_info : new_accounts_info)
     new_accounts.push_back(account_info.account_id);
   std::vector<std::string> old_accounts = GetAccountsInPrefs();
   std::sort(new_accounts.begin(), new_accounts.end());
@@ -274,10 +274,10 @@ void AuthenticationService::MigrateAccountsStoredInPrefsIfNeeded() {
 }
 
 void AuthenticationService::StoreAccountsInPrefs() {
-  std::vector<AccountInfo> accounts(
+  std::vector<CoreAccountInfo> accounts(
       identity_manager_->GetAccountsWithRefreshTokens());
   base::ListValue accounts_pref_value;
-  for (const AccountInfo& account_info : accounts)
+  for (const CoreAccountInfo& account_info : accounts)
     accounts_pref_value.AppendString(account_info.account_id);
   pref_service_->Set(prefs::kSigninLastAccounts, accounts_pref_value);
 }

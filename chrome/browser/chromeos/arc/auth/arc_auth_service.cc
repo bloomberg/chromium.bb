@@ -690,9 +690,9 @@ void ArcAuthService::TriggerAccountsPushToArc() {
   if (!chromeos::IsAccountManagerAvailable(profile_))
     return;
 
-  const std::vector<AccountInfo> accounts =
+  const std::vector<CoreAccountInfo> accounts =
       identity_manager_->GetAccountsWithRefreshTokens();
-  for (const AccountInfo& account : accounts)
+  for (const CoreAccountInfo& account : accounts)
     OnRefreshTokenUpdatedForAccount(account);
 }
 

@@ -144,10 +144,10 @@ void UpdateProfileName(Profile* profile,
                           base::UTF16ToUTF8(new_profile_name));
 }
 
-std::vector<AccountInfo> GetSecondaryAccountsForSignedInProfile(
+std::vector<CoreAccountInfo> GetSecondaryAccountsForSignedInProfile(
     Profile* profile) {
   auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
-  std::vector<AccountInfo> accounts =
+  std::vector<CoreAccountInfo> accounts =
       identity_manager->GetAccountsWithRefreshTokens();
 
   // The vector returned by GetAccountsWithRefreshTokens() contains
@@ -157,7 +157,7 @@ std::vector<AccountInfo> GetSecondaryAccountsForSignedInProfile(
 
   auto primary_index = std::find_if(
       accounts.begin(), accounts.end(),
-      [&primary_account](const AccountInfo& account_info) {
+      [&primary_account](const CoreAccountInfo& account_info) {
         return account_info.account_id == primary_account.account_id;
       });
   DCHECK(primary_index != accounts.end());

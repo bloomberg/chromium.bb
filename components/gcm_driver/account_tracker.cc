@@ -92,12 +92,12 @@ void AccountTracker::OnPrimaryAccountSet(
     const CoreAccountInfo& primary_account_info) {
   TRACE_EVENT0("identity", "AccountTracker::OnPrimaryAccountSet");
 
-  std::vector<AccountInfo> accounts =
+  std::vector<CoreAccountInfo> accounts =
       identity_manager_->GetAccountsWithRefreshTokens();
 
   DVLOG(1) << "LOGIN " << accounts.size() << " accounts available.";
 
-  for (const AccountInfo& account_info : accounts) {
+  for (const CoreAccountInfo& account_info : accounts) {
     UpdateSignInState(account_info.account_id, /*is_signed_in=*/true);
   }
 }

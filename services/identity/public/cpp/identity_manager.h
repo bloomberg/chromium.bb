@@ -238,7 +238,12 @@ class IdentityManager : public SigninManagerBase::Observer,
   // NOTE: The accounts should not be assumed to be in any particular order; in
   // particular, they are not guaranteed to be in the order in which the
   // refresh tokens were added.
-  std::vector<AccountInfo> GetAccountsWithRefreshTokens() const;
+  std::vector<CoreAccountInfo> GetAccountsWithRefreshTokens() const;
+
+  // Same functionality as GetAccountsWithRefreshTokens() but returning the
+  // extended account information.
+  std::vector<AccountInfo> GetExtendedAccountInfoForAccountsWithRefreshToken()
+      const;
 
   // Provides access to the latest cached information of all accounts that are
   // present in the Gaia cookie in the cookie jar, ordered by their order in

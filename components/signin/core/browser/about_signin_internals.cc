@@ -677,14 +677,14 @@ AboutSigninInternals::SigninStatus::ToValue(
 
   // Account info section
   auto account_info_section = std::make_unique<base::ListValue>();
-  const std::vector<AccountInfo>& accounts_with_refresh_tokens =
+  const std::vector<CoreAccountInfo>& accounts_with_refresh_tokens =
       identity_manager->GetAccountsWithRefreshTokens();
   if (accounts_with_refresh_tokens.size() == 0) {
     auto no_token_entry = std::make_unique<base::DictionaryValue>();
     no_token_entry->SetString("accountId", "No token in Token Service.");
     account_info_section->Append(std::move(no_token_entry));
   } else {
-    for (const AccountInfo account_info : accounts_with_refresh_tokens) {
+    for (const CoreAccountInfo& account_info : accounts_with_refresh_tokens) {
       auto entry = std::make_unique<base::DictionaryValue>();
       entry->SetString("accountId", account_info.account_id);
       // TODO(https://crbug.com/919793): Remove this field once the token

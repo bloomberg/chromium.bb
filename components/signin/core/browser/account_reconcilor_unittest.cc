@@ -1174,7 +1174,7 @@ TEST_P(AccountReconcilorDiceEndpointParamTest,
   const std::string account_id_2 = account_info_2.account_id;
 
   auto* identity_manager = identity_test_env()->identity_manager();
-  std::vector<AccountInfo> accounts =
+  std::vector<CoreAccountInfo> accounts =
       identity_manager->GetAccountsWithRefreshTokens();
   ASSERT_EQ(2u, accounts.size());
   ASSERT_TRUE(identity_manager->HasAccountWithRefreshToken(account_id_1));
@@ -1233,7 +1233,7 @@ TEST_P(AccountReconcilorDiceEndpointParamTest, DiceLastKnownFirstAccount) {
       account_info_1.gaia, &test_url_loader_factory_);
 
   auto* identity_manager = identity_test_env()->identity_manager();
-  std::vector<AccountInfo> accounts =
+  std::vector<CoreAccountInfo> accounts =
       identity_manager->GetAccountsWithRefreshTokens();
   ASSERT_EQ(2u, accounts.size());
   ASSERT_TRUE(identity_manager->HasAccountWithRefreshToken(account_id_1));

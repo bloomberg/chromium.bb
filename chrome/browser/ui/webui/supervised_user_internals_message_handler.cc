@@ -221,7 +221,8 @@ void SupervisedUserInternalsMessageHandler::SendBasicInfo() {
   // |identity_manager| is null in incognito and guest profiles.
   if (identity_manager) {
     for (const auto& account :
-         identity_manager->GetAccountsWithRefreshTokens()) {
+         identity_manager
+             ->GetExtendedAccountInfoForAccountsWithRefreshToken()) {
       base::ListValue* section_user = AddSection(section_list.get(),
           "User Information for " + account.full_name);
       AddSectionEntry(section_user, "Account id", account.account_id);

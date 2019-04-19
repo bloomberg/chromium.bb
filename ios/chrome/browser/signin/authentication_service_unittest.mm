@@ -415,11 +415,11 @@ TEST_F(AuthenticationServiceTest,
 
   identity_service_->AddIdentities(@[ @"foo3" ]);
 
-  auto account_compare_func = [](const AccountInfo& first,
-                                 const AccountInfo& second) {
+  auto account_compare_func = [](const CoreAccountInfo& first,
+                                 const CoreAccountInfo& second) {
     return first.account_id < second.account_id;
   };
-  std::vector<AccountInfo> accounts =
+  std::vector<CoreAccountInfo> accounts =
       identity_manager()->GetAccountsWithRefreshTokens();
   std::sort(accounts.begin(), accounts.end(), account_compare_func);
   ASSERT_EQ(2u, accounts.size());

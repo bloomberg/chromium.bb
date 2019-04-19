@@ -491,7 +491,7 @@ TEST_F(IdentityManagerTest, GetAccountsInteractionWithPrimaryAccount) {
   // GetAccountsWithRefreshTokens().
   SetRefreshTokenForPrimaryAccount(identity_manager());
 
-  std::vector<AccountInfo> accounts_after_update =
+  std::vector<CoreAccountInfo> accounts_after_update =
       identity_manager()->GetAccountsWithRefreshTokens();
 
   EXPECT_EQ(1u, accounts_after_update.size());
@@ -502,7 +502,7 @@ TEST_F(IdentityManagerTest, GetAccountsInteractionWithPrimaryAccount) {
   // Update the token and check that it doesn't change the state (or blow up).
   SetRefreshTokenForPrimaryAccount(identity_manager());
 
-  std::vector<AccountInfo> accounts_after_second_update =
+  std::vector<CoreAccountInfo> accounts_after_second_update =
       identity_manager()->GetAccountsWithRefreshTokens();
 
   EXPECT_EQ(1u, accounts_after_second_update.size());
@@ -577,7 +577,7 @@ TEST_F(IdentityManagerTest, GetAccountsInteractionWithSecondaryAccounts) {
       account_tracker()->FindAccountInfoByGaiaId(kTestGaiaId2).account_id;
   SetRefreshTokenForAccount(identity_manager(), account_id2);
 
-  std::vector<AccountInfo> accounts_after_update =
+  std::vector<CoreAccountInfo> accounts_after_update =
       identity_manager()->GetAccountsWithRefreshTokens();
 
   EXPECT_EQ(1u, accounts_after_update.size());
@@ -592,11 +592,11 @@ TEST_F(IdentityManagerTest, GetAccountsInteractionWithSecondaryAccounts) {
       account_tracker()->FindAccountInfoByGaiaId(kTestGaiaId3).account_id;
   SetRefreshTokenForAccount(identity_manager(), account_id3);
 
-  std::vector<AccountInfo> accounts_after_second_update =
+  std::vector<CoreAccountInfo> accounts_after_second_update =
       identity_manager()->GetAccountsWithRefreshTokens();
   EXPECT_EQ(2u, accounts_after_second_update.size());
 
-  for (AccountInfo account_info : accounts_after_second_update) {
+  for (CoreAccountInfo account_info : accounts_after_second_update) {
     if (account_info.account_id == account_id2) {
       EXPECT_EQ(account_info.gaia, kTestGaiaId2);
       EXPECT_EQ(account_info.email, kTestEmail2);
@@ -609,7 +609,7 @@ TEST_F(IdentityManagerTest, GetAccountsInteractionWithSecondaryAccounts) {
   // Remove the token for account2 and check that account3 is still present.
   RemoveRefreshTokenForAccount(identity_manager(), account_id2);
 
-  std::vector<AccountInfo> accounts_after_third_update =
+  std::vector<CoreAccountInfo> accounts_after_third_update =
       identity_manager()->GetAccountsWithRefreshTokens();
 
   EXPECT_EQ(1u, accounts_after_third_update.size());
@@ -702,7 +702,7 @@ TEST_F(IdentityManagerTest,
       account_tracker()->FindAccountInfoByGaiaId(kTestGaiaId2).account_id;
   SetRefreshTokenForAccount(identity_manager(), account_id2);
 
-  std::vector<AccountInfo> accounts_after_update =
+  std::vector<CoreAccountInfo> accounts_after_update =
       identity_manager()->GetAccountsWithRefreshTokens();
 
   EXPECT_EQ(1u, accounts_after_update.size());
@@ -716,11 +716,11 @@ TEST_F(IdentityManagerTest,
   // also shows up in GetAccountsWithRefreshTokens().
   SetRefreshTokenForPrimaryAccount(identity_manager());
 
-  std::vector<AccountInfo> accounts_after_second_update =
+  std::vector<CoreAccountInfo> accounts_after_second_update =
       identity_manager()->GetAccountsWithRefreshTokens();
   EXPECT_EQ(2u, accounts_after_second_update.size());
 
-  for (AccountInfo account_info : accounts_after_second_update) {
+  for (const CoreAccountInfo& account_info : accounts_after_second_update) {
     if (account_info.account_id == account_id2) {
       EXPECT_EQ(account_info.gaia, kTestGaiaId2);
       EXPECT_EQ(account_info.email, kTestEmail2);
@@ -736,7 +736,7 @@ TEST_F(IdentityManagerTest,
   // present.
   RemoveRefreshTokenForPrimaryAccount(identity_manager());
 
-  std::vector<AccountInfo> accounts_after_third_update =
+  std::vector<CoreAccountInfo> accounts_after_third_update =
       identity_manager()->GetAccountsWithRefreshTokens();
 
   EXPECT_EQ(1u, accounts_after_third_update.size());

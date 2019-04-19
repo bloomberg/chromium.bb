@@ -304,7 +304,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     auto* identity_manager =
         IdentityManagerFactory::GetForBrowserState(_browserState);
 
-    for (const AccountInfo& account :
+    for (const CoreAccountInfo& account :
          identity_manager->GetAccountsWithRefreshTokens()) {
       ChromeIdentity* identity = ios::GetChromeBrowserProvider()
                                      ->GetChromeIdentityService()
