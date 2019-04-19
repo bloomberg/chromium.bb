@@ -2121,6 +2121,12 @@
       "models": [
         {
           "board_name": "kukui",
+          "name": "krane",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        },
+        {
+          "board_name": "kukui",
           "name": "kukui",
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt"
@@ -2342,6 +2348,12 @@
         },
         {
           "board_name": "octopus",
+          "name": "blorb",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        },
+        {
+          "board_name": "octopus",
           "name": "bluebird",
           "test_suites": [
             "sanity",
@@ -2403,6 +2415,12 @@
             "bvt-perbuild",
             "bvt-tast-informational"
           ],
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        },
+        {
+          "board_name": "octopus",
+          "name": "droid",
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt"
         },
