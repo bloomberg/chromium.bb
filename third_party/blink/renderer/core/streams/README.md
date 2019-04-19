@@ -12,11 +12,12 @@ feature. The following files are part of the new implementation:
     readable_stream_default_controller.idl
     readable_stream_default_controller_interface.cc
     readable_stream_default_controller_interface.h
-    readable_stream_default_reader.cc
     readable_stream_default_reader.h
     readable_stream_default_reader.idl
     readable_stream_native.cc
     readable_stream_native.h
+    readable_stream_reader.cc
+    readable_stream_reader.h
     writable_stream_default_controller.cc
     writable_stream_default_controller.h
     writable_stream_default_controller.idl

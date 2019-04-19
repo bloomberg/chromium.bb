@@ -16,7 +16,7 @@ namespace blink {
 
 class ExceptionState;
 class ReadableStreamDefaultController;
-class ReadableStreamDefaultReader;
+class ReadableStreamReader;
 class ScriptState;
 class StrategySizeAlgorithm;
 class StreamAlgorithm;
@@ -188,7 +188,7 @@ class ReadableStreamNative : public ReadableStream {
 
  private:
   friend class ReadableStreamDefaultController;
-  friend class ReadableStreamDefaultReader;
+  friend class ReadableStreamReader;
 
   struct PipeOptions;
   class PipeToEngine;
@@ -199,11 +199,10 @@ class ReadableStreamNative : public ReadableStream {
   static void Initialize(ReadableStreamNative*);
 
   // https://streams.spec.whatwg.org/#acquire-readable-stream-reader
-  static ReadableStreamDefaultReader* AcquireDefaultReader(
-      ScriptState*,
-      ReadableStreamNative*,
-      bool for_author_code,
-      ExceptionState&);
+  static ReadableStreamReader* AcquireDefaultReader(ScriptState*,
+                                                    ReadableStreamNative*,
+                                                    bool for_author_code,
+                                                    ExceptionState&);
 
   // https://streams.spec.whatwg.org/#readable-stream-pipe-to
   static ScriptPromise PipeTo(ScriptState*,
@@ -243,20 +242,6 @@ class ReadableStreamNative : public ReadableStream {
   // https://streams.spec.whatwg.org/#readable-stream-get-num-read-requests
   static int GetNumReadRequests(const ReadableStreamNative*);
 
-  // https://streams.spec.whatwg.org/#readable-stream-reader-generic-cancel
-  static v8::Local<v8::Promise> ReaderGenericCancel(
-      ScriptState*,
-      ReadableStreamDefaultReader*,
-      v8::Local<v8::Value> reason);
-
-  // https://streams.spec.whatwg.org/#readable-stream-reader-generic-initialize
-  static void ReaderGenericInitialize(ScriptState*,
-                                      ReadableStreamDefaultReader*,
-                                      ReadableStreamNative*);
-
-  // https://streams.spec.whatwg.org/#readable-stream-reader-generic-release
-  static void ReaderGenericRelease(ScriptState*, ReadableStreamDefaultReader*);
-
   //
   // TODO(ricea): Functions for transferable streams.
   //
@@ -271,16 +256,11 @@ class ReadableStreamNative : public ReadableStream {
                          const char* property_name,
                          ExceptionState&);
 
-  // Calls method |method_name| on |object|, passing no arguments, and ignoring
-  // errors. Used for Blink lock notifications.
-  static void CallNullaryMethod(ScriptState*,
-                                v8::Local<v8::Object> object,
-                                const char* method_name);
 
   bool is_disturbed_ = false;
   State state_ = kReadable;
   Member<ReadableStreamDefaultController> readable_stream_controller_;
-  Member<ReadableStreamDefaultReader> reader_;
+  Member<ReadableStreamReader> reader_;
   TraceWrapperV8Reference<v8::Value> stored_error_;
 };
 
