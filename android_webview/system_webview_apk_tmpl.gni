@@ -11,7 +11,10 @@ import("//chrome/android/trichrome.gni")
 import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
 
 declare_args() {
-  # Package name of the system_webview_apk target.
+  # Android package name to use when compiling the system_webview_apk and
+  # trichrome_webview_apk targets. This should be used if the Android build
+  # on which you are going to install WebView is configured to load a
+  # different package name than the default used in AOSP.
   system_webview_package_name = "com.android.webview"
 }
 
