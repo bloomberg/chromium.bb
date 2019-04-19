@@ -9,6 +9,7 @@
 #include "components/metrics/metrics_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/driver/sync_service.h"
+#include "components/ukm/ios/features.h"
 #include "components/unified_consent/pref_names.h"
 #include "ios/chrome/browser/pref_names.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
@@ -163,9 +164,13 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
         initWithPrefService:localPrefService
                    prefName:metrics::prefs::kMetricsReportingEnabled];
     _sendDataUsagePreference.observer = self;
-    _sendDataUsageWifiOnlyPreference = [[PrefBackedBoolean alloc]
-        initWithPrefService:localPrefService
-                   prefName:prefs::kMetricsReportingWifiOnly];
+    if (!base::FeatureList::IsEnabled(kUmaCellular)) {
+      // When flag is not, kMetricsReportingWifiOnly pref has not been
+      // initialized, so don't create a PrefBackedBoolean for it.
+      _sendDataUsageWifiOnlyPreference = [[PrefBackedBoolean alloc]
+          initWithPrefService:localPrefService
+                     prefName:prefs::kMetricsReportingWifiOnly];
+    }
     _anonymizedDataCollectionPreference = [[PrefBackedBoolean alloc]
         initWithPrefService:userPrefService
                    prefName:unified_consent::prefs::
@@ -630,7 +635,9 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
       break;
     case ImproveChromeItemType:
       self.sendDataUsagePreference.value = value;
-      if (value) {
+      // Don't set value if sendDataUsageWifiOnlyPreference has not been
+      // allocated.
+      if (value && self.sendDataUsageWifiOnlyPreference) {
         // Should be wifi only, until https://crbug.com/872101 is fixed.
         self.sendDataUsageWifiOnlyPreference.value = YES;
       }
