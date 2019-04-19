@@ -554,15 +554,15 @@ void PaymentRequestBrowserTestBase::ClickOnDialogViewAndWait(
 }
 
 void PaymentRequestBrowserTestBase::ClickOnChildInListViewAndWait(
-    int child_index,
-    int total_num_children,
+    size_t child_index,
+    size_t total_num_children,
     DialogViewID list_view_id,
     bool wait_for_animation) {
   views::View* list_view =
       dialog_view()->GetViewByID(static_cast<int>(list_view_id));
   EXPECT_TRUE(list_view);
-  EXPECT_EQ(total_num_children, list_view->child_count());
-  ClickOnDialogViewAndWait(list_view->child_at(child_index),
+  EXPECT_EQ(total_num_children, list_view->children().size());
+  ClickOnDialogViewAndWait(list_view->children()[child_index],
                            wait_for_animation);
 }
 

@@ -782,7 +782,7 @@ IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTest,
 
   views::View* card_list_view = GetCardListView();
   EXPECT_TRUE(card_list_view->visible());
-  EXPECT_EQ(card_list_view->child_count(), 2);
+  ASSERT_EQ(2u, card_list_view->children().size());
   // Cards will be added to database in a reversed order.
   EXPECT_EQ(static_cast<MigratableCardView*>(card_list_view->child_at(0))
                 ->GetNetworkAndLastFourDigits(),

@@ -487,8 +487,7 @@ void BrowserViewLayout::UpdateTopContainerBounds() {
   // top container view paints parts of the frame (title, window controls)
   // during an immersive fullscreen reveal.
   int height = 0;
-  for (int i = 0; i < top_container_->child_count(); ++i) {
-    views::View* child = top_container_->child_at(i);
+  for (views::View* child : top_container_->children()) {
     if (child->visible())
       height = std::max(height, child->bounds().bottom());
   }

@@ -161,8 +161,7 @@ const GURL LegalMessageView::GetUrlForLink(views::StyledLabel* label,
   // Index of |label| within its parent's view hierarchy is the same as the
   // legal message line index. DCHECK this assumption to guard against future
   // layout changes.
-  DCHECK_EQ(static_cast<size_t>(label->parent()->child_count()),
-            legal_message_lines_.size());
+  DCHECK_EQ(label->parent()->children().size(), legal_message_lines_.size());
 
   const std::vector<LegalMessageLine::Link>& links =
       legal_message_lines_[label->parent()->GetIndexOf(label)].links();

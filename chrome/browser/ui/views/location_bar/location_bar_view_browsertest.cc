@@ -143,8 +143,7 @@ IN_PROC_BROWSER_TEST_F(TouchLocationBarViewBrowserTest, OmniboxViewViewsSize) {
   // (currently, the LocationIconView is *always* added as a leading decoration,
   // so it's not possible to test the leading side).
   views::View* omnibox_view_views = GetLocationBarView()->omnibox_view();
-  for (int i = 0; i < GetLocationBarView()->child_count(); ++i) {
-    views::View* child = GetLocationBarView()->child_at(i);
+  for (views::View* child : GetLocationBarView()->children()) {
     if (child != omnibox_view_views)
       child->SetVisible(false);
   }
@@ -169,8 +168,7 @@ IN_PROC_BROWSER_TEST_F(TouchLocationBarViewBrowserTest,
   OmniboxViewViews* omnibox_view_views = GetLocationBarView()->omnibox_view();
   views::Label* ime_inline_autocomplete_view =
       GetLocationBarView()->ime_inline_autocomplete_view_;
-  for (int i = 0; i < GetLocationBarView()->child_count(); ++i) {
-    views::View* child = GetLocationBarView()->child_at(i);
+  for (views::View* child : GetLocationBarView()->children()) {
     if (child != omnibox_view_views)
       child->SetVisible(false);
   }

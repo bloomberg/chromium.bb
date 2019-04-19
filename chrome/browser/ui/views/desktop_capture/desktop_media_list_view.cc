@@ -81,8 +81,8 @@ void DesktopMediaListView::OnDoubleClick() {
 }
 
 gfx::Size DesktopMediaListView::CalculatePreferredSize() const {
-  int total_rows =
-      (child_count() + active_style_->columns - 1) / active_style_->columns;
+  int total_rows = (int{children().size()} + active_style_->columns - 1) /
+                   active_style_->columns;
   return gfx::Size(active_style_->columns * active_style_->item_size.width(),
                    total_rows * active_style_->item_size.height());
 }
@@ -91,7 +91,7 @@ void DesktopMediaListView::Layout() {
   int x = 0;
   int y = 0;
 
-  for (int i = 0; i < child_count(); ++i) {
+  for (size_t i = 0; i < children().size(); ++i) {
     if (i > 0 && i % active_style_->columns == 0) {
       x = 0;
       y += active_style_->item_size.height();
@@ -131,8 +131,8 @@ bool DesktopMediaListView::OnKeyPressed(const ui::KeyEvent& event) {
 
   if (selected) {
     int index = GetIndexOf(selected);
-    int new_index =
-        base::ClampToRange(index + position_increment, 0, child_count() - 1);
+    int new_index = base::ClampToRange(index + position_increment, 0,
+                                       int{children().size()} - 1);
     if (index != new_index)
       new_selected = child_at(new_index);
   } else if (!children().empty()) {
@@ -159,7 +159,7 @@ void DesktopMediaListView::OnSourceAdded(size_t index) {
   const DesktopMediaList::Source& source = controller_->GetSource(index);
 
   // We are going to have a second item, apply the generic style.
-  if (child_count() == 1)
+  if (children().size() == 1)
     SetStyle(&generic_style_);
 
   DesktopMediaSourceView* source_view =
@@ -182,7 +182,7 @@ void DesktopMediaListView::OnSourceAdded(size_t index) {
   }
   AddChildViewAt(source_view, index);
 
-  if ((child_count() - 1) % active_style_->columns == 0)
+  if ((children().size() - 1) % active_style_->columns == 0)
     controller_->OnSourceListLayoutChanged();
 
   PreferredSizeChanged();
@@ -199,11 +199,11 @@ void DesktopMediaListView::OnSourceRemoved(size_t index) {
   if (was_selected)
     OnSelectionChanged();
 
-  if (child_count() % active_style_->columns == 0)
+  if (children().size() % active_style_->columns == 0)
     controller_->OnSourceListLayoutChanged();
 
   // Apply single-item styling when the second source is removed.
-  if (child_count() == 1)
+  if (children().size() == 1)
     SetStyle(&single_style_);
 
   PreferredSizeChanged();

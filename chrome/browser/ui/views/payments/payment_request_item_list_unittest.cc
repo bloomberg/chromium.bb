@@ -85,7 +85,7 @@ TEST(PaymentRequestItemListTest, TestAddItem) {
   EXPECT_TRUE(item_pointers[3]->selected());
 
   list_view = list.CreateListView();
-  EXPECT_EQ(4, list_view->child_count());
+  EXPECT_EQ(4u, list_view->children().size());
 }
 
 TEST(PaymentRequestItemListTest, TestSelectItemResultsInSingleItemSelected) {

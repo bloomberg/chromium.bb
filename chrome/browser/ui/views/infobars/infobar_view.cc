@@ -134,8 +134,7 @@ InfoBarView::~InfoBarView() {
 void InfoBarView::RecalculateHeight() {
   // Ensure the infobar is tall enough to display its contents.
   int height = 0;
-  for (int i = 0; i < child_count(); ++i) {
-    View* child = child_at(i);
+  for (View* child : children()) {
     const gfx::Insets* const margins = child->GetProperty(views::kMarginsKey);
     const int margin_height = margins ? margins->height() : 0;
     height = std::max(height, child->height() + margin_height);
@@ -218,8 +217,7 @@ void InfoBarView::OnThemeChanged() {
   views::SetImageFromVectorIcon(close_button_, vector_icons::kCloseRoundedIcon,
                                 text_color);
 
-  for (int i = 0; i < child_count(); ++i) {
-    View* child = child_at(i);
+  for (views::View* child : children()) {
     LabelType label_type = child->GetProperty(kLabelType);
     if (label_type != LabelType::kNone) {
       auto* label = static_cast<views::Label*>(child);

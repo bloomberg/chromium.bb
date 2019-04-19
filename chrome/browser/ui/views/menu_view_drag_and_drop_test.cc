@@ -215,7 +215,7 @@ void MenuViewDragAndDropTest::DoTestWithMenuOpen() {
   ASSERT_TRUE(submenu->IsShowing());
   ASSERT_EQ(3u, submenu->GetMenuItems().size());
   const views::View* first_view = submenu->GetMenuItemAt(0);
-  ASSERT_EQ(1, first_view->child_count());
+  ASSERT_EQ(1u, first_view->children().size());
   const views::View* child_view = first_view->child_at(0);
   EXPECT_EQ(child_view, target_view_);
 
@@ -424,7 +424,7 @@ void MenuViewDragAndDropTestNestedDrag::DoTestWithMenuOpen() {
   MenuViewDragAndDropTest::DoTestWithMenuOpen();
 
   // Cause the target's second child to trigger a mouse up when dragged over.
-  ASSERT_EQ(2, target_view()->child_count());
+  ASSERT_EQ(2u, target_view()->children().size());
   SetStopDraggingView(target_view()->child_at(1));
 
   // We're going to drag the target's first child.

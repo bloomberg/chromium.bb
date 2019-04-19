@@ -464,8 +464,8 @@ std::unique_ptr<views::View> PaymentRequestSheetController::CreateFooterView() {
   AddSecondaryButton(trailing_buttons_container.get());
 #endif  // defined(OS_MACOSX)
 
-  if (container->child_count() == 0 &&
-      trailing_buttons_container->child_count() == 0) {
+  if (container->children().empty() &&
+      trailing_buttons_container->children().empty()) {
     // If there's no extra view and no button, return null to signal that no
     // footer should be rendered.
     return nullptr;

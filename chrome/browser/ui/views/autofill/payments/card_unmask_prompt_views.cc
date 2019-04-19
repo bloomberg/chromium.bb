@@ -149,8 +149,8 @@ void CardUnmaskPromptViews::GotVerificationResult(
 void CardUnmaskPromptViews::LinkClicked(views::Link* source, int event_flags) {
   DCHECK_EQ(source, new_card_link_);
   controller_->NewCardLinkClicked();
-  for (int i = 0; i < input_row_->child_count(); ++i)
-    input_row_->child_at(i)->SetVisible(true);
+  for (views::View* child : input_row_->children())
+    child->SetVisible(true);
 
   new_card_link_->SetVisible(false);
   input_row_->InvalidateLayout();

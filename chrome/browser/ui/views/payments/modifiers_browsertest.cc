@@ -38,11 +38,11 @@ class PaymentRequestModifiersTest : public PaymentRequestBrowserTestBase {
         {});
   }
 
-  int GetLineCount() {
+  size_t GetLineCount() {
     auto* top = dialog_view()->view_stack_for_testing()->top();
     const auto* content =
         top->GetViewByID(static_cast<int>(DialogViewID::CONTENT_VIEW));
-    return content->child_count();
+    return content->children().size();
   }
 
  private:
@@ -60,7 +60,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestModifiersTest,
   EXPECT_EQ(base::ASCIIToUTF16("$5.00"),
             GetLabelText(DialogViewID::ORDER_SUMMARY_TOTAL_AMOUNT_LABEL));
   // There's only the total line.
-  EXPECT_EQ(1, GetLineCount());
+  EXPECT_EQ(1u, GetLineCount());
 }
 
 IN_PROC_BROWSER_TEST_F(
@@ -81,7 +81,7 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_EQ(base::ASCIIToUTF16("$4.00"),
             GetLabelText(DialogViewID::ORDER_SUMMARY_TOTAL_AMOUNT_LABEL));
   // A line for the discount and one for the total.
-  EXPECT_EQ(2, GetLineCount());
+  EXPECT_EQ(2u, GetLineCount());
 }
 
 IN_PROC_BROWSER_TEST_F(
@@ -114,7 +114,7 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_EQ(base::ASCIIToUTF16("$4.00"),
             GetLabelText(DialogViewID::ORDER_SUMMARY_TOTAL_AMOUNT_LABEL));
   // A line for the discount and one for the total.
-  EXPECT_EQ(2, GetLineCount());
+  EXPECT_EQ(2u, GetLineCount());
 }
 
 IN_PROC_BROWSER_TEST_F(
@@ -147,7 +147,7 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_EQ(base::ASCIIToUTF16("$5.00"),
             GetLabelText(DialogViewID::ORDER_SUMMARY_TOTAL_AMOUNT_LABEL));
   // There's only the total line.
-  EXPECT_EQ(1, GetLineCount());
+  EXPECT_EQ(1u, GetLineCount());
 }
 
 IN_PROC_BROWSER_TEST_F(
@@ -180,7 +180,7 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_EQ(base::ASCIIToUTF16("$4.00"),
             GetLabelText(DialogViewID::ORDER_SUMMARY_TOTAL_AMOUNT_LABEL));
   // A line for the discount and one for the total.
-  EXPECT_EQ(2, GetLineCount());
+  EXPECT_EQ(2u, GetLineCount());
 }
 
 IN_PROC_BROWSER_TEST_F(
@@ -213,7 +213,7 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_EQ(base::ASCIIToUTF16("$5.00"),
             GetLabelText(DialogViewID::ORDER_SUMMARY_TOTAL_AMOUNT_LABEL));
   // There's only the total line.
-  EXPECT_EQ(1, GetLineCount());
+  EXPECT_EQ(1u, GetLineCount());
 }
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestModifiersTest,
@@ -231,7 +231,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestModifiersTest,
   EXPECT_EQ(base::ASCIIToUTF16("$4.00"),
             GetLabelText(DialogViewID::ORDER_SUMMARY_TOTAL_AMOUNT_LABEL));
   // There's the total line and the discount line.
-  EXPECT_EQ(2, GetLineCount());
+  EXPECT_EQ(2u, GetLineCount());
 }
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestModifiersTest,
@@ -264,7 +264,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestModifiersTest,
   EXPECT_EQ(base::ASCIIToUTF16("$4.00"),
             GetLabelText(DialogViewID::ORDER_SUMMARY_TOTAL_AMOUNT_LABEL));
   // There's the total line and the discount line.
-  EXPECT_EQ(2, GetLineCount());
+  EXPECT_EQ(2u, GetLineCount());
 }
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestModifiersTest,
@@ -296,7 +296,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestModifiersTest,
   EXPECT_EQ(base::ASCIIToUTF16("$5.00"),
             GetLabelText(DialogViewID::ORDER_SUMMARY_TOTAL_AMOUNT_LABEL));
   // Only global total is available.
-  EXPECT_EQ(1, GetLineCount());
+  EXPECT_EQ(1u, GetLineCount());
 }
 
 }  // namespace payments

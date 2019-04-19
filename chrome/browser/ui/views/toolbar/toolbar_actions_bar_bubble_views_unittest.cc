@@ -435,7 +435,7 @@ TEST_F(ToolbarActionsBarBubbleViewsTest, TestCreateExtraViewImageAndText) {
   std::unique_ptr<views::View> extra_view(TestCreateExtraView());
   ASSERT_TRUE(extra_view);
   EXPECT_EQ("View", std::string(extra_view->GetClassName()));
-  EXPECT_EQ(2, extra_view->child_count());
+  ASSERT_EQ(2u, extra_view->children().size());
 
   for (int i = 0; i < 2; i++) {
     const views::View* v = extra_view->child_at(i);

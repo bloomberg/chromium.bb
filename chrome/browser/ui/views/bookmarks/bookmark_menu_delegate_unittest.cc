@@ -144,7 +144,7 @@ TEST_F(BookmarkMenuDelegateTest, VerifyLazyLoad) {
   views::MenuItemView* root_item = bookmark_menu_delegate_->menu();
   ASSERT_TRUE(root_item->HasSubmenu());
   EXPECT_EQ(4u, root_item->GetSubmenu()->GetMenuItems().size());
-  EXPECT_EQ(5, root_item->GetSubmenu()->child_count());  // Includes separator.
+  EXPECT_EQ(5u, root_item->GetSubmenu()->children().size());  // + separator
   views::MenuItemView* f1_item = root_item->GetSubmenu()->GetMenuItemAt(1);
   ASSERT_TRUE(f1_item->HasSubmenu());
   // f1 hasn't been loaded yet.
