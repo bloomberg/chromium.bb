@@ -33,9 +33,8 @@ Referrer Referrer::SanitizeForRequest(const GURL& request,
     sanitized_referrer.policy = network::mojom::ReferrerPolicy::kNever;
   }
 
-  bool is_web_scheme = request.SchemeIsHTTPOrHTTPS() || request.IsAboutBlank();
-
-  if (!is_web_scheme || !sanitized_referrer.url.SchemeIsValidForReferrer()) {
+  if (!request.SchemeIsHTTPOrHTTPS() ||
+      !sanitized_referrer.url.SchemeIsValidForReferrer()) {
     sanitized_referrer.url = GURL();
     return sanitized_referrer;
   }

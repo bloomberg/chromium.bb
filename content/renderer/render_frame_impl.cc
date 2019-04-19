@@ -6508,39 +6508,29 @@ void RenderFrameImpl::BeginNavigation(
     for (auto& observer : observers_)
       observer.DidStartNavigation(url, info->navigation_type);
 
-    // First navigation in a frame to an empty document must be handled
-    // synchronously.
-    bool is_first_real_empty_document_navigation =
-        WebDocumentLoader::WillLoadUrlAsEmpty(url) &&
-        !frame_->HasCommittedFirstRealLoad();
+    // Navigations which require network request should be sent to the browser.
+    if (!use_archive && IsURLHandledByNetworkStack(url)) {
+      BeginNavigationInternal(std::move(info));
+      return;
+    }
 
-    if (is_first_real_empty_document_navigation) {
+    // First navigaiton in a frame to an empty document must be handled
+    // synchronously.
+    if (WebDocumentLoader::WillLoadUrlAsEmpty(url) &&
+        !frame_->HasCommittedFirstRealLoad()) {
       CommitSyncNavigation(std::move(info));
       return;
     }
 
-    // Navigation to about:srcdoc or to an MHTML archive don't need to consult
-    // the browser. The document content is already available in the renderer
-    // process.
-    // TODO(arthursonzogni): Remove this. Everything should use the default code
-    // path and be driven by the browser process.
-    if (use_archive || url == content::kAboutSrcDocURL) {
-      if (!frame_->CreatePlaceholderDocumentLoader(*info, BuildDocumentState()))
-        return;
-      // Only the first navigation in a frame to an empty document must be
-      // handled synchronously, the others are required to happen
-      // asynchronously. So a PostTask is used.
-      sync_navigation_callback_.Reset(
-          base::BindOnce(&RenderFrameImpl::CommitSyncNavigation,
-                         weak_factory_.GetWeakPtr(), base::Passed(&info)));
-      frame_->GetTaskRunner(blink::TaskType::kInternalLoading)
-          ->PostTask(FROM_HERE, sync_navigation_callback_.callback());
+    // Everything else (does not require networking, not an empty document)
+    // will be committed asynchronously in the renderer.
+    if (!frame_->CreatePlaceholderDocumentLoader(*info, BuildDocumentState()))
       return;
-    }
-
-    // Everything else is handled asynchronously by the browser process through
-    // BeginNavigation.
-    BeginNavigationInternal(std::move(info));
+    sync_navigation_callback_.Reset(
+        base::BindOnce(&RenderFrameImpl::CommitSyncNavigation,
+                       weak_factory_.GetWeakPtr(), base::Passed(&info)));
+    frame_->GetTaskRunner(blink::TaskType::kInternalLoading)
+        ->PostTask(FROM_HERE, sync_navigation_callback_.callback());
     return;
   }
 
