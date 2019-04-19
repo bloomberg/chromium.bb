@@ -984,6 +984,8 @@ template <typename C>
 Status AppendString8EntryToCBORMapTmpl(span<uint8_t> string8_key,
                                        span<uint8_t> string8_value,
                                        C* cbor) {
+  // Careful below: Don't compare (*cbor)[idx] with a uint8_t, since
+  // it could be a char (signed!). Instead, use bytes.
   span<uint8_t> bytes(reinterpret_cast<const uint8_t*>(cbor->data()),
                       cbor->size());
   CBORTokenizer tokenizer(bytes);
@@ -998,7 +1000,7 @@ Status AppendString8EntryToCBORMapTmpl(span<uint8_t> string8_key,
   if (envelope_size == 0 ||
       (tokenizer.GetEnvelopeContents()[0] != EncodeIndefiniteLengthMapStart()))
     return Status(Error::CBOR_MAP_START_EXPECTED, kEncodedEnvelopeHeaderSize);
-  if (cbor->back() != EncodeStop())
+  if (bytes[bytes.size() - 1] != EncodeStop())
     return Status(Error::CBOR_MAP_STOP_EXPECTED, cbor->size() - 1);
   cbor->pop_back();
   EncodeString8(string8_key, cbor);
