@@ -180,7 +180,7 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
   void ClearActivation() { user_activation_state_.Clear(); }
 
   // Transfers user activation state from |other| frame into |this|.
-  void TransferActivationFrom(Frame* other);
+  void TransferUserActivationFrom(Frame* other);
 
   void SetDocumentHasReceivedUserGestureBeforeNavigation(bool value) {
     has_received_user_gesture_before_nav_ = value;

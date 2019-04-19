@@ -1435,6 +1435,10 @@ IPC_MESSAGE_ROUTED2(FrameHostMsg_UpdateRenderThrottlingStatus,
 IPC_MESSAGE_ROUTED1(FrameHostMsg_UpdateUserActivationState,
                     blink::UserActivationUpdateType /* type of state update */)
 
+// Transfers user activation state from the source frame to the current frame.
+IPC_MESSAGE_ROUTED1(FrameMsg_TransferUserActivationFrom,
+                    int /* source_routing_id */)
+
 // Indicates that this frame received a user gesture on a previous navigation on
 // the same eTLD+1. This ensures the state is propagated to any remote frames.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_SetHasReceivedUserGestureBeforeNavigation,

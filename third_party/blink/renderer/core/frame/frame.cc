@@ -225,7 +225,7 @@ void Frame::ClearUserActivationInLocalTree() {
     node->user_activation_state_.Clear();
 }
 
-void Frame::TransferActivationFrom(Frame* other) {
+void Frame::TransferUserActivationFrom(Frame* other) {
   if (other)
     user_activation_state_.TransferFrom(other->user_activation_state_);
 }

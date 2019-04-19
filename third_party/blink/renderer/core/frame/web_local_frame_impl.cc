@@ -2301,7 +2301,7 @@ void WebLocalFrameImpl::DispatchMessageEventWithOriginCheck(
     source_frame = msg_event->source()->ToDOMWindow()->GetFrame();
   if (RuntimeEnabledFeatures::UserActivationPostMessageTransferEnabled() &&
       msg_event->transferUserActivation()) {
-    GetFrame()->TransferActivationFrom(source_frame);
+    GetFrame()->TransferUserActivationFrom(source_frame);
   }
 
   GetFrame()->DomWindow()->DispatchMessageEventWithOriginCheck(
