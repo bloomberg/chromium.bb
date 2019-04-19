@@ -808,14 +808,27 @@ Affects:
     libavformat/mov.c
 
 ------------------------------------------------------------------
-commit d88e4cd33cd337ce665cebf296324fc5d845df1f
+commit 3078a25b14e810523f9d78988ee9ecb04e1b46cd
 Author: Dan Sanders <sandersd@chromium.org>
-Date:   Thu Apr 18 17:12:46 2019 -0700
+Date:   Fri Apr 19 11:28:10 2019 -0700
 
     avformat/apetag: tag values are unsigned
 
     Bug: 895652
+    Change-Id: I9d78ff73f6fd0224b726c6fbc96d0814e6278f68
+    Reviewed-on: https://chromium-review.googlesource.com/c/chromium/third_party/ffmpeg/+/1574406
+    Reviewed-by: Chrome Cunningham <chcunningham@chromium.org>
 
 Affects:
     libavformat/apetag.c
+
+------------------------------------------------------------------
+commit 88c07c9c7146556b172833cd39a2d666541ba8e9
+Author: Dan Sanders <sandersd@chromium.org>
+Date:   Fri Apr 19 14:43:13 2019 -0700
+
+    Fix.
+
+Affects:
+    libavformat/mov.c
 
