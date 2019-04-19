@@ -28,10 +28,10 @@ Polymer({
   },
 
   /**
-   * Timeout used to delay processing of the input, in ms.
-   * @private {?number}
+   * The last search query.
+   * @private {string}
    */
-  timeout_: null,
+  lastString_: '',
 
   /** @return {!HTMLInputElement} */
   getSearchInput: function() {
@@ -44,16 +44,20 @@ Polymer({
    */
   onSearchChanged_: function(e) {
     const safeQueryString = e.detail.trim().replace(SANITIZE_REGEX, '\\$&');
-    const safeQuery = safeQueryString.length > 0 ?
+    if (safeQueryString === this.lastString_) {
+      return;
+    }
+
+    this.lastString_ = safeQueryString;
+    this.searchQuery = safeQueryString.length > 0 ?
         new RegExp(`(${safeQueryString})`, 'i') :
         null;
-    if (this.timeout_) {
-      clearTimeout(this.timeout_);
-    }
-    this.timeout_ = setTimeout(() => {
-      this.searchQuery = safeQuery;
-      this.timeout_ = null;
-    }, 150);
+  },
+
+  /** @private */
+  onClearClick_: function() {
+    this.setValue('');
+    this.$.searchInput.focus();
   },
 });
 })();
