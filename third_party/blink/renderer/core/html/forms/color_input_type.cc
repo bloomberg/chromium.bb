@@ -112,7 +112,7 @@ bool ColorInputType::SupportsRequired() const {
 String ColorInputType::SanitizeValue(const String& proposed_value) const {
   if (!IsValidColorString(proposed_value))
     return "#000000";
-  return proposed_value.DeprecatedLower();
+  return proposed_value.LowerASCII();
 }
 
 Color ColorInputType::ValueAsColor() const {
