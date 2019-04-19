@@ -12215,6 +12215,13 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MobileRecentTabManagerOpenAllTabsFromOtherDevice">
+  <owner>sczs@chromium.org</owner>
+  <description>
+    The user has selected to Open all tabs from other device in Recent Tabs.
+  </description>
+</action>
+
 <action name="MobileRecentTabManagerRecentTabOpened">
   <owner>finkm@chromium.org</owner>
   <description>
