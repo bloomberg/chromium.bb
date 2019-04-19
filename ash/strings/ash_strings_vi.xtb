@@ -108,11 +108,11 @@
 <translation id="255671100581129685">Bạn không thể sử dụng Trợ lý Google trong phiên công khai.</translation>
 <translation id="2575685495496069081">Đã tắt tính năng đăng nhập nhiều tài khoản</translation>
 <translation id="2582112259361606227">Khởi động lại để cập nhật</translation>
-<translation id="2597972630681408282">Chế độ ánh sáng ban đêm: <ph name="NIGHT_LIGHT_STATUS" /></translation>
+<translation id="2597972630681408282">Ánh sáng đêm: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">Thẻ SIM bị khóa</translation>
 <translation id="2653659639078652383">Gửi</translation>
 <translation id="2700493154570097719">Đặt bàn phím</translation>
-<translation id="2718395828230677721">Chế độ ánh sáng ban đêm</translation>
+<translation id="2718395828230677721">Ánh sáng đêm</translation>
 <translation id="2727977024730340865">Được cắm vào bộ sạc công suất thấp. Việc sạc pin có thể không được đảm bảo.</translation>
 <translation id="2761704814324807722">Khay trạng thái, thời gian <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">Đang kết nối lại với <ph name="NAME" /></translation>
@@ -326,7 +326,7 @@
 <translation id="6284232397434400372">Đã thay đổi độ phân giải</translation>
 <translation id="6297287540776456956">Sử dụng bút cảm ứng để chọn một vùng</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> đã được xoay vòng sang <ph name="ROTATION" /></translation>
-<translation id="6344698853700675736">Bật/tắt Chế độ ánh sáng ban đêm</translation>
+<translation id="6344698853700675736">Bật/tắt Ánh sáng đêm</translation>
 <translation id="6376931439017688372">Bluetooth đang bật</translation>
 <translation id="639644700271529076">CAPS LOCK tắt</translation>
 <translation id="6406704438230478924">altgr</translation>
@@ -376,7 +376,7 @@
 <translation id="7067196344162293536">Tự động xoay</translation>
 <translation id="7068360136237591149">Mở tệp</translation>
 <translation id="7076293881109082629">Đăng nhập</translation>
-<translation id="7092922358121866860">Hiển thị các tùy chọn cài đặt Chế độ ánh sáng ban đêm</translation>
+<translation id="7092922358121866860">Hiển thị các tùy chọn cài đặt Ánh sáng đêm</translation>
 <translation id="7098389117866926363">Thiết bị USB-C (cổng bên trái ở phía sau)</translation>
 <translation id="7131634465328662194">Bạn sẽ tự động bị đăng xuất.</translation>
 <translation id="7143207342074048698">Đang kết nối</translation>

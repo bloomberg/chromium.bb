@@ -126,7 +126,7 @@
 <translation id="1846771122725914429">ब्लूटूथ ब्रेल डिसप्ले</translation>
 <translation id="1865601187525349519">लेख का अंत</translation>
 <translation id="1876229593313240038">दस्तावेज़</translation>
-<translation id="188130072164734898">वर्तमान समय और दिनांक बोलें.</translation>
+<translation id="188130072164734898">वर्तमान समय और तारीख बोलें.</translation>
 <translation id="1902396333223336119">सेल</translation>
 <translation id="1903683160884433981">मध्यम बसंती हरा</translation>
 <translation id="1905379170753160525">शीर्षकों की सूची दिखाएं</translation>
@@ -160,7 +160,7 @@
         किए जा सकने वाले ब्रेल प्रदर्शन का आउटपुट की नकल प्रस्तुत करता है.</translation>
 <translation id="2163782704988363449">गलतियां</translation>
 <translation id="2169714232367507776">वर्तमान आइटम पर क्लिक करें</translation>
-<translation id="2179452035581866348">ChromeVox आपको आवश्यक और अतिरिक्त जानकारी देने के लिए ध्वनियों का उपयोग करता है. हर ध्वनि का क्या अर्थ है, इसे सीखकर आप अधिक तेज़ी से नेविगेट करने के लिए इन ध्वनियों का उपयोग कर सकते हैं. अपने आपको सहज महसूस करने पर आप बोली में विस्तृत विवरणों को बंद कर सकते हैं और पेज के बारे में आवश्‍यक जानकारी के लिए उन पर विश्वास कर सकते हैं. यहां ध्वनियों की पूरी सूची और उनके अर्थ दिए गए हैं.</translation>
+<translation id="2179452035581866348">ChromeVox आपको आवश्यक और अतिरिक्त जानकारी देने के लिए ध्वनियों का उपयोग करता है. हर ध्वनि का क्या अर्थ है, इसे सीखकर आप ज़्यादा तेज़ी से नेविगेट करने के लिए इन ध्वनियों का उपयोग कर सकते हैं. अपने आपको सहज महसूस करने पर आप बोली में विस्तृत विवरणों को बंद कर सकते हैं और पेज के बारे में आवश्‍यक जानकारी के लिए उन पर विश्वास कर सकते हैं. यहां ध्वनियों की पूरी सूची और उनके अर्थ दिए गए हैं.</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{बंद कोष्ठक}one{# बंद कोष्ठक}other{# बंद कोष्ठक}}</translation>
 <translation id="2197863150503783129">सैडल ब्राउन</translation>
 <translation id="2199994615414171367">पिछला गणित</translation>
@@ -175,7 +175,7 @@
 <translation id="2314393392395134769">सबस्क्रिप्ट नहीं है</translation>
 <translation id="2318372665160196757">मुख्य</translation>
 <translation id="2329324941084714723">टैब फलक</translation>
-<translation id="2344193891939537199">दिनांक समय नियंत्रण</translation>
+<translation id="2344193891939537199">तारीख समय नियंत्रण</translation>
 <translation id="2347456970887948350">लिंक</translation>
 <translation id="2359897517538099099">तालिका मोड में नहीं है.</translation>
 <translation id="2381733276052567791">बोली को चालू या बंद पर टॉगल करें</translation>
@@ -451,7 +451,7 @@
 <translation id="42164919740161077">हल्का स्लेटी नीला</translation>
 <translation id="4218529045364428769">{COUNT,plural, =1{डैश}one{# डैश}other{# डैश}}</translation>
 <translation id="421884353938374759">रंग पिकर</translation>
-<translation id="4229646983878045487">दिनांक समय</translation>
+<translation id="4229646983878045487">तारीख समय</translation>
 <translation id="4230834257931120629">हल्का स्लेटी</translation>
 <translation id="4231102694147661229">डेवलपर विकल्प चालू करें</translation>
 <translation id="423334822609210999">कोई बायां सेल नहीं.</translation>
@@ -461,7 +461,7 @@
 <translation id="4254798249533888099">ट्री</translation>
 <translation id="4255943572433203166">ChromeVox को कस्टमाइज़ करने के लिए नीचे दिए गए विकल्‍पों का उपयोग करें. बदलाव तुरंत लागू हो जाते हैं.</translation>
 <translation id="4271220233568730077">अगला गणित</translation>
-<translation id="4271521365602459209">और अधिक परिणाम नहीं.</translation>
+<translation id="4271521365602459209">और ज़्यादा परिणाम नहीं.</translation>
 <translation id="4275397969489577657">इवेंट स्ट्रीम में लॉग इन करना चालू करें</translation>
 <translation id="4281245629646759298">हल्का पीला</translation>
 <translation id="4287520460805643128">कोई अगला लेख नहीं.</translation>
@@ -472,7 +472,7 @@
 <translation id="4342180618051828363">{COUNT,plural, =1{बिंदु}=3{पदलोप चिह्न}one{# बिंदु}other{# बिंदु}}</translation>
 <translation id="4347461890115250064">कोई अगली सूची नहीं.</translation>
 <translation id="4367650418938037324">गणित ML लीफ़</translation>
-<translation id="4372435075475052704">न्यूनतम:<ph name="X" /></translation>
+<translation id="4372435075475052704">कम से कम:<ph name="X" /></translation>
 <translation id="4372705107434148843">बोली रोकें</translation>
 <translation id="4373197658375206385">कोई पिछला आइटम नहीं जो लिंक नहीं है.</translation>
 <translation id="4376316291247992553">ग्राफिक को ब्रेल के रूप में देखें</translation>
@@ -676,7 +676,7 @@
 <translation id="5729047866208036762">गणित के बारे में और जानने के लिए ऊपर, नीचे, बाएं या दाएं वाले तीर दबाएं.</translation>
 <translation id="5732189279857692565">यह दूसरा शीर्षक है. आगे बढ़ते रहें; Search+H या Search+Shift+H दबाएं</translation>
 <translation id="5748623122140342504">पिछला लेवल 5 का शीर्षक</translation>
-<translation id="5750633686117194034">कोई संशोधक नहीं दबाया गया; कृपया एक या अधिक संशोधक दबाकर रखें; पूर्ण हो जाने पर अपनी अंगुलियां उठा लें और आपको सुनाई देगा कि कुंजियां सेट हो गई हैं. बाहर निकलने के लिए टैब दबाएं.</translation>
+<translation id="5750633686117194034">कोई संशोधक नहीं दबाया गया; कृपया एक या ज़्यादा संशोधक दबाकर रखें; पूर्ण हो जाने पर अपनी अंगुलियां उठा लें और आपको सुनाई देगा कि कुंजियां सेट हो गई हैं. बाहर निकलने के लिए टैब दबाएं.</translation>
 <translation id="5760594853119905566">परिशिष्ट</translation>
 <translation id="5788275253279308023">गुप्‍त विंडो, <ph name="TITLE" />, टैब</translation>
 <translation id="5805940204952508776">दो उंगलियों से टैप करें</translation>
@@ -815,7 +815,7 @@
 <translation id="6871161210040114857">केस को अनदेखा करना.</translation>
 <translation id="6877435256196695200">कोई अगला ग्राफ़िक नहीं.</translation>
 <translation id="6897341342232909480">बाएं ले जाएं</translation>
-<translation id="6901540140423170855">दिनांक</translation>
+<translation id="6901540140423170855">तारीख</translation>
 <translation id="6910211073230771657">हटाया गया</translation>
 <translation id="6910969481785184048">चालू करें, बंद करें और रोकें</translation>
 <translation id="6911965441508464308">ऊपर कोई सेल नहीं.</translation>
@@ -1117,7 +1117,7 @@
 <translation id="8587549812518406253">अगला सूची आइटम</translation>
 <translation id="860150890330522909"><ph name="NAME" />, चेकबॉक्‍स चेक किया गया</translation>
 <translation id="8603071050456974042">ChromeVox फलक</translation>
-<translation id="8606621670302093223">दिनांक नियंत्रण</translation>
+<translation id="8606621670302093223">तारीख नियंत्रण</translation>
 <translation id="8613709718990529335">शोरबे जैसा रंग</translation>
 <translation id="8628186274519446680">टमाटर जैसा रंग</translation>
 <translation id="8631359288236106450">चयनित <ph name="COUNT" /> आइटम</translation>

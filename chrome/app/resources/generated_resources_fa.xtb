@@ -224,7 +224,7 @@
 <translation id="131364520783682672">Caps Lock</translation>
 <translation id="1313705515580255288">‏نشانک‌ها، سابقه و سایر تنظیماتتان با حساب Google شما همگام خواهند شد.</translation>
 <translation id="1314565355471455267">Android VPN</translation>
-<translation id="131461803491198646">شبکه اصلی، بدون رومینگ</translation>
+<translation id="131461803491198646">شبکه اصلی، بدون فراگردی</translation>
 <translation id="1316136264406804862">در حال جستجو...</translation>
 <translation id="1316495628809031177">همگام‌سازی موقتاً متوقف شده است</translation>
 <translation id="1322046419516468189">در <ph name="SAVED_PASSWORDS_STORE" /> گذرواژه‌های ذخیره‌شده‌تان را مشاهده و مدیریت کنید</translation>
@@ -2516,7 +2516,7 @@
 <translation id="479536056609751218">‏صفحهٔ وب، فقط HTML</translation>
 <translation id="4798236378408895261">‏پیوست <ph name="BEGIN_LINK" />گزارش‌های بلوتوث<ph name="END_LINK" /> (داخلی Google)</translation>
 <translation id="4801448226354548035">پنهان‌سازی حساب‌ها</translation>
-<translation id="4801512016965057443">اجازه دادن رومینگ داده تلفن همراه</translation>
+<translation id="4801512016965057443">اجازه دادن فراگردی داده تلفن همراه</translation>
 <translation id="4801956050125744859">حفظ هر دو</translation>
 <translation id="4804818685124855865">قطع اتصال</translation>
 <translation id="4807098396393229769">نام روی کارت</translation>
@@ -2815,7 +2815,7 @@
 <translation id="5247051749037287028">نام نمایشی (اختیاری)</translation>
 <translation id="5249624017678798539">مرورگر پیش از تکمیل بارگیری ناگهان خارج شد.</translation>
 <translation id="5250372599208556903"><ph name="SEARCH_ENGINE_NAME" /> از مکانتان برای ارائه محتوای محلی استفاده می‌کند. می‌توانید در <ph name="SETTINGS_LINK" /> آن را تغییر دهید.</translation>
-<translation id="5252456968953390977">رومینگ</translation>
+<translation id="5252456968953390977">فراگردی</translation>
 <translation id="5252653240322147470">کد پین باید کمتر از <ph name="MAXIMUM" /> رقم باشد</translation>
 <translation id="5253070652067921974">ایجاد شده توسط</translation>
 <translation id="5254368820972107711">نمایش فایل‌های موردنظر برای پاک کردن</translation>
@@ -5086,7 +5086,7 @@
 <translation id="8610103157987623234">قالب نادرست است، لطفاً دوباره امتحان کنید</translation>
 <translation id="8615618338313291042">برنامه ناشناس: <ph name="APP_NAME" /></translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME" />: <ph name="ERROR" /></translation>
-<translation id="8620617069779373398">وضعیت رومینگ</translation>
+<translation id="8620617069779373398">وضعیت فراگردی</translation>
 <translation id="8620765578342452535">پیکربندی اتصالات شبکه</translation>
 <translation id="8621866727807194849">‏نرم‌افزار مضری در رایانه‌تان وجود دارد. Chrome آن را برمی‌دارد، تنظیمات شما را بازنشانی می‌کند و افزونه‌ها را غیرفعال می‌کند. این کار باعث می‌شود مرورگرتان دوباره به‌طور معمول کار کند.</translation>
 <translation id="862542460444371744">&amp;برنامه های افزودنی</translation>

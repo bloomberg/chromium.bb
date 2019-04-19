@@ -232,7 +232,7 @@
 <translation id="453661520163887813">Fuldt opladet om <ph name="TIME" /></translation>
 <translation id="4544944664594876241">Genvejen til at låse skærmen er ændret. Brug <ph name="NEW_SHORTCUT" /> i stedet for <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4570957409596482333">Knap for Tekstoplæsning</translation>
-<translation id="4585337515783392668">Stop med at caste på en ukendt modtager</translation>
+<translation id="4585337515783392668">Stop cast på en ukendt modtager</translation>
 <translation id="4628757576491864469">Enheder</translation>
 <translation id="4659419629803378708">ChromeVox er aktiveret</translation>
 <translation id="4696813013609194136">Lås enheden op med forældrekode</translation>
@@ -438,7 +438,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="8030169304546394654">Afbrudt</translation>
 <translation id="8054466585765276473">Beregner batteritid.</translation>
 <translation id="8061464966246066292">Høj kontrast</translation>
-<translation id="8098591350844501178">Stop cast skærmen til <ph name="RECEIVER_NAME" /></translation>
+<translation id="8098591350844501178">Stop skærmcast til <ph name="RECEIVER_NAME" /></translation>
 <translation id="8113423164597455979">Aktiveret, alle apps</translation>
 <translation id="8132793192354020517">Forbundet til <ph name="NAME" /></translation>
 <translation id="813913629614996137">Initialiserer...</translation>

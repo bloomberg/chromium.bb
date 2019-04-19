@@ -40,13 +40,13 @@
 <translation id="1537254971476575106">फ़ुलस्क्रीन पर सामग्री को बड़ा दिखाने की सुविधा</translation>
 <translation id="15373452373711364">बड़ा माउस कर्सर</translation>
 <translation id="1546492247443594934">डेस्क 2</translation>
-<translation id="1550523713251050646">अधिक विकल्पों के लिए क्लिक करें</translation>
+<translation id="1550523713251050646">ज़्यादा विकल्पों के लिए क्लिक करें</translation>
 <translation id="1570871743947603115">ब्लूटूथ टॉगल करें. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">इस सत्र में अपनी सभी गतिविधि एक्सेस करें</translation>
 <translation id="1608626060424371292">इस उपयोगकर्ता को हटाएं</translation>
 <translation id="1621499497873603021">बैटरी के खाली होने में शेष समय, <ph name="TIME_LEFT" /></translation>
 <translation id="1654477262762802994">बोलकर खोजना शुरू करें</translation>
-<translation id="1658406695958299976">माफ़ करें, आपके पासवर्ड की अभी भी पुष्टि नहीं हो पाई है. नोट: अगर आपने हाल ही में अपना पासवर्ड बदला है, तो आपके साइन आउट होते ही आपका नया पासवर्ड लागू हो जाएगा, कृपया यहां पुराने पासवर्ड का इस्तेमाल करें.</translation>
+<translation id="1658406695958299976">माफ़ करें, आपके पासवर्ड की अब भी पुष्टि नहीं हो पाई है. नोट: अगर आपने हाल ही में अपना पासवर्ड बदला है, तो आपके साइन आउट होते ही आपका नया पासवर्ड लागू हो जाएगा, कृपया यहां पुराने पासवर्ड का इस्तेमाल करें.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> शेष</translation>
 <translation id="1698760176351776263">IPv6 पता: <ph name="ADDRESS" /></translation>
 <translation id="1743570585616704562">उंगली की पहचान नहीं हो सकी</translation>
@@ -156,7 +156,7 @@
 <translation id="3236488194889173876">कोई मोबाइल नेटवर्क उपलब्ध नहीं</translation>
 <translation id="3255483164551725916">तुम क्या-क्या कर सकती हो?</translation>
 <translation id="3294437725009624529">अतिथि</translation>
-<translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> अभी भी बाद में साइन इन कर सकते हैं.</translation>
+<translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> अब भी बाद में साइन इन कर सकते हैं.</translation>
 <translation id="3321628682574733415">माता-पिता वाला कोड गलत है</translation>
 <translation id="332587331255250389">कृपया बैटरी बदलें</translation>
 <translation id="3351879221545518001">आप इस समय स्क्रीन कास्ट कर रहे हैं.</translation>
@@ -373,7 +373,7 @@
 <translation id="7025533177575372252">अपने <ph name="DEVICE_NAME" /> को अपने फ़ोन से कनेक्ट करें</translation>
 <translation id="7029814467594812963">सत्र से बाहर निकलें</translation>
 <translation id="7066646422045619941">यह नेटवर्क आपके व्यवस्थापक द्वारा अक्षम किया गया है.</translation>
-<translation id="7067196344162293536">स्वत: घुमाएं</translation>
+<translation id="7067196344162293536">अपने आप घूमना</translation>
 <translation id="7068360136237591149">फ़ाइल खोलो</translation>
 <translation id="7076293881109082629">प्रवेश किया जा रहा है...</translation>
 <translation id="7092922358121866860">नाइट लाइट की सेटिंग दिखाएं</translation>
