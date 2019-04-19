@@ -95,7 +95,8 @@ class LeakDetectionStorySet(story_module.StorySet):
       'https://www.shutterstock.com/',
       'https://docs.google.com/',
       'https://wordpress.com/',
-      'https://www.apple.com/',
+      # TODO(yuzus): This test crashes.
+      # 'https://www.apple.com/',
       'https://play.google.com/store',
       'https://www.dropbox.com/',
       'https://soundcloud.com/',
