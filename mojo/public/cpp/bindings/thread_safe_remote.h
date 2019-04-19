@@ -1,0 +1,195 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef MOJO_PUBLIC_CPP_BINDINGS_THREAD_SAFE_REMOTE_H_
+#define MOJO_PUBLIC_CPP_BINDINGS_THREAD_SAFE_REMOTE_H_
+
+#include <memory>
+
+#include "base/bind.h"
+#include "base/macros.h"
+#include "base/memory/ptr_util.h"
+#include "base/memory/ref_counted.h"
+#include "base/stl_util.h"
+#include "base/synchronization/waitable_event.h"
+#include "base/task_runner.h"
+#include "base/threading/sequenced_task_runner_handle.h"
+#include "mojo/public/cpp/bindings/associated_group.h"
+#include "mojo/public/cpp/bindings/associated_interface_ptr.h"
+#include "mojo/public/cpp/bindings/interface_ptr.h"
+#include "mojo/public/cpp/bindings/message.h"
+#include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/bindings/sync_call_restrictions.h"
+#include "mojo/public/cpp/bindings/sync_event_watcher.h"
+#include "mojo/public/cpp/bindings/thread_safe_interface_ptr.h"
+
+// ThreadSafeRemote wraps a non-thread-safe Remote and proxies messages to it.
+// Async calls are posted to the sequence that the Remote is bound to, and the
+// responses are posted back to the calling sequence. Sync calls are dispatched
+// directly if the call is made on the sequence that the wrapped Remote is bound
+// to, or posted otherwise. It's important to be aware that sync calls block
+// both the calling sequence and the Remote sequence. That means that you cannot
+// make sync calls through a ThreadSafeRemote if the underlying Remote is bound
+// to a sequence that cannot block, like the IPC thread.
+
+namespace mojo {
+
+template <typename RemoteType>
+class ThreadSafeRemoteBase
+    : public base::RefCountedThreadSafe<ThreadSafeRemoteBase<RemoteType>> {
+ public:
+  using InterfaceType = typename RemoteType::InterfaceType;
+  using PendingType = typename RemoteType::PendingType;
+
+  explicit ThreadSafeRemoteBase(
+      std::unique_ptr<ThreadSafeForwarder<InterfaceType>> forwarder)
+      : forwarder_(std::move(forwarder)) {}
+
+  // Creates a ThreadSafeRemoteBase wrapping an underlying non-thread-safe
+  // RemoteType which is bound to the calling sequence. All messages sent
+  // via this thread-safe proxy will internally be sent by first posting to this
+  // (the calling) sequence's TaskRunner.
+  static scoped_refptr<ThreadSafeRemoteBase> Create(RemoteType remote) {
+    scoped_refptr<RemoteWrapper> wrapper = new RemoteWrapper(std::move(remote));
+    return new ThreadSafeRemoteBase(wrapper->CreateForwarder());
+  }
+
+  // Creates a ThreadSafeRemoteBase which binds the underlying
+  // non-thread-safe InterfacePtrType on the specified TaskRunner. All messages
+  // sent via this thread-safe proxy will internally be sent by first posting to
+  // that TaskRunner.
+  static scoped_refptr<ThreadSafeRemoteBase> Create(
+      PendingType pending_remote,
+      scoped_refptr<base::SequencedTaskRunner> bind_task_runner) {
+    scoped_refptr<RemoteWrapper> wrapper =
+        new RemoteWrapper(std::move(bind_task_runner));
+    wrapper->BindOnTaskRunner(std::move(pending_remote));
+    return new ThreadSafeRemoteBase(wrapper->CreateForwarder());
+  }
+
+  InterfaceType* get() { return &forwarder_->proxy(); }
+  InterfaceType* operator->() { return get(); }
+  InterfaceType& operator*() { return *get(); }
+
+ private:
+  friend class base::RefCountedThreadSafe<ThreadSafeRemoteBase<RemoteType>>;
+
+  struct RemoteWrapperDeleter;
+
+  // Helper class which owns a |RemoteType| instance on an appropriate sequence.
+  // This is kept alive as long as it's bound within some ThreadSafeForwarder's
+  // callbacks.
+  class RemoteWrapper
+      : public base::RefCountedThreadSafe<RemoteWrapper, RemoteWrapperDeleter> {
+   public:
+    explicit RemoteWrapper(RemoteType remote)
+        : RemoteWrapper(base::SequencedTaskRunnerHandle::Get()) {
+      remote_ = std::move(remote);
+      associated_group_ = *remote_.internal_state()->associated_group();
+    }
+
+    explicit RemoteWrapper(scoped_refptr<base::SequencedTaskRunner> task_runner)
+        : task_runner_(std::move(task_runner)) {}
+
+    void BindOnTaskRunner(PendingRemote<InterfaceType> remote) {
+      // TODO(https://crbug.com/682334): At the moment we don't have a group
+      // controller available. That means the user won't be able to pass
+      // associated endpoints on this interface (at least not immediately). In
+      // order to fix this, we need to create a MultiplexRouter immediately and
+      // bind it to the interface pointer on the |task_runner_|. Therefore,
+      // MultiplexRouter should be able to be created on a sequence different
+      // than the one that it is supposed to listen on.
+      task_runner_->PostTask(
+          FROM_HERE,
+          base::BindOnce(&RemoteWrapper::Bind, this, std::move(remote)));
+    }
+
+    std::unique_ptr<ThreadSafeForwarder<InterfaceType>> CreateForwarder() {
+      return std::make_unique<ThreadSafeForwarder<InterfaceType>>(
+          task_runner_, base::BindRepeating(&RemoteWrapper::Accept, this),
+          base::BindRepeating(&RemoteWrapper::AcceptWithResponder, this),
+          associated_group_);
+    }
+
+   private:
+    friend struct RemoteWrapperDeleter;
+
+    ~RemoteWrapper() {}
+
+    void Bind(PendingType remote) {
+      DCHECK(task_runner_->RunsTasksInCurrentSequence());
+      remote_.Bind(std::move(remote));
+    }
+
+    void Accept(Message message) {
+      remote_.internal_state()->ForwardMessage(std::move(message));
+    }
+
+    void AcceptWithResponder(Message message,
+                             std::unique_ptr<MessageReceiver> responder) {
+      remote_.internal_state()->ForwardMessageWithResponder(
+          std::move(message), std::move(responder));
+    }
+
+    void DeleteOnCorrectThread() const {
+      if (!task_runner_->RunsTasksInCurrentSequence()) {
+        // NOTE: This is only called when there are no more references to
+        // |this|, so binding it unretained is both safe and necessary.
+        task_runner_->PostTask(
+            FROM_HERE, base::BindOnce(&RemoteWrapper::DeleteOnCorrectThread,
+                                      base::Unretained(this)));
+      } else {
+        delete this;
+      }
+    }
+
+    RemoteType remote_;
+    const scoped_refptr<base::SequencedTaskRunner> task_runner_;
+    AssociatedGroup associated_group_;
+
+    DISALLOW_COPY_AND_ASSIGN(RemoteWrapper);
+  };
+
+  struct RemoteWrapperDeleter {
+    static void Destruct(const RemoteWrapper* wrapper) {
+      wrapper->DeleteOnCorrectThread();
+    }
+  };
+
+  ~ThreadSafeRemoteBase() {}
+
+  const std::unique_ptr<ThreadSafeForwarder<InterfaceType>> forwarder_;
+
+  DISALLOW_COPY_AND_ASSIGN(ThreadSafeRemoteBase);
+};
+
+template <typename Interface>
+class ThreadSafeRemote {
+ public:
+  ThreadSafeRemote() = default;
+  ThreadSafeRemote(PendingRemote<Interface> pending_remote)
+      : ThreadSafeRemote(std::move(pending_remote),
+                         base::SequencedTaskRunnerHandle::Get()) {}
+  ThreadSafeRemote(PendingRemote<Interface> pending_remote,
+                   scoped_refptr<base::SequencedTaskRunner> bind_task_runner)
+      : remote_(pending_remote.is_valid()
+                    ? ThreadSafeRemoteBase<Remote<Interface>>::Create(
+                          std::move(pending_remote),
+                          std::move(bind_task_runner))
+                    : nullptr) {}
+
+  bool is_bound() const { return remote_ != nullptr; }
+  explicit operator bool() const { return is_bound(); }
+
+  Interface* get() const { return remote_->get(); }
+  Interface* operator->() const { return get(); }
+  Interface& operator*() const { return *get(); }
+
+ private:
+  scoped_refptr<ThreadSafeRemoteBase<Remote<Interface>>> remote_;
+};
+
+}  // namespace mojo
+
+#endif  // MOJO_PUBLIC_CPP_BINDINGS_THREAD_SAFE_REMOTE_H_

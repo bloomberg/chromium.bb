@@ -128,7 +128,6 @@ class Receiver {
   // disconnection notifications on the default SequencedTaskRunner (i.e.
   // base::SequencedTaskRunnerHandle::Get() at the time of this call).
   void Bind(PendingReceiver<Interface> pending_receiver) {
-    DCHECK(pending_receiver.is_valid());
     Bind(std::move(pending_receiver), nullptr);
   }
 
@@ -139,7 +138,10 @@ class Receiver {
   // Receiver.
   void Bind(PendingReceiver<Interface> pending_receiver,
             scoped_refptr<base::SequencedTaskRunner> task_runner) {
-    internal_state_.Bind(pending_receiver.PassPipe(), std::move(task_runner));
+    if (pending_receiver)
+      internal_state_.Bind(pending_receiver.PassPipe(), std::move(task_runner));
+    else
+      reset();
   }
 
   // Unbinds this Receiver, preventing any further |impl| method calls or
@@ -156,7 +158,7 @@ class Receiver {
   // response callbacks that haven't been invoked, as once the Receiver is
   // unbound those response callbacks are no longer valid and the Remote will
   // never be able to receive its expected responses.
-  PendingReceiver<Interface> Unbind() {
+  PendingReceiver<Interface> Unbind() WARN_UNUSED_RESULT {
     CHECK(!internal_state_.HasAssociatedInterfaces());
     return PendingReceiver<Interface>(
         internal_state_.Unbind().PassMessagePipe());

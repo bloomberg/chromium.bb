@@ -494,11 +494,14 @@ class PendingRemote(ReferenceKind):
   ReferenceKind.AddSharedProperty('kind')
 
   def __init__(self, kind=None):
-    if not isinstance(kind, Interface):
-      raise Exception(
-          'pending_remote<T> requires T to be an interface type. Got %r' %
-          kind.spec)
-    ReferenceKind.__init__(self, 'rmt:' + kind.spec)
+    if kind is not None:
+      if not isinstance(kind, Interface):
+        raise Exception(
+            'pending_remote<T> requires T to be an interface type. Got %r' %
+            kind.spec)
+      ReferenceKind.__init__(self, 'rmt:' + kind.spec)
+    else:
+      ReferenceKind.__init__(self)
     self.kind = kind
 
 
@@ -506,11 +509,14 @@ class PendingReceiver(ReferenceKind):
   ReferenceKind.AddSharedProperty('kind')
 
   def __init__(self, kind=None):
-    if not isinstance(kind, Interface):
-      raise Exception(
-          'pending_receiver<T> requires T to be an interface type. Got %r' %
-          kind.spec)
-    ReferenceKind.__init__(self, 'rcv:' + kind.spec)
+    if kind is not None:
+      if not isinstance(kind, Interface):
+        raise Exception(
+            'pending_receiver<T> requires T to be an interface type. Got %r' %
+            kind.spec)
+      ReferenceKind.__init__(self, 'rcv:' + kind.spec)
+    else:
+      ReferenceKind.__init__(self)
     self.kind = kind
 
 

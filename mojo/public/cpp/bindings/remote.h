@@ -57,12 +57,13 @@ namespace mojo {
 template <typename Interface>
 class Remote {
  public:
+  using InterfaceType = Interface;
+  using PendingType = PendingRemote<Interface>;
+
   // Constructs an unbound Remote. This object cannot issue Interface method
   // calls and does not schedule any tasks.
   Remote() = default;
-  Remote(Remote&& other) noexcept {
-    internal_state_.Swap(&other.internal_state_);
-  }
+  Remote(Remote&& other) noexcept { *this = std::move(other); }
 
   // Constructs a new Remote which is bound from |pending_remote| and which
   // schedules response callbacks and disconnection notifications on the default
@@ -77,11 +78,15 @@ class Remote {
   // this Remote.
   Remote(PendingRemote<Interface> pending_remote,
          scoped_refptr<base::SequencedTaskRunner> task_runner) {
-    DCHECK(pending_remote.is_valid());
     Bind(std::move(pending_remote), std::move(task_runner));
   }
 
   ~Remote() = default;
+
+  Remote& operator=(Remote&& other) noexcept {
+    internal_state_.Swap(&other.internal_state_);
+    return *this;
+  }
 
   // Exposes access to callable Interface methods directed at this Remote's
   // receiver. Must only be called on a bound Remote.
@@ -104,6 +109,7 @@ class Remote {
   // methods, it is always safe to assume that a Remote you've bound will remain
   // bound and callable.
   bool is_bound() const { return internal_state_.is_bound(); }
+  explicit operator bool() const { return is_bound(); }
 
   // Indicates whether this Remote is connected to a receiver. Must only be
   // called on a bound Remote. If this returns |true|, method calls made by this
@@ -144,6 +150,13 @@ class Remote {
     internal_state_.Swap(&doomed_state);
   }
 
+  // Similar to the method above, but also specifies a disconnect reason.
+  void ResetWithReason(uint32_t custom_reason, const std::string& description) {
+    if (internal_state_.is_bound())
+      internal_state_.CloseWithReason(custom_reason, description);
+    reset();
+  }
+
   // Binds this Remote, connecting it to a new PendingReceiver which is
   // returned for transmission to some Receiver which can bind it. The Remote
   // will schedule any response callbacks or disconnection notifications on the
@@ -182,6 +195,11 @@ class Remote {
   void Bind(PendingRemote<Interface> pending_remote,
             scoped_refptr<base::SequencedTaskRunner> task_runner) {
     DCHECK(!is_bound()) << "Remote is already bound";
+    if (!pending_remote) {
+      reset();
+      return;
+    }
+
     internal_state_.Bind(InterfacePtrInfo<Interface>(pending_remote.PassPipe(),
                                                      pending_remote.version()),
                          std::move(task_runner));
@@ -206,11 +224,16 @@ class Remote {
   // Must only be called on a bound Remote.
   PendingRemote<Interface> Unbind() WARN_UNUSED_RESULT {
     DCHECK(is_bound());
-    CHECK(!internal_state_.has_unbound_callbacks());
+    CHECK(!internal_state_.has_pending_callbacks());
     State state;
     internal_state_.Swap(&state);
     InterfacePtrInfo<Interface> info = state.PassInterface();
     return PendingRemote<Interface>(info.PassHandle(), info.version());
+  }
+
+  // DO NOT USE. Exposed only for internal use and for testing.
+  internal::InterfacePtrState<Interface>* internal_state() {
+    return &internal_state_;
   }
 
  private:
