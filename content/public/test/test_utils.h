@@ -290,12 +290,14 @@ class InProcessUtilityThreadHelper : public BrowserChildProcessObserver {
   ~InProcessUtilityThreadHelper() override;
 
  private:
-  void BrowserChildProcessHostConnected(const ChildProcessData& data) override;
+  void JoinAllUtilityThreads();
+  void CheckHasRunningChildProcess();
+  static void CheckHasRunningChildProcessOnIO(
+      const base::RepeatingClosure& quit_closure);
   void BrowserChildProcessHostDisconnected(
       const ChildProcessData& data) override;
 
-  int child_thread_count_;
-  std::unique_ptr<base::RunLoop> run_loop_;
+  base::RepeatingClosure quit_closure_;
   std::unique_ptr<TestServiceManagerContext> shell_context_;
 
   DISALLOW_COPY_AND_ASSIGN(InProcessUtilityThreadHelper);

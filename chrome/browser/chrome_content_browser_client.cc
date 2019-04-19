@@ -256,6 +256,7 @@
 #include "components/services/heap_profiling/heap_profiling_service.h"
 #include "components/services/heap_profiling/public/cpp/settings.h"
 #include "components/services/heap_profiling/public/mojom/constants.mojom.h"
+#include "components/services/patch/public/interfaces/constants.mojom.h"
 #include "components/services/unzip/public/interfaces/constants.mojom.h"
 #include "components/signin/core/browser/account_consistency_method.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
@@ -461,7 +462,6 @@
 #include "chrome/browser/ui/passwords/google_password_manager_navigation_throttle.h"
 #include "chrome/browser/ui/search/new_tab_page_navigation_throttle.h"
 #include "chrome/common/importer/profile_import.mojom.h"
-#include "components/services/patch/public/interfaces/constants.mojom.h"
 #endif  //  !defined(OS_ANDROID)
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || \
@@ -3952,10 +3952,8 @@ void ChromeContentBrowserClient::RegisterOutOfProcessServices(
       &l10n_util::GetStringUTF16, IDS_UTILITY_PROCESS_FILE_UTILITY_NAME);
 #endif
 
-#if !defined(OS_ANDROID)
   (*services)[patch::mojom::kServiceName] = base::BindRepeating(
       &l10n_util::GetStringUTF16, IDS_UTILITY_PROCESS_PATCH_NAME);
-#endif
 
   (*services)[unzip::mojom::kServiceName] = base::BindRepeating(
       &l10n_util::GetStringUTF16, IDS_UTILITY_PROCESS_UNZIP_NAME);

@@ -324,34 +324,49 @@ void WindowedNotificationObserver::Observe(int type,
 }
 
 InProcessUtilityThreadHelper::InProcessUtilityThreadHelper()
-    : child_thread_count_(0), shell_context_(new TestServiceManagerContext) {
+    : shell_context_(new TestServiceManagerContext) {
   RenderProcessHost::SetRunRendererInProcess(true);
-  BrowserChildProcessObserver::Add(this);
 }
 
 InProcessUtilityThreadHelper::~InProcessUtilityThreadHelper() {
-  if (child_thread_count_) {
-    DCHECK(BrowserThread::IsThreadInitialized(BrowserThread::UI));
-    DCHECK(BrowserThread::IsThreadInitialized(BrowserThread::IO));
-    run_loop_.reset(new base::RunLoop);
-    run_loop_->Run();
-  }
-  BrowserChildProcessObserver::Remove(this);
+  JoinAllUtilityThreads();
   RenderProcessHost::SetRunRendererInProcess(false);
 }
 
-void InProcessUtilityThreadHelper::BrowserChildProcessHostConnected(
-    const ChildProcessData& data) {
-  child_thread_count_++;
+void InProcessUtilityThreadHelper::JoinAllUtilityThreads() {
+  base::RunLoop run_loop;
+  quit_closure_ = run_loop.QuitClosure();
+
+  BrowserChildProcessObserver::Add(this);
+  CheckHasRunningChildProcess();
+  run_loop.Run();
+  BrowserChildProcessObserver::Remove(this);
+}
+
+void InProcessUtilityThreadHelper::CheckHasRunningChildProcess() {
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
+      base::BindOnce(
+          &InProcessUtilityThreadHelper::CheckHasRunningChildProcessOnIO,
+          quit_closure_));
+}
+
+// static
+void InProcessUtilityThreadHelper::CheckHasRunningChildProcessOnIO(
+    const base::RepeatingClosure& quit_closure) {
+  BrowserChildProcessHostIterator it;
+  if (!it.Done()) {
+    // Have some running child processes -> need to wait.
+    return;
+  }
+
+  DCHECK(quit_closure);
+  quit_closure.Run();
 }
 
 void InProcessUtilityThreadHelper::BrowserChildProcessHostDisconnected(
     const ChildProcessData& data) {
-  if (--child_thread_count_)
-    return;
-
-  if (run_loop_)
-    run_loop_->Quit();
+  CheckHasRunningChildProcess();
 }
 
 RenderFrameDeletedObserver::RenderFrameDeletedObserver(RenderFrameHost* rfh)

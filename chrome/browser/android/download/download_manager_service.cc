@@ -497,6 +497,15 @@ void DownloadManagerService::OnDownloadRemoved(
       content::DownloadItemUtils::GetBrowserContext(item)->IsOffTheRecord());
 }
 
+void DownloadManagerService::OnDisconnected() {
+  // Some unit tests recreate |ServiceManagerContext| inside
+  // |TestServiceManagerContext|. Closing |service_binding_| will prevent DCHECK
+  // in such tests, because |DownloadManagerService| starts automatically in
+  // |ServiceManagerContext|.
+  service_binding_.Close();
+  Terminate();
+}
+
 void DownloadManagerService::ResumeDownloadInternal(
     const std::string& download_guid,
     bool is_off_the_record,

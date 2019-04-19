@@ -190,6 +190,9 @@ class DownloadManagerService
   friend class DownloadManagerServiceTest;
   friend struct base::DefaultSingletonTraits<DownloadManagerService>;
 
+  // service_manager::Service implementation.
+  void OnDisconnected() final;
+
   // Helper function to start the download resumption.
   void ResumeDownloadInternal(const std::string& download_guid,
                               bool is_off_the_record,
