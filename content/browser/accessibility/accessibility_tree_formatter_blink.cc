@@ -114,6 +114,7 @@ std::string IntAttrToString(const BrowserAccessibility& node,
     case ax::mojom::IntAttribute::kNextFocusId:
     case ax::mojom::IntAttribute::kNextOnLineId:
     case ax::mojom::IntAttribute::kPosInSet:
+    case ax::mojom::IntAttribute::kPopupForId:
     case ax::mojom::IntAttribute::kPreviousFocusId:
     case ax::mojom::IntAttribute::kPreviousOnLineId:
     case ax::mojom::IntAttribute::kScrollX:

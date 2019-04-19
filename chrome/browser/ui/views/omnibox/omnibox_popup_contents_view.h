@@ -21,12 +21,12 @@ class LocationBarView;
 class OmniboxEditModel;
 class OmniboxResultView;
 enum class OmniboxTint;
-class OmniboxView;
+class OmniboxViewViews;
 
 // A view representing the contents of the autocomplete popup.
 class OmniboxPopupContentsView : public views::View, public OmniboxPopupView {
  public:
-  OmniboxPopupContentsView(OmniboxView* omnibox_view,
+  OmniboxPopupContentsView(OmniboxViewViews* omnibox_view,
                            OmniboxEditModel* edit_model,
                            LocationBarView* location_bar_view);
   ~OmniboxPopupContentsView() override;
@@ -118,7 +118,7 @@ class OmniboxPopupContentsView : public views::View, public OmniboxPopupView {
   base::WeakPtr<AutocompletePopupWidget> popup_;
 
   // The edit view that invokes us.
-  OmniboxView* omnibox_view_;
+  OmniboxViewViews* omnibox_view_;
 
   LocationBarView* location_bar_view_;
 

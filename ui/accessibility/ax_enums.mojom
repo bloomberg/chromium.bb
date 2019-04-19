@@ -542,6 +542,7 @@ enum IntAttribute {
   kInPageLinkTargetId,
   kMemberOfId,
   kNextOnLineId,
+  kPopupForId,
   kPreviousOnLineId,
 
    // Input restriction, if any, such as readonly or disabled.

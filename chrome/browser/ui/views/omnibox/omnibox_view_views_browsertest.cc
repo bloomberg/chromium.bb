@@ -39,6 +39,7 @@
 #include "ui/events/event_processor.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/textfield/textfield_test_api.h"
 
 #if defined(USE_AURA)
@@ -634,6 +635,12 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, AccessiblePopup) {
   EXPECT_FALSE(popup_node_data_1.HasState(ax::mojom::State::kExpanded));
   EXPECT_TRUE(popup_node_data_1.HasState(ax::mojom::State::kCollapsed));
   EXPECT_TRUE(popup_node_data_1.HasState(ax::mojom::State::kInvisible));
+
+  EXPECT_TRUE(
+      popup_node_data_1.HasIntAttribute(ax::mojom::IntAttribute::kPopupForId));
+  EXPECT_EQ(
+      popup_node_data_1.GetIntAttribute(ax::mojom::IntAttribute::kPopupForId),
+      omnibox_view_views->GetViewAccessibility().GetUniqueId().Get());
 
   // Populate suggestions for the omnibox popup.
   AutocompleteController* autocomplete_controller =

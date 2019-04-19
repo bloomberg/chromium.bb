@@ -1475,6 +1475,8 @@ const char* ToString(ax::mojom::IntAttribute int_attribute) {
       return "memberOfId";
     case ax::mojom::IntAttribute::kNextOnLineId:
       return "nextOnLineId";
+    case ax::mojom::IntAttribute::kPopupForId:
+      return "popupForId";
     case ax::mojom::IntAttribute::kPreviousOnLineId:
       return "previousOnLineId";
     case ax::mojom::IntAttribute::kRestriction:
@@ -1593,6 +1595,8 @@ ax::mojom::IntAttribute ParseIntAttribute(const char* int_attribute) {
     return ax::mojom::IntAttribute::kMemberOfId;
   if (0 == strcmp(int_attribute, "nextOnLineId"))
     return ax::mojom::IntAttribute::kNextOnLineId;
+  if (0 == strcmp(int_attribute, "popupForId"))
+    return ax::mojom::IntAttribute::kPopupForId;
   if (0 == strcmp(int_attribute, "previousOnLineId"))
     return ax::mojom::IntAttribute::kPreviousOnLineId;
   if (0 == strcmp(int_attribute, "restriction"))

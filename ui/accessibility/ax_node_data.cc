@@ -100,6 +100,7 @@ bool IsNodeIdIntAttribute(ax::mojom::IntAttribute attr) {
     case ax::mojom::IntAttribute::kInPageLinkTargetId:
     case ax::mojom::IntAttribute::kMemberOfId:
     case ax::mojom::IntAttribute::kNextOnLineId:
+    case ax::mojom::IntAttribute::kPopupForId:
     case ax::mojom::IntAttribute::kPreviousOnLineId:
     case ax::mojom::IntAttribute::kTableHeaderId:
     case ax::mojom::IntAttribute::kTableColumnHeaderId:
@@ -991,6 +992,9 @@ std::string AXNodeData::ToString() const {
         break;
       case ax::mojom::IntAttribute::kNextOnLineId:
         result += " next_on_line_id=" + value;
+        break;
+      case ax::mojom::IntAttribute::kPopupForId:
+        result += " popup_for_id=" + value;
         break;
       case ax::mojom::IntAttribute::kPreviousOnLineId:
         result += " previous_on_line_id=" + value;

@@ -121,6 +121,8 @@ class OmniboxViewViews : public OmniboxView,
   void RevertAll() override;
   void SetFocus() override;
   bool IsImeComposing() const override;
+  gfx::NativeView GetRelativeWindowForPopup() const override;
+  bool IsImeShowingPopup() const override;
 
   // views::Textfield:
   gfx::Size GetMinimumSize() const override;
@@ -219,8 +221,6 @@ class OmniboxViewViews : public OmniboxView,
   void OnBeforePossibleChange() override;
   bool OnAfterPossibleChange(bool allow_keyword_ui_change) override;
   gfx::NativeView GetNativeView() const override;
-  gfx::NativeView GetRelativeWindowForPopup() const override;
-  bool IsImeShowingPopup() const override;
   void ShowVirtualKeyboardIfEnabled() override;
   void HideImeIfNeeded() override;
   int GetOmniboxTextLength() const override;

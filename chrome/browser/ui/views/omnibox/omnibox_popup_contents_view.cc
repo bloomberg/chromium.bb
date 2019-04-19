@@ -10,15 +10,16 @@
 #include "build/build_config.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_result_view.h"
+#include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
 #include "chrome/browser/ui/views/omnibox/rounded_omnibox_results_frame.h"
 #include "chrome/browser/ui/views/theme_copying_widget.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
-#include "components/omnibox/browser/omnibox_view.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/compositor/closure_animation_observer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/image/image.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/widget/widget.h"
 
 #if defined(USE_AURA)
@@ -145,7 +146,7 @@ class OmniboxPopupContentsView::AutocompletePopupWidget
 // OmniboxPopupContentsView, public:
 
 OmniboxPopupContentsView::OmniboxPopupContentsView(
-    OmniboxView* omnibox_view,
+    OmniboxViewViews* omnibox_view,
     OmniboxEditModel* edit_model,
     LocationBarView* location_bar_view)
     : model_(new OmniboxPopupModel(this, edit_model)),
@@ -463,6 +464,13 @@ void OmniboxPopupContentsView::GetAccessibleNodeData(
   } else {
     node_data->AddState(ax::mojom::State::kCollapsed);
     node_data->AddState(ax::mojom::State::kInvisible);
+  }
+
+  if (omnibox_view_) {
+    int32_t omnibox_view_id =
+        omnibox_view_->GetViewAccessibility().GetUniqueId().Get();
+    node_data->AddIntAttribute(ax::mojom::IntAttribute::kPopupForId,
+                               omnibox_view_id);
   }
 }
 
