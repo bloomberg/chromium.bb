@@ -491,9 +491,7 @@ void MediaNotificationView::UpdateForegroundColor() {
       kMediaButtonIconSize, foreground);
 
   // Update action buttons.
-  for (int i = 0; i < button_row_->child_count(); ++i) {
-    views::View* child = button_row_->child_at(i);
-
+  for (views::View* child : button_row_->children()) {
     // Skip the play pause button since it is a special case.
     if (child == play_pause_button_)
       continue;

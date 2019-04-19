@@ -436,11 +436,8 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // the views are deleted, unless marked as not parent owned.
   void RemoveAllChildViews(bool delete_children);
 
-  // TODO(https://crbug.com/940135): Remove child_count() and child_at() in
-  // favor of this.
+  // TODO(https://crbug.com/940135): Remove child_at() in favor of this.
   const Views& children() const { return children_; }
-
-  int child_count() const { return static_cast<int>(children_.size()); }
 
   // Returns the child view at |index|.
   const View* child_at(int index) const {

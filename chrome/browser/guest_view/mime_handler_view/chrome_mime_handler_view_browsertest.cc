@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/containers/circular_deque.h"
 #include "base/guid.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
@@ -384,21 +385,19 @@ IN_PROC_BROWSER_TEST_F(ChromeMimeHandlerViewBrowserPluginTest,
   ASSERT_TRUE(widget->GetRootView());
 
   // Find WebView corresponding to embedder_web_contents().
+  const std::string kWebViewClassName = views::WebView::kViewClassName;
   views::View* aura_webview = nullptr;
-  base::queue<views::View*> queue;
-  queue.push(widget->GetRootView());
-  while (!queue.empty()) {
-    views::View* current = queue.front();
-    queue.pop();
-    if (std::string(current->GetClassName()).find("WebView") !=
-            std::string::npos &&
+  for (base::circular_deque<views::View*> deque = {widget->GetRootView()};
+       !deque.empty(); deque.pop_front()) {
+    views::View* current = deque.front();
+    if (current->GetClassName() == kWebViewClassName &&
         static_cast<views::WebView*>(current)->GetWebContents() ==
             embedder_web_contents()) {
       aura_webview = current;
       break;
     }
-    for (int i = 0; i < current->child_count(); ++i)
-      queue.push(current->child_at(i));
+    const auto& children = current->children();
+    deque.insert(deque.end(), children.cbegin(), children.cend());
   }
   ASSERT_TRUE(aura_webview);
   gfx::Rect bounds(aura_webview->bounds());
