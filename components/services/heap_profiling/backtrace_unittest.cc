@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/services/heap_profiling/backtrace_storage.h"
+#include "components/services/heap_profiling/backtrace.h"
 
 #include <vector>
 
@@ -21,7 +21,7 @@ TEST(BacktraceStorage, KeyStability) {
     // Each backtrace should contain its index as the only stack entry.
     std::vector<Address> addrs;
     addrs.push_back(Address(i));
-    traces.push_back(storage.Insert(std::move(addrs)));
+    traces.push_back(&*storage.insert(Backtrace(std::move(addrs))).first);
   }
 
   // Validate the backtraces are still valid.

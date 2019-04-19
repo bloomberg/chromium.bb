@@ -9,8 +9,7 @@
 #include <map>
 #include <unordered_set>
 
-#include "components/services/heap_profiling/address.h"
-#include "components/services/heap_profiling/backtrace_storage.h"
+#include "components/services/heap_profiling/backtrace.h"
 #include "components/services/heap_profiling/public/mojom/heap_profiling_client.mojom.h"
 
 namespace heap_profiling {
@@ -59,7 +58,7 @@ class AllocationEvent {
   struct EqualityByAddress {
     bool operator()(const AllocationEvent& lhs,
                     const AllocationEvent& rhs) const {
-      return lhs.address().value == rhs.address().value;
+      return lhs.address() == rhs.address();
     }
   };
 

@@ -18,11 +18,6 @@ const size_t kMinSizeThreshold = 16 * 1024;
 const size_t kMinCountThreshold = 1024;
 }  // namespace
 
-ConnectionManager::DumpArgs::DumpArgs() = default;
-ConnectionManager::DumpArgs::DumpArgs(DumpArgs&& other) noexcept
-    : backtrace_storage_lock(std::move(other.backtrace_storage_lock)) {}
-ConnectionManager::DumpArgs::~DumpArgs() = default;
-
 // Tracking information for DumpProcessForTracing(). This struct is
 // refcounted since there will be many background thread calls (one for each
 // AllocationTracker) and the callback is only issued when each has
@@ -31,10 +26,7 @@ ConnectionManager::DumpArgs::~DumpArgs() = default;
 // This class is not threadsafe, its members must only be accessed on the
 // I/O thread.
 struct ConnectionManager::DumpProcessesForTracingTracking
-    : public ConnectionManager::DumpArgs,
-      public base::RefCountedThreadSafe<DumpProcessesForTracingTracking> {
-  DumpProcessesForTracingTracking() = default;
-
+    : public base::RefCountedThreadSafe<DumpProcessesForTracingTracking> {
   // Number of processes we're still waiting on responses for. When this gets
   // to 0, the callback will be issued.
   size_t waiting_responses = 0;
@@ -174,8 +166,6 @@ void ConnectionManager::DumpProcessesForTracing(
   }
 
   auto tracking = base::MakeRefCounted<DumpProcessesForTracingTracking>();
-  tracking->backtrace_storage_lock =
-      BacktraceStorage::Lock(&backtrace_storage_);
   tracking->waiting_responses = connections_.size();
   tracking->callback = std::move(callback);
   tracking->vm_regions = std::move(vm_regions);
@@ -202,7 +192,6 @@ void ConnectionManager::HeapProfileRetrieved(
   ContextMap context_map;
   AddressToStringMap string_map;
   BacktraceStorage backtrace_storage;
-  BacktraceStorage::Lock backtrace_storage_lock(&backtrace_storage);
 
   bool success = true;
   for (const mojom::HeapProfileSamplePtr& sample : profile->samples) {
@@ -223,8 +212,9 @@ void ConnectionManager::HeapProfileRetrieved(
                                 static_cast<int>(context_map.size() + 1))
                        .first->second;
     }
-    const Backtrace* backtrace = backtrace_storage.Insert(
-        std::vector<Address>(sample->stack.begin(), sample->stack.end()));
+    std::vector<Address> stack(sample->stack.begin(), sample->stack.end());
+    const Backtrace* backtrace =
+        &*backtrace_storage.insert(Backtrace(std::move(stack))).first;
     AllocationEvent alloc(sample->allocator, Address(0), sample->size,
                           backtrace, context_id);
     ++counts[alloc];
@@ -266,15 +256,8 @@ void ConnectionManager::DoDumpOneProcessForTracing(
     return;
   }
 
-  CHECK(tracking->backtrace_storage_lock.IsLocked());
   ExportParams params;
   params.allocs = std::move(counts);
-
-  auto it = tracking->vm_regions.find(pid);
-  if (it != tracking->vm_regions.end()) {
-    params.maps = std::move(it->second);
-  }
-
   params.context_map = std::move(context);
   params.mapped_strings = std::move(mapped_strings);
   params.process_type = process_type;
@@ -283,6 +266,10 @@ void ConnectionManager::DoDumpOneProcessForTracing(
   params.strip_path_from_mapped_files = strip_path_from_mapped_files;
   params.next_id = next_id_;
   params.sampling_rate = sampling_rate;
+
+  auto it = tracking->vm_regions.find(pid);
+  if (it != tracking->vm_regions.end())
+    params.maps = std::move(it->second);
 
   std::ostringstream oss;
   ExportMemoryMapsAndV2StackTraceToJSON(&params, oss);

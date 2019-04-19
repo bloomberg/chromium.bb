@@ -19,7 +19,6 @@
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "components/services/heap_profiling/allocation_event.h"
-#include "components/services/heap_profiling/backtrace_storage.h"
 #include "components/services/heap_profiling/public/mojom/heap_profiling_service.mojom.h"
 #include "services/resource_coordinator/public/mojom/memory_instrumentation/memory_instrumentation.mojom.h"
 
@@ -46,22 +45,6 @@ class ConnectionManager {
  public:
   ConnectionManager();
   ~ConnectionManager();
-
-  // Shared types for the dump-type-specific args structures.
-  struct DumpArgs {
-    DumpArgs();
-    DumpArgs(DumpArgs&&) noexcept;
-    ~DumpArgs();
-
-   private:
-    friend ConnectionManager;
-
-    // This lock keeps the backtrace atoms alive throughout the dumping
-    // process. It will be initialized by DumpProcess.
-    BacktraceStorage::Lock backtrace_storage_lock;
-
-    DISALLOW_COPY_AND_ASSIGN(DumpArgs);
-  };
 
   // Dumping is asynchronous so will not be complete when this function
   // returns. The dump is complete when the callback provided in the args is
@@ -109,8 +92,6 @@ class ConnectionManager {
 
   // Reports the ProcessTypes of the processes being profiled.
   void ReportMetrics();
-
-  BacktraceStorage backtrace_storage_;
 
   // The next ID to use when exporting a heap dump.
   size_t next_id_ = 1;

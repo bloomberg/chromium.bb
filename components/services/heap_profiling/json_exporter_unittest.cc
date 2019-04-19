@@ -13,7 +13,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "components/services/heap_profiling/backtrace_storage.h"
+#include "components/services/heap_profiling/backtrace.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/os_metrics.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -128,21 +128,22 @@ bool IsBacktraceInList(const base::Value* backtraces, int id, int parent) {
   return false;
 }
 
+const Backtrace* InsertBacktrace(BacktraceStorage& storage,
+                                 std::vector<Address> addrs) {
+  return &*storage.insert(Backtrace(std::move(addrs))).first;
+}
+
 }  // namespace
 
 TEST(ProfilingJsonExporterTest, Simple) {
   BacktraceStorage backtrace_storage;
 
-  std::vector<Address> stack1;
-  stack1.push_back(Address(0x5678));
-  stack1.push_back(Address(0x1234));
-  const Backtrace* bt1 = backtrace_storage.Insert(std::move(stack1));
+  std::vector<Address> stack1{Address(0x5678), Address(0x1234)};
+  const Backtrace* bt1 = InsertBacktrace(backtrace_storage, std::move(stack1));
 
-  std::vector<Address> stack2;
-  stack2.push_back(Address(0x9013));
-  stack2.push_back(Address(0x9012));
-  stack2.push_back(Address(0x1234));
-  const Backtrace* bt2 = backtrace_storage.Insert(std::move(stack2));
+  std::vector<Address> stack2{Address(0x9013), Address(0x9012),
+                              Address(0x1234)};
+  const Backtrace* bt2 = InsertBacktrace(backtrace_storage, std::move(stack2));
 
   AllocationEventSet events;
   events.insert(
@@ -301,9 +302,8 @@ TEST(ProfilingJsonExporterTest, Sampling) {
 
   BacktraceStorage backtrace_storage;
 
-  std::vector<Address> stack1;
-  stack1.push_back(Address(0x5678));
-  const Backtrace* bt1 = backtrace_storage.Insert(std::move(stack1));
+  std::vector<Address> stack1{Address(0x5678)};
+  const Backtrace* bt1 = InsertBacktrace(backtrace_storage, std::move(stack1));
 
   AllocationEventSet events;
   events.insert(AllocationEvent(AllocatorType::kMalloc, Address(0x1),
@@ -356,17 +356,14 @@ TEST(ProfilingJsonExporterTest, Sampling) {
 TEST(ProfilingJsonExporterTest, SimpleWithFilteredAllocations) {
   BacktraceStorage backtrace_storage;
 
-  std::vector<Address> stack1;
-  stack1.push_back(Address(0x1234));
-  const Backtrace* bt1 = backtrace_storage.Insert(std::move(stack1));
+  std::vector<Address> stack1{Address(0x1234)};
+  const Backtrace* bt1 = InsertBacktrace(backtrace_storage, std::move(stack1));
 
-  std::vector<Address> stack2;
-  stack2.push_back(Address(0x5678));
-  const Backtrace* bt2 = backtrace_storage.Insert(std::move(stack2));
+  std::vector<Address> stack2{Address(0x5678)};
+  const Backtrace* bt2 = InsertBacktrace(backtrace_storage, std::move(stack2));
 
-  std::vector<Address> stack3;
-  stack3.push_back(Address(0x9999));
-  const Backtrace* bt3 = backtrace_storage.Insert(std::move(stack3));
+  std::vector<Address> stack3{Address(0x9999)};
+  const Backtrace* bt3 = InsertBacktrace(backtrace_storage, std::move(stack3));
 
   AllocationEventSet events;
   events.insert(
@@ -493,9 +490,8 @@ TEST(ProfilingJsonExporterTest, Context) {
   BacktraceStorage backtrace_storage;
   ExportParams params;
 
-  std::vector<Address> stack;
-  stack.push_back(Address(0x1234));
-  const Backtrace* bt = backtrace_storage.Insert(std::move(stack));
+  std::vector<Address> stack{Address(0x1234)};
+  const Backtrace* bt = InsertBacktrace(backtrace_storage, std::move(stack));
 
   std::string context_str1("Context 1");
   int context_id1 = 1;

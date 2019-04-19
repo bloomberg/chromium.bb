@@ -47,9 +47,8 @@ struct BacktraceNode {
 using BacktraceTable = std::map<BacktraceNode, size_t>;
 
 // Used as a temporary map key to uniquify an allocation with a given context
-// and stack. A lock is held when dumping bactraces that guarantees that no
-// Backtraces will be created or destroyed during the lifetime of that
-// structure. Therefore it's safe to use a raw pointer Since backtraces are
+// and stack. No backtraces are created or destroyed during the lifetime of that
+// structure. Therefore it's safe to use a raw pointer since backtraces are
 // uniquified, this does pointer comparisons on the backtrace to give a stable
 // ordering, even if that ordering has no intrinsic meaning.
 struct UniqueAlloc {
@@ -219,9 +218,9 @@ size_t AppendBacktraceStrings(const Backtrace& backtrace,
                               ExportParams* params) {
   int parent = -1;
   // Addresses must be outputted in reverse order.
-  for (const Address& addr : base::Reversed(backtrace.addrs())) {
+  for (const Address addr : base::Reversed(backtrace.addrs())) {
     size_t sid;
-    auto it = params->mapped_strings.find(addr.value);
+    auto it = params->mapped_strings.find(addr);
     if (it != params->mapped_strings.end()) {
       sid = AddOrGetString(it->second, string_table, params);
     } else {
@@ -231,10 +230,9 @@ size_t AppendBacktraceStrings(const Backtrace& backtrace,
       // Adding to sizeof(kPcPrefix) yields the buffer size needed including the
       // null terminator.
       static constexpr int kBufSize =
-          sizeof(kPcPrefix) +
-          (std::numeric_limits<decltype(addr.value)>::digits / 4);
+          sizeof(kPcPrefix) + std::numeric_limits<decltype(addr)>::digits / 4;
       char buf[kBufSize];
-      snprintf(buf, kBufSize, "%s%" PRIx64, kPcPrefix, addr.value);
+      snprintf(buf, kBufSize, "%s%" PRIx64, kPcPrefix, addr);
       sid = AddOrGetString(buf, string_table, params);
     }
     parent = AddOrGetBacktraceNode(BacktraceNode(sid, parent), backtrace_table,
@@ -245,7 +243,7 @@ size_t AppendBacktraceStrings(const Backtrace& backtrace,
 
 // Writes the string table which looks like:
 //   "strings":[
-//     {"id":123,string:"This is the string"},
+//     {"id":123,"string":"This is the string"},
 //     ...
 //   ]
 void WriteStrings(const StringTable& string_table, std::ostream& out) {

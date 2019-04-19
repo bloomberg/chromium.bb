@@ -8,7 +8,6 @@
 #include <iosfwd>
 #include <vector>
 
-#include "base/values.h"
 #include "components/services/heap_profiling/allocation_event.h"
 #include "components/services/heap_profiling/public/mojom/heap_profiling_service.mojom.h"
 #include "services/resource_coordinator/public/mojom/memory_instrumentation/memory_instrumentation.mojom.h"

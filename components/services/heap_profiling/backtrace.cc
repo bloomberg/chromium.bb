@@ -4,33 +4,29 @@
 
 #include "components/services/heap_profiling/backtrace.h"
 
-#include <string.h>
-
-#include <algorithm>
+#include <cstring>
+#include <utility>
 
 #include "base/hash/hash.h"
-#include "components/services/heap_profiling/backtrace_storage.h"
 
 namespace heap_profiling {
 
 namespace {
-
-// TODO(ajwong) replace with a fingerprint capable hash.
 size_t ComputeHash(const std::vector<Address>& addrs) {
   if (addrs.empty())
     return 0;
-  // Assume Address is a POD containing only the address with no padding.
+  static_assert(std::is_integral<Address>::value,
+                "base::Hash call below needs simple type.");
   return base::Hash(addrs.data(), addrs.size() * sizeof(Address));
 }
-
 }  // namespace
 
 Backtrace::Backtrace(std::vector<Address>&& a)
-    : addrs_(std::move(a)), fingerprint_(ComputeHash(addrs_)) {}
+    : addrs_(std::move(a)), hash_(ComputeHash(addrs_)) {}
 
 Backtrace::Backtrace(Backtrace&& other) noexcept = default;
 
-Backtrace::~Backtrace() {}
+Backtrace::~Backtrace() = default;
 
 Backtrace& Backtrace::operator=(Backtrace&& other) = default;
 
