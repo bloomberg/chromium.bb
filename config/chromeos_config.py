@@ -1975,27 +1975,20 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'amd64-generic',
       'arm-generic',
       'arm64-generic',
-      'auron_yuna',
       'beaglebone',
       'betty',
       'betty-arc64',
       'betty-arcnext',
-      'bob',
       'capri',
       'capri-zfpga',
       'caroline',
       'caroline-arcnext',
-      'cave',
       'chell',
       'cheza',
       'cobblepot',
-      'coral',
       'daisy',
       'daisy_skate',
       'daisy_spring',
-      'edgar',
-      'elm',
-      'eve',
       'eve-arcnext',
       'eve-campfire',
       'falco',
@@ -2005,17 +1998,13 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'flapjack',
       'glados',
       'gonzo',
-      'grunt',
       'guado',
       'guado-accelerator',
       'guado_moblab',
-      'hana',
       'hatch',
       'kalista',
-      'kevin',
       'kevin64',
       'kevin-arcnext',
-      'kip',
       'kukui',
       'lakitu-gpu',
       'lasilla-ground',
@@ -2023,41 +2012,26 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'littlejoe',
       'monroe',
       'nami',
-      'nocturne',
-      'nyan_kitty',
       'oak',
       'octavius',
-      'octopus',
       'panther',
-      'peach_pit',
-      'peppy',
       'poppy',
       'quawks',
       'rammus',
-      'reef',
       'romer',
       'sarien',
       'samus',
-      'scarlet',
-      'sentry',
       'sludge',
       'stout',
       'tael',
       'tatl',
       'terra',
-      'tidus',
       'tricky',
       'veyron_jaq',
       'veyron_jerry',
-      'veyron_mighty',
-      'veyron_minnie',
       'veyron_rialto',
-      'veyron_speedy',
       'veyron_tiger',
       'viking',
-      'winky',
-      'wizpig',
-      'wolf',
       'wooten',
   ])
 
@@ -2089,15 +2063,41 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   # notice, preferably with a comment indicating why and a bug.
   _paladin_experimental_boards = _paladin_new_boards | frozenset([
       'auron_paine', # crbug.com/950751
+      'auron_yuna', # crbug.com/954446
+      'bob', # crbug.com/954446
+      'cave', # crbug.com/954446
+      'coral', # crbug.com/954446
       'cyan', # crbug.com/953920
+      'edgar', # crbug.com/954446
+      'elm', # crbug.com/954446
+      'eve', # crbug.com/954446
       'gale', # crbug.com/953701
+      'grunt', # crbug.com/954446
+      'hana', # crbug.com/954446
+      'kevin', # crbug.com/954446
+      'kip', # crbug.com/954446
       'lakitu', # crbug.com/953855
       'lakitu-st', # crbug.com/953855
       'mistral', # contact: roopeshr@
       'moblab-generic-vm', # crbug.com/953966
+      'nocturne', # crbug.com/954446
       'nyan_big', # crbug.com/954185
       'nyan_blaze', # crbug.com/954185
+      'nyan_kitty', # crbug.com/954446
+      'octopus', # crbug.com/954446
+      'peach_pit', # crbug.com/954446
+      'peppy', # crbug.com/954446
+      'sentry', # crbug.com/954446
+      'scarlet', # crbug.com/954446
+      'reef', # crbug.com/954446
+      'tidus', # crbug.com/954446
+      'veyron_mighty', # crbug.com/954446
+      'veyron_minnie', # crbug.com/954446
+      'veyron_speedy', # crbug.com/954446
       'whirlwind', # crbug.com/953701
+      'winky', # crbug.com/954446
+      'wizpig', # crbug.com/954446
+      'wolf', # crbug.com/954446
   ])
 
   assert not (_paladin_experimental_boards & _paladin_important_boards), (
