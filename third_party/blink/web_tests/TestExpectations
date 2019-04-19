@@ -779,7 +779,7 @@ crbug.com/714962 [ Mac ] virtual/layout_ng/fast/writing-mode/broken-ideograph-sm
 crbug.com/714962 [ Mac ] virtual/layout_ng/fast/writing-mode/broken-ideographic-font.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/writing-mode/fieldsets.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/writing-mode/flipped-blocks-hit-test-line-edges.html [ Failure ]
-crbug.com/714962 virtual/layout_ng/fast/writing-mode/japanese-lr-selection.html [ Failure ]
+crbug.com/714962 [ Mac Linux ] virtual/layout_ng/fast/writing-mode/japanese-lr-selection.html [ Failure ]
 crbug.com/714962 [ Mac ] virtual/layout_ng/fast/writing-mode/japanese-lr-text.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/writing-mode/japanese-rl-selection.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/writing-mode/percentage-height-orthogonal-writing-modes.html [ Failure ]
@@ -6157,3 +6157,6 @@ crbug.com/938884 [ Win7 ] http/tests/devtools/elements/styles-3/styles-add-blank
 crbug.com/954297 [ Linux Win ] http/tests/devtools/oopif/oopif-presentation-console-messages.js [ Pass Crash Timeout ]
 crbug.com/953994 [ Linux Win ] http/tests/security/svg-image-with-cached-remote-image.html [ Pass Crash ]
 crbug.com/953994 [ Linux Win ] virtual/outofblink-cors/http/tests/security/svg-image-with-cached-remote-image.html [ Pass Crash ]
+
+# Sheriff 2019-04-19
+crbug.com/954628 [ Win ] external/wpt/payment-request/payment-request-canmakepayment-method.https.html [ Pass Timeout ]
