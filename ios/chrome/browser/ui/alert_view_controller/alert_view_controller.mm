@@ -30,8 +30,15 @@ constexpr CGFloat kMinimumMargin = 4;
 }  // namespace
 
 @interface AlertAction ()
+
 @property(nonatomic, readwrite) NSString* title;
+
+// The unique identifier for the actions created.
+@property(nonatomic) NSInteger uniqueIdentifier;
+
+// Block to be called when this action is triggered.
 @property(nonatomic, copy) void (^handler)(AlertAction* action);
+
 @end
 
 @implementation AlertAction
@@ -39,6 +46,8 @@ constexpr CGFloat kMinimumMargin = 4;
 + (instancetype)actionWithTitle:(NSString*)title
                         handler:(void (^)(AlertAction* action))handler {
   AlertAction* action = [[AlertAction alloc] init];
+  static NSInteger actionIdentifier = 0;
+  action.uniqueIdentifier = ++actionIdentifier;
   action.title = title;
   action.handler = handler;
   return action;
@@ -49,6 +58,10 @@ constexpr CGFloat kMinimumMargin = 4;
 @interface AlertViewController ()
 @property(nonatomic, readwrite) NSArray<AlertAction*>* actions;
 @property(nonatomic, readwrite) NSArray<UITextField*>* textFields;
+
+// This maps UIButtons' tags with AlertActions' uniqueIdentifiers.
+@property(nonatomic, strong)
+    NSMutableDictionary<NSNumber*, AlertAction*>* buttonAlertActionsDictionary;
 
 // This is the view with the shadow, white background and round corners.
 // Everything will be added here.
@@ -167,11 +180,15 @@ constexpr CGFloat kMinimumMargin = 4;
     [stackView addArrangedSubview:messageLabel];
   }
 
+  self.buttonAlertActionsDictionary = [[NSMutableDictionary alloc] init];
   for (AlertAction* action in self.actions) {
     UIButton* button = [UIButton buttonWithType:UIButtonTypeSystem];
     [button setTitle:action.title forState:UIControlStateNormal];
     button.contentHorizontalAlignment =
         UIControlContentHorizontalAlignmentCenter;
+    [button addTarget:self
+                  action:@selector(didSelectActionForButton:)
+        forControlEvents:UIControlEventTouchUpInside];
     button.translatesAutoresizingMaskIntoConstraints = NO;
     [self.contentView addSubview:button];
 
@@ -182,6 +199,17 @@ constexpr CGFloat kMinimumMargin = 4;
           constraintEqualToAnchor:self.contentView.leadingAnchor],
     ]];
     [stackView addArrangedSubview:button];
+    button.tag = action.uniqueIdentifier;
+    self.buttonAlertActionsDictionary[@(action.uniqueIdentifier)] = action;
+  }
+}
+
+#pragma mark - Private
+
+- (void)didSelectActionForButton:(UIButton*)button {
+  AlertAction* action = self.buttonAlertActionsDictionary[@(button.tag)];
+  if (action.handler) {
+    action.handler(action);
   }
 }
 
