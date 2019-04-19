@@ -1904,11 +1904,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "enable-webrtc-srtp-encrypted-headers",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-webrtc-stun-origin",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76

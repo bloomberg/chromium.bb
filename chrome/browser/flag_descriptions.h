@@ -1248,9 +1248,6 @@ extern const char kWebRtcRemoteEventLogDescription[];
 extern const char kWebrtcSrtpAesGcmName[];
 extern const char kWebrtcSrtpAesGcmDescription[];
 
-extern const char kWebrtcSrtpEncryptedHeadersName[];
-extern const char kWebrtcSrtpEncryptedHeadersDescription[];
-
 extern const char kWebrtcStunOriginName[];
 extern const char kWebrtcStunOriginDescription[];
 
