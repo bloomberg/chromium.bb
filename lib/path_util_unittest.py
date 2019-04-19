@@ -277,3 +277,19 @@ class TestPathResolver(cros_test_lib.MockTestCase):
     self.assertEqual(
         os.path.join(self.chroot_path, 'some/path'),
         resolver.FromChroot('/some/path'))
+
+  @mock.patch('chromite.lib.cros_build_lib.IsInsideChroot', return_value=False)
+  def testSymlinkedChroot(self, _):
+    self.SetChrootPath(constants.SOURCE_ROOT)
+    resolver = path_util.ChrootPathResolver()
+    self.PatchObject(resolver, '_ReadChrootLink', return_value='/another/path')
+
+    # Should still resolve paths from the chroot to the default location.
+    self.assertEqual(
+        os.path.join(constants.SOURCE_ROOT, constants.DEFAULT_CHROOT_DIR,
+                     'some/path'),
+        resolver.FromChroot('/some/path'))
+
+    # Should be able to handle translating the linked location to a chroot path.
+    self.assertEqual('/some/path',
+                     resolver.ToChroot('/another/path/some/path'))
