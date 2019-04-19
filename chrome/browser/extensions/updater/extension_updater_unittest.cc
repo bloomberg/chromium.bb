@@ -2308,11 +2308,11 @@ TEST_F(ExtensionUpdaterTest, TestManifestRetryDownloading) {
   TestManifestRetryDownloading();
 }
 
-TEST_F(ExtensionUpdaterTest, TestGalleryRequestsWithOrganicBrand) {
+TEST_F(ExtensionUpdaterTest, DISABLED_TestGalleryRequestsWithOrganicBrand) {
   TestGalleryRequestsWithBrand(true);
 }
 
-TEST_F(ExtensionUpdaterTest, TestGalleryRequestsWithNonOrganicBrand) {
+TEST_F(ExtensionUpdaterTest, DISABLED_TestGalleryRequestsWithNonOrganicBrand) {
   TestGalleryRequestsWithBrand(false);
 }
 
