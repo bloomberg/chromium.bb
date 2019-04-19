@@ -265,6 +265,9 @@ void AutocompleteControllerAndroid::OnSuggestionSelected(
         ClipboardRecentContent::GetInstance()->GetClipboardContentAge());
   }
 
+  AutocompleteMatch::LogSearchEngineUsed(
+      match, TemplateURLServiceFactory::GetForProfile(profile_));
+
   OmniboxLog log(
       // For zero suggest, record an empty input string instead of the
       // current URL.

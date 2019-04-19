@@ -9,6 +9,7 @@
 
 #include "base/feature_list.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
@@ -25,6 +26,7 @@
 #include "components/omnibox/browser/suggestion_answer.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/search_engines/template_url.h"
+#include "components/search_engines/template_url_prepopulate_data.h"
 #include "components/search_engines/template_url_service.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "ui/gfx/vector_icon_types.h"
@@ -625,6 +627,23 @@ url_formatter::FormatUrlTypes AutocompleteMatch::GetFormatTypes(
   }
 
   return format_types;
+}
+
+// static
+void AutocompleteMatch::LogSearchEngineUsed(
+    const AutocompleteMatch& match,
+    TemplateURLService* template_url_service) {
+  DCHECK(template_url_service);
+
+  TemplateURL* template_url = match.GetTemplateURL(template_url_service, false);
+  if (template_url) {
+    SearchEngineType search_engine_type =
+        match.destination_url.is_valid()
+            ? TemplateURLPrepopulateData::GetEngineType(match.destination_url)
+            : SEARCH_ENGINE_OTHER;
+    UMA_HISTOGRAM_ENUMERATION("Omnibox.SearchEngineType", search_engine_type,
+                              SEARCH_ENGINE_MAX);
+  }
 }
 
 void AutocompleteMatch::ComputeStrippedDestinationURL(

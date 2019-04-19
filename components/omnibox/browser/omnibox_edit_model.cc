@@ -803,11 +803,7 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
       // in template_url.h.
     }
 
-    SearchEngineType search_engine_type = match.destination_url.is_valid() ?
-        TemplateURLPrepopulateData::GetEngineType(match.destination_url) :
-        SEARCH_ENGINE_OTHER;
-    UMA_HISTOGRAM_ENUMERATION("Omnibox.SearchEngineType", search_engine_type,
-                              SEARCH_ENGINE_MAX);
+    AutocompleteMatch::LogSearchEngineUsed(match, service);
   } else {
     // |match| is a URL navigation, not a search.
     // For logging the below histogram, only record uses that depend on the

@@ -273,6 +273,11 @@ struct AutocompleteMatch {
   static url_formatter::FormatUrlTypes GetFormatTypes(bool preserve_scheme,
                                                       bool preserve_subdomain);
 
+  // Logs the search engine used to navigate to a search page or auto complete
+  // suggestion. For direct URL navigations, nothing is logged.
+  static void LogSearchEngineUsed(const AutocompleteMatch& match,
+                                  TemplateURLService* template_url_service);
+
   // Computes the stripped destination URL (via GURLToStrippedGURL()) and
   // stores the result in |stripped_destination_url|.  |input| is used for the
   // same purpose as in GURLToStrippedGURL().
