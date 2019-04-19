@@ -56,11 +56,13 @@ SpdySessionPool::SpdySessionRequest::SpdySessionRequest(
     const SpdySessionKey& key,
     bool enable_ip_based_pooling,
     bool is_websocket,
+    bool is_blocking_request_for_session,
     Delegate* delegate,
     SpdySessionPool* spdy_session_pool)
     : key_(key),
       enable_ip_based_pooling_(enable_ip_based_pooling),
       is_websocket_(is_websocket),
+      is_blocking_request_for_session_(is_blocking_request_for_session),
       delegate_(delegate),
       spdy_session_pool_(spdy_session_pool) {}
 
@@ -318,10 +320,10 @@ base::WeakPtr<SpdySession> SpdySessionPool::RequestSession(
     bool enable_ip_based_pooling,
     bool is_websocket,
     const NetLogWithSource& net_log,
-    base::RepeatingClosure on_request_destroyed_callback,
+    base::RepeatingClosure on_blocking_request_destroyed_callback,
     SpdySessionRequest::Delegate* delegate,
     std::unique_ptr<SpdySessionRequest>* spdy_session_request,
-    bool* is_first_request_for_session) {
+    bool* is_blocking_request_for_session) {
   DCHECK(delegate);
 
   base::WeakPtr<SpdySession> spdy_session =
@@ -329,19 +331,22 @@ base::WeakPtr<SpdySession> SpdySessionPool::RequestSession(
   if (spdy_session) {
     // This value doesn't really matter, but best to always populate it, for
     // consistency.
-    *is_first_request_for_session = true;
+    *is_blocking_request_for_session = true;
     return spdy_session;
   }
 
-  RequestSet* request_set = &spdy_session_request_map_[key];
-  *is_first_request_for_session = request_set->empty();
+  RequestInfoForKey* request_info = &spdy_session_request_map_[key];
+  *is_blocking_request_for_session = !request_info->has_blocking_request;
   *spdy_session_request = std::make_unique<SpdySessionRequest>(
-      key, enable_ip_based_pooling, is_websocket, delegate, this);
-  request_set->insert(spdy_session_request->get());
+      key, enable_ip_based_pooling, is_websocket,
+      *is_blocking_request_for_session, delegate, this);
+  request_info->request_set.insert(spdy_session_request->get());
 
-  if (on_request_destroyed_callback && !*is_first_request_for_session) {
-    spdy_session_pending_request_map_[key].push_back(
-        on_request_destroyed_callback);
+  if (*is_blocking_request_for_session) {
+    request_info->has_blocking_request = true;
+  } else if (on_blocking_request_destroyed_callback) {
+    request_info->deferred_callbacks.push_back(
+        on_blocking_request_destroyed_callback);
   }
   return nullptr;
 }
@@ -446,21 +451,21 @@ void SpdySessionPool::OnCertDBChanged() {
 void SpdySessionPool::RemoveRequestForSpdySession(SpdySessionRequest* request) {
   DCHECK_EQ(this, request->spdy_session_pool());
 
-  const SpdySessionKey& spdy_session_key = request->key();
-  // Resume all pending requests now that |request| is done/canceled.
-  if (spdy_session_pending_request_map_.find(spdy_session_key) !=
-      spdy_session_pending_request_map_.end()) {
+  auto iter = spdy_session_request_map_.find(request->key());
+  DCHECK(iter != spdy_session_request_map_.end());
+
+  // Resume all pending requests if it is the blocking request, which is either
+  // being canceled, or has completed.
+  if (request->is_blocking_request_for_session() &&
+      !iter->second.deferred_callbacks.empty()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(&SpdySessionPool::UpdatePendingRequests,
-                       weak_ptr_factory_.GetWeakPtr(), spdy_session_key));
+                       weak_ptr_factory_.GetWeakPtr(), request->key()));
   }
 
-  auto iter = spdy_session_request_map_.find(spdy_session_key);
-  DCHECK(iter != spdy_session_request_map_.end());
-  RequestSet& request_set = iter->second;
-  DCHECK(base::ContainsKey(request_set, request));
-  RemoveRequestInternal(iter, request_set.find(request));
+  DCHECK(base::ContainsKey(iter->second.request_set, request));
+  RemoveRequestInternal(iter, iter->second.request_set.find(request));
 }
 
 void SpdySessionPool::DumpMemoryStats(
@@ -509,6 +514,9 @@ void SpdySessionPool::DumpMemoryStats(
                   base::trace_event::MemoryAllocatorDump::kUnitsBytes,
                   cert_size);
 }
+
+SpdySessionPool::RequestInfoForKey::RequestInfoForKey() = default;
+SpdySessionPool::RequestInfoForKey::~RequestInfoForKey() = default;
 
 bool SpdySessionPool::IsSessionAvailable(
     const base::WeakPtr<SpdySession>& session) const {
@@ -648,7 +656,7 @@ void SpdySessionPool::UpdatePendingRequests(const SpdySessionKey& key) {
       auto iter = spdy_session_request_map_.find(key);
       if (iter == spdy_session_request_map_.end())
         break;
-      RequestSet* request_set = &iter->second;
+      RequestSet* request_set = &iter->second.request_set;
       // Find a request that can use the socket, if any.
       RequestSet::iterator request;
       for (request = request_set->begin(); request != request_set->end();
@@ -671,19 +679,24 @@ void SpdySessionPool::UpdatePendingRequests(const SpdySessionKey& key) {
     }
   }
 
-  auto iter = spdy_session_pending_request_map_.find(key);
-  if (iter == spdy_session_pending_request_map_.end())
+  auto iter = spdy_session_request_map_.find(key);
+  if (iter == spdy_session_request_map_.end())
     return;
   // Remove all pending requests, if there are any. As a result, if one of these
   // callbacks triggers a new RequestSession() call,
-  // |is_first_request_for_session| will be true.
-  std::list<base::RepeatingClosure> pending_requests = std::move(iter->second);
-  spdy_session_pending_request_map_.erase(iter);
+  // |is_blocking_request_for_session| will be true.
+  std::list<base::RepeatingClosure> deferred_requests =
+      std::move(iter->second.deferred_callbacks);
 
-  // Resume any pending requests. This needs to be after the
+  // Delete the RequestMap if there are no SpdySessionRequests, and no deferred
+  // requests.
+  if (iter->second.request_set.empty())
+    spdy_session_request_map_.erase(iter);
+
+  // Resume any deferred requests. This needs to be after the
   // OnSpdySessionAvailable() calls, to prevent requests from calling into the
   // socket pools in cases where that's not necessary.
-  for (auto callback : pending_requests) {
+  for (auto callback : deferred_requests) {
     callback.Run();
   }
 }
@@ -692,9 +705,17 @@ void SpdySessionPool::RemoveRequestInternal(
     SpdySessionRequestMap::iterator request_map_iterator,
     RequestSet::iterator request_set_iterator) {
   SpdySessionRequest* request = *request_set_iterator;
-  request_map_iterator->second.erase(request_set_iterator);
-  if (request_map_iterator->second.empty())
+  request_map_iterator->second.request_set.erase(request_set_iterator);
+  if (request->is_blocking_request_for_session()) {
+    DCHECK(request_map_iterator->second.has_blocking_request);
+    request_map_iterator->second.has_blocking_request = false;
+  }
+
+  // If both lists of requests are empty, can now remove the entry from the map.
+  if (request_map_iterator->second.request_set.empty() &&
+      request_map_iterator->second.deferred_callbacks.empty()) {
     spdy_session_request_map_.erase(request_map_iterator);
+  }
   request->OnRemovedFromPool();
 }
 

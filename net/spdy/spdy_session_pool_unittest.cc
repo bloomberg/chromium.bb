@@ -7,9 +7,11 @@
 #include <cstddef>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/trace_event/memory_allocator_dump.h"
 #include "base/trace_event/process_memory_dump.h"
@@ -1146,4 +1148,195 @@ TEST_F(SpdySessionPoolTest, FindAvailableSessionForWebSocket) {
   EXPECT_TRUE(data.AllReadDataConsumed());
   EXPECT_TRUE(data.AllWriteDataConsumed());
 }
+
+class TestOnRequestDeletedCallback {
+ public:
+  TestOnRequestDeletedCallback() = default;
+  ~TestOnRequestDeletedCallback() = default;
+
+  base::RepeatingClosure Callback() {
+    return base::BindRepeating(&TestOnRequestDeletedCallback::OnRequestDeleted,
+                               base::Unretained(this));
+  }
+
+  bool invoked() const { return invoked_; }
+
+  void WaitUntilInvoked() { run_loop_.Run(); }
+
+  void SetRequestDeletedCallback(base::OnceClosure request_deleted_callback) {
+    DCHECK(!request_deleted_callback_);
+    request_deleted_callback_ = std::move(request_deleted_callback);
+  }
+
+ private:
+  void OnRequestDeleted() {
+    EXPECT_FALSE(invoked_);
+    invoked_ = true;
+    if (request_deleted_callback_)
+      std::move(request_deleted_callback_).Run();
+    run_loop_.Quit();
+  }
+
+  bool invoked_ = false;
+  base::RunLoop run_loop_;
+
+  base::OnceClosure request_deleted_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestOnRequestDeletedCallback);
+};
+
+class TestRequestDelegate
+    : public SpdySessionPool::SpdySessionRequest::Delegate {
+ public:
+  TestRequestDelegate() = default;
+  ~TestRequestDelegate() override = default;
+
+  // SpdySessionPool::SpdySessionRequest::Delegate implementation:
+  void OnSpdySessionAvailable(
+      base::WeakPtr<SpdySession> spdy_session) override {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestRequestDelegate);
+};
+
+TEST_F(SpdySessionPoolTest, RequestSessionWithNoSessions) {
+  const SpdySessionKey kSessionKey(HostPortPair("foo.test", 443),
+                                   ProxyServer::Direct(), PRIVACY_MODE_DISABLED,
+                                   SpdySessionKey::IsProxySession::kFalse,
+                                   SocketTag());
+
+  CreateNetworkSession();
+
+  // First request. Its request deleted callback should never be invoked.
+  TestOnRequestDeletedCallback request_deleted_callback1;
+  TestRequestDelegate request_delegate1;
+  std::unique_ptr<SpdySessionPool::SpdySessionRequest> spdy_session_request1;
+  bool is_first_request_for_session;
+  EXPECT_FALSE(spdy_session_pool_->RequestSession(
+      kSessionKey, /* enable_ip_based_pooling = */ false,
+      /* is_websocket = */ false, NetLogWithSource(),
+      request_deleted_callback1.Callback(), &request_delegate1,
+      &spdy_session_request1, &is_first_request_for_session));
+  EXPECT_TRUE(is_first_request_for_session);
+
+  // Second request.
+  TestOnRequestDeletedCallback request_deleted_callback2;
+  TestRequestDelegate request_delegate2;
+  std::unique_ptr<SpdySessionPool::SpdySessionRequest> spdy_session_request2;
+  EXPECT_FALSE(spdy_session_pool_->RequestSession(
+      kSessionKey, /* enable_ip_based_pooling = */ false,
+      /* is_websocket = */ false, NetLogWithSource(),
+      request_deleted_callback2.Callback(), &request_delegate2,
+      &spdy_session_request2, &is_first_request_for_session));
+  EXPECT_FALSE(is_first_request_for_session);
+
+  // Third request.
+  TestOnRequestDeletedCallback request_deleted_callback3;
+  TestRequestDelegate request_delegate3;
+  std::unique_ptr<SpdySessionPool::SpdySessionRequest> spdy_session_request3;
+  EXPECT_FALSE(spdy_session_pool_->RequestSession(
+      kSessionKey, /* enable_ip_based_pooling = */ false,
+      /* is_websocket = */ false, NetLogWithSource(),
+      request_deleted_callback3.Callback(), &request_delegate3,
+      &spdy_session_request3, &is_first_request_for_session));
+  EXPECT_FALSE(is_first_request_for_session);
+
+  // Destroying the second request shouldn't cause anything to happen.
+  spdy_session_request2.reset();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(request_deleted_callback1.invoked());
+  EXPECT_FALSE(request_deleted_callback2.invoked());
+  EXPECT_FALSE(request_deleted_callback3.invoked());
+
+  // But destroying the first request should cause the second and third
+  // callbacks to be invoked.
+  spdy_session_request1.reset();
+  request_deleted_callback2.WaitUntilInvoked();
+  request_deleted_callback3.WaitUntilInvoked();
+  EXPECT_FALSE(request_deleted_callback1.invoked());
+
+  // Nothing should happen when the third request is destroyed.
+  spdy_session_request3.reset();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(request_deleted_callback1.invoked());
+}
+
+TEST_F(SpdySessionPoolTest, RequestSessionDuringNotification) {
+  const SpdySessionKey kSessionKey(HostPortPair("foo.test", 443),
+                                   ProxyServer::Direct(), PRIVACY_MODE_DISABLED,
+                                   SpdySessionKey::IsProxySession::kFalse,
+                                   SocketTag());
+
+  CreateNetworkSession();
+
+  // First request. Its request deleted callback should never be invoked.
+  TestOnRequestDeletedCallback request_deleted_callback1;
+  TestRequestDelegate request_delegate1;
+  std::unique_ptr<SpdySessionPool::SpdySessionRequest> spdy_session_request1;
+  bool is_first_request_for_session;
+  EXPECT_FALSE(spdy_session_pool_->RequestSession(
+      kSessionKey, /* enable_ip_based_pooling = */ false,
+      /* is_websocket = */ false, NetLogWithSource(),
+      request_deleted_callback1.Callback(), &request_delegate1,
+      &spdy_session_request1, &is_first_request_for_session));
+  EXPECT_TRUE(is_first_request_for_session);
+
+  // Second request.
+  TestOnRequestDeletedCallback request_deleted_callback2;
+  TestRequestDelegate request_delegate2;
+  std::unique_ptr<SpdySessionPool::SpdySessionRequest> spdy_session_request2;
+  EXPECT_FALSE(spdy_session_pool_->RequestSession(
+      kSessionKey, /* enable_ip_based_pooling = */ false,
+      /* is_websocket = */ false, NetLogWithSource(),
+      request_deleted_callback2.Callback(), &request_delegate2,
+      &spdy_session_request2, &is_first_request_for_session));
+  EXPECT_FALSE(is_first_request_for_session);
+
+  TestOnRequestDeletedCallback request_deleted_callback3;
+  TestRequestDelegate request_delegate3;
+  std::unique_ptr<SpdySessionPool::SpdySessionRequest> spdy_session_request3;
+  TestOnRequestDeletedCallback request_deleted_callback4;
+  TestRequestDelegate request_delegate4;
+  std::unique_ptr<SpdySessionPool::SpdySessionRequest> spdy_session_request4;
+  request_deleted_callback2.SetRequestDeletedCallback(
+      base::BindLambdaForTesting([&]() {
+        // Third request. It should again be marked as the first request for the
+        // session, since it's only created after the original two have been
+        // removed.
+        bool is_first_request_for_session;
+        EXPECT_FALSE(spdy_session_pool_->RequestSession(
+            kSessionKey, /* enable_ip_based_pooling = */ false,
+            /* is_websocket = */ false, NetLogWithSource(),
+            request_deleted_callback3.Callback(), &request_delegate3,
+            &spdy_session_request3, &is_first_request_for_session));
+        EXPECT_TRUE(is_first_request_for_session);
+
+        // Fourth request.
+        EXPECT_FALSE(spdy_session_pool_->RequestSession(
+            kSessionKey, /* enable_ip_based_pooling = */ false,
+            /* is_websocket = */ false, NetLogWithSource(),
+            request_deleted_callback4.Callback(), &request_delegate4,
+            &spdy_session_request4, &is_first_request_for_session));
+        EXPECT_FALSE(is_first_request_for_session);
+      }));
+
+  // Destroying the first request should cause the second callback to be
+  // invoked, and the third and fourth request to be made.
+  spdy_session_request1.reset();
+  request_deleted_callback2.WaitUntilInvoked();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(request_deleted_callback1.invoked());
+  EXPECT_FALSE(request_deleted_callback3.invoked());
+  EXPECT_FALSE(request_deleted_callback4.invoked());
+  EXPECT_TRUE(spdy_session_request3);
+  EXPECT_TRUE(spdy_session_request4);
+
+  // Destroying the third request should cause the fourth callback to be
+  // invoked.
+  spdy_session_request3.reset();
+  request_deleted_callback4.WaitUntilInvoked();
+  EXPECT_FALSE(request_deleted_callback1.invoked());
+  EXPECT_FALSE(request_deleted_callback3.invoked());
+}
+
 }  // namespace net

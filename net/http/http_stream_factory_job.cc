@@ -837,13 +837,13 @@ int HttpStreamFactory::Job::DoInitConnectionImpl() {
                       ptr_factory_.GetWeakPtr())
                 : base::RepeatingClosure();
 
-        bool is_first_request_for_session;
+        bool is_blocking_request_for_session;
         existing_spdy_session_ = session_->spdy_session_pool()->RequestSession(
             spdy_session_key_, enable_ip_based_pooling_,
             try_websocket_over_http2_, net_log_, resume_callback, this,
-            &spdy_session_request_, &is_first_request_for_session);
+            &spdy_session_request_, &is_blocking_request_for_session);
         if (!existing_spdy_session_ && should_throttle_connect &&
-            !is_first_request_for_session) {
+            !is_blocking_request_for_session) {
           net_log_.AddEvent(NetLogEventType::HTTP_STREAM_JOB_THROTTLED);
           next_state_ = STATE_INIT_CONNECTION;
           base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
