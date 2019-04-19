@@ -30,6 +30,11 @@ class BackForwardCacheMetricsTest : public RenderViewHostImplTestHarness,
     BackForwardCacheMetrics::OverrideTimeForTesting(&clock_);
   }
 
+  void TearDown() override {
+    BackForwardCacheMetrics::OverrideTimeForTesting(nullptr);
+    RenderViewHostImplTestHarness::TearDown();
+  }
+
   void DidStartNavigation(NavigationHandle* navigation_handle) override {
     navigation_ids_.push_back(navigation_handle->GetNavigationId());
   }
