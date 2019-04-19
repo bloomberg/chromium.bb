@@ -30,7 +30,8 @@ template("android_resource_sizes_test") {
     _apk_path =
         "@WrappedPath(@FileArg($_rebased_apk_build_config:deps_info:apk_path))"
     executable_args = [
-      "--chartjson",
+      "--output-format",
+      "histograms",
       _apk_path,
       "--chromium-output-directory",
       "@WrappedPath(.)",

@@ -712,8 +712,6 @@ def main():
       choices=['chartjson', 'histograms'],
       help='Output the results to a file in the given '
       'format instead of printing the results.')
-  argparser.add_argument(
-      '--output-dir', default='.', help='Directory to save chartjson to.')
   argparser.add_argument('--loadable_module', help='Obsolete (ignored).')
   argparser.add_argument(
       '--estimate-patch-size',
@@ -739,7 +737,11 @@ def main():
       type=os.path.realpath,
       help=argparse.SUPPRESS)
 
-  argparser.add_argument(
+  output_group = argparser.add_mutually_exclusive_group()
+
+  output_group.add_argument(
+      '--output-dir', default='.', help='Directory to save chartjson to.')
+  output_group.add_argument(
       '--isolated-script-test-output',
       type=os.path.realpath,
       help='File to which results will be written in the '
@@ -756,6 +758,12 @@ def main():
 
   isolated_script_output = {'valid': False, 'failures': []}
 
+  if args.isolated_script_test_output:
+    args.output_dir = os.path.join(
+        os.path.dirname(args.isolated_script_test_output), 'resource_sizes')
+    if not os.path.exists(args.output_dir):
+      os.makedirs(args.output_dir)
+
   try:
     result = ResourceSizes(args)
     isolated_script_output = {
@@ -764,6 +772,9 @@ def main():
     }
   finally:
     if args.isolated_script_test_output:
+      results_path = os.path.join(args.output_dir, 'test_results.json')
+      with open(results_path, 'w') as output_file:
+        json.dump(isolated_script_output, output_file)
       with open(args.isolated_script_test_output, 'w') as output_file:
         json.dump(isolated_script_output, output_file)
 
