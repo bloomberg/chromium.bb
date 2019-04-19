@@ -5326,7 +5326,7 @@ TEST_P(PaintPropertyTreeBuilderTest, BackfaceHidden) {
     ASSERT_NE(nullptr, paint_offset_translation);
     EXPECT_EQ(FloatSize(60, 50), paint_offset_translation->Translation2D());
     EXPECT_EQ(TransformPaintPropertyNode::BackfaceVisibility::kInherited,
-              paint_offset_translation->GetBackfaceVisibility());
+              paint_offset_translation->GetBackfaceVisibilityForTesting());
   }
 
   const auto* transform = target_properties->Transform();
@@ -5335,7 +5335,7 @@ TEST_P(PaintPropertyTreeBuilderTest, BackfaceHidden) {
     ASSERT_NE(nullptr, transform);
     EXPECT_TRUE(transform->IsIdentity());
     EXPECT_EQ(TransformPaintPropertyNode::BackfaceVisibility::kHidden,
-              transform->GetBackfaceVisibility());
+              transform->GetBackfaceVisibilityForTesting());
   } else {
     EXPECT_EQ(nullptr, transform);
   }

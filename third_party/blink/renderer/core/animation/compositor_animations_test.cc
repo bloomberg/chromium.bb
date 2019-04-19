@@ -2029,7 +2029,7 @@ TEST_P(AnimationCompositorAnimationsTest,
   // Make sure the backface-visibility is correctly set, both in blink and on
   // the cc::Layer.
   EXPECT_FALSE(transform->Matrix().IsIdentity());  // Rotated
-  EXPECT_EQ(transform->GetBackfaceVisibility(),
+  EXPECT_EQ(transform->GetBackfaceVisibilityForTesting(),
             TransformPaintPropertyNode::BackfaceVisibility::kVisible);
   const CompositedLayerMapping* composited_layer_mapping =
       ToLayoutBoxModelObject(target->GetLayoutObject())
@@ -2046,7 +2046,7 @@ TEST_P(AnimationCompositorAnimationsTest,
   target->setAttribute(html_names::kClassAttr, "backface-hidden");
   ForceFullCompositingUpdate();
   // Make sure the setting made it to both blink and all the way to CC.
-  EXPECT_EQ(transform->GetBackfaceVisibility(),
+  EXPECT_EQ(transform->GetBackfaceVisibilityForTesting(),
             TransformPaintPropertyNode::BackfaceVisibility::kHidden);
   EXPECT_FALSE(layer->double_sided())
       << "Change to hidden did not get propagated to CC";

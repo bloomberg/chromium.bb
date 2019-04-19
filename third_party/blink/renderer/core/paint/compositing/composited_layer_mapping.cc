@@ -1346,7 +1346,7 @@ void CompositedLayerMapping::UpdateMainGraphicsLayerGeometry(
 
   // In BGPT mode, we do not need to update the backface visibility here, as it
   // will already be set by PaintArtifactCompsitor based on
-  // TransformPaintPropertyNode::GetBackfaceVisibility.
+  // TransformPaintPropertyNode::IsBackfaceHidden.
   if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
     graphics_layer_->SetBackfaceVisibility(
         GetLayoutObject().StyleRef().BackfaceVisibility() ==
@@ -1558,7 +1558,7 @@ void CompositedLayerMapping::UpdateOverflowControlsHostLayerGeometry(
 
   // In BGPT mode, we do not need to update the backface visibility here, as it
   // will already be set by PaintArtifactCompsitor based on
-  // TransformPaintPropertyNode::GetBackfaceVisibility.
+  // TransformPaintPropertyNode::IsBackfaceHidden.
   if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
     overflow_controls_host_layer_->SetBackfaceVisibility(
         owning_layer_.GetLayoutObject().StyleRef().BackfaceVisibility() ==

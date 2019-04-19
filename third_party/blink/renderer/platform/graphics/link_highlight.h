@@ -15,6 +15,7 @@ class Layer;
 namespace blink {
 
 class EffectPaintPropertyNode;
+class FloatPoint;
 
 class PLATFORM_EXPORT LinkHighlight : public DisplayItemClient {
  public:
@@ -25,6 +26,10 @@ class PLATFORM_EXPORT LinkHighlight : public DisplayItemClient {
   virtual cc::Layer* Layer() = 0;
 
   virtual const EffectPaintPropertyNode& Effect() const = 0;
+
+  // This returns the link highlight offset from its parent transform node,
+  // including both the link location and the layer location.
+  virtual FloatPoint GetOffsetFromTransformNode() const = 0;
 
   // DisplayItemClient methods
   // TODO(wangxianzhu): This class doesn't need to be a DisplayItemClient in

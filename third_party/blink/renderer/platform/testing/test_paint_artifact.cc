@@ -93,9 +93,10 @@ TestPaintArtifact& TestPaintArtifact::RectDrawing(FakeDisplayItemClient& client,
 }
 
 TestPaintArtifact& TestPaintArtifact::ForeignLayer(
-    scoped_refptr<cc::Layer> layer) {
+    scoped_refptr<cc::Layer> layer,
+    const FloatPoint& offset) {
   display_item_list_.AllocateAndConstruct<ForeignLayerDisplayItem>(
-      DisplayItem::kForeignLayerFirst, std::move(layer));
+      DisplayItem::kForeignLayerFirst, std::move(layer), offset);
   return *this;
 }
 

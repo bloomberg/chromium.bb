@@ -450,11 +450,6 @@ void GraphicsLayer::UpdateContentsRect() {
   if (!contents_layer)
     return;
 
-  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-    const auto& offset = GetContentsOffsetFromTransformNode();
-    contents_layer->SetOffsetToTransformParent(
-        gfx::Vector2dF(offset.X(), offset.Y()));
-  }
   contents_layer->SetPosition(
       FloatPoint(contents_rect_.X(), contents_rect_.Y()));
   if (!image_layer_) {
@@ -1059,17 +1054,8 @@ void GraphicsLayer::SetLayerState(const PropertyTreeState& layer_state,
         std::make_unique<LayerState>(LayerState{layer_state, layer_offset});
   }
 
-  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-    CcLayer()->SetOffsetToTransformParent(
-        gfx::Vector2dF(layer_offset.X(), layer_offset.Y()));
-
-    if (ContentsLayer()) {
-      const auto& offset = GetContentsOffsetFromTransformNode();
-      ContentsLayer()->SetOffsetToTransformParent(
-          gfx::Vector2dF(offset.X(), offset.Y()));
-    }
+  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
     SetPaintArtifactCompositorNeedsUpdate();
-  }
 }
 
 void GraphicsLayer::SetContentsPropertyTreeState(
