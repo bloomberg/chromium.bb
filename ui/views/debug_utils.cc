@@ -17,11 +17,9 @@
 namespace views {
 namespace {
 void PrintViewHierarchyImp(const View* view,
-                           int indent,
+                           size_t indent,
                            std::ostringstream* out) {
-  int ind = indent;
-  while (ind-- > 0)
-    *out << ' ';
+  *out << std::string(indent, ' ');
   *out << view->GetClassName();
   *out << ' ';
   *out << view->id();
@@ -37,11 +35,9 @@ void PrintViewHierarchyImp(const View* view,
 }
 
 void PrintFocusHierarchyImp(const View* view,
-                            int indent,
+                            size_t indent,
                             std::ostringstream* out) {
-  int ind = indent;
-  while (ind-- > 0)
-    *out << ' ';
+  *out << std::string(indent, ' ');
   *out << view->GetClassName();
   *out << ' ';
   *out << view->id();

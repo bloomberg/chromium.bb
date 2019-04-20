@@ -173,13 +173,11 @@ View* AXAuraObjCache::GetFocusedView() {
     // If focused widget has non client view, falls back to first child view of
     // its client view. We don't expect that non client view gets keyboard
     // focus.
-    if (focused_widget->non_client_view() &&
-        focused_widget->non_client_view()->client_view() &&
-        !focused_widget->non_client_view()->client_view()->children().empty()) {
-      return focused_widget->non_client_view()->client_view()->child_at(0);
-    }
-
-    return focused_widget->GetRootView();
+    auto* non_client = focused_widget->non_client_view();
+    auto* client = non_client ? non_client->client_view() : nullptr;
+    return (client && !client->children().empty())
+               ? client->child_at(0)
+               : focused_widget->GetRootView();
   }
 
   return nullptr;

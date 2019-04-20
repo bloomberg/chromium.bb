@@ -70,9 +70,9 @@ bool LayerIsAncestor(const ui::Layer* ancestor, const ui::Layer* layer) {
 
 // Convenience functions for walking a View tree.
 const views::View* FirstView(const views::View* view) {
-  const views::View* v = view;
-  while (!v->children().empty())
-    v = v->child_at(0);
+  const views::View* v;
+  for (v = view; !v->children().empty(); v = v->child_at(0)) {
+  }
   return v;
 }
 
@@ -4919,7 +4919,7 @@ class OrderableView : public View {
 
 TEST_F(ViewTest, ChildViewZOrderChanged) {
   const int kChildrenCount = 4;
-  std::unique_ptr<View> view(new OrderableView());
+  auto view = std::make_unique<OrderableView>();
   view->SetPaintToLayer();
   for (int i = 0; i < kChildrenCount; ++i)
     AddViewWithChildLayer(view.get());
@@ -4928,8 +4928,8 @@ TEST_F(ViewTest, ChildViewZOrderChanged) {
   EXPECT_EQ(kChildrenCount, static_cast<int>(layers.size()));
   EXPECT_EQ(kChildrenCount, static_cast<int>(children.size()));
   for (int i = 0; i < kChildrenCount; ++i) {
-    EXPECT_EQ(view->child_at(i)->layer(), layers[i]);
     EXPECT_EQ(view->child_at(i), children[i]);
+    EXPECT_EQ(view->child_at(i)->layer(), layers[i]);
   }
 
   // Raise one of the children in z-order and add another child to reorder.

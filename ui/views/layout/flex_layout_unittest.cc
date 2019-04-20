@@ -1850,18 +1850,18 @@ class NestedFlexLayoutTest : public FlexLayoutTest {
  public:
   void AddChildren(int num_children) {
     for (int i = 0; i < num_children; ++i) {
-      View* v = new View;
+      auto v = std::make_unique<View>();
       FlexLayout* layout = v->SetLayoutManager(std::make_unique<FlexLayout>());
-      host_->AddChildView(v);
-      children_.push_back(v);
+      children_.push_back(v.get());
       layouts_.push_back(layout);
+      host_->AddChildView(std::move(v));
     }
   }
 
   View* AddGrandchild(
       int child_index,
       const gfx::Size& preferred,
-      const base::Optional<gfx::Size>& minimum = base::Optional<gfx::Size>()) {
+      const base::Optional<gfx::Size>& minimum = base::nullopt) {
     return AddChild(children_[child_index - 1], preferred, minimum);
   }
 
@@ -1877,7 +1877,7 @@ class NestedFlexLayoutTest : public FlexLayoutTest {
 
  private:
   std::vector<FlexLayout*> layouts_;
-  std::vector<View*> children_;
+  View::Views children_;
 };
 
 TEST_F(NestedFlexLayoutTest, Layout_OppositeOrientation) {

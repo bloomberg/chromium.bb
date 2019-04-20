@@ -63,7 +63,7 @@ LayoutExampleBase::ChildPanel::ChildPanel(LayoutExampleBase* example,
                                           const gfx::Size& preferred_size)
     : example_(example), preferred_size_(preferred_size) {
   SetBorder(CreateSolidBorder(1, SK_ColorGRAY));
-  for (unsigned i = 0; i < sizeof(margin_) / sizeof(margin_[0]); ++i)
+  for (size_t i = 0; i < base::size(margin_); ++i)
     margin_[i] = CreateTextfield();
   flex_ = CreateTextfield();
   flex_->SetText(base::ASCIIToUTF16(""));
@@ -86,7 +86,7 @@ void LayoutExampleBase::ChildPanel::Layout() {
   const int kSpacing = 2;
   if (selected_) {
     gfx::Rect client = GetContentsBounds();
-    for (unsigned i = 0; i < sizeof(margin_) / sizeof(margin_[0]); ++i) {
+    for (size_t i = 0; i < base::size(margin_); ++i) {
       gfx::Point pos;
       Textfield* textfield = margin_[i];
       switch (i) {
@@ -266,8 +266,7 @@ void LayoutExampleBase::CreateExampleView(View* container) {
   add_button_->SizeToPreferredSize();
   control_panel_->AddChildView(add_button_);
   horizontal_pos += add_button_->width() + kLayoutExampleVerticalSpacing;
-  for (unsigned i = 0;
-       i < sizeof(child_panel_size_) / sizeof(child_panel_size_[0]); ++i) {
+  for (size_t i = 0; i < base::size(child_panel_size_); ++i) {
     child_panel_size_[i] =
         CreateRawTextfield(vertical_pos, true, &horizontal_pos);
     child_panel_size_[i]->SetY(
