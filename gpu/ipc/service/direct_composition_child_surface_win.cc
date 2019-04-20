@@ -218,6 +218,8 @@ void* DirectCompositionChildSurfaceWin::GetHandle() {
 
 gfx::SwapResult DirectCompositionChildSurfaceWin::SwapBuffers(
     PresentationCallback callback) {
+  TRACE_EVENT1("gpu", "DirectCompositionChildSurfaceWin::SwapBuffers", "size",
+               size_.ToString());
   // PresentationCallback is handled by DirectCompositionSurfaceWin. The child
   // surface doesn't need provide presentation feedback.
   DCHECK(!callback);
