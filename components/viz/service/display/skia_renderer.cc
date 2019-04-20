@@ -1102,7 +1102,7 @@ void SkiaRenderer::FlushBatchedQuads() {
   paint.setBlendMode(batched_quad_state_.blend_mode);
   current_canvas_->experimental_DrawEdgeAAImageSet(
       &batched_quads_.front(), batched_quads_.size(),
-      &batched_draw_regions_.front(), &batched_cdt_matrices_.front(), &paint,
+      batched_draw_regions_.data(), &batched_cdt_matrices_.front(), &paint,
       batched_quad_state_.constraint);
 
   batched_quads_.clear();

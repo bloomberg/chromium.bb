@@ -34,7 +34,7 @@ void HidConnectionImpl::OnInputReport(
   DCHECK(client_);
   uint8_t report_id = buffer->data()[0];
   uint8_t* begin = &buffer->data()[1];
-  uint8_t* end = &buffer->data()[size];
+  uint8_t* end = buffer->data().data() + size;
   std::vector<uint8_t> data(begin, end);
   client_->OnInputReport(report_id, data);
 }

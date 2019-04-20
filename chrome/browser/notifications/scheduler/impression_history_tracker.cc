@@ -14,7 +14,7 @@ namespace notifications {
 
 // Comparator used to sort notification entries based on creation time.
 bool CreateTimeCompare(const Impression& lhs, const Impression& rhs) {
-  return lhs.create_time <= rhs.create_time;
+  return lhs.create_time < rhs.create_time;
 }
 
 ImpressionHistoryTrackerImpl::ImpressionHistoryTrackerImpl(

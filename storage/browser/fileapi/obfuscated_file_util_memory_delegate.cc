@@ -439,7 +439,7 @@ int ObfuscatedFileUtilMemoryDelegate::ReadFile(const base::FilePath& path,
   if (buf_len > remaining)
     buf_len = static_cast<int>(remaining);
 
-  memcpy(buf->data(), &dp->entry->file_content[offset], buf_len);
+  memcpy(buf->data(), dp->entry->file_content.data() + offset, buf_len);
 
   return buf_len;
 }

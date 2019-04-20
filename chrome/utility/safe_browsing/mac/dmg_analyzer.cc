@@ -110,7 +110,8 @@ bool MachOFeatureExtractor::HashAndCopyStream(
       return false;
 
     buffer_.resize(buffer_offset + bytes_read);
-    sha256->Update(&buffer_[buffer_offset], bytes_read);
+    if (bytes_read)
+      sha256->Update(&buffer_[buffer_offset], bytes_read);
   } while (bytes_read > 0);
 
   sha256->Finish(digest, crypto::kSHA256Length);
