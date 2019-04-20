@@ -244,11 +244,6 @@ void FidoRequestHandlerBase::InitiatePairingWithDevice(
       std::move(success_callback), std::move(error_callback));
 }
 
-void FidoRequestHandlerBase::ProvidePIN(const std::string& old_pin,
-                                        const std::string& pin) {
-  NOTREACHED();
-}
-
 base::WeakPtr<FidoRequestHandlerBase> FidoRequestHandlerBase::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }

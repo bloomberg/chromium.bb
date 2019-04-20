@@ -189,8 +189,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
                                  base::OnceClosure success_callback,
                                  base::OnceClosure error_callback);
 
-  virtual void ProvidePIN(const std::string& old_pin, const std::string& pin);
-
   base::WeakPtr<FidoRequestHandlerBase> GetWeakPtr();
 
   void set_observer(Observer* observer) {

@@ -69,8 +69,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) SetPINRequestHandler
   // that an attempt at setting the PIN can be made. If the authenticator
   // doesn't currently have a PIN set, then |old_pin| must be the empty string.
   // pin::IsValid(new_pin) must be true when calling.
-  void ProvidePIN(const std::string& old_pin,
-                  const std::string& new_pin) override;
+  void ProvidePIN(const std::string& old_pin, const std::string& new_pin);
 
  private:
   enum class State {
