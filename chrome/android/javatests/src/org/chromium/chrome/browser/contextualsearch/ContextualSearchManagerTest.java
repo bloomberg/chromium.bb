@@ -2667,7 +2667,7 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    @CommandLineFlags.Add(ContextualSearchFieldTrial.DISABLE_TRANSLATION + "=true")
+    @CommandLineFlags.Add(ContextualSearchFieldTrial.TRANSLATION_DISABLED + "=true")
     public void testTapDisabled() throws InterruptedException, TimeoutException {
         // Tapping a German word would normally trigger translation, but not with the above flag.
         simulateTapSearch("german");
@@ -2710,7 +2710,7 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    @CommandLineFlags.Add(ContextualSearchFieldTrial.DISABLE_TRANSLATION + "=true")
+    @CommandLineFlags.Add(ContextualSearchFieldTrial.TRANSLATION_DISABLED + "=true")
     public void testLongpressTranslateDisabledDoesNotTranslate()
             throws InterruptedException, TimeoutException {
         // When disabled, LongPress on any word should not trigger translation.

@@ -13,6 +13,8 @@ import org.chromium.base.TimeUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
+import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial.ContextualSearchSetting;
+import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial.ContextualSearchSwitch;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.content_public.browser.SelectionPopupController;
@@ -130,7 +132,8 @@ public class ContextualSearchSelectionController {
         mContainsWordPattern = Pattern.compile(CONTAINS_WORD_PATTERN);
         // TODO(donnd): remove when behind-the-flag bug fixed (crbug.com/786589).
         Log.i(TAG, "Tap suppression enabled: %s",
-                ContextualSearchFieldTrial.isContextualSearchMlTapSuppressionEnabled());
+                ContextualSearchFieldTrial.getSwitch(
+                        ContextualSearchSwitch.IS_CONTEXTUAL_SEARCH_ML_TAP_SUPPRESSION_ENABLED));
     }
 
     /**
@@ -410,7 +413,8 @@ public class ContextualSearchSelectionController {
         boolean shouldOverrideMlTapSuppression = tapHeuristics.shouldOverrideMlTapSuppression();
 
         // Make sure Tap Suppression features are consistent.
-        assert !ContextualSearchFieldTrial.isContextualSearchMlTapSuppressionEnabled()
+        assert !ContextualSearchFieldTrial.getSwitch(
+                ContextualSearchSwitch.IS_CONTEXTUAL_SEARCH_ML_TAP_SUPPRESSION_ENABLED)
                 || interactionRecorder.isQueryEnabled()
             : "Tap Suppression requires the Ranker Query feature to be enabled!";
 
@@ -426,7 +430,8 @@ public class ContextualSearchSelectionController {
 
         // Make the suppression decision and act upon it.
         boolean shouldSuppressTapBasedOnRanker = (tapPrediction == AssistRankerPrediction.SUPPRESS)
-                && ContextualSearchFieldTrial.isContextualSearchMlTapSuppressionEnabled()
+                && ContextualSearchFieldTrial.getSwitch(
+                        ContextualSearchSwitch.IS_CONTEXTUAL_SEARCH_ML_TAP_SUPPRESSION_ENABLED)
                 && !shouldOverrideMlTapSuppression;
         if (shouldSuppressTapBasedOnHeuristics || shouldSuppressTapBasedOnRanker) {
             Log.i(TAG, "Tap suppressed due to Ranker: %s, heuristics: %s",
@@ -527,7 +532,8 @@ public class ContextualSearchSelectionController {
         boolean isValid = isValidSelection(selection);
 
         if (mSelectionType == SelectionType.TAP) {
-            int minSelectionLength = ContextualSearchFieldTrial.getMinimumSelectionLength();
+            int minSelectionLength = ContextualSearchFieldTrial.getValue(
+                    ContextualSearchSetting.MINIMUM_SELECTION_LENGTH);
             if (selection.length() < minSelectionLength) {
                 isValid = false;
                 ContextualSearchUma.logSelectionLengthSuppression(true);

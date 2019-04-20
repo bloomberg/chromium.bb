@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.contextualsearch;
 import android.support.annotation.Nullable;
 
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial.ContextualSearchSwitch;
 import org.chromium.content_public.browser.WebContents;
 
 import java.util.Collections;
@@ -254,7 +255,8 @@ public class ContextualSearchRankerLoggerImpl implements ContextualSearchInterac
 
     /** Whether actually writing data is enabled.  If not, we may do nothing, or just print. */
     private boolean isEnabled() {
-        return !ContextualSearchFieldTrial.isUkmRankerLoggingDisabled();
+        return !ContextualSearchFieldTrial.getSwitch(
+                ContextualSearchSwitch.IS_UKM_RANKER_LOGGING_DISABLED);
     }
 
     /**

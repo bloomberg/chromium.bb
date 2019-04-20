@@ -13,6 +13,7 @@ import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager.OverlayPanelManagerObserver;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
+import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial.ContextualSearchSwitch;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
 import org.chromium.chrome.browser.locale.LocaleManager;
@@ -385,9 +386,10 @@ public class ContextualSearchTabHelper
 
     /** @return Whether the device is online, or we have disabled online-detection. */
     private boolean isDeviceOnline(ContextualSearchManager manager) {
-        if (ContextualSearchFieldTrial.isOnlineDetectionDisabled()) return true;
-
-        return manager.isDeviceOnline();
+        return ContextualSearchFieldTrial.getSwitch(
+                       ContextualSearchSwitch.IS_ONLINE_DETECTION_DISABLED)
+                ? true
+                : manager.isDeviceOnline();
     }
 
     /**

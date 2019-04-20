@@ -16,6 +16,8 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel;
+import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial.ContextualSearchSetting;
+import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial.ContextualSearchSwitch;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchSelectionController.SelectionType;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
@@ -113,11 +115,12 @@ class ContextualSearchPolicy {
      * @return Whether a Tap gesture is currently supported as a trigger for the feature.
      */
     boolean isTapSupported() {
-        if (!isUserUndecided()
-                || ContextualSearchFieldTrial.isContextualSearchTapDisableOverrideEnabled()) {
-            return true;
-        }
-        return getPromoTapsRemaining() != 0;
+        return (!isUserUndecided()
+                       || ContextualSearchFieldTrial.getSwitch(
+                               ContextualSearchSwitch
+                                       .IS_CONTEXTUAL_SEARCH_TAP_DISABLE_OVERRIDE_ENABLED))
+                ? true
+                : (getPromoTapsRemaining() != 0);
     }
 
     /**
@@ -140,7 +143,8 @@ class ContextualSearchPolicy {
      */
     boolean shouldPreviousTapResolve() {
         if (isMandatoryPromoAvailable()
-                || ContextualSearchFieldTrial.isSearchTermResolutionDisabled()) {
+                || ContextualSearchFieldTrial.getSwitch(
+                        ContextualSearchSwitch.IS_SEARCH_TERM_RESOLUTION_DISABLED)) {
             return false;
         }
 
@@ -165,11 +169,14 @@ class ContextualSearchPolicy {
      * @return Whether the Mandatory Promo is enabled.
      */
     boolean isMandatoryPromoAvailable() {
-        if (!isUserUndecided() || !ContextualSearchFieldTrial.isMandatoryPromoEnabled()) {
+        if (!isUserUndecided()
+                || !ContextualSearchFieldTrial.getSwitch(
+                        ContextualSearchSwitch.IS_MANDATORY_PROMO_ENABLED)) {
             return false;
         }
 
-        return getPromoOpenCount() >= ContextualSearchFieldTrial.getMandatoryPromoLimit();
+        return getPromoOpenCount() >= ContextualSearchFieldTrial.getValue(
+                       ContextualSearchSetting.MANDATORY_PROMO_LIMIT);
     }
 
     /**
@@ -450,7 +457,7 @@ class ContextualSearchPolicy {
      * @return Whether any translation feature for Contextual Search is enabled.
      */
     boolean isTranslationDisabled() {
-        return ContextualSearchFieldTrial.isTranslationDisabled();
+        return ContextualSearchFieldTrial.getSwitch(ContextualSearchSwitch.IS_TRANSLATION_DISABLED);
     }
 
     /**
@@ -458,7 +465,9 @@ class ContextualSearchPolicy {
      *         available or privacy-enabled.
      */
     String getHomeCountry(Context context) {
-        if (ContextualSearchFieldTrial.isSendHomeCountryDisabled()) return "";
+        if (ContextualSearchFieldTrial.getSwitch(
+                    ContextualSearchSwitch.IS_SEND_HOME_COUNTRY_DISABLED))
+            return "";
 
         TelephonyManager telephonyManager =
                 (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);

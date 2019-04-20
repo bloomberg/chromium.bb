@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.contextualsearch;
 
+import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial.ContextualSearchSwitch;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 
 /**
@@ -19,7 +20,8 @@ public class EngagementSuppression extends ContextualSearchHeuristic {
      */
     EngagementSuppression() {
         mPreferenceManager = ChromePreferenceManager.getInstance();
-        mIsEnabled = ContextualSearchFieldTrial.isEngagementSuppressionEnabled();
+        mIsEnabled = ContextualSearchFieldTrial.getSwitch(
+                ContextualSearchSwitch.IS_ENGAGEMENT_SUPPRESSION_ENABLED);
         // Used for manual testing; suppress when we've had an entity impression but no open,
         // OR had a Quick Action presented but none taken and at least one ignored.
         boolean hadEntityImpression =

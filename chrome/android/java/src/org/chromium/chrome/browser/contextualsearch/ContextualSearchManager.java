@@ -25,6 +25,8 @@ import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.PanelState;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelContentViewDelegate;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel;
+import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial.ContextualSearchSetting;
+import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial.ContextualSearchSwitch;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchInternalStateController.InternalState;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchSelectionController.SelectionType;
 import org.chromium.chrome.browser.contextualsearch.ResolvedSearchTerm.CardTag;
@@ -948,7 +950,8 @@ public class ContextualSearchManager
         assert surroundingText != null;
         int startOffset = mContext.getSelectionStartOffset();
         int endOffset = mContext.getSelectionEndOffset();
-        if (!ContextualSearchFieldTrial.isPageContentNotificationDisabled()) {
+        if (!ContextualSearchFieldTrial.getSwitch(
+                    ContextualSearchSwitch.IS_PAGE_CONTENT_NOTIFICATION_DISABLED)) {
             GSAContextDisplaySelection selection = new GSAContextDisplaySelection(
                     mContext.getEncoding(), surroundingText, startOffset, endOffset);
             notifyShowContextualSearch(selection);
@@ -1018,7 +1021,8 @@ public class ContextualSearchManager
         public void onMainFrameNavigation(String url, boolean isExternalUrl, boolean isFailure) {
             assert mSearchPanel != null;
             if (isExternalUrl) {
-                if (!ContextualSearchFieldTrial.isAmpAsSeparateTabDisabled()
+                if (!ContextualSearchFieldTrial.getSwitch(
+                            ContextualSearchSwitch.IS_AMP_AS_SEPARATE_TAB_DISABLED)
                         && mPolicy.isAmpUrl(url) && mSearchPanel.didTouchContent()) {
                     onExternalNavigation(url);
                 }
@@ -1176,9 +1180,7 @@ public class ContextualSearchManager
 
     @Override
     public void logCurrentState() {
-        if (ContextualSearchFieldTrial.isEnabled()) {
-            mPolicy.logCurrentState();
-        }
+        if (ContextualSearchFieldTrial.isEnabled()) mPolicy.logCurrentState();
     }
 
     /** @return Whether the given HTTP result code represents a failure or not. */
@@ -1412,8 +1414,10 @@ public class ContextualSearchManager
         // If there's a wait-after-tap experiment then we may want to delay a bit longer for
         // the user to take an action like scrolling that will reset our internal state.
         long delayBeforeFinishingWorkMs = 0;
-        if (ContextualSearchFieldTrial.getWaitAfterTapDelayMs() > 0 && tapTimeNanoseconds > 0) {
-            delayBeforeFinishingWorkMs = ContextualSearchFieldTrial.getWaitAfterTapDelayMs()
+        if (ContextualSearchFieldTrial.getValue(ContextualSearchSetting.WAIT_AFTER_TAP_DELAY_MS) > 0
+                && tapTimeNanoseconds > 0) {
+            delayBeforeFinishingWorkMs = ContextualSearchFieldTrial.getValue(
+                                                 ContextualSearchSetting.WAIT_AFTER_TAP_DELAY_MS)
                     - (System.nanoTime() - tapTimeNanoseconds) / NANOSECONDS_IN_A_MILLISECOND;
         }
 
