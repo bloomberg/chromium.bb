@@ -562,6 +562,7 @@ void OverlayWindowViews::Close() {
 
 void OverlayWindowViews::ShowInactive() {
   views::Widget::ShowInactive();
+  views::Widget::SetVisibleOnAllWorkspaces(true);
 #if defined(OS_CHROMEOS)
   // For rounded corners.
   if (ash::features::IsPipRoundedCornersEnabled()) {
