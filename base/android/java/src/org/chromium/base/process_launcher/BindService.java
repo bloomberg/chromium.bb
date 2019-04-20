@@ -14,6 +14,9 @@ import android.os.Handler;
 import android.os.Process;
 import android.os.UserHandle;
 
+import org.chromium.base.BuildInfo;
+import org.chromium.base.StrictModeContext;
+
 import java.lang.reflect.Method;
 import java.util.concurrent.Executor;
 
@@ -21,12 +24,42 @@ import java.util.concurrent.Executor;
  * Class of static helper methods to call Context.bindService variants.
  */
 final class BindService {
+    private static final Method sDoBindServiceQMethod;
+    static {
+        Method method = null;
+        try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+            if (BuildInfo.isAtLeastQ()) {
+                Class<?> clazz =
+                        Class.forName("org.chromium.base.process_launcher.BindServiceInternal");
+                method = clazz.getDeclaredMethod("doBindServiceQ", Context.class, Intent.class,
+                        ServiceConnection.class, int.class, Executor.class, String.class);
+            }
+        } catch (Exception e) {
+            // Ignore exceptions.
+        } finally {
+            sDoBindServiceQMethod = method;
+        }
+    }
+
     private static Method sBindServiceAsUserMethod;
+
+    static boolean supportVariableConnections() {
+        return sDoBindServiceQMethod != null;
+    }
 
     // Note that handler is not guaranteed to be used, and client still need to correctly handle
     // callbacks on the UI thread.
     static boolean doBindService(Context context, Intent intent, ServiceConnection connection,
             int flags, Handler handler, Executor executor, String instanceName) {
+        if (supportVariableConnections()) {
+            try {
+                return (boolean) sDoBindServiceQMethod.invoke(
+                        null, context, intent, connection, flags, executor, instanceName);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
             return bindServiceByCall(context, intent, connection, flags);
         }
