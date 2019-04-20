@@ -23,7 +23,10 @@ NullResourceFetcherProperties::NullResourceFetcherProperties()
               String(),
               HttpsState::kNone,
               AllowedByNosniff::MimeTypeCheck::kStrict,
-              mojom::IPAddressSpace::kPublic)) {}
+              mojom::IPAddressSpace::kPublic,
+              kLeaveInsecureRequestsAlone,
+              FetchClientSettingsObject::InsecureNavigationsSet(),
+              false /* mixed_autoupgrade_opt_out */)) {}
 
 void NullResourceFetcherProperties::Trace(Visitor* visitor) {
   visitor->Trace(fetch_client_settings_object_);

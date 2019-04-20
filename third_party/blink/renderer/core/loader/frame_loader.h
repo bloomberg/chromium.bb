@@ -47,6 +47,7 @@
 #include "third_party/blink/renderer/core/loader/frame_loader_types.h"
 #include "third_party/blink/renderer/core/loader/history_item.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
@@ -175,9 +176,14 @@ class CORE_EXPORT FrameLoader final {
   // already present in the FrameOwner's ContainerPolicy.
   WebSandboxFlags EffectiveSandboxFlags() const;
 
-  void ModifyRequestForCSP(ResourceRequest&,
-                           Document*,
-                           network::mojom::RequestContextFrameType) const;
+  // Modifying itself is done based on |fetch_client_settings_object|.
+  // |document_for_logging| is used only for logging, use counters,
+  // UKM-related things.
+  void ModifyRequestForCSP(
+      ResourceRequest&,
+      const FetchClientSettingsObject* fetch_client_settings_object,
+      Document* document_for_logging,
+      network::mojom::RequestContextFrameType) const;
 
   Frame* Opener();
   void SetOpener(LocalFrame*);
@@ -229,9 +235,19 @@ class CORE_EXPORT FrameLoader final {
   void Trace(blink::Visitor*);
 
   static void SetReferrerForFrameRequest(FrameLoadRequest&);
-  static void UpgradeInsecureRequest(ResourceRequest&,
-                                     ExecutionContext*,
-                                     network::mojom::RequestContextFrameType);
+
+  // Upgrade the insecure requests.
+  // https://w3c.github.io/webappsec-upgrade-insecure-requests/
+  // Upgrading itself is done based on |fetch_client_settings_object|.
+  // |execution_context_for_logging| is used only for logging, use counters,
+  // UKM-related things.
+  // TODO(hiroshige): Move this outside FrameLoader. This function is also used
+  // from WorkerFetchContext, which is not related to frames.
+  static void UpgradeInsecureRequest(
+      ResourceRequest&,
+      const FetchClientSettingsObject* fetch_client_settings_object,
+      ExecutionContext* execution_context_for_logging,
+      network::mojom::RequestContextFrameType);
 
   void ClientDroppedNavigation();
   void MarkAsLoading();

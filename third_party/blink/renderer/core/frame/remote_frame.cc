@@ -22,6 +22,9 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher_properties.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_timing_info.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
@@ -95,9 +98,16 @@ void RemoteFrame::Navigate(const FrameLoadRequest& passed_request,
   // information to determine correct referrer and upgrade the url, since it
   // won't have access to the originDocument. Do it now.
   FrameLoader::SetReferrerForFrameRequest(frame_request);
-  FrameLoader::UpgradeInsecureRequest(frame_request.GetResourceRequest(),
-                                      frame_request.OriginDocument(),
-                                      frame_request.GetFrameType());
+  const FetchClientSettingsObject* fetch_client_settings_object = nullptr;
+  if (frame_request.OriginDocument()) {
+    fetch_client_settings_object = &frame_request.OriginDocument()
+                                        ->Fetcher()
+                                        ->GetProperties()
+                                        .GetFetchClientSettingsObject();
+  }
+  FrameLoader::UpgradeInsecureRequest(
+      frame_request.GetResourceRequest(), fetch_client_settings_object,
+      frame_request.OriginDocument(), frame_request.GetFrameType());
 
   bool is_opener_navigation = false;
   bool initiator_frame_has_download_sandbox_flag = false;

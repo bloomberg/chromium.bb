@@ -1061,7 +1061,9 @@ TEST_F(ResourceFetcherTest, DetachedPropertiesWithDefaultValues) {
           network::mojom::ReferrerPolicy::kDefault,
           "https://example.com/foo.html", HttpsState::kModern,
           AllowedByNosniff::MimeTypeCheck::kStrict,
-          mojom::IPAddressSpace::kPublic);
+          mojom::IPAddressSpace::kPublic, kLeaveInsecureRequestsAlone,
+          FetchClientSettingsObject::InsecureNavigationsSet(),
+          false /* mixed_autoupgrade_opt_out */);
   const auto& original_properties =
       *MakeGarbageCollected<TestResourceFetcherProperties>(
           original_client_settings_object);
@@ -1113,7 +1115,9 @@ TEST_F(ResourceFetcherTest, DetachedPropertiesWithNonDefaultValues) {
           network::mojom::ReferrerPolicy::kDefault,
           "https://example.com/foo.html", HttpsState::kModern,
           AllowedByNosniff::MimeTypeCheck::kStrict,
-          mojom::IPAddressSpace::kPublic);
+          mojom::IPAddressSpace::kPublic, kLeaveInsecureRequestsAlone,
+          FetchClientSettingsObject::InsecureNavigationsSet(),
+          false /* mixed_autoupgrade_opt_out */);
   auto& original_properties =
       *MakeGarbageCollected<TestResourceFetcherProperties>(
           original_client_settings_object);

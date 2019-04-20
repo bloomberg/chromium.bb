@@ -101,6 +101,7 @@
 #include "third_party/blink/renderer/platform/instance_counters.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher_properties.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
 #include "third_party/blink/renderer/platform/network/network_utils.h"
@@ -912,8 +913,14 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
   // (i.e. javascript urls). Please see https://crbug.com/701749.
 
   // Report-only CSP headers are checked in browser.
-  ModifyRequestForCSP(resource_request, origin_document,
-                      request.GetFrameType());
+  const FetchClientSettingsObject* fetch_client_settings_object = nullptr;
+  if (origin_document) {
+    fetch_client_settings_object = &origin_document->Fetcher()
+                                        ->GetProperties()
+                                        .GetFetchClientSettingsObject();
+  }
+  ModifyRequestForCSP(resource_request, fetch_client_settings_object,
+                      origin_document, request.GetFrameType());
 
   DCHECK(Client()->HasWebView());
   // Check for non-escaped new lines in the url.
@@ -1665,7 +1672,8 @@ SandboxFlags FrameLoader::EffectiveSandboxFlags() const {
 
 void FrameLoader::ModifyRequestForCSP(
     ResourceRequest& resource_request,
-    Document* origin_document,
+    const FetchClientSettingsObject* fetch_client_settings_object,
+    Document* document_for_logging,
     network::mojom::RequestContextFrameType frame_type) const {
   if (!RequiredCSP().IsEmpty()) {
     DCHECK(
@@ -1688,13 +1696,15 @@ void FrameLoader::ModifyRequestForCSP(
                                         "1");
   }
 
-  UpgradeInsecureRequest(resource_request, origin_document, frame_type);
+  UpgradeInsecureRequest(resource_request, fetch_client_settings_object,
+                         document_for_logging, frame_type);
 }
 
 // static
 void FrameLoader::UpgradeInsecureRequest(
     ResourceRequest& resource_request,
-    ExecutionContext* origin_context,
+    const FetchClientSettingsObject* fetch_client_settings_object,
+    ExecutionContext* execution_context_for_logging,
     network::mojom::RequestContextFrameType frame_type) {
   // We always upgrade requests that meet any of the following criteria:
   //  1. Are for subresources.
@@ -1707,25 +1717,29 @@ void FrameLoader::UpgradeInsecureRequest(
   // * Browser initiated main document loading. No upgrade required.
   // * Navigation initiated by a frame in another process. URL should have
   //   already been upgraded in the initiator's process.
-  if (!origin_context)
+  if (!execution_context_for_logging)
     return;
 
-  if (!(origin_context->GetSecurityContext().GetInsecureRequestPolicy() &
+  DCHECK(fetch_client_settings_object);
+
+  if (!(fetch_client_settings_object->GetInsecureRequestsPolicy() &
         kUpgradeInsecureRequests)) {
     mojom::RequestContextType context = resource_request.GetRequestContext();
     // TODO(carlosil): Handle strict_mixed_content_checking_for_plugin
     // correctly.
     if (context != mojom::RequestContextType::UNSPECIFIED &&
         resource_request.Url().ProtocolIs("http") &&
-        !origin_context->GetSecurityContext().GetMixedAutoUpgradeOptOut() &&
+        !fetch_client_settings_object->GetMixedAutoUpgradeOptOut() &&
         MixedContentChecker::ShouldAutoupgrade(
-            origin_context->GetHttpsState(),
+            fetch_client_settings_object->GetHttpsState(),
             WebMixedContent::ContextTypeFromRequestContext(context, false))) {
-      if (origin_context->IsDocument()) {
-        Document* document = static_cast<Document*>(origin_context);
+      if (execution_context_for_logging->IsDocument()) {
+        Document* document =
+            static_cast<Document*>(execution_context_for_logging);
         document->AddConsoleMessage(
             MixedContentChecker::CreateConsoleMessageAboutFetchAutoupgrade(
-                origin_context->Url(), resource_request.Url()));
+                fetch_client_settings_object->GlobalObjectUrl(),
+                resource_request.Url()));
         resource_request.SetUkmSourceId(document->UkmSourceID());
       }
       resource_request.SetIsAutomaticUpgrade(true);
@@ -1752,10 +1766,10 @@ void FrameLoader::UpgradeInsecureRequest(
 
   if (frame_type == network::mojom::RequestContextFrameType::kNone ||
       resource_request.GetRequestContext() == mojom::RequestContextType::FORM ||
-      (!url.Host().IsNull() && origin_context->GetSecurityContext()
-                                   .InsecureNavigationsToUpgrade()
-                                   ->Contains(url.Host().Impl()->GetHash()))) {
-    UseCounter::Count(origin_context,
+      (!url.Host().IsNull() &&
+       fetch_client_settings_object->GetUpgradeInsecureNavigationsSet()
+           .Contains(url.Host().Impl()->GetHash()))) {
+    UseCounter::Count(execution_context_for_logging,
                       WebFeature::kUpgradeInsecureRequestsUpgradedRequest);
     url.SetProtocol("https");
     if (url.Port() == 80)

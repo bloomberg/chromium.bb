@@ -491,7 +491,9 @@ void FrameFetchContext::ModifyRequestForCSP(ResourceRequest& resource_request) {
   // request.
   GetFrame()->Loader().RecordLatestRequiredCSP();
   GetFrame()->Loader().ModifyRequestForCSP(
-      resource_request, &frame_or_imported_document_->GetDocument(),
+      resource_request,
+      &GetResourceFetcherProperties().GetFetchClientSettingsObject(),
+      &frame_or_imported_document_->GetDocument(),
       network::mojom::RequestContextFrameType::kNone);
 }
 

@@ -268,7 +268,9 @@ class FrameFetchContextModifyRequestTest : public FrameFetchContextTest {
                            network::mojom::RequestContextFrameType frame_type) {
     document->GetFrame()->Loader().RecordLatestRequiredCSP();
     document->GetFrame()->Loader().ModifyRequestForCSP(
-        resource_request, document.Get(), frame_type);
+        resource_request,
+        &document->Fetcher()->GetProperties().GetFetchClientSettingsObject(),
+        document.Get(), frame_type);
   }
 
   void ExpectUpgrade(const char* input, const char* expected) {

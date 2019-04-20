@@ -229,8 +229,9 @@ void WorkerFetchContext::PopulateResourceRequest(
     const FetchParameters::ResourceWidth& resource_width,
     ResourceRequest& out_request) {
   FrameLoader::UpgradeInsecureRequest(
-      out_request, global_scope_,
-      network::mojom::RequestContextFrameType::kNone);
+      out_request,
+      &GetResourceFetcherProperties().GetFetchClientSettingsObject(),
+      global_scope_, network::mojom::RequestContextFrameType::kNone);
   SetFirstPartyCookie(out_request);
   if (!out_request.TopFrameOrigin())
     out_request.SetTopFrameOrigin(GetTopFrameOrigin());
