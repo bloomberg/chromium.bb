@@ -68,6 +68,7 @@ const char kChromeUIExtensionsInternalsHost[] = "extensions-internals";
 const char kChromeUIExtensionsURL[] = "chrome://extensions/";
 const char kChromeUIFaviconHost[] = "favicon";
 const char kChromeUIFaviconURL[] = "chrome://favicon/";
+const char kChromeUIFileiconURL[] = "chrome://fileicon/";
 const char kChromeUIFlagsHost[] = "flags";
 const char kChromeUIFlagsURL[] = "chrome://flags/";
 const char kChromeUIGCMInternalsHost[] = "gcm-internals";

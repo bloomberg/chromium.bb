@@ -36,8 +36,10 @@ cr.define('cr.icon', function() {
    * @return {string}
    */
   function getFileIconUrl(filePath) {
-    return 'chrome://fileicon/' + encodeURIComponent(filePath) +
-        '?scale=' + window.devicePixelRatio + 'x';
+    const url = new URL('chrome://fileicon/');
+    url.searchParams.set('path', filePath);
+    url.searchParams.set('scale', window.devicePixelRatio + 'x');
+    return url.toString();
   }
 
   /**
