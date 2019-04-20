@@ -33,8 +33,7 @@ Controller::Controller() {
   als_reader_ = std::make_unique<AlsReaderImpl>();
   als_reader_->Init();
 
-  brightness_monitor_ =
-      std::make_unique<BrightnessMonitorImpl>(power_manager_client);
+  brightness_monitor_ = std::make_unique<BrightnessMonitorImpl>();
 
   model_config_loader_ = std::make_unique<ModelConfigLoaderImpl>();
 

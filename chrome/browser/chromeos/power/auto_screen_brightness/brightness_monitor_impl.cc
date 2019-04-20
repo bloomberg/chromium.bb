@@ -16,6 +16,7 @@
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager/backlight.pb.h"
+#include "chromeos/services/power/public/cpp/power_manager_mojo_client.h"
 
 namespace chromeos {
 namespace power {
@@ -23,15 +24,11 @@ namespace auto_screen_brightness {
 
 constexpr base::TimeDelta BrightnessMonitorImpl::kBrightnessSampleDelay;
 
-BrightnessMonitorImpl::BrightnessMonitorImpl(
-    chromeos::PowerManagerClient* const power_manager_client)
-    : power_manager_client_observer_(this),
-      power_manager_client_(power_manager_client),
-      weak_ptr_factory_(this) {
-  DCHECK(power_manager_client);
-  power_manager_client_observer_.Add(power_manager_client);
+BrightnessMonitorImpl::BrightnessMonitorImpl() {
+  power_manager_client_observer_.Add(chromeos::PowerManagerMojoClient::Get());
 
-  power_manager_client_->WaitForServiceToBeAvailable(
+  // TODO(estade): use Mojo.
+  chromeos::PowerManagerClient::Get()->WaitForServiceToBeAvailable(
       base::BindOnce(&BrightnessMonitorImpl::OnPowerManagerServiceAvailable,
                      weak_ptr_factory_.GetWeakPtr()));
 
@@ -115,7 +112,7 @@ void BrightnessMonitorImpl::OnPowerManagerServiceAvailable(
     OnInitializationComplete();
     return;
   }
-  power_manager_client_->GetScreenBrightnessPercent(
+  chromeos::PowerManagerMojoClient::Get()->GetScreenBrightnessPercent(
       base::BindOnce(&BrightnessMonitorImpl::OnReceiveInitialBrightnessPercent,
                      weak_ptr_factory_.GetWeakPtr()));
 }

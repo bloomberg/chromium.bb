@@ -209,7 +209,7 @@ class PowerManagerClientImpl : public PowerManagerClient {
   // PowerManagerClient overrides:
 
   void AddObserver(Observer* observer) override {
-    CHECK(observer);  // http://crbug.com/119976
+    DCHECK(observer);  // http://crbug.com/119976
     observers_.AddObserver(observer);
   }
 
@@ -1043,7 +1043,7 @@ class PowerManagerClientImpl : public PowerManagerClient {
   // Reports suspend readiness to powerd if no observers are still holding
   // suspend readiness callbacks.
   void MaybeReportSuspendReadiness() {
-    CHECK(suspend_is_pending_);
+    DCHECK(suspend_is_pending_);
 
     // Avoid reporting suspend readiness if some observers have yet to be
     // notified about the pending attempt.
@@ -1143,31 +1143,34 @@ class PowerManagerClientImpl : public PowerManagerClient {
   DISALLOW_COPY_AND_ASSIGN(PowerManagerClientImpl);
 };
 
-PowerManagerClient::PowerManagerClient() {
-  CHECK(!g_instance);
-  g_instance = this;
-}
-
-PowerManagerClient::~PowerManagerClient() {
-  CHECK_EQ(this, g_instance);
-  g_instance = nullptr;
-}
+// Unlike most D-Bus clients, PowerManagerClient doesn't set the singleton
+// instance in the ctor. This is because the mojo client is also a
+// PowerManagerClient, and co-exists with the D-Bus client in single process
+// Mash. When multi-process Mash is default, g_instance setting/clearing can be
+// moved back to the ctor/dtor.
+PowerManagerClient::PowerManagerClient() = default;
+PowerManagerClient::~PowerManagerClient() = default;
 
 // static
 void PowerManagerClient::Initialize(dbus::Bus* bus) {
-  CHECK(bus);
-  (new PowerManagerClientImpl())->Init(bus);
+  DCHECK(bus);
+  DCHECK(!g_instance);
+  auto* power_manager_client = new PowerManagerClientImpl();
+  power_manager_client->Init(bus);
+  g_instance = power_manager_client;
 }
 
 // static
 void PowerManagerClient::InitializeFake() {
-  new FakePowerManagerClient();
+  DCHECK(!g_instance);
+  g_instance = new FakePowerManagerClient();
 }
 
 // static
 void PowerManagerClient::Shutdown() {
-  CHECK(g_instance);
+  DCHECK(g_instance);
   delete g_instance;
+  g_instance = nullptr;
 }
 
 // static

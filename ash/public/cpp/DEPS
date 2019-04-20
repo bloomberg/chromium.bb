@@ -1,5 +1,6 @@
 include_rules = [
   "+chromeos/constants",
+  "+chromeos/services",
   "+components/prefs",
   "+services/data_decoder/public",
   "+services/device/public",

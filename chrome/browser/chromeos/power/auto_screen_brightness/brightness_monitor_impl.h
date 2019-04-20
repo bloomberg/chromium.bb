@@ -34,9 +34,7 @@ class BrightnessMonitorImpl : public BrightnessMonitor,
   static constexpr base::TimeDelta kBrightnessSampleDelay =
       base::TimeDelta::FromSeconds(5);
 
-  // PowerManagerClient must outlive BrightnessMonitorImpl.
-  explicit BrightnessMonitorImpl(
-      chromeos::PowerManagerClient* power_manager_client);
+  BrightnessMonitorImpl();
   ~BrightnessMonitorImpl() override;
 
   // BrightnessMonitor overrides:
@@ -75,8 +73,7 @@ class BrightnessMonitorImpl : public BrightnessMonitor,
 
   ScopedObserver<chromeos::PowerManagerClient,
                  chromeos::PowerManagerClient::Observer>
-      power_manager_client_observer_;
-  chromeos::PowerManagerClient* const power_manager_client_;
+      power_manager_client_observer_{this};
 
   // Delay after user brightness adjustment before we record the brightness.
   base::TimeDelta brightness_sample_delay_;
@@ -104,7 +101,7 @@ class BrightnessMonitorImpl : public BrightnessMonitor,
 
   base::ObserverList<BrightnessMonitor::Observer> observers_;
 
-  base::WeakPtrFactory<BrightnessMonitorImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<BrightnessMonitorImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BrightnessMonitorImpl);
 };

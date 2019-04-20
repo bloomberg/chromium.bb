@@ -1,0 +1,30 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module chromeos.power.mojom;
+
+// TODO(https://crbug.com/657632): This struct wrapper exists to allow the value
+// to be null.
+struct Brightness {
+  double value;
+};
+
+// The interface for handling out-of-process calls that query or adjust power
+// related state. The implementation relays calls to the D-Bus client, which
+// uses D-Bus to communicate with the Power Manager daemon. In Mash, this lives
+// in the Ash process.
+interface PowerManagerController {
+  SetObserver(associated PowerManagerObserver observer);
+
+  // All following methods and their semantics are copied from the
+  // PowerManagerClient interface. Refer to that for documentation.
+  GetScreenBrightnessPercent() => (Brightness? brightness);
+};
+
+// An interface for observing changes to power state. The changes are dispatched
+// over mojo from PowerManagerController.
+interface PowerManagerObserver {
+  // TODO(estade): the parameter should be a BacklightBrightnessChange.
+  ScreenBrightnessChanged(double percent);
+};

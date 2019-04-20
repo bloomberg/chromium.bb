@@ -101,8 +101,7 @@ class BrightnessMonitorImplTest : public testing::Test {
           features::kAutoScreenBrightness, params);
     }
 
-    monitor_ =
-        std::make_unique<BrightnessMonitorImpl>(PowerManagerClient::Get());
+    monitor_ = std::make_unique<BrightnessMonitorImpl>();
     test_observer_ = std::make_unique<TestObserver>();
     monitor_->AddObserver(test_observer_.get());
     scoped_task_environment_.RunUntilIdle();

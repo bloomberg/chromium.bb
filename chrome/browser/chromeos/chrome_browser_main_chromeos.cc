@@ -136,6 +136,7 @@
 #include "chromeos/cryptohome/system_salt_getter.h"
 #include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/power/power_policy_controller.h"
 #include "chromeos/dbus/services/cros_dbus_service.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
@@ -147,6 +148,7 @@
 #include "chromeos/network/network_cert_loader.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/portal_detector/network_portal_detector_stub.h"
+#include "chromeos/services/power/public/cpp/power_manager_mojo_client.h"
 #include "chromeos/system/statistics_provider.h"
 #include "chromeos/tpm/install_attributes.h"
 #include "chromeos/tpm/tpm_token_loader.h"
@@ -569,6 +571,11 @@ int ChromeBrowserMainPartsChromeos::PreEarlyInitialization() {
   // DBus is initialized in ChromeMainDelegate::PostEarlyInitialization().
   CHECK(DBusThreadManager::IsInitialized());
 
+  if (base::FeatureList::IsEnabled(chromeos::features::kMojoDBusRelay)) {
+    power_manager_mojo_client_ =
+        std::make_unique<chromeos::PowerManagerMojoClient>();
+  }
+
   if (!base::SysInfo::IsRunningOnChromeOS() &&
       parsed_command_line().HasSwitch(
           switches::kFakeDriveFsLauncherChrootPath) &&
@@ -606,6 +613,17 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
   memory_kills_monitor_ = memory::MemoryKillsMonitor::Initialize();
 
   ChromeBrowserMainPartsLinux::PostMainMessageLoopStart();
+}
+
+void ChromeBrowserMainPartsChromeos::ServiceManagerConnectionStarted(
+    content::ServiceManagerConnection* connection) {
+  if (base::FeatureList::IsEnabled(chromeos::features::kMojoDBusRelay)) {
+    connection->GetConnector()->BindInterface(
+        ash::mojom::kServiceName, power_manager_mojo_client_->interface_ptr());
+    power_manager_mojo_client_->InitAfterInterfaceBound();
+  }
+
+  ChromeBrowserMainPartsLinux::ServiceManagerConnectionStarted(connection);
 }
 
 // Threads are initialized between MainMessageLoopStart and MainMessageLoopRun.
@@ -951,7 +969,7 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
       std::make_unique<FreezerCgroupProcessManager>());
 
   power_metrics_reporter_ = std::make_unique<PowerMetricsReporter>(
-      PowerManagerClient::Get(), g_browser_process->local_state());
+      chromeos::PowerManagerClient::Get(), g_browser_process->local_state());
 
   g_browser_process->platform_part()->InitializeAutomaticRebootManager();
   user_removal_manager::RemoveUsersIfNeeded();

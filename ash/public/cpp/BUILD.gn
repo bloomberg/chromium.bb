@@ -178,6 +178,7 @@ source_set("manifest") {
     "//ash/public/interfaces:interfaces_internal",
     "//base",
     "//chromeos/services/multidevice_setup/public/mojom",
+    "//chromeos/services/power/public/mojom",
     "//services/content/public/mojom",
     "//services/data_decoder/public/mojom",
     "//services/device/public/mojom",

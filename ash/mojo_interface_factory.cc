@@ -54,6 +54,7 @@
 #include "base/lazy_instance.h"
 #include "base/single_thread_task_runner.h"
 #include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/services/power/public/cpp/power_manager_mojo_controller.h"
 #include "ui/keyboard/keyboard_controller.h"
 
 namespace ash {
@@ -272,6 +273,12 @@ void BindSplitViewRequestOnMainThread(
   Shell::Get()->split_view_controller()->BindRequest(std::move(request));
 }
 
+void BindPowerManagerControllerRequestOnMainThread(
+    chromeos::power::mojom::PowerManagerControllerRequest request) {
+  Shell::Get()->power_manager_mojo_controller()->BindRequest(
+      std::move(request));
+}
+
 }  // namespace
 
 void RegisterInterfaces(
@@ -403,6 +410,9 @@ void RegisterInterfaces(
                          main_thread_task_runner);
   registry->AddInterface(base::BindRepeating(&BindSplitViewRequestOnMainThread),
                          main_thread_task_runner);
+  registry->AddInterface(
+      base::BindRepeating(&BindPowerManagerControllerRequestOnMainThread),
+      main_thread_task_runner);
 
   // Inject additional optional interfaces.
   if (g_register_interfaces_callback.Get()) {

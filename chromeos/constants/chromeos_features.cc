@@ -52,6 +52,12 @@ const base::Feature kEnableFileManagerFeedbackPanel{
 const base::Feature kEnableMessagesWebPush{"EnableMessagesWebPush",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables the use of Mojo by Chrome-process code to communicate with Power
+// Manager. In order to use mojo, this feature must be turned on and a callsite
+// must use PowerManagerMojoClient::Get().
+const base::Feature kMojoDBusRelay{"MojoDBusRelay",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
+
 // If enabled, MyFiles will be a root/volume and user can create other
 // sub-folders and files in addition to the Downloads folder inside MyFiles.
 const base::Feature kMyFilesVolume{"MyFilesVolume",
