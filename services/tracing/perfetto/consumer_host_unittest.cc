@@ -167,6 +167,19 @@ class ThreadedPerfettoService : public mojom::TracingSession {
     wait_for_call.Run();
   }
 
+  void DisableTracingAndEmitJson(
+      mojo::ScopedDataPipeProducerHandle stream,
+      ConsumerHost::DisableTracingAndEmitJsonCallback callback) {
+    base::RunLoop wait_for_call;
+    task_runner_->PostTaskAndReply(
+        FROM_HERE,
+        base::BindOnce(&ConsumerHost::DisableTracingAndEmitJson,
+                       base::Unretained(consumer_.get()), std::string(),
+                       std::move(stream), std::move(callback)),
+        wait_for_call.QuitClosure());
+    wait_for_call.Run();
+  }
+
   void WritePacketBigly() {
     base::RunLoop wait_for_call;
     task_runner_->PostTask(FROM_HERE,
@@ -287,13 +300,21 @@ class TracingConsumerTest : public testing::Test,
 
   // mojo::DataPipeDrainer::Client
   void OnDataComplete() override {
-    auto proto = std::make_unique<perfetto::protos::Trace>();
-    EXPECT_TRUE(
-        proto->ParseFromArray(received_data_.data(), received_data_.size()));
-
-    for (int i = 0; i < proto->packet_size(); ++i) {
-      if (proto->packet(i).for_testing().str() == packet_testing_str_) {
+    if (expect_json_data_) {
+      std::string output(reinterpret_cast<const char*>(received_data_.data()),
+                         received_data_.size());
+      if (output.find(packet_testing_str_) != std::string::npos) {
         matching_packet_count_++;
+      }
+    } else {
+      auto proto = std::make_unique<perfetto::protos::Trace>();
+      EXPECT_TRUE(
+          proto->ParseFromArray(received_data_.data(), received_data_.size()));
+
+      for (int i = 0; i < proto->packet_size(); ++i) {
+        if (proto->packet(i).for_testing().str() == packet_testing_str_) {
+          matching_packet_count_++;
+        }
       }
     }
 
@@ -310,11 +331,27 @@ class TracingConsumerTest : public testing::Test,
   }
 
   void ReadBuffers() {
-    mojo::DataPipe data_pipe;
-    threaded_service_->ReadBuffers(std::move(data_pipe.producer_handle),
-                                   base::OnceClosure());
-    drainer_.reset(
-        new mojo::DataPipeDrainer(this, std::move(data_pipe.consumer_handle)));
+    MojoCreateDataPipeOptions options = {sizeof(MojoCreateDataPipeOptions),
+                                         MOJO_CREATE_DATA_PIPE_FLAG_NONE, 1, 0};
+    mojo::ScopedDataPipeProducerHandle producer;
+    mojo::ScopedDataPipeConsumerHandle consumer;
+    MojoResult rv = mojo::CreateDataPipe(&options, &producer, &consumer);
+    ASSERT_EQ(MOJO_RESULT_OK, rv);
+    threaded_service_->ReadBuffers(std::move(producer), base::OnceClosure());
+    drainer_.reset(new mojo::DataPipeDrainer(this, std::move(consumer)));
+  }
+
+  void DisableTracingAndEmitJson(base::OnceClosure write_callback) {
+    expect_json_data_ = true;
+    MojoCreateDataPipeOptions options = {sizeof(MojoCreateDataPipeOptions),
+                                         MOJO_CREATE_DATA_PIPE_FLAG_NONE, 1, 0};
+    mojo::ScopedDataPipeProducerHandle producer;
+    mojo::ScopedDataPipeConsumerHandle consumer;
+    MojoResult rv = mojo::CreateDataPipe(&options, &producer, &consumer);
+    ASSERT_EQ(MOJO_RESULT_OK, rv);
+    threaded_service_->DisableTracingAndEmitJson(std::move(producer),
+                                                 std::move(write_callback));
+    drainer_.reset(new mojo::DataPipeDrainer(this, std::move(consumer)));
   }
 
   perfetto::TraceConfig GetDefaultTraceConfig(
@@ -366,6 +403,7 @@ class TracingConsumerTest : public testing::Test,
   std::string packet_testing_str_;
   size_t matching_packet_count_ = 0;
   size_t total_bytes_received_ = 0;
+  bool expect_json_data_ = false;
 };
 
 TEST_F(TracingConsumerTest, EnableAndDisableTracing) {
@@ -575,6 +613,35 @@ TEST_F(TracingConsumerTest, PrivacyFilterConfig) {
                   ->GetProducerClientConfig()
                   .chrome_config()
                   .privacy_filtering_enabled());
+}
+
+TEST_F(TracingConsumerTest, PrivacyFilterConfigInJson) {
+  EnableTracingWithDataSourceName(mojom::kTraceEventDataSourceName,
+                                  /* enable_privacy_filtering =*/true);
+
+  base::RunLoop wait_for_tracing_start;
+  threaded_perfetto_service()->CreateProducer(
+      mojom::kTraceEventDataSourceName, 10u,
+      wait_for_tracing_start.QuitClosure());
+
+  wait_for_tracing_start.Run();
+
+  EXPECT_TRUE(threaded_perfetto_service()
+                  ->GetProducerClientConfig()
+                  .chrome_config()
+                  .privacy_filtering_enabled());
+
+  base::RunLoop no_more_data;
+  ExpectPackets("\"perfetto_trace_stats\":\"__stripped__\"",
+                no_more_data.QuitClosure());
+
+  base::RunLoop write_done;
+  DisableTracingAndEmitJson(write_done.QuitClosure());
+
+  no_more_data.Run();
+  write_done.Run();
+
+  EXPECT_EQ(1u, matching_packet_count());
 }
 
 }  // namespace tracing

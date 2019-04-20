@@ -23,6 +23,7 @@
 #include "services/tracing/perfetto/json_trace_exporter.h"
 #include "services/tracing/perfetto/perfetto_service.h"
 #include "services/tracing/perfetto/track_event_json_exporter.h"
+#include "services/tracing/public/cpp/trace_event_args_whitelist.h"
 #include "third_party/perfetto/include/perfetto/tracing/core/observable_events.h"
 #include "third_party/perfetto/include/perfetto/tracing/core/trace_config.h"
 #include "third_party/perfetto/include/perfetto/tracing/core/trace_packet.h"
@@ -155,6 +156,12 @@ void ConsumerHost::EnableTracing(mojom::TracingSessionPtr tracing_session,
 
   tracing_session_ = std::move(tracing_session);
 
+  privacy_filtering_enabled_ = false;
+  for (const auto& data_source : trace_config.data_sources()) {
+    if (data_source.config().chrome_config().privacy_filtering_enabled()) {
+      privacy_filtering_enabled_ = true;
+    }
+  }
   perfetto::TraceConfig trace_config_copy = AdjustTraceConfig(trace_config);
 
   filtered_pids_.clear();
@@ -252,10 +259,28 @@ void ConsumerHost::DisableTracingAndEmitJson(
                      weak_factory_.GetWeakPtr()),
       base::SequencedTaskRunnerHandle::Get());
 
-  // TODO(eseckler): Support argument/metadata filtering.
+  // In legacy backend, the trace event agent sets the predicate used by
+  // TraceLog. For perfetto backend, ensure that predicate is always set
+  // before creating the exporter. The agent can be created later than this
+  // point.
+  if (base::trace_event::TraceLog::GetInstance()
+          ->GetArgumentFilterPredicate()
+          .is_null()) {
+    base::trace_event::TraceLog::GetInstance()->SetArgumentFilterPredicate(
+        base::BindRepeating(&IsTraceEventArgsWhitelisted));
+    base::trace_event::TraceLog::GetInstance()->SetMetadataFilterPredicate(
+        base::BindRepeating(&IsMetadataWhitelisted));
+  }
+
+  JSONTraceExporter::ArgumentFilterPredicate arg_filter_predicate;
+  JSONTraceExporter::MetadataFilterPredicate metadata_filter_predicate;
+  if (privacy_filtering_enabled_) {
+    auto* trace_log = base::trace_event::TraceLog::GetInstance();
+    arg_filter_predicate = trace_log->GetArgumentFilterPredicate();
+    metadata_filter_predicate = trace_log->GetMetadataFilterPredicate();
+  }
   json_trace_exporter_ = std::make_unique<TrackEventJSONExporter>(
-      JSONTraceExporter::ArgumentFilterPredicate(),
-      JSONTraceExporter::MetadataFilterPredicate(),
+      std::move(arg_filter_predicate), std::move(metadata_filter_predicate),
       base::BindRepeating(&ConsumerHost::OnJSONTraceData,
                           base::Unretained(this)));
 

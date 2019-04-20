@@ -99,6 +99,7 @@ class ConsumerHost : public perfetto::Consumer, public mojom::ConsumerHost {
   base::OnceCallback<void(bool)> flush_callback_;
   mojom::TracingSessionPtr tracing_session_;
   std::set<base::ProcessId> filtered_pids_;
+  bool privacy_filtering_enabled_ = false;
   // If set, we didn't issue OnTracingEnabled() on the session yet. If set and
   // empty, no more pids are pending and we should issue OnTracingEnabled().
   base::Optional<std::set<base::ProcessId>> pending_enable_tracing_ack_pids_;
