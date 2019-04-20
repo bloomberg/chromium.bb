@@ -262,7 +262,7 @@ void FindInPageManagerImpl::StartSearch(NSString* query) {
         base::BindOnce(&FindInPageManagerImpl::ProcessFindInPageResult,
                        weak_factory_.GetWeakPtr(), frame->GetFrameId(),
                        last_find_request_.unique_id),
-        base::TimeDelta::FromSeconds(kJavaScriptFunctionCallTimeout));
+        base::TimeDelta::FromMilliseconds(kJavaScriptFunctionCallTimeout));
     if (!result) {
       // Calling JavaScript function failed or the frame does not support
       // messaging.
@@ -330,7 +330,7 @@ void FindInPageManagerImpl::ProcessFindInPageResult(const std::string& frame_id,
           kFindInPagePump, params,
           base::BindOnce(&FindInPageManagerImpl::ProcessFindInPageResult,
                          weak_factory_.GetWeakPtr(), frame_id, unique_id),
-          base::TimeDelta::FromSeconds(kJavaScriptFunctionCallTimeout));
+          base::TimeDelta::FromMilliseconds(kJavaScriptFunctionCallTimeout));
       return;
     }
 
@@ -388,7 +388,7 @@ void FindInPageManagerImpl::SelectCurrentMatch() {
         kFindInPageSelectAndScrollToMatch, params,
         base::BindOnce(&FindInPageManagerImpl::NotifyDelegateDidSelectMatch,
                        weak_factory_.GetWeakPtr()),
-        base::TimeDelta::FromSeconds(kJavaScriptFunctionCallTimeout));
+        base::TimeDelta::FromMilliseconds(kJavaScriptFunctionCallTimeout));
   }
 }
 
