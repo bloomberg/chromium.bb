@@ -279,6 +279,8 @@ const char kHeaderFooter[] = "headerFooter";
 // Name of a dictionary field telling us whether the kPrintHeaderFooter pref is
 // managed by an enterprise policy.
 const char kIsHeaderFooterManaged[] = "isHeaderFooterManaged";
+// Name of a dictionary field holding the cloud print URL.
+const char kCloudPrintURL[] = "cloudPrintURL";
 
 // Get the print job settings dictionary from |json_str|.
 // Returns |base::Value()| on failure.
@@ -952,8 +954,6 @@ void PrintPreviewHandler::HandleGetInitialSettings(
 
   AllowJavascript();
 
-  // Send before SendInitialSettings() to allow cloud printer auto select.
-  SendCloudPrintEnabled();
   GetPrinterHandler(PrinterType::kLocalPrinter)
       ->GetDefaultPrinter(base::Bind(&PrintPreviewHandler::SendInitialSettings,
                                      weak_factory_.GetWeakPtr(), callback_id));
@@ -987,6 +987,11 @@ void PrintPreviewHandler::SendInitialSettings(
     // customized.
     initial_settings.SetBoolean(kHeaderFooter,
                                 prefs->GetBoolean(prefs::kPrintHeaderFooter));
+  }
+  if (prefs->GetBoolean(prefs::kCloudPrintSubmitEnabled) &&
+      !base::FeatureList::IsEnabled(features::kCloudPrinterHandler)) {
+    initial_settings.SetString(kCloudPrintURL,
+                               GURL(cloud_devices::GetCloudPrintURL()).spec());
   }
   initial_settings.SetBoolean(
       kIsHeaderFooterManaged,
@@ -1065,17 +1070,6 @@ void PrintPreviewHandler::SendPrinterSetup(const std::string& callback_id,
     LOG(WARNING) << "Printer setup failed";
   }
   ResolveJavascriptCallback(base::Value(callback_id), response);
-}
-
-void PrintPreviewHandler::SendCloudPrintEnabled() {
-  PrefService* prefs = GetPrefs();
-  if (prefs->GetBoolean(prefs::kCloudPrintSubmitEnabled) &&
-      !base::FeatureList::IsEnabled(features::kCloudPrinterHandler)) {
-    FireWebUIListener(
-        "use-cloud-print",
-        base::Value(GURL(cloud_devices::GetCloudPrintURL()).spec()),
-        base::Value(chrome::IsRunningInForcedAppMode()));
-  }
 }
 
 void PrintPreviewHandler::SendCloudPrintJob(

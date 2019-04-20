@@ -295,9 +295,8 @@ class PrintPreviewHandlerTest : public testing::Test {
         base::ListValue::From(base::Value::ToUniquePtrValue(std::move(args)));
     handler()->HandleGetInitialSettings(list_args.get());
 
-    // In response to get initial settings, the initial settings are sent back
-    // and a use-cloud-print event is dispatched.
-    ASSERT_EQ(2u, web_ui()->call_data().size());
+    // In response to get initial settings, the initial settings are sent back.
+    ASSERT_EQ(1u, web_ui()->call_data().size());
   }
 
   void AssertWebUIEventFired(const content::TestWebUI::CallData& data,
@@ -370,6 +369,9 @@ class PrintPreviewHandlerTest : public testing::Test {
     ASSERT_EQ(expected_header_footer.has_value(), !!header_footer);
     if (expected_header_footer.has_value())
       EXPECT_EQ(expected_header_footer.value(), header_footer->GetBool());
+
+    ASSERT_TRUE(
+        settings->FindKeyOfType("cloudPrintURL", base::Value::Type::STRING));
   }
 
   IPC::TestSink& initiator_sink() {
@@ -423,9 +425,6 @@ TEST_F(PrintPreviewHandlerTest, InitialSettingsSimple) {
   // Verify initial settings were sent.
   ValidateInitialSettings(*web_ui()->call_data().back(), kDummyPrinterName,
                           kDummyInitiatorName, {});
-
-  // Check that the use-cloud-print event got sent
-  AssertWebUIEventFired(*web_ui()->call_data().front(), "use-cloud-print");
 }
 
 TEST_F(PrintPreviewHandlerTest, InitialSettingsEnableHeaderFooter) {
@@ -464,9 +463,9 @@ TEST_F(PrintPreviewHandlerTest, GetPrinters) {
     handler()->HandleGetPrinters(list_args.get());
     EXPECT_TRUE(handler()->CalledOnlyForType(type));
 
-    // Start with 2 calls from initial settings, then add 2 more for each loop
+    // Start with 1 call from initial settings, then add 2 more for each loop
     // iteration (one for printers-added, and one for the response).
-    ASSERT_EQ(2u + 2 * (i + 1), web_ui()->call_data().size());
+    ASSERT_EQ(1u + 2 * (i + 1), web_ui()->call_data().size());
 
     // Validate printers-added
     const content::TestWebUI::CallData& add_data =
@@ -511,9 +510,9 @@ TEST_F(PrintPreviewHandlerTest, GetPrinterCapabilities) {
     handler()->HandleGetPrinterCapabilities(list_args.get());
     EXPECT_TRUE(handler()->CalledOnlyForType(type));
 
-    // Start with 2 calls from initial settings, then add 1 more for each loop
+    // Start with 1 call from initial settings, then add 1 more for each loop
     // iteration.
-    ASSERT_EQ(2u + (i + 1), web_ui()->call_data().size());
+    ASSERT_EQ(1u + (i + 1), web_ui()->call_data().size());
 
     // Verify that the printer capabilities promise was resolved correctly.
     const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
@@ -541,9 +540,9 @@ TEST_F(PrintPreviewHandlerTest, GetPrinterCapabilities) {
     handler()->HandleGetPrinterCapabilities(list_args.get());
     EXPECT_TRUE(handler()->CalledOnlyForType(type));
 
-    // Start with 2 calls from initial settings plus base::size(kAllTypes) from
+    // Start with 1 call from initial settings plus base::size(kAllTypes) from
     // first loop, then add 1 more for each loop iteration.
-    ASSERT_EQ(2u + base::size(kAllTypes) + (i + 1),
+    ASSERT_EQ(1u + base::size(kAllTypes) + (i + 1),
               web_ui()->call_data().size());
 
     // Verify printer capabilities promise was rejected.
@@ -747,9 +746,9 @@ TEST_F(PrintPreviewHandlerFailingTest, GetPrinterCapabilities) {
     handler()->HandleGetPrinterCapabilities(list_args.get());
     EXPECT_TRUE(handler()->CalledOnlyForType(type));
 
-    // Start with 2 calls from initial settings, then add 1 more for each loop
+    // Start with 1 call from initial settings, then add 1 more for each loop
     // iteration.
-    ASSERT_EQ(2u + (i + 1), web_ui()->call_data().size());
+    ASSERT_EQ(1u + (i + 1), web_ui()->call_data().size());
 
     // Verify printer capabilities promise was rejected.
     const content::TestWebUI::CallData& data = *web_ui()->call_data().back();

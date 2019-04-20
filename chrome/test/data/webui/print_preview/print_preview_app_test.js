@@ -36,7 +36,8 @@ cr.define('print_preview_app_test', function() {
       shouldPrintSelectionOnly: false,
       printerName: 'FooDevice',
       serializedAppStateStr: null,
-      serializedDefaultDestinationSelectionRulesStr: null
+      serializedDefaultDestinationSelectionRulesStr: null,
+      cloudPrintURL: 'cloudprint URL'
     };
 
     /** @override */
@@ -57,10 +58,7 @@ cr.define('print_preview_app_test', function() {
       document.body.appendChild(page);
       const previewArea = page.$.previewArea;
       pluginProxy.setLoadCallback(previewArea.onPluginLoad_.bind(previewArea));
-      return print_preview.Model.whenReady().then(() => {
-        cr.webUIListenerCallback('use-cloud-print', 'cloudprint url', false);
-        return nativeLayer.whenCalled('getPrinterCapabilities');
-      });
+      return nativeLayer.whenCalled('getPreview');
     });
 
     // Regression test for https://crbug.com/936029

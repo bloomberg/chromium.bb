@@ -266,9 +266,6 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
                         const std::string& printer_name,
                         base::Value settings_info);
 
-  // Send whether cloud print integration should be enabled.
-  void SendCloudPrintEnabled();
-
   // Send the PDF data to the cloud to print.
   void SendCloudPrintJob(const std::string& callback_id,
                          const base::RefCountedMemory* data);

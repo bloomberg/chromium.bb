@@ -39,10 +39,11 @@ print_preview.LocalDestinationInfo;
  *   documentHasSelection: boolean,
  *   shouldPrintSelectionOnly: boolean,
  *   printerName: string,
- *   headerFooter: ?boolean,
+ *   headerFooter: (boolean | undefined),
  *   isHeaderFooterManaged: boolean,
  *   serializedAppStateStr: ?string,
  *   serializedDefaultDestinationSelectionRulesStr: ?string,
+ *   cloudPrintURL: (string | undefined)
  * }}
  * @see corresponding field name definitions in print_preview_handler.cc
  */

@@ -116,8 +116,6 @@ Polymer({
   attached: function() {
     document.documentElement.classList.remove('loading');
     this.nativeLayer_ = print_preview.NativeLayer.getInstance();
-    this.addWebUIListener(
-        'use-cloud-print', this.onCloudPrintEnable_.bind(this));
     this.addWebUIListener('print-failed', this.onPrintFailed_.bind(this));
     this.addWebUIListener(
         'print-preset-options', this.onPrintPresetOptions_.bind(this));
@@ -249,6 +247,12 @@ Polymer({
       return;
     }
     this.whenReady_.then(() => {
+      // The cloud print interface should be initialized before initializing the
+      // sidebar, so that cloud printers can be selected automatically.
+      if (settings.cloudPrintURL) {
+        this.initializeCloudPrint_(
+            settings.cloudPrintURL, settings.isInAppKioskMode);
+      }
       this.$.documentInfo.init(
           settings.previewModifiable, settings.documentTitle,
           settings.documentHasSelection);
@@ -275,33 +279,23 @@ Polymer({
   },
 
   /**
-   * Called when Google Cloud Print integration is enabled by the
-   * PrintPreviewHandler.
-   * Fetches the user's cloud printers.
+   * Called when Google Cloud Print integration is enabled.
    * @param {string} cloudPrintUrl The URL to use for cloud print servers.
-   * @param {boolean} appKioskMode Whether to print automatically for kiosk
-   *     mode.
+   * @param {boolean} appKioskMode Whether the browser is in app kiosk mode.
    * @private
    */
-  onCloudPrintEnable_: function(cloudPrintUrl, appKioskMode) {
-    if (!this.whenReady_) {
-      // This element and its corresponding model were detached while waiting
-      // for the callback. This can happen in tests; return early.
-      return;
-    }
-    this.whenReady_.then(() => {
-      assert(!this.cloudPrintInterface_);
-      this.cloudPrintInterface_ = cloudprint.getCloudPrintInterface(
-          cloudPrintUrl, assert(this.nativeLayer_), appKioskMode);
-      this.tracker_.add(
-          assert(this.cloudPrintInterface_).getEventTarget(),
-          cloudprint.CloudPrintInterfaceEventType.SUBMIT_DONE,
-          this.close_.bind(this));
-      this.tracker_.add(
-          assert(this.cloudPrintInterface_).getEventTarget(),
-          cloudprint.CloudPrintInterfaceEventType.SUBMIT_FAILED,
-          this.onCloudPrintError_.bind(this, appKioskMode));
-    });
+  initializeCloudPrint_: function(cloudPrintUrl, appKioskMode) {
+    assert(!this.cloudPrintInterface_);
+    this.cloudPrintInterface_ = cloudprint.getCloudPrintInterface(
+        cloudPrintUrl, assert(this.nativeLayer_), appKioskMode);
+    this.tracker_.add(
+        assert(this.cloudPrintInterface_).getEventTarget(),
+        cloudprint.CloudPrintInterfaceEventType.SUBMIT_DONE,
+        this.close_.bind(this));
+    this.tracker_.add(
+        assert(this.cloudPrintInterface_).getEventTarget(),
+        cloudprint.CloudPrintInterfaceEventType.SUBMIT_FAILED,
+        this.onCloudPrintError_.bind(this, appKioskMode));
   },
 
   /** @private */

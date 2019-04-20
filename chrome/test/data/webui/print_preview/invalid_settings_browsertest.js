@@ -96,12 +96,12 @@ cr.define('invalid_settings_browsertest', function() {
           print_preview.makeRecentDestination(printers[1]),
         ],
       });
+      initialSettings.cloudPrintURL = 'cloudprint URL';
       localDestinationInfos = [];
 
       loadTimeData.overrideValues({isEnterpriseManaged: false});
       createPage(true);
 
-      cr.webUIListenerCallback('use-cloud-print', 'cloudprint url', false);
       printers.forEach(printer => cloudPrintInterface.setPrinter(printer));
     }
 
