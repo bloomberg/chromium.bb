@@ -36,7 +36,10 @@ class MimeHandlerViewUMATypes {
     // For recording postMessage to embedded MimeHandlerViews (e.g., MHVs not
     // created due to navigations to the resource).
     kPostMessageToEmbeddedMimeHandlerView = 10,
-    kMaxValue = kPostMessageToEmbeddedMimeHandlerView,
+    // For recording postMessage from internal APIs (includes 'print' messages
+    // full page MimeHandlerView).
+    kPostMessageInternal = 11,
+    kMaxValue = kPostMessageInternal,
   };
 
  private:

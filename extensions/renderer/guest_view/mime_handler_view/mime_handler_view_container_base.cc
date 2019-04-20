@@ -276,6 +276,7 @@ void MimeHandlerViewContainerBase::PostMessageFromValue(
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
   v8::HandleScope handle_scope(isolate);
   v8::Context::Scope context_scope(frame->MainWorldScriptContext());
+  RecordInteraction(UMAType::kPostMessageInternal);
   base::AutoReset<bool> avoid_recording_internal_messages(
       &should_report_internal_messages_, false);
   PostJavaScriptMessage(isolate,

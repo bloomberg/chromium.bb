@@ -37507,6 +37507,9 @@ Called by update_use_counter_css.py.-->
     Any message posted to a MimeHandlerViewContainerBase that is embedded; i.e.,
     is not created as a result of navigating a frame to the resource.
   </int>
+  <int value="11" label="PostMessageInternal">
+    Emitted when an internal postMesasge to 'print' is issued from C++ code.
+  </int>
 </enum>
 
 <enum name="MissingStartType">
