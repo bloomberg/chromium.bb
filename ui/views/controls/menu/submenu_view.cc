@@ -477,7 +477,7 @@ void SubmenuView::MenuHostDestroyed() {
   host_ = nullptr;
   MenuController* controller = parent_menu_item_->GetMenuController();
   if (controller)
-    controller->Cancel(MenuController::EXIT_DESTROYED);
+    controller->Cancel(MenuController::ExitType::kDestroyed);
 }
 
 const char* SubmenuView::GetClassName() const {

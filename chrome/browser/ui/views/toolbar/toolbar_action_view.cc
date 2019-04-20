@@ -366,7 +366,7 @@ bool ToolbarActionView::CloseActiveMenuIfNeeded() {
     if (menu_controller->in_nested_run()) {
       // There is another menu showing. Close the outermost menu (since we are
       // shown in the same menu, we don't want to close the whole thing).
-      menu_controller->Cancel(views::MenuController::EXIT_OUTERMOST);
+      menu_controller->Cancel(views::MenuController::ExitType::kOutermost);
       return true;
     }
   }

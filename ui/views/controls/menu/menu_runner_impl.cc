@@ -72,7 +72,7 @@ void MenuRunnerImpl::Release() {
       // Release is invoked when MenuRunner is destroyed. Assume this is
       // happening because the object referencing the menu has been destroyed
       // and the menu button is no longer valid.
-      controller_->Cancel(MenuController::EXIT_DESTROYED);
+      controller_->Cancel(MenuController::ExitType::kDestroyed);
       return;
     }
   }
@@ -130,12 +130,13 @@ void MenuRunnerImpl::RunMenuAt(Widget* parent,
   }
   DCHECK((run_types & MenuRunner::COMBOBOX) == 0 ||
          (run_types & MenuRunner::EDITABLE_COMBOBOX) == 0);
+  using ComboboxType = MenuController::ComboboxType;
   if (run_types & MenuRunner::COMBOBOX)
-    controller->set_combobox_type(MenuController::kReadonlyCombobox);
+    controller->set_combobox_type(ComboboxType::kReadonly);
   else if (run_types & MenuRunner::EDITABLE_COMBOBOX)
-    controller->set_combobox_type(MenuController::kEditableCombobox);
+    controller->set_combobox_type(ComboboxType::kEditable);
   else
-    controller->set_combobox_type(MenuController::kNotACombobox);
+    controller->set_combobox_type(ComboboxType::kNone);
   controller->set_send_gesture_events_to_owner(
       (run_types & MenuRunner::SEND_GESTURE_EVENTS_TO_OWNER) != 0);
   controller->set_use_touchable_layout(
@@ -152,7 +153,7 @@ void MenuRunnerImpl::RunMenuAt(Widget* parent,
 
 void MenuRunnerImpl::Cancel() {
   if (running_)
-    controller_->Cancel(MenuController::EXIT_ALL);
+    controller_->Cancel(MenuController::ExitType::kAll);
 }
 
 base::TimeTicks MenuRunnerImpl::GetClosingEventTime() const {

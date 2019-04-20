@@ -393,17 +393,17 @@ class MenuControllerTest : public ViewsTestBase {
 
   // Verifies that an open menu receives a cancel event, and closes.
   void TestCancelEvent() {
-    EXPECT_EQ(MenuController::EXIT_NONE, menu_controller_->exit_type());
+    EXPECT_EQ(MenuController::ExitType::kNone, menu_controller_->exit_type());
     ui::CancelModeEvent cancel_event;
     event_generator_->Dispatch(&cancel_event);
-    EXPECT_EQ(MenuController::EXIT_ALL, menu_controller_->exit_type());
+    EXPECT_EQ(MenuController::ExitType::kAll, menu_controller_->exit_type());
   }
 #endif  // defined(USE_AURA)
 
   // Verifies the state of the |menu_controller_| before destroying it.
   void VerifyDragCompleteThenDestroy() {
     EXPECT_FALSE(menu_controller()->drag_in_progress());
-    EXPECT_EQ(MenuController::EXIT_ALL, menu_controller()->exit_type());
+    EXPECT_EQ(MenuController::ExitType::kAll, menu_controller()->exit_type());
     DestroyMenuController();
   }
 
@@ -707,7 +707,7 @@ class MenuControllerTest : public ViewsTestBase {
   }
 
   void ExitMenuRun() {
-    menu_controller_->SetExitType(MenuController::ExitType::EXIT_OUTERMOST);
+    menu_controller_->SetExitType(MenuController::ExitType::kOutermost);
     menu_controller_->ExitTopMostMenu();
   }
 
@@ -792,12 +792,12 @@ TEST_F(MenuControllerTest, EventTargeter) {
     aura::ScopedWindowTargeter scoped_targeter(
         GetRootWindow(owner()), std::make_unique<aura::NullWindowTargeter>());
     PressKey(ui::VKEY_ESCAPE);
-    EXPECT_EQ(MenuController::EXIT_NONE, menu_exit_type());
+    EXPECT_EQ(MenuController::ExitType::kNone, menu_exit_type());
   }
   // Now that the targeter has been destroyed, expect to exit the menu
   // normally when hitting escape.
   TestAsyncEscapeKey();
-  EXPECT_EQ(MenuController::EXIT_ALL, menu_exit_type());
+  EXPECT_EQ(MenuController::ExitType::kAll, menu_exit_type());
 }
 
 #endif  // defined(USE_X11)
@@ -823,7 +823,7 @@ TEST_F(MenuControllerTest, TouchIdsReleasedCorrectly) {
   MenuControllerTest::ReleaseTouchId(1);
   TestAsyncEscapeKey();
 
-  EXPECT_EQ(MenuController::EXIT_ALL, menu_exit_type());
+  EXPECT_EQ(MenuController::ExitType::kAll, menu_exit_type());
   EXPECT_EQ(0, test_event_handler.outstanding_touches());
 
   GetRootWindow(owner())->RemovePreTargetHandler(&test_event_handler);
@@ -1035,7 +1035,7 @@ TEST_F(MenuControllerTest, PreviousSelectedItem) {
 
 // Tests that opening menu and calling SelectByChar works correctly.
 TEST_F(MenuControllerTest, SelectByChar) {
-  SetComboboxType(MenuController::kReadonlyCombobox);
+  SetComboboxType(MenuController::ComboboxType::kReadonly);
 
   // Handle null character should do nothing.
   SelectByChar(0);
@@ -1249,7 +1249,7 @@ TEST_F(MenuControllerTest, AsynchronousCancelAll) {
   EXPECT_EQ(0, delegate->on_menu_closed_mouse_event_flags());
   EXPECT_EQ(internal::MenuControllerDelegate::NOTIFY_DELEGATE,
             delegate->on_menu_closed_notify_type());
-  EXPECT_EQ(MenuController::EXIT_ALL, controller->exit_type());
+  EXPECT_EQ(MenuController::ExitType::kAll, controller->exit_type());
 }
 
 // Tests that canceling a nested menu restores the previous
@@ -1274,7 +1274,7 @@ TEST_F(MenuControllerTest, AsynchronousNestedDelegate) {
   EXPECT_EQ(0, nested_delegate->on_menu_closed_mouse_event_flags());
   EXPECT_EQ(internal::MenuControllerDelegate::NOTIFY_DELEGATE,
             nested_delegate->on_menu_closed_notify_type());
-  EXPECT_EQ(MenuController::EXIT_ALL, controller->exit_type());
+  EXPECT_EQ(MenuController::ExitType::kAll, controller->exit_type());
 }
 
 // Tests that dropping within an asynchronous menu stops the menu from showing
@@ -1457,7 +1457,7 @@ TEST_F(MenuControllerTest, NoTouchCloseWhenSendingGesturesToOwner) {
   controller->OnTouchEvent(sub_menu, &touch_event);
   views::test::WaitForMenuClosureAnimation();
   EXPECT_FALSE(IsShowing());
-  EXPECT_EQ(MenuController::EXIT_ALL, controller->exit_type());
+  EXPECT_EQ(MenuController::ExitType::kAll, controller->exit_type());
 }
 
 // Tests that a nested menu does not crash when trying to repost events that
@@ -1498,7 +1498,7 @@ TEST_F(MenuControllerTest, AsynchronousRepostEvent) {
   EXPECT_EQ(0, nested_delegate->on_menu_closed_mouse_event_flags());
   EXPECT_EQ(internal::MenuControllerDelegate::NOTIFY_DELEGATE,
             nested_delegate->on_menu_closed_notify_type());
-  EXPECT_EQ(MenuController::EXIT_ALL, controller->exit_type());
+  EXPECT_EQ(MenuController::ExitType::kAll, controller->exit_type());
 }
 
 // Tests that an asynchronous menu reposts touch events that occur outside of
@@ -1527,7 +1527,7 @@ TEST_F(MenuControllerTest, AsynchronousTouchEventRepostEvent) {
   EXPECT_EQ(0, delegate->on_menu_closed_mouse_event_flags());
   EXPECT_EQ(internal::MenuControllerDelegate::NOTIFY_DELEGATE,
             delegate->on_menu_closed_notify_type());
-  EXPECT_EQ(MenuController::EXIT_ALL, controller->exit_type());
+  EXPECT_EQ(MenuController::ExitType::kAll, controller->exit_type());
 }
 
 // Tests that having the MenuController deleted during RepostEvent does not
@@ -1867,10 +1867,10 @@ TEST_F(MenuControllerTest, AsynchronousCancelEvent) {
   MenuController* controller = menu_controller();
   controller->Run(owner(), nullptr, menu_item(), gfx::Rect(),
                   MenuAnchorPosition::kTopLeft, false, false);
-  EXPECT_EQ(MenuController::EXIT_NONE, controller->exit_type());
+  EXPECT_EQ(MenuController::ExitType::kNone, controller->exit_type());
   ui::CancelModeEvent cancel_event;
   event_generator()->Dispatch(&cancel_event);
-  EXPECT_EQ(MenuController::EXIT_ALL, controller->exit_type());
+  EXPECT_EQ(MenuController::ExitType::kAll, controller->exit_type());
 }
 
 // Tests that menus without parent widgets do not crash in MenuPreTargetHandler.

@@ -423,7 +423,7 @@ void MenuController::Run(Widget* parent,
                          MenuAnchorPosition position,
                          bool context_menu,
                          bool is_nested_drag) {
-  exit_type_ = EXIT_NONE;
+  exit_type_ = ExitType::kNone;
   possible_drag_ = false;
   drag_in_progress_ = false;
   did_initiate_drag_ = false;
@@ -513,7 +513,7 @@ void MenuController::Cancel(ExitType type) {
   // If the menu has already been destroyed, no further cancellation is
   // needed.  We especially don't want to set the |exit_type_| to a lesser
   // value.
-  if (exit_type_ == EXIT_DESTROYED || exit_type_ == type)
+  if (exit_type_ == ExitType::kDestroyed || exit_type_ == type)
     return;
 
   if (!showing_) {
@@ -542,13 +542,13 @@ void MenuController::Cancel(ExitType type) {
     return;
   }
 
-  // If |type| is EXIT_ALL we update the state of the menu to not showing. For
-  // dragging this ensures that the correct visual state is reported until the
-  // drag operation completes. For non-dragging cases it is possible that the
-  // release of ViewsDelegate leads immediately to shutdown, which can trigger
-  // nested calls to Cancel. We want to reject these to prevent attempting a
-  // nested tear down of this and |delegate_|.
-  if (type == EXIT_ALL)
+  // If |type| is ExitType::kAll we update the state of the menu to not showing.
+  // For dragging this ensures that the correct visual state is reported until
+  // the drag operation completes. For non-dragging cases it is possible that
+  // the release of ViewsDelegate leads immediately to shutdown, which can
+  // trigger nested calls to Cancel. We want to reject these to prevent
+  // attempting a nested tear down of this and |delegate_|.
+  if (type == ExitType::kAll)
     showing_ = false;
 
   // On Windows and Linux the destruction of this menu's Widget leads to the
@@ -570,11 +570,11 @@ bool MenuController::IsCombobox() const {
 }
 
 bool MenuController::IsEditableCombobox() const {
-  return combobox_type_ == kEditableCombobox;
+  return combobox_type_ == ComboboxType::kEditable;
 }
 
 bool MenuController::IsReadonlyCombobox() const {
-  return combobox_type_ == kReadonlyCombobox;
+  return combobox_type_ == ComboboxType::kReadonly;
 }
 
 bool MenuController::IsContextMenu() const {
@@ -1049,7 +1049,7 @@ int MenuController::OnPerformDrop(SubmenuView* source,
 
   // Set state such that we exit.
   showing_ = false;
-  SetExitType(EXIT_ALL);
+  SetExitType(ExitType::kAll);
 
   // If over an empty menu item, drop occurs on the parent.
   if (drop_target->id() == MenuItemView::kEmptyMenuItemViewID)
@@ -1109,13 +1109,13 @@ void MenuController::OnDragComplete(bool should_close) {
       if (GetActiveInstance() == this) {
         base::WeakPtr<MenuController> this_ref = AsWeakPtr();
         CloseAllNestedMenus();
-        Cancel(EXIT_ALL);
+        Cancel(ExitType::kAll);
         // The above may have deleted us. If not perform a full shutdown.
         if (!this_ref)
           return;
         ExitMenu();
       }
-    } else if (exit_type_ == EXIT_ALL) {
+    } else if (exit_type_ == ExitType::kAll) {
       // We may have been canceled during the drag. If so we still need to fully
       // shutdown.
       ExitMenu();
@@ -1125,7 +1125,7 @@ void MenuController::OnDragComplete(bool should_close) {
 
 ui::PostDispatchAction MenuController::OnWillDispatchKeyEvent(
     ui::KeyEvent* event) {
-  if (exit_type() == EXIT_ALL || exit_type() == EXIT_DESTROYED) {
+  if (exit_type() == ExitType::kAll || exit_type() == ExitType::kDestroyed) {
     // If the event has arrived after the menu's exit type has changed but
     // before its Widgets have been destroyed, the event will continue its
     // normal propagation for the following reason:
@@ -1166,7 +1166,7 @@ ui::PostDispatchAction MenuController::OnWillDispatchKeyEvent(
       // example Ctrl+<T> is an accelerator, but <T> only is a mnemonic.
       const int kKeyFlagsMask = ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN;
       const int flags = event->flags();
-      if (exit_type() == EXIT_NONE && (flags & kKeyFlagsMask) == 0) {
+      if (exit_type() == ExitType::kNone && (flags & kKeyFlagsMask) == 0) {
         base::char16 c = event->GetCharacter();
         SelectByChar(c);
         // SelectByChar can lead to this being deleted.
@@ -1495,7 +1495,7 @@ void MenuController::OnKeyDown(ui::KeyboardCode key_code) {
           if ((key_code == ui::VKEY_F4 ||
                (key_code == ui::VKEY_RETURN && IsEditableCombobox())) &&
               pending_state_.item->GetSubmenu()->IsShowing())
-            Cancel(EXIT_ALL);
+            Cancel(ExitType::kAll);
           else
             OpenSubmenuChangeSelectionIfCan();
         } else {
@@ -1514,7 +1514,8 @@ void MenuController::OnKeyDown(ui::KeyboardCode key_code) {
         // User pressed escape and current menu has no submenus. If we are
         // nested, close the current menu on the stack. Otherwise fully exit the
         // menu.
-        Cancel(delegate_stack_.size() > 1 ? EXIT_OUTERMOST : EXIT_ALL);
+        Cancel(delegate_stack_.size() > 1 ? ExitType::kOutermost
+                                          : ExitType::kAll);
         break;
       }
       CloseSubmenu();
@@ -1547,7 +1548,7 @@ void MenuController::OnKeyDown(ui::KeyboardCode key_code) {
     // OS behavior.
     case ui::VKEY_MENU:
     case ui::VKEY_F10:
-      Cancel(EXIT_ALL);
+      Cancel(ExitType::kAll);
       break;
 #endif
 
@@ -1647,9 +1648,9 @@ void MenuController::ReallyAccept(MenuItemView* item, int event_flags) {
 #endif
   if (item && !menu_stack_.empty() &&
       !item->GetDelegate()->ShouldCloseAllMenusOnExecute(item->GetCommand())) {
-    SetExitType(EXIT_OUTERMOST);
+    SetExitType(ExitType::kOutermost);
   } else {
-    SetExitType(EXIT_ALL);
+    SetExitType(ExitType::kAll);
   }
   accept_event_flags_ = event_flags;
   ExitMenu();
@@ -2726,17 +2727,17 @@ void MenuController::RepostEventAndCancel(SubmenuView* source,
 
   // Determine target to see if a complete or partial close of the menu should
   // occur.
-  ExitType exit_type = EXIT_ALL;
+  ExitType exit_type = ExitType::kAll;
   if (!menu_stack_.empty()) {
     // We're running nested menus. Only exit all if the mouse wasn't over one
     // of the menus from the last run.
     MenuPart last_part = GetMenuPartByScreenCoordinateUsingMenu(
         menu_stack_.back().first.item, screen_loc);
     if (last_part.type != MenuPart::NONE)
-      exit_type = EXIT_OUTERMOST;
+      exit_type = ExitType::kOutermost;
   }
 #if defined(OS_MACOSX)
-  SubmenuView* target = exit_type == EXIT_ALL
+  SubmenuView* target = exit_type == ExitType::kAll
                             ? source
                             : state_.item->GetRootMenuItem()->GetSubmenu();
   menu_closure_animation_ = std::make_unique<MenuClosureAnimationMac>(
@@ -2873,7 +2874,7 @@ void MenuController::ExitMenu() {
   delegate->OnMenuClosed(internal::MenuControllerDelegate::NOTIFY_DELEGATE,
                          result, accept_event_flags);
   // |delegate| may have deleted this.
-  if (this_ref && nested && exit_type_ == EXIT_ALL)
+  if (this_ref && nested && exit_type_ == ExitType::kAll)
     ExitMenu();
 }
 
@@ -2941,8 +2942,8 @@ MenuItemView* MenuController::ExitTopMostMenu() {
   // In case we're nested, reset |result_|.
   result_ = nullptr;
 
-  if (exit_type_ == EXIT_OUTERMOST) {
-    SetExitType(EXIT_NONE);
+  if (exit_type_ == ExitType::kOutermost) {
+    SetExitType(ExitType::kNone);
   } else if (nested_menu && result) {
     // We're nested and about to return a value. The caller might enter
     // another blocking loop. We need to make sure all menus are hidden
@@ -2951,8 +2952,8 @@ MenuItemView* MenuController::ExitTopMostMenu() {
     SetSelection(nullptr, SELECTION_UPDATE_IMMEDIATELY | SELECTION_EXIT);
 
     // Set exit_all_, which makes sure all nested loops exit immediately.
-    if (exit_type_ != EXIT_DESTROYED)
-      SetExitType(EXIT_ALL);
+    if (exit_type_ != ExitType::kDestroyed)
+      SetExitType(ExitType::kAll);
   }
 
   // Reset our pressed lock and hot-tracked state to the previous state's, if
@@ -2970,7 +2971,7 @@ void MenuController::HandleMouseLocation(SubmenuView* source,
     return;
 
   // Ignore mouse events if we're closing the menu.
-  if (exit_type_ != EXIT_NONE)
+  if (exit_type_ != ExitType::kNone)
     return;
 
   MenuPart part = GetMenuPart(source, mouse_location);

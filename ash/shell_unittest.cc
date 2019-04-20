@@ -210,7 +210,8 @@ class ShellTest : public AshTestBase {
     views::MenuController* menu_controller =
         views::MenuController::GetActiveInstance();
     DCHECK(menu_controller);
-    EXPECT_EQ(views::MenuController::EXIT_NONE, menu_controller->exit_type());
+    EXPECT_EQ(views::MenuController::ExitType::kNone,
+              menu_controller->exit_type());
 
     // Create a LockScreen window.
     views::Widget::InitParams widget_params(

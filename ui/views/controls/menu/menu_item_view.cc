@@ -139,7 +139,8 @@ base::string16 MenuItemView::GetTooltipText(const gfx::Point& p) const {
     return base::string16();
 
   const MenuController* controller = GetMenuController();
-  if (!controller || controller->exit_type() != MenuController::EXIT_NONE) {
+  if (!controller ||
+      controller->exit_type() != MenuController::ExitType::kNone) {
     // Either the menu has been closed or we're in the process of closing the
     // menu. Don't attempt to query the delegate as it may no longer be valid.
     return base::string16();
@@ -148,7 +149,7 @@ base::string16 MenuItemView::GetTooltipText(const gfx::Point& p) const {
   const MenuItemView* root_menu_item = GetRootMenuItem();
   if (root_menu_item->canceled_) {
     // TODO(sky): if |canceled_| is true, controller->exit_type() should be
-    // something other than EXIT_NONE, but crash reports seem to indicate
+    // something other than ExitType::kNone, but crash reports seem to indicate
     // otherwise. Figure out why this is needed.
     return base::string16();
   }
@@ -268,7 +269,7 @@ base::string16 MenuItemView::GetAccessibleNameForMenuItem(
 void MenuItemView::Cancel() {
   if (controller_ && !canceled_) {
     canceled_ = true;
-    controller_->Cancel(MenuController::EXIT_ALL);
+    controller_->Cancel(MenuController::ExitType::kAll);
   }
 }
 
