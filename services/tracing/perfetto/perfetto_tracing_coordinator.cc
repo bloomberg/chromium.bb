@@ -124,11 +124,11 @@ class PerfettoTracingCoordinator::TracingSession : public perfetto::Consumer {
     consumer_endpoint_->DisableTracing();
   }
 
-  void OnJSONTraceEventCallback(const std::string& json,
+  void OnJSONTraceEventCallback(std::string* json,
                                 base::DictionaryValue* metadata,
                                 bool has_more) {
     if (stream_.is_valid()) {
-      mojo::BlockingCopyFromString(json, stream_);
+      mojo::BlockingCopyFromString(*json, stream_);
     }
 
     if (!has_more) {

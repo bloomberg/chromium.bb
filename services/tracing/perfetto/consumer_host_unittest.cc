@@ -247,6 +247,14 @@ class ThreadedPerfettoService : public mojom::TracingSession {
     return config;
   }
 
+  void ClearConsumer() {
+    base::RunLoop wait_loop;
+    task_runner_->PostTaskAndReply(
+        FROM_HERE, base::BindLambdaForTesting([&]() { consumer_.reset(); }),
+        wait_loop.QuitClosure());
+    wait_loop.Run();
+  }
+
  private:
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   std::unique_ptr<PerfettoService> perfetto_service_;
@@ -393,6 +401,26 @@ TEST_F(TracingConsumerTest, ReceiveTestPackets) {
   no_more_data.Run();
 
   EXPECT_EQ(10u, matching_packet_count());
+}
+
+TEST_F(TracingConsumerTest, DeleteConsumerWhenReceiving) {
+  EnableTracingWithDataSourceName(mojom::kTraceEventDataSourceName);
+
+  base::RunLoop wait_for_tracing_start;
+  threaded_perfetto_service()->CreateProducer(
+      mojom::kTraceEventDataSourceName, 100u,
+      wait_for_tracing_start.QuitClosure());
+
+  wait_for_tracing_start.Run();
+
+  base::RunLoop no_more_data;
+  ExpectPackets(kPerfettoTestString, no_more_data.QuitClosure());
+
+  threaded_perfetto_service()->DisableTracing();
+  ReadBuffers();
+
+  threaded_perfetto_service()->ClearConsumer();
+  no_more_data.Run();
 }
 
 TEST_F(TracingConsumerTest, FlushProducers) {

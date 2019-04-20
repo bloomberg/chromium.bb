@@ -55,10 +55,8 @@ class JSONTraceExporter {
   using MetadataFilterPredicate =
       base::RepeatingCallback<bool(const std::string& metadata_name)>;
 
-  using OnTraceEventJSONCallback =
-      base::RepeatingCallback<void(const std::string& json,
-                                   base::DictionaryValue* metadata,
-                                   bool has_more)>;
+  using OnTraceEventJSONCallback = base::RepeatingCallback<
+      void(std::string* json, base::DictionaryValue* metadata, bool has_more)>;
 
   JSONTraceExporter(ArgumentFilterPredicate argument_filter_predicate,
                     MetadataFilterPredicate metadata_filter_predicate,

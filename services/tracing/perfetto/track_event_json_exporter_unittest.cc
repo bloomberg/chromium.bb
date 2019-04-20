@@ -54,15 +54,16 @@ class TrackEventJsonExporterTest : public testing::Test {
 
   void TearDown() override { json_trace_exporter_.reset(); }
 
-  void OnTraceEventJson(const std::string& json,
+  void OnTraceEventJson(std::string* json,
                         base::DictionaryValue* metadata,
                         bool has_more) {
     CHECK(!has_more);
 
-    unparsed_trace_data_ = json;
-    parsed_trace_data_ =
-        base::DictionaryValue::From(base::JSONReader::ReadDeprecated(json));
-    ASSERT_TRUE(parsed_trace_data_) << "Couldn't parse json: \n" << json;
+    unparsed_trace_data_.swap(*json);
+    parsed_trace_data_ = base::DictionaryValue::From(
+        base::JSONReader::ReadDeprecated(unparsed_trace_data_));
+    ASSERT_TRUE(parsed_trace_data_) << "Couldn't parse json: \n"
+                                    << unparsed_trace_data_;
 
     // The TraceAnalyzer expects the raw trace output, without the
     // wrapping root-node.

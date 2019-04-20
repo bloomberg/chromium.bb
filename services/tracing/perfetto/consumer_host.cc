@@ -16,6 +16,7 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/wait.h"
@@ -40,6 +41,70 @@ bool StringToProcessId(const std::string& input, base::ProcessId* output) {
 }
 
 }  // namespace
+
+class ConsumerHost::StreamWriter {
+ public:
+  using Slices = std::vector<std::string>;
+
+  static scoped_refptr<base::SequencedTaskRunner> CreateTaskRunner() {
+    return base::CreateSequencedTaskRunnerWithTraits(
+        {base::WithBaseSyncPrimitives(), base::TaskPriority::BEST_EFFORT});
+  }
+
+  StreamWriter(mojo::ScopedDataPipeProducerHandle stream,
+               ReadBuffersCallback callback,
+               base::OnceClosure disconnect_callback,
+               scoped_refptr<base::SequencedTaskRunner> callback_task_runner)
+      : stream_(std::move(stream)),
+        read_buffers_callback_(std::move(callback)),
+        disconnect_callback_(std::move(disconnect_callback)),
+        callback_task_runner_(callback_task_runner) {}
+
+  void WriteToStream(std::unique_ptr<Slices> slices, bool has_more) {
+    DCHECK(stream_.is_valid());
+    for (const auto& slice : *slices) {
+      uint32_t write_position = 0;
+
+      while (write_position < slice.size()) {
+        uint32_t write_bytes = slice.size() - write_position;
+
+        MojoResult result =
+            stream_->WriteData(slice.data() + write_position, &write_bytes,
+                               MOJO_WRITE_DATA_FLAG_NONE);
+
+        if (result == MOJO_RESULT_OK) {
+          write_position += write_bytes;
+          continue;
+        }
+
+        if (result == MOJO_RESULT_SHOULD_WAIT) {
+          result = mojo::Wait(stream_.get(), MOJO_HANDLE_SIGNAL_WRITABLE);
+        }
+
+        if (result != MOJO_RESULT_OK) {
+          if (!disconnect_callback_.is_null()) {
+            callback_task_runner_->PostTask(FROM_HERE,
+                                            std::move(disconnect_callback_));
+          }
+          return;
+        }
+      }
+    }
+
+    if (!has_more && !read_buffers_callback_.is_null()) {
+      callback_task_runner_->PostTask(FROM_HERE,
+                                      std::move(read_buffers_callback_));
+    }
+  }
+
+ private:
+  mojo::ScopedDataPipeProducerHandle stream_;
+  ReadBuffersCallback read_buffers_callback_;
+  base::OnceClosure disconnect_callback_;
+  scoped_refptr<base::SequencedTaskRunner> callback_task_runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(StreamWriter);
+};
 
 // static
 bool ConsumerHost::ParsePidFromProducerName(const std::string& producer_name,
@@ -164,8 +229,12 @@ void ConsumerHost::Flush(uint32_t timeout,
 void ConsumerHost::ReadBuffers(mojo::ScopedDataPipeProducerHandle stream,
                                ReadBuffersCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  read_buffers_stream_ = std::move(stream);
-  read_buffers_callback_ = std::move(callback);
+
+  read_buffers_stream_writer_ = base::SequenceBound<StreamWriter>(
+      StreamWriter::CreateTaskRunner(), std::move(stream), std::move(callback),
+      base::BindOnce(&ConsumerHost::OnConsumerClientDisconnected,
+                     weak_factory_.GetWeakPtr()),
+      base::SequencedTaskRunnerHandle::Get());
 
   consumer_endpoint_->ReadBuffers();
 }
@@ -175,11 +244,13 @@ void ConsumerHost::DisableTracingAndEmitJson(
     mojo::ScopedDataPipeProducerHandle stream,
     DisableTracingAndEmitJsonCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!read_buffers_stream_ && !read_buffers_callback_ &&
-         !json_trace_exporter_);
+  DCHECK(!read_buffers_stream_writer_);
 
-  read_buffers_stream_ = std::move(stream);
-  read_buffers_callback_ = std::move(callback);
+  read_buffers_stream_writer_ = base::SequenceBound<StreamWriter>(
+      StreamWriter::CreateTaskRunner(), std::move(stream), std::move(callback),
+      base::BindOnce(&ConsumerHost::OnConsumerClientDisconnected,
+                     weak_factory_.GetWeakPtr()),
+      base::SequencedTaskRunnerHandle::Get());
 
   // TODO(eseckler): Support argument/metadata filtering.
   json_trace_exporter_ = std::make_unique<TrackEventJSONExporter>(
@@ -239,22 +310,21 @@ void ConsumerHost::OnTraceData(std::vector<perfetto::TracePacket> packets,
     return;
   }
 
+  auto copy = std::make_unique<StreamWriter::Slices>();
   for (auto& packet : packets) {
     char* data;
     size_t size;
     std::tie(data, size) = packet.GetProtoPreamble();
-    WriteToStream(data, size);
+    copy->emplace_back(data, size);
     auto& slices = packet.slices();
     for (auto& slice : slices) {
-      WriteToStream(slice.start, slice.size);
+      copy->emplace_back(static_cast<const char*>(slice.start), slice.size);
     }
   }
-
+  read_buffers_stream_writer_.Post(FROM_HERE, &StreamWriter::WriteToStream,
+                                   std::move(copy), has_more);
   if (!has_more) {
-    read_buffers_stream_.reset();
-    if (read_buffers_callback_) {
-      std::move(read_buffers_callback_).Run();
-    }
+    read_buffers_stream_writer_.Reset();
   }
 }
 
@@ -357,54 +427,23 @@ void ConsumerHost::OnTraceStats(bool success,
   std::move(request_buffer_usage_callback_).Run(true, percent_full);
 }
 
-void ConsumerHost::OnJSONTraceData(const std::string& json,
+void ConsumerHost::OnJSONTraceData(std::string* json,
                                    base::DictionaryValue* metadata,
                                    bool has_more) {
-  WriteToStream(json.data(), json.size());
+  auto slices = std::make_unique<StreamWriter::Slices>();
+  slices->push_back(std::string());
+  slices->back().swap(*json);
+  read_buffers_stream_writer_.Post(FROM_HERE, &StreamWriter::WriteToStream,
+                                   std::move(slices), has_more);
 
-  if (has_more) {
-    return;
-  }
-
-  read_buffers_stream_.reset();
-  if (read_buffers_callback_) {
-    std::move(read_buffers_callback_).Run();
+  if (!has_more) {
+    read_buffers_stream_writer_.Reset();
   }
 }
 
-void ConsumerHost::WriteToStream(const void* start, size_t size) {
-  TRACE_EVENT0("ipc", "ConsumerHost::WriteToStream");
-  DCHECK(read_buffers_stream_.is_valid());
-  uint32_t write_position = 0;
-
-  while (write_position < size) {
-    uint32_t write_bytes = size - write_position;
-
-    MojoResult result = read_buffers_stream_->WriteData(
-        static_cast<const uint8_t*>(start) + write_position, &write_bytes,
-        MOJO_WRITE_DATA_FLAG_NONE);
-
-    if (result == MOJO_RESULT_OK) {
-      write_position += write_bytes;
-      continue;
-    }
-
-    if (result == MOJO_RESULT_SHOULD_WAIT) {
-      // TODO(oysteine): If we end up actually blocking here it means
-      // the client is consuming data slower than Perfetto is producing
-      // it. Consider other solutions at that point because it means
-      // eventually Producers will run out of chunks and will stall waiting
-      // for new ones.
-      result =
-          mojo::Wait(read_buffers_stream_.get(), MOJO_HANDLE_SIGNAL_WRITABLE);
-    }
-
-    if (result != MOJO_RESULT_OK) {
-      // Bail out; destination handle got closed.
-      consumer_endpoint_->FreeBuffers();
-      return;
-    }
-  }
+void ConsumerHost::OnConsumerClientDisconnected() {
+  // Bail out; destination handle got closed.
+  consumer_endpoint_->FreeBuffers();
 }
 
 }  // namespace tracing

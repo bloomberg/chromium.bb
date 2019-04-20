@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
+#include "base/threading/sequence_bound.h"
 #include "base/timer/timer.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/tracing/public/mojom/perfetto_service.mojom.h"
@@ -81,19 +82,20 @@ class ConsumerHost : public perfetto::Consumer, public mojom::ConsumerHost {
   void OnActiveServicePidsInitialized();
 
  private:
+  class StreamWriter;
+
   perfetto::TraceConfig AdjustTraceConfig(
       const perfetto::TraceConfig& trace_config);
   void OnEnableTracingTimeout();
   void MaybeSendEnableTracingAck();
   bool IsExpectedPid(base::ProcessId pid) const;
-  void OnJSONTraceData(const std::string& json,
+  void OnJSONTraceData(std::string* json,
                        base::DictionaryValue* metadata,
                        bool has_more);
-  void WriteToStream(const void* start, size_t size);
+  void OnConsumerClientDisconnected();
 
   PerfettoService* const service_;
-  mojo::ScopedDataPipeProducerHandle read_buffers_stream_;
-  ReadBuffersCallback read_buffers_callback_;
+  base::SequenceBound<StreamWriter> read_buffers_stream_writer_;
   base::OnceCallback<void(bool)> flush_callback_;
   mojom::TracingSessionPtr tracing_session_;
   std::set<base::ProcessId> filtered_pids_;
