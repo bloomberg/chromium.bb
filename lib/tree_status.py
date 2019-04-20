@@ -115,6 +115,70 @@ def _GetStatus(status_url):
     return status_dict.get(TREE_STATUS_STATE)
 
 
+def WaitForTreeStatus(status_url=None, period=1, timeout=1, throttled_ok=False):
+  """Wait for tree status to be open (or throttled, if |throttled_ok|).
+
+  Args:
+    status_url: The status url to check i.e.
+      'https://status.appspot.com/current?format=json'
+    period: How often to poll for status updates.
+    timeout: How long to wait until a tree status is discovered.
+    throttled_ok: is TREE_THROTTLED an acceptable status?
+
+  Returns:
+    The most recent tree status, either constants.TREE_OPEN or
+    constants.TREE_THROTTLED (if |throttled_ok|)
+
+  Raises:
+    timeout_util.TimeoutError if timeout expired before tree reached
+    acceptable status.
+  """
+  if not status_url:
+    status_url = CROS_TREE_STATUS_JSON_URL
+
+  acceptable_states = set([constants.TREE_OPEN])
+  verb = 'open'
+  if throttled_ok:
+    acceptable_states.add(constants.TREE_THROTTLED)
+    verb = 'not be closed'
+
+  timeout = max(timeout, 1)
+
+  def _LogMessage(remaining):
+    logging.info('Waiting for the tree to %s (%s left)...', verb, remaining)
+
+  def _get_status():
+    return _GetStatus(status_url)
+
+  return timeout_util.WaitForReturnValue(
+      acceptable_states, _get_status, timeout=timeout,
+      period=period, side_effect_func=_LogMessage)
+
+
+def IsTreeOpen(status_url=None, period=1, timeout=1, throttled_ok=False):
+  """Wait for tree status to be open (or throttled, if |throttled_ok|).
+
+  Args:
+    status_url: The status url to check i.e.
+      'https://status.appspot.com/current?format=json'
+    period: How often to poll for status updates.
+    timeout: How long to wait until a tree status is discovered.
+    throttled_ok: Does TREE_THROTTLED count as open?
+
+  Returns:
+    True if the tree is open (or throttled, if |throttled_ok|). False if
+    timeout expired before tree reached acceptable status.
+  """
+  if not status_url:
+    status_url = CROS_TREE_STATUS_JSON_URL
+
+  try:
+    WaitForTreeStatus(status_url=status_url, period=period, timeout=timeout,
+                      throttled_ok=throttled_ok)
+  except timeout_util.TimeoutError:
+    return False
+  return True
+
 def GetExperimentalBuilders(status_url=None, timeout=1):
   """Polls |status_url| and returns the list of experimental builders.
 

@@ -83,6 +83,59 @@ class TestTreeStatus(cros_test_lib.MockTestCase):
     self.PatchObject(urllib, 'urlopen', autospec=True,
                      side_effect=return_value)
 
+  def testTreeIsOpen(self):
+    """Tests that we return True is the tree is open."""
+    self._SetupMockTreeStatusResponses(rejected_status_count=5,
+                                       retries_500=5)
+    self.assertTrue(tree_status.IsTreeOpen(status_url=self.status_url,
+                                           period=0))
+
+  def testTreeIsClosed(self):
+    """Tests that we return false is the tree is closed."""
+    self._SetupMockTreeStatusResponses(output_final_status=False)
+    self.assertFalse(tree_status.IsTreeOpen(status_url=self.status_url,
+                                            period=0.1))
+
+  def testTreeIsThrottled(self):
+    """Tests that we return True if the tree is throttled."""
+    self._SetupMockTreeStatusResponses(
+        final_tree_status='Tree is throttled (flaky bug on flaky builder)',
+        final_general_state=constants.TREE_THROTTLED)
+    self.assertTrue(tree_status.IsTreeOpen(status_url=self.status_url,
+                                           throttled_ok=True))
+
+  def testTreeIsThrottledNotOk(self):
+    """Tests that we respect throttled_ok"""
+    self._SetupMockTreeStatusResponses(
+        rejected_tree_status='Tree is throttled (flaky bug on flaky builder)',
+        rejected_general_state=constants.TREE_THROTTLED,
+        output_final_status=False)
+    self.assertFalse(tree_status.IsTreeOpen(status_url=self.status_url,
+                                            period=0.1))
+
+  def testWaitForStatusOpen(self):
+    """Tests that we can wait for a tree open response."""
+    self._SetupMockTreeStatusResponses()
+    self.assertEqual(tree_status.WaitForTreeStatus(status_url=self.status_url),
+                     constants.TREE_OPEN)
+
+
+  def testWaitForStatusThrottled(self):
+    """Tests that we can wait for a tree open response."""
+    self._SetupMockTreeStatusResponses(
+        final_general_state=constants.TREE_THROTTLED)
+    self.assertEqual(tree_status.WaitForTreeStatus(status_url=self.status_url,
+                                                   throttled_ok=True),
+                     constants.TREE_THROTTLED)
+
+  def testWaitForStatusFailure(self):
+    """Tests that we can wait for a tree open response."""
+    self._SetupMockTreeStatusResponses(output_final_status=False)
+    self.assertRaises(timeout_util.TimeoutError,
+                      tree_status.WaitForTreeStatus,
+                      status_url=self.status_url,
+                      period=0.1)
+
   def testGetStatusDictParsesMessage(self):
     """Tests that _GetStatusDict parses message correctly."""
     self._SetupMockTreeStatusResponses(
