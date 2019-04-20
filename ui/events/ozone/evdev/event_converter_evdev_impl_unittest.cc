@@ -18,10 +18,10 @@
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/events/ozone/device/device_manager.h"
-#include "ui/events/ozone/evdev/cursor_delegate_evdev.h"
 #include "ui/events/ozone/evdev/event_converter_test_util.h"
 #include "ui/events/ozone/evdev/event_factory_evdev.h"
 #include "ui/events/ozone/evdev/keyboard_evdev.h"
+#include "ui/events/ozone/evdev/testing/fake_cursor_delegate_evdev.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
 #include "ui/events/test/scoped_event_test_tick_clock.h"
 
@@ -52,36 +52,6 @@ class MockEventConverterEvdevImpl : public EventConverterEvdevImpl {
   DISALLOW_COPY_AND_ASSIGN(MockEventConverterEvdevImpl);
 };
 
-class MockCursorEvdev : public CursorDelegateEvdev {
- public:
-  MockCursorEvdev() {}
-  ~MockCursorEvdev() override {}
-
-  // CursorDelegateEvdev:
-  void MoveCursorTo(gfx::AcceleratedWidget widget,
-                    const gfx::PointF& location) override {
-    cursor_location_ = location;
-  }
-  void MoveCursorTo(const gfx::PointF& location) override {
-    cursor_location_ = location;
-  }
-  void MoveCursor(const gfx::Vector2dF& delta) override {
-    cursor_location_ = gfx::PointF(delta.x(), delta.y());
-  }
-  bool IsCursorVisible() override { return 1; }
-  gfx::Rect GetCursorConfinedBounds() override {
-    NOTIMPLEMENTED();
-    return gfx::Rect();
-  }
-  gfx::PointF GetLocation() override { return cursor_location_; }
-  void InitializeOnEvdev() override {}
- private:
-  // The location of the mock cursor.
-  gfx::PointF cursor_location_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockCursorEvdev);
-};
-
 }  // namespace ui
 
 // Test fixture.
@@ -98,7 +68,7 @@ class EventConverterEvdevImplTest : public testing::Test {
     base::ScopedFD events_in(evdev_io[0]);
     events_out_.reset(evdev_io[1]);
 
-    cursor_.reset(new ui::MockCursorEvdev());
+    cursor_.reset(new ui::FakeCursorDelegateEvdev());
 
     device_manager_ = ui::CreateDeviceManagerForTest();
     event_factory_ = ui::CreateEventFactoryEvdevForTest(
@@ -121,7 +91,7 @@ class EventConverterEvdevImplTest : public testing::Test {
     test_clock_.reset();
   }
 
-  ui::MockCursorEvdev* cursor() { return cursor_.get(); }
+  ui::FakeCursorDelegateEvdev* cursor() { return cursor_.get(); }
   ui::MockEventConverterEvdevImpl* device() { return device_.get(); }
 
   unsigned size() { return dispatched_events_.size(); }
@@ -160,7 +130,7 @@ class EventConverterEvdevImplTest : public testing::Test {
 
   base::MessageLoopForUI ui_loop_;
 
-  std::unique_ptr<ui::MockCursorEvdev> cursor_;
+  std::unique_ptr<ui::FakeCursorDelegateEvdev> cursor_;
   std::unique_ptr<ui::DeviceManager> device_manager_;
   std::unique_ptr<ui::EventFactoryEvdev> event_factory_;
   std::unique_ptr<ui::DeviceEventDispatcherEvdev> dispatcher_;
