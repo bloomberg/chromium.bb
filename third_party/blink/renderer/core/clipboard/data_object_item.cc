@@ -127,7 +127,7 @@ File* DataObjectItem::GetAsFile() const {
     if (file_)
       return file_.Get();
     DCHECK(shared_buffer_);
-    // FIXME: This code is currently impossible--we never populate
+    // TODO: This code is currently impossible--we never populate
     // |shared_buffer_| when dragging in. At some point though, we may need to
     // support correctly converting a shared buffer into a file.
     return nullptr;
@@ -180,7 +180,7 @@ String DataObjectItem::GetAsString() const {
 }
 
 bool DataObjectItem::IsFilename() const {
-  // FIXME: https://bugs.webkit.org/show_bug.cgi?id=81261: When we properly
+  // TODO(https://bugs.webkit.org/show_bug.cgi?id=81261): When we properly
   // support File dragout, we'll need to make sure this works as expected for
   // DragDataChromium.
   return kind_ == kFileKind && file_;

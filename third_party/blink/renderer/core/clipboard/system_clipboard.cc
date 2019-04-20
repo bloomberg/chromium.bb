@@ -248,7 +248,7 @@ bool SystemClipboard::IsValidBufferType(mojom::ClipboardBuffer buffer) {
 #else
       // Chrome OS and non-X11 unix builds do not support
       // the X selection clipboard.
-      // TODO: remove the need for this case, see http://crbug.com/361753
+      // TODO(http://crbug.com/361753): remove the need for this case.
       return false;
 #endif
   }

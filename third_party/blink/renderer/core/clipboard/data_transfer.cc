@@ -159,7 +159,7 @@ class DraggedNodeImageBuilder {
 }  // namespace
 static DragOperation ConvertEffectAllowedToDragOperation(const String& op) {
   // Values specified in
-  // http://www.whatwg.org/specs/web-apps/current-work/multipage/dnd.html#dom-datatransfer-effectallowed
+  // https://html.spec.whatwg.org/multipage/dnd.html#dom-datatransfer-effectallowed
   if (op == "uninitialized")
     return kDragOperationEvery;
   if (op == "none")
@@ -597,7 +597,7 @@ bool DataTransfer::HasDropZoneType(const String& keyword) {
 }
 
 DataTransferItemList* DataTransfer::items() {
-  // FIXME: According to the spec, we are supposed to return the same collection
+  // TODO: According to the spec, we are supposed to return the same collection
   // of items each time. We now return a wrapper that always wraps the *same*
   // set of items, so JS shouldn't be able to tell, but we probably still want
   // to fix this.
