@@ -46,11 +46,11 @@ def _OptionsForBrowser(browser_type, finder_options):
   finder_options.browser_executable = None
   finder_options.browser_options.browser_type = browser_type
 
-  # TODO(crbug.com/881469): remove this once Webview support surface
-  # synchronization and viz.
+  # TODO(crbug.com/881469): remove this once Webview supports
+  # VizDisplayCompositor.
   if browser_type and 'android-webview' in browser_type:
     finder_options.browser_options.AppendExtraBrowserArgs(
-        '--disable-features=SurfaceSynchronization,VizDisplayCompositor')
+        '--disable-features=VizDisplayCompositor')
 
   return finder_options
 

@@ -194,6 +194,12 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
   // layer is managed by the DelegatedFrameHost.
   view_.SetLayer(cc::Layer::Create());
   view_.set_event_handler(this);
+
+  // If we're showing at creation time, we won't get a visibility change, so
+  // generate our initial LocalSurfaceId here.
+  if (is_showing_)
+    local_surface_id_allocator_.GenerateId();
+
   if (using_browser_compositor_) {
     delegated_frame_host_client_ =
         std::make_unique<DelegatedFrameHostClientAndroid>(this);
@@ -202,7 +208,6 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
         delegated_frame_host_client_.get(), host()->GetFrameSinkId(),
         features::IsSurfaceSynchronizationEnabled());
     if (is_showing_) {
-      local_surface_id_allocator_.GenerateId();
       delegated_frame_host_->WasShown(
           local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()
               .local_surface_id(),
@@ -1039,21 +1044,26 @@ void RenderWidgetHostViewAndroid::SynchronousFrameMetadata(
   if (!view_.parent())
     return;
 
-  bool is_mobile_optimized = IsMobileOptimizedFrame(
-      metadata.page_scale_factor, metadata.min_page_scale_factor,
-      metadata.max_page_scale_factor, metadata.scrollable_viewport_size,
-      metadata.root_layer_size);
+  // With SurfaceSynchronization, this logic happens during RenderFrameMetadata
+  // processing.
+  // TODO(ericrk): Remove this once surface synchronization feature is no
+  // longer optional.
+  if (!features::IsSurfaceSynchronizationEnabled()) {
+    bool is_mobile_optimized = IsMobileOptimizedFrame(
+        metadata.page_scale_factor, metadata.min_page_scale_factor,
+        metadata.max_page_scale_factor, metadata.scrollable_viewport_size,
+        metadata.root_layer_size);
 
-  if (host() && host()->input_router()) {
-    host()->input_router()->NotifySiteIsMobileOptimized(is_mobile_optimized);
+    if (host() && host()->input_router())
+      host()->input_router()->NotifySiteIsMobileOptimized(is_mobile_optimized);
+
+    // This is a subset of OnSwapCompositorFrame() used in the synchronous
+    // compositor flow.
+    OnFrameMetadataUpdated(metadata.Clone(), false);
   }
 
   if (host() && metadata.frame_token)
     host()->DidProcessFrame(metadata.frame_token);
-
-  // This is a subset of OnSwapCompositorFrame() used in the synchronous
-  // compositor flow.
-  OnFrameMetadataUpdated(metadata.Clone(), false);
 
   // DevTools ScreenCast support for Android WebView.
   RenderFrameHost* frame_host = RenderViewHost::From(host())->GetMainFrame();
@@ -2025,9 +2035,6 @@ RenderWidgetHostViewAndroid::GetTouchSelectionControllerClientManager() {
 
 const viz::LocalSurfaceIdAllocation&
 RenderWidgetHostViewAndroid::GetLocalSurfaceIdAllocation() const {
-  if (!delegated_frame_host_)
-    return viz::ParentLocalSurfaceIdAllocator::
-        InvalidLocalSurfaceIdAllocation();
   return local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation();
 }
 

@@ -109,12 +109,12 @@ class PerfBenchmark(benchmark.Benchmark):
     browser_options.AppendExtraBrowserArgs(
         '--disable-gpu-process-for-dx12-vulkan-info-collection')
 
-    # TODO(crbug.com/881469): remove this once Webview support surface
-    # synchronization and viz.
+    # TODO(crbug.com/881469): remove this once Webview supports
+    # VizDisplayCompositor.
     if (browser_options.browser_type and
         'android-webview' in browser_options.browser_type):
       browser_options.AppendExtraBrowserArgs(
-          '--disable-features=SurfaceSynchronization,VizDisplayCompositor')
+          '--disable-features=VizDisplayCompositor')
 
     # Switch Chrome to use Perfetto instead of TraceLog as the tracing backend,
     # needed until the feature gets turned on by default everywhere.

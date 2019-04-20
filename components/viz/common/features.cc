@@ -19,13 +19,8 @@ constexpr char kProvider[] = "provider";
 constexpr char kDrawQuad[] = "draw_quad";
 constexpr char kSurfaceLayer[] = "surface_layer";
 
-#if defined(USE_AURA) || defined(OS_MACOSX)
 const base::Feature kEnableSurfaceSynchronization{
     "SurfaceSynchronization", base::FEATURE_ENABLED_BY_DEFAULT};
-#else
-const base::Feature kEnableSurfaceSynchronization{
-    "SurfaceSynchronization", base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
 
 // Enables running the display compositor as part of the viz service in the GPU
 // process. This is also referred to as out-of-process display compositor
