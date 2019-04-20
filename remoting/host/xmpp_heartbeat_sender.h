@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_HOST_HEARTBEAT_SENDER_H_
-#define REMOTING_HOST_HEARTBEAT_SENDER_H_
+#ifndef REMOTING_HOST_XMPP_HEARTBEAT_SENDER_H_
+#define REMOTING_HOST_XMPP_HEARTBEAT_SENDER_H_
 
 #include <memory>
 #include <string>
@@ -36,8 +36,8 @@ class RsaKeyPair;
 class IqRequest;
 class IqSender;
 
-// HeartbeatSender periodically sends heartbeat stanzas to the Chromoting Bot.
-// Each heartbeat stanza looks as follows:
+// XmppHeartbeatSender periodically sends heartbeat stanzas to the Chromoting
+// Bot. Each heartbeat stanza looks as follows:
 //
 // <iq type="set" to="remoting@bot.talk.google.com"
 //     from="user@gmail.com/chromoting123123" id="5" xmlns="jabber:client">
@@ -92,7 +92,7 @@ class IqSender;
 //      <rem:expected-sequence-id>654</rem:expected-sequence-id>
 //    </rem:heartbeat-result>
 //  </iq>
-class HeartbeatSender : public SignalStrategy::Listener {
+class XmppHeartbeatSender : public SignalStrategy::Listener {
  public:
   // |signal_strategy| and |delegate| must outlive this
   // object. Heartbeats will start when the supplied SignalStrategy
@@ -103,13 +103,14 @@ class HeartbeatSender : public SignalStrategy::Listener {
   //
   // |on_unknown_host_id_error| is invoked when the host ID is permanently not
   // recognized by the server.
-  HeartbeatSender(const base::Closure& on_heartbeat_successful_callback,
-                  const base::Closure& on_unknown_host_id_error,
-                  const std::string& host_id,
-                  SignalStrategy* signal_strategy,
-                  const scoped_refptr<const RsaKeyPair>& host_key_pair,
-                  const std::string& directory_bot_jid);
-  ~HeartbeatSender() override;
+  XmppHeartbeatSender(
+      const base::RepeatingClosure& on_heartbeat_successful_callback,
+      const base::RepeatingClosure& on_unknown_host_id_error,
+      const std::string& host_id,
+      SignalStrategy* signal_strategy,
+      const scoped_refptr<const RsaKeyPair>& host_key_pair,
+      const std::string& directory_bot_jid);
+  ~XmppHeartbeatSender() override;
 
   // Sets host offline reason for future heartbeat stanzas, and initiates
   // sending a stanza right away.
@@ -123,10 +124,10 @@ class HeartbeatSender : public SignalStrategy::Listener {
   void SetHostOfflineReason(
       const std::string& host_offline_reason,
       const base::TimeDelta& timeout,
-      const base::Callback<void(bool success)>& ack_callback);
+      const base::RepeatingCallback<void(bool success)>& ack_callback);
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(HeartbeatSenderTest, SetInterval);
+  FRIEND_TEST_ALL_PREFIXES(XmppHeartbeatSenderTest, SetInterval);
 
   enum class HeartbeatResult {
     SUCCESS,
@@ -138,7 +139,8 @@ class HeartbeatSender : public SignalStrategy::Listener {
 
   // SignalStrategy::Listener interface.
   void OnSignalStrategyStateChange(SignalStrategy::State state) override;
-  bool OnSignalStrategyIncomingStanza(const jingle_xmpp::XmlElement* stanza) override;
+  bool OnSignalStrategyIncomingStanza(
+      const jingle_xmpp::XmlElement* stanza) override;
 
   void SendHeartbeat();
   void OnResponse(IqRequest* request, const jingle_xmpp::XmlElement* response);
@@ -152,8 +154,8 @@ class HeartbeatSender : public SignalStrategy::Listener {
   std::unique_ptr<jingle_xmpp::XmlElement> CreateHeartbeatMessage();
   std::unique_ptr<jingle_xmpp::XmlElement> CreateSignature();
 
-  base::Closure on_heartbeat_successful_callback_;
-  base::Closure on_unknown_host_id_error_;
+  base::RepeatingClosure on_heartbeat_successful_callback_;
+  base::RepeatingClosure on_unknown_host_id_error_;
   std::string host_id_;
   SignalStrategy* const signal_strategy_;
   scoped_refptr<const RsaKeyPair> host_key_pair_;
@@ -172,14 +174,14 @@ class HeartbeatSender : public SignalStrategy::Listener {
 
   // Fields to send and indicate completion of sending host-offline-reason.
   std::string host_offline_reason_;
-  base::Callback<void(bool success)> host_offline_reason_ack_callback_;
+  base::RepeatingCallback<void(bool success)> host_offline_reason_ack_callback_;
   base::OneShotTimer host_offline_reason_timeout_timer_;
 
-  base::ThreadChecker thread_checker_;
+  THREAD_CHECKER(thread_checker_);
 
-  DISALLOW_COPY_AND_ASSIGN(HeartbeatSender);
+  DISALLOW_COPY_AND_ASSIGN(XmppHeartbeatSender);
 };
 
 }  // namespace remoting
 
-#endif  // REMOTING_HOST_HEARTBEAT_SENDER_H_
+#endif  // REMOTING_HOST_XMPP_HEARTBEAT_SENDER_H_

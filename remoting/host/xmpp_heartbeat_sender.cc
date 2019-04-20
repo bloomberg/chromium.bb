@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/heartbeat_sender.h"
+#include "remoting/host/xmpp_heartbeat_sender.h"
 
 #include <math.h>
 
@@ -66,9 +66,9 @@ const int kMaxHeartbeatTimeouts = 2;
 
 }  // namespace
 
-HeartbeatSender::HeartbeatSender(
-    const base::Closure& on_heartbeat_successful_callback,
-    const base::Closure& on_unknown_host_id_error,
+XmppHeartbeatSender::XmppHeartbeatSender(
+    const base::RepeatingClosure& on_heartbeat_successful_callback,
+    const base::RepeatingClosure& on_unknown_host_id_error,
     const std::string& host_id,
     SignalStrategy* signal_strategy,
     const scoped_refptr<const RsaKeyPair>& host_key_pair,
@@ -82,7 +82,7 @@ HeartbeatSender::HeartbeatSender(
       interval_(kDefaultHeartbeatInterval) {
   DCHECK(signal_strategy_);
   DCHECK(host_key_pair_.get());
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   signal_strategy_->AddListener(this);
 
@@ -90,13 +90,14 @@ HeartbeatSender::HeartbeatSender(
   OnSignalStrategyStateChange(signal_strategy_->GetState());
 }
 
-HeartbeatSender::~HeartbeatSender() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+XmppHeartbeatSender::~XmppHeartbeatSender() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   signal_strategy_->RemoveListener(this);
 }
 
-void HeartbeatSender::OnSignalStrategyStateChange(SignalStrategy::State state) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+void XmppHeartbeatSender::OnSignalStrategyStateChange(
+    SignalStrategy::State state) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (state == SignalStrategy::CONNECTED) {
     DCHECK(!iq_sender_);
     iq_sender_ = std::make_unique<IqSender>(signal_strategy_);
@@ -108,18 +109,18 @@ void HeartbeatSender::OnSignalStrategyStateChange(SignalStrategy::State state) {
   }
 }
 
-bool HeartbeatSender::OnSignalStrategyIncomingStanza(
+bool XmppHeartbeatSender::OnSignalStrategyIncomingStanza(
     const jingle_xmpp::XmlElement* stanza) {
   return false;
 }
 
-void HeartbeatSender::OnHostOfflineReasonTimeout() {
+void XmppHeartbeatSender::OnHostOfflineReasonTimeout() {
   DCHECK(host_offline_reason_ack_callback_);
 
   std::move(host_offline_reason_ack_callback_).Run(false);
 }
 
-void HeartbeatSender::OnHostOfflineReasonAck() {
+void XmppHeartbeatSender::OnHostOfflineReasonAck() {
   if (!host_offline_reason_ack_callback_) {
     DCHECK(!host_offline_reason_timeout_timer_.IsRunning());
     return;
@@ -131,17 +132,18 @@ void HeartbeatSender::OnHostOfflineReasonAck() {
   std::move(host_offline_reason_ack_callback_).Run(true);
 }
 
-void HeartbeatSender::SetHostOfflineReason(
+void XmppHeartbeatSender::SetHostOfflineReason(
     const std::string& host_offline_reason,
     const base::TimeDelta& timeout,
-    const base::Callback<void(bool success)>& ack_callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+    const base::RepeatingCallback<void(bool success)>& ack_callback) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!host_offline_reason_ack_callback_);
 
   host_offline_reason_ = host_offline_reason;
   host_offline_reason_ack_callback_ = ack_callback;
   host_offline_reason_timeout_timer_.Start(
-      FROM_HERE, timeout, this, &HeartbeatSender::OnHostOfflineReasonTimeout);
+      FROM_HERE, timeout, this,
+      &XmppHeartbeatSender::OnHostOfflineReasonTimeout);
   if (signal_strategy_->GetState() == SignalStrategy::CONNECTED) {
     // Drop timer or pending heartbeat and send a new heartbeat immediately.
     request_.reset();
@@ -151,15 +153,16 @@ void HeartbeatSender::SetHostOfflineReason(
   }
 }
 
-void HeartbeatSender::SendHeartbeat() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+void XmppHeartbeatSender::SendHeartbeat() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   VLOG(1) << "Sending heartbeat stanza to " << directory_bot_jid_;
 
   if (iq_sender_) {
     DCHECK_EQ(signal_strategy_->GetState(), SignalStrategy::CONNECTED);
     request_ = iq_sender_->SendIq(
         jingle_xmpp::STR_SET, directory_bot_jid_, CreateHeartbeatMessage(),
-        base::Bind(&HeartbeatSender::OnResponse, base::Unretained(this)));
+        base::BindRepeating(&XmppHeartbeatSender::OnResponse,
+                            base::Unretained(this)));
   } else {
     DCHECK_EQ(signal_strategy_->GetState(), SignalStrategy::DISCONNECTED);
   }
@@ -174,9 +177,9 @@ void HeartbeatSender::SendHeartbeat() {
   ++sequence_id_;
 }
 
-void HeartbeatSender::OnResponse(IqRequest* request,
-                                 const jingle_xmpp::XmlElement* response) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+void XmppHeartbeatSender::OnResponse(IqRequest* request,
+                                     const jingle_xmpp::XmlElement* response) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   HeartbeatResult result = ProcessResponse(response);
 
@@ -259,10 +262,10 @@ void HeartbeatSender::OnResponse(IqRequest* request,
       break;
   }
 
-  timer_.Start(FROM_HERE, delay, this, &HeartbeatSender::SendHeartbeat);
+  timer_.Start(FROM_HERE, delay, this, &XmppHeartbeatSender::SendHeartbeat);
 }
 
-HeartbeatSender::HeartbeatResult HeartbeatSender::ProcessResponse(
+XmppHeartbeatSender::HeartbeatResult XmppHeartbeatSender::ProcessResponse(
     const jingle_xmpp::XmlElement* response) {
   if (!response) {
     return HeartbeatResult::TIMEOUT;
@@ -272,8 +275,8 @@ HeartbeatSender::HeartbeatResult HeartbeatSender::ProcessResponse(
   if (type == jingle_xmpp::STR_ERROR) {
     const XmlElement* error_element =
         response->FirstNamed(QName(jingle_xmpp::NS_CLIENT, kErrorTag));
-    if (error_element &&
-        error_element->FirstNamed(QName(jingle_xmpp::NS_STANZA, kNotFoundTag))) {
+    if (error_element && error_element->FirstNamed(
+                             QName(jingle_xmpp::NS_STANZA, kNotFoundTag))) {
       LOG(ERROR) << "Received error: Host ID not found";
       return HeartbeatResult::INVALID_HOST_ID;
     }
@@ -289,9 +292,8 @@ HeartbeatSender::HeartbeatResult HeartbeatSender::ProcessResponse(
   const XmlElement* result_element =
       response->FirstNamed(QName(kChromotingXmlNamespace, kHeartbeatResultTag));
   if (result_element) {
-    const XmlElement* set_interval_element =
-        result_element->FirstNamed(QName(kChromotingXmlNamespace,
-                                         kSetIntervalTag));
+    const XmlElement* set_interval_element = result_element->FirstNamed(
+        QName(kChromotingXmlNamespace, kSetIntervalTag));
     if (set_interval_element) {
       const std::string& interval_str = set_interval_element->BodyText();
       int interval_seconds;
@@ -304,9 +306,8 @@ HeartbeatSender::HeartbeatResult HeartbeatSender::ProcessResponse(
       }
     }
 
-    const XmlElement* expected_sequence_id_element =
-        result_element->FirstNamed(QName(kChromotingXmlNamespace,
-                                         kExpectedSequenceIdTag));
+    const XmlElement* expected_sequence_id_element = result_element->FirstNamed(
+        QName(kChromotingXmlNamespace, kExpectedSequenceIdTag));
     if (expected_sequence_id_element) {
       // The sequence ID sent in the previous heartbeat was not what the server
       // expected, so send another heartbeat with the expected sequence ID.
@@ -314,8 +315,8 @@ HeartbeatSender::HeartbeatResult HeartbeatSender::ProcessResponse(
           expected_sequence_id_element->BodyText();
       int expected_sequence_id;
       if (!base::StringToInt(expected_sequence_id_str, &expected_sequence_id)) {
-        LOG(ERROR) << "Received invalid " << kExpectedSequenceIdTag << ": " <<
-            expected_sequence_id_element->Str();
+        LOG(ERROR) << "Received invalid " << kExpectedSequenceIdTag << ": "
+                   << expected_sequence_id_element->Str();
 
         return HeartbeatResult::ERROR;
       }
@@ -328,7 +329,7 @@ HeartbeatSender::HeartbeatResult HeartbeatSender::ProcessResponse(
   return HeartbeatResult::SUCCESS;
 }
 
-std::unique_ptr<XmlElement> HeartbeatSender::CreateHeartbeatMessage() {
+std::unique_ptr<XmlElement> XmppHeartbeatSender::CreateHeartbeatMessage() {
   // Create heartbeat stanza.
   std::unique_ptr<XmlElement> heartbeat(
       new XmlElement(QName(kChromotingXmlNamespace, kHeartbeatQueryTag)));
@@ -336,9 +337,8 @@ std::unique_ptr<XmlElement> HeartbeatSender::CreateHeartbeatMessage() {
   heartbeat->AddAttr(QName(kChromotingXmlNamespace, kSequenceIdAttr),
                      base::NumberToString(sequence_id_));
   if (!host_offline_reason_.empty()) {
-    heartbeat->AddAttr(
-        QName(kChromotingXmlNamespace, kHostOfflineReasonAttr),
-        host_offline_reason_);
+    heartbeat->AddAttr(QName(kChromotingXmlNamespace, kHostOfflineReasonAttr),
+                       host_offline_reason_);
   }
   heartbeat->AddElement(CreateSignature().release());
   // Append host version.
@@ -368,7 +368,7 @@ std::unique_ptr<XmlElement> HeartbeatSender::CreateHeartbeatMessage() {
   return heartbeat;
 }
 
-std::unique_ptr<XmlElement> HeartbeatSender::CreateSignature() {
+std::unique_ptr<XmlElement> XmppHeartbeatSender::CreateSignature() {
   std::unique_ptr<XmlElement> signature_tag(
       new XmlElement(QName(kChromotingXmlNamespace, kHeartbeatSignatureTag)));
 

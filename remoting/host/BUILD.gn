@@ -161,8 +161,6 @@ static_library("common") {
     "gcd_rest_client.h",
     "gcd_state_updater.cc",
     "gcd_state_updater.h",
-    "heartbeat_sender.cc",
-    "heartbeat_sender.h",
     "host_attributes.cc",
     "host_attributes.h",
     "host_change_notification_listener.cc",
@@ -291,6 +289,8 @@ static_library("common") {
     "usage_stats_consent_win.cc",
     "username.cc",
     "username.h",
+    "xmpp_heartbeat_sender.cc",
+    "xmpp_heartbeat_sender.h",
   ]
 
   libs = []
@@ -475,7 +475,6 @@ source_set("unit_tests") {
     "desktop_session_agent_unittest.cc",
     "gcd_rest_client_unittest.cc",
     "gcd_state_updater_unittest.cc",
-    "heartbeat_sender_unittest.cc",
     "host_attributes_unittest.cc",
     "host_change_notification_listener_unittest.cc",
     "host_config_unittest.cc",
@@ -509,6 +508,7 @@ source_set("unit_tests") {
     "token_validator_base_unittest.cc",
     "token_validator_factory_impl_unittest.cc",
     "touch_injector_win_unittest.cc",
+    "xmpp_heartbeat_sender_unittest.cc",
   ]
 
   if (use_ozone || is_chromeos) {

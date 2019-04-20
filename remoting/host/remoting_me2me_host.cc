@@ -61,7 +61,6 @@
 #include "remoting/host/ftl_signaling_connector.h"
 #include "remoting/host/gcd_rest_client.h"
 #include "remoting/host/gcd_state_updater.h"
-#include "remoting/host/heartbeat_sender.h"
 #include "remoting/host/host_change_notification_listener.h"
 #include "remoting/host/host_config.h"
 #include "remoting/host/host_event_logger.h"
@@ -88,6 +87,7 @@
 #include "remoting/host/token_validator_factory_impl.h"
 #include "remoting/host/usage_stats_consent.h"
 #include "remoting/host/username.h"
+#include "remoting/host/xmpp_heartbeat_sender.h"
 #include "remoting/protocol/authenticator.h"
 #include "remoting/protocol/channel_authenticator.h"
 #include "remoting/protocol/chromium_port_allocator_factory.h"
@@ -330,7 +330,7 @@ class HostProcess : public ConfigWatcher::Delegate,
   void StartHostIfReady();
   void StartHost();
 
-  // Error handler for HeartbeatSender.
+  // Error handler for XmppHeartbeatSender.
   void OnHeartbeatSuccessful();
   void OnUnknownHostIdError();
 
@@ -424,7 +424,7 @@ class HostProcess : public ConfigWatcher::Delegate,
   bool enable_ftl_signaling_ = false;
 
   // Signal strategies must outlive |signaling_connector_|, |gcd_subscriber_|,
-  // and |heartbeat_sender_|.
+  // and |xmpp_heartbeat_sender_|.
   // |ftl_signal_strategy_| and |xmpp_signal_strategy_| must outlive
   // |muxing_signal_strategy_|.
   std::unique_ptr<FtlSignalStrategy> ftl_signal_strategy_;
@@ -433,7 +433,7 @@ class HostProcess : public ConfigWatcher::Delegate,
 
   std::unique_ptr<SignalingConnector> xmpp_signaling_connector_;
   std::unique_ptr<FtlSignalingConnector> ftl_signaling_connector_;
-  std::unique_ptr<HeartbeatSender> heartbeat_sender_;
+  std::unique_ptr<XmppHeartbeatSender> xmpp_heartbeat_sender_;
 #if defined(USE_GCD)
   std::unique_ptr<GcdStateUpdater> gcd_state_updater_;
   std::unique_ptr<PushNotificationSubscriber> gcd_subscriber_;
@@ -1457,7 +1457,7 @@ void HostProcess::InitializeSignaling() {
   DCHECK(!gcd_state_updater_);
   DCHECK(!gcd_subscriber_);
 #endif  // defined(USE_GCD)
-  DCHECK(!heartbeat_sender_);
+  DCHECK(!xmpp_heartbeat_sender_);
 
   // Create SignalStrategy.
   xmpp_signal_strategy_ = std::make_unique<XmppSignalStrategy>(
@@ -1508,8 +1508,8 @@ void HostProcess::InitializeSignaling() {
       new PushNotificationSubscriber(xmpp_signal_strategy_.get(), subs));
 #endif  // defined(USE_GCD)
 
-  // Create HeartbeatSender.
-  heartbeat_sender_.reset(new HeartbeatSender(
+  // Create XmppHeartbeatSender.
+  xmpp_heartbeat_sender_.reset(new XmppHeartbeatSender(
       base::Bind(&HostProcess::OnHeartbeatSuccessful, base::Unretained(this)),
       base::Bind(&HostProcess::OnUnknownHostIdError, base::Unretained(this)),
       host_id_, xmpp_signal_strategy_.get(), key_pair_, directory_bot_jid_));
@@ -1697,8 +1697,8 @@ void HostProcess::GoOffline(const std::string& host_offline_reason) {
       InitializeSignaling();
 
     HOST_LOG << "SendHostOfflineReason: sending " << host_offline_reason << ".";
-    if (heartbeat_sender_) {
-      heartbeat_sender_->SetHostOfflineReason(
+    if (xmpp_heartbeat_sender_) {
+      xmpp_heartbeat_sender_->SetHostOfflineReason(
           host_offline_reason,
           base::TimeDelta::FromSeconds(kHostOfflineReasonTimeoutSeconds),
           base::Bind(&HostProcess::OnHostOfflineReasonAck, this));
@@ -1725,7 +1725,7 @@ void HostProcess::OnHostOfflineReasonAck(bool success) {
   DCHECK(!host_);  // Assert that the host is really offline at this point.
 
   HOST_LOG << "SendHostOfflineReason " << (success ? "succeeded." : "failed.");
-  heartbeat_sender_.reset();
+  xmpp_heartbeat_sender_.reset();
   oauth_token_getter_.reset();
   ftl_signaling_connector_.reset();
   xmpp_signaling_connector_.reset();

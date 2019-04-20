@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/heartbeat_sender.h"
+#include "remoting/host/xmpp_heartbeat_sender.h"
 
 #include <set>
 
@@ -46,10 +46,9 @@ constexpr base::TimeDelta kOfflineReasonTimeout =
 
 }  // namespace
 
-class HeartbeatSenderTest
-    : public testing::Test {
+class XmppHeartbeatSenderTest : public testing::Test {
  protected:
-  HeartbeatSenderTest()
+  XmppHeartbeatSenderTest()
       : signal_strategy_(SignalingAddress(kTestJid)),
         bot_signal_strategy_(SignalingAddress(kTestBotJid)) {}
 
@@ -64,14 +63,14 @@ class HeartbeatSenderTest
 
     EXPECT_CALL(mock_unknown_host_id_error_callback_, Run()).Times(0);
 
-    heartbeat_sender_.reset(
-        new HeartbeatSender(mock_heartbeat_successful_callback_.Get(),
-                            mock_unknown_host_id_error_callback_.Get(), kHostId,
-                            &signal_strategy_, key_pair_, kTestBotJid));
+    xmpp_heartbeat_sender_.reset(new XmppHeartbeatSender(
+        mock_heartbeat_successful_callback_.Get(),
+        mock_unknown_host_id_error_callback_.Get(), kHostId, &signal_strategy_,
+        key_pair_, kTestBotJid));
   }
 
   void TearDown() override {
-    heartbeat_sender_.reset();
+    xmpp_heartbeat_sender_.reset();
     base::RunLoop().RunUntilIdle();
   }
 
@@ -90,13 +89,15 @@ class HeartbeatSenderTest
   FakeSignalStrategy signal_strategy_;
   FakeSignalStrategy bot_signal_strategy_;
 
-  base::MockCallback<base::Closure> mock_heartbeat_successful_callback_;
-  base::MockCallback<base::Closure> mock_unknown_host_id_error_callback_;
+  base::MockCallback<base::RepeatingClosure>
+      mock_heartbeat_successful_callback_;
+  base::MockCallback<base::RepeatingClosure>
+      mock_unknown_host_id_error_callback_;
   scoped_refptr<RsaKeyPair> key_pair_;
-  std::unique_ptr<HeartbeatSender> heartbeat_sender_;
+  std::unique_ptr<XmppHeartbeatSender> xmpp_heartbeat_sender_;
 };
 
-void HeartbeatSenderTest::ValidateHeartbeatStanza(
+void XmppHeartbeatSenderTest::ValidateHeartbeatStanza(
     XmlElement* stanza,
     const std::string& expected_sequence_id,
     const std::string& expected_host_offline_reason) {
@@ -113,8 +114,8 @@ void HeartbeatSenderTest::ValidateHeartbeatStanza(
         jingle_xmpp::QName(kChromotingXmlNamespace, "host-offline-reason")));
   } else {
     EXPECT_EQ(expected_host_offline_reason,
-              heartbeat_stanza->Attr(
-                  jingle_xmpp::QName(kChromotingXmlNamespace, "host-offline-reason")));
+              heartbeat_stanza->Attr(jingle_xmpp::QName(
+                  kChromotingXmlNamespace, "host-offline-reason")));
   }
   EXPECT_EQ(std::string(kHostId),
             heartbeat_stanza->Attr(QName(kChromotingXmlNamespace, "hostid")));
@@ -131,9 +132,9 @@ void HeartbeatSenderTest::ValidateHeartbeatStanza(
   EXPECT_EQ(expected_signature, signature->BodyText());
 }
 
-void HeartbeatSenderTest::SendResponse(int message_index,
-                                       base::TimeDelta interval,
-                                       int expected_sequence_id) {
+void XmppHeartbeatSenderTest::SendResponse(int message_index,
+                                           base::TimeDelta interval,
+                                           int expected_sequence_id) {
   auto response = std::make_unique<XmlElement>(jingle_xmpp::QN_IQ);
   response->AddAttr(QName(std::string(), "type"), "result");
   response->AddAttr(QName(std::string(), "to"), kTestJid);
@@ -169,7 +170,7 @@ void HeartbeatSenderTest::SendResponse(int message_index,
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(HeartbeatSenderTest, SendHeartbeat) {
+TEST_F(XmppHeartbeatSenderTest, SendHeartbeat) {
   signal_strategy_.Connect();
   base::RunLoop().RunUntilIdle();
 
@@ -184,7 +185,7 @@ TEST_F(HeartbeatSenderTest, SendHeartbeat) {
 }
 
 // Ensure a new heartbeat is sent after signaling is connected.
-TEST_F(HeartbeatSenderTest, AfterSignalingReconnect) {
+TEST_F(XmppHeartbeatSenderTest, AfterSignalingReconnect) {
   signal_strategy_.Connect();
   base::RunLoop().RunUntilIdle();
 
@@ -204,7 +205,7 @@ TEST_F(HeartbeatSenderTest, AfterSignalingReconnect) {
 
 // Verify that a second heartbeat is sent immediately after a response from
 // server with expected-sequence-id field set.
-TEST_F(HeartbeatSenderTest, ExpectedSequenceId) {
+TEST_F(XmppHeartbeatSenderTest, ExpectedSequenceId) {
   signal_strategy_.Connect();
   base::RunLoop().RunUntilIdle();
 
@@ -224,7 +225,7 @@ TEST_F(HeartbeatSenderTest, ExpectedSequenceId) {
 }
 
 // Verify that ProcessResponse parses set-interval result.
-TEST_F(HeartbeatSenderTest, SetInterval) {
+TEST_F(XmppHeartbeatSenderTest, SetInterval) {
   signal_strategy_.Connect();
   base::RunLoop().RunUntilIdle();
 
@@ -232,17 +233,18 @@ TEST_F(HeartbeatSenderTest, SetInterval) {
 
   EXPECT_CALL(mock_heartbeat_successful_callback_, Run());
   SendResponse(0, kTestInterval);
-  EXPECT_EQ(kTestInterval, heartbeat_sender_->interval_);
+  EXPECT_EQ(kTestInterval, xmpp_heartbeat_sender_->interval_);
 }
 
 // Make sure SetHostOfflineReason sends a correct stanza and triggers callback
 // when the bot responds.
-TEST_F(HeartbeatSenderTest, SetHostOfflineReason) {
-  base::MockCallback<base::Callback<void(bool success)>> mock_ack_callback;
+TEST_F(XmppHeartbeatSenderTest, SetHostOfflineReason) {
+  base::MockCallback<base::RepeatingCallback<void(bool success)>>
+      mock_ack_callback;
   EXPECT_CALL(mock_ack_callback, Run(_)).Times(0);
 
-  heartbeat_sender_->SetHostOfflineReason("test_error", kOfflineReasonTimeout,
-                                          mock_ack_callback.Get());
+  xmpp_heartbeat_sender_->SetHostOfflineReason(
+      "test_error", kOfflineReasonTimeout, mock_ack_callback.Get());
 
   testing::Mock::VerifyAndClearExpectations(&mock_ack_callback);
 
@@ -260,7 +262,7 @@ TEST_F(HeartbeatSenderTest, SetHostOfflineReason) {
 }
 
 // The first heartbeat should include host OS information.
-TEST_F(HeartbeatSenderTest, HostOsInfo) {
+TEST_F(XmppHeartbeatSenderTest, HostOsInfo) {
   signal_strategy_.Connect();
   base::RunLoop().RunUntilIdle();
 
@@ -281,7 +283,7 @@ TEST_F(HeartbeatSenderTest, HostOsInfo) {
   signal_strategy_.Disconnect();
 }
 
-TEST_F(HeartbeatSenderTest, ResponseTimeout) {
+TEST_F(XmppHeartbeatSenderTest, ResponseTimeout) {
   signal_strategy_.Connect();
   base::RunLoop().RunUntilIdle();
 

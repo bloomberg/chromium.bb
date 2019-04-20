@@ -54,7 +54,7 @@ void GcdStateUpdater::SetHostOfflineReason(
     const base::TimeDelta& timeout,
     const base::Callback<void(bool success)>& ack_callback) {
   // TODO(jrw): Implement this.  Refer to
-  // HeartbeatSender::SetHostOfflineReason.
+  // XmppHeartbeatSender::SetHostOfflineReason.
   NOTIMPLEMENTED();
 }
 
