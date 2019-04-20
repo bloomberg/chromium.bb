@@ -482,7 +482,7 @@ TEST_F(UnifiedMessageCenterViewTest, StackingCounterRemovedWithNotifications) {
 TEST_F(UnifiedMessageCenterViewTest, RedesignedStackingCounterLayout) {
   EnableNotificationStackingBarRedesign();
 
-  for (size_t i = 0; i < 6; ++i)
+  for (size_t i = 0; i < 10; ++i)
     AddNotification();
 
   // MessageCenterView is maxed out.
@@ -511,7 +511,7 @@ TEST_F(UnifiedMessageCenterViewTest,
        RedesignedStackingCounterMessageListScrolled) {
   EnableNotificationStackingBarRedesign();
 
-  for (size_t i = 0; i < 6; ++i)
+  for (size_t i = 0; i < 10; ++i)
     AddNotification();
   CreateMessageCenterView();
   EXPECT_TRUE(message_center_view()->visible());
@@ -573,6 +573,13 @@ TEST_F(UnifiedMessageCenterViewTest,
   EXPECT_TRUE(GetStackingCounter()->visible());
   EXPECT_FALSE(GetStackingCounterLabel()->visible());
   EXPECT_TRUE(GetStackingCounterClearAllButton()->visible());
+
+  // The MessageCenterView should be tall enough to contain the bar, two
+  // notifications, and extra padding.
+  EXPECT_EQ(kStackingNotificationCounterWithClearAllHeight +
+                GetMessageListView()->height() +
+                kUnifiedNotificationCenterSpacing,
+            message_center_view()->height());
 
   // Dismiss until there is only 1 notification left. The bar should be
   // invisible.

@@ -163,6 +163,8 @@ int GetStackingNotificationCounterHeight() {
 
 StackingNotificationCounterView::StackingNotificationCounterView(
     views::ButtonListener* listener) {
+  SetVisible(false);
+
   if (!features::IsNotificationStackingBarRedesignEnabled())
     return;
 
@@ -349,6 +351,12 @@ void UnifiedMessageCenterView::Layout() {
 
 gfx::Size UnifiedMessageCenterView::CalculatePreferredSize() const {
   gfx::Size preferred_size = scroller_->GetPreferredSize();
+
+  if (stacking_counter_->visible()) {
+    preferred_size.set_height(preferred_size.height() +
+                              GetStackingNotificationCounterHeight());
+  }
+
   // Hide Clear All button at the buttom from initial viewport.
   preferred_size.set_height(preferred_size.height() - kClearAllButtonRowHeight);
   return preferred_size;
