@@ -209,7 +209,7 @@ class PingResponderImpl : example::mojom::PingResponder {
 
 And conveniently `RenderFrameHostImpl` implements `DocumentInterfaceBroker`, and
 any calls made on the object returned by
-`RenderFrameImpl::GetDocumentInterfaceBroker()' will be routed directly to the
+`RenderFrameImpl::GetDocumentInterfaceBroker()` will be routed directly to the
 `RenderFrameHostImpl`.  So the only thing left to do is update
 `RenderFrameHostImpl` to implement `GetPingResponder`. If you forget to do this
 the compiler will complain anyway, because generated mojom interface methods are
