@@ -627,13 +627,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         'draw-webgl-to-canvas-2d-repeatedly.html',
         ['linux', 'amd', 'passthrough'], bug=906066)
 
-    # The following two tests only fail on Linux/Intel with Mesa 18.0.5,
-    # not on Mesa 17.1.4 with the same Intel HD 630 GPU.
-    self.Fail('conformance/programs/program-test.html',
-        ['linux', 'intel'], bug=928530)
-    self.Fail('conformance/uniforms/uniform-default-values.html',
-        ['linux', 'intel'], bug=928530)
-
     ####################
     # Android failures #
     ####################
