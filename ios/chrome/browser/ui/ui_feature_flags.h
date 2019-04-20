@@ -11,9 +11,6 @@
 // closing the last incognito tab.
 extern const base::Feature kClosingLastIncognitoTab;
 
-// Feature to contain the NTP directly from browser container.
-extern const base::Feature kBrowserContainerContainsNTP;
-
 // Feature to retain the contentView in the browser container.
 extern const base::Feature kBrowserContainerKeepsContentView;
 

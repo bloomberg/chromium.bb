@@ -220,11 +220,6 @@ const char kAutofillRichMetadataQueriesDescription[] =
     "Transmit rich form/field metadata when querying the autofill server. "
     "This feature only works on the Canary and Dev channels.";
 
-const char kBrowserContainerContainsNTPName[] = "Browser Container NTP";
-const char kBrowserContainerContainsNTPDescription[] =
-    "When enabled, the BrowserContainer contains the NTP directly, rather than"
-    "via native content.";
-
 const char kBrowserContainerKeepsContentViewName[] =
     "Browser Container retains the content view";
 const char kBrowserContainerKeepsContentViewDescription[] =

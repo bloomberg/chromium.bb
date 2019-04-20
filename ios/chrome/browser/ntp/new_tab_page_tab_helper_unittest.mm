@@ -6,9 +6,7 @@
 
 #include <memory>
 
-#include "base/feature_list.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
@@ -18,7 +16,6 @@
 #include "ios/chrome/browser/ntp/new_tab_page_tab_helper_delegate.h"
 #include "ios/chrome/browser/ntp_snippets/ios_chrome_content_suggestions_service_factory.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
-#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "ios/chrome/test/ios_chrome_scoped_testing_chrome_browser_state_manager.h"
@@ -92,9 +89,6 @@ class NewTabPageTabHelperTest : public PlatformTest {
 
 // Tests a newly created NTP webstate.
 TEST_F(NewTabPageTabHelperTest, TestAlreadyNTP) {
-  base::test::ScopedFeatureList scoped_feature_list_;
-  scoped_feature_list_.InitAndEnableFeature(kBrowserContainerContainsNTP);
-
   GURL url(kChromeUINewTabURL);
   test_web_state_.SetVisibleURL(url);
   CreateTabHelper();
@@ -105,9 +99,6 @@ TEST_F(NewTabPageTabHelperTest, TestAlreadyNTP) {
 
 // Tests a newly created NTP webstate using about://newtab.
 TEST_F(NewTabPageTabHelperTest, TestAlreadyAboutNTP) {
-  base::test::ScopedFeatureList scoped_feature_list_;
-  scoped_feature_list_.InitAndEnableFeature(kBrowserContainerContainsNTP);
-
   GURL url(kChromeUIAboutNewTabURL);
   test_web_state_.SetVisibleURL(url);
   CreateTabHelper();
@@ -118,9 +109,6 @@ TEST_F(NewTabPageTabHelperTest, TestAlreadyAboutNTP) {
 
 // Tests a newly created non-NTP webstate.
 TEST_F(NewTabPageTabHelperTest, TestNotNTP) {
-  base::test::ScopedFeatureList scoped_feature_list_;
-  scoped_feature_list_.InitAndEnableFeature(kBrowserContainerContainsNTP);
-
   GURL url(kTestURL);
   test_web_state_.SetVisibleURL(url);
   CreateTabHelper();
@@ -130,9 +118,6 @@ TEST_F(NewTabPageTabHelperTest, TestNotNTP) {
 
 // Tests navigating back and forth between an NTP and non-NTP page.
 TEST_F(NewTabPageTabHelperTest, TestToggleToAndFromNTP) {
-  base::test::ScopedFeatureList scoped_feature_list_;
-  scoped_feature_list_.InitAndEnableFeature(kBrowserContainerContainsNTP);
-
   CreateTabHelper();
   EXPECT_FALSE(tab_helper()->IsActive());
 
@@ -173,9 +158,6 @@ TEST_F(NewTabPageTabHelperTest, TestToggleToAndFromNTP) {
 
 // Tests double navigations from an NTP and non-NTP page at the same time.
 TEST_F(NewTabPageTabHelperTest, TestMismatchedPendingItem) {
-  base::test::ScopedFeatureList scoped_feature_list_;
-  scoped_feature_list_.InitAndEnableFeature(kBrowserContainerContainsNTP);
-
   // Test an NTP url with a mismatched pending item.
   GURL url(kChromeUINewTabURL);
   GURL not_ntp_url(kTestURL);

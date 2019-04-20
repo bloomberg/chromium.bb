@@ -235,7 +235,7 @@
       [_dispatcher closeCurrentTab];
     } break;
     case OverscrollAction::REFRESH:
-      [self reload];
+      [self.contentSuggestionsMediator.dataSink reloadAllData];
       break;
     case OverscrollAction::NONE:
       NOTREACHED();
@@ -267,20 +267,10 @@
   return height + topInset;
 }
 
-#pragma mark - CRWNativeContent
+#pragma mark - Public methods
 
 - (UIView*)view {
   return self.suggestionsViewController.view;
-}
-
-- (void)reload {
-  [self.contentSuggestionsMediator.dataSink reloadAllData];
-}
-
-- (void)wasShown {
-}
-
-- (void)wasHidden {
 }
 
 - (void)dismissModals {
@@ -301,18 +291,6 @@
 
 - (void)willUpdateSnapshot {
   [self.suggestionsViewController clearOverscroll];
-}
-
-- (NSString*)title {
-  return nil;
-}
-
-- (const GURL&)url {
-  return GURL::EmptyGURL();
-}
-
-- (BOOL)isViewAlive {
-  return YES;
 }
 
 @end

@@ -25,10 +25,8 @@
 #import "ios/chrome/browser/ui/ntp_tile_views/ntp_tile_layout_util.h"
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_utils.h"
-#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
-#include "ios/web/common/features.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -272,14 +270,6 @@ NSString* const kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix =
 
 - (void)viewDidLayoutSubviews {
   [super viewDidLayoutSubviews];
-  if (!base::FeatureList::IsEnabled(kBrowserContainerContainsNTP) &&
-      CGSizeEqualToSize(self.collectionView.bounds.size, CGSizeZero) &&
-      !CGSizeEqualToSize(self.view.bounds.size, CGSizeZero)) {
-    // When started after a cold start, the frame of the collection view isn't
-    // set to the bounds of the view. In that case, the constraints for the
-    // cells are broken.
-    self.collectionView.frame = self.view.bounds;
-  }
   [self applyContentOffset];
 }
 

@@ -4,11 +4,9 @@
 
 import("//build/config/ios/rules.gni")
 
+# TODO(crbug.com/944008): This source set is now empty, remove in followup.
 source_set("ui") {
-  sources = [
-    "native_content_controller.h",
-    "native_content_controller.mm",
-  ]
+  sources = []
   public_deps = [
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/common/ui_util",
@@ -36,14 +34,12 @@ source_set("feature_flags") {
   ]
 }
 
+# TODO(crbug.com/944008): This source set is now empty, remove in followup.
 source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
-  sources = [
-    "native_content_controller_unittest.mm",
-  ]
+  sources = []
   deps = [
-    ":native_content_controller_test_xib",
     ":resources_unit_tests",
     ":ui",
     "//base",
@@ -72,7 +68,6 @@ source_set("unit_tests") {
     "//ios/chrome/browser/ui/alert_coordinator",
     "//ios/chrome/browser/ui/browser_container:ui",
     "//ios/chrome/browser/ui/commands",
-    "//ios/chrome/browser/ui/ntp:ntp_controller",
     "//ios/chrome/browser/ui/toolbar/public",
     "//ios/chrome/browser/ui/toolbar/test",
     "//ios/chrome/browser/url_loading",
@@ -96,12 +91,6 @@ source_set("unit_tests") {
     "//ui/base:test_support",
     "//url",
   ]
-}
-
-bundle_data_ib_file("native_content_controller_test_xib") {
-  visibility = [ ":unit_tests" ]
-  testonly = true
-  source = "native_content_controller_test.xib"
 }
 
 bundle_data("resources_unit_tests") {

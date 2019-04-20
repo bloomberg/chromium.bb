@@ -47,9 +47,6 @@ bool IsClosingLastIncognitoTabEnabled();
 // TODO (crbug.com/884723): Remove all use of this flag.
 bool IsRefreshLocationBarEnabled();
 
-// Returns the height of the status bar, accounting for orientation.
-CGFloat StatusBarHeight();
-
 // Returns the approximate corner radius of the current device.
 CGFloat DeviceCornerRadius();
 

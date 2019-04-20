@@ -184,7 +184,6 @@ source_set("unit_tests") {
     "//ios/chrome/browser/sessions:serialisation",
     "//ios/chrome/browser/sessions:test_support",
     "//ios/chrome/browser/snapshots",
-    "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/open_in",
     "//ios/chrome/browser/web",
     "//ios/chrome/browser/web:web_internal",

@@ -14,7 +14,6 @@
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/ntp/features.h"
 #include "ios/chrome/browser/ntp/new_tab_page_tab_helper_delegate.h"
-#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/web_state/navigation_context.h"
@@ -55,7 +54,6 @@ NewTabPageTabHelper::NewTabPageTabHelper(
     id<NewTabPageTabHelperDelegate> delegate)
     : delegate_(delegate), web_state_(web_state) {
   DCHECK(delegate);
-  DCHECK(base::FeatureList::IsEnabled(kBrowserContainerContainsNTP));
 
   web_state->AddObserver(this);
 

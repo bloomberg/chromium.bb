@@ -27,10 +27,6 @@ MainController* GetMainController();
 // Returns the DeviceSharingManager object.
 DeviceSharingManager* GetDeviceSharingManager();
 
-// Returns the |NewTabPageController| of the current tab if the current tab is
-// a new tab and nil otherwise.
-NewTabPageController* GetCurrentNewTabPageController();
-
 // Returns the current WebState.
 web::WebState* GetCurrentWebState();
 

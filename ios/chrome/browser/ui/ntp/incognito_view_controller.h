@@ -13,7 +13,7 @@ class UrlLoadingService;
 
 @protocol NewTabPageControllerDelegate;
 
-@interface IncognitoViewController : UIViewController<CRWNativeContent>
+@interface IncognitoViewController : UIViewController
 
 // Init with the given loader object. |loader| may be nil, but isn't
 // retained so it must outlive this controller.

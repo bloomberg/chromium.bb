@@ -179,7 +179,6 @@ test("ios_chrome_unittests") {
     "//ios/chrome/browser/tabs:unit_tests",
     "//ios/chrome/browser/translate:unit_tests",
     "//ios/chrome/browser/u2f:unit_tests",
-    "//ios/chrome/browser/ui:unit_tests",
     "//ios/chrome/browser/ui/activity_services:unit_tests",
     "//ios/chrome/browser/ui/alert_coordinator:unit_tests",
     "//ios/chrome/browser/ui/app_launcher:unit_tests",

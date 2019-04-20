@@ -167,11 +167,6 @@ extern const char kAutofillRestrictUnownedFieldsToFormlessCheckoutDescription[];
 extern const char kAutofillRichMetadataQueriesName[];
 extern const char kAutofillRichMetadataQueriesDescription[];
 
-// Title and description for the flag to make browser container contain the NTP
-// directly.
-extern const char kBrowserContainerContainsNTPName[];
-extern const char kBrowserContainerContainsNTPDescription[];
-
 // Title and description for the flag to make browser container keep the
 // content view hierarchy directly.
 extern const char kBrowserContainerKeepsContentViewName[];

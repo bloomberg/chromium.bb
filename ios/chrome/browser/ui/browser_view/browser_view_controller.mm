@@ -123,9 +123,7 @@
 #import "ios/chrome/browser/ui/main_content/main_content_ui_broadcasting_util.h"
 #import "ios/chrome/browser/ui/main_content/main_content_ui_state.h"
 #import "ios/chrome/browser/ui/main_content/web_scroll_view_main_content_ui_forwarder.h"
-#import "ios/chrome/browser/ui/ntp/new_tab_page_controller.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_coordinator.h"
-#import "ios/chrome/browser/ui/ntp/new_tab_page_owning.h"
 #import "ios/chrome/browser/ui/ntp/ntp_util.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_presenter.h"
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
@@ -630,6 +628,11 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 // Whether the keyboard observer helper is viewed
 @property(nonatomic, strong) KeyboardObserverHelper* observer;
 
+// Helper method to check whether the NewTabPageTabHelper is valid and Active
+// for |self.currentWebState|.
+@property(nonatomic, assign, readonly, getter=isNTPActiveForCurrentWebState)
+    BOOL NTPActiveForCurrentWebState;
+
 // BVC initialization
 // ------------------
 // If the BVC is initialized with a valid browser state & tab model immediately,
@@ -691,8 +694,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 // Returns the footer view if one exists (e.g. the voice search bar).
 - (UIView*)footerView;
 // Returns the appropriate frame for the NTP.
-// TODO(crbug.com/826369): Most of this method's implementation details can be
-// unwound when BVC fullscreen and NTP experiments are enabled by default.
 - (CGRect)ntpFrameForWebState:(web::WebState*)webState;
 // Returns web contents frame without including primary toolbar.
 - (CGRect)visibleFrameForTab:(Tab*)tab;
@@ -1113,6 +1114,15 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   return _bubblePresenter;
 }
 
+- (BOOL)isNTPActiveForCurrentWebState {
+  if (self.currentWebState) {
+    NewTabPageTabHelper* NTPHelper =
+        NewTabPageTabHelper::FromWebState(self.currentWebState);
+    return (NTPHelper && NTPHelper->IsActive());
+  }
+  return NO;
+}
+
 #pragma mark - Public methods
 
 - (void)setPrimary:(BOOL)primary {
@@ -1306,9 +1316,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   [self.tabModel.currentTab dismissModals];
 
   if (webState) {
-    NewTabPageTabHelper* NTPHelper =
-        NewTabPageTabHelper::FromWebState(webState);
-    if (NTPHelper && NTPHelper->IsActive()) {
+    if (self.isNTPActiveForCurrentWebState) {
       [_ntpCoordinatorsForWebStates[webState] dismissModals];
     }
     auto* findHelper = FindTabHelper::FromWebState(webState);
@@ -1573,14 +1581,10 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   self.primaryToolbarHeightConstraint.constant =
       [self primaryToolbarHeightWithInset];
 
-  if (self.currentWebState && self.webUsageEnabled) {
-    NewTabPageTabHelper* NTPHelper =
-        NewTabPageTabHelper::FromWebState(self.currentWebState);
-    if (NTPHelper && NTPHelper->IsActive()) {
-      _ntpCoordinatorsForWebStates[self.currentWebState]
-          .viewController.view.frame =
-          [self ntpFrameForWebState:self.currentWebState];
-    }
+  if (self.isNTPActiveForCurrentWebState && self.webUsageEnabled) {
+    _ntpCoordinatorsForWebStates[self.currentWebState]
+        .viewController.view.frame =
+        [self ntpFrameForWebState:self.currentWebState];
   }
 }
 
@@ -2494,14 +2498,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     // changes.  This can leave the BVC in a blank state where only the bottom
     // toolbar is visible. Instead, if possible, use the NewTabPageTabHelper
     // IsActive() value rather than checking -IsVisibleURLNewTabPage.
-    BOOL isNTP = false;
-    if (base::FeatureList::IsEnabled(kBrowserContainerContainsNTP)) {
-      NewTabPageTabHelper* NTPHelper =
-          NewTabPageTabHelper::FromWebState(webState);
-      isNTP = NTPHelper && NTPHelper->IsActive();
-    } else {
-      isNTP = IsVisibleURLNewTabPage(webState);
-    }
+    NewTabPageTabHelper* NTPHelper =
+        NewTabPageTabHelper::FromWebState(webState);
+    BOOL isNTP = NTPHelper && NTPHelper->IsActive();
     // Hide the toolbar when displaying content suggestions without the tab
     // strip, without the focused omnibox, and for UI Refresh, only when in
     // split toolbar mode.
@@ -2538,8 +2537,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 - (CGRect)ntpFrameForWebState:(web::WebState*)webState {
   NewTabPageTabHelper* NTPHelper = NewTabPageTabHelper::FromWebState(webState);
-  if (!NTPHelper || !NTPHelper->IsActive())
-    return CGRectZero;
+  DCHECK(NTPHelper && NTPHelper->IsActive());
   if (!IsRegularXRegularSizeClass())
     return self.contentArea.bounds;
   // NTP expects to be laid out behind the bottom toolbar.  It uses
@@ -2745,9 +2743,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   DCHECK(_downloadManagerCoordinator);
   DownloadManagerTabHelper::CreateForWebState(tab.webState,
                                               _downloadManagerCoordinator);
-  if (base::FeatureList::IsEnabled(kBrowserContainerContainsNTP)) {
-    NewTabPageTabHelper::CreateForWebState(tab.webState, self);
-  }
+  NewTabPageTabHelper::CreateForWebState(tab.webState, self);
 
   // The language detection helper accepts a callback from the translate
   // client, so must be created after it.
@@ -2820,12 +2816,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 - (id)nativeControllerForTab:(Tab*)tab {
   id nativeController = tab.webController.nativeController;
-  if (tab.webState) {
-    NewTabPageTabHelper* NTPHelper =
-        NewTabPageTabHelper::FromWebState(tab.webState);
-    if (NTPHelper && NTPHelper->IsActive())
-      nativeController = _ntpCoordinatorsForWebStates[tab.webState];
-  }
   return nativeController ? nativeController : _temporaryNativeController;
 }
 
@@ -2882,15 +2872,11 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   DCHECK(bubblePresenter == self.bubblePresenter);
 
   // If there is a native controller, use the native controller's scroll offset.
-  id nativeController =
-      [self nativeControllerForTab:[self.tabModel currentTab]];
-  if ([nativeController conformsToProtocol:@protocol(NewTabPageOwning)] &&
-      [nativeController respondsToSelector:@selector(contentOffset)]) {
-    CGFloat scrolledToTopOffset =
-        [nativeController respondsToSelector:@selector(contentInset)]
-            ? [nativeController contentInset].top
-            : 0.0;
-    return [nativeController contentOffset].y == scrolledToTopOffset;
+  if (self.isNTPActiveForCurrentWebState) {
+    NewTabPageCoordinator* coordinator =
+        _ntpCoordinatorsForWebStates[self.currentWebState];
+    CGFloat scrolledToTopOffset = [coordinator contentInset].top;
+    return [coordinator contentOffset].y == scrolledToTopOffset;
   }
 
   CRWWebViewScrollViewProxy* scrollProxy =
@@ -2976,6 +2962,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   id nativeController = [self nativeControllerForTab:tab];
   if ([nativeController respondsToSelector:@selector(willUpdateSnapshot)]) {
     [nativeController willUpdateSnapshot];
+  }
+  if (self.isNTPActiveForCurrentWebState) {
+    [_ntpCoordinatorsForWebStates[self.currentWebState] willUpdateSnapshot];
   }
   OverscrollActionsTabHelper::FromWebState(webState)->Clear();
 }
@@ -3435,13 +3424,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // webState has never been visible (such as during startup with an NTP), it's
   // possible the webView can trigger a unnecessary load for chrome://newtab.
   if (URL.GetOrigin() != kChromeUINewTabURL) {
-    WebStateList* webStateList = self.tabModel.webStateList;
-    web::WebState* current_web_state = webStateList->GetActiveWebState();
-
-    NewTabPageTabHelper* NTPHelper =
-        NewTabPageTabHelper::FromWebState(current_web_state);
-    if (NTPHelper && NTPHelper->IsActive()) {
-      NTPHelper->Deactivate();
+    if (self.isNTPActiveForCurrentWebState) {
+      NewTabPageTabHelper::FromWebState(self.currentWebState)->Deactivate();
     }
   }
 }
@@ -3624,10 +3608,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     return reading_list::IsOfflineURLValid(
         url, ReadingListModelFactory::GetForBrowserState(_browserState));
   }
-  if (host == kChromeUINewTabHost) {
-    return !base::FeatureList::IsEnabled(kBrowserContainerContainsNTP);
-  }
-
   return NO;
 }
 
@@ -3637,28 +3617,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   id<CRWNativeContent> nativeController = nil;
   base::StringPiece url_host = url.host_piece();
-  if (url_host == kChromeUINewTabHost) {
-    if (base::FeatureList::IsEnabled(kBrowserContainerContainsNTP))
-      return nil;
-
-    CGFloat fakeStatusBarHeight = _fakeStatusBarView.frame.size.height;
-    UIEdgeInsets safeAreaInset = self.view.safeAreaInsets;
-    safeAreaInset.top = MAX(safeAreaInset.top - fakeStatusBarHeight, 0);
-
-    NewTabPageController* pageController = [[NewTabPageController alloc]
-                 initWithUrl:url
-                     focuser:self.dispatcher
-                browserState:_browserState
-             toolbarDelegate:self.toolbarInterface
-                    tabModel:self.tabModel
-        parentViewController:self.browserContainerViewController
-                  dispatcher:self.dispatcher
-               safeAreaInset:safeAreaInset];
-    pageController.swipeRecognizerProvider = self.sideSwipeController;
-    nativeController = pageController;
-  } else if (!reading_list::IsOfflinePageWithoutNativeContentEnabled() &&
-             url_host == kChromeUIOfflineHost &&
-             [self hasControllerForURL:url]) {
+  if (!reading_list::IsOfflinePageWithoutNativeContentEnabled() &&
+      url_host == kChromeUIOfflineHost && [self hasControllerForURL:url]) {
     StaticHtmlNativeContent* staticNativeController =
         [[OfflinePageNativeContent alloc] initWithBrowserState:_browserState
                                                       webState:webState
@@ -3666,9 +3626,10 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     [self setOverScrollActionControllerToStaticNativeContent:
               staticNativeController];
     nativeController = staticNativeController;
-  } else if (url_host == kChromeUICrashHost) {
-    // There is no native controller for kChromeUICrashHost, it is instead
-    // handled as any other renderer crash by the SadTabTabHelper.
+  } else if (url_host == kChromeUINewTabHost ||
+             url_host == kChromeUICrashHost) {
+    // There are no native controller for kChromeUINewTabHost or
+    // kChromeUICrashHost, they are instead handled by TabHelpers.
     nativeController = nil;
   } else {
     NOTREACHED();
@@ -3844,12 +3805,12 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   [self.infobarContainerCoordinator updateInfobarContainer];
 
   // Resize the NTP's contentInset.bottom to be above the secondary toolbar.
-  id nativeController = [self nativeControllerForTab:self.tabModel.currentTab];
-  if ([nativeController conformsToProtocol:@protocol(NewTabPageOwning)]) {
-    id<NewTabPageOwning> newTabPageController = nativeController;
-    UIEdgeInsets contentInset = newTabPageController.contentInset;
+  if (self.isNTPActiveForCurrentWebState) {
+    NewTabPageCoordinator* coordinator =
+        _ntpCoordinatorsForWebStates[self.currentWebState];
+    UIEdgeInsets contentInset = coordinator.contentInset;
     contentInset.bottom = height;
-    newTabPageController.contentInset = contentInset;
+    coordinator.contentInset = contentInset;
   }
 }
 
@@ -4330,9 +4291,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 }
 
 - (void)focusFakebox {
-  id nativeController = [self nativeControllerForTab:self.tabModel.currentTab];
-  DCHECK([nativeController conformsToProtocol:@protocol(NewTabPageOwning)]);
-  [nativeController focusFakebox];
+  if (self.isNTPActiveForCurrentWebState) {
+    [_ntpCoordinatorsForWebStates[self.currentWebState] focusFakebox];
+  }
 }
 
 - (void)searchByImage:(UIImage*)image {
@@ -4764,15 +4725,14 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 #pragma mark - LogoAnimationControllerOwnerOwner (Public)
 
 - (id<LogoAnimationControllerOwner>)logoAnimationControllerOwner {
-  id currentNativeController =
-      [self nativeControllerForTab:self.tabModel.currentTab];
-  Protocol* possibleOwnerProtocol =
-      @protocol(LogoAnimationControllerOwnerOwner);
-  if ([currentNativeController conformsToProtocol:possibleOwnerProtocol] &&
-      [currentNativeController logoAnimationControllerOwner]) {
-    // If the current native controller is showing a GLIF view (e.g. the NTP
-    // when there is no doodle), use that GLIFControllerOwner.
-    return [currentNativeController logoAnimationControllerOwner];
+  if (self.isNTPActiveForCurrentWebState) {
+    NewTabPageCoordinator* coordinator =
+        _ntpCoordinatorsForWebStates[self.currentWebState];
+    if ([coordinator logoAnimationControllerOwner]) {
+      // If the current native controller is showing a GLIF view (e.g. the NTP
+      // when there is no doodle), use that GLIFControllerOwner.
+      return [coordinator logoAnimationControllerOwner];
+    }
   }
   return nil;
 }

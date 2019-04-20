@@ -108,7 +108,6 @@ source_set("unit_tests") {
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/ntp",
     "//ios/chrome/browser/tabs",
-    "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/main:tab_switcher",
     "//ios/chrome/browser/web",
     "//ios/chrome/browser/web:test_support",

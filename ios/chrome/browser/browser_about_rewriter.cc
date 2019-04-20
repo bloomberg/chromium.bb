@@ -42,16 +42,13 @@ bool WillHandleWebBrowserAboutURL(GURL* url, web::BrowserState* browser_state) {
   if (!url->SchemeIs(kChromeUIScheme))
     return false;
 
-  if (base::FeatureList::IsEnabled(kBrowserContainerContainsNTP)) {
-    // Translate chrome://newtab back into about://newtab when
-    // kBrowserContainerContainsNTP is enabled so the WebState shows a blank
-    // page under the NTP.
-    if (url->GetOrigin() == kChromeUINewTabURL) {
-      GURL::Replacements replacements;
-      replacements.SetSchemeStr(url::kAboutScheme);
-      *url = url->ReplaceComponents(replacements);
-      return *url != original_url;
-    }
+  // Translate chrome://newtab back into about://newtab so the WebState shows a
+  // blank page under the NTP.
+  if (url->GetOrigin() == kChromeUINewTabURL) {
+    GURL::Replacements replacements;
+    replacements.SetSchemeStr(url::kAboutScheme);
+    *url = url->ReplaceComponents(replacements);
+    return *url != original_url;
   }
 
   std::string host(url->host());

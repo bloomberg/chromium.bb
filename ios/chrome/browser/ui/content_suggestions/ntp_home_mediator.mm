@@ -38,7 +38,6 @@
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
 #import "ios/chrome/browser/ui/ntp/notification_promo_whats_new.h"
 #import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
-#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/url_loading/url_loading_service.h"
@@ -597,9 +596,6 @@ const char kNTPHelpURL[] =
 // before we navigate away.
 - (void)saveContentOffsetForWebState:(web::WebState*)webState {
   if (webState->GetLastCommittedURL().GetOrigin() != kChromeUINewTabURL)
-    return;
-
-  if (!base::FeatureList::IsEnabled(kBrowserContainerContainsNTP))
     return;
 
   web::NavigationManager* manager = webState->GetNavigationManager();

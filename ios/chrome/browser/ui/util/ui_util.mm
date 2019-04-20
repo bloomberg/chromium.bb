@@ -68,24 +68,6 @@ bool IsRefreshLocationBarEnabled() {
   return true;
 }
 
-CGFloat StatusBarHeight() {
-  if (base::FeatureList::IsEnabled(kBrowserContainerContainsNTP)) {
-    DCHECK(!base::ios::IsRunningOnIOS11OrLater());
-  }
-
-  // This is a temporary solution until usage of StatusBarHeight has been
-  // replaced with topLayoutGuide.
-  if (IsIPhoneX()) {
-    return IsPortrait() ? 44 : 0;
-  }
-
-  // The location bar is hidden on landscape.
-  BOOL isCompactHeight = [UIApplication sharedApplication]
-                             .keyWindow.traitCollection.verticalSizeClass ==
-                         UIUserInterfaceSizeClassCompact;
-  return isCompactHeight ? 0 : 20;
-}
-
 CGFloat DeviceCornerRadius() {
   return IsIPhoneX() ? 40.0 : 0.0;
 }
