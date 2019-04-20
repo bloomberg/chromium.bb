@@ -5162,7 +5162,13 @@ bool RenderFrameHostImpl::CanCommitURL(const GURL& url) {
   if (!GetContentClient()->browser()->CanCommitURL(GetProcess(), url))
     return false;
 
-  // TODO(nasko): Consider checking the |url| against CanAccessDataForOrigin.
+  // TODO(nasko): This check should be updated to apply to all URLs, not just
+  // standard ones.
+  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
+  if (url.IsStandard() &&
+      !policy->CanAccessDataForOrigin(GetProcess()->GetID(), url)) {
+    return false;
+  }
 
   return true;
 }
@@ -6104,6 +6110,69 @@ bool RenderFrameHostImpl::ValidateDidCommitParams(
       !CanCommitURL(validated_params->url)) {
     VLOG(1) << "Blocked URL " << validated_params->url.spec();
     LogRendererKillCrashKeys(GetSiteInstance()->GetSiteURL());
+
+    // Temporary instrumentation to debug the root cause of renderer process
+    // terminations. See https://crbug.com/931895.
+    auto bool_to_crash_key = [](bool b) { return b ? "true" : "false"; };
+    base::debug::SetCrashKeyString(
+        base::debug::AllocateCrashKeyString("is_same_document",
+                                            base::debug::CrashKeySize::Size32),
+        bool_to_crash_key(is_same_document_navigation));
+
+    base::debug::SetCrashKeyString(
+        base::debug::AllocateCrashKeyString("is_main_frame",
+                                            base::debug::CrashKeySize::Size32),
+        bool_to_crash_key(frame_tree_node_->IsMainFrame()));
+
+    base::debug::SetCrashKeyString(
+        base::debug::AllocateCrashKeyString("is_cross_process_subframe",
+                                            base::debug::CrashKeySize::Size32),
+        bool_to_crash_key(IsCrossProcessSubframe()));
+
+    base::debug::SetCrashKeyString(
+        base::debug::AllocateCrashKeyString("site_lock",
+                                            base::debug::CrashKeySize::Size256),
+        GetSiteInstance()->lock_url().spec());
+
+    if (navigation_request_ && navigation_request_->navigation_handle()) {
+      NavigationHandleImpl* handle = navigation_request_->navigation_handle();
+      base::debug::SetCrashKeyString(
+          base::debug::AllocateCrashKeyString(
+              "is_renderer_initiated", base::debug::CrashKeySize::Size32),
+          bool_to_crash_key(handle->IsRendererInitiated()));
+
+      base::debug::SetCrashKeyString(
+          base::debug::AllocateCrashKeyString(
+              "is_server_redirect", base::debug::CrashKeySize::Size32),
+          bool_to_crash_key(handle->WasServerRedirect()));
+
+      base::debug::SetCrashKeyString(
+          base::debug::AllocateCrashKeyString(
+              "is_form_submission", base::debug::CrashKeySize::Size32),
+          bool_to_crash_key(handle->IsFormSubmission()));
+
+      base::debug::SetCrashKeyString(
+          base::debug::AllocateCrashKeyString(
+              "is_error_page", base::debug::CrashKeySize::Size32),
+          bool_to_crash_key(handle->IsErrorPage()));
+
+      base::debug::SetCrashKeyString(
+          base::debug::AllocateCrashKeyString(
+              "net_error_code", base::debug::CrashKeySize::Size32),
+          base::NumberToString(navigation_request_->net_error()));
+
+      base::debug::SetCrashKeyString(
+          base::debug::AllocateCrashKeyString(
+              "initiator_origin", base::debug::CrashKeySize::Size64),
+          handle->GetInitiatorOrigin()
+              ? handle->GetInitiatorOrigin()->GetDebugString()
+              : "none");
+
+      base::debug::SetCrashKeyString(
+          base::debug::AllocateCrashKeyString(
+              "starting_site_instance", base::debug::CrashKeySize::Size64),
+          handle->GetStartingSiteInstance()->GetSiteURL().spec());
+    }
 
     // Kills the process.
     bad_message::ReceivedBadMessage(process,
