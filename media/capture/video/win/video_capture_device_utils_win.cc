@@ -87,7 +87,7 @@ bool IsAutoRotationEnabled() {
 }
 
 bool IsInternalCamera(VideoFacingMode facing) {
-  if (base::win::GetVersion() < base::win::VERSION_WIN10) {
+  if (base::win::GetVersion() < base::win::Version::WIN10) {
     return true;
   }
 

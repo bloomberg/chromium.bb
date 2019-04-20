@@ -63,7 +63,7 @@ TEST(PlatformThreadWinTest,
   // *not* be the case.
   const float priority_after_thread_mode_background_begin =
       ::GetThreadPriority(thread_handle);
-  if (win::GetVersion() == win::VERSION_WIN7) {
+  if (win::GetVersion() == win::Version::WIN7) {
     constexpr std::array<int, 3> kExpectedWin7Priorities(
         {// Priority if GetThreadPriority() is not affected.
          THREAD_PRIORITY_NORMAL,

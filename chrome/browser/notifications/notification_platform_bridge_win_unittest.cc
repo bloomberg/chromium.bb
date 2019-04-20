@@ -101,7 +101,7 @@ class NotificationPlatformBridgeWinTest : public testing::Test {
 TEST_F(NotificationPlatformBridgeWinTest, GroupAndTag) {
   // This test requires WinRT core functions, which are not available in
   // older versions of Windows.
-  if (base::win::GetVersion() < base::win::VERSION_WIN8)
+  if (base::win::GetVersion() < base::win::Version::WIN8)
     return;
 
   base::win::ScopedCOMInitializer com_initializer;
@@ -135,7 +135,7 @@ TEST_F(NotificationPlatformBridgeWinTest, GroupAndTag) {
 TEST_F(NotificationPlatformBridgeWinTest, GroupAndTagUniqueness) {
   // This test requires WinRT core functions, which are not available in
   // older versions of Windows.
-  if (base::win::GetVersion() < base::win::VERSION_WIN8)
+  if (base::win::GetVersion() < base::win::Version::WIN8)
     return;
 
   base::win::ScopedCOMInitializer com_initializer;
@@ -212,7 +212,7 @@ TEST_F(NotificationPlatformBridgeWinTest, GroupAndTagUniqueness) {
 TEST_F(NotificationPlatformBridgeWinTest, Suppress) {
   // This test requires WinRT core functions, which are not available in
   // older versions of Windows.
-  if (base::win::GetVersion() < base::win::VERSION_WIN8)
+  if (base::win::GetVersion() < base::win::Version::WIN8)
     return;
 
   base::win::ScopedCOMInitializer com_initializer;

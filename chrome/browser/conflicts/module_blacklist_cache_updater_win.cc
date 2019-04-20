@@ -207,7 +207,7 @@ ModuleBlacklistCacheUpdater::~ModuleBlacklistCacheUpdater() {
 
 // static
 bool ModuleBlacklistCacheUpdater::IsBlockingEnabled() {
-  return base::win::GetVersion() >= base::win::VERSION_WIN8 &&
+  return base::win::GetVersion() >= base::win::Version::WIN8 &&
          base::FeatureList::IsEnabled(features::kThirdPartyModulesBlocking);
 }
 

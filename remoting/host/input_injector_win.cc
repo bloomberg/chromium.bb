@@ -466,7 +466,7 @@ std::unique_ptr<InputInjector> InputInjector::Create(
 
 // static
 bool InputInjector::SupportsTouchEvents() {
-  return base::win::GetVersion() >= base::win::VERSION_WIN8;
+  return base::win::GetVersion() >= base::win::Version::WIN8;
 }
 
 }  // namespace remoting

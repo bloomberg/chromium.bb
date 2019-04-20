@@ -673,7 +673,7 @@ void VideoCaptureDeviceTest::RunCaptureMjpegTestCase() {
 
 #if defined(OS_WIN)
   base::win::Version version = base::win::GetVersion();
-  if (version >= base::win::VERSION_WIN10) {
+  if (version >= base::win::Version::WIN10) {
     VLOG(1) << "Skipped on Win10: http://crbug.com/570604, current: "
             << static_cast<int>(version);
     return;

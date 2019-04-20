@@ -1933,7 +1933,7 @@ LRESULT HWNDMessageHandler::OnPointerEvent(UINT message,
                                            WPARAM w_param,
                                            LPARAM l_param) {
   // WM_POINTER is not supported on Windows 7.
-  if (base::win::GetVersion() == base::win::VERSION_WIN7) {
+  if (base::win::GetVersion() == base::win::Version::WIN7) {
     SetMsgHandled(FALSE);
     return -1;
   }
@@ -2549,7 +2549,7 @@ LRESULT HWNDMessageHandler::OnTouchEvent(UINT message,
       point.x = TOUCH_COORD_TO_PIXEL(input[i].x);
       point.y = TOUCH_COORD_TO_PIXEL(input[i].y);
 
-      if (base::win::GetVersion() == base::win::VERSION_WIN7) {
+      if (base::win::GetVersion() == base::win::Version::WIN7) {
         // Windows 7 sends touch events for touches in the non-client area,
         // whereas Windows 8 does not. In order to unify the behaviour, always
         // ignore touch events in the non-client area.

@@ -269,7 +269,7 @@ base::string16 PrependWindowsSessionPath(const base::char16* object) {
 bool ShouldSetJobLevel(const base::CommandLine& cmd_line) {
   // Windows 8 allows nested jobs so we don't need to check if we are in other
   // job.
-  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+  if (base::win::GetVersion() >= base::win::Version::WIN8)
     return true;
 
   BOOL in_job = true;
@@ -414,7 +414,7 @@ sandbox::ResultCode AddPolicyForSandboxedProcess(
   sandbox::ResultCode result = sandbox::SBOX_ALL_OK;
 
   // Win8+ adds a device DeviceApi that we don't need.
-  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+  if (base::win::GetVersion() >= base::win::Version::WIN8)
     result = policy->AddKernelObjectToClose(L"File", L"\\Device\\DeviceApi");
   if (result != sandbox::SBOX_ALL_OK)
     return result;
@@ -547,7 +547,7 @@ BOOL WINAPI DuplicateHandlePatch(HANDLE source_process_handle,
 #endif
 
 bool IsAppContainerEnabled() {
-  if (base::win::GetVersion() < base::win::VERSION_WIN8)
+  if (base::win::GetVersion() < base::win::Version::WIN8)
     return false;
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
@@ -780,7 +780,7 @@ bool SandboxWin::IsAppContainerEnabledForSandbox(
     SandboxType sandbox_type) {
   if (sandbox_type != SANDBOX_TYPE_GPU)
     return false;
-  if (base::win::GetVersion() < base::win::VERSION_WIN10_RS1)
+  if (base::win::GetVersion() < base::win::Version::WIN10_RS1)
     return false;
   const std::string appcontainer_group_name =
       base::FieldTrialList::FindFullName("EnableGpuAppContainer");
@@ -863,7 +863,7 @@ sandbox::ResultCode SandboxWin::StartSandboxedProcess(
     BOOL in_job = true;
     // Prior to Windows 8 nested jobs aren't possible.
     if (sandbox_type == SANDBOX_TYPE_NETWORK &&
-        (base::win::GetVersion() >= base::win::VERSION_WIN8 ||
+        (base::win::GetVersion() >= base::win::Version::WIN8 ||
          (::IsProcessInJob(::GetCurrentProcess(), nullptr, &in_job) &&
           !in_job))) {
       // Launch the process in a job to ensure that the network process doesn't

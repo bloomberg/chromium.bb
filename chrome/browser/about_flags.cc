@@ -4022,7 +4022,7 @@ bool SkipConditionalFeatureEntry(const FeatureEntry& entry) {
 #if defined(OS_WIN)
   // HDR mode works, but displays everything horribly wrong prior to windows 10.
   if (!strcmp("enable-hdr", entry.internal_name) &&
-      base::win::GetVersion() < base::win::Version::VERSION_WIN10) {
+      base::win::GetVersion() < base::win::Version::WIN10) {
     return true;
   }
 #endif  // OS_WIN

@@ -653,7 +653,7 @@ BluetoothLowEnergyWrapper::BluetoothLowEnergyWrapper() {}
 BluetoothLowEnergyWrapper::~BluetoothLowEnergyWrapper() {}
 
 bool BluetoothLowEnergyWrapper::IsBluetoothLowEnergySupported() {
-  return base::win::GetVersion() >= base::win::VERSION_WIN8;
+  return base::win::GetVersion() >= base::win::Version::WIN8;
 }
 
 bool BluetoothLowEnergyWrapper::EnumerateKnownBluetoothLowEnergyDevices(

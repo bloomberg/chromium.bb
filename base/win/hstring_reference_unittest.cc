@@ -28,7 +28,7 @@ void VerifyHSTRINGEquals(HSTRING hstring, const wchar_t* test_string) {
 TEST(HStringReferenceTest, Init) {
   // ScopedHString requires WinRT core functions, which are not available in
   // older versions.
-  if (GetVersion() < VERSION_WIN8) {
+  if (GetVersion() < Version::WIN8) {
     EXPECT_FALSE(HStringReference::ResolveCoreWinRTStringDelayload());
     return;
   }

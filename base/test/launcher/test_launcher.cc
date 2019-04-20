@@ -306,7 +306,7 @@ int LaunchChildTestProcessWithOptions(const CommandLine& command_line,
 
     // Allow break-away from job since sandbox and few other places rely on it
     // on Windows versions prior to Windows 8 (which supports nested jobs).
-    if (win::GetVersion() < win::VERSION_WIN8 &&
+    if (win::GetVersion() < win::Version::WIN8 &&
         flags & TestLauncher::ALLOW_BREAKAWAY_FROM_JOB) {
       job_flags |= JOB_OBJECT_LIMIT_BREAKAWAY_OK;
     }

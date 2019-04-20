@@ -58,7 +58,7 @@ void RegisterBrowserUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterInt64Pref(prefs::kDefaultBrowserLastDeclined, 0);
   bool reset_check_default = false;
 #if defined(OS_WIN)
-  reset_check_default = base::win::GetVersion() >= base::win::VERSION_WIN10;
+  reset_check_default = base::win::GetVersion() >= base::win::Version::WIN10;
 #endif
   registry->RegisterBooleanPref(prefs::kResetCheckDefaultBrowser,
                                 reset_check_default);

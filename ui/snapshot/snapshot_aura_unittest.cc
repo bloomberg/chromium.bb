@@ -202,7 +202,7 @@ TEST_F(SnapshotAuraTest, MAYBE_FullScreenWindow) {
 #if defined(OS_WIN)
   // TODO(https://crbug.com/850556): Make work on Win10.
   base::win::Version version = base::win::GetVersion();
-  if (version >= base::win::VERSION_WIN10)
+  if (version >= base::win::Version::WIN10)
     return;
 #endif
   SetupTestWindow(root_window()->bounds());
@@ -218,7 +218,7 @@ TEST_F(SnapshotAuraTest, PartialBounds) {
 #if defined(OS_WIN)
   // TODO(https://crbug.com/850556): Make work on Win10.
   base::win::Version version = base::win::GetVersion();
-  if (version >= base::win::VERSION_WIN10)
+  if (version >= base::win::Version::WIN10)
     return;
 #endif
   gfx::Rect test_bounds(100, 100, 300, 200);
@@ -234,7 +234,7 @@ TEST_F(SnapshotAuraTest, Rotated) {
 #if defined(OS_WIN)
   // TODO(https://crbug.com/850556): Make work on Win10.
   base::win::Version version = base::win::GetVersion();
-  if (version >= base::win::VERSION_WIN10)
+  if (version >= base::win::Version::WIN10)
     return;
 #endif
   test_screen()->SetDisplayRotation(display::Display::ROTATE_90);
@@ -252,7 +252,7 @@ TEST_F(SnapshotAuraTest, UIScale) {
 #if defined(OS_WIN)
   // TODO(https://crbug.com/850556): Make work on Win10.
   base::win::Version version = base::win::GetVersion();
-  if (version >= base::win::VERSION_WIN10)
+  if (version >= base::win::Version::WIN10)
     return;
 #endif
   const float kUIScale = 0.5f;
@@ -276,7 +276,7 @@ TEST_F(SnapshotAuraTest, DeviceScaleFactor) {
 #if defined(OS_WIN)
   // TODO(https://crbug.com/850556): Make work on Win10.
   base::win::Version version = base::win::GetVersion();
-  if (version >= base::win::VERSION_WIN10)
+  if (version >= base::win::Version::WIN10)
     return;
 #endif
   test_screen()->SetDeviceScaleFactor(2.0f);
@@ -299,7 +299,7 @@ TEST_F(SnapshotAuraTest, RotateAndUIScale) {
 #if defined(OS_WIN)
   // TODO(https://crbug.com/850556): Make work on Win10.
   base::win::Version version = base::win::GetVersion();
-  if (version >= base::win::VERSION_WIN10)
+  if (version >= base::win::Version::WIN10)
     return;
 #endif
   const float kUIScale = 0.5f;
@@ -324,7 +324,7 @@ TEST_F(SnapshotAuraTest, RotateAndUIScaleAndScaleFactor) {
 #if defined(OS_WIN)
   // TODO(https://crbug.com/850556): Make work on Win10.
   base::win::Version version = base::win::GetVersion();
-  if (version >= base::win::VERSION_WIN10)
+  if (version >= base::win::Version::WIN10)
     return;
 #endif
   test_screen()->SetDeviceScaleFactor(2.0f);

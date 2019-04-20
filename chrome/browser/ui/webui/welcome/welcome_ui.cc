@@ -189,7 +189,7 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
 
 #if defined(OS_WIN)
     html_source->AddBoolean(
-        "is_win10", base::win::GetVersion() >= base::win::VERSION_WIN10);
+        "is_win10", base::win::GetVersion() >= base::win::Version::WIN10);
 #endif
 
     // Add the shared bookmark handler for onboarding modules.

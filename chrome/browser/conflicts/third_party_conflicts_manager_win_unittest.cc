@@ -128,7 +128,7 @@ TEST_F(ThirdPartyConflictsManagerTest, InitializeUpdaters) {
   ASSERT_TRUE(final_state().has_value());
 
   const auto kExpectedFinalState =
-      base::win::GetVersion() >= base::win::VERSION_WIN10
+      base::win::GetVersion() >= base::win::Version::WIN10
           ? ThirdPartyConflictsManager::State::kWarningAndBlockingInitialized
           : ThirdPartyConflictsManager::State::kBlockingInitialized;
   EXPECT_EQ(final_state().value(), kExpectedFinalState);

@@ -48,7 +48,7 @@ bool IsSwapChainTearingSupported() {
 
     // Swap chain tearing is supported only on Windows 10 Anniversary Edition
     // (Redstone 1) and above.
-    if (base::win::GetVersion() < base::win::VERSION_WIN10_RS1)
+    if (base::win::GetVersion() < base::win::Version::WIN10_RS1)
       return false;
 
     Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =

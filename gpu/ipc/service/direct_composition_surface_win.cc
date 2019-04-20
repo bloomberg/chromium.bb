@@ -217,7 +217,7 @@ void InitializeHardwareOverlaySupport() {
 
   // Before Windows 10 Anniversary Update (Redstone 1), overlay planes wouldn't
   // be assigned to non-UWP apps.
-  if (base::win::GetVersion() < base::win::VERSION_WIN10_RS1)
+  if (base::win::GetVersion() < base::win::Version::WIN10_RS1)
     return;
 
   Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
@@ -1913,7 +1913,7 @@ void DirectCompositionSurfaceWin::SetPreferNV12OverlaysForTesting() {
 // static
 bool DirectCompositionSurfaceWin::IsHDRSupported() {
   // HDR support was introduced in Windows 10 Creators Update.
-  if (base::win::GetVersion() < base::win::VERSION_WIN10_RS2)
+  if (base::win::GetVersion() < base::win::Version::WIN10_RS2)
     return false;
 
   HRESULT hr = S_OK;

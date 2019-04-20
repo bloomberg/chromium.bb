@@ -326,7 +326,7 @@ void GetDeviceSupportedFormatsMediaFoundation(const Descriptor& descriptor,
 
 bool IsEnclosureLocationSupported() {
   // DeviceInformation class is only available in Win10 onwards (v10.0.10240.0).
-  if (base::win::GetVersion() < base::win::VERSION_WIN10) {
+  if (base::win::GetVersion() < base::win::Version::WIN10) {
     DVLOG(1) << "DeviceInformation not supported before Windows 10";
     return false;
   }

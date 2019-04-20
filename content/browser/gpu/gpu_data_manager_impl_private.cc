@@ -80,7 +80,7 @@ int GetGpuBlacklistHistogramValueWin(gpu::GpuFeatureStatus status) {
   //   Enabled VERSION_XP = 5,
   //   ...
   static const base::win::Version version = base::win::GetVersion();
-  if (version == base::win::VERSION_WIN_LAST)
+  if (version == base::win::Version::WIN_LAST)
     return -1;
   DCHECK_NE(gpu::kGpuFeatureStatusMax, status);
   int entry_index = static_cast<int>(version) * gpu::kGpuFeatureStatusMax;
@@ -163,7 +163,7 @@ void UpdateFeatureStats(const gpu::GpuFeatureInfo& gpu_feature_info) {
 #if defined(OS_WIN)
     int value_win = GetGpuBlacklistHistogramValueWin(value);
     if (value_win >= 0) {
-      int32_t max_sample = static_cast<int32_t>(base::win::VERSION_WIN_LAST) *
+      int32_t max_sample = static_cast<int32_t>(base::win::Version::WIN_LAST) *
                            gpu::kGpuFeatureStatusMax;
       histogram_pointer = base::LinearHistogram::FactoryGet(
           kGpuBlacklistFeatureHistogramNamesWin[i], 1, max_sample,

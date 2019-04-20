@@ -201,7 +201,7 @@ constexpr wchar_t IncompatibleApplicationsBrowserTest::kApplicationName[];
 // page is shown after a browser crash.
 IN_PROC_BROWSER_TEST_F(IncompatibleApplicationsBrowserTest,
                        InjectIncompatibleDLL) {
-  if (base::win::GetVersion() < base::win::VERSION_WIN10)
+  if (base::win::GetVersion() < base::win::Version::WIN10)
     return;
 
   // TODO(crbug.com/850517) This fails in viz_browser_tests in official builds.

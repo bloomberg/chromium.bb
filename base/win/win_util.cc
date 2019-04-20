@@ -115,9 +115,9 @@ bool SetProcessDpiAwarenessWrapper(PROCESS_DPI_AWARENESS value) {
     return false;
   }
 
-  DCHECK_LT(GetVersion(), VERSION_WIN8_1) << "SetProcessDpiAwarenessInternal "
-                                             "should be available on all "
-                                             "platforms >= Windows 8.1";
+  DCHECK_LT(GetVersion(), Version::WIN8_1) << "SetProcessDpiAwarenessInternal "
+                                              "should be available on all "
+                                              "platforms >= Windows 8.1";
   return false;
 }
 
@@ -137,7 +137,7 @@ bool EnablePerMonitorV2() {
         DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
   }
 
-  DCHECK_LT(GetVersion(), VERSION_WIN10_RS2)
+  DCHECK_LT(GetVersion(), Version::WIN10_RS2)
       << "SetProcessDpiAwarenessContext should be available on all platforms"
          " >= Windows 10 Redstone 2";
 
@@ -182,7 +182,7 @@ bool* GetRegisteredWithManagementStateStorage() {
 // it to always return UserInteractionMode_Touch which as per documentation
 // indicates tablet mode.
 bool IsWindows10TabletMode(HWND hwnd) {
-  if (GetVersion() < VERSION_WIN10)
+  if (GetVersion() < Version::WIN10)
     return false;
 
   if (!ResolveCoreWinRTDelayload() ||
@@ -218,7 +218,7 @@ bool IsWindows10TabletMode(HWND hwnd) {
 bool IsKeyboardPresentOnSlate(std::string* reason, HWND hwnd) {
   bool result = false;
 
-  if (GetVersion() < VERSION_WIN8) {
+  if (GetVersion() < Version::WIN8) {
     if (reason)
       *reason = "Detection not supported";
     return false;
@@ -506,7 +506,7 @@ void SetAbortBehaviorForCrashReporting() {
 }
 
 bool IsTabletDevice(std::string* reason, HWND hwnd) {
-  if (GetVersion() < VERSION_WIN8) {
+  if (GetVersion() < Version::WIN8) {
     if (reason)
       *reason = "Tablet device detection not supported below Windows 8\n";
     return false;
@@ -524,7 +524,7 @@ bool IsTabletDevice(std::string* reason, HWND hwnd) {
 // input configuration of the device and can be manually triggered by the user
 // independently from the hardware state.
 bool IsDeviceUsedAsATablet(std::string* reason) {
-  if (GetVersion() < VERSION_WIN8) {
+  if (GetVersion() < Version::WIN8) {
     if (reason)
       *reason = "Tablet device detection not supported below Windows 8\n";
     return false;
@@ -600,7 +600,7 @@ bool IsUser32AndGdi32Available() {
     // If win32k syscalls aren't disabled, then user32 and gdi32 are available.
 
     // Can't disable win32k prior to windows 8.
-    if (GetVersion() < VERSION_WIN8)
+    if (GetVersion() < Version::WIN8)
       return true;
 
     typedef decltype(
@@ -711,8 +711,8 @@ void EnableHighDPISupport() {
   // since Win8.1 does not have EnableChildWindowDpiMessage, necessary for
   // correct non-client area scaling across monitors.
   PROCESS_DPI_AWARENESS process_dpi_awareness =
-      GetVersion() >= VERSION_WIN10 ? PROCESS_PER_MONITOR_DPI_AWARE
-                                    : PROCESS_SYSTEM_DPI_AWARE;
+      GetVersion() >= Version::WIN10 ? PROCESS_PER_MONITOR_DPI_AWARE
+                                     : PROCESS_SYSTEM_DPI_AWARE;
   if (!SetProcessDpiAwarenessWrapper(process_dpi_awareness)) {
     // For windows versions where SetProcessDpiAwareness is not available or
     // failed, try its predecessor.

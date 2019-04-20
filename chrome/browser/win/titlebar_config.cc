@@ -21,5 +21,5 @@ bool ShouldCustomDrawSystemTitlebar() {
   // currently implemented.
   return !ui::NativeTheme::GetInstanceForNativeUi()->UsesHighContrastColors() &&
          base::FeatureList::IsEnabled(kWindows10CustomTitlebar) &&
-         base::win::GetVersion() >= base::win::VERSION_WIN10;
+         base::win::GetVersion() >= base::win::Version::WIN10;
 }

@@ -306,7 +306,7 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
   if (SBOX_ALL_OK != result)
     return result;
   if (lowbox_token.IsValid() &&
-      base::win::GetVersion() < base::win::VERSION_WIN8) {
+      base::win::GetVersion() < base::win::Version::WIN8) {
     // We don't allow lowbox_token below Windows 8.
     return SBOX_ERROR_BAD_PARAMS;
   }
@@ -348,7 +348,7 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
     ++attribute_count;
 
   bool restrict_child_process_creation = false;
-  if (base::win::GetVersion() >= base::win::VERSION_WIN10_TH2 &&
+  if (base::win::GetVersion() >= base::win::Version::WIN10_TH2 &&
       policy_base->GetJobLevel() <= JOB_LIMITED_USER) {
     restrict_child_process_creation = true;
     ++attribute_count;
@@ -375,12 +375,12 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
   scoped_refptr<AppContainerProfileBase> profile =
       policy_base->GetAppContainerProfileBase();
   if (profile) {
-    if (base::win::GetVersion() < base::win::VERSION_WIN8)
+    if (base::win::GetVersion() < base::win::Version::WIN8)
       return SBOX_ERROR_BAD_PARAMS;
     ++attribute_count;
     if (profile->GetEnableLowPrivilegeAppContainer()) {
       // LPAC first supported in RS1.
-      if (base::win::GetVersion() < base::win::VERSION_WIN10_RS1)
+      if (base::win::GetVersion() < base::win::Version::WIN10_RS1)
         return SBOX_ERROR_BAD_PARAMS;
       ++attribute_count;
     }

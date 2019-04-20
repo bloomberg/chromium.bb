@@ -455,7 +455,7 @@ TEST(StartupTabProviderTest, IncognitoProfile) {
   Profile* incognito = profile.GetOffTheRecordProfile();
   StartupTabs output = StartupTabProviderImpl().GetOnboardingTabs(incognito);
 #if defined(OS_WIN)
-  if (base::win::GetVersion() >= base::win::VERSION_WIN10) {
+  if (base::win::GetVersion() >= base::win::Version::WIN10) {
     ASSERT_EQ(1U, output.size());
     EXPECT_EQ(StartupTabProviderImpl::GetWin10WelcomePageUrl(false),
               output[0].url.GetOrigin());

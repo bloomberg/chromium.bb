@@ -57,7 +57,7 @@ eAVEncH264VProfile GetH264VProfile(VideoCodecProfile profile) {
       return eAVEncH264VProfile_Main;
     case H264PROFILE_HIGH: {
       // eAVEncH264VProfile_High requires Windows 8.
-      if (base::win::GetVersion() < base::win::VERSION_WIN8) {
+      if (base::win::GetVersion() < base::win::Version::WIN8) {
         return eAVEncH264VProfile_unknown;
       }
       return eAVEncH264VProfile_High;
@@ -343,7 +343,7 @@ bool MediaFoundationVideoEncodeAccelerator::CreateHardwareEncoderMFT() {
   DCHECK(main_client_task_runner_->BelongsToCurrentThread());
 
   if (!compatible_with_win7_ &&
-      base::win::GetVersion() < base::win::VERSION_WIN8) {
+      base::win::GetVersion() < base::win::Version::WIN8) {
     DVLOG(ERROR) << "Windows versions earlier than 8 are not supported.";
     return false;
   }

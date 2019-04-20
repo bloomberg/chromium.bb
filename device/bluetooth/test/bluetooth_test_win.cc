@@ -647,7 +647,7 @@ void BluetoothTestWin::FinishPendingTasks() {
 BluetoothTestWinrt::BluetoothTestWinrt() {
   if (GetParam()) {
     scoped_feature_list_.InitAndEnableFeature(kNewBLEWinImplementation);
-    if (base::win::GetVersion() >= base::win::VERSION_WIN10) {
+    if (base::win::GetVersion() >= base::win::Version::WIN10) {
       scoped_winrt_initializer_.emplace();
     }
   } else {
@@ -662,7 +662,7 @@ BluetoothTestWinrt::~BluetoothTestWinrt() {
 }
 
 bool BluetoothTestWinrt::PlatformSupportsLowEnergy() {
-  return GetParam() ? base::win::GetVersion() >= base::win::VERSION_WIN10
+  return GetParam() ? base::win::GetVersion() >= base::win::Version::WIN10
                     : BluetoothTestWin::PlatformSupportsLowEnergy();
 }
 

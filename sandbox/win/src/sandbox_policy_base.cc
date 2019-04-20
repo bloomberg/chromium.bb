@@ -288,7 +288,7 @@ ResultCode PolicyBase::SetDelayedIntegrityLevel(
 }
 
 ResultCode PolicyBase::SetLowBox(const wchar_t* sid) {
-  if (base::win::GetVersion() < base::win::VERSION_WIN8)
+  if (base::win::GetVersion() < base::win::Version::WIN8)
     return SBOX_ERROR_UNSUPPORTED;
 
   DCHECK(sid);
@@ -554,7 +554,7 @@ ResultCode PolicyBase::SetDisconnectCsrss() {
 // CreateThread EAT patch used when this is enabled.
 // See https://crbug.com/783296#c27.
 #if defined(_WIN64) && !defined(ADDRESS_SANITIZER)
-  if (base::win::GetVersion() >= base::win::VERSION_WIN10) {
+  if (base::win::GetVersion() >= base::win::Version::WIN10) {
     is_csrss_connected_ = false;
     return AddKernelObjectToClose(L"ALPC Port", nullptr);
   }
@@ -606,7 +606,7 @@ bool PolicyBase::GetEnableOPMRedirection() {
 
 ResultCode PolicyBase::AddAppContainerProfile(const wchar_t* package_name,
                                               bool create_profile) {
-  if (base::win::GetVersion() < base::win::VERSION_WIN8)
+  if (base::win::GetVersion() < base::win::Version::WIN8)
     return SBOX_ERROR_UNSUPPORTED;
 
   DCHECK(package_name);

@@ -160,7 +160,7 @@ TEST_F(NativeWindowOcclusionTrackerTest, ComplexRegionWindow) {
 
 TEST_F(NativeWindowOcclusionTrackerTest, CloakedWindow) {
   // Cloaking is only supported in Windows 8 and above.
-  if (base::win::GetVersion() < base::win::VERSION_WIN8)
+  if (base::win::GetVersion() < base::win::Version::WIN8)
     return;
   HWND hwnd = CreateNativeWindow(/*ex_style=*/0);
   gfx::Rect win_rect;

@@ -110,7 +110,7 @@ SkColor GetHarmonyTextColorForNonStandardNativeTheme(
 #if defined(OS_WIN)
 // static
 int ChromeTypographyProvider::GetPlatformFontHeight(int font_context) {
-  const bool windows_10 = base::win::GetVersion() >= base::win::VERSION_WIN10;
+  const bool windows_10 = base::win::GetVersion() >= base::win::Version::WIN10;
   switch (font_context) {
     case CONTEXT_HEADLINE:
       return windows_10 ? 27 : 28;

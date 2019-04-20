@@ -806,7 +806,7 @@ bool DXVAVideoDecodeAccelerator::Initialize(const Config& config,
 // copy does not exist on Windows 7. Look into an alternate approach
 // and enable the code below.
 #if defined(ENABLE_DX11_FOR_WIN7)
-  if (base::win::GetVersion() == base::win::VERSION_WIN7) {
+  if (base::win::GetVersion() == base::win::Version::WIN7) {
     dxgi_manager_dll = ::GetModuleHandle(L"mshtmlmedia.dll");
     RETURN_ON_FAILURE(dxgi_manager_dll,
                       "mshtmlmedia.dll is required for decoding", false);
@@ -1446,7 +1446,7 @@ DXVAVideoDecodeAccelerator::GetSupportedProfiles(
   // VPX has no default resolutions since it may not even be supported.
   ResolutionPair max_vpx_resolutions;
 
-  if (base::win::GetVersion() > base::win::VERSION_WIN7) {
+  if (base::win::GetVersion() > base::win::Version::WIN7) {
     // To detect if a driver supports the desired resolutions, we try and create
     // a DXVA decoder instance for that resolution and profile. If that succeeds
     // we assume that the driver supports decoding for that resolution.
@@ -1528,7 +1528,7 @@ void DXVAVideoDecodeAccelerator::PreSandboxInitialization() {
     ::LoadLibrary(mfdll);
   ::LoadLibrary(L"dxva2.dll");
 
-  if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
+  if (base::win::GetVersion() >= base::win::Version::WIN8) {
     LoadLibrary(L"msvproc.dll");
   } else {
 #if defined(ENABLE_DX11_FOR_WIN7)

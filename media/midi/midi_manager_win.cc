@@ -891,7 +891,7 @@ void MidiManagerWin::SendOnTaskRunner(MidiManagerClient* client,
 
 MidiManager* MidiManager::Create(MidiService* service) {
   if (base::FeatureList::IsEnabled(features::kMidiManagerWinrt) &&
-      base::win::GetVersion() >= base::win::VERSION_WIN10) {
+      base::win::GetVersion() >= base::win::Version::WIN10) {
     return new MidiManagerWinrt(service);
   }
   return new MidiManagerWin(service);

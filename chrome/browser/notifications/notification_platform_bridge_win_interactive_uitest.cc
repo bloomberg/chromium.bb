@@ -50,7 +50,7 @@ const char kLaunchIdSettings[] =
 // built in Notification Center. Although native notifications in Chrome are
 // only available in Win 10+ we keep the minimum test coverage at Win 8 in case
 // we decide to backport.
-constexpr int kMinimumWindowsVersion = base::win::VERSION_WIN8;
+constexpr base::win::Version kMinimumWindowsVersion = base::win::Version::WIN8;
 
 Profile* CreateTestingProfile(const base::FilePath& path) {
   base::ScopedAllowBlockingForTesting allow_blocking;

@@ -25,7 +25,7 @@ namespace {
 
 void VerifySystemProfileData(const metrics::SystemProfileProto& system_profile,
                              bool expect_unhashed_value) {
-  if (base::win::GetVersion() < base::win::VERSION_WIN8)
+  if (base::win::GetVersion() < base::win::Version::WIN8)
     return;
 
   // The name of Windows Defender changed sometime in Windows 10, so any of the
@@ -33,7 +33,7 @@ void VerifySystemProfileData(const metrics::SystemProfileProto& system_profile,
   constexpr char kWindowsDefender[] = "Windows Defender";
   constexpr char kWindowsDefenderAntivirus[] = "Windows Defender Antivirus";
 
-  if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
+  if (base::win::GetVersion() >= base::win::Version::WIN8) {
     bool defender_found = false;
     for (const auto& av : system_profile.antivirus_product()) {
       if (av.product_name_hash() ==

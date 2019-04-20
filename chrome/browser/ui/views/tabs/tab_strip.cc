@@ -1734,7 +1734,7 @@ bool TabStrip::TitlebarBackgroundIsTransparent() const {
 #if defined(OS_WIN)
   // Windows 8+ uses transparent window contents (because the titlebar area is
   // drawn by the system and not Chrome), but the actual titlebar is opaque.
-  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+  if (base::win::GetVersion() >= base::win::Version::WIN8)
     return false;
 #endif
   return GetWidget()->ShouldWindowContentsBeTransparent();

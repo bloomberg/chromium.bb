@@ -85,7 +85,7 @@ const base::Feature kTSFImeSupport = {"TSFImeSupport",
                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
 bool IsUsingWMPointerForTouch() {
-  return base::win::GetVersion() >= base::win::VERSION_WIN8 &&
+  return base::win::GetVersion() >= base::win::Version::WIN8 &&
          base::FeatureList::IsEnabled(kPointerEventsForTouch);
 }
 

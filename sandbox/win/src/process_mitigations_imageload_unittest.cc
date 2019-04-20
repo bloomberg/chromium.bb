@@ -265,7 +265,7 @@ SBOX_TESTS_COMMAND int TestImageLoadHijack(int argc, wchar_t** argv) {
 // This test validates that setting the MITIGATION_IMAGE_LOAD_NO_REMOTE
 // mitigation enables the setting on a process.
 TEST(ProcessMitigationsTest, CheckWin10ImageLoadNoRemotePolicySuccess) {
-  if (base::win::GetVersion() < base::win::VERSION_WIN10_TH2)
+  if (base::win::GetVersion() < base::win::Version::WIN10_TH2)
     return;
 
   base::string16 test_command = L"CheckPolicy ";
@@ -299,7 +299,7 @@ TEST(ProcessMitigationsTest, CheckWin10ImageLoadNoRemotePolicySuccess) {
 //
 // MANUAL testing only.
 TEST(ProcessMitigationsTest, DISABLED_CheckWin10ImageLoadNoRemoteSuccess) {
-  if (base::win::GetVersion() < base::win::VERSION_WIN10_TH2)
+  if (base::win::GetVersion() < base::win::Version::WIN10_TH2)
     return;
 
   TestWin10ImageLoadRemote(true);
@@ -311,7 +311,7 @@ TEST(ProcessMitigationsTest, DISABLED_CheckWin10ImageLoadNoRemoteSuccess) {
 //
 // MANUAL testing only.
 TEST(ProcessMitigationsTest, DISABLED_CheckWin10ImageLoadNoRemoteFailure) {
-  if (base::win::GetVersion() < base::win::VERSION_WIN10_TH2)
+  if (base::win::GetVersion() < base::win::Version::WIN10_TH2)
     return;
 
   TestWin10ImageLoadRemote(false);
@@ -326,7 +326,7 @@ TEST(ProcessMitigationsTest, DISABLED_CheckWin10ImageLoadNoRemoteFailure) {
 // This test validates that setting the MITIGATION_IMAGE_LOAD_NO_LOW_LABEL
 // mitigation enables the setting on a process.
 TEST(ProcessMitigationsTest, CheckWin10ImageLoadNoLowLabelPolicySuccess) {
-  if (base::win::GetVersion() < base::win::VERSION_WIN10_TH2)
+  if (base::win::GetVersion() < base::win::Version::WIN10_TH2)
     return;
 
   base::string16 test_command = L"CheckPolicy ";
@@ -358,7 +358,7 @@ TEST(ProcessMitigationsTest, CheckWin10ImageLoadNoLowLabelPolicySuccess) {
 // low mandatory label (IL), if the MITIGATION_IMAGE_LOAD_NO_LOW_LABEL
 // mitigation is NOT set.
 TEST(ProcessMitigationsTest, CheckWin10ImageLoadNoLowLabelSuccess) {
-  if (base::win::GetVersion() < base::win::VERSION_WIN10_TH2)
+  if (base::win::GetVersion() < base::win::Version::WIN10_TH2)
     return;
 
   TestWin10ImageLoadLowLabel(true);
@@ -367,7 +367,7 @@ TEST(ProcessMitigationsTest, CheckWin10ImageLoadNoLowLabelSuccess) {
 // This test validates that setting the MITIGATION_IMAGE_LOAD_NO_LOW_LABEL
 // mitigation prevents creating a new process with low mandatory label (IL).
 TEST(ProcessMitigationsTest, CheckWin10ImageLoadNoLowLabelFailure) {
-  if (base::win::GetVersion() < base::win::VERSION_WIN10_TH2)
+  if (base::win::GetVersion() < base::win::Version::WIN10_TH2)
     return;
 
   TestWin10ImageLoadLowLabel(false);
@@ -381,7 +381,7 @@ TEST(ProcessMitigationsTest, CheckWin10ImageLoadNoLowLabelFailure) {
 // This test validates that setting the MITIGATION_IMAGE_LOAD_PREFER_SYS32
 // mitigation enables the setting on a process.
 TEST(ProcessMitigationsTest, CheckWin10ImageLoadPreferSys32PolicySuccess) {
-  if (base::win::GetVersion() < base::win::VERSION_WIN10_RS1)
+  if (base::win::GetVersion() < base::win::Version::WIN10_RS1)
     return;
 
   base::string16 test_command = L"CheckPolicy ";
@@ -418,7 +418,7 @@ TEST(ProcessMitigationsTest, CheckWin10ImageLoadPreferSys32PolicySuccess) {
 //
 // Must run this test as admin/elevated.
 TEST(ProcessMitigationsTest, CheckWin10ImageLoadPreferSys32_Baseline) {
-  if (base::win::GetVersion() < base::win::VERSION_WIN10_RS1)
+  if (base::win::GetVersion() < base::win::Version::WIN10_RS1)
     return;
 
   HANDLE mutex = ::CreateMutexW(nullptr, false, g_hijack_dlls_mutex);
@@ -439,7 +439,7 @@ TEST(ProcessMitigationsTest, CheckWin10ImageLoadPreferSys32_Baseline) {
 //
 // Must run this test as admin/elevated.
 TEST(ProcessMitigationsTest, CheckWin10ImageLoadPreferSys32_Success) {
-  if (base::win::GetVersion() < base::win::VERSION_WIN10_RS1)
+  if (base::win::GetVersion() < base::win::Version::WIN10_RS1)
     return;
 
   HANDLE mutex = ::CreateMutexW(nullptr, false, g_hijack_dlls_mutex);
@@ -459,7 +459,7 @@ TEST(ProcessMitigationsTest, CheckWin10ImageLoadPreferSys32_Success) {
 //
 // Must run this test as admin/elevated.
 TEST(ProcessMitigationsTest, CheckWin10ImageLoadPreferSys32_Failure) {
-  if (base::win::GetVersion() < base::win::VERSION_WIN10_RS1)
+  if (base::win::GetVersion() < base::win::Version::WIN10_RS1)
     return;
 
   HANDLE mutex = ::CreateMutexW(nullptr, false, g_hijack_dlls_mutex);

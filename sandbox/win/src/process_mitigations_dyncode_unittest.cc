@@ -403,7 +403,7 @@ SBOX_TESTS_COMMAND int TestWin10DynamicCodeWithOptOut(int argc,
 // This test validates that setting the MITIGATION_DYNAMIC_CODE_DISABLE
 // mitigation enables the setting on a process.
 TEST(ProcessMitigationsTest, CheckWin81DynamicCodePolicySuccess) {
-  if (base::win::GetVersion() < base::win::VERSION_WIN8_1)
+  if (base::win::GetVersion() < base::win::Version::WIN8_1)
     return;
 
 // TODO(crbug.com/805414): Windows ASan hotpatching requires dynamic code.
@@ -444,7 +444,7 @@ TEST(ProcessMitigationsTest, CheckWin81DynamicCodePolicySuccess) {
 // This test validates that we can meddle with dynamic code if the
 // MITIGATION_DYNAMIC_CODE_DISABLE mitigation is NOT set.
 TEST(ProcessMitigationsTest, CheckWin81DynamicCode_BaseCase) {
-  if (base::win::GetVersion() < base::win::VERSION_WIN8_1)
+  if (base::win::GetVersion() < base::win::Version::WIN8_1)
     return;
 
   HANDLE mutex =
@@ -463,7 +463,7 @@ TEST(ProcessMitigationsTest, CheckWin81DynamicCode_BaseCase) {
 // This test validates that setting the MITIGATION_DYNAMIC_CODE_DISABLE
 // mitigation prevents meddling with dynamic code.
 TEST(ProcessMitigationsTest, CheckWin81DynamicCode_TestMitigation) {
-  if (base::win::GetVersion() < base::win::VERSION_WIN8_1)
+  if (base::win::GetVersion() < base::win::Version::WIN8_1)
     return;
 
   HANDLE mutex =
@@ -489,7 +489,7 @@ TEST(ProcessMitigationsTest, CheckWin81DynamicCode_TestMitigation) {
 // MITIGATION_DYNAMIC_CODE_DISABLE_WITH_OPT_OUT mitigation enables the setting
 // on a process.
 TEST(ProcessMitigationsTest, CheckWin10DynamicCodeOptOutPolicySuccess) {
-  if (base::win::GetVersion() < base::win::VERSION_WIN10_RS1)
+  if (base::win::GetVersion() < base::win::Version::WIN10_RS1)
     return;
 
 // TODO(crbug.com/805414): Windows ASan hotpatching requires dynamic code.
@@ -531,7 +531,7 @@ TEST(ProcessMitigationsTest, CheckWin10DynamicCodeOptOutPolicySuccess) {
 // This test validates that we CAN meddle with dynamic code if the
 // MITIGATION_DYNAMIC_CODE_DISABLE_WITH_OPT_OUT mitigation is NOT set.
 TEST(ProcessMitigationsTest, CheckWin10DynamicCodeOptOut_BaseCase) {
-  if (base::win::GetVersion() < base::win::VERSION_WIN10_RS1)
+  if (base::win::GetVersion() < base::win::Version::WIN10_RS1)
     return;
 
   HANDLE mutex =
@@ -552,7 +552,7 @@ TEST(ProcessMitigationsTest, CheckWin10DynamicCodeOptOut_BaseCase) {
 // MITIGATION_DYNAMIC_CODE_DISABLE_WITH_OPT_OUT mitigation BLOCKS meddling
 // with dynamic code.
 TEST(ProcessMitigationsTest, CheckWin10DynamicCodeOptOut_TestMitigation) {
-  if (base::win::GetVersion() < base::win::VERSION_WIN10_RS1)
+  if (base::win::GetVersion() < base::win::Version::WIN10_RS1)
     return;
 
   HANDLE mutex =
@@ -574,7 +574,7 @@ TEST(ProcessMitigationsTest, CheckWin10DynamicCodeOptOut_TestMitigation) {
 // thread-specific opt-out ALLOWS meddling with dynamic code.
 TEST(ProcessMitigationsTest,
      CheckWin10DynamicCodeOptOut_TestMitigationWithOptOut) {
-  if (base::win::GetVersion() < base::win::VERSION_WIN10_RS1)
+  if (base::win::GetVersion() < base::win::Version::WIN10_RS1)
     return;
 
   HANDLE mutex =

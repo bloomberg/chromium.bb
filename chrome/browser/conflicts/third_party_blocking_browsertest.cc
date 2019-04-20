@@ -160,7 +160,7 @@ class ThirdPartyBlockingBrowserTest : public InProcessBrowserTest {
 //       browser launch.
 IN_PROC_BROWSER_TEST_F(ThirdPartyBlockingBrowserTest,
                        CreateModuleBlacklistCache) {
-  if (base::win::GetVersion() < base::win::VERSION_WIN8)
+  if (base::win::GetVersion() < base::win::Version::WIN8)
     return;
 
   base::FilePath module_list_path;

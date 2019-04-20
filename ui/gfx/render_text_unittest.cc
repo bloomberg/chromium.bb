@@ -4192,7 +4192,7 @@ TEST_F(RenderTextTest, HarfBuzz_UniscribeFallback) {
   std::string localized_font_name;
 
   base::win::Version version = base::win::GetVersion();
-  if (version < base::win::VERSION_WIN10) {
+  if (version < base::win::Version::WIN10) {
     // The font 'Meiryo' exists on windows 7 and windows 8. see:
     // https://docs.microsoft.com/en-us/typography/fonts/windows_7_font_list
     // https://docs.microsoft.com/en-us/typography/fonts/windows_8_font_list
@@ -4200,7 +4200,7 @@ TEST_F(RenderTextTest, HarfBuzz_UniscribeFallback) {
     // Japanese name for Meiryo.
     localized_font_name = "\u30e1\u30a4\u30ea\u30aa";
   } else {
-    ASSERT_GE(version, base::win::VERSION_WIN10);
+    ASSERT_GE(version, base::win::Version::WIN10);
     // The font 'Malgun Gothic' exists on windows 10. see:
     // https://docs.microsoft.com/en-us/typography/fonts/windows_10_font_list
     font_name = "Malgun Gothic";

@@ -121,7 +121,7 @@ const char kUtilityProcess[] = "utility";
 #if defined(OS_WIN)
 
 bool IsWin32kLockdownEnabled() {
-  return base::win::GetVersion() >= base::win::VERSION_WIN8 &&
+  return base::win::GetVersion() >= base::win::Version::WIN8 &&
          !base::CommandLine::ForCurrentProcess()->HasSwitch(
              switches::kDisableWin32kLockDown);
 }

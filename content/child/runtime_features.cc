@@ -49,7 +49,7 @@ void SetRuntimeFeatureDefaultsForPlatform() {
 #endif
 
 #if defined(OS_WIN)
-  if (base::win::GetVersion() >= base::win::VERSION_WIN10)
+  if (base::win::GetVersion() >= base::win::Version::WIN10)
     WebRuntimeFeatures::EnableWebBluetooth(true);
 #endif
 }

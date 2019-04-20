@@ -101,7 +101,7 @@ TEST_F(PathServiceTest, Get) {
   for (int key = PATH_WIN_START + 1; key < PATH_WIN_END; ++key) {
     bool valid = true;
     if (key == DIR_APP_SHORTCUTS)
-      valid = base::win::GetVersion() >= base::win::VERSION_WIN8;
+      valid = base::win::GetVersion() >= base::win::Version::WIN8;
 
     if (valid)
       EXPECT_TRUE(ReturnsValidPath(key)) << key;

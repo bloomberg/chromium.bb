@@ -131,7 +131,7 @@ std::string GetCssColor(ClosedCaptionColor caption_color) {
 }
 
 CaptionStyle InitializeFromSystemSettings() {
-  DCHECK_GE(base::win::GetVersion(), base::win::VERSION_WIN10);
+  DCHECK_GE(base::win::GetVersion(), base::win::Version::WIN10);
   DCHECK(base::FeatureList::IsEnabled(features::kSystemCaptionStyle));
 
   // Need to do this check before using ScopedHString.
@@ -221,7 +221,7 @@ CaptionStyle InitializeFromSystemSettings() {
 
 CaptionStyle CaptionStyle::FromSystemSettings() {
   CaptionStyle style;
-  if (base::win::GetVersion() >= base::win::VERSION_WIN10 &&
+  if (base::win::GetVersion() >= base::win::Version::WIN10 &&
       base::FeatureList::IsEnabled(features::kSystemCaptionStyle)) {
     style = InitializeFromSystemSettings();
   }

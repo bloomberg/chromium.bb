@@ -139,7 +139,7 @@ class OnScreenKeyboardTest : public ::testing::Test {
 // from the registry.
 TEST_F(OnScreenKeyboardTest, OSKPath) {
   // The on screen keyboard is only available on Windows 8+.
-  if (base::win::GetVersion() < base::win::VERSION_WIN8)
+  if (base::win::GetVersion() < base::win::Version::WIN8)
     return;
 
   std::unique_ptr<OnScreenKeyboardDisplayManagerTabTip>
@@ -164,7 +164,7 @@ TEST_F(OnScreenKeyboardTest, OSKPath) {
 
 TEST_F(OnScreenKeyboardTest, InputPane) {
   // InputPane is supported only on RS1 and later.
-  if (base::win::GetVersion() < base::win::VERSION_WIN10_RS1)
+  if (base::win::GetVersion() < base::win::Version::WIN10_RS1)
     return;
   std::unique_ptr<OnScreenKeyboardDisplayManagerInputPane>
       keyboard_display_manager = CreateInputPane();

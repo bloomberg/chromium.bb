@@ -90,7 +90,7 @@ class FaceDetectionImplWinTest : public testing::Test {
 
 TEST_F(FaceDetectionImplWinTest, ScanOneFace) {
   // FaceDetector not supported before Windows 10
-  if (base::win::GetVersion() < base::win::VERSION_WIN10)
+  if (base::win::GetVersion() < base::win::Version::WIN10)
     return;
 
   mojom::FaceDetectionPtr face_detector = ConnectToFaceDetector();

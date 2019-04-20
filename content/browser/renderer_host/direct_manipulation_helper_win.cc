@@ -49,7 +49,7 @@ DirectManipulationHelper::CreateInstance(HWND window,
     return nullptr;
 
   // DM_POINTERHITTEST supported since Win10.
-  if (base::win::GetVersion() < base::win::VERSION_WIN10)
+  if (base::win::GetVersion() < base::win::Version::WIN10)
     return nullptr;
 
   std::unique_ptr<DirectManipulationHelper> instance =
@@ -70,7 +70,7 @@ DirectManipulationHelper::CreateInstanceForTesting(
     return nullptr;
 
   // DM_POINTERHITTEST supported since Win10.
-  if (base::win::GetVersion() < base::win::VERSION_WIN10)
+  if (base::win::GetVersion() < base::win::Version::WIN10)
     return nullptr;
 
   std::unique_ptr<DirectManipulationHelper> instance =

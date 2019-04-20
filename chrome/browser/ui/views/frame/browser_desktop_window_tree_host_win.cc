@@ -77,7 +77,7 @@ bool BrowserDesktopWindowTreeHostWin::UsesNativeSystemMenu() const {
 void BrowserDesktopWindowTreeHostWin::Init(
     const views::Widget::InitParams& params) {
   DesktopWindowTreeHostWin::Init(params);
-  if (base::win::GetVersion() < base::win::VERSION_WIN10)
+  if (base::win::GetVersion() < base::win::Version::WIN10)
     return;  // VirtualDesktopManager isn't support pre Win-10.
 
   CHECK(SUCCEEDED(::CoCreateInstance(__uuidof(VirtualDesktopManager), nullptr,
@@ -183,7 +183,7 @@ bool BrowserDesktopWindowTreeHostWin::GetDwmFrameInsetsInPixels(
     // The 2 px (not DIP) at the inner edges of Win 7 glass are a light and dark
     // line, so we must inset further to account for those.
     constexpr int kWin7GlassInset = 2;
-    const int inset = (base::win::GetVersion() < base::win::VERSION_WIN8)
+    const int inset = (base::win::GetVersion() < base::win::Version::WIN8)
                           ? kWin7GlassInset
                           : 0;
     *insets = gfx::Insets(tabstrip_region_bounds.bottom() + inset, inset, inset,
@@ -338,7 +338,7 @@ bool BrowserDesktopWindowTreeHostWin::IsOpaqueHostedAppFrame() const {
   // TODO(https://crbug.com/868239): Support Windows 7 Aero glass for hosted app
   // window titlebar controls.
   return browser_view_->IsBrowserTypeHostedApp() &&
-         base::win::GetVersion() < base::win::VERSION_WIN10;
+         base::win::GetVersion() < base::win::Version::WIN10;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

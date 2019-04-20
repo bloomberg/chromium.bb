@@ -681,11 +681,11 @@ base::TimeDelta CoreAudioUtil::ReferenceTimeToTimeDelta(REFERENCE_TIME time) {
 }
 
 uint32_t CoreAudioUtil::GetIAudioClientVersion() {
-  if (base::win::GetVersion() >= base::win::VERSION_WIN10) {
+  if (base::win::GetVersion() >= base::win::Version::WIN10) {
     // Minimum supported client: Windows 10.
     // Minimum supported server: Windows Server 2016
     return 3;
-  } else if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
+  } else if (base::win::GetVersion() >= base::win::Version::WIN8) {
     // Minimum supported client: Windows 8.
     // Minimum supported server: Windows Server 2012.
     return 2;

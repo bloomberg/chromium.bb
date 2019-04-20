@@ -46,7 +46,7 @@ class LayoutProviderTest : public testing::Test {
     // different font heights. However, only use DirectWrite on Windows 10 and
     // later, since it's known to have flaky results on Windows 7. See
     // http://crbug.com/759870.
-    if (base::win::GetVersion() >= base::win::VERSION_WIN10)
+    if (base::win::GetVersion() >= base::win::Version::WIN10)
       gfx::win::InitializeDirectWrite();
   }
 #endif

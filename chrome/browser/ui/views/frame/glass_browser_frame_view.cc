@@ -171,7 +171,7 @@ int GlassBrowserFrameView::GetThemeBackgroundXInset() const {
 bool GlassBrowserFrameView::HasVisibleBackgroundTabShapes(
     ActiveState active_state) const {
   // Pre-Win 8, tabs never match the glass frame appearance.
-  if (base::win::GetVersion() < base::win::VERSION_WIN8)
+  if (base::win::GetVersion() < base::win::Version::WIN8)
     return true;
 
   // Enabling high contrast mode disables the custom-drawn titlebar (so the
@@ -189,7 +189,7 @@ bool GlassBrowserFrameView::HasVisibleBackgroundTabShapes(
 bool GlassBrowserFrameView::CanDrawStrokes() const {
   // On Win 7, the tabs are drawn as flat shapes against the glass frame, so
   // the active tab always has a visible shape and strokes are unnecessary.
-  if (base::win::GetVersion() < base::win::VERSION_WIN8)
+  if (base::win::GetVersion() < base::win::Version::WIN8)
     return false;
 
   return BrowserNonClientFrameView::CanDrawStrokes();
@@ -311,7 +311,7 @@ int GlassBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
   // corner of the window. This code ensures the mouse isn't set to a size
   // cursor while hovering over the caption buttons, thus giving the incorrect
   // impression that the user can resize the window.
-  if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
+  if (base::win::GetVersion() >= base::win::Version::WIN8) {
     RECT button_bounds = {0};
     if (SUCCEEDED(DwmGetWindowAttribute(views::HWNDForWidget(frame()),
                                         DWMWA_CAPTION_BUTTON_BOUNDS,

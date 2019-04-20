@@ -59,7 +59,7 @@ base::WeakPtr<BluetoothAdapter> BluetoothAdapterWin::CreateClassicAdapter(
 // static
 bool BluetoothAdapterWin::UseNewBLEWinImplementation() {
   return base::FeatureList::IsEnabled(kNewBLEWinImplementation) &&
-         base::win::GetVersion() >= base::win::VERSION_WIN10;
+         base::win::GetVersion() >= base::win::Version::WIN10;
 }
 
 BluetoothAdapterWin::BluetoothAdapterWin(InitCallback init_callback)

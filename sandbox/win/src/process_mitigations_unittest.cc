@@ -534,7 +534,7 @@ SBOX_TESTS_COMMAND int TestChildProcess(int argc, wchar_t** argv) {
 #if !defined(_WIN64)
 // DEP is always enabled on 64-bit.  Only test on x86.
 TEST(ProcessMitigationsTest, CheckDepWin7) {
-  if (base::win::GetVersion() > base::win::VERSION_WIN7)
+  if (base::win::GetVersion() > base::win::Version::WIN7)
     return;
 
   TestRunner runner;
@@ -559,7 +559,7 @@ TEST(ProcessMitigationsTest, CheckDepWin7) {
 // This test validates that setting the MITIGATION_DEP*
 // mitigations enables the setting on a process.
 TEST(ProcessMitigationsTest, CheckDepWin8PolicySuccess) {
-  if (base::win::GetVersion() < base::win::VERSION_WIN8)
+  if (base::win::GetVersion() < base::win::Version::WIN8)
     return;
 
   base::string16 test_command = L"CheckPolicy ";
@@ -600,7 +600,7 @@ TEST(ProcessMitigationsTest, CheckDepWin8PolicySuccess) {
 //------------------------------------------------------------------------------
 
 TEST(ProcessMitigationsTest, CheckWin8AslrPolicySuccess) {
-  if (base::win::GetVersion() < base::win::VERSION_WIN8)
+  if (base::win::GetVersion() < base::win::Version::WIN8)
     return;
 
   base::string16 test_command = L"CheckPolicy ";
@@ -628,7 +628,7 @@ TEST(ProcessMitigationsTest, CheckWin8AslrPolicySuccess) {
 //------------------------------------------------------------------------------
 
 TEST(ProcessMitigationsTest, CheckWin8StrictHandlePolicySuccess) {
-  if (base::win::GetVersion() < base::win::VERSION_WIN8)
+  if (base::win::GetVersion() < base::win::Version::WIN8)
     return;
 
   base::string16 test_command = L"CheckPolicy ";
@@ -655,7 +655,7 @@ TEST(ProcessMitigationsTest, CheckWin8StrictHandlePolicySuccess) {
 // This test validates that setting the MITIGATION_NON_SYSTEM_FONTS_DISABLE
 // mitigation enables the setting on a process.
 TEST(ProcessMitigationsTest, CheckWin10NonSystemFontLockDownPolicySuccess) {
-  if (base::win::GetVersion() < base::win::VERSION_WIN10)
+  if (base::win::GetVersion() < base::win::Version::WIN10)
     return;
 
   base::string16 test_command = L"CheckPolicy ";
@@ -686,7 +686,7 @@ TEST(ProcessMitigationsTest, CheckWin10NonSystemFontLockDownPolicySuccess) {
 // This test validates that we can load a non-system font if the
 // MITIGATION_NON_SYSTEM_FONTS_DISABLE mitigation is NOT set.
 TEST(ProcessMitigationsTest, CheckWin10NonSystemFontLockDownLoadSuccess) {
-  if (base::win::GetVersion() < base::win::VERSION_WIN10)
+  if (base::win::GetVersion() < base::win::Version::WIN10)
     return;
 
   TestWin10NonSystemFont(true);
@@ -695,7 +695,7 @@ TEST(ProcessMitigationsTest, CheckWin10NonSystemFontLockDownLoadSuccess) {
 // This test validates that setting the MITIGATION_NON_SYSTEM_FONTS_DISABLE
 // mitigation prevents the loading of a non-system font.
 TEST(ProcessMitigationsTest, CheckWin10NonSystemFontLockDownLoadFailure) {
-  if (base::win::GetVersion() < base::win::VERSION_WIN10)
+  if (base::win::GetVersion() < base::win::Version::WIN10)
     return;
 
   TestWin10NonSystemFont(false);
@@ -712,7 +712,7 @@ TEST(ProcessMitigationsTest, CheckWin10NonSystemFontLockDownLoadFailure) {
 // This test validates that setting the MITIGATION_FORCE_MS_SIGNED_BINS
 // mitigation enables the setting on a process.
 TEST(ProcessMitigationsTest, CheckWin10MsSignedPolicySuccess) {
-  if (base::win::GetVersion() < base::win::VERSION_WIN10_TH2)
+  if (base::win::GetVersion() < base::win::Version::WIN10_TH2)
     return;
 
   base::string16 test_command = L"CheckPolicy ";
@@ -739,7 +739,7 @@ TEST(ProcessMitigationsTest, CheckWin10MsSignedPolicySuccess) {
 // This test validates that we can load an unsigned DLL if the
 // MITIGATION_FORCE_MS_SIGNED_BINS mitigation is NOT set.
 TEST(ProcessMitigationsTest, CheckWin10MsSigned_Success) {
-  if (base::win::GetVersion() < base::win::VERSION_WIN10_TH2)
+  if (base::win::GetVersion() < base::win::Version::WIN10_TH2)
     return;
 
   HANDLE mutex =
@@ -758,7 +758,7 @@ TEST(ProcessMitigationsTest, CheckWin10MsSigned_Success) {
 // This test validates that setting the MITIGATION_FORCE_MS_SIGNED_BINS
 // mitigation prevents the loading of an unsigned DLL.
 TEST(ProcessMitigationsTest, CheckWin10MsSigned_Failure) {
-  if (base::win::GetVersion() < base::win::VERSION_WIN10_TH2)
+  if (base::win::GetVersion() < base::win::Version::WIN10_TH2)
     return;
 
   HANDLE mutex =
@@ -778,7 +778,7 @@ TEST(ProcessMitigationsTest, CheckWin10MsSigned_Failure) {
 // MITIGATION_FORCE_MS_SIGNED_BINS mitigation is NOT set.  Very basic
 // sanity test.
 TEST(ProcessMitigationsTest, CheckWin10MsSigned_MsBaseline) {
-  if (base::win::GetVersion() < base::win::VERSION_WIN10_TH2)
+  if (base::win::GetVersion() < base::win::Version::WIN10_TH2)
     return;
 
   HANDLE mutex =
@@ -797,7 +797,7 @@ TEST(ProcessMitigationsTest, CheckWin10MsSigned_MsBaseline) {
 // This test validates that setting the MITIGATION_FORCE_MS_SIGNED_BINS
 // mitigation still allows the load of an MS-signed DLL.
 TEST(ProcessMitigationsTest, CheckWin10MsSigned_MsSuccess) {
-  if (base::win::GetVersion() < base::win::VERSION_WIN10_TH2)
+  if (base::win::GetVersion() < base::win::Version::WIN10_TH2)
     return;
 
   HANDLE mutex =
@@ -907,7 +907,7 @@ TEST(ProcessMitigationsTest, CheckChildProcessAbnormalExit) {
 // on a process.
 TEST(ProcessMitigationsTest,
      CheckWin10RestrictIndirectBranchPredictionPolicySuccess) {
-  if (base::win::GetVersion() < base::win::VERSION_WIN10_RS3)
+  if (base::win::GetVersion() < base::win::Version::WIN10_RS3)
     return;
 
   base::string16 test_command = L"CheckPolicy ";

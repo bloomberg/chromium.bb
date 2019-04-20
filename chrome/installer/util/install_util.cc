@@ -245,7 +245,7 @@ bool InstallUtil::IsOSSupported() {
   // We do not support anything prior to Windows 7.
   VLOG(1) << base::SysInfo::OperatingSystemName() << ' '
           << base::SysInfo::OperatingSystemVersion();
-  return base::win::GetVersion() >= base::win::VERSION_WIN7;
+  return base::win::GetVersion() >= base::win::Version::WIN7;
 }
 
 void InstallUtil::AddInstallerResultItems(

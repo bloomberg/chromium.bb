@@ -230,7 +230,7 @@ bool AreSHA1IntermediatesAllowed() {
   // TODO(rsleevi): Remove this once https://crbug.com/588789 is resolved
   // for Windows 7/2008 users.
   // Note: This must be kept in sync with cert_verify_proc.cc
-  return base::win::GetVersion() < base::win::VERSION_WIN8;
+  return base::win::GetVersion() < base::win::Version::WIN8;
 #else
   return false;
 #endif

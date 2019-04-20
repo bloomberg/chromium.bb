@@ -1895,7 +1895,7 @@ TEST_F(LayerWithRealCompositorTest, CanvasDrawFadedString) {
   ASSERT_FALSE(bitmap.empty());
 
   std::string filename;
-  if (base::win::GetVersion() < base::win::VERSION_WIN10)
+  if (base::win::GetVersion() < base::win::Version::WIN10)
     filename = "string_faded_win7.png";
   else
     filename = "string_faded_win10.png";

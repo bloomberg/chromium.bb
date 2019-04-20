@@ -682,7 +682,7 @@ TEST(FilePolicyTest, CheckMissingNTPrefixEscape) {
 TEST(FilePolicyTest, TestCopyFile) {
   // Check if the test is running Win8 or newer since
   // MITIGATION_STRICT_HANDLE_CHECKS is not supported on older systems.
-  if (base::win::GetVersion() < base::win::VERSION_WIN8)
+  if (base::win::GetVersion() < base::win::Version::WIN8)
     return;
 
   TestRunner runner;

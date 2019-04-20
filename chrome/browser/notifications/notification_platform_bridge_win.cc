@@ -882,11 +882,11 @@ bool NotificationPlatformBridgeWin::HandleActivation(
 // static
 bool NotificationPlatformBridgeWin::NativeNotificationEnabled() {
   // There was a Microsoft bug in Windows 10 prior to build 17134 (i.e.,
-  // VERSION_WIN10_RS4), causing endless loops in displaying notifications. It
-  // significantly amplified the memory and CPU usage. Therefore, we enable
-  // Windows 10 native notification only for build 17134 and later. See
-  // crbug.com/882622 and crbug.com/878823 for more details.
-  return base::win::GetVersion() >= base::win::VERSION_WIN10_RS4 &&
+  // Version::WIN10_RS4), causing endless loops in displaying
+  // notifications. It significantly amplified the memory and CPU usage.
+  // Therefore, we enable Windows 10 native notification only for build 17134
+  // and later. See crbug.com/882622 and crbug.com/878823 for more details.
+  return base::win::GetVersion() >= base::win::Version::WIN10_RS4 &&
          base::FeatureList::IsEnabled(features::kNativeNotifications);
 }
 

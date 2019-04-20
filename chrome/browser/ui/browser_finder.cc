@@ -55,7 +55,7 @@ const int kMatchCurrentWorkspace = 1 << 4;
 // call like SendMessage, because IsWindowOnCurrentVirtualDesktop will return
 // an error.
 bool IsOnOtherVirtualDesktop(Browser* browser) {
-  if (base::win::GetVersion() < base::win::VERSION_WIN10)
+  if (base::win::GetVersion() < base::win::Version::WIN10)
     return false;
 
   Microsoft::WRL::ComPtr<IVirtualDesktopManager> virtual_desktop_manager;

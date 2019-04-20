@@ -117,7 +117,7 @@ Browser* FindOneOtherBrowser(Browser* browser) {
 
 bool IsWindows10OrNewer() {
 #if defined(OS_WIN)
-  return base::win::GetVersion() >= base::win::VERSION_WIN10;
+  return base::win::GetVersion() >= base::win::Version::WIN10;
 #else
   return false;
 #endif

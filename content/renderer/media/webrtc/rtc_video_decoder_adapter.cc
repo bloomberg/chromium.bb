@@ -144,7 +144,7 @@ std::unique_ptr<RTCVideoDecoderAdapter> RTCVideoDecoderAdapter::Create(
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableWin7WebRtcHWH264Decoding) &&
       video_codec_type == webrtc::kVideoCodecH264 &&
-      base::win::GetVersion() == base::win::VERSION_WIN7) {
+      base::win::GetVersion() == base::win::Version::WIN7) {
     DVLOG(1) << "H.264 HW decoding is not supported on Win7";
     return nullptr;
   }

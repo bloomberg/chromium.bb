@@ -68,7 +68,7 @@ QuarantineFileResult SetInternetZoneIdentifierDirectly(
   static const char kHostUrlFormat[] = "HostUrl=%s\r\n";
 
   std::string identifier = "[ZoneTransfer]\r\nZoneId=3\r\n";
-  if (base::win::GetVersion() >= base::win::VERSION_WIN10) {
+  if (base::win::GetVersion() >= base::win::Version::WIN10) {
     // Match what the InvokeAttachmentServices() function will output, including
     // the order of the values.
     if (IsValidUrlForAttachmentServices(referrer_url)) {

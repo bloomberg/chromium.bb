@@ -618,7 +618,7 @@ SBOX_TESTS_COMMAND int CheckWin8OPMApis(int argc, wchar_t** argv) {
 // the target process causes the launch to fail in process initialization.
 // The test process itself links against user32/gdi32.
 TEST(ProcessMitigationsWin32kTest, CheckWin8LockDownFailure) {
-  if (base::win::GetVersion() < base::win::VERSION_WIN8)
+  if (base::win::GetVersion() < base::win::Version::WIN8)
     return;
 
   base::string16 test_policy_command = L"CheckPolicy ";
@@ -638,7 +638,7 @@ TEST(ProcessMitigationsWin32kTest, CheckWin8LockDownFailure) {
 // The test process itself links against user32/gdi32.
 
 TEST(ProcessMitigationsWin32kTest, CheckWin8LockDownSuccess) {
-  if (base::win::GetVersion() < base::win::VERSION_WIN8)
+  if (base::win::GetVersion() < base::win::Version::WIN8)
     return;
 
   base::string16 test_policy_command = L"CheckPolicy ";
@@ -665,7 +665,7 @@ TEST(ProcessMitigationsWin32kTest, CheckWin8LockDownSuccess) {
 // we can use the IPC redirection to enumerate the list of monitors.
 // Flaky. https://crbug.com/840335
 TEST(ProcessMitigationsWin32kTest, CheckWin8Redirection) {
-  if (base::win::GetVersion() < base::win::VERSION_WIN8)
+  if (base::win::GetVersion() < base::win::Version::WIN8)
     return;
 
   base::string16 test_policy_command = L"CheckPolicy ";

@@ -185,7 +185,7 @@ bool IsAeroGlassEnabled() {
 bool IsDwmCompositionEnabled() {
   // As of Windows 8, DWM composition is always enabled.
   // In Windows 7 this can change at runtime.
-  if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
+  if (base::win::GetVersion() >= base::win::Version::WIN8) {
     return true;
   }
   BOOL is_enabled;

@@ -426,7 +426,7 @@ class TouchEventHandler : public ui::EventHandler {
 TEST_F(DesktopWidgetTestInteractive, DISABLED_TouchNoActivateWindow) {
   // ui_controls::SendTouchEvents which uses InjectTouchInput API only works
   // on Windows 8 and up.
-  if (base::win::GetVersion() <= base::win::VERSION_WIN7)
+  if (base::win::GetVersion() <= base::win::Version::WIN7)
     return;
 
   View* focusable_view = new View;

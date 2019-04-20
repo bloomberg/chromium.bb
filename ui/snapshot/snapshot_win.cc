@@ -24,7 +24,7 @@ namespace {
 // Without that flag PrintWindow may not correctly capture what's actually
 // onscreen.
 bool UseAuraSnapshot() {
-  return (base::win::GetVersion() < base::win::VERSION_WIN8_1);
+  return (base::win::GetVersion() < base::win::Version::WIN8_1);
 }
 
 }  // namespace

@@ -190,10 +190,10 @@ void RecordStartupMetrics() {
 #if defined(OS_WIN)
   const base::win::OSInfo& os_info = *base::win::OSInfo::GetInstance();
   UMA_HISTOGRAM_ENUMERATION("Windows.GetVersionExVersion", os_info.version(),
-                            base::win::VERSION_WIN_LAST);
+                            base::win::Version::WIN_LAST);
   UMA_HISTOGRAM_ENUMERATION("Windows.Kernel32Version",
                             os_info.Kernel32Version(),
-                            base::win::VERSION_WIN_LAST);
+                            base::win::Version::WIN_LAST);
   UMA_HISTOGRAM_BOOLEAN("Windows.InCompatibilityMode",
                         os_info.version() != os_info.Kernel32Version());
 
