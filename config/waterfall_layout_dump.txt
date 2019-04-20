@@ -502,7 +502,6 @@
     octopus-postsubmit
     orco-postsubmit
     panther-postsubmit
-    peach_pi-postsubmit
     peach_pit-postsubmit
     peppy-postsubmit
     poppy-postsubmit
@@ -593,8 +592,6 @@
     cobblepot-release
     coral-release
     cyan-release
-    daisy-release
-    daisy_skate-release
     edgar-release
     elm-release
     enguarde-release
@@ -658,8 +655,6 @@
     octopus-release
     orco-release
     panther-release
-    peach_pi-release
-    peach_pit-release
     peppy-release
     pyro-release
     quawks-release
@@ -2795,7 +2790,6 @@
     octopus-postsubmit-tryjob
     orco-postsubmit-tryjob
     panther-postsubmit-tryjob
-    peach_pi-postsubmit-tryjob
     peach_pit-postsubmit-tryjob
     peppy-postsubmit-tryjob
     poppy-postsubmit-tryjob
@@ -2875,8 +2869,6 @@
     cobblepot-release-tryjob
     coral-release-tryjob
     cyan-release-tryjob
-    daisy-release-tryjob
-    daisy_skate-release-tryjob
     edgar-release-tryjob
     elm-release-tryjob
     enguarde-release-tryjob
@@ -2940,8 +2932,6 @@
     octopus-release-tryjob
     orco-release-tryjob
     panther-release-tryjob
-    peach_pi-release-tryjob
-    peach_pit-release-tryjob
     peppy-release-tryjob
     pyro-release-tryjob
     quawks-release-tryjob

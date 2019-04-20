@@ -350,30 +350,6 @@
       ]
     },
     {
-      "name": "daisy",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": false,
-          "leader_board": true,
-          "board_group": "daisy",
-          "arch": "ARM_INTERNAL"
-        }
-      ]
-    },
-    {
-      "name": "daisy_skate",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": false,
-          "leader_board": false,
-          "board_group": "daisy",
-          "arch": "ARM_INTERNAL"
-        }
-      ]
-    },
-    {
       "name": "edgar",
       "configs": [
         {
@@ -1042,30 +1018,6 @@
           "leader_board": false,
           "board_group": "slippy",
           "arch": "X86_INTERNAL"
-        }
-      ]
-    },
-    {
-      "name": "peach_pi",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": false,
-          "leader_board": false,
-          "board_group": "peach",
-          "arch": "ARM_INTERNAL"
-        }
-      ]
-    },
-    {
-      "name": "peach_pit",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": false,
-          "leader_board": true,
-          "board_group": "peach",
-          "arch": "ARM_INTERNAL"
         }
       ]
     },
