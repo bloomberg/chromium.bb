@@ -141,6 +141,19 @@ TEST(SpanFromTest, FromConstCharAndLiteral) {
   EXPECT_EQ(3, SpanFrom("foo").size());
 }
 
+// =============================================================================
+// Status and Error codes
+// =============================================================================
+
+TEST(StatusTest, StatusToASCIIString) {
+  Status ok_status;
+  EXPECT_EQ("OK", ok_status.ToASCIIString());
+  Status json_error(Error::JSON_PARSER_COLON_EXPECTED, 42);
+  EXPECT_EQ("JSON: colon expected at position 42", json_error.ToASCIIString());
+  Status cbor_error(Error::CBOR_TRAILING_JUNK, 21);
+  EXPECT_EQ("CBOR: trailing junk at position 21", cbor_error.ToASCIIString());
+}
+
 namespace cbor {
 
 // =============================================================================

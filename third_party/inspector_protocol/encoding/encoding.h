@@ -73,7 +73,9 @@ inline span<uint8_t> SpanFrom(const std::string& v) {
   return span<uint8_t>(reinterpret_cast<const uint8_t*>(v.data()), v.size());
 }
 
-// Error codes.
+// =============================================================================
+// Status and Error codes
+// =============================================================================
 enum class Error {
   OK = 0,
   // JSON parsing errors - json_parser.{h,cc}.
@@ -105,11 +107,10 @@ enum class Error {
   CBOR_UNEXPECTED_EOF_IN_MAP = 0x19,
   CBOR_INVALID_MAP_KEY = 0x1a,
   CBOR_STACK_LIMIT_EXCEEDED = 0x1b,
-  CBOR_STRING8_MUST_BE_7BIT = 0x1c,
-  CBOR_TRAILING_JUNK = 0x1d,
-  CBOR_MAP_START_EXPECTED = 0x1e,
-  CBOR_MAP_STOP_EXPECTED = 0x1f,
-  CBOR_ENVELOPE_SIZE_LIMIT_EXCEEDED = 0x20,
+  CBOR_TRAILING_JUNK = 0x1c,
+  CBOR_MAP_START_EXPECTED = 0x1d,
+  CBOR_MAP_STOP_EXPECTED = 0x1e,
+  CBOR_ENVELOPE_SIZE_LIMIT_EXCEEDED = 0x1f,
 };
 
 // A status value with position that can be copied. The default status
@@ -123,6 +124,13 @@ struct Status {
   std::ptrdiff_t pos = npos();
   Status(Error error, std::ptrdiff_t pos) : error(error), pos(pos) {}
   Status() = default;
+
+  // Returns a 7 bit US-ASCII string, either "OK" or an error message
+  // that includes the position.
+  std::string ToASCIIString() const;
+
+ private:
+  std::string ToASCIIString(const char* msg) const;
 };
 
 // Handler interface for parser events emitted by a streaming parser.
