@@ -4724,7 +4724,7 @@ workspace_move_surface_down_binding(struct weston_keyboard *keyboard,
 }
 
 static void
-shell_reposition_view_on_output_destroy(struct weston_view *view)
+shell_reposition_view_on_output_change(struct weston_view *view)
 {
 	struct weston_output *output, *first_output;
 	struct weston_compositor *ec = view->surface->compositor;
@@ -4789,14 +4789,15 @@ shell_for_each_layer(struct desktop_shell *shell,
 }
 
 static void
-shell_output_destroy_move_layer(struct desktop_shell *shell,
+shell_output_changed_move_layer(struct desktop_shell *shell,
 				struct weston_layer *layer,
 				void *data)
 {
 	struct weston_view *view;
 
 	wl_list_for_each(view, &layer->view_list.link, layer_link.link)
-		shell_reposition_view_on_output_destroy(view);
+		shell_reposition_view_on_output_change(view);
+
 }
 
 static void
@@ -4806,7 +4807,7 @@ handle_output_destroy(struct wl_listener *listener, void *data)
 		container_of(listener, struct shell_output, destroy_listener);
 	struct desktop_shell *shell = output_listener->shell;
 
-	shell_for_each_layer(shell, shell_output_destroy_move_layer, NULL);
+	shell_for_each_layer(shell, shell_output_changed_move_layer, NULL);
 
 	if (output_listener->panel_surface)
 		wl_list_remove(&output_listener->panel_surface_listener.link);
@@ -4860,6 +4861,10 @@ create_shell_output(struct desktop_shell *shell,
 	wl_signal_add(&output->destroy_signal,
 		      &shell_output->destroy_listener);
 	wl_list_insert(shell->output_list.prev, &shell_output->link);
+
+	if (wl_list_length(&shell->output_list) == 1)
+		shell_for_each_layer(shell,
+				     shell_output_changed_move_layer, NULL);
 }
 
 static void
