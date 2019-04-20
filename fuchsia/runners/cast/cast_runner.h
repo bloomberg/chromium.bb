@@ -19,8 +19,7 @@
 class CastRunner : public WebContentRunner {
  public:
   CastRunner(base::fuchsia::ServiceDirectory* service_directory,
-             fuchsia::web::ContextPtr context,
-             base::OnceClosure on_idle_closure);
+             fuchsia::web::ContextPtr context);
 
   ~CastRunner() override;
 

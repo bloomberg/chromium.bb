@@ -120,18 +120,16 @@ class CastRunnerIntegrationTest : public testing::Test {
 
     // Create the CastRunner, published into |test_services_|.
     cast_runner_ = std::make_unique<CastRunner>(
-        public_services_.get(), WebContentRunner::CreateIncognitoWebContext(),
-        cast_runner_run_loop_.QuitClosure());
+        public_services_.get(), WebContentRunner::CreateIncognitoWebContext());
 
     // Connect to the CastRunner's fuchsia.sys.Runner interface.
     base::fuchsia::ServiceDirectoryClient public_directory_client(
         std::move(directory));
     cast_runner_ptr_ =
         public_directory_client.ConnectToService<fuchsia::sys::Runner>();
-    cast_runner_ptr_.set_error_handler([this](zx_status_t status) {
+    cast_runner_ptr_.set_error_handler([](zx_status_t status) {
       ZX_LOG(ERROR, status) << "CastRunner closed channel.";
       ADD_FAILURE();
-      cast_runner_run_loop_.Quit();
     });
   }
 
@@ -142,9 +140,9 @@ class CastRunnerIntegrationTest : public testing::Test {
   }
 
   void TearDown() override {
-    // Disconnect the CastRunner.
+    // Disconnect the CastRunner & let things tear-down.
     cast_runner_ptr_.Unbind();
-    cast_runner_run_loop_.Run();
+    base::RunLoop().RunUntilIdle();
   }
 
   void WaitUntilCastChannelOpened() {
@@ -220,7 +218,6 @@ class CastRunnerIntegrationTest : public testing::Test {
 
   std::unique_ptr<CastRunner> cast_runner_;
   fuchsia::sys::RunnerPtr cast_runner_ptr_;
-  base::RunLoop cast_runner_run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(CastRunnerIntegrationTest);
 };

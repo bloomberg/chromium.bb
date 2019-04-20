@@ -72,17 +72,9 @@ fuchsia::web::ContextPtr WebContentRunner::CreateIncognitoWebContext() {
 
 WebContentRunner::WebContentRunner(
     base::fuchsia::ServiceDirectory* service_directory,
-    fuchsia::web::ContextPtr context,
-    base::OnceClosure on_idle_closure)
-    : context_(std::move(context)),
-      service_binding_(service_directory, this),
-      on_idle_closure_(std::move(on_idle_closure)) {
+    fuchsia::web::ContextPtr context)
+    : context_(std::move(context)), service_binding_(service_directory, this) {
   DCHECK(context_);
-  DCHECK(on_idle_closure_);
-
-  // Signal that we're idle if the service manager connection is dropped.
-  service_binding_.SetOnLastClientCallback(base::BindOnce(
-      &WebContentRunner::RunOnIdleClosureIfValid, base::Unretained(this)));
 }
 
 WebContentRunner::~WebContentRunner() = default;
@@ -117,9 +109,6 @@ void WebContentRunner::GetWebComponentForTest(
 
 void WebContentRunner::DestroyComponent(WebComponent* component) {
   components_.erase(components_.find(component));
-
-  if (components_.empty())
-    RunOnIdleClosureIfValid();
 }
 
 void WebContentRunner::RegisterComponent(
@@ -128,9 +117,4 @@ void WebContentRunner::RegisterComponent(
     std::move(web_component_test_callback_).Run(component.get());
   }
   components_.insert(std::move(component));
-}
-
-void WebContentRunner::RunOnIdleClosureIfValid() {
-  if (on_idle_closure_)
-    std::move(on_idle_closure_).Run();
 }
