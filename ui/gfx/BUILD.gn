@@ -528,6 +528,7 @@ jumbo_source_set("memory_buffer_sources") {
   ]
 
   deps = [
+    ":gfx_switches",
     ":native_widget_types",
     "//base",
     "//ui/gfx/geometry",

@@ -13,6 +13,7 @@
 
 #include <utility>
 
+#include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/posix/eintr_wrapper.h"
@@ -21,6 +22,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "ui/gfx/switches.h"
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 11, 0)
 #include <linux/dma-buf.h>
@@ -59,6 +61,12 @@ void PrimeSyncEnd(int dmabuf_fd) {
   sync_end.flags = DMA_BUF_SYNC_END | DMA_BUF_SYNC_RW;
   int rv = HANDLE_EINTR(ioctl(dmabuf_fd, DMA_BUF_IOCTL_SYNC, &sync_end));
   PLOG_IF(ERROR, rv) << "Failed DMA_BUF_SYNC_END";
+}
+
+bool AllowCpuMappableBuffers() {
+  static bool result = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableNativeGpuMemoryBuffers);
+  return result;
 }
 
 }  // namespace
@@ -106,10 +114,16 @@ bool ClientNativePixmapDmaBuf::IsConfigurationSupported(
              format == gfx::BufferFormat::RGBA_8888 ||
              format == gfx::BufferFormat::BGRA_8888;
     case gfx::BufferUsage::SCANOUT_CPU_READ_WRITE:
+      // TODO(crbug.com/954233): RG_88 is enabled only with
+      // --enable-native-gpu-memory-buffers . Otherwise it breaks some telemetry
+      // tests. Fix that issue and enable it again.
+      if (format == gfx::BufferFormat::RG_88 && !AllowCpuMappableBuffers())
+        return false;
+
       return
 #if defined(ARCH_CPU_X86_FAMILY)
-          // Currently only Intel driver (i.e. minigbm and Mesa) supports R_8
-          // RG_88, NV12 and XB30/XR30. https://crbug.com/356871
+          // Currently only Intel driver (i.e. minigbm and Mesa) supports
+          // R_8 RG_88, NV12 and XB30/XR30.
           format == gfx::BufferFormat::R_8 ||
           format == gfx::BufferFormat::RG_88 ||
           format == gfx::BufferFormat::YUV_420_BIPLANAR ||
@@ -125,11 +139,12 @@ bool ClientNativePixmapDmaBuf::IsConfigurationSupported(
       return false;
 
     case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE:
+      if (!AllowCpuMappableBuffers())
+        return false;
       return
 #if defined(ARCH_CPU_X86_FAMILY)
-          // Currently only Intel driver (i.e. minigbm and
-          // Mesa) supports R_8 RG_88 and NV12.
-          // https://crbug.com/356871
+          // Currently only Intel driver (i.e. minigbm and Mesa) supports R_8,
+          // RG_88 and NV12.
           format == gfx::BufferFormat::R_8 ||
           format == gfx::BufferFormat::RG_88 ||
           format == gfx::BufferFormat::YUV_420_BIPLANAR ||

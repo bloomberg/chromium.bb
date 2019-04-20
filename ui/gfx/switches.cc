@@ -15,6 +15,9 @@ const char kDisableFontSubpixelPositioning[] =
 // Run in headless mode, i.e., without a UI or display server dependencies.
 const char kHeadless[] = "headless";
 
+// Enable native CPU-mappable GPU memory buffer support on Linux.
+const char kEnableNativeGpuMemoryBuffers[] = "enable-native-gpu-memory-buffers";
+
 }  // namespace switches
 
 namespace features {

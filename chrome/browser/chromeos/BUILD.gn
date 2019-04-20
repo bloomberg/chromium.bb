@@ -266,6 +266,7 @@ source_set("chromeos") {
     "//ui/events/devices",
     "//ui/events/platform",
     "//ui/file_manager",
+    "//ui/gfx:gfx_switches",
     "//ui/keyboard",
     "//ui/message_center",
     "//ui/message_center/public/cpp",

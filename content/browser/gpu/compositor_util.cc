@@ -175,11 +175,6 @@ const GpuFeatureData GetGpuFeatureData(
       {"multiple_raster_threads", gpu::kGpuFeatureStatusEnabled,
        NumberOfRendererRasterThreads() == 1, "Raster is using a single thread.",
        false, true},
-      {"native_gpu_memory_buffers", gpu::kGpuFeatureStatusEnabled,
-       !gpu::AreNativeGpuMemoryBuffersEnabled(),
-       "Native GpuMemoryBuffers have been disabled, either via about:flags or "
-       "command line.",
-       true, true},
       {"surface_control",
        SafeGetFeatureStatus(gpu_feature_info,
                             gpu::GPU_FEATURE_TYPE_ANDROID_SURFACE_CONTROL),
@@ -435,10 +430,6 @@ bool IsGpuMemoryBufferCompositorResourcesEnabled() {
           switches::kDisableGpuMemoryBufferCompositorResources)) {
     return false;
   }
-
-  // Native GPU memory buffers are required.
-  if (!gpu::AreNativeGpuMemoryBuffersEnabled())
-    return false;
 
 #if defined(OS_MACOSX)
   return true;

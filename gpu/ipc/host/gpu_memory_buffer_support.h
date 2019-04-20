@@ -38,8 +38,6 @@ namespace gpu {
 
 class GpuMemoryBufferSupport;
 
-bool AreNativeGpuMemoryBuffersEnabled();
-
 // Returns the set of supported configurations.
 GpuMemoryBufferConfigurationSet GetNativeGpuMemoryBufferConfigurations(
     GpuMemoryBufferSupport* support);

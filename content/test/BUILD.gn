@@ -1065,6 +1065,7 @@ test("content_browsertests") {
     "//ui/events:test_support",
     "//ui/events/blink:blink",
     "//ui/gfx",
+    "//ui/gfx:gfx_switches",
     "//ui/gfx/geometry",
     "//ui/gl",
     "//ui/gl:test_support",
