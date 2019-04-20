@@ -549,7 +549,7 @@
     },
     {
       name: "FetchMetadata",
-      status: "experimental"
+      status: "stable"
     },
     {
       name: "FetchMetadataDestination",

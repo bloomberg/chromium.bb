@@ -61,7 +61,7 @@ const base::Feature kEnforceRequestInitiatorLockForCorb{
 
 // Implementation of https://mikewest.github.io/sec-metadata/
 const base::Feature kFetchMetadata{"FetchMetadata",
-                                   base::FEATURE_DISABLED_BY_DEFAULT};
+                                   base::FEATURE_ENABLED_BY_DEFAULT};
 
 // The `Sec-Fetch-Dest` header is split out from the main "FetchMetadata"
 // feature so we can ship the broader feature without this specifific bit
