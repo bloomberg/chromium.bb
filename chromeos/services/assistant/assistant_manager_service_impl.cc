@@ -134,7 +134,7 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
     network::NetworkConnectionTracker* network_connection_tracker,
     std::unique_ptr<network::SharedURLLoaderFactoryInfo>
         url_loader_factory_info)
-    : media_session_(std::make_unique<AssistantMediaSession>(connector)),
+    : media_session_(std::make_unique<AssistantMediaSession>(connector, this)),
       action_module_(std::make_unique<action::CrosActionModule>(
           this,
           assistant::features::IsAppSupportEnabled(),
@@ -248,6 +248,30 @@ void AssistantManagerServiceImpl::RegisterFallbackMediaHandler() {
           OnMediaControlAction(action_name, media_action_args_proto);
         }
       });
+}
+
+void AssistantManagerServiceImpl::UpdateInternalMediaPlayerStatus(
+    media_session::mojom::MediaSessionAction action) {
+  auto* media_manager = assistant_manager_->GetMediaManager();
+  if (!media_manager)
+    return;
+
+  switch (action) {
+    case media_session::mojom::MediaSessionAction::kPause:
+      media_manager->Pause();
+      break;
+    case media_session::mojom::MediaSessionAction::kPlay:
+      media_manager->Resume();
+      break;
+    case media_session::mojom::MediaSessionAction::kPreviousTrack:
+    case media_session::mojom::MediaSessionAction::kNextTrack:
+    case media_session::mojom::MediaSessionAction::kSeekBackward:
+    case media_session::mojom::MediaSessionAction::kSeekForward:
+    case media_session::mojom::MediaSessionAction::kSkipAd:
+    case media_session::mojom::MediaSessionAction::kStop:
+      NOTIMPLEMENTED();
+      break;
+  }
 }
 
 void AssistantManagerServiceImpl::AddMediaControllerObserver() {
@@ -1048,6 +1072,10 @@ void AssistantManagerServiceImpl::OnStartFinished() {
   RegisterFallbackMediaHandler();
   AddMediaControllerObserver();
 
+  auto* media_manager = assistant_manager_->GetMediaManager();
+  if (media_manager)
+    media_manager->AddListener(this);
+
   if (service_->assistant_state()->arc_play_store_enabled().has_value()) {
     SetArcPlayStoreEnabled(
         service_->assistant_state()->arc_play_store_enabled().value());
@@ -1233,6 +1261,12 @@ void AssistantManagerServiceImpl::OnOpenUrlOnMainThread(
 
   interaction_subscribers_.ForAllPtrs(
       [&url](auto* ptr) { ptr->OnOpenUrlResponse(GURL(url)); });
+}
+
+void AssistantManagerServiceImpl::OnPlaybackStateChange(
+    const MediaStatus& status) {
+  if (media_session_)
+    media_session_->NotifyMediaSessionMetadataChanged(status);
 }
 
 void AssistantManagerServiceImpl::OnShowNotificationOnMainThread(

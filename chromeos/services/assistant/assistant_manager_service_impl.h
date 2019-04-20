@@ -26,6 +26,7 @@
 #include "libassistant/shared/internal_api/assistant_manager_delegate.h"
 #include "libassistant/shared/public/conversation_state_listener.h"
 #include "libassistant/shared/public/device_state_listener.h"
+#include "libassistant/shared/public/media_manager.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "services/device/public/mojom/battery_monitor.mojom.h"
@@ -88,6 +89,7 @@ class AssistantManagerServiceImpl
       public assistant_client::ConversationStateListener,
       public assistant_client::AssistantManagerDelegate,
       public assistant_client::DeviceStateListener,
+      public assistant_client::MediaManager::Listener,
       public media_session::mojom::MediaControllerObserver {
  public:
   // |service| owns this class and must outlive this class.
@@ -143,6 +145,8 @@ class AssistantManagerServiceImpl
       const std::vector<action::Suggestion>& suggestions) override;
   void OnShowText(const std::string& text) override;
   void OnOpenUrl(const std::string& url) override;
+  void OnPlaybackStateChange(
+      const assistant_client::MediaStatus& status) override;
   void OnShowNotification(const action::Notification& notification) override;
   void OnOpenAndroidApp(const action::AndroidAppInfo& app_info,
                         const action::InteractionInfo& interaction) override;
@@ -198,6 +202,9 @@ class AssistantManagerServiceImpl
       override {}
   void MediaSessionChanged(
       const base::Optional<base::UnguessableToken>& request_id) override {}
+
+  void UpdateInternalMediaPlayerStatus(
+      media_session::mojom::MediaSessionAction action);
 
  private:
   void StartAssistantInternal(const base::Optional<std::string>& access_token);

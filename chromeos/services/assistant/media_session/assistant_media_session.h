@@ -8,7 +8,9 @@
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "base/unguessable_token.h"
+#include "libassistant/shared/public/media_manager.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 
@@ -16,30 +18,40 @@ namespace service_manager {
 class Connector;
 }  // namespace service_manager
 
+namespace assistant_client {
+struct MediaStatus;
+}  // namespace assistant_client
+
 namespace chromeos {
 namespace assistant {
+
+class AssistantManagerServiceImpl;
 
 // MediaSession manages the media session and audio focus for Assistant.
 // MediaSession allows clients to observe its changes via MediaSessionObserver,
 // and allows clients to resume/suspend/stop the managed players.
 class AssistantMediaSession : public media_session::mojom::MediaSession {
  public:
-  enum class State { ACTIVE, INACTIVE };
+  enum class State { ACTIVE, SUSPENDED, INACTIVE };
 
-  explicit AssistantMediaSession(service_manager::Connector* connector);
+  explicit AssistantMediaSession(
+      service_manager::Connector* connector,
+      AssistantManagerServiceImpl* assistant_manager);
   ~AssistantMediaSession() override;
 
   // media_session.mojom.MediaSession overrides:
-  void Suspend(SuspendType suspend_type) override {}
-  void Resume(SuspendType suspend_type) override {}
+  void Suspend(SuspendType suspend_type) override;
+  void Resume(SuspendType suspend_type) override;
   void StartDucking() override {}
   void StopDucking() override {}
   void GetMediaSessionInfo(GetMediaSessionInfoCallback callback) override;
   void GetDebugInfo(GetDebugInfoCallback callback) override;
   void AddObserver(
-      media_session::mojom::MediaSessionObserverPtr observer) override {}
+      media_session::mojom::MediaSessionObserverPtr observer) override;
   void PreviousTrack() override {}
   void NextTrack() override {}
+  void NotifyMediaSessionMetadataChanged(
+      const assistant_client::MediaStatus& status);
   void SkipAd() override {}
   void Seek(base::TimeDelta seek_time) override {}
   void Stop(SuspendType suspend_type) override {}
@@ -75,10 +87,21 @@ class AssistantMediaSession : public media_session::mojom::MediaSession {
   // Returns if the session is currently active.
   bool IsActive() const;
 
+  // Returns if the session is currently suspended.
+  bool IsSuspended() const;
+
+  // The current metadata associated with the current media session.
+  media_session::MediaMetadata metadata_;
+
+  AssistantManagerServiceImpl* const assistant_manager_service_;
   service_manager::Connector* connector_;
 
   // Binding for Mojo pointer to |this| held by AudioFocusManager.
   mojo::Binding<media_session::mojom::MediaSession> binding_;
+
+  assistant_client::TrackType current_track_;
+
+  mojo::InterfacePtrSet<media_session::mojom::MediaSessionObserver> observers_;
 
   // Holds a pointer to the MediaSessionService.
   media_session::mojom::AudioFocusManagerPtr audio_focus_ptr_;
@@ -86,6 +109,9 @@ class AssistantMediaSession : public media_session::mojom::MediaSession {
   // If the media session has acquired audio focus then this will contain a
   // pointer to that requests AudioFocusRequestClient.
   media_session::mojom::AudioFocusRequestClientPtr request_client_ptr_;
+
+  // The last updated |MediaSessionInfo| that was sent to |observers_|.
+  media_session::mojom::MediaSessionInfoPtr session_info_;
 
   State audio_focus_state_ = State::INACTIVE;
 
