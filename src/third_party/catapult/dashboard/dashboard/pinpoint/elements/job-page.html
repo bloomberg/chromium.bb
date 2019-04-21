@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<!--
+Copyright 2017 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<link rel="import" href="/components/app-route/app-route.html">
+<link rel="import" href="/components/paper-tooltip/paper-tooltip.html">
+
+<link rel="import" href="/elements/base-style.html">
+<link rel="import" href="/elements/job-page/change-details.html">
+<link rel="import" href="/elements/job-page/job-chart.html">
+<link rel="import" href="/elements/job-page/job-details.html">
+<link rel="import" href="/elements/job-page/job-menu-fab.html">
+<link rel="import" href="/elements/loading-wrapper.html">
+<link rel="import" href="/elements/results2-frame.html">
+
+<dom-module id="job-page">
+  <template>
+    <style include="base-style">
+      #failed {
+        background: var(--paper-red-50);
+        color: var(--paper-red-500);
+        cursor: pointer;
+      }
+
+      #failed-tooltip {
+        max-width: 50em;
+        white-space: pre-wrap;
+      }
+
+      #running {
+        background: var(--paper-indigo-50);
+        color: var(--paper-indigo-500);
+      }
+
+      h1 {
+        margin-bottom: 0.1em;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      #layout {
+        display: grid;
+        grid-auto-columns: 1fr;
+        grid-column-gap: 24px;
+        grid-row-gap: 24px;
+        grid-template-rows: max-content;
+        margin-top: 24px;
+      }
+
+      #details-column {
+        grid-column: 1 / 3;
+        grid-row: 1 / 3;
+      }
+
+      #results {
+        grid-column: 3 / 9;
+      }
+
+      #change-a {
+        grid-column: 3 / 6;
+      }
+
+      #change-a > div {
+        background-color: var(--paper-indigo-500);
+        height: 8px;
+      }
+
+      #change-b {
+        grid-column: 6 / 9;
+      }
+
+      #change-b > div {
+        background-color: var(--paper-pink-a200);
+        height: 8px;
+      }
+
+      #exception {
+        color: var(--paper-grey-500);
+        white-space: pre-wrap;
+      }
+    </style>
+
+    <app-route route="{{route}}" pattern="/:jobId" data="{{routeData}}"></app-route>
+
+    <loading-wrapper url="/api/job/[[routeData.jobId]]?o=STATE" response="{{job}}">
+      <h1>
+        <template is="dom-if" if="[[failed(job)]]">
+          <span id="failed" class="badge">Error</span>
+          <paper-tooltip for="failed" animation-delay="0">
+            <div id="failed-tooltip">[[job.exception]]</div>
+          </paper-tooltip>
+        </template>
+        <template is="dom-if" if="[[running(job)]]">
+          <span id="running" class="badge">Running</span>
+        </template>
+        [[job.name]]
+      </h1>
+      <p class="byline">
+        For [[job.user]]
+        <span class="middle-dot"></span>
+        [[duration(job)]]
+        <span class="middle-dot"></span>
+        [[start(job)]]
+      </p>
+      <div id="layout">
+        <div id="details-column">
+          <job-details job="[[job]]"></job-details>
+        </div>
+        <div id="results">
+          <template is="dom-if" if="[[failed(job)]]">
+            <h2>Job failed</h2>
+            <p id="exception">[[job.exception]]</p>
+          </template>
+          <template is="dom-if" if="[[shouldShowChart(job)]]">
+            <job-chart job="[[job]]" change-index="{{changeIndex}}"></job-chart>
+          </template>
+          <template is="dom-if" if="[[!failed(job)]]">
+            <template is="dom-if" if="[[!job.comparison_mode]]">
+              <results2-frame job-id="[[job.job_id]]"></results2-frame>
+            </template>
+          </template>
+        </div>
+        <div id="change-a">
+          <div></div>
+          <change-details job="[[job]]" change-state="[[previousChangeState(job.state, changeIndex)]]"></change-details>
+        </div>
+        <div id="change-b">
+          <div></div>
+          <change-details job="[[job]]" change-state="[[changeState(job.state, changeIndex)]]"></change-details>
+        </div>
+      </div>
+      <job-menu-fab job="[[job]]" auth-headers="[[authHeaders]]"></job-menu-fab>
+    </loading-wrapper>
+  </template>
+
+  <script>
+    'use strict';
+    Polymer({
+      is: 'job-page',
+
+      properties: {
+        job: {
+          type: Object,
+          observer: '_jobChanged',
+        },
+
+        changeIndex: {
+          type: Number
+        }
+      },
+
+      _jobChanged() {
+        this.setChangeIndex();
+      },
+
+      setChangeIndex() {
+        // TODO: Choose the largest difference, not just any difference.
+        for (let i = 0; i < this.job.state.length; ++i) {
+          if (this.job.state[i].comparisons.prev === 'different') {
+            this.set('changeIndex', i);
+            return;
+          }
+        }
+        // TODO: If no statistical difference, choose the largest delta.
+        this.set('changeIndex', this.job.state.length - 1);
+      },
+
+      failed(job) {
+        return job.status.toLowerCase() === 'failed';
+      },
+
+      running(job) {
+        return job.status.toLowerCase() === 'running';
+      },
+
+      start(job) {
+        return new Date(job.created + 'Z').toLocaleString();
+      },
+
+      duration(job) {
+        const created = new Date(job.created + 'Z');
+        const updated = new Date(job.updated + 'Z');
+        const durationMs = updated - created;
+
+        const seconds = durationMs / 1000;
+        if (seconds < 60) {
+          return seconds.toFixed(1) + ' seconds';
+        }
+
+        const minutes = durationMs / (1000 * 60);
+        if (minutes < 60) {
+          return minutes.toFixed(1) + ' minutes';
+        }
+
+        const hours = durationMs / (1000 * 60 * 60);
+        return hours.toFixed(1) + ' hours';
+      },
+
+      shouldShowChart(job) {
+        return job.comparison_mode &&
+          job.state.some(state => state.result_values.length);
+      },
+
+      previousChangeState(jobState, changeIndex) {
+        return jobState[changeIndex - 1];
+      },
+
+      changeState(jobState, changeIndex) {
+        return jobState[changeIndex];
+      },
+    });
+  </script>
+</dom-module>
