@@ -35,8 +35,8 @@
   </Type>
 
   <!--libc++'s short string optimization:
-      A basic_string is 3 size_t words long. In the "alternate string layout" that we use,
-      they are: pointer to data, size, capacity.
+      A basic_string is 3 size_t words long. In the "alternate string layout"
+      that we use, they are: pointer to data, size, capacity.
       (In the normal layout, it's capacity, size, data instead.)
       If a string is short enough that it fits in these three size_ts instead,
       the string data is stored inline in these 3 words, with the last byte of
@@ -298,6 +298,49 @@
       <Expand>
         <Item Condition="value() != 0" Name="[ptr]">value()</Item>
       </Expand>
+  </Type>
+
+<Type Name="std::__1::unordered_map&lt;*&gt;">
+    <AlternativeType Name="std::__1::unordered_multimap&lt;*&gt;" />
+    <AlternativeType Name="std::__1::unordered_multiset&lt;*&gt;" />
+    <AlternativeType Name="std::__1::unordered_set&lt;*&gt;" />
+    <Intrinsic Name="size" Expression="*(size_type*)&amp;__table_.__p2_" />
+    <Intrinsic Name="bucket_count"
+        Expression="*(size_type*)&amp;
+                    ((__table::__bucket_list_deleter*)
+                        ((void**)&amp;__table_.__bucket_list_ + 1))
+                        -&gt;__data_" />
+    <DisplayString>{{ size={size()} }}</DisplayString>
+    <Expand>
+      <Item Name="[bucket_count]">bucket_count()</Item>
+      <Item Name="[load_factor]">
+        bucket_count() != 0 ? (float)size() / bucket_count() : 0.f</Item>
+      <Item Name="[max_load_factor]">*(float*)&amp;__table_.__p3_</Item>
+      <!-- Use CustomListItems instead of LinkedListItems because we
+        need to cast to __table::__node_pointer and LinkedListItems
+        evaluates <Value> in the context of the node, not of the container,
+        so we'd have to say std::unordered_map<$T1,...>::__table::__node_pointer
+        and then we couldn't share this <Type> between unordered_(multi)map
+        and unordered_(multi)set. -->
+      <CustomListItems>
+        <Variable Name="node"
+            InitialValue="*(__table::__next_pointer*)&amp;__table_.__p1_" />
+        <Size>size()</Size>
+        <Loop>
+          <Item>(*(__table::__node_pointer*)&amp;node)-&gt;__value_</Item>
+          <Exec>node = node-&gt;__next_</Exec>
+        </Loop>
+      </CustomListItems>
+    </Expand>
+  </Type>
+  <!-- This is the node __value_ of an unordered_(multi)map. Expand it through
+    a separate formatter instead of in the <Item> expression above so that the
+    same <Type> works for unordered_(multi)set and unordered_(multi)map. -->
+  <Type Name="std::__1::__hash_value_type&lt;*&gt;">
+    <DisplayString>{__cc}</DisplayString>
+    <Expand>
+      <ExpandedItem>__cc</ExpandedItem>
+    </Expand>
   </Type>
 
   <Type Name="std::__1::vector&lt;*&gt;">
