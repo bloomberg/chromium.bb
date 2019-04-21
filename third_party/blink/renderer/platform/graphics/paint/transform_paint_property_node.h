@@ -336,7 +336,7 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
            CompositingReason::kComboActiveAnimation;
   }
   bool HasActiveTransformAnimation() const {
-    return DirectCompositingReasons() &
+    return state_.direct_compositing_reasons &
            CompositingReason::kActiveTransformAnimation;
   }
 

@@ -251,14 +251,32 @@ void PropertyTreeManager::SetupRootScrollNode() {
   root_layer_->SetScrollTreeIndex(scroll_node.id);
 }
 
-static bool TransformsAre2dAxisAligned(const TransformPaintPropertyNode& a,
-                                       const TransformPaintPropertyNode& b) {
+static bool TransformsToAncestorHaveActiveAnimation(
+    const TransformPaintPropertyNode& descendant,
+    const TransformPaintPropertyNode& ancestor) {
+  if (&descendant == &ancestor)
+    return false;
+  for (const auto* n = &descendant; n != &ancestor; n = n->Parent()) {
+    if (n->HasActiveTransformAnimation())
+      return true;
+  }
+  return false;
+}
+
+static bool TransformsMayBe2dAxisMisaligned(
+    const TransformPaintPropertyNode& a,
+    const TransformPaintPropertyNode& b) {
   if (&a == &b)
-    return true;
+    return false;
   const auto& translation_2d_or_matrix =
       GeometryMapper::SourceToDestinationProjection(a, b);
-  return translation_2d_or_matrix.IsIdentityOr2DTranslation() ||
-         translation_2d_or_matrix.Matrix().Preserves2dAxisAlignment();
+  if (!translation_2d_or_matrix.IsIdentityOr2DTranslation() &&
+      !translation_2d_or_matrix.Matrix().Preserves2dAxisAlignment())
+    return true;
+  // Assume any animation can cause 2d axis misalignment.
+  const auto& lca = LowestCommonAncestor(a, b);
+  return TransformsToAncestorHaveActiveAnimation(a, lca) ||
+         TransformsToAncestorHaveActiveAnimation(b, lca);
 }
 
 void PropertyTreeManager::SetCurrentEffectState(
@@ -280,9 +298,8 @@ void PropertyTreeManager::SetCurrentEffectState(
   } else if (previous_transform &&
              !current_.may_be_2d_axis_misaligned_to_render_surface) {
     current_.may_be_2d_axis_misaligned_to_render_surface =
-        !TransformsAre2dAxisAligned(current_.Transform(),
-                                    *previous_transform) ||
-        current_.Transform().Unalias().HasActiveTransformAnimation();
+        TransformsMayBe2dAxisMisaligned(*previous_transform,
+                                        current_.Transform());
   }
 }
 
@@ -686,8 +703,8 @@ PropertyTreeManager::NeedsSyntheticEffect(
   // Cc requires that a rectangluar clip is 2d-axis-aligned with the render
   // surface to correctly apply the clip.
   if (current_.may_be_2d_axis_misaligned_to_render_surface ||
-      !TransformsAre2dAxisAligned(clip.LocalTransformSpace(),
-                                  current_.Transform()))
+      TransformsMayBe2dAxisMisaligned(clip.LocalTransformSpace(),
+                                      current_.Transform()))
     return CcEffectType::kSyntheticFor2dAxisAlignment;
 
   return base::nullopt;
