@@ -59,7 +59,7 @@ class FileIconSource : public content::URLDataSource {
 
   // Called when favicon data is available from the history backend.
   void OnFileIconDataAvailable(const IconRequestDetails& details,
-                               gfx::Image* icon);
+                               gfx::Image icon);
 
   // Tracks tasks requesting file icons.
   base::CancelableTaskTracker cancelable_task_tracker_;

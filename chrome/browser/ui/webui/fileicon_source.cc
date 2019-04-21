@@ -133,13 +133,11 @@ bool FileIconSource::AllowCaching() const {
 }
 
 void FileIconSource::OnFileIconDataAvailable(const IconRequestDetails& details,
-                                             gfx::Image* icon) {
-  if (icon) {
+                                             gfx::Image icon) {
+  if (!icon.IsEmpty()) {
     scoped_refptr<base::RefCountedBytes> icon_data(new base::RefCountedBytes);
     gfx::PNGCodec::EncodeBGRASkBitmap(
-        icon->ToImageSkia()
-            ->GetRepresentation(details.scale_factor)
-            .GetBitmap(),
+        icon.ToImageSkia()->GetRepresentation(details.scale_factor).GetBitmap(),
         false, &icon_data->data());
 
     details.callback.Run(icon_data.get());

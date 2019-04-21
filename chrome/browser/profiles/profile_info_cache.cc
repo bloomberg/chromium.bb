@@ -532,7 +532,7 @@ void ProfileInfoCache::SetGAIAGivenNameOfProfileAtIndex(
 }
 
 void ProfileInfoCache::SetGAIAPictureOfProfileAtIndex(size_t index,
-                                                      const gfx::Image* image) {
+                                                      gfx::Image image) {
   base::FilePath path = GetPathOfProfileAtIndex(index);
   std::string key = CacheKeyFromProfilePath(path);
 
@@ -541,7 +541,7 @@ void ProfileInfoCache::SetGAIAPictureOfProfileAtIndex(size_t index,
       kGAIAPictureFileNameKey, &old_file_name);
   std::string new_file_name;
 
-  if (!image && old_file_name.empty()) {
+  if (image.IsEmpty() && old_file_name.empty()) {
     // On Windows, Taskbar and Desktop icons are refreshed every time
     // |OnProfileAvatarChanged| notification is fired.
     // Updating from an empty image to a null image is a no-op and it is
@@ -553,7 +553,7 @@ void ProfileInfoCache::SetGAIAPictureOfProfileAtIndex(size_t index,
 
   // Delete the old bitmap from cache.
   cached_avatar_images_.erase(key);
-  if (!image) {
+  if (image.IsEmpty()) {
     // Delete the old bitmap from disk.
     base::FilePath image_path = path.AppendASCII(old_file_name);
     file_task_runner_->PostTask(FROM_HERE,

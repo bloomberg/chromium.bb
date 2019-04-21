@@ -207,8 +207,8 @@ SkColor DownloadItemView::GetTextColorForThemeProvider(
                : gfx::kPlaceholderColor;
 }
 
-void DownloadItemView::OnExtractIconComplete(gfx::Image* icon_bitmap) {
-  if (icon_bitmap)
+void DownloadItemView::OnExtractIconComplete(gfx::Image icon_bitmap) {
+  if (!icon_bitmap.IsEmpty())
     shelf_->SchedulePaint();
 }
 

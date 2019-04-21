@@ -121,10 +121,10 @@ void StartSmartSelectionActionMenu::HandleTextSelectionActions(
         /*title=*/base::UTF8ToUTF16(actions_[i]->title));
 
     if (actions_[i]->icon) {
-      auto icon = GetIconImage(std::move(actions_[i]->icon));
-      if (icon) {
+      gfx::Image icon = GetIconImage(std::move(actions_[i]->icon));
+      if (!icon.IsEmpty()) {
         proxy_->UpdateMenuIcon(
-            IDC_CONTENT_CONTEXT_START_SMART_SELECTION_ACTION1 + i, *icon.get());
+            IDC_CONTENT_CONTEXT_START_SMART_SELECTION_ACTION1 + i, icon);
       }
     }
   }
@@ -143,19 +143,19 @@ void StartSmartSelectionActionMenu::HandleTextSelectionActions(
   proxy_->RemoveAdjacentSeparators();
 }
 
-std::unique_ptr<gfx::Image> StartSmartSelectionActionMenu::GetIconImage(
+gfx::Image StartSmartSelectionActionMenu::GetIconImage(
     mojom::ActivityIconPtr icon) {
   constexpr size_t kBytesPerPixel = 4;  // BGRA
   if (icon->width > kMaxIconSizeInPx || icon->height > kMaxIconSizeInPx ||
       icon->width == 0 || icon->height == 0 ||
       icon->icon.size() != (icon->width * icon->height * kBytesPerPixel)) {
-    return nullptr;
+    return gfx::Image();
   }
 
   SkBitmap bitmap;
   bitmap.allocPixels(SkImageInfo::MakeN32Premul(icon->width, icon->height));
   if (!bitmap.getPixels())
-    return nullptr;
+    return gfx::Image();
   DCHECK_GE(bitmap.computeByteSize(), icon->icon.size());
   memcpy(bitmap.getPixels(), &icon->icon.front(), icon->icon.size());
 
@@ -165,7 +165,7 @@ std::unique_ptr<gfx::Image> StartSmartSelectionActionMenu::GetIconImage(
       original, skia::ImageOperations::RESIZE_BEST,
       gfx::Size(kSmallIconSizeInDip, kSmallIconSizeInDip)));
 
-  return std::make_unique<gfx::Image>(icon_small);
+  return gfx::Image(icon_small);
 }
 
 }  // namespace arc

@@ -313,8 +313,9 @@ class DownloadFileIconExtractorImpl : public DownloadFileIconExtractor {
                              IconURLCallback callback) override;
 
  private:
-  void OnIconLoadComplete(
-      float scale, const IconURLCallback& callback, gfx::Image* icon);
+  void OnIconLoadComplete(float scale,
+                          const IconURLCallback& callback,
+                          gfx::Image icon);
 
   base::CancelableTaskTracker cancelable_task_tracker_;
 };
@@ -337,12 +338,15 @@ bool DownloadFileIconExtractorImpl::ExtractIconURLForPath(
 }
 
 void DownloadFileIconExtractorImpl::OnIconLoadComplete(
-    float scale, const IconURLCallback& callback, gfx::Image* icon) {
+    float scale,
+    const IconURLCallback& callback,
+    gfx::Image icon) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   callback.Run(
-      !icon ? std::string()
-            : webui::GetBitmapDataUrl(
-                  icon->ToImageSkia()->GetRepresentation(scale).GetBitmap()));
+      icon.IsEmpty()
+          ? std::string()
+          : webui::GetBitmapDataUrl(
+                icon.ToImageSkia()->GetRepresentation(scale).GetBitmap()));
 }
 
 IconLoader::IconSize IconLoaderSizeFromPixelSize(int pixel_size) {

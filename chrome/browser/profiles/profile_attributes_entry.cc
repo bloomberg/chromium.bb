@@ -257,7 +257,7 @@ void ProfileAttributesEntry::SetGAIAGivenName(const base::string16& name) {
   profile_info_cache_->SetGAIAGivenNameOfProfileAtIndex(profile_index(), name);
 }
 
-void ProfileAttributesEntry::SetGAIAPicture(const gfx::Image* image) {
+void ProfileAttributesEntry::SetGAIAPicture(gfx::Image image) {
   profile_info_cache_->SetGAIAPictureOfProfileAtIndex(profile_index(), image);
 }
 

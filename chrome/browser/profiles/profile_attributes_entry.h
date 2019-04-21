@@ -104,7 +104,7 @@ class ProfileAttributesEntry {
   void SetBackgroundStatus(bool running_background_apps);
   void SetGAIAName(const base::string16& name);
   void SetGAIAGivenName(const base::string16& name);
-  void SetGAIAPicture(const gfx::Image* image);
+  void SetGAIAPicture(gfx::Image image);
   void SetIsUsingGAIAPicture(bool value);
   void SetIsSigninRequired(bool value);
   void SetIsEphemeral(bool value);

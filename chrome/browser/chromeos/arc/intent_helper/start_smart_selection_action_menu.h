@@ -35,7 +35,7 @@ class StartSmartSelectionActionMenu : public RenderViewContextMenuObserver {
   void HandleTextSelectionActions(
       std::vector<mojom::TextSelectionActionPtr> actions);
 
-  std::unique_ptr<gfx::Image> GetIconImage(mojom::ActivityIconPtr icon);
+  gfx::Image GetIconImage(mojom::ActivityIconPtr icon);
 
   RenderViewContextMenuProxy* const proxy_;  // Owned by RenderViewContextMenu.
 

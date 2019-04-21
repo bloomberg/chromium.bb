@@ -265,9 +265,9 @@ const gfx::Image* ProfileAttributesStorage::LoadAvatarPictureFromPath(
     const base::FilePath& image_path) const {
   // If the picture is already loaded then use it.
   if (cached_avatar_images_.count(key)) {
-    if (cached_avatar_images_[key]->IsEmpty())
+    if (cached_avatar_images_[key].IsEmpty())
       return nullptr;
-    return cached_avatar_images_[key].get();
+    return &cached_avatar_images_[key];
   }
 
   // Don't download the image if downloading is disabled for tests.
@@ -361,13 +361,13 @@ void ProfileAttributesStorage::DownloadHighResAvatar(
 
 void ProfileAttributesStorage::SaveAvatarImageAtPath(
     const base::FilePath& profile_path,
-    const gfx::Image* image,
+    gfx::Image image,
     const std::string& key,
     const base::FilePath& image_path) {
-  cached_avatar_images_[key].reset(new gfx::Image(*image));
+  cached_avatar_images_[key] = image;
 
   std::unique_ptr<ImageData> data(new ImageData);
-  scoped_refptr<base::RefCountedMemory> png_data = image->As1xPNGBytes();
+  scoped_refptr<base::RefCountedMemory> png_data = image.As1xPNGBytes();
   data->assign(png_data->front(), png_data->front() + png_data->size());
 
   // Remove the file from the list of downloads in progress. Note that this list
@@ -401,10 +401,10 @@ void ProfileAttributesStorage::OnAvatarPictureLoaded(
   cached_avatar_images_loading_[key] = false;
 
   if (*image) {
-    cached_avatar_images_[key].reset(*image);
+    cached_avatar_images_[key] = **image;
   } else {
     // Place an empty image in the cache to avoid reloading it again.
-    cached_avatar_images_[key].reset(new gfx::Image());
+    cached_avatar_images_[key] = gfx::Image();
   }
   delete image;
 
