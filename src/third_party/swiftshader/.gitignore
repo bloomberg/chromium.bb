@@ -1,0 +1,46 @@
+# Ignored folders #
+/cache/
+/lib/
+/obj/
+/bin/
+/out/
+.vs
+.vscode/ipch
+CMakeFiles/
+
+# Per user vscode config files.
+.vscode/launch.json
+.vscode/settings.json
+
+# The /build/ directory is recommended for CMake build output and should be
+# ignored, except for Visual Studio project files that we check into the
+# repository and regenerate with build/cmake.sh
+!/build
+/build/*
+!/build/cmake.sh
+!/build/Visual Studio 15 2017 Win64/
+
+# Ignored files #
+*.obj
+*.lib
+*.log
+*.tlog
+*.exe
+*.ilk
+*.pdb
+*.sbr
+*.bsc
+*.dll
+*.res
+*.idb
+*.sdf
+*.suo
+*.o
+*.depend
+*.layout
+*.opensdf
+*.aps
+*.opendb
+*.db
+*~
+CMakeCache.txt
