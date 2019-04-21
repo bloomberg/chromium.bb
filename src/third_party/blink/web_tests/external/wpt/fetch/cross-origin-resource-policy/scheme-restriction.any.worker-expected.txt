@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL Cross-Origin-Resource-Policy: same-site blocks retrieving HTTPS from HTTP window is not defined
+Harness: the test ran to completion.
+

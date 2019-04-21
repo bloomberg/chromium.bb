@@ -1,0 +1,36 @@
+<script src=resources/common.js></script>
+<script src=../resources/testharness.js></script>
+<script src=../resources/testharnessreport.js></script>
+
+<script id=script1 importance=high src=../resources/dummy.js></script>
+<script id=script2 importance=low src=../resources/dummy.js?1></script>
+<script id=script3 importance=auto src=../resources/dummy.js?2></script>
+<script id=script4 importance=xyz src=../resources/dummy.js?3></script>
+<script id=script5 src=../resources/dummy.js?4></script>
+
+<script>
+  async_test(t => {
+    addEventListener('DOMContentLoaded', t.step_func(() => {
+      const msg = 'all scripts were fetched by the preload scanner';
+      assert_true(internals.isPreloaded(script1.src), msg);
+      assert_true(internals.isPreloaded(script2.src), msg);
+      assert_true(internals.isPreloaded(script3.src), msg);
+      assert_true(internals.isPreloaded(script4.src), msg);
+      assert_true(internals.isPreloaded(script5.src), msg);
+
+      assert_equals(getPriority(script1.src), kHigh,
+                    'high importance on <script> has no effect');
+      assert_equals(getPriority(script2.src), kHigh,
+                    'low importance on <script> has no effect');
+      assert_equals(getPriority(script3.src), kHigh,
+                    'auto importance on <script> has no effect');
+      assert_equals(getPriority(script4.src), kHigh,
+                    'invalid importance on <script> has no effect');
+      assert_equals(getPriority(script5.src), kHigh,
+                    'missing importance on <script> has no effect');
+
+      t.done();
+    }));
+  }, 'importance attribute on non-{async, module} <script>s fetched by the ' +
+     'preload scanner has no effect on resource load priority');
+</script>

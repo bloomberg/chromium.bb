@@ -1,0 +1,147 @@
+/* Copyright 2019 The Chromium Authors. All rights reserved.
+   Use of this source code is governed by a BSD-style license that can be
+   found in the LICENSE file. */
+
+video::-internal-media-controls-touchless {
+  width: inherit;
+  height: inherit;
+
+  position: relative;
+  direction: ltr;
+  display: flex;
+  flex-direction: column;
+  opacity: 1;
+
+  margin-top: env(safe-area-inset-top);
+  margin-left: env(safe-area-inset-left);
+  margin-right: env(safe-area-inset-right);
+  margin-bottom: env(safe-area-inset-bottom);
+}
+
+video::-internal-media-controls-touchless.transparent {
+  opacity: 0;
+  transition: opacity .5s;
+}
+
+video::-internal-media-controls-touchless-overlay {
+  width: 104px;
+  height: 104px;
+  background-image: -webkit-image-set(url(ic_mid_background.svg) 1x);
+  background-size: 104px;
+  background-position: center;
+  background-repeat: no-repeat;
+  position: absolute;
+  z-index: 1;
+  margin: auto;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+}
+
+video::-internal-media-controls-touchless-volume-up-button {
+  width: 30px;
+  height: 30px;
+  margin-left: 37px /* (overlay width -width) / 2 */;
+  background-image: -webkit-image-set(url(ic_volume_up.svg) 1x);
+  background-size: 20px;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+
+video::-internal-media-controls-touchless-seek-backward-button {
+  width: 30px;
+  height: 30px;
+  margin-top: 7px /* (play button height - height) / 2 */;
+  float: left;
+  background-image: -webkit-image-set(url(ic_fast_rewind.svg) 1x);
+  background-size: 20px;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+
+video::-internal-media-controls-touchless-play-button {
+  width: 44px;
+  height: 44px;
+  background-position: center;
+  background-size: 24px;
+  background-repeat: no-repeat;
+  float: left;
+}
+
+video::-internal-media-controls-touchless-play-button.playing {
+  background-image: -webkit-image-set(url(ic_pause.svg) 1x);
+}
+
+video::-internal-media-controls-touchless-play-button.paused {
+  background-image: -webkit-image-set(url(ic_play_arrow.svg) 1x);
+}
+
+video::-internal-media-controls-touchless-seek-forward-button {
+  width: 30px;
+  height: 30px;
+  margin-top: 7px /* (play button height - height) / 2 */;
+  float: left;
+  background-image: -webkit-image-set(url(ic_fast_forward.svg) 1x);
+  background-size: 20px;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+video::-internal-media-controls-touchless-volume-down-button {
+  width: 30px;
+  height: 30px;
+  margin-left: 37px /* (overlay width -width) / 2 */;
+  position: absolute;
+  bottom: 0;
+  background-image: -webkit-image-set(url(ic_volume_down.svg) 1x);
+  background-size: 20px;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+video::-internal-media-controls-touchless-bottom-container {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  height: 100%;
+  width: 100%;
+  z-index: 0;
+  background-size: auto 48px;
+
+  background:
+    -webkit-image-set(url('gradient_bg.png') 1x)
+    repeat-x bottom left;
+}
+
+video::-internal-media-controls-touchless-time-display {
+  color: #ffffff;
+  font-family: Roboto-Regular, Roboto, sans-serif;
+  font-size: 14px;
+  width: 100%;
+  bottom: auto;
+  padding-left: 8px;
+  padding-bottom: 8px;
+}
+
+video::-internal-media-controls-touchless-timeline {
+  width: 100%;
+  bottom: auto;
+  height: 4px;
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+video::-internal-media-controls-touchless-timeline-loaded {
+  height: 100%;
+  border-radius: 0 2px 2px 0;
+  background-color: rgba(255, 255, 255, 0.54);
+}
+
+video::-internal-media-controls-touchless-timeline-progress {
+  height: 100%;
+  border-radius: 0 2px 2px 0;
+  background-color: rgba(255, 255, 255, 1.0);
+}

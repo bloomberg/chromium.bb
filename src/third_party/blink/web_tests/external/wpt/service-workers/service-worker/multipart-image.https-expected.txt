@@ -1,0 +1,9 @@
+This is a testharness.js-based test.
+FAIL initialize global state assert_unreached: unregister and register should not fail: Failed to register a ServiceWorker: ServiceWorker script evaluation failed Reached unreachable code
+FAIL same-origin multipart image via SW should be readable Cannot read property 'contentWindow' of undefined
+FAIL cross-origin multipart image via SW with approved CORS should be readable Cannot read property 'contentWindow' of undefined
+FAIL cross-origin multipart image with no-cors via SW should not be readable Cannot read property 'contentWindow' of undefined
+FAIL cross-origin multipart image via SW with rejected CORS should fail to load Cannot read property 'contentWindow' of undefined
+FAIL restore global state Cannot read property 'unregister' of undefined
+Harness: the test ran to completion.
+

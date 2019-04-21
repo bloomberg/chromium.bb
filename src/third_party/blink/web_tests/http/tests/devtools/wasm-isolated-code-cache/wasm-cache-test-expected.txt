@@ -1,0 +1,88 @@
+Tests V8 code cache for WebAssembly resources.
+
+---First navigation - produce and consume code cache ------
+
+v8.wasm.streamFromResponseCallback Properties:
+{
+    data : {
+    }
+    endTime : <number>
+    startTime : <number>
+    type : "v8.wasm.streamFromResponseCallback"
+}
+v8.wasm.streamFromResponseCallback Properties:
+{
+    data : {
+    }
+    endTime : <number>
+    startTime : <number>
+    type : "v8.wasm.streamFromResponseCallback"
+}
+v8.wasm.streamFromResponseCallback Properties:
+{
+    data : {
+    }
+    endTime : <number>
+    startTime : <number>
+    type : "v8.wasm.streamFromResponseCallback"
+}
+v8.wasm.streamFromResponseCallback Properties:
+{
+    data : {
+    }
+    endTime : <number>
+    startTime : <number>
+    type : "v8.wasm.streamFromResponseCallback"
+}
+v8.wasm.streamFromResponseCallback Properties:
+{
+    data : {
+    }
+    endTime : <number>
+    startTime : <number>
+    type : "v8.wasm.streamFromResponseCallback"
+}
+
+--- Second navigation - from a different origin ------
+
+v8.wasm.streamFromResponseCallback Properties:
+{
+    data : {
+    }
+    endTime : <number>
+    startTime : <number>
+    type : "v8.wasm.streamFromResponseCallback"
+}
+v8.wasm.streamFromResponseCallback Properties:
+{
+    data : {
+    }
+    endTime : <number>
+    startTime : <number>
+    type : "v8.wasm.streamFromResponseCallback"
+}
+v8.wasm.streamFromResponseCallback Properties:
+{
+    data : {
+    }
+    endTime : <number>
+    startTime : <number>
+    type : "v8.wasm.streamFromResponseCallback"
+}
+v8.wasm.streamFromResponseCallback Properties:
+{
+    data : {
+    }
+    endTime : <number>
+    startTime : <number>
+    type : "v8.wasm.streamFromResponseCallback"
+}
+v8.wasm.streamFromResponseCallback Properties:
+{
+    data : {
+    }
+    endTime : <number>
+    startTime : <number>
+    type : "v8.wasm.streamFromResponseCallback"
+}
+

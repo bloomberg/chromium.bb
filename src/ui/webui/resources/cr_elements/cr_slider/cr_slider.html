@@ -1,0 +1,242 @@
+<link rel="import" href="../../html/polymer.html">
+
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-behaviors/paper-ripple-behavior.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../html/cr.html">
+<link rel="import" href="../../html/event_tracker.html">
+<link rel="import" href="../hidden_style_css.html">
+<link rel="import" href="../shared_vars_css.html">
+
+<dom-module id="cr-slider">
+  <template>
+    <style include="cr-hidden-style">
+      :host {
+        --cr-slider-active-color: var(--google-blue-600);
+        --cr-slider-bar-height: 2px;
+        --cr-slider-container-color: rgba(var(--google-blue-600-rgb), .24);
+        --cr-slider-container-disabled-color:
+            rgba(var(--google-grey-600-rgb), .24);
+        --cr-slider-disabled-color: var(--google-grey-600);
+        --cr-slider-knob-color: var(--google-blue-600);
+        --cr-slider-knob-disabled-color: white;
+        --cr-slider-marker-active-color: rgba(255, 255, 255, 0.54);
+        --cr-slider-marker-color: rgba(26, 115, 232, 0.54);
+        --cr-slider-marker-disabled-color: rgba(128, 134, 139, 0.54);
+        --cr-slider-position-transition: 80ms ease;
+        /* --cr-slider-ripple-opacity is left at default in light mode. */
+
+        -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+        cursor: default;
+        outline: none;
+        user-select: none;
+      }
+
+      :host-context([dark]) {
+        --cr-slider-active-color: var(--google-blue-refresh-300);
+        --cr-slider-container-color:
+            rgba(var(--google-blue-refresh-500-rgb, .48));
+        --cr-slider-container-disabled-color:
+            rgba(var(--google-grey-800-rgb), .4);
+        --cr-slider-disabled-color: var(--google-grey-800);
+        --cr-slider-knob-color: var(--google-blue-refresh-300);
+        /* --google-grey-900 + 4% white blended together. */
+        --cr-slider-knob-disabled-color: #28292c;
+        --cr-slider-marker-active-color: var(--google-blue-refresh-300);
+        --cr-slider-marker-color: var(--google-blue-refresh-300);
+        --cr-slider-marker-disabled-color: rgba(255, 255, 255, .54);
+        --cr-slider-ripple-opacity: .4;
+      }
+
+      :host([dragging]) {
+        touch-action: none;
+      }
+
+      #container {
+        height: 32px;
+        position: relative;
+      }
+
+      #barContainer,
+      #bar {
+        /* Using border instead of background-color to address pixel rounding
+           at low zoom levels (e.g. 33%). The browser will round border widths
+           to a minimum of 1px.*/
+        border-top-style: solid;
+        border-top-width: 2px;
+      }
+
+      #barContainer {
+        border-top-color: var(--cr-slider-container-color);
+        height: var(--cr-slider-bar-height);
+        margin: 0 16px;
+        position: absolute;
+        top: 15px;
+        width: calc(100% - 32px);
+      }
+
+      #barContainer div {
+        top: calc(-1 * var(--cr-slider-bar-height));
+      }
+
+      #bar {
+        border-top-color: var(--cr-slider-active-color);
+        position: absolute;
+        width: 0;
+      }
+
+      :host([transiting_]) #bar {
+        transition: width var(--cr-slider-position-transition);
+      }
+
+      #knobContainer {
+        margin-inline-start: 12px;
+        position: absolute;
+        top: 11px;
+        width: calc(100% - 32px);
+      }
+
+      #knob {
+        background-color: var(--cr-slider-knob-color);
+        border: 0;
+        border-radius: 50%;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.4);
+        height: 10px;
+        margin-inline-start: 0;
+        outline: none;
+        position: absolute;
+        width: 10px;
+      }
+
+      :host([transiting_]) #knob {
+        transition: margin-inline-start var(--cr-slider-position-transition);
+      }
+
+      paper-ripple {
+        --paper-ripple-opacity: var(--cr-slider-ripple-opacity);
+        color: var(--cr-slider-knob-color);
+        height: 32px;
+        left: -11px;
+        pointer-events: none;
+        top: -11px;
+        transition: color linear 80ms;
+        width: 32px;
+      }
+
+      :host([is-rtl_]) paper-ripple {
+        left: auto;
+        right: -11px;
+      }
+
+      #markers {
+        left: 0;
+        pointer-events: none;
+        position: absolute;
+        right: 0;
+        @apply --layout-horizontal;
+      }
+
+      .active-marker,
+      .inactive-marker {
+        @apply --layout-flex;
+      }
+      #markers::before,
+      #markers::after,
+      .active-marker::after,
+      .inactive-marker::after {
+        border-radius: 50%;
+        content: '';
+        display: block;
+        height: 2px;
+        margin-left: -1px;
+        width: 2px;
+      }
+
+      #markers::before,
+      .active-marker::after {
+        background-color: var(--cr-slider-marker-active-color);
+      }
+
+      #markers::after,
+      .inactive-marker::after {
+        background-color: var(--cr-slider-marker-color);
+      }
+
+      #labelContainer {
+        cursor: default;
+        margin-inline-start: 1px;
+        opacity: 0;
+        transition: opacity 80ms ease-in-out;
+        user-select: none;
+        width: calc(100% - 32px);
+      }
+
+      #container:hover #labelContainer,
+      .hover #labelContainer,
+      :host([hold-down_]) #labelContainer {
+        opacity: 1;
+      }
+
+      #label {
+        background: var(--cr-slider-knob-color);
+        border-radius: 14px;
+        bottom: 28px;
+        color: white;  /* Same for dark and light mode. */
+        font-size: 12px;
+        line-height: 1.5em;
+        padding: 0 8px;
+        position: absolute;
+        white-space: nowrap;
+      }
+
+      :host([transiting_]) #label {
+        transition: margin-inline-start var(--cr-slider-position-transition);
+      }
+
+      :host([disabled_]) {
+        pointer-events: none;
+      }
+
+      :host([disabled_]) #barContainer {
+        border-top-color: var(--cr-slider-container-disabled-color);
+      }
+
+      :host([disabled_]) #bar {
+        border-top-color: var(--cr-slider-disabled-color);
+      }
+
+      :host([disabled_]) .inactive-marker::after,
+      :host([disabled_]) #markers::after {
+        background-color: var(--cr-slider-marker-disabled-color);
+      }
+
+      :host([disabled_]) #knobContainer {
+        margin-inline-start: 10px;
+        top: 9px;
+      }
+      :host([disabled_]) #knob {
+        background-color: var(--cr-slider-disabled-color);
+        border: 2px solid var(--cr-slider-knob-disabled-color);
+        box-shadow: unset;
+      }
+    </style>
+    <div id="container">
+      <div id="barContainer">
+        <div id="bar"></div>
+        <div id="markers" hidden$="[[!markerCount]]">
+          <template is="dom-repeat" items="[[getMarkers_(markerCount)]]">
+            <div class$="[[getMarkerClass_(index, value, min, max,
+                                           markerCount)]]"></div>
+          </template>
+        </div>
+      </div>
+      <div id="knobContainer">
+        <div id="knob" on-transitionend="onKnobTransitionEnd_"
+            on-keydown="onKnobKeydown_"></div>
+      </div>
+      <div id="labelContainer" aria-label="[[label_]]">
+        <div id="label">[[label_]]</div>
+      </div>
+    </div>
+  </template>
+  <script src="cr_slider.js"></script>
+</dom-module>

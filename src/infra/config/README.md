@@ -1,0 +1,11 @@
+**IMPORTANT:** If you see this in a branch which is not `master`,
+**this directory has no effect and should be ignored.**
+
+This directory contains chromium project-wide configurations
+for Chrome Operations services.
+For example, [cr-buildbucket.cfg](cr-buildbucket.cfg) defines builders.
+
+**Remember** Change these configs on `master` branch only!
+
+Currently active version can be checked at
+https://luci-config.appspot.com/#/projects/chromium .

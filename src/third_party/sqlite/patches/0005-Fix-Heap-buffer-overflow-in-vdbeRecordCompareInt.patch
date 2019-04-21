@@ -1,0 +1,28 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Darwin Huang <huangdarwin@chromium.org>
+Date: Tue, 5 Mar 2019 13:49:51 -0800
+Subject: [PATCH 05/15] Fix Heap-buffer-overflow in vdbeRecordCompareInt
+
+This backports https://www.sqlite.org/src/info/c1ac00706bae45fe
+
+Bug: 932353
+---
+ third_party/sqlite/patched/src/btree.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/third_party/sqlite/patched/src/btree.c b/third_party/sqlite/patched/src/btree.c
+index 773be1646914..caa45e507da6 100644
+--- a/third_party/sqlite/patched/src/btree.c
++++ b/third_party/sqlite/patched/src/btree.c
+@@ -5510,7 +5510,7 @@ int sqlite3BtreeMovetoUnpacked(
+             sqlite3_free(pCellKey);
+             goto moveto_finish;
+           }
+-          c = xRecordCompare(nCell, pCellKey, pIdxKey);
++          c = sqlite3VdbeRecordCompare(nCell, pCellKey, pIdxKey);
+           sqlite3_free(pCellKey);
+         }
+         assert(
+-- 
+2.21.0.392.gf8f6787159e-goog
+

@@ -1,0 +1,6 @@
+include_rules = [
+  "+components/viz",
+  "+gpu/config",
+  "+gpu/ipc/service",
+  "+media/gpu"
+]

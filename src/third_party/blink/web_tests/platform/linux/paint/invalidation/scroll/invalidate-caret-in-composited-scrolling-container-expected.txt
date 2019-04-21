@@ -1,0 +1,45 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "drawsContent": false,
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "Scrolling Layer",
+      "bounds": [800, 600],
+      "drawsContent": false
+    },
+    {
+      "name": "Scrolling Contents Layer",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "LayoutTextControl INPUT id='root'",
+      "position": [7, 7],
+      "bounds": [63, 24],
+      "backgroundColor": "#FFFFFF",
+      "paintInvalidations": [
+        {
+          "object": "LayoutTextControl INPUT id='root'",
+          "rect": [0, 0, 63, 24],
+          "reason": "full layer"
+        },
+        {
+          "object": "LayoutTextControl INPUT id='root'",
+          "rect": [0, 0, 61, 22],
+          "reason": "full layer"
+        },
+        {
+          "object": "Caret",
+          "rect": [58, 4, 1, 16],
+          "reason": "caret"
+        }
+      ]
+    }
+  ]
+}
+

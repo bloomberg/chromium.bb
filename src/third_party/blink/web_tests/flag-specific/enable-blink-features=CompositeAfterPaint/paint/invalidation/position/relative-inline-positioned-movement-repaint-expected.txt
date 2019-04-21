@@ -1,0 +1,24 @@
+{
+  "layers": [
+    {
+      "name": "Scrolling background of LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "LayoutInline (relative positioned) DIV id='block'",
+      "position": [68, 7],
+      "bounds": [365, 21],
+      "backfaceVisibility": "hidden",
+      "paintInvalidations": [
+        {
+          "object": "LayoutInline (relative positioned) DIV id='block'",
+          "rect": [0, 0, 365, 21],
+          "reason": "paint property change"
+        }
+      ]
+    }
+  ]
+}
+

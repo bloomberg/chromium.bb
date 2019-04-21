@@ -1,0 +1,193 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/ui/ash/assistant/device_actions.h"
+
+#include <utility>
+
+#include "ash/public/cpp/ash_pref_names.h"
+#include "base/bind.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
+#include "chromeos/dbus/power/power_manager_client.h"
+#include "chromeos/dbus/power_manager/backlight.pb.h"
+#include "chromeos/network/network_state_handler.h"
+#include "components/arc/arc_service_manager.h"
+#include "components/arc/common/intent_helper.mojom.h"
+#include "components/arc/session/arc_bridge_service.h"
+#include "components/prefs/pref_service.h"
+#include "components/user_manager/user_manager.h"
+#include "services/service_manager/public/cpp/connector.h"
+#include "ui/display/types/display_constants.h"
+
+using chromeos::NetworkHandler;
+using chromeos::NetworkStateHandler;
+using chromeos::NetworkTypePattern;
+using chromeos::assistant::mojom::AndroidAppInfoPtr;
+using chromeos::assistant::mojom::AppStatus;
+
+namespace {
+
+AppStatus GetAndroidAppStatus(const std::string& package_name) {
+  auto* prefs = ArcAppListPrefs::Get(ProfileManager::GetActiveUserProfile());
+  if (!prefs) {
+    LOG(ERROR) << "ArcAppListPrefs is not available.";
+    return AppStatus::UNKNOWN;
+  }
+  std::string app_id = prefs->GetAppIdByPackageName(package_name);
+
+  return app_id.empty() ? AppStatus::UNAVAILABLE : AppStatus::AVAILABLE;
+}
+
+base::Optional<std::string> GetActivity(const std::string& package_name) {
+  auto* prefs = ArcAppListPrefs::Get(ProfileManager::GetActiveUserProfile());
+  if (!prefs) {
+    LOG(ERROR) << "ArcAppListPrefs is not available.";
+    return base::nullopt;
+  }
+  std::string app_id = prefs->GetAppIdByPackageName(package_name);
+
+  if (!app_id.empty()) {
+    std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(app_id);
+    return base::Optional<std::string>(app_info->activity);
+  }
+
+  return base::nullopt;
+}
+
+}  // namespace
+
+DeviceActions::DeviceActions() {}
+
+DeviceActions::~DeviceActions() {
+  bindings_.CloseAllBindings();
+}
+
+chromeos::assistant::mojom::DeviceActionsPtr DeviceActions::AddBinding() {
+  chromeos::assistant::mojom::DeviceActionsPtr ptr;
+  bindings_.AddBinding(this, mojo::MakeRequest(&ptr));
+  return ptr;
+}
+
+void DeviceActions::SetWifiEnabled(bool enabled) {
+  NetworkHandler::Get()->network_state_handler()->SetTechnologyEnabled(
+      NetworkTypePattern::WiFi(), enabled,
+      chromeos::network_handler::ErrorCallback());
+}
+
+void DeviceActions::SetBluetoothEnabled(bool enabled) {
+  const user_manager::User* const user =
+      user_manager::UserManager::Get()->GetActiveUser();
+  Profile* profile = chromeos::ProfileHelper::Get()->GetProfileByUser(user);
+  DCHECK(profile);
+  // Simply toggle the user pref, which is being observed by ash's bluetooth
+  // power controller.
+  profile->GetPrefs()->SetBoolean(ash::prefs::kUserBluetoothAdapterEnabled,
+                                  enabled);
+}
+
+void HandleScreenBrightnessCallback(
+    DeviceActions::GetScreenBrightnessLevelCallback callback,
+    base::Optional<double> level) {
+  if (level.has_value()) {
+    std::move(callback).Run(true, level.value() / 100.0);
+  } else {
+    std::move(callback).Run(false, 0.0);
+  }
+}
+
+void DeviceActions::GetScreenBrightnessLevel(
+    DeviceActions::GetScreenBrightnessLevelCallback callback) {
+  chromeos::PowerManagerClient::Get()->GetScreenBrightnessPercent(
+      base::BindOnce(&HandleScreenBrightnessCallback, std::move(callback)));
+}
+
+void DeviceActions::SetScreenBrightnessLevel(double level, bool gradual) {
+  power_manager::SetBacklightBrightnessRequest request;
+  request.set_percent(level * 100);
+  request.set_transition(
+      gradual
+          ? power_manager::SetBacklightBrightnessRequest_Transition_GRADUAL
+          : power_manager::SetBacklightBrightnessRequest_Transition_INSTANT);
+  request.set_cause(
+      power_manager::SetBacklightBrightnessRequest_Cause_USER_REQUEST);
+  chromeos::PowerManagerClient::Get()->SetScreenBrightness(request);
+}
+
+void DeviceActions::SetNightLightEnabled(bool enabled) {
+  const user_manager::User* const user =
+      user_manager::UserManager::Get()->GetActiveUser();
+  Profile* profile = chromeos::ProfileHelper::Get()->GetProfileByUser(user);
+  DCHECK(profile);
+  // Simply toggle the user pref, which is being observed by ash's night
+  // light controller.
+  profile->GetPrefs()->SetBoolean(ash::prefs::kNightLightEnabled, enabled);
+}
+
+void DeviceActions::OpenAndroidApp(AndroidAppInfoPtr app_info,
+                                   OpenAndroidAppCallback callback) {
+  app_info->status = GetAndroidAppStatus(app_info->package_name);
+
+  if (app_info->status != AppStatus::AVAILABLE) {
+    std::move(callback).Run(false);
+    return;
+  }
+
+  auto* helper = ARC_GET_INSTANCE_FOR_METHOD(
+      arc::ArcServiceManager::Get()->arc_bridge_service()->intent_helper(),
+      HandleIntent);
+  if (!helper) {
+    LOG(ERROR) << "Android container is not running.";
+    std::move(callback).Run(false);
+    return;
+  }
+  auto& package_name = app_info->package_name;
+
+  arc::mojom::ActivityNamePtr activity = arc::mojom::ActivityName::New();
+  activity->package_name = package_name;
+  auto intent = arc::mojom::IntentInfo::New();
+  if (!app_info->action.empty())
+    intent->action = app_info->action;
+
+  if (!app_info->intent.empty()) {
+    intent->data = app_info->intent;
+  } else {
+    // Intent is not specified to resolve the activity, set default activity
+    // name.
+    auto activity_name = GetActivity(package_name);
+    if (!activity_name.has_value()) {
+      LOG(ERROR) << "No activity resolved from package name.";
+      std::move(callback).Run(false);
+      return;
+    }
+
+    activity->activity_name = activity_name.value();
+  }
+  helper->HandleIntent(std::move(intent), std::move(activity));
+
+  std::move(callback).Run(true);
+}
+
+void DeviceActions::VerifyAndroidApp(
+    std::vector<chromeos::assistant::mojom::AndroidAppInfoPtr> apps_info,
+    VerifyAndroidAppCallback callback) {
+  for (const auto& app_info : apps_info) {
+    app_info->status = GetAndroidAppStatus(app_info->package_name);
+  }
+  std::move(callback).Run(std::move(apps_info));
+}
+
+void DeviceActions::LaunchAndroidIntent(const std::string& intent) {
+  auto* app = ARC_GET_INSTANCE_FOR_METHOD(
+      arc::ArcServiceManager::Get()->arc_bridge_service()->app(), LaunchIntent);
+  if (!app) {
+    LOG(ERROR) << "Android container is not running.";
+    return;
+  }
+
+  // TODO(updowndota): Launch the intent in current active display.
+  app->LaunchIntent(intent, display::kDefaultDisplayId);
+}

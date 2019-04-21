@@ -1,0 +1,11 @@
+include_rules = [
+  "+components/blacklist/opt_out_blacklist",
+  "+components/leveldb_proto",
+  "+components/optimization_guide",
+  "+components/previews/core",
+  "+components/url_matcher",
+  "+components/variations",
+  "+content/public/common",
+  "+net",
+  "+services/network",
+]

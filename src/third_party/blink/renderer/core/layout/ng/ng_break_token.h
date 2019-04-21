@@ -1,0 +1,110 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef NGBreakToken_h
+#define NGBreakToken_h
+
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_layout_input_node.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
+
+namespace blink {
+
+// A break token is a continuation token for layout. A single layout input node
+// can have multiple fragments asssociated with it.
+//
+// Each fragment has a break token which can be used to determine if a layout
+// input node has finished producing fragments (aka. is "exhausted" of
+// fragments), and optionally used to produce the next fragment in the chain.
+//
+// See CSS Fragmentation (https://drafts.csswg.org/css-break/) for a detailed
+// description of different types of breaks which can occur in CSS.
+//
+// Each layout algorithm which can fragment, e.g. block-flow can optionally
+// accept a break token. For example:
+//
+// NGLayoutInputNode* node = ...;
+// NGPhysicalFragment* fragment = node->Layout(space);
+// DCHECK(!fragment->BreakToken()->IsFinished());
+// NGPhysicalFragment* fragment2 = node->Layout(space, fragment->BreakToken());
+//
+// The break token should encapsulate enough information to "resume" the layout.
+class CORE_EXPORT NGBreakToken : public RefCounted<NGBreakToken> {
+  USING_FAST_MALLOC(NGBreakToken);
+
+ public:
+  virtual ~NGBreakToken() = default;
+
+  enum NGBreakTokenType {
+    kBlockBreakToken = NGLayoutInputNode::kBlock,
+    kInlineBreakToken = NGLayoutInputNode::kInline
+  };
+  NGBreakTokenType Type() const { return static_cast<NGBreakTokenType>(type_); }
+
+  bool IsBlockType() const { return Type() == kBlockBreakToken; }
+  bool IsInlineType() const { return Type() == kInlineBreakToken; }
+
+  enum NGBreakTokenStatus { kUnfinished, kFinished };
+
+  // Whether the layout node cannot produce any more fragments.
+  bool IsFinished() const { return status_ == kFinished; }
+
+  // Returns the node associated with this break token. A break token cannot be
+  // used with any other node.
+  NGLayoutInputNode InputNode() const {
+    return NGLayoutInputNode::Create(
+        box_, static_cast<NGLayoutInputNode::NGLayoutInputNodeType>(type_));
+  }
+
+#ifndef NDEBUG
+  virtual String ToString() const;
+  void ShowBreakTokenTree() const;
+#endif  // NDEBUG
+
+ protected:
+  NGBreakToken(NGBreakTokenType type,
+               NGBreakTokenStatus status,
+               NGLayoutInputNode node)
+      : box_(node.GetLayoutBox()),
+        type_(type),
+        status_(status),
+        flags_(0),
+        ignore_floats_(false),
+        is_break_before_(false),
+        has_last_resort_break_(false) {
+    DCHECK_EQ(type, static_cast<NGBreakTokenType>(node.Type()));
+  }
+
+ private:
+  // Because |NGLayoutInputNode| has a pointer and 1 bit flag, and it's fast to
+  // re-construct, keep |LayoutBox| to save the memory consumed by alignment.
+  LayoutBox* box_;
+
+  unsigned type_ : 1;
+  unsigned status_ : 1;
+
+ protected:
+  // The following bitfields are only to be used by NGInlineBreakToken (it's
+  // defined here to save memory, since that class has no bitfields).
+
+  unsigned flags_ : 2;  // NGInlineBreakTokenFlags
+  unsigned ignore_floats_ : 1;
+
+  // The following bitfields are only to be used by NGBlockBreakToken (it's
+  // defined here to save memory, since that class has no bitfields).
+
+  unsigned is_break_before_ : 1;
+
+  // We're attempting to break at an undesirable place. Sometimes that's
+  // unavoidable, but we should only break here if we cannot find a better break
+  // point further up in the ancestry.
+  unsigned has_last_resort_break_ : 1;
+};
+
+typedef Vector<scoped_refptr<NGBreakToken>> NGBreakTokenVector;
+
+}  // namespace blink
+
+#endif  // NGBreakToken_h

@@ -1,0 +1,37 @@
+This is a testharness.js-based test.
+FAIL TransformStream errors thrown in transform put the writable and readable in an errored state Failed to construct 'TransformStream': TransformStream disabled because StreamsNative is enabled
+FAIL TransformStream errors thrown in flush put the writable and readable in an errored state Failed to construct 'TransformStream': TransformStream disabled because StreamsNative is enabled
+FAIL errored TransformStream should not enqueue new chunks Failed to construct 'TransformStream': TransformStream disabled because StreamsNative is enabled
+FAIL TransformStream transformer.start() rejected promise should error the stream Failed to construct 'TransformStream': TransformStream disabled because StreamsNative is enabled
+FAIL when controller.error is followed by a rejection, the error reason should come from controller.error Failed to construct 'TransformStream': TransformStream disabled because StreamsNative is enabled
+FAIL TransformStream constructor should throw when start does assert_throws: constructor should throw function "() => new TransformStream({
+    start() { throw new URIError('start thrown error'); },
+    transform() {}
+  })" threw object "TypeError: Failed to construct 'TransformStream': TransformStream disabled because StreamsNative is enabled" ("TypeError") expected object "URIError" ("URIError")
+FAIL when strategy.size throws inside start(), the constructor should throw the same error assert_throws: constructor should throw the same error strategy.size throws function "() => new TransformStream({
+    start(c) {
+      c.enqueue('a');
+    },
+    transform() {}
+  }, undefined, strategy)" threw object "TypeError: Failed to construct 'TransformStream': TransformStream disabled because StreamsNative is enabled" ("TypeError") expected object "URIError" ("URIError")
+FAIL when strategy.size calls controller.error() then throws, the constructor should throw the first error assert_throws: the first error should be thrown function "() => new TransformStream({
+    start(c) {
+      controller = c;
+      c.enqueue('a');
+    },
+    transform() {}
+  }, undefined, strategy)" threw object "TypeError: Failed to construct 'TransformStream': TransformStream disabled because StreamsNative is enabled" ("TypeError") expected object "URIError" ("URIError")
+FAIL cancelling the readable side should error the writable Failed to construct 'TransformStream': TransformStream disabled because StreamsNative is enabled
+FAIL it should be possible to error the readable between close requested and complete Failed to construct 'TransformStream': TransformStream disabled because StreamsNative is enabled
+FAIL an exception from transform() should error the stream if terminate has been requested but not completed Failed to construct 'TransformStream': TransformStream disabled because StreamsNative is enabled
+FAIL abort should set the close reason for the writable when it happens before cancel during start, but cancel should still succeed Failed to construct 'TransformStream': TransformStream disabled because StreamsNative is enabled
+FAIL abort should set the close reason for the writable when it happens before cancel during underlying sink write, but cancel should still succeed Failed to construct 'TransformStream': TransformStream disabled because StreamsNative is enabled
+FAIL controller.error() should do nothing the second time it is called Failed to construct 'TransformStream': TransformStream disabled because StreamsNative is enabled
+FAIL controller.error() should do nothing after readable.cancel() Failed to construct 'TransformStream': TransformStream disabled because StreamsNative is enabled
+FAIL controller.error() should do nothing after writable.abort() has completed Failed to construct 'TransformStream': TransformStream disabled because StreamsNative is enabled
+FAIL controller.error() should do nothing after a transformer method has thrown an exception Failed to construct 'TransformStream': TransformStream disabled because StreamsNative is enabled
+FAIL erroring during write with backpressure should result in the write failing Failed to construct 'TransformStream': TransformStream disabled because StreamsNative is enabled
+FAIL a write() that was waiting for backpressure should reject if the writable is aborted Failed to construct 'TransformStream': TransformStream disabled because StreamsNative is enabled
+FAIL the readable should be errored with the reason passed to the writable abort() method Failed to construct 'TransformStream': TransformStream disabled because StreamsNative is enabled
+Harness: the test ran to completion.
+

@@ -1,0 +1,14 @@
+Name: FlatBuffers
+Short Name: flatbuffers
+URL: https://github.com/google/flatbuffers
+Version: 9bf9b18f0a705dfd6d50b98056463a55de6a1bf9
+Date: 2019-02-25
+License: Apache 2.0
+License File: LICENSE
+Security Critical: yes
+
+Description:
+FlatBuffers is an efficient cross platform serialization library for games and
+other memory constrained apps. It allows you to directly access serialized data
+without unpacking/parsing it first, while still having great forwards/backwards
+compatibility.

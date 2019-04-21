@@ -1,0 +1,82 @@
+<title>ResourceLoadPriority tests</title>
+
+<script src="resources/common.js"></script>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+
+<script>
+function openWindow(url) {
+  const win = window.open(url, '_blank');
+  add_result_callback(() => win.close());
+  return win;
+}
+
+function resource_load_priority_test(windowURL, expected_priority, description) {
+  promise_test(async () => {
+    openWindow('resources/' + windowURL);
+    const priority_event =
+      await new Promise(resolve => window.onmessage = resolve);
+    assert_not_equals(priority_event.data,
+                      'FAILED',
+                      'The resource failed to load for some reason.');
+
+    assert_equals(priority_event.data, expected_priority);
+  }, description);
+}
+
+resource_load_priority_test(
+  'off-screen-image.html', kLow,
+  'Off-screen images should be loaded with kLow priority');
+
+resource_load_priority_test(
+  'render-blocking-stylesheet.html', kVeryHigh,
+  'Render-blocking style sheets should be loaded with kVeryHigh priority');
+
+resource_load_priority_test(
+  'parser-blocking-script.html', kHigh,
+  'Parser-blocking scripts should be loaded with kHigh priority');
+
+resource_load_priority_test(
+  'async-script.html', kHigh,
+  'Async scripts should be loaded with kLow priority');
+
+resource_load_priority_test(
+  'defer-script.html', kHigh,
+  'Deferred scripts should be loaded with kLow priority');
+
+resource_load_priority_test(
+  'module-script.html', kHigh,
+  'Module scripts should be loaded with kHigh priority');
+
+resource_load_priority_test(
+  'fetch.html', kHigh,
+  'Requests from the Fetch API should be loaded with kHigh priority');
+
+resource_load_priority_test(
+  'xhr.html', kHigh, 'XHRs should be loaded with kHigh priority');
+
+resource_load_priority_test(
+  'sync-xhr.html', kVeryHigh,
+  'Synchronous XHRs should be loaded with kVeryHigh priority');
+
+// Preload tests.
+resource_load_priority_test(
+  'preload/as-style.html', kVeryHigh,
+  'Preloaded style sheets should be loaded with kVeryHigh priority');
+
+resource_load_priority_test(
+  'preload/as-script.html', kHigh,
+  'Preloaded scripts should be loaded with kHigh priority');
+
+resource_load_priority_test(
+  'preload/as-font.html', kHigh,
+  'Preloaded fonts should be loaded with kHigh priority');
+
+resource_load_priority_test(
+  'preload/as-fetch.html', kHigh,
+  'Preloaded fetches should be loaded with kHigh priority');
+
+resource_load_priority_test(
+  'preload/as-image.html', kLow,
+  'Preloaded images should be loaded with kLow priority');
+</script>

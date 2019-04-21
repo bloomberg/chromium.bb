@@ -1,0 +1,29 @@
+# NOTE: if adding an exclusion for an existing failure (e.g. additional test for
+# feature X that is already not working), please add it beside the existing
+# failures. Otherwise please reach out to network-service-dev@.
+
+# These tests currently fail when run with --enable-features=NetworkService
+
+# Fail because they expect to have no features enabled when run.
+-org.chromium.chrome.browser.FeaturesAnnotationsTest.testFeaturesAddToExistingFlags
+-org.chromium.chrome.browser.FeaturesAnnotationsTest.testFeaturesDoNotRemoveExistingFlags
+-org.chromium.chrome.browser.FeaturesAnnotationsTest.testFeaturesSetExistingFlags
+
+# http://crbug.com/917467
+-org.chromium.chrome.browser.webapps.WebApkIntegrationTest.testLaunchAndNavigateOffOrigin
+-org.chromium.chrome.browser.webapps.WebApkIntegrationTest.testLaunchAndNavigationInNewWindowOffandInOrigin
+-org.chromium.chrome.browser.webapps.WebApkIntegrationTest.testLaunchAndOpenNewWindowInOrigin
+
+# Miscellaneous flaky or failing tests:
+# http://crbug.com/941856
+-org.chromium.chrome.browser.webapps.WebApkIntegrationTest.testActivateWebApk
+
+# http://crbug.com/943829
+-org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTest.testStartAndAccept
+-org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetViewTest.testRemovingTabDeletesItsView
+
+# http://crbug.com/943835
+-org.chromium.chrome.browser.widget.OverviewListLayoutTest.testCanSwipeClosed
+
+# http://crbug.com/943847
+-org.chromium.chrome.browser.browserservices.TrustedWebActivityTest.launchesTwa

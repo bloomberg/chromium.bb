@@ -1,0 +1,94 @@
+<link rel="import" href="../html/polymer.html">
+
+<link rel="import" href="shared_vars_css.html">
+<link rel="import" href="hidden_style_css.html">
+<link rel="import" href="cr_icons_css.html">
+
+<!-- Common styles for Material Design WebUI. Included directly in
+  settings_shared_css.html. -->
+<dom-module id="cr-shared-style">
+  <template>
+    <style include="cr-hidden-style cr-icons">
+      html,
+      :host {
+        --scrollable-border-color: var(--google-grey-refresh-300);
+      }
+
+      html[dark],
+      :host-context([dark]) {
+        --scrollable-border-color: var(--google-grey-refresh-700);
+      }
+
+      [actionable] {
+        @apply --cr-actionable;
+      }
+
+      .subpage-arrow,
+      .icon-external {
+        display: none;
+      }
+
+      [actionable] :-webkit-any(.subpage-arrow, .icon-external),
+      [actionable]:-webkit-any(.subpage-arrow, .icon-external) {
+        display: block;
+      }
+
+      /* Horizontal rule line. */
+      .hr {
+        border-top: var(--cr-separator-line);
+      }
+
+      iron-list.cr-separators > *:not([first]) {
+        border-top: var(--cr-separator-line);
+      }
+
+      [scrollable] {
+        border-color: transparent;
+        border-style: solid;
+        border-width: 1px 0;
+        overflow-y: auto;
+      }
+      [scrollable].is-scrolled {
+        border-top-color: var(--scrollable-border-color);
+      }
+      [scrollable].can-scroll:not(.scrolled-to-bottom) {
+        border-bottom-color: var(--scrollable-border-color);
+      }
+      [scrollable] iron-list > :not(.no-outline):focus {
+        @apply --cr-list-item-focus;
+        @apply --cr-selectable-focus;
+      }
+
+      .scroll-container {
+        display: flex;
+        flex-direction: column;
+        min-height: 1px;
+      }
+
+      [selectable]:not(cr-radio-group):focus,
+      [selectable]:not(cr-radio-group) > :focus {
+        @apply --cr-selectable-focus;
+      }
+      [selectable]:not(cr-radio-group) > * {
+        @apply --cr-actionable;
+      }
+
+      /** Styles for elements that implement the CrContainerShadowBehavior */
+      #cr-container-shadow-top,
+      #cr-container-shadow-bottom {
+        @apply --cr-container-shadow;
+      }
+
+      #cr-container-shadow-bottom {
+        margin-bottom: 0;
+        margin-top: var(--cr-container-shadow-margin);
+        transform: scaleY(-1);
+      }
+
+      #cr-container-shadow-top.has-shadow,
+      #cr-container-shadow-bottom.has-shadow {
+        opacity: var(--cr-container-shadow-max-opacity);
+      }
+    </style>
+  </template>
+</dom-module>

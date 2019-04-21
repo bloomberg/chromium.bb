@@ -1,0 +1,32 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
+<link rel="import" href="navi_colors_css.html">
+
+<dom-module id="step-indicator">
+  <template>
+    <style include="navi-colors-css">
+      :host {
+        align-items: center;
+        display: flex;
+      }
+
+      span {
+        background: var(--navi-step-indicator-color);
+        border-radius: 50%;
+        display: inline-block;
+        height: 8px;
+        margin: 0 4px;
+        width: 8px;
+      }
+
+      span.active {
+        @apply --navi-step-indicator-active;
+      }
+    </style>
+    <template is="dom-repeat" items="[[dots_]]">
+      <span class$="[[getActiveClass_(index, model.active)]]"></span>
+    </template>
+  </template>
+  <script src="step_indicator.js"></script>
+</dom-module>

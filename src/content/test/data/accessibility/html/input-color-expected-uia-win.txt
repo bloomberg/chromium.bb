@@ -1,0 +1,4 @@
+region
+++document
+++++group
+++++++textbox Value.Value='100% red 60% green 0% blue'

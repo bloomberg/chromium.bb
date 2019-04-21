@@ -1,0 +1,12 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// https://html.spec.whatwg.org/C/#language-preferences
+
+[
+    Exposed=(Window, Worker)
+] interface mixin NavigatorLanguage {
+    [HighEntropy, MeasureAs=NavigatorLanguage] readonly attribute DOMString language;
+    [CachedAttribute=IsLanguagesDirty, HighEntropy, MeasureAs=NavigatorLanguages] readonly attribute FrozenArray<DOMString> languages;
+};

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Test that Badge API accepts expected types.</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
+<script src="file:///gen/third_party/blink/public/mojom/badging/badging.mojom.js"></script>
+<script src="resources/mock-badge-service.js"></script>
+</head>
+<body>
+<script>
+
+badge_test(() => { ExperimentalBadge.set(); }, 'setFlag');
+
+badge_test(() => { ExperimentalBadge.set(undefined); }, 'setFlag');
+
+badge_test(() => { ExperimentalBadge.set(1); }, 'setInteger');
+
+// Setting the Badge to 0 should be equivalent to clearing the badge.
+badge_test(() => { ExperimentalBadge.set(0); }, 'clearBadge');
+
+badge_test(() => { ExperimentalBadge.clear(); }, 'clearBadge');
+
+</script>
+</body>
+</html>

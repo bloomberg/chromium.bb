@@ -1,0 +1,9 @@
+CONSOLE WARNING: line 13: Element.createShadowRoot is deprecated and will be removed in M73, around March 2019. Please use Element.attachShadow instead. See https://www.chromestatus.com/features/4507242028072960 for more details.
+PASS anchorInShadow.href.indexOf("http://www.example.com") is -1
+PASS anchorInHostChildren.href.indexOf("http://www.example.com") is -1
+PASS anchorOutsideOfShadow.href.indexOf("http://www.example.com") is -1
+PASS successfullyParsed is true
+
+TEST COMPLETE
+
+tehepero

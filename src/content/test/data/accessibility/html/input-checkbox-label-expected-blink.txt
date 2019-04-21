@@ -1,0 +1,3 @@
+rootWebArea
+++genericContainer
+++++checkBox name='Checkbox Title' checkedState=false

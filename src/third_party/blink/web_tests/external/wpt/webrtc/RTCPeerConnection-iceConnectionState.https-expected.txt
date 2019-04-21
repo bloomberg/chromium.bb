@@ -1,0 +1,8 @@
+This is a testharness.js-based test.
+PASS Initial iceConnectionState should be new
+PASS Closing the connection should set iceConnectionState to closed
+PASS connection with one data channel should eventually have connected or completed connection state
+FAIL connection with one data channel should eventually have connected connection state assert_equals: Expect ICE transport to be in checking state when iceConnectionState is checking expected "checking" but got "connected"
+PASS ICE can connect in a recvonly usecase
+Harness: the test ran to completion.
+

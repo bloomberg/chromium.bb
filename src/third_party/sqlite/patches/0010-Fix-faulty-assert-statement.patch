@@ -1,0 +1,29 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Darwin Huang <huangdarwin@chromium.org>
+Date: Wed, 27 Mar 2019 12:05:31 -0700
+Subject: [PATCH 10/15] Fix faulty assert statement
+
+This backports https://www.sqlite.org/src/info/bcbe7d96df3c9515
+
+Bug: 945139
+---
+ third_party/sqlite/patched/src/btree.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/third_party/sqlite/patched/src/btree.c b/third_party/sqlite/patched/src/btree.c
+index 33d63d7b1ce2..c528bb1815fd 100644
+--- a/third_party/sqlite/patched/src/btree.c
++++ b/third_party/sqlite/patched/src/btree.c
+@@ -8099,7 +8099,8 @@ static int balance_nonroot(
+     rc = defragmentPage(apNew[0], -1);
+     testcase( rc!=SQLITE_OK );
+     assert( apNew[0]->nFree ==
+-        (get2byte(&apNew[0]->aData[5])-apNew[0]->cellOffset-apNew[0]->nCell*2)
++        (get2byteNotZero(&apNew[0]->aData[5]) - apNew[0]->cellOffset
++          - apNew[0]->nCell*2)
+       || rc!=SQLITE_OK
+     );
+     copyNodeContent(apNew[0], pParent, &rc);
+-- 
+2.21.0.392.gf8f6787159e-goog
+
