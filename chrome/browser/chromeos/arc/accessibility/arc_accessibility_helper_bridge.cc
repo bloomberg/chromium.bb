@@ -544,6 +544,9 @@ void ArcAccessibilityHelperBridge::OnAction(
           arc::mojom::AccessibilityActionType::HIDE_TOOLTIP;
       break;
     }
+    case ax::mojom::Action::kInternalInvalidateTree:
+      tree_source->InvalidateTree();
+      break;
     default:
       return;
   }

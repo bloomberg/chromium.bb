@@ -385,6 +385,10 @@ const gfx::Rect AXTreeSourceArc::GetBounds(ArcAccessibilityInfoData* info_data,
   return info_data_bounds;
 }
 
+void AXTreeSourceArc::InvalidateTree() {
+  current_tree_serializer_->Reset();
+}
+
 gfx::Rect AXTreeSourceArc::ComputeEnclosingBounds(
     ArcAccessibilityInfoData* info_data) const {
   gfx::Rect computed_bounds;

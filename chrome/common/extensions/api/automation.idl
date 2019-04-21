@@ -298,6 +298,7 @@
     hideTooltip,
     hitTest,
     increment,
+    internalInvalidateTree,
     loadInlineTextBoxes,
     replaceSelectedText,
     scrollBackward,

@@ -637,6 +637,7 @@ ax::mojom::Action AXNodeData::AddAction(ax::mojom::Action action_enum) {
     case ax::mojom::Action::kGetImageData:
     case ax::mojom::Action::kHitTest:
     case ax::mojom::Action::kIncrement:
+    case ax::mojom::Action::kInternalInvalidateTree:
     case ax::mojom::Action::kLoadInlineTextBoxes:
     case ax::mojom::Action::kReplaceSelectedText:
     case ax::mojom::Action::kScrollToMakeVisible:

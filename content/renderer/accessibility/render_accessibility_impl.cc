@@ -792,14 +792,15 @@ void RenderAccessibilityImpl::OnPerformAction(
         MarkAllAXObjectsDirty(ax::mojom::Role::kImage);
       }
       break;
-    case ax::mojom::Action::kShowTooltip:
-    case ax::mojom::Action::kHideTooltip:
-      break;
     case ax::mojom::Action::kSignalEndOfTest:
       // Wait for 100ms to allow pending events to come in
       base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
 
       HandleAXEvent(root, ax::mojom::Event::kEndOfTest);
+      break;
+    case ax::mojom::Action::kShowTooltip:
+    case ax::mojom::Action::kHideTooltip:
+    case ax::mojom::Action::kInternalInvalidateTree:
       break;
   }
 }
