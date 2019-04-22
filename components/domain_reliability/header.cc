@@ -279,6 +279,7 @@ DomainReliabilityHeader::ReleaseConfig() {
 }
 
 std::string DomainReliabilityHeader::ToString() const {
+  DCHECK_EQ(PARSE_SET_CONFIG, status_);
   std::string string;
   int64_t max_age_s = max_age_.InSeconds();
 

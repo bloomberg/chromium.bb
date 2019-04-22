@@ -28,7 +28,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   base::StringPiece input(reinterpret_cast<const char*>(data), size);
   std::unique_ptr<DomainReliabilityHeader> header =
       DomainReliabilityHeader::Parse(input);
-  if (!header->IsParseError()) {
+  if (header->IsSetConfig()) {
     header->ToString();
   }
   return 0;
