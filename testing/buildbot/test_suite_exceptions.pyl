@@ -707,6 +707,11 @@
       # We need to match the Playstore version as well because AR tests fail on
       # old versions of the Playstore.
       'Oreo Phone Tester': {
+        'args': [
+          # ArCore is not installed as a system app on O, so we can install it
+          # normally instead of replacing the system version.
+          '--additional-apk=//third_party/arcore-android-sdk/test-apks/arcore/arcore_current.apk'
+        ],
         'swarming': {
           'dimension_sets': [
             {
@@ -718,6 +723,11 @@
           ],
         },
       },
+      'android-pie-arm64-dbg': {
+        'args': [
+          '--replace-system-package=com.google.ar.core,//third_party/arcore-android-sdk/test-apks/arcore/arcore_current.apk'
+        ]
+      }
     },
   },
   'nacl_helper_nonsfi_unittests': {
