@@ -105,7 +105,7 @@ class UpdateScreenUnitTest : public testing::Test {
   // Accessory objects needed by UpdateScreen.
   MockBaseScreenDelegate mock_base_screen_delegate_;
   MockUpdateView mock_view_;
-  MockNetworkErrorView mock_error_view_;
+  MockErrorScreenView mock_error_view_;
   std::unique_ptr<MockErrorScreen> mock_error_screen_;
   MockNetworkPortalDetector* mock_network_portal_detector_;
   FakeUpdateEngineClient* fake_update_engine_client_;

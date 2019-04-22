@@ -7,14 +7,14 @@
 
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/chromeos/login/screens/network_error.h"
-#include "chrome/browser/chromeos/login/screens/network_error_view.h"
+#include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace chromeos {
 
 class MockErrorScreen : public ErrorScreen {
  public:
-  explicit MockErrorScreen(NetworkErrorView* view);
+  explicit MockErrorScreen(ErrorScreenView* view);
   ~MockErrorScreen() override;
 
   void FixCaptivePortal() override;
@@ -29,10 +29,10 @@ class MockErrorScreen : public ErrorScreen {
                     const std::string& network));
 };
 
-class MockNetworkErrorView : public NetworkErrorView {
+class MockErrorScreenView : public ErrorScreenView {
  public:
-  MockNetworkErrorView();
-  virtual ~MockNetworkErrorView();
+  MockErrorScreenView();
+  virtual ~MockErrorScreenView();
 
   void Bind(ErrorScreen* screen) override;
   void Unbind() override;

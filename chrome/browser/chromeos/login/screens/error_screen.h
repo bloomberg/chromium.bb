@@ -22,7 +22,7 @@
 namespace chromeos {
 
 class CaptivePortalWindowProxy;
-class NetworkErrorView;
+class ErrorScreenView;
 
 // Controller for the error screen.
 class ErrorScreen : public BaseScreen,
@@ -41,7 +41,7 @@ class ErrorScreen : public BaseScreen,
   static const char kUserActionRebootButtonClicked[];
   static const char kUserActionShowCaptivePortalClicked[];
 
-  explicit ErrorScreen(NetworkErrorView* view);
+  explicit ErrorScreen(ErrorScreenView* view);
   ~ErrorScreen() override;
 
   CaptivePortalWindowProxy* captive_portal_window_proxy() {
@@ -70,7 +70,7 @@ class ErrorScreen : public BaseScreen,
 
   // This method is called, when view is being destroyed. Note, if model
   // is destroyed earlier then it has to call Unbind().
-  void OnViewDestroyed(NetworkErrorView* view);
+  void OnViewDestroyed(ErrorScreenView* view);
 
   // Sets current UI state.
   virtual void SetUIState(NetworkError::UIState ui_state);
@@ -150,7 +150,7 @@ class ErrorScreen : public BaseScreen,
   void StartGuestSessionAfterOwnershipCheck(
       DeviceSettingsService::OwnershipStatus ownership_status);
 
-  NetworkErrorView* view_ = nullptr;
+  ErrorScreenView* view_ = nullptr;
 
   std::unique_ptr<LoginPerformer> guest_login_performer_;
 

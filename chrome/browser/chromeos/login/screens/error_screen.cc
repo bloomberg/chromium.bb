@@ -15,7 +15,6 @@
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/login/auth/chrome_login_performer.h"
 #include "chrome/browser/chromeos/login/chrome_restart_request.h"
-#include "chrome/browser/chromeos/login/screens/network_error_view.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/ui/captive_portal_window_proxy.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
@@ -30,6 +29,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
+#include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "chromeos/dbus/power/power_manager_client.h"
@@ -73,7 +73,7 @@ constexpr const char ErrorScreen::kUserActionRebootButtonClicked[] = "reboot";
 constexpr const char ErrorScreen::kUserActionShowCaptivePortalClicked[] =
     "show-captive-portal";
 
-ErrorScreen::ErrorScreen(NetworkErrorView* view)
+ErrorScreen::ErrorScreen(ErrorScreenView* view)
     : BaseScreen(OobeScreen::SCREEN_ERROR_MESSAGE),
       view_(view),
       weak_factory_(this) {
@@ -123,7 +123,7 @@ void ErrorScreen::HideCaptivePortal() {
     captive_portal_window_proxy_->Close();
 }
 
-void ErrorScreen::OnViewDestroyed(NetworkErrorView* view) {
+void ErrorScreen::OnViewDestroyed(ErrorScreenView* view) {
   if (view_ == view)
     view_ = nullptr;
 }

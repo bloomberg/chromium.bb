@@ -114,6 +114,11 @@ class RecommendAppsScreenTest : public InProcessBrowserTest {
     RecommendAppsFetcher::SetFactoryCallbackForTesting(
         &fetcher_factory_callback_);
 
+    // Delete initial screen before we create the new screen, as the screen ctor
+    // will bind to the handler.
+    WizardController::default_controller()
+        ->screen_manager()
+        ->DeleteScreenForTesting(OobeScreen::SCREEN_RECOMMEND_APPS);
     auto recommend_apps_screen = std::make_unique<RecommendAppsScreen>(
         GetOobeUI()->GetRecommendAppsScreenView(),
         base::BindRepeating(&RecommendAppsScreenTest::HandleScreenExit,

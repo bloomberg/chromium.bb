@@ -23,7 +23,26 @@ class ArcOptInPreferenceHandler;
 namespace chromeos {
 
 class ArcTermsOfServiceScreen;
-class ArcTermsOfServiceScreenViewObserver;
+
+class ArcTermsOfServiceScreenViewObserver {
+ public:
+  virtual ~ArcTermsOfServiceScreenViewObserver() = default;
+
+  // Called when the user skips the PlayStore Terms of Service.
+  virtual void OnSkip() = 0;
+
+  // Called when the user accepts the PlayStore Terms of Service.
+  virtual void OnAccept(bool review_arc_settings) = 0;
+
+  // Called when the view is destroyed so there is no dead reference to it.
+  virtual void OnViewDestroyed(ArcTermsOfServiceScreenView* view) = 0;
+
+ protected:
+  ArcTermsOfServiceScreenViewObserver() = default;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ArcTermsOfServiceScreenViewObserver);
+};
 
 class ArcTermsOfServiceScreenView {
  public:

@@ -13,7 +13,6 @@
 namespace chromeos {
 
 class RecommendAppsScreen;
-class RecommendAppsScreenViewObserver;
 
 // Interface for dependency injection between RecommendAppsScreen and its
 // WebUI representation.
@@ -22,10 +21,6 @@ class RecommendAppsScreenView {
   constexpr static OobeScreen kScreenId = OobeScreen::SCREEN_RECOMMEND_APPS;
 
   virtual ~RecommendAppsScreenView() = default;
-
-  // Adds/Removes observer for view.
-  virtual void AddObserver(RecommendAppsScreenViewObserver* observer) = 0;
-  virtual void RemoveObserver(RecommendAppsScreenViewObserver* observer) = 0;
 
   // Sets screen this view belongs to.
   virtual void Bind(RecommendAppsScreen* screen) = 0;
@@ -62,21 +57,17 @@ class RecommendAppsScreenHandler : public BaseScreenHandler,
   void RegisterMessages() override;
 
   // RecommendAppsScreenView:
-  void AddObserver(RecommendAppsScreenViewObserver* observer) override;
-  void RemoveObserver(RecommendAppsScreenViewObserver* observer) override;
   void Bind(RecommendAppsScreen* screen) override;
   void Show() override;
   void Hide() override;
-
- private:
-  // BaseScreenHandler:
-  void Initialize() override;
-
-  // RecommendAppsScreenView:
   void OnLoadError() override;
   void OnLoadSuccess(const base::Value& app_list) override;
   void OnParseResponseError() override;
 
+  // BaseScreenHandler:
+  void Initialize() override;
+
+ private:
   void OnUserSkip();
 
   // Call the JS function to load the list of apps in the WebView.
@@ -89,9 +80,6 @@ class RecommendAppsScreenHandler : public BaseScreenHandler,
   RecommendAppsScreen* screen_ = nullptr;
 
   PrefService* pref_service_;
-
-  base::ObserverList<RecommendAppsScreenViewObserver, true>::Unchecked
-      observer_list_;
 
   int recommended_app_count_ = 0;
 

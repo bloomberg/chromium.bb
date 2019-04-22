@@ -18,25 +18,11 @@ RecommendAppsScreen::RecommendAppsScreen(
   DCHECK(view_);
 
   view_->Bind(this);
-  view_->AddObserver(this);
 }
 
 RecommendAppsScreen::~RecommendAppsScreen() {
-  if (view_) {
+  if (view_)
     view_->Bind(nullptr);
-    view_->RemoveObserver(this);
-  }
-}
-
-void RecommendAppsScreen::Show() {
-  view_->Show();
-
-  recommend_apps_fetcher_ = RecommendAppsFetcher::Create(this);
-  recommend_apps_fetcher_->Start();
-}
-
-void RecommendAppsScreen::Hide() {
-  view_->Hide();
 }
 
 void RecommendAppsScreen::OnSkip() {
@@ -53,8 +39,18 @@ void RecommendAppsScreen::OnInstall() {
 
 void RecommendAppsScreen::OnViewDestroyed(RecommendAppsScreenView* view) {
   DCHECK_EQ(view, view_);
-  view_->RemoveObserver(this);
   view_ = nullptr;
+}
+
+void RecommendAppsScreen::Show() {
+  view_->Show();
+
+  recommend_apps_fetcher_ = RecommendAppsFetcher::Create(this);
+  recommend_apps_fetcher_->Start();
+}
+
+void RecommendAppsScreen::Hide() {
+  view_->Hide();
 }
 
 void RecommendAppsScreen::OnLoadSuccess(const base::Value& app_list) {

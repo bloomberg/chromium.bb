@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/chromeos/login/screens/network_screen.h"
-#include "chrome/browser/chromeos/login/screens/network_screen_view.h"
+#include "chrome/browser/ui/webui/chromeos/login/network_screen_handler.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace chromeos {
