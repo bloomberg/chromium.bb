@@ -14,6 +14,7 @@
 #include "ash/public/interfaces/kiosk_app_info.mojom.h"
 #include "ash/public/interfaces/login_screen.mojom.h"
 #include "ash/shutdown_controller.h"
+#include "ash/system/locale/locale_update_controller.h"
 #include "ash/tray_action/tray_action_observer.h"
 #include "base/scoped_observer.h"
 #include "ui/views/controls/button/button.h"
@@ -47,7 +48,8 @@ class ASH_EXPORT LoginShelfView : public views::View,
                                   public LockScreenActionBackgroundObserver,
                                   public ShutdownController::Observer,
                                   public LoginScreenControllerObserver,
-                                  public LoginDataDispatcher::Observer {
+                                  public LoginDataDispatcher::Observer,
+                                  public LocaleChangeObserver {
  public:
   enum ButtonId {
     kShutdown = 1,   // Shut down the device.
@@ -122,6 +124,9 @@ class ASH_EXPORT LoginShelfView : public views::View,
   void OnUsersChanged(
       const std::vector<mojom::LoginUserInfoPtr>& users) override;
 
+  // LocaleChangeObserver:
+  void OnLocaleChanged() override;
+
  private:
   bool LockScreenActionBackgroundAnimating() const;
 
@@ -157,6 +162,9 @@ class ASH_EXPORT LoginShelfView : public views::View,
 
   ScopedObserver<LoginScreenController, LoginScreenControllerObserver>
       login_screen_controller_observer_;
+
+  ScopedObserver<LocaleUpdateController, LocaleChangeObserver>
+      locale_change_observer_{this};
 
   KioskAppsButton* kiosk_apps_button_ = nullptr;  // Owned by view hierarchy
 

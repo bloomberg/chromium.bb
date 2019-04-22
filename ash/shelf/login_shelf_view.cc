@@ -62,6 +62,8 @@ using session_manager::SessionState;
 namespace ash {
 namespace {
 
+const char* kLoginShelfButtonClassName = "LoginShelfButton";
+
 LoginMetricsRecorder::ShelfButtonClickTarget GetUserClickTarget(int button_id) {
   switch (button_id) {
     case LoginShelfView::kShutdown:
@@ -128,10 +130,12 @@ void SetButtonHighlightPath(views::View* view) {
 class LoginShelfButton : public views::LabelButton {
  public:
   LoginShelfButton(views::ButtonListener* listener,
-                   const base::string16& text,
+                   int text_resource_id,
                    const gfx::VectorIcon& icon)
-      : LabelButton(listener, text), icon_(icon) {
-    SetAccessibleName(text);
+      : LabelButton(listener, l10n_util::GetStringUTF16(text_resource_id)),
+        text_resource_id_(text_resource_id),
+        icon_(icon) {
+    SetAccessibleName(GetText());
     SetImage(views::Button::STATE_NORMAL,
              gfx::CreateVectorIcon(icon, kButtonIconColor));
     SetImage(views::Button::STATE_DISABLED,
@@ -165,10 +169,16 @@ class LoginShelfButton : public views::LabelButton {
 
   ~LoginShelfButton() override = default;
 
+  int text_resource_id() const { return text_resource_id_; }
+
   // views::LabelButton:
   gfx::Insets GetInsets() const override {
     return gfx::Insets(kButtonMarginTopDp, kButtonMarginLeftDp,
                        kButtonMarginBottomDp, kButtonMarginRightDp);
+  }
+
+  const char* GetClassName() const override {
+    return kLoginShelfButtonClassName;
   }
 
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override {
@@ -204,6 +214,7 @@ class LoginShelfButton : public views::LabelButton {
   }
 
  private:
+  const int text_resource_id_;
   const gfx::VectorIcon& icon_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginShelfButton);
@@ -371,8 +382,8 @@ LoginShelfView::LoginShelfView(
 
   auto add_button = [this](ButtonId id, int text_resource_id,
                            const gfx::VectorIcon& icon) {
-    const base::string16 text = l10n_util::GetStringUTF16(text_resource_id);
-    LoginShelfButton* button = new LoginShelfButton(this, text, icon);
+    LoginShelfButton* button =
+        new LoginShelfButton(this, text_resource_id, icon);
     button->set_id(id);
     AddChildView(button);
   };
@@ -397,6 +408,7 @@ LoginShelfView::LoginShelfView(
   lock_screen_action_background_observer_.Add(lock_screen_action_background);
   login_screen_controller_observer_.Add(
       Shell::Get()->login_screen_controller());
+  locale_change_observer_.Add(Shell::Get()->locale_update_controller());
   UpdateUi();
 }
 
@@ -551,6 +563,16 @@ void LoginShelfView::OnUsersChanged(
     const std::vector<mojom::LoginUserInfoPtr>& users) {
   login_screen_has_users_ = !users.empty();
   UpdateUi();
+}
+
+void LoginShelfView::OnLocaleChanged() {
+  for (views::View* child : children()) {
+    if (child->GetClassName() == kLoginShelfButtonClassName) {
+      auto* button = static_cast<LoginShelfButton*>(child);
+      button->SetText(l10n_util::GetStringUTF16(button->text_resource_id()));
+      button->SetAccessibleName(button->GetText());
+    }
+  }
 }
 
 bool LoginShelfView::LockScreenActionBackgroundAnimating() const {
