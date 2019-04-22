@@ -449,7 +449,49 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::Move(TextUnit unit,
                                                       int count,
                                                       int* units_moved) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXTRANGE_MOVE);
-  return E_NOTIMPL;
+  UIA_VALIDATE_TEXTRANGEPROVIDER_CALL();
+
+  *units_moved = 0;
+
+  // Per MSDN, move with zero count has no effect.
+  if (count == 0)
+    return S_OK;
+
+  // Save a clone of start and end, in case one of the moves fails.
+  auto start_backup = start_->Clone();
+  auto end_backup = end_->Clone();
+  bool is_degenerate_range = (*start_ == *end_);
+
+  // Move the start of the text range forward or backward in the document by the
+  // requested number of text unit boundaries.
+  int start_units_moved = 0;
+  HRESULT hr = MoveEndpointByUnit(TextPatternRangeEndpoint_Start, unit, count,
+                                  &start_units_moved);
+
+  bool succeeded_move = SUCCEEDED(hr) && start_units_moved == count;
+  if (succeeded_move) {
+    end_ = start_->Clone();
+    if (!is_degenerate_range) {
+      // Expand the text range from the degenerate state by moving the
+      // endpoint forward by one text unit.
+      int end_units_moved = 0;
+      hr = MoveEndpointByUnit(TextPatternRangeEndpoint_End, unit, 1,
+                              &end_units_moved);
+      succeeded_move = SUCCEEDED(hr) && end_units_moved == 1;
+    }
+  }
+
+  if (!succeeded_move) {
+    start_ = std::move(start_backup);
+    end_ = std::move(end_backup);
+    start_units_moved = 0;
+    if (!SUCCEEDED(hr))
+      return hr;
+  }
+
+  *units_moved = start_units_moved;
+
+  return S_OK;
 }
 
 STDMETHODIMP AXPlatformNodeTextRangeProviderWin::MoveEndpointByUnit(

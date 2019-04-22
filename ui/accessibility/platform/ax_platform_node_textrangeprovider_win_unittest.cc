@@ -215,6 +215,164 @@ class AXPlatformNodeTextRangeProviderTest : public ui::AXPlatformNodeWinTest {
     update.root_id = root_data.id;
     return update;
   }
+
+  ui::AXTreeUpdate BuildAXTreeForMove() {
+    ui::AXNodeData group1_data;
+    group1_data.id = 2;
+    group1_data.role = ax::mojom::Role::kGenericContainer;
+
+    ui::AXNodeData text_data;
+    text_data.id = 3;
+    text_data.role = ax::mojom::Role::kStaticText;
+    std::string text_content = "First line of text";
+    text_data.SetName(text_content);
+    std::vector<int> word_end_offsets;
+    std::vector<int> word_start_offsets;
+    ComputeWordBoundariesOffsets(text_content, word_start_offsets,
+                                 word_end_offsets);
+    text_data.AddIntListAttribute(ax::mojom::IntListAttribute::kWordStarts,
+                                  word_start_offsets);
+    text_data.AddIntListAttribute(ax::mojom::IntListAttribute::kWordEnds,
+                                  word_end_offsets);
+    group1_data.child_ids = {3};
+
+    ui::AXNodeData group2_data;
+    group2_data.id = 4;
+    group2_data.role = ax::mojom::Role::kGenericContainer;
+
+    ui::AXNodeData line_break1_data;
+    line_break1_data.id = 5;
+    line_break1_data.role = ax::mojom::Role::kLineBreak;
+
+    ui::AXNodeData standalone_text_data;
+    standalone_text_data.id = 6;
+    standalone_text_data.role = ax::mojom::Role::kStaticText;
+    text_content = "Standalone line";
+    standalone_text_data.SetName(text_content);
+    ComputeWordBoundariesOffsets(text_content, word_start_offsets,
+                                 word_end_offsets);
+    standalone_text_data.AddIntListAttribute(
+        ax::mojom::IntListAttribute::kWordStarts, word_start_offsets);
+    standalone_text_data.AddIntListAttribute(
+        ax::mojom::IntListAttribute::kWordEnds, word_end_offsets);
+
+    ui::AXNodeData line_break2_data;
+    line_break2_data.id = 7;
+    line_break2_data.role = ax::mojom::Role::kLineBreak;
+
+    group2_data.child_ids = {5, 6, 7};
+
+    ui::AXNodeData bold_text_data;
+    bold_text_data.id = 8;
+    bold_text_data.role = ax::mojom::Role::kStaticText;
+    bold_text_data.AddIntAttribute(
+        ax::mojom::IntAttribute::kTextStyle,
+        static_cast<int32_t>(ax::mojom::TextStyle::kBold));
+    text_content = "bold text";
+    bold_text_data.SetName(text_content);
+    ComputeWordBoundariesOffsets(text_content, word_start_offsets,
+                                 word_end_offsets);
+    bold_text_data.AddIntListAttribute(ax::mojom::IntListAttribute::kWordStarts,
+                                       word_start_offsets);
+    bold_text_data.AddIntListAttribute(ax::mojom::IntListAttribute::kWordEnds,
+                                       word_end_offsets);
+
+    ui::AXNodeData paragraph1_data;
+    paragraph1_data.id = 9;
+    paragraph1_data.role = ax::mojom::Role::kParagraph;
+
+    ui::AXNodeData paragraph1_text_data;
+    paragraph1_text_data.id = 10;
+    paragraph1_text_data.role = ax::mojom::Role::kStaticText;
+    text_content = "Paragraph 1";
+    paragraph1_text_data.SetName(text_content);
+    ComputeWordBoundariesOffsets(text_content, word_start_offsets,
+                                 word_end_offsets);
+    paragraph1_text_data.AddIntListAttribute(
+        ax::mojom::IntListAttribute::kWordStarts, word_start_offsets);
+    paragraph1_text_data.AddIntListAttribute(
+        ax::mojom::IntListAttribute::kWordEnds, word_end_offsets);
+    paragraph1_data.child_ids = {10};
+
+    ui::AXNodeData paragraph2_data;
+    paragraph2_data.id = 11;
+    paragraph2_data.role = ax::mojom::Role::kParagraph;
+
+    ui::AXNodeData paragraph2_text_data;
+    paragraph2_text_data.id = 12;
+    paragraph2_text_data.role = ax::mojom::Role::kStaticText;
+    text_content = "Paragraph 2";
+    paragraph2_text_data.SetName(text_content);
+    ComputeWordBoundariesOffsets(text_content, word_start_offsets,
+                                 word_end_offsets);
+    paragraph2_text_data.AddIntListAttribute(
+        ax::mojom::IntListAttribute::kWordStarts, word_start_offsets);
+    paragraph2_text_data.AddIntListAttribute(
+        ax::mojom::IntListAttribute::kWordEnds, word_end_offsets);
+    paragraph2_data.child_ids = {12};
+
+    ui::AXNodeData root_data;
+    root_data.id = 1;
+    root_data.role = ax::mojom::Role::kRootWebArea;
+    root_data.child_ids = {2, 4, 8, 9, 11};
+
+    ui::AXTreeUpdate update;
+    ui::AXTreeData tree_data;
+    tree_data.tree_id = ui::AXTreeID::CreateNewAXTreeID();
+    update.tree_data = tree_data;
+    update.has_tree_data = true;
+    update.root_id = root_data.id;
+    update.nodes.push_back(root_data);
+    update.nodes.push_back(group1_data);
+    update.nodes.push_back(text_data);
+    update.nodes.push_back(group2_data);
+    update.nodes.push_back(line_break1_data);
+    update.nodes.push_back(standalone_text_data);
+    update.nodes.push_back(line_break2_data);
+    update.nodes.push_back(bold_text_data);
+    update.nodes.push_back(paragraph1_data);
+    update.nodes.push_back(paragraph1_text_data);
+    update.nodes.push_back(paragraph2_data);
+    update.nodes.push_back(paragraph2_text_data);
+
+    return update;
+  }
+
+  static void AssertMoveEndpointByUnit(
+      ComPtr<ITextRangeProvider> text_range_provider,
+      TextPatternRangeEndpoint endpoint,
+      TextUnit unit,
+      int count,
+      const std::wstring& expected_text,
+      int expected_count) {
+    int result_count;
+    ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
+        endpoint, unit, count, &result_count));
+    ASSERT_EQ(expected_count, result_count);
+
+    base::win::ScopedBstr text_content;
+    ASSERT_HRESULT_SUCCEEDED(
+        text_range_provider->GetText(-1, text_content.Receive()));
+    EXPECT_STREQ(expected_text.data(), text_content);
+    text_content.Reset();
+  }
+
+  static void AssertMove(ComPtr<ITextRangeProvider> text_range_provider,
+                         TextUnit unit,
+                         int count,
+                         const std::wstring& expected_text,
+                         int expected_count) {
+    int result_count;
+    ASSERT_HRESULT_SUCCEEDED(
+        text_range_provider->Move(unit, count, &result_count));
+    ASSERT_EQ(expected_count, result_count);
+
+    base::win::ScopedBstr text_content;
+    ASSERT_HRESULT_SUCCEEDED(
+        text_range_provider->GetText(-1, text_content.Receive()));
+    EXPECT_STREQ(expected_text.data(), text_content);
+    text_content.Reset();
+  }
 };
 
 class MockAXPlatformNodeTextRangeProviderWin
@@ -736,6 +894,363 @@ TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderGetText) {
 }
 
 TEST_F(AXPlatformNodeTextRangeProviderTest,
+       TestITextRangeProviderMoveCharacter) {
+  Init(BuildAXTreeForMove());
+  AXNode* root_node = GetRootNode();
+  AXNodePosition::SetTreeForTesting(tree_.get());
+
+  ComPtr<ITextRangeProvider> text_range_provider;
+  GetTextRangeProviderFromTextNode(text_range_provider, root_node);
+
+  // Moving by 0 should have no effect.
+  AssertMove(
+      text_range_provider, TextUnit_Character,
+      /*count*/ 0,
+      /*expected_text*/
+      L"First line of textStandalone linebold textParagraph 1Paragraph 2",
+      /*expected_count*/ 0);
+
+  // Move forward
+  AssertMove(text_range_provider, TextUnit_Character,
+             /*count*/ 1,
+             /*expected_text*/ L"i",
+             /*expected_count*/ 1);
+  AssertMove(text_range_provider, TextUnit_Character,
+             /*count*/ 18,
+             /*expected_text*/ L"S",
+             /*expected_count*/ 18);
+  AssertMove(text_range_provider, TextUnit_Character,
+             /*count*/ 17,
+             /*expected_text*/ L"b",
+             /*expected_count*/ 17);
+  AssertMove(text_range_provider, TextUnit_Character,
+             /*count*/ 32,
+             /*expected_text*/ L"2",
+             /*expected_count*/ 32);
+  // Trying to move past the last character should have no effect.
+  AssertMove(text_range_provider, TextUnit_Character,
+             /*count*/ 1,
+             /*expected_text*/ L"2",
+             /*expected_count*/ 0);
+
+  // Move backwards
+  AssertMove(text_range_provider, TextUnit_Character,
+             /*count*/ -2,
+             /*expected_text*/ L"h",
+             /*expected_count*/ -2);
+  AssertMove(text_range_provider, TextUnit_Character,
+             /*count*/ -9,
+             /*expected_text*/ L"1",
+             /*expected_count*/ -9);
+  AssertMove(text_range_provider, TextUnit_Character,
+             /*count*/ -54,
+             /*expected_text*/ L"F",
+             /*expected_count*/ -54);
+  // Moving backward by any number of characters at the start of document
+  // should have no effect.
+  AssertMove(text_range_provider, TextUnit_Character,
+             /*count*/ -1,
+             /*expected_text*/
+             L"F",
+             /*expected_count*/ 0);
+
+  // Degenerate range moves
+  AssertMoveEndpointByUnit(text_range_provider, TextPatternRangeEndpoint_End,
+                           TextUnit_Character,
+                           /*count*/ -1,
+                           /*expected_text*/ L"",
+                           /*expected_count*/ -1);
+  AssertMove(text_range_provider, TextUnit_Character,
+             /*count*/ 4,
+             /*expected_text*/ L"",
+             /*expected_count*/ 4);
+  // Trying to move past the last character should have no effect.
+  AssertMove(text_range_provider, TextUnit_Character,
+             /*count*/ 70,
+             /*expected_text*/ L"",
+             /*expected_count*/ 0);
+  AssertMove(text_range_provider, TextUnit_Character,
+             /*count*/ -2,
+             /*expected_text*/ L"",
+             /*expected_count*/ -2);
+
+  AXNodePosition::SetTreeForTesting(nullptr);
+}
+
+TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderMoveFormat) {
+  Init(BuildAXTreeForMove());
+  AXNode* root_node = GetRootNode();
+  AXNodePosition::SetTreeForTesting(tree_.get());
+
+  ComPtr<ITextRangeProvider> text_range_provider;
+  GetTextRangeProviderFromTextNode(text_range_provider, root_node);
+
+  // TODO(https://crbug.com/928948): add tests
+
+  AXNodePosition::SetTreeForTesting(nullptr);
+}
+
+TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderMoveWord) {
+  Init(BuildAXTreeForMove());
+  AXNode* root_node = GetRootNode();
+  AXNodePosition::SetTreeForTesting(tree_.get());
+
+  ComPtr<ITextRangeProvider> text_range_provider;
+  GetTextRangeProviderFromTextNode(text_range_provider, root_node);
+
+  // Moving by 0 should have no effect.
+  AssertMove(
+      text_range_provider, TextUnit_Word,
+      /*count*/ 0,
+      /*expected_text*/
+      L"First line of textStandalone linebold textParagraph 1Paragraph 2",
+      /*expected_count*/ 0);
+
+  // Move forward
+  AssertMove(text_range_provider, TextUnit_Word,
+             /*count*/ 1,
+             /*expected_text*/ L"line",
+             /*expected_count*/ 1);
+  AssertMove(text_range_provider, TextUnit_Word,
+             /*count*/ 2,
+             /*expected_text*/ L"text",
+             /*expected_count*/ 2);
+  AssertMove(text_range_provider, TextUnit_Word,
+             /*count*/ 2,
+             /*expected_text*/ L"line",
+             /*expected_count*/ 2);
+  AssertMove(text_range_provider, TextUnit_Word,
+             /*count*/ 3,
+             /*expected_text*/ L"Paragraph",
+             /*expected_count*/ 3);
+  AssertMove(text_range_provider, TextUnit_Word,
+             /*count*/ 3,
+             /*expected_text*/ L"2",
+             /*expected_count*/ 3);
+  // Trying to move past the last character should have no effect.
+  AssertMove(text_range_provider, TextUnit_Word,
+             /*count*/ 1,
+             /*expected_text*/ L"2",
+             /*expected_count*/ 0);
+
+  // Move backwards
+  AssertMove(text_range_provider, TextUnit_Word,
+             /*count*/ -3,
+             /*expected_text*/ L"Paragraph",
+             /*expected_count*/ -3);
+  AssertMove(text_range_provider, TextUnit_Word,
+             /*count*/ -3,
+             /*expected_text*/ L"line",
+             /*expected_count*/ -3);
+  AssertMove(text_range_provider, TextUnit_Word,
+             /*count*/ -2,
+             /*expected_text*/ L"text",
+             /*expected_count*/ -2);
+  AssertMove(text_range_provider, TextUnit_Word,
+             /*count*/ -3,
+             /*expected_text*/ L"First",
+             /*expected_count*/ -3);
+  // Moving backward by any number of words at the start of document
+  // should have no effect.
+  AssertMove(text_range_provider, TextUnit_Word,
+             /*count*/ -20,
+             /*expected_text*/ L"First",
+             /*expected_count*/ 0);
+
+  // Degenerate range moves
+  AssertMoveEndpointByUnit(text_range_provider, TextPatternRangeEndpoint_End,
+                           TextUnit_Document,
+                           /*count*/ -1,
+                           /*expected_text*/ L"",
+                           /*expected_count*/ -1);
+  AssertMove(text_range_provider, TextUnit_Word,
+             /*count*/ 4,
+             /*expected_text*/ L"",
+             /*expected_count*/ 4);
+  // Trying to move past the last character should have no effect.
+  AssertMove(text_range_provider, TextUnit_Word,
+             /*count*/ 70,
+             /*expected_text*/ L"",
+             /*expected_count*/ 0);
+  AssertMove(text_range_provider, TextUnit_Word,
+             /*count*/ -2,
+             /*expected_text*/ L"",
+             /*expected_count*/ -2);
+
+  AXNodePosition::SetTreeForTesting(nullptr);
+}
+
+TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderMoveLine) {
+  Init(BuildAXTreeForMove());
+  AXNode* root_node = GetRootNode();
+  AXNodePosition::SetTreeForTesting(tree_.get());
+
+  ComPtr<ITextRangeProvider> text_range_provider;
+  GetTextRangeProviderFromTextNode(text_range_provider, root_node);
+
+  // Moving by 0 should have no effect.
+  AssertMove(
+      text_range_provider, TextUnit_Line,
+      /*count*/ 0,
+      /*expected_text*/
+      L"First line of textStandalone linebold textParagraph 1Paragraph 2",
+      /*expected_count*/ 0);
+
+  // Move forward
+  AssertMove(text_range_provider, TextUnit_Line,
+             /*count*/ 1,
+             /*expected_text*/ L"Standalone line",
+             /*expected_count*/ 1);
+  AssertMove(text_range_provider, TextUnit_Line,
+             /*count*/ 1,
+             /*expected_text*/ L"bold text",
+             /*expected_count*/ 1);
+  AssertMove(text_range_provider, TextUnit_Line,
+             /*count*/ 2,
+             /*expected_text*/ L"Paragraph 2",
+             /*expected_count*/ 2);
+  // Trying to move past the last character should have no effect.
+  AssertMove(text_range_provider, TextUnit_Line,
+             /*count*/ 1,
+             /*expected_text*/ L"Paragraph 2",
+             /*expected_count*/ 0);
+
+  // Move backwards
+  AssertMove(text_range_provider, TextUnit_Line,
+             /*count*/ -1,
+             /*expected_text*/ L"Paragraph 1",
+             /*expected_count*/ -1);
+  AssertMove(text_range_provider, TextUnit_Line,
+             /*count*/ -3,
+             /*expected_text*/ L"First line of text",
+             /*expected_count*/ -3);
+  // Moving backward by any number of words at the start of document
+  // should have no effect.
+  AssertMove(text_range_provider, TextUnit_Line,
+             /*count*/ -20,
+             /*expected_text*/ L"First line of text",
+             /*expected_count*/ 0);
+
+  // Degenerate range moves
+  AssertMoveEndpointByUnit(text_range_provider, TextPatternRangeEndpoint_End,
+                           TextUnit_Document,
+                           /*count*/ -1,
+                           /*expected_text*/ L"",
+                           /*expected_count*/ -1);
+  AssertMove(text_range_provider, TextUnit_Line,
+             /*count*/ 4,
+             /*expected_text*/ L"",
+             /*expected_count*/ 4);
+  // Trying to move past the last character should have no effect.
+  AssertMove(text_range_provider, TextUnit_Line,
+             /*count*/ 70,
+             /*expected_text*/ L"",
+             /*expected_count*/ 0);
+  AssertMove(text_range_provider, TextUnit_Line,
+             /*count*/ -2,
+             /*expected_text*/ L"",
+             /*expected_count*/ -2);
+
+  AXNodePosition::SetTreeForTesting(nullptr);
+}
+
+TEST_F(AXPlatformNodeTextRangeProviderTest,
+       TestITextRangeProviderMoveParagraph) {
+  Init(BuildAXTreeForMove());
+  AXNode* root_node = GetRootNode();
+  AXNodePosition::SetTreeForTesting(tree_.get());
+
+  ComPtr<ITextRangeProvider> text_range_provider;
+  GetTextRangeProviderFromTextNode(text_range_provider, root_node);
+
+  // TODO(https://crbug.com/928948): add tests
+
+  AXNodePosition::SetTreeForTesting(nullptr);
+}
+
+TEST_F(AXPlatformNodeTextRangeProviderTest,
+       TestITextRangeProviderMoveDocument) {
+  Init(BuildAXTreeForMove());
+  AXNode* root_node = GetRootNode();
+  AXNodePosition::SetTreeForTesting(tree_.get());
+
+  ComPtr<ITextRangeProvider> text_range_provider;
+  GetTextRangeProviderFromTextNode(text_range_provider, root_node);
+
+  // Moving by 0 should have no effect.
+  AssertMove(
+      text_range_provider, TextUnit_Document,
+      /*count*/ 0,
+      /*expected_text*/
+      L"First line of textStandalone linebold textParagraph 1Paragraph 2",
+      /*expected_count*/ 0);
+
+  AssertMove(
+      text_range_provider, TextUnit_Document,
+      /*count*/ -1,
+      /*expected_text*/
+      L"First line of textStandalone linebold textParagraph 1Paragraph 2",
+      /*expected_count*/ -1);
+  AssertMove(
+      text_range_provider, TextUnit_Document,
+      /*count*/ 2,
+      /*expected_text*/
+      L"First line of textStandalone linebold textParagraph 1Paragraph 2",
+      /*expected_count*/ 0);
+  AssertMove(
+      text_range_provider, TextUnit_Page,
+      /*count*/ 1,
+      /*expected_text*/
+      L"First line of textStandalone linebold textParagraph 1Paragraph 2",
+      /*expected_count*/ 0);
+  AssertMove(
+      text_range_provider, TextUnit_Page,
+      /*count*/ -1,
+      /*expected_text*/
+      L"First line of textStandalone linebold textParagraph 1Paragraph 2",
+      /*expected_count*/ 0);
+
+  // Degenerate range moves
+  AssertMoveEndpointByUnit(text_range_provider, TextPatternRangeEndpoint_End,
+                           TextUnit_Document,
+                           /*count*/ -2,
+                           /*expected_text*/ L"",
+                           /*expected_count*/ -1);
+  AssertMove(text_range_provider, TextUnit_Page,
+             /*count*/ 4,
+             /*expected_text*/ L"",
+             /*expected_count*/ 0);
+  // Trying to move past the last character should have no effect.
+  AssertMove(text_range_provider, TextUnit_Document,
+             /*count*/ 1,
+             /*expected_text*/ L"",
+             /*expected_count*/ 1);
+  AssertMove(text_range_provider, TextUnit_Page,
+             /*count*/ -2,
+             /*expected_text*/ L"",
+             /*expected_count*/ 0);
+  AssertMove(text_range_provider, TextUnit_Document,
+             /*count*/ -1,
+             /*expected_text*/ L"",
+             /*expected_count*/ -1);
+
+  AXNodePosition::SetTreeForTesting(nullptr);
+}
+
+TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderMove) {
+  Init(BuildAXTreeForMove());
+  AXNode* root_node = GetRootNode();
+  AXNodePosition::SetTreeForTesting(tree_.get());
+
+  ComPtr<ITextRangeProvider> text_range_provider;
+  GetTextRangeProviderFromTextNode(text_range_provider, root_node);
+
+  // TODO(https://crbug.com/928948): test intermixed unit types
+
+  AXNodePosition::SetTreeForTesting(nullptr);
+}
+
+TEST_F(AXPlatformNodeTextRangeProviderTest,
        TestITextRangeProviderMoveEndpointByDocument) {
   Init(BuildTextDocument({"some text", "more text", "even more text"}));
   AXNodePosition::SetTreeForTesting(tree_.get());
@@ -750,50 +1265,55 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
     GetTextRangeProviderFromTextNode(text_range_provider, text_node);
 
     // Verify MoveEndpointByUnit with zero count has no effect
-    int count;
-    ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
-        TextPatternRangeEndpoint_End, textunit, /*count*/ 0, &count));
-    ASSERT_EQ(0, count);
+    AssertMoveEndpointByUnit(text_range_provider, TextPatternRangeEndpoint_End,
+                             textunit,
+                             /*count*/ 0,
+                             /*expected_text*/ L"more text",
+                             /*expected_count*/ 0);
 
     // Move the endpoint to the end of the document. Verify all text content.
-    ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
-        TextPatternRangeEndpoint_End, textunit, /*count*/ 1, &count));
-    ASSERT_EQ(1, count);
-    EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"more texteven more text");
+    AssertMoveEndpointByUnit(text_range_provider, TextPatternRangeEndpoint_End,
+                             textunit,
+                             /*count*/ 1,
+                             /*expected_text*/ L"more texteven more text",
+                             /*expected_count*/ 1);
 
     // Verify no moves occur since the end is already at the end of the document
-    ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
-        TextPatternRangeEndpoint_End, textunit, /*count*/ 5, &count));
-    ASSERT_EQ(0, count);
-    EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"more texteven more text");
+    AssertMoveEndpointByUnit(text_range_provider, TextPatternRangeEndpoint_End,
+                             textunit,
+                             /*count*/ 5,
+                             /*expected_text*/ L"more texteven more text",
+                             /*expected_count*/ 0);
 
     // Move the end before the start
-    ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
-        TextPatternRangeEndpoint_End, textunit, /*count*/ -4, &count));
-    ASSERT_EQ(-1, count);
-    EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"");
+    AssertMoveEndpointByUnit(text_range_provider, TextPatternRangeEndpoint_End,
+                             textunit,
+                             /*count*/ -4,
+                             /*expected_text*/ L"",
+                             /*expected_count*/ -1);
 
     // Move the end back to the end of the document. The text content
     // should now include the entire document since end was previously
     // moved before start.
-    ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
-        TextPatternRangeEndpoint_End, textunit, /*count*/ 1, &count));
-    ASSERT_EQ(1, count);
-    EXPECT_UIA_TEXTRANGE_EQ(text_range_provider,
-                            L"some textmore texteven more text");
+    AssertMoveEndpointByUnit(
+        text_range_provider, TextPatternRangeEndpoint_End, textunit,
+        /*count*/ 1,
+        /*expected_text*/ L"some textmore texteven more text",
+        /*expected_count*/ 1);
 
     // Move the start point to the end
-    ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
-        TextPatternRangeEndpoint_Start, textunit, /*count*/ 3, &count));
-    ASSERT_EQ(1, count);
-    EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"");
+    AssertMoveEndpointByUnit(text_range_provider,
+                             TextPatternRangeEndpoint_Start, textunit,
+                             /*count*/ 3,
+                             /*expected_text*/ L"",
+                             /*expected_count*/ 1);
 
     // Move the start point back to the beginning
-    ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
-        TextPatternRangeEndpoint_Start, textunit, /*count*/ -3, &count));
-    ASSERT_EQ(-1, count);
-    EXPECT_UIA_TEXTRANGE_EQ(text_range_provider,
-                            L"some textmore texteven more text");
+    AssertMoveEndpointByUnit(
+        text_range_provider, TextPatternRangeEndpoint_Start, textunit,
+        /*count*/ -3,
+        /*expected_text*/ L"some textmore texteven more text",
+        /*expected_count*/ -1);
   }
 }
 
@@ -808,90 +1328,98 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"some text");
 
   // Verify MoveEndpointByUnit with zero count has no effect
-  int count;
-  ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
-      TextPatternRangeEndpoint_End, TextUnit_Character, /*count*/ 0, &count));
-  ASSERT_EQ(0, count);
   EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"some text");
+  AssertMoveEndpointByUnit(text_range_provider, TextPatternRangeEndpoint_Start,
+                           TextUnit_Character,
+                           /*count*/ 0,
+                           /*expected_text*/ L"some text",
+                           /*expected_count*/ 0);
 
   // Test start and end node single-unit moves within a single node
-  ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
-      TextPatternRangeEndpoint_Start, TextUnit_Character, /*count*/ 1, &count));
-  ASSERT_EQ(1, count);
-  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"ome text");
-
-  ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
-      TextPatternRangeEndpoint_End, TextUnit_Character, /*count*/ -1, &count));
-  ASSERT_EQ(-1, count);
-  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"ome tex");
+  AssertMoveEndpointByUnit(text_range_provider, TextPatternRangeEndpoint_Start,
+                           TextUnit_Character,
+                           /*count*/ 1,
+                           /*expected_text*/ L"ome text",
+                           /*expected_count*/ 1);
+  AssertMoveEndpointByUnit(text_range_provider, TextPatternRangeEndpoint_End,
+                           TextUnit_Character,
+                           /*count*/ -1,
+                           /*expected_text*/ L"ome tex",
+                           /*expected_count*/ -1);
 
   // Test start and end node multi-unit moves within a single node
-  ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
-      TextPatternRangeEndpoint_Start, TextUnit_Character, /*count*/ 2, &count));
-  ASSERT_EQ(2, count);
-  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"e tex");
-
-  ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
-      TextPatternRangeEndpoint_End, TextUnit_Character, /*count*/ -3, &count));
-  ASSERT_EQ(-3, count);
-  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"e ");
+  AssertMoveEndpointByUnit(text_range_provider, TextPatternRangeEndpoint_Start,
+                           TextUnit_Character,
+                           /*count*/ 2,
+                           /*expected_text*/ L"e tex",
+                           /*expected_count*/ 2);
+  AssertMoveEndpointByUnit(text_range_provider, TextPatternRangeEndpoint_End,
+                           TextUnit_Character,
+                           /*count*/ -3,
+                           /*expected_text*/ L"e ",
+                           /*expected_count*/ -3);
 
   // Move end to before start - ensure count is truncated
-  ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
-      TextPatternRangeEndpoint_End, TextUnit_Character, /*count*/ -10, &count));
-  ASSERT_EQ(-5, count);
-  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"");
+  AssertMoveEndpointByUnit(text_range_provider, TextPatternRangeEndpoint_End,
+                           TextUnit_Character,
+                           /*count*/ -10,
+                           /*expected_text*/ L"",
+                           /*expected_count*/ -5);
 
   // Move end back out - ensure both start and end were moved
-  ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
-      TextPatternRangeEndpoint_End, TextUnit_Character, /*count*/ 4, &count));
-  ASSERT_EQ(4, count);
-  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"some");
+  AssertMoveEndpointByUnit(text_range_provider, TextPatternRangeEndpoint_End,
+                           TextUnit_Character,
+                           /*count*/ 4,
+                           /*expected_text*/ L"some",
+                           /*expected_count*/ 4);
 
   // Move start past end, ensure a degenerate range is created
-  ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
-      TextPatternRangeEndpoint_Start, TextUnit_Character, /*count*/ 7, &count));
-  ASSERT_EQ(7, count);
-  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"");
+  AssertMoveEndpointByUnit(text_range_provider, TextPatternRangeEndpoint_Start,
+                           TextUnit_Character,
+                           /*count*/ 7,
+                           /*expected_text*/ L"",
+                           /*expected_count*/ 7);
 
   // Move start back to its prior position and verify that end was also moved
   // as part of moving start past end
-  ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
-      TextPatternRangeEndpoint_Start, TextUnit_Character, /*count*/ -7,
-      &count));
-  ASSERT_EQ(-7, count);
-  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"some te");
+  AssertMoveEndpointByUnit(text_range_provider, TextPatternRangeEndpoint_Start,
+                           TextUnit_Character,
+                           /*count*/ -7,
+                           /*expected_text*/ L"some te",
+                           /*expected_count*/ -7);
 
   // Move end into the adjacent node
-  ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
-      TextPatternRangeEndpoint_End, TextUnit_Character, /*count*/ 3, &count));
-  ASSERT_EQ(3, count);
-  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"some text");
+  AssertMoveEndpointByUnit(text_range_provider, TextPatternRangeEndpoint_End,
+                           TextUnit_Character,
+                           /*count*/ 3,
+                           /*expected_text*/ L"some text",
+                           /*expected_count*/ 3);
 
   // Move end to the end of the document, ensure truncated count
-  ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
-      TextPatternRangeEndpoint_End, TextUnit_Character, /*count*/ 30, &count));
-  ASSERT_EQ(24, count);
-  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider,
-                          L"some textmore texteven more text");
+  AssertMoveEndpointByUnit(
+      text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Character,
+      /*count*/ 30,
+      /*expected_text*/ L"some textmore texteven more text",
+      /*expected_count*/ 24);
 
   // Move start beyond end, ensure truncated count and degenerate range
-  ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
-      TextPatternRangeEndpoint_Start, TextUnit_Character, /*count*/ 40,
-      &count));
-  ASSERT_EQ(34, count);
-  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"");
+  AssertMoveEndpointByUnit(text_range_provider, TextPatternRangeEndpoint_Start,
+                           TextUnit_Character,
+                           /*count*/ 40,
+                           /*expected_text*/ L"",
+                           /*expected_count*/ 34);
 
   // Move end before start, ensure both positions are moved
-  ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
-      TextPatternRangeEndpoint_End, TextUnit_Character, /*count*/ -10, &count));
-  ASSERT_EQ(-10, count);
-  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"");
-
-  ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
-      TextPatternRangeEndpoint_End, TextUnit_Character, /*count*/ 5, &count));
-  ASSERT_EQ(5, count);
-  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L" more");
+  AssertMoveEndpointByUnit(text_range_provider, TextPatternRangeEndpoint_End,
+                           TextUnit_Character,
+                           /*count*/ -10,
+                           /*expected_text*/ L"",
+                           /*expected_count*/ -10);
+  AssertMoveEndpointByUnit(text_range_provider, TextPatternRangeEndpoint_End,
+                           TextUnit_Character,
+                           /*count*/ 5,
+                           /*expected_text*/ L" more",
+                           /*expected_count*/ 5);
 }
 
 TEST_F(AXPlatformNodeTextRangeProviderTest,
@@ -906,87 +1434,91 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"more text");
 
   // Moving with zero count does not alter the range.
-  int count;
-  ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
-      TextPatternRangeEndpoint_End, TextUnit_Word, /*count*/ 0, &count));
-  ASSERT_EQ(0, count);
-  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"more text");
+  AssertMoveEndpointByUnit(text_range_provider, TextPatternRangeEndpoint_End,
+                           TextUnit_Word,
+                           /*count*/ 0,
+                           /*expected_text*/ L"more text",
+                           /*expected_count*/ 0);
 
   // Moving the start forward and backward.
-  ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
-      TextPatternRangeEndpoint_Start, TextUnit_Word, /*count*/ 1, &count));
-  ASSERT_EQ(1, count);
-  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"text");
-
-  ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
-      TextPatternRangeEndpoint_Start, TextUnit_Word, /*count*/ -1, &count));
-  ASSERT_EQ(-1, count);
-  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"more text");
+  AssertMoveEndpointByUnit(text_range_provider, TextPatternRangeEndpoint_Start,
+                           TextUnit_Word,
+                           /*count*/ 1,
+                           /*expected_text*/ L"text",
+                           /*expected_count*/ 1);
+  AssertMoveEndpointByUnit(text_range_provider, TextPatternRangeEndpoint_Start,
+                           TextUnit_Word,
+                           /*count*/ -1,
+                           /*expected_text*/ L"more text",
+                           /*expected_count*/ -1);
 
   // Moving the end backward and forward.
-  ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
-      TextPatternRangeEndpoint_End, TextUnit_Word, /*count*/ -1, &count));
-  ASSERT_EQ(-1, count);
-  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"more");
-
-  ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
-      TextPatternRangeEndpoint_End, TextUnit_Word, /*count*/ 1, &count));
-  ASSERT_EQ(1, count);
-  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"more text");
+  AssertMoveEndpointByUnit(text_range_provider, TextPatternRangeEndpoint_End,
+                           TextUnit_Word,
+                           /*count*/ -1,
+                           /*expected_text*/ L"more",
+                           /*expected_count*/ -1);
+  AssertMoveEndpointByUnit(text_range_provider, TextPatternRangeEndpoint_End,
+                           TextUnit_Word,
+                           /*count*/ 1,
+                           /*expected_text*/ L"more text",
+                           /*expected_count*/ 1);
 
   // Moving the start past the end, then reverting.
-  ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
-      TextPatternRangeEndpoint_Start, TextUnit_Word, /*count*/ 3, &count));
-  ASSERT_EQ(3, count);
-  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"");
-
-  ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
-      TextPatternRangeEndpoint_Start, TextUnit_Word, /*count*/ -3, &count));
-  ASSERT_EQ(-3, count);
-  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"more texteven ");
-
-  ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
-      TextPatternRangeEndpoint_End, TextUnit_Word, /*count*/ -2, &count));
-  ASSERT_EQ(-2, count);
-  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"more text");
+  AssertMoveEndpointByUnit(text_range_provider, TextPatternRangeEndpoint_Start,
+                           TextUnit_Word,
+                           /*count*/ 3,
+                           /*expected_text*/ L"",
+                           /*expected_count*/ 3);
+  AssertMoveEndpointByUnit(text_range_provider, TextPatternRangeEndpoint_Start,
+                           TextUnit_Word,
+                           /*count*/ -3,
+                           /*expected_text*/ L"more texteven ",
+                           /*expected_count*/ -3);
+  AssertMoveEndpointByUnit(text_range_provider, TextPatternRangeEndpoint_End,
+                           TextUnit_Word,
+                           /*count*/ -2,
+                           /*expected_text*/ L"more text",
+                           /*expected_count*/ -2);
 
   // Moving the end past the start, then reverting.
-  ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
-      TextPatternRangeEndpoint_End, TextUnit_Word, /*count*/ -3, &count));
-  ASSERT_EQ(-3, count);
-  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"");
-
-  ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
-      TextPatternRangeEndpoint_End, TextUnit_Word, /*count*/ 3, &count));
-  ASSERT_EQ(3, count);
-  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L" textmore text");
-
-  ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
-      TextPatternRangeEndpoint_Start, TextUnit_Word, /*count*/ 2, &count));
-  ASSERT_EQ(2, count);
-  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"more text");
+  AssertMoveEndpointByUnit(text_range_provider, TextPatternRangeEndpoint_End,
+                           TextUnit_Word,
+                           /*count*/ -3,
+                           /*expected_text*/ L"",
+                           /*expected_count*/ -3);
+  AssertMoveEndpointByUnit(text_range_provider, TextPatternRangeEndpoint_End,
+                           TextUnit_Word,
+                           /*count*/ 3,
+                           /*expected_text*/ L" textmore text",
+                           /*expected_count*/ 3);
+  AssertMoveEndpointByUnit(text_range_provider, TextPatternRangeEndpoint_Start,
+                           TextUnit_Word,
+                           /*count*/ 2,
+                           /*expected_text*/ L"more text",
+                           /*expected_count*/ 2);
 
   // Moving the endpoints further than both ends of the document.
-  ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
-      TextPatternRangeEndpoint_End, TextUnit_Word, /*count*/ 5, &count));
-  ASSERT_EQ(3, count);
-  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"more texteven more text");
-
-  ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
-      TextPatternRangeEndpoint_Start, TextUnit_Word, /*count*/ 6, &count));
-  ASSERT_EQ(4, count);
-  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"text");
-
-  ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
-      TextPatternRangeEndpoint_Start, TextUnit_Word, /*count*/ -7, &count));
-  ASSERT_EQ(-6, count);
-  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider,
-                          L"some textmore texteven more text");
-
-  ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
-      TextPatternRangeEndpoint_End, TextUnit_Word, /*count*/ -8, &count));
-  ASSERT_EQ(-6, count);
-  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"some");
+  AssertMoveEndpointByUnit(text_range_provider, TextPatternRangeEndpoint_End,
+                           TextUnit_Word,
+                           /*count*/ 5,
+                           /*expected_text*/ L"more texteven more text",
+                           /*expected_count*/ 3);
+  AssertMoveEndpointByUnit(text_range_provider, TextPatternRangeEndpoint_Start,
+                           TextUnit_Word,
+                           /*count*/ 6,
+                           /*expected_text*/ L"text",
+                           /*expected_count*/ 4);
+  AssertMoveEndpointByUnit(
+      text_range_provider, TextPatternRangeEndpoint_Start, TextUnit_Word,
+      /*count*/ -7,
+      /*expected_text*/ L"some textmore texteven more text",
+      /*expected_count*/ -6);
+  AssertMoveEndpointByUnit(text_range_provider, TextPatternRangeEndpoint_End,
+                           TextUnit_Word,
+                           /*count*/ -8,
+                           /*expected_text*/ L"some",
+                           /*expected_count*/ -6);
 }
 
 TEST_F(AXPlatformNodeTextRangeProviderTest,
@@ -1000,75 +1532,79 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"3");
 
   // Moving with zero count does not alter the range.
-  int count;
-  ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
-      TextPatternRangeEndpoint_End, TextUnit_Line, /*count*/ 0, &count));
-  ASSERT_EQ(0, count);
-  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"3");
+  AssertMoveEndpointByUnit(text_range_provider, TextPatternRangeEndpoint_End,
+                           TextUnit_Line,
+                           /*count*/ 0,
+                           /*expected_text*/ L"3",
+                           /*expected_count*/ 0);
 
   // Moving the start backward and forward.
-  ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
-      TextPatternRangeEndpoint_Start, TextUnit_Line, /*count*/ -2, &count));
-  ASSERT_EQ(-2, count);
-  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"123");
-
-  ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
-      TextPatternRangeEndpoint_Start, TextUnit_Line, /*count*/ 1, &count));
-  ASSERT_EQ(1, count);
-  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"23");
+  AssertMoveEndpointByUnit(text_range_provider, TextPatternRangeEndpoint_Start,
+                           TextUnit_Line,
+                           /*count*/ -2,
+                           /*expected_text*/ L"123",
+                           /*expected_count*/ -2);
+  AssertMoveEndpointByUnit(text_range_provider, TextPatternRangeEndpoint_Start,
+                           TextUnit_Line,
+                           /*count*/ 1,
+                           /*expected_text*/ L"23",
+                           /*expected_count*/ 1);
 
   // Moving the end forward and backward.
-  ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
-      TextPatternRangeEndpoint_End, TextUnit_Line, /*count*/ 3, &count));
-  ASSERT_EQ(3, count);
-  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"23456");
-
-  ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
-      TextPatternRangeEndpoint_End, TextUnit_Line, /*count*/ -2, &count));
-  ASSERT_EQ(-2, count);
-  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"234");
+  AssertMoveEndpointByUnit(text_range_provider, TextPatternRangeEndpoint_End,
+                           TextUnit_Line,
+                           /*count*/ 3,
+                           /*expected_text*/ L"23456",
+                           /*expected_count*/ 3);
+  AssertMoveEndpointByUnit(text_range_provider, TextPatternRangeEndpoint_End,
+                           TextUnit_Line,
+                           /*count*/ -2,
+                           /*expected_text*/ L"234",
+                           /*expected_count*/ -2);
 
   // Moving the end past the start and vice versa.
-  ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
-      TextPatternRangeEndpoint_End, TextUnit_Line, /*count*/ -4, &count));
-  ASSERT_EQ(-4, count);
-  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"");
-
-  ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
-      TextPatternRangeEndpoint_Start, TextUnit_Line, /*count*/ -1, &count));
-  ASSERT_EQ(-1, count);
-  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"0");
-
-  ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
-      TextPatternRangeEndpoint_Start, TextUnit_Line, /*count*/ 6, &count));
-  ASSERT_EQ(6, count);
-  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"");
-
-  ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
-      TextPatternRangeEndpoint_Start, TextUnit_Line, /*count*/ -6, &count));
-  ASSERT_EQ(-6, count);
-  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"012345");
+  AssertMoveEndpointByUnit(text_range_provider, TextPatternRangeEndpoint_End,
+                           TextUnit_Line,
+                           /*count*/ -4,
+                           /*expected_text*/ L"",
+                           /*expected_count*/ -4);
+  AssertMoveEndpointByUnit(text_range_provider, TextPatternRangeEndpoint_Start,
+                           TextUnit_Line,
+                           /*count*/ -1,
+                           /*expected_text*/ L"0",
+                           /*expected_count*/ -1);
+  AssertMoveEndpointByUnit(text_range_provider, TextPatternRangeEndpoint_Start,
+                           TextUnit_Line,
+                           /*count*/ 6,
+                           /*expected_text*/ L"",
+                           /*expected_count*/ 6);
+  AssertMoveEndpointByUnit(text_range_provider, TextPatternRangeEndpoint_Start,
+                           TextUnit_Line,
+                           /*count*/ -6,
+                           /*expected_text*/ L"012345",
+                           /*expected_count*/ -6);
 
   // Moving the endpoints further than both ends of the document.
-  ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
-      TextPatternRangeEndpoint_End, TextUnit_Line, /*count*/ -13, &count));
-  ASSERT_EQ(-5, count);
-  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"0");
-
-  ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
-      TextPatternRangeEndpoint_End, TextUnit_Line, /*count*/ 11, &count));
-  ASSERT_EQ(6, count);
-  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"0123456");
-
-  ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
-      TextPatternRangeEndpoint_Start, TextUnit_Line, /*count*/ 9, &count));
-  ASSERT_EQ(6, count);
-  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"6");
-
-  ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
-      TextPatternRangeEndpoint_Start, TextUnit_Line, /*count*/ -7, &count));
-  ASSERT_EQ(-6, count);
-  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"0123456");
+  AssertMoveEndpointByUnit(text_range_provider, TextPatternRangeEndpoint_End,
+                           TextUnit_Line,
+                           /*count*/ -13,
+                           /*expected_text*/ L"0",
+                           /*expected_count*/ -5);
+  AssertMoveEndpointByUnit(text_range_provider, TextPatternRangeEndpoint_End,
+                           TextUnit_Line,
+                           /*count*/ 11,
+                           /*expected_text*/ L"0123456",
+                           /*expected_count*/ 6);
+  AssertMoveEndpointByUnit(text_range_provider, TextPatternRangeEndpoint_Start,
+                           TextUnit_Line,
+                           /*count*/ 9,
+                           /*expected_text*/ L"6",
+                           /*expected_count*/ 6);
+  AssertMoveEndpointByUnit(text_range_provider, TextPatternRangeEndpoint_Start,
+                           TextUnit_Line,
+                           /*count*/ -7,
+                           /*expected_text*/ L"0123456",
+                           /*expected_count*/ -6);
 }
 
 TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderCompare) {
