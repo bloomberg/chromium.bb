@@ -126,13 +126,13 @@ public class ChildConnectionAllocatorTest {
 
     private final TestConnectionFactory mTestConnectionFactory = new TestConnectionFactory();
 
-    private ChildConnectionAllocator mAllocator;
+    private ChildConnectionAllocator.FixedSizeAllocatorImpl mAllocator;
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
 
-        mAllocator = ChildConnectionAllocator.createForTest(null, TEST_PACKAGE_NAME,
+        mAllocator = ChildConnectionAllocator.createFixedForTesting(null, TEST_PACKAGE_NAME,
                 "AllocatorTest", MAX_CONNECTION_NUMBER, true /* bindToCaller */,
                 false /* bindAsExternalService */, false /* useStrongBinding */);
         mAllocator.setConnectionFactoryForTesting(mTestConnectionFactory);
@@ -177,7 +177,7 @@ public class ChildConnectionAllocatorTest {
     @Feature({"ProcessManagement"})
     public void testQueueAllocation() {
         Runnable freeConnectionCallback = mock(Runnable.class);
-        mAllocator = ChildConnectionAllocator.createForTest(freeConnectionCallback,
+        mAllocator = ChildConnectionAllocator.createFixedForTesting(freeConnectionCallback,
                 TEST_PACKAGE_NAME, "AllocatorTest", 1, true /* bindToCaller */,
                 false /* bindAsExternalService */, false /* useStrongBinding */);
         mAllocator.setConnectionFactoryForTesting(mTestConnectionFactory);
@@ -219,8 +219,8 @@ public class ChildConnectionAllocatorTest {
     @Feature({"ProcessManagement"})
     public void testStrongBindingParam() {
         for (boolean useStrongBinding : new boolean[] {true, false}) {
-            ChildConnectionAllocator allocator = ChildConnectionAllocator.createForTest(null,
-                    TEST_PACKAGE_NAME, "AllocatorTest", MAX_CONNECTION_NUMBER,
+            ChildConnectionAllocator allocator = ChildConnectionAllocator.createFixedForTesting(
+                    null, TEST_PACKAGE_NAME, "AllocatorTest", MAX_CONNECTION_NUMBER,
                     true /* bindToCaller */, false /* bindAsExternalService */, useStrongBinding);
             allocator.setConnectionFactoryForTesting(mTestConnectionFactory);
             ChildProcessConnection connection = allocator.allocate(

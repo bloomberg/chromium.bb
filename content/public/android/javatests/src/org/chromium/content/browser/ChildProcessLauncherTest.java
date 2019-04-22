@@ -351,7 +351,7 @@ public class ChildProcessLauncherTest {
                         new Callable<ChildConnectionAllocator>() {
                             @Override
                             public ChildConnectionAllocator call() {
-                                return ChildConnectionAllocator.createForTest(null,
+                                return ChildConnectionAllocator.createFixedForTesting(null,
                                         "org.chromium.wrong_package", "WrongService",
                                         2 /* serviceCount */, false /* bindToCaller */,
                                         false /* bindAsExternalService */,

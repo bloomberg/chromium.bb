@@ -360,9 +360,10 @@ public final class ChildProcessLauncherHelperImpl {
                 String serviceName = !TextUtils.isEmpty(sSandboxedServicesNameForTesting)
                         ? sSandboxedServicesNameForTesting
                         : SandboxedProcessService.class.getName();
-                connectionAllocator = ChildConnectionAllocator.createForTest(freeSlotRunnable,
-                        packageName, serviceName, sSandboxedServicesCountForTesting, bindToCaller,
-                        bindAsExternalService, false /* useStrongBinding */);
+                connectionAllocator =
+                        ChildConnectionAllocator.createFixedForTesting(freeSlotRunnable,
+                                packageName, serviceName, sSandboxedServicesCountForTesting,
+                                bindToCaller, bindAsExternalService, false /* useStrongBinding */);
             } else {
                 connectionAllocator = ChildConnectionAllocator.create(context,
                         LauncherThread.getHandler(), freeSlotRunnable, packageName,

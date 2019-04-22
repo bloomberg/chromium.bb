@@ -25,7 +25,7 @@ import java.util.Queue;
  * process services. These connections are in a pool (the services are defined
  * in the AndroidManifest.xml).
  */
-public class ChildConnectionAllocator {
+public abstract class ChildConnectionAllocator {
     private static final String TAG = "ChildConnAllocator";
 
     /** Factory interface. Used by tests to specialize created connections. */
@@ -51,24 +51,13 @@ public class ChildConnectionAllocator {
     // The handler of the thread on which all interations should happen.
     private final Handler mLauncherHandler;
 
-    // Connections to services. Indices of the array correspond to the service numbers.
-    private final ChildProcessConnection[] mChildProcessConnections;
-
-    // Runnable which will be called when allocator wants to allocate a new connection, but does
-    // not have any more free slots. May be null.
-    private final Runnable mFreeSlotCallback;
-    private final String mPackageName;
-    private final String mServiceClassName;
-    private final boolean mBindToCaller;
-    private final boolean mBindAsExternalService;
+    /* package */ final String mPackageName;
+    /* package */ final String mServiceClassName;
+    /* package */ final boolean mBindToCaller;
+    /* package */ final boolean mBindAsExternalService;
     private final boolean mUseStrongBinding;
 
-    // The list of free (not bound) service indices.
-    private final ArrayList<Integer> mFreeConnectionIndices;
-
-    private final Queue<Runnable> mPendingAllocations = new ArrayDeque<>();
-
-    private ConnectionFactory mConnectionFactory = new ConnectionFactoryImpl();
+    /* package */ ConnectionFactory mConnectionFactory = new ConnectionFactoryImpl();
 
     /**
      * Factory method that retrieves the service name and number of service from the
@@ -103,7 +92,7 @@ public class ChildConnectionAllocator {
             throw new RuntimeException("Illegal meta data value: the child service doesn't exist");
         }
 
-        return new ChildConnectionAllocator(launcherHandler, freeSlotCallback, packageName,
+        return new FixedSizeAllocatorImpl(launcherHandler, freeSlotCallback, packageName,
                 serviceClassName, bindToCaller, bindAsExternalService, useStrongBinding,
                 numServices);
     }
@@ -113,18 +102,17 @@ public class ChildConnectionAllocator {
      * instead of being retrieved from the AndroidManifest.xml.
      */
     @VisibleForTesting
-    public static ChildConnectionAllocator createForTest(Runnable freeSlotCallback,
+    public static FixedSizeAllocatorImpl createFixedForTesting(Runnable freeSlotCallback,
             String packageName, String serviceClassName, int serviceCount, boolean bindToCaller,
             boolean bindAsExternalService, boolean useStrongBinding) {
-        return new ChildConnectionAllocator(new Handler(), freeSlotCallback, packageName,
+        return new FixedSizeAllocatorImpl(new Handler(), freeSlotCallback, packageName,
                 serviceClassName, bindToCaller, bindAsExternalService, useStrongBinding,
                 serviceCount);
     }
 
-    private ChildConnectionAllocator(Handler launcherHandler, Runnable freeSlotCallback,
-            String packageName, String serviceClassName, boolean bindToCaller,
-            boolean bindAsExternalService, boolean useStrongBinding, int numChildServices) {
-        mFreeSlotCallback = freeSlotCallback;
+    private ChildConnectionAllocator(Handler launcherHandler, String packageName,
+            String serviceClassName, boolean bindToCaller, boolean bindAsExternalService,
+            boolean useStrongBinding) {
         mLauncherHandler = launcherHandler;
         assert isRunningOnLauncherThread();
         mPackageName = packageName;
@@ -132,24 +120,15 @@ public class ChildConnectionAllocator {
         mBindToCaller = bindToCaller;
         mBindAsExternalService = bindAsExternalService;
         mUseStrongBinding = useStrongBinding;
-        mChildProcessConnections = new ChildProcessConnection[numChildServices];
-        mFreeConnectionIndices = new ArrayList<Integer>(numChildServices);
-        for (int i = 0; i < numChildServices; i++) {
-            mFreeConnectionIndices.add(i);
-        }
     }
 
     /** @return a bound connection, or null if there are no free slots. */
     public ChildProcessConnection allocate(Context context, Bundle serviceBundle,
             final ChildProcessConnection.ServiceCallback serviceCallback) {
         assert isRunningOnLauncherThread();
-        if (mFreeConnectionIndices.isEmpty()) {
-            Log.d(TAG, "Ran out of services to allocate.");
-            return null;
-        }
-        int slot = mFreeConnectionIndices.remove(0);
-        assert mChildProcessConnections[slot] == null;
-        ComponentName serviceName = new ComponentName(mPackageName, mServiceClassName + slot);
+
+        ChildProcessConnection connection = doAllocate(context, serviceBundle);
+        if (connection == null) return null;
 
         // Wrap the service callbacks so that:
         // - we can intercept onChildProcessDied and clean-up connections
@@ -215,91 +194,149 @@ public class ChildConnectionAllocator {
                     }
                 };
 
-        ChildProcessConnection connection = mConnectionFactory.createConnection(
-                context, serviceName, mBindToCaller, mBindAsExternalService, serviceBundle);
-        mChildProcessConnections[slot] = connection;
-
         connection.start(mUseStrongBinding, serviceCallbackWrapper);
-        Log.d(TAG, "Allocator allocated and bound a connection, name: %s, slot: %d",
-                mServiceClassName, slot);
         return connection;
     }
 
     /** Free connection allocated by this allocator. */
     private void free(ChildProcessConnection connection) {
         assert isRunningOnLauncherThread();
-
-        // mChildProcessConnections is relatively short (20 items at max at this point).
-        // We are better of iterating than caching in a map.
-        int slot = Arrays.asList(mChildProcessConnections).indexOf(connection);
-        if (slot == -1) {
-            Log.e(TAG, "Unable to find connection to free.");
-            assert false;
-        } else {
-            mChildProcessConnections[slot] = null;
-            assert !mFreeConnectionIndices.contains(slot);
-            mFreeConnectionIndices.add(slot);
-            Log.d(TAG, "Allocator freed a connection, name: %s, slot: %d", mServiceClassName, slot);
-        }
-
-        if (mPendingAllocations.isEmpty()) return;
-        mPendingAllocations.remove().run();
-        assert mFreeConnectionIndices.isEmpty();
-        if (!mPendingAllocations.isEmpty() && mFreeSlotCallback != null) mFreeSlotCallback.run();
+        doFree(connection);
     }
 
     // Can only be called once all slots are full, ie when allocate returns null.
     // The callback will be called when a slot becomes free, and should synchronous call
     // allocate to take the slot.
     public void queueAllocation(Runnable runnable) {
-        assert mFreeConnectionIndices.isEmpty();
-        boolean wasEmpty = mPendingAllocations.isEmpty();
-        mPendingAllocations.add(runnable);
-        if (wasEmpty && mFreeSlotCallback != null) mFreeSlotCallback.run();
-    }
-
-    public String getPackageName() {
-        return mPackageName;
-    }
-
-    public boolean anyConnectionAllocated() {
-        return mFreeConnectionIndices.size() < mChildProcessConnections.length;
-    }
-
-    public boolean isFreeConnectionAvailable() {
         assert isRunningOnLauncherThread();
-        return !mFreeConnectionIndices.isEmpty();
+        doQueueAllocation(runnable);
     }
 
-    public int getNumberOfServices() {
-        return mChildProcessConnections.length;
-    }
+    /** May return -1 if size is not fixed. */
+    public abstract int getNumberOfServices();
 
-    public boolean isConnectionFromAllocator(ChildProcessConnection connection) {
-        for (ChildProcessConnection existingConnection : mChildProcessConnections) {
-            if (existingConnection == connection) return true;
-        }
-        return false;
-    }
+    @VisibleForTesting
+    public abstract boolean anyConnectionAllocated();
+
+    /** @return the count of connections managed by the allocator */
+    @VisibleForTesting
+    public abstract int allocatedConnectionsCountForTesting();
 
     @VisibleForTesting
     public void setConnectionFactoryForTesting(ConnectionFactory connectionFactory) {
         mConnectionFactory = connectionFactory;
     }
 
-    /** @return the count of connections managed by the allocator */
-    @VisibleForTesting
-    public int allocatedConnectionsCountForTesting() {
-        assert isRunningOnLauncherThread();
-        return mChildProcessConnections.length - mFreeConnectionIndices.size();
-    }
-
-    @VisibleForTesting
-    public ChildProcessConnection getChildProcessConnectionAtSlotForTesting(int slotNumber) {
-        return mChildProcessConnections[slotNumber];
-    }
-
     private boolean isRunningOnLauncherThread() {
         return mLauncherHandler.getLooper() == Looper.myLooper();
+    }
+
+    /* package */ abstract ChildProcessConnection doAllocate(Context context, Bundle serviceBundle);
+    /* package */ abstract void doFree(ChildProcessConnection connection);
+    /* package */ abstract void doQueueAllocation(Runnable runnable);
+
+    @VisibleForTesting
+    public static class FixedSizeAllocatorImpl extends ChildConnectionAllocator {
+        // Runnable which will be called when allocator wants to allocate a new connection, but does
+        // not have any more free slots. May be null.
+        private final Runnable mFreeSlotCallback;
+
+        // Connections to services. Indices of the array correspond to the service numbers.
+        private final ChildProcessConnection[] mChildProcessConnections;
+
+        // The list of free (not bound) service indices.
+        private final ArrayList<Integer> mFreeConnectionIndices;
+
+        private final Queue<Runnable> mPendingAllocations = new ArrayDeque<>();
+
+        private FixedSizeAllocatorImpl(Handler launcherHandler, Runnable freeSlotCallback,
+                String packageName, String serviceClassName, boolean bindToCaller,
+                boolean bindAsExternalService, boolean useStrongBinding, int numChildServices) {
+            super(launcherHandler, packageName, serviceClassName, bindToCaller,
+                    bindAsExternalService, useStrongBinding);
+
+            mFreeSlotCallback = freeSlotCallback;
+            mChildProcessConnections = new ChildProcessConnection[numChildServices];
+
+            mFreeConnectionIndices = new ArrayList<Integer>(numChildServices);
+            for (int i = 0; i < numChildServices; i++) {
+                mFreeConnectionIndices.add(i);
+            }
+        }
+
+        @Override
+        /* package */ ChildProcessConnection doAllocate(Context context, Bundle serviceBundle) {
+            if (mFreeConnectionIndices.isEmpty()) {
+                Log.d(TAG, "Ran out of services to allocate.");
+                return null;
+            }
+            int slot = mFreeConnectionIndices.remove(0);
+            assert mChildProcessConnections[slot] == null;
+            ComponentName serviceName = new ComponentName(mPackageName, mServiceClassName + slot);
+
+            ChildProcessConnection connection = mConnectionFactory.createConnection(
+                    context, serviceName, mBindToCaller, mBindAsExternalService, serviceBundle);
+            mChildProcessConnections[slot] = connection;
+            Log.d(TAG, "Allocator allocated and bound a connection, name: %s, slot: %d",
+                    mServiceClassName, slot);
+            return connection;
+        }
+
+        @Override
+        /* package */ void doFree(ChildProcessConnection connection) {
+            // mChildProcessConnections is relatively short (40 items at max at this point).
+            // We are better of iterating than caching in a map.
+            int slot = Arrays.asList(mChildProcessConnections).indexOf(connection);
+            if (slot == -1) {
+                Log.e(TAG, "Unable to find connection to free.");
+                assert false;
+            } else {
+                mChildProcessConnections[slot] = null;
+                assert !mFreeConnectionIndices.contains(slot);
+                mFreeConnectionIndices.add(slot);
+                Log.d(TAG, "Allocator freed a connection, name: %s, slot: %d", mServiceClassName,
+                        slot);
+            }
+
+            if (mPendingAllocations.isEmpty()) return;
+            mPendingAllocations.remove().run();
+            assert mFreeConnectionIndices.isEmpty();
+            if (!mPendingAllocations.isEmpty() && mFreeSlotCallback != null) {
+                mFreeSlotCallback.run();
+            }
+        }
+
+        @Override
+        /* package */ void doQueueAllocation(Runnable runnable) {
+            assert mFreeConnectionIndices.isEmpty();
+            boolean wasEmpty = mPendingAllocations.isEmpty();
+            mPendingAllocations.add(runnable);
+            if (wasEmpty && mFreeSlotCallback != null) mFreeSlotCallback.run();
+        }
+
+        @Override
+        public int getNumberOfServices() {
+            return mChildProcessConnections.length;
+        }
+
+        @Override
+        public int allocatedConnectionsCountForTesting() {
+            return mChildProcessConnections.length - mFreeConnectionIndices.size();
+        }
+
+        @VisibleForTesting
+        public ChildProcessConnection getChildProcessConnectionAtSlotForTesting(int slotNumber) {
+            return mChildProcessConnections[slotNumber];
+        }
+
+        @VisibleForTesting
+        public boolean isFreeConnectionAvailable() {
+            return !mFreeConnectionIndices.isEmpty();
+        }
+
+        @Override
+        public boolean anyConnectionAllocated() {
+            return mFreeConnectionIndices.size() < mChildProcessConnections.length;
+        }
     }
 }

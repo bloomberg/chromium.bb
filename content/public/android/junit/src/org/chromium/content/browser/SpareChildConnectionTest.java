@@ -40,8 +40,8 @@ public class SpareChildConnectionTest {
 
     // A connection allocator not used to create connections.
     private final ChildConnectionAllocator mWrongConnectionAllocator =
-            ChildConnectionAllocator.createForTest(null, "org.chromium.test", "TestServiceName",
-                    3 /* serviceCount */, false /* bindToCaller */,
+            ChildConnectionAllocator.createFixedForTesting(null, "org.chromium.test",
+                    "TestServiceName", 3 /* serviceCount */, false /* bindToCaller */,
                     false /* bindAsExternalService */, false /* useStrongBinding */);
 
     // The allocator used to allocate the actual connection.
@@ -86,10 +86,10 @@ public class SpareChildConnectionTest {
         // asserts are not triggered.
         LauncherThread.setCurrentThreadAsLauncherThread();
 
-        mConnectionAllocator =
-                ChildConnectionAllocator.createForTest(null, "org.chromium.test.spare_connection",
-                        "TestServiceName", 5 /* serviceCount */, false /* bindToCaller */,
-                        false /* bindAsExternalService */, false /* useStrongBinding */);
+        mConnectionAllocator = ChildConnectionAllocator.createFixedForTesting(null,
+                "org.chromium.test.spare_connection", "TestServiceName", 5 /* serviceCount */,
+                false /* bindToCaller */, false /* bindAsExternalService */,
+                false /* useStrongBinding */);
         mConnectionAllocator.setConnectionFactoryForTesting(mTestConnectionFactory);
         mSpareConnection = new SpareChildConnection(
                 null /* context */, mConnectionAllocator, null /* serviceBundle */);
