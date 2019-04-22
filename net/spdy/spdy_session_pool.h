@@ -70,17 +70,14 @@ class NET_EXPORT SpdySessionPool
     std::string payload;
   };
 
-  // A request for a SpdySession with a particular SpdySessionKey. These are
-  // created by calling CreateRequestForSpdySession(). The Delegate's
+  // A request for a SpdySession with a particular SpdySessionKey. The
+  // SpdySessionPool's RequestSession() creates these. The Delegate's
   // OnSpdySessionAvailable() method will be invoked when a matching SpdySession
-  // is added to the pool, if the consumer that inserts the SpdySession also
-  // calls OnNewSpdySessionReady. The Delegate's OnSpdySessionAvailable() method
-  // will be invoked at most once for a single SpdySessionRequest.
+  // is added to the pool. The Delegate's OnSpdySessionAvailable() method will
+  // be invoked at most once for a single SpdySessionRequest.
   //
   // Destroying the request will stop watching the pool for such a session. The
   // request must be destroyed before the SpdySessionPool is.
-  //
-  // TODO(mmenke): Remove the dependency on OnNewSpdySessionReady.
   class NET_EXPORT_PRIVATE SpdySessionRequest {
    public:
     // Interface for watching for when a SpdySession with a provided key is
