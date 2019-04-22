@@ -25,6 +25,7 @@ skia_support_skottie = true
 
 declare_args() {
   skia_whitelist_serialized_typefaces = false
+  skia_use_metal = false
 }
 
 # External-facing config for dependent code.
@@ -101,10 +102,7 @@ config("skia_config") {
   }
 
   if (is_mac) {
-    defines += [
-      "SK_BUILD_FOR_MAC",
-      "SK_METAL",
-    ]
+    defines += [ "SK_BUILD_FOR_MAC" ]
   }
 
   if (is_win) {
@@ -558,14 +556,20 @@ component("skia") {
   }
 
   if (is_mac) {
-    deps += [ ":skia_metal" ]
-    defines += [ "SK_METAL" ]
+    if (skia_use_metal) {
+      deps += [ ":skia_metal" ]
+      defines += [ "SK_METAL" ]
+      libs += [
+        "Metal.framework",
+        "Foundation.framework",
+      ]
+    }
+
     libs = [
       "AppKit.framework",
       "CoreFoundation.framework",
       "CoreGraphics.framework",
       "CoreText.framework",
-      "Metal.framework",
       "Foundation.framework",
     ]
   }
@@ -797,7 +801,7 @@ skia_source_set("skia_opts") {
 }
 
 # Split out metal sources, because they require ARC.
-if (is_mac) {
+if (is_mac && skia_use_metal) {
   skia_source_set("skia_metal") {
     defines = [ "SK_METAL" ]
     sources = skia_metal_sources

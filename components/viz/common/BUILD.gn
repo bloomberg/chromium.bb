@@ -40,34 +40,6 @@ viz_component("resource_format_utils") {
   ]
 }
 
-if (is_mac) {
-  viz_component("metal_context_provider") {
-    output_name = "viz_metal_context_provider"
-
-    defines = [ "VIZ_METAL_CONTEXT_PROVIDER_IMPLEMENTATION" ]
-
-    sources = [
-      "gpu/metal_context_provider.h",
-      "gpu/metal_context_provider.mm",
-      "viz_metal_context_provider_export.h",
-    ]
-
-    public_deps = [
-      "//skia",
-    ]
-
-    deps = [
-      "//base",
-      "//ui/gfx",
-    ]
-
-    libs = [
-      "Metal.framework",
-      "Foundation.framework",
-    ]
-  }
-}
-
 if (enable_vulkan) {
   viz_component("vulkan_context_provider") {
     output_name = "viz_vulkan_context_provider"
@@ -283,9 +255,6 @@ viz_component("common") {
   ]
   if (enable_vulkan) {
     public_deps += [ ":vulkan_context_provider" ]
-  }
-  if (is_mac) {
-    public_deps += [ ":metal_context_provider" ]
   }
 }
 
