@@ -116,8 +116,8 @@
          cannot select which corners must be rounded, they are all rounded. -->
     <ImageView
         android:id="@+id/corner_top"
-        android:layout_width="@dimen/default_card_corner_radius"
-        android:layout_height="@dimen/default_card_corner_radius"
+        android:layout_width="@dimen/default_rounded_corner_radius"
+        android:layout_height="@dimen/default_rounded_corner_radius"
         android:layout_alignTop="@id/card_contents"
         android:layout_alignParentEnd="true"
         tools:ignore="ContentDescription"
@@ -126,8 +126,8 @@
 
     <ImageView
         android:id="@+id/corner_bottom"
-        android:layout_width="@dimen/default_card_corner_radius"
-        android:layout_height="@dimen/default_card_corner_radius"
+        android:layout_width="@dimen/default_rounded_corner_radius"
+        android:layout_height="@dimen/default_rounded_corner_radius"
         android:layout_alignBottom="@id/card_contents"
         android:layout_alignParentEnd="true"
         tools:ignore="ContentDescription"

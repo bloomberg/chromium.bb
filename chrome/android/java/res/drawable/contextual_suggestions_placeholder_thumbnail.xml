@@ -7,5 +7,5 @@
     <solid
         android:color="@color/thumbnail_placeholder_on_primary_bg" />
     <corners
-        android:radius="@dimen/default_card_corner_radius" />
+        android:radius="@dimen/default_rounded_corner_radius" />
 </shape>

@@ -53,7 +53,7 @@
     <dimen name="tab_title_favicon_end_padding">7dp</dimen>
 
     <!-- Card dimensions -->
-    <dimen name="default_card_corner_radius">8dp</dimen>
+    <dimen name="default_rounded_corner_radius">8dp</dimen>
 
     <!-- Custom Menu dimensions -->
     <dimen name="menu_width">258dp</dimen>

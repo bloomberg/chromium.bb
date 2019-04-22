@@ -103,7 +103,7 @@ public class SuggestionsBinder {
         }
 
         mSmallThumbnailCornerRadius = mCardContainerView.getResources().getDimensionPixelSize(
-                R.dimen.default_card_corner_radius);
+                R.dimen.default_rounded_corner_radius);
     }
 
     public void updateViewInformation(SnippetArticle suggestion) {
