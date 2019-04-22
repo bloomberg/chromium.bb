@@ -192,16 +192,6 @@ TEST_F(ShapeResultViewTest, LatinMultiRun) {
   EXPECT_TRUE(
       CompareResultGlyphs(composite_copy_glyphs, reference_glyphs, 0u, 16u));
   EXPECT_EQ(composite_view->Width(), composite_copy->Width());
-
-  // Rounding of x and width may be off by ~0.1 on Mac.
-  float tolerance = 0.1f;
-  EXPECT_NEAR(composite_view->Bounds().X(), composite_copy->Bounds().X(),
-              tolerance);
-  EXPECT_NEAR(composite_view->Bounds().Width(),
-              composite_copy->Bounds().Width(), tolerance);
-  EXPECT_EQ(composite_view->Bounds().Y(), composite_copy->Bounds().Y());
-  EXPECT_EQ(composite_view->Bounds().Height(),
-            composite_copy->Bounds().Height());
 }
 
 TEST_F(ShapeResultViewTest, LatinCompositeView) {
@@ -255,7 +245,6 @@ TEST_F(ShapeResultViewTest, LatinCompositeView) {
   EXPECT_EQ(composite_glyphs.size(), 36u);
   EXPECT_TRUE(CompareResultGlyphs(composite_glyphs, reference_glyphs, 0u, 22u));
   EXPECT_EQ(composite_view->Width(), composite_copy->Width());
-  EXPECT_EQ(composite_view->Bounds(), composite_copy->Bounds());
 }
 
 TEST_F(ShapeResultViewTest, MixedScriptsCompositeView) {
@@ -301,18 +290,6 @@ TEST_F(ShapeResultViewTest, MixedScriptsCompositeView) {
   EXPECT_TRUE(CompareResultGlyphs(composite_glyphs, reference_glyphs, 0u,
                                   reference_glyphs.size()));
   EXPECT_EQ(composite_view->Width(), composite_copy->Width());
-
-  // Rounding of x may be off by ~0.1 on Mac.
-  float tolerance = 0.1f;
-  EXPECT_NEAR(composite_view->Bounds().X(), composite_copy->Bounds().X(),
-              tolerance);
-  // The rounding for the x/width might be off slightly for composite views.
-  tolerance = composite_view->Bounds().Width() / 10;
-  EXPECT_NEAR(composite_view->Bounds().Width(),
-              composite_copy->Bounds().Width(), tolerance);
-  EXPECT_EQ(composite_view->Bounds().Y(), composite_copy->Bounds().Y());
-  EXPECT_EQ(composite_view->Bounds().Height(),
-            composite_copy->Bounds().Height());
 }
 
 TEST_F(ShapeResultViewTest, TrimEndOfView) {

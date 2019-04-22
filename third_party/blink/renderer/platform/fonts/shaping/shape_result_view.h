@@ -110,7 +110,6 @@ class PLATFORM_EXPORT ShapeResultView final
   unsigned NumGlyphs() const { return num_glyphs_; }
   float Width() const { return width_; }
   LayoutUnit SnappedWidth() const { return LayoutUnit::FromFloatCeil(width_); }
-  const FloatRect& Bounds() const { return glyph_bounding_box_; }
   TextDirection Direction() const {
     return static_cast<TextDirection>(direction_);
   }
@@ -136,6 +135,10 @@ class PLATFORM_EXPORT ShapeResultView final
                                 GraphemeClusterCallback,
                                 void* context) const;
 
+  // Computes and returns the ink bounds (or visual overflow rect). This is
+  // quite expensive and involves measuring each glyph accumulating the bounds.
+  FloatRect ComputeInkBounds() const;
+
   scoped_refptr<const SimpleFontData> PrimaryFont() const {
     return primary_font_;
   }
@@ -152,10 +155,13 @@ class PLATFORM_EXPORT ShapeResultView final
                             unsigned start_index,
                             unsigned end_index);
   void AddSegments(const Segment*, size_t);
-  template <bool is_horizontal_run>
-  void ComputeBoundsForPart(const RunInfoPart&, float origin);
 
   unsigned CharacterIndexOffsetForGlyphData(const RunInfoPart&) const;
+
+  template <bool is_horizontal_run>
+  void ComputePartInkBounds(const ShapeResultView::RunInfoPart&,
+                            float run_advance,
+                            FloatRect* ink_bounds) const;
 
   // Common signatures with ShapeResult, to templatize algorithms.
   const Vector<std::unique_ptr<RunInfoPart>, 4>& RunsOrParts() const {
@@ -182,7 +188,6 @@ class PLATFORM_EXPORT ShapeResultView final
   unsigned char_index_offset_;
 
   float width_;
-  FloatRect glyph_bounding_box_;
   Vector<std::unique_ptr<RunInfoPart>, 4> parts_;
 
   friend class ShapeResult;

@@ -31,6 +31,7 @@ unsigned CharactersInShapeResult(
 // implementation may wrap that.
 CharacterRange ShapeResultBuffer::GetCharacterRange(
     scoped_refptr<const ShapeResult> result,
+    FloatRect ink_bounds,
     const StringView& text,
     TextDirection direction,
     float total_width,
@@ -38,8 +39,8 @@ CharacterRange ShapeResultBuffer::GetCharacterRange(
     unsigned to) {
   Vector<scoped_refptr<const ShapeResult>, 64> results;
   results.push_back(result);
-  return GetCharacterRangeInternal(results, text, direction, total_width, from,
-                                   to);
+  return GetCharacterRangeInternal(results, ink_bounds, text, direction,
+                                   total_width, from, to);
 }
 
 CharacterRange ShapeResultBuffer::GetCharacterRange(const StringView& text,
@@ -47,12 +48,13 @@ CharacterRange ShapeResultBuffer::GetCharacterRange(const StringView& text,
                                                     float total_width,
                                                     unsigned from,
                                                     unsigned to) const {
-  return GetCharacterRangeInternal(results_, text, direction, total_width, from,
-                                   to);
+  return GetCharacterRangeInternal(results_, ink_bounds_, text, direction,
+                                   total_width, from, to);
 }
 
 CharacterRange ShapeResultBuffer::GetCharacterRangeInternal(
     const Vector<scoped_refptr<const ShapeResult>, 64>& results,
+    FloatRect ink_bounds,
     const StringView& text,
     TextDirection direction,
     float total_width,
@@ -117,8 +119,8 @@ CharacterRange ShapeResultBuffer::GetCharacterRangeInternal(
       }
 
       if (found_from_x || found_to_x) {
-        min_y = std::min(min_y, result->Bounds().Y());
-        max_y = std::max(max_y, result->Bounds().MaxY());
+        min_y = std::min(min_y, ink_bounds.Y());
+        max_y = std::max(max_y, ink_bounds.MaxY());
       }
 
       if (found_from_x && found_to_x)

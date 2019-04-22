@@ -6,6 +6,7 @@
 
 #include <iterator>
 #include "base/containers/adapters.h"
+#include "build/build_config.h"
 #include "third_party/blink/renderer/platform/fonts/font.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/glyph_bounds_accumulator.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_inline_headers.h"
@@ -148,7 +149,6 @@ scoped_refptr<ShapeResult> ShapeResultView::CreateShapeResult() const {
   new_result->num_glyphs_ = num_glyphs_;
   new_result->has_vertical_offsets_ = has_vertical_offsets_;
   new_result->width_ = width_;
-  new_result->glyph_bounding_box_ = glyph_bounding_box_;
 
   return base::AdoptRef(new_result);
 }
@@ -254,7 +254,6 @@ scoped_refptr<ShapeResultView> ShapeResultView::Create(
   out->char_index_offset_ = out->Rtl() ? 0 : result->StartIndex();
   out->CreateViewsForResult(result, 0, std::numeric_limits<unsigned>::max());
   out->has_vertical_offsets_ = result->has_vertical_offsets_;
-  out->glyph_bounding_box_ = result->glyph_bounding_box_;
   return base::AdoptRef(out);
 }
 
@@ -278,7 +277,6 @@ void ShapeResultView::AddSegments(const Segment* segments,
     char_index_offset_ = 0;
   }
 
-  FloatRect bounds;
   for (unsigned i = 0; i < segment_count; i++) {
     const Segment& segment = segments[Rtl() ? last_segment_index - i : i];
     if (segment.result) {
@@ -286,82 +284,15 @@ void ShapeResultView::AddSegments(const Segment* segments,
       CreateViewsForResult(segment.result, segment.start_index,
                            segment.end_index);
       has_vertical_offsets_ |= segment.result->has_vertical_offsets_;
-      bounds.Unite(segment.result->Bounds());
     } else if (segment.view) {
       DCHECK_EQ(segment.view->Direction(), Direction());
       CreateViewsForResult(segment.view, segment.start_index,
                            segment.end_index);
       has_vertical_offsets_ |= segment.view->has_vertical_offsets_;
-      bounds.Unite(segment.view->Bounds());
     } else {
       NOTREACHED();
     }
   }
-
-  // Compute new glyph bounding box. We only need accurate (logical) left and
-  // right edges. For the (logical) top and bottom use on the unified bounds of
-  // all source ShapeResults which gurantees that the bounds of the view fully
-  // contains all text.
-  float origin = 0;
-  for (const auto& part : parts_) {
-    if (!part->NumGlyphs())
-      continue;
-    if (part->IsHorizontal())
-      ComputeBoundsForPart<true>(*part, origin);
-    else
-      ComputeBoundsForPart<false>(*part, origin);
-    origin += part->width_;
-  }
-  glyph_bounding_box_.SetY(bounds.Y());
-  glyph_bounding_box_.SetHeight(bounds.Height());
-}
-
-namespace {
-
-template <bool is_horizontal_run>
-void AccumulateGlyphBounds(GlyphBoundsAccumulator* bounds,
-                           const HarfBuzzRunGlyphData& glyph_data,
-                           const SimpleFontData* font_data) {
-  FloatRect glyph_bounds = glyph_data.HasValidGlyphBounds()
-                               ? glyph_data.GlyphBounds<is_horizontal_run>()
-                               : font_data->BoundsForGlyph(glyph_data.glyph);
-  bounds->Unite<is_horizontal_run>(glyph_data, glyph_bounds);
-}
-
-}  // Anonymous namespace
-
-template <bool is_horizontal_run>
-void ShapeResultView::ComputeBoundsForPart(const RunInfoPart& part,
-                                           float origin) {
-  GlyphBoundsAccumulator bounds(origin);
-  const auto& run = part.run_;
-  const SimpleFontData* font_data = run->font_data_.get();
-  DCHECK_GT(part.NumGlyphs(), 0u);
-
-  // We only need the bounds of the full first...
-  const unsigned first_character_index = part.GlyphAt(0).character_index;
-  for (const auto& glyph_data : part) {
-    if (first_character_index != glyph_data.character_index)
-      break;
-    AccumulateGlyphBounds<is_horizontal_run>(&bounds, glyph_data, font_data);
-    bounds.origin += glyph_data.advance;
-  }
-
-  /// ...and last glyph.
-  unsigned last_character_index =
-      part.GlyphAt(part.NumGlyphs() - 1).character_index;
-  bounds.origin = origin + part.width_;
-  for (auto it = part.rbegin(); it != part.rend(); it++) {
-    const auto& glyph_data = *it;
-    if (last_character_index != glyph_data.character_index)
-      break;
-    bounds.origin -= glyph_data.advance;
-    AccumulateGlyphBounds<is_horizontal_run>(&bounds, glyph_data, font_data);
-  }
-
-  if (!is_horizontal_run)
-    bounds.ConvertVerticalRunToLogical(font_data->GetFontMetrics());
-  glyph_bounding_box_.Unite(bounds.bounds);
 }
 
 unsigned ShapeResultView::ComputeStartIndex() const {
@@ -571,6 +502,60 @@ float ShapeResultView::ForEachGraphemeClusters(const StringView& text,
     }
   }
   return advance_so_far;
+}
+
+template <bool is_horizontal_run>
+void ShapeResultView::ComputePartInkBounds(
+    const ShapeResultView::RunInfoPart& part,
+    float run_advance,
+    FloatRect* ink_bounds) const {
+  // Get glyph bounds from Skia. It's a lot faster if we give it list of glyph
+  // IDs rather than calling it for each glyph.
+  // TODO(kojii): MacOS does not benefit from batching the Skia request due to
+  // https://bugs.chromium.org/p/skia/issues/detail?id=5328, and the cost to
+  // prepare batching, which is normally much less than the benefit of
+  // batching, is not ignorable unfortunately.
+  const SimpleFontData& current_font_data = *part.run_->font_data_;
+  unsigned num_glyphs = part.NumGlyphs();
+#if !defined(OS_MACOSX)
+  Vector<Glyph, 256> glyphs(num_glyphs);
+  unsigned i = 0;
+  for (const auto& glyph_data : part)
+    glyphs[i++] = glyph_data.glyph;
+  Vector<SkRect, 256> bounds_list(num_glyphs);
+  current_font_data.BoundsForGlyphs(glyphs, &bounds_list);
+#endif
+
+  GlyphBoundsAccumulator bounds(run_advance);
+  for (unsigned i = 0; i < num_glyphs; ++i) {
+    const HarfBuzzRunGlyphData& glyph_data = part.GlyphAt(i);
+#if defined(OS_MACOSX)
+    FloatRect glyph_bounds = current_font_data.BoundsForGlyph(glyph_data.glyph);
+#else
+    FloatRect glyph_bounds(bounds_list[i]);
+#endif
+    bounds.Unite<is_horizontal_run>(glyph_data, glyph_bounds);
+    bounds.origin += glyph_data.advance;
+  }
+
+  if (!is_horizontal_run)
+    bounds.ConvertVerticalRunToLogical(current_font_data.GetFontMetrics());
+  ink_bounds->Unite(bounds.bounds);
+}
+
+FloatRect ShapeResultView::ComputeInkBounds() const {
+  FloatRect ink_bounds;
+
+  float run_advance = 0.0f;
+  for (const auto& part : parts_) {
+    if (part->IsHorizontal())
+      ComputePartInkBounds<true>(*part.get(), run_advance, &ink_bounds);
+    else
+      ComputePartInkBounds<false>(*part.get(), run_advance, &ink_bounds);
+    run_advance += part->Width();
+  }
+
+  return ink_bounds;
 }
 
 }  // namespace blink

@@ -456,10 +456,7 @@ TEST_F(HarfBuzzShaperTest, ShapeVerticalUpright) {
   HarfBuzzShaper shaper(string);
   scoped_refptr<ShapeResult> result = shaper.Shape(&font, direction);
 
-  // Check width and bounds are not too much different. ".1" is heuristic.
-  EXPECT_NEAR(result->Width(), result->Bounds().Width(), result->Width() * .1);
-
-  // Shape each run and merge them using CopyRange. Bounds() should match.
+  // Shape each run and merge them using CopyRange. Width() should match.
   scoped_refptr<ShapeResult> result1 = shaper.Shape(&font, direction, 0, 3);
   scoped_refptr<ShapeResult> result2 =
       shaper.Shape(&font, direction, 3, string.length());
@@ -469,14 +466,7 @@ TEST_F(HarfBuzzShaperTest, ShapeVerticalUpright) {
   result1->CopyRange(0, 3, composite_result.get());
   result2->CopyRange(3, string.length(), composite_result.get());
 
-  EXPECT_EQ(result->Bounds().X(), composite_result->Bounds().X());
-  EXPECT_EQ(result->Bounds().Width(), composite_result->Bounds().Width());
-
-  // We don't get the y-axis quite correct for vertical runs.
-  float tolerance = result->Bounds().Height() * 0.2;
-  EXPECT_NEAR(result->Bounds().Y(), composite_result->Bounds().Y(), tolerance);
-  EXPECT_NEAR(result->Bounds().Height(), composite_result->Bounds().Height(),
-              tolerance);
+  EXPECT_EQ(result->Width(), composite_result->Width());
 }
 
 TEST_F(HarfBuzzShaperTest, ShapeVerticalUprightIdeograph) {
@@ -490,10 +480,7 @@ TEST_F(HarfBuzzShaperTest, ShapeVerticalUprightIdeograph) {
   HarfBuzzShaper shaper(string);
   scoped_refptr<ShapeResult> result = shaper.Shape(&font, direction);
 
-  // Check width and bounds are not too much different. ".1" is heuristic.
-  EXPECT_NEAR(result->Width(), result->Bounds().Width(), result->Width() * .1);
-
-  // Shape each run and merge them using CopyRange. Bounds() should match.
+  // Shape each run and merge them using CopyRange. Width() should match.
   scoped_refptr<ShapeResult> result1 = shaper.Shape(&font, direction, 0, 3);
   scoped_refptr<ShapeResult> result2 =
       shaper.Shape(&font, direction, 3, string.length());
@@ -505,15 +492,7 @@ TEST_F(HarfBuzzShaperTest, ShapeVerticalUprightIdeograph) {
 
   // Rounding of x and width may be off by ~0.1 on Mac.
   float tolerance = 0.1f;
-  EXPECT_NEAR(result->Bounds().X(), composite_result->Bounds().X(), tolerance);
-  EXPECT_NEAR(result->Bounds().Width(), composite_result->Bounds().Width(),
-              tolerance);
-
-  // We don't get the y-axis quite correct for vertical runs.
-  tolerance = result->Bounds().Height() * 0.2;
-  EXPECT_NEAR(result->Bounds().Y(), composite_result->Bounds().Y(), tolerance);
-  EXPECT_NEAR(result->Bounds().Height(), composite_result->Bounds().Height(),
-              tolerance);
+  EXPECT_NEAR(result->Width(), composite_result->Width(), tolerance);
 }
 
 TEST_F(HarfBuzzShaperTest, RangeShapeSmallCaps) {
@@ -569,7 +548,7 @@ TEST_F(HarfBuzzShaperTest, ShapeVerticalMixed) {
   HarfBuzzShaper shaper(string);
   scoped_refptr<ShapeResult> result = shaper.Shape(&font, direction);
 
-  // Shape each run and merge them using CopyRange. Bounds() should match.
+  // Shape each run and merge them using CopyRange. Width() should match.
   scoped_refptr<ShapeResult> result1 = shaper.Shape(&font, direction, 0, 3);
   scoped_refptr<ShapeResult> result2 =
       shaper.Shape(&font, direction, 3, string.length());
@@ -579,14 +558,7 @@ TEST_F(HarfBuzzShaperTest, ShapeVerticalMixed) {
   result1->CopyRange(0, 3, composite_result.get());
   result2->CopyRange(3, string.length(), composite_result.get());
 
-  EXPECT_EQ(result->Bounds().X(), composite_result->Bounds().X());
-  EXPECT_EQ(result->Bounds().Width(), composite_result->Bounds().Width());
-
-  // We don't get the y-axis quite correct for vertical runs.
-  float tolerance = result->Bounds().Height() * 0.2;
-  EXPECT_NEAR(result->Bounds().Y(), composite_result->Bounds().Y(), tolerance);
-  EXPECT_NEAR(result->Bounds().Height(), composite_result->Bounds().Height(),
-              tolerance);
+  EXPECT_EQ(result->Width(), composite_result->Width());
 }
 
 class ShapeStringTest : public HarfBuzzShaperTest,
@@ -720,7 +692,6 @@ TEST_F(HarfBuzzShaperTest, NegativeLetterSpacing) {
   HarfBuzzShaper shaper(string);
   scoped_refptr<ShapeResult> result = shaper.Shape(&font, TextDirection::kLtr);
   float width = result->Width();
-  FloatRect bounds = result->Bounds();
 
   ShapeResultSpacing<String> spacing(string);
   FontDescription font_description;
@@ -729,7 +700,6 @@ TEST_F(HarfBuzzShaperTest, NegativeLetterSpacing) {
   result->ApplySpacing(spacing);
 
   EXPECT_EQ(5 * 5, width - result->Width());
-  EXPECT_EQ(5 * 4 - 1, bounds.Width() - result->Bounds().Width());
 }
 
 TEST_F(HarfBuzzShaperTest, NegativeLetterSpacingTo0) {
@@ -745,11 +715,6 @@ TEST_F(HarfBuzzShaperTest, NegativeLetterSpacingTo0) {
   result->ApplySpacing(spacing);
 
   // EXPECT_EQ(0.0f, result->Width());
-  EXPECT_NEAR(0.0f, result->Bounds().X(), 1);
-  // Because all characters are at 0, the glyph bounds must be the char_width.
-  // Allow being larger because accurate width requires re-measuring each glyph.
-  EXPECT_GE(result->Bounds().MaxX(), char_width);
-  EXPECT_LE(result->Bounds().MaxX(), char_width * 1.2);
 }
 
 TEST_F(HarfBuzzShaperTest, NegativeLetterSpacingToNegative) {
@@ -766,10 +731,6 @@ TEST_F(HarfBuzzShaperTest, NegativeLetterSpacingToNegative) {
 
   // CSS does not allow negative width, it should be clampled to 0.
   // EXPECT_EQ(0.0f, result->Width());
-  // Glyph bounding box should overflow to the left.
-  EXPECT_EQ(-char_width * string.length(), result->Bounds().X());
-  // MaxX() should be char_width. Allow being larger.
-  EXPECT_GE(result->Bounds().MaxX(), char_width);
 }
 
 static struct GlyphDataRangeTestData {
@@ -1245,13 +1206,9 @@ TEST_F(HarfBuzzShaperTest, ShapeResultCopyRangeIntoLatin) {
   EXPECT_EQ(result->NumCharacters(), composite_result->NumCharacters());
   EXPECT_EQ(result->SnappedWidth(), composite_result->SnappedWidth());
 
-  // Rounding of x and width may be off by ~0.1 on Mac.
+  // Rounding of width may be off by ~0.1 on Mac.
   float tolerance = 0.1f;
-  EXPECT_NEAR(result->Bounds().X(), composite_result->Bounds().X(), tolerance);
-  EXPECT_NEAR(result->Bounds().Width(), composite_result->Bounds().Width(),
-              tolerance);
-  EXPECT_EQ(result->Bounds().Y(), composite_result->Bounds().Y());
-  EXPECT_EQ(result->Bounds().Height(), composite_result->Bounds().Height());
+  EXPECT_NEAR(result->Width(), composite_result->Width(), tolerance);
 
   EXPECT_EQ(result->SnappedStartPositionForOffset(0),
             composite_result->SnappedStartPositionForOffset(0));
@@ -1270,9 +1227,6 @@ TEST_F(HarfBuzzShaperTest, ShapeResultCopyRangeIntoArabicThaiHanLatin) {
   HarfBuzzShaper shaper(String(mixed_string, 8));
   scoped_refptr<ShapeResult> result = shaper.Shape(&font, direction);
 
-  // Check width and bounds are not too much different. ".2" is heuristic.
-  EXPECT_NEAR(result->Width(), result->Bounds().Width(), result->Width() * .2);
-
   scoped_refptr<ShapeResult> composite_result =
       ShapeResult::Create(&font, 0, direction);
   result->CopyRange(0, 4, composite_result.get());
@@ -1281,8 +1235,6 @@ TEST_F(HarfBuzzShaperTest, ShapeResultCopyRangeIntoArabicThaiHanLatin) {
 
   EXPECT_EQ(result->NumCharacters(), composite_result->NumCharacters());
   EXPECT_EQ(result->SnappedWidth(), composite_result->SnappedWidth());
-  EXPECT_TRUE(composite_result->Bounds().Contains(result->Bounds()))
-      << composite_result->Bounds() << "/" << result->Bounds();
   EXPECT_EQ(result->SnappedStartPositionForOffset(0),
             composite_result->SnappedStartPositionForOffset(0));
   EXPECT_EQ(result->SnappedStartPositionForOffset(1),
@@ -1312,9 +1264,6 @@ TEST_P(ShapeParameterTest, ShapeResultCopyRangeAcrossRuns) {
   TextDirection direction = GetParam();
   HarfBuzzShaper shaper(mixed_string);
   scoped_refptr<ShapeResult> result = shaper.Shape(&font, direction);
-
-  // Check width and bounds are not too much different. ".1" is heuristic.
-  EXPECT_NEAR(result->Width(), result->Bounds().Width(), result->Width() * .1);
 
   // CopyRange(5, 7) should copy 1 character from [1] and 1 from [2].
   scoped_refptr<ShapeResult> target = ShapeResult::Create(&font, 0, direction);
@@ -1352,34 +1301,7 @@ TEST_F(HarfBuzzShaperTest, ShapeResultCopyRangeSegmentGlyphBoundingBox) {
   result2->CopyRange(6, string.length(), composite_result.get());
 
   scoped_refptr<ShapeResult> result = shaper.Shape(&font, direction);
-  EXPECT_EQ(result->Bounds(), composite_result->Bounds());
-
-  // Check width and bounds are not too much different. ".1" is heuristic.
-  EXPECT_NEAR(result->Width(), result->Bounds().Width(), result->Width() * .1);
-}
-
-TEST_F(HarfBuzzShaperTest, ShapeResultCopyRangeBoundsLtr) {
-  String string(u". ");
-  TextDirection direction = TextDirection::kLtr;
-  HarfBuzzShaper shaper(string);
-  scoped_refptr<ShapeResult> result = shaper.Shape(&font, direction);
-
-  // Because a space character does not have ink, the bounds of "." should be
-  // the same as the bounds of ". ".
-  scoped_refptr<ShapeResult> sub_range = result->SubRange(0, 1);
-  EXPECT_NEAR(sub_range->Bounds().Width(), result->Bounds().Width(), 0.1);
-}
-
-TEST_F(HarfBuzzShaperTest, ShapeResultCopyRangeBoundsRtl) {
-  String string(u". ");
-  TextDirection direction = TextDirection::kRtl;
-  HarfBuzzShaper shaper(string);
-  scoped_refptr<ShapeResult> result = shaper.Shape(&font, direction);
-
-  // Because a space character does not have ink, the bounds of "." should be
-  // the same as the bounds of ". ".
-  scoped_refptr<ShapeResult> sub_range = result->SubRange(0, 1);
-  EXPECT_NEAR(sub_range->Bounds().Width(), result->Bounds().Width(), 0.1f);
+  EXPECT_EQ(result->Width(), composite_result->Width());
 }
 
 TEST_F(HarfBuzzShaperTest, SubRange) {
@@ -1517,7 +1439,6 @@ TEST_F(HarfBuzzShaperTest, SafeToBreakLatinDiscretionaryLigatures) {
   // altered the text spacing, for example by breaking apart ligatures or
   // kerning pairs.
   EXPECT_EQ(result->SnappedWidth(), referenceResult->SnappedWidth());
-  EXPECT_EQ(result->Bounds(), referenceResult->Bounds());
 
   // Zero-width spaces were inserted, so we need to account for that by
   // offseting the index that we compare against.

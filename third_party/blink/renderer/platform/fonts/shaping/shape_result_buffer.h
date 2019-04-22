@@ -25,9 +25,11 @@ class PLATFORM_EXPORT ShapeResultBuffer {
  public:
   ShapeResultBuffer() : has_vertical_offsets_(false) {}
 
-  void AppendResult(scoped_refptr<const ShapeResult> result) {
+  void AppendResult(scoped_refptr<const ShapeResult> result,
+                    FloatRect ink_bounds) {
     has_vertical_offsets_ |= result->HasVerticalOffsets();
     results_.push_back(std::move(result));
+    ink_bounds_.Unite(ink_bounds);
   }
 
   bool HasVerticalOffsets() const { return has_vertical_offsets_; }
@@ -48,6 +50,7 @@ class PLATFORM_EXPORT ShapeResultBuffer {
                                              float total_width) const;
 
   static CharacterRange GetCharacterRange(scoped_refptr<const ShapeResult>,
+                                          FloatRect ink_bounds,
                                           const StringView& text,
                                           TextDirection,
                                           float total_width,
@@ -64,6 +67,7 @@ class PLATFORM_EXPORT ShapeResultBuffer {
   friend class ShapeResultBloberizer;
   static CharacterRange GetCharacterRangeInternal(
       const Vector<scoped_refptr<const ShapeResult>, 64>&,
+      FloatRect ink_bounds,
       const StringView& text,
       TextDirection,
       float total_width,
@@ -78,6 +82,7 @@ class PLATFORM_EXPORT ShapeResultBuffer {
   // rare.
   Vector<scoped_refptr<const ShapeResult>, 64> results_;
   bool has_vertical_offsets_;
+  FloatRect ink_bounds_;
 
   DISALLOW_COPY_AND_ASSIGN(ShapeResultBuffer);
 };

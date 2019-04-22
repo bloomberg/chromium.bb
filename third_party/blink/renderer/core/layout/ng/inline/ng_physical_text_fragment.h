@@ -150,7 +150,7 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
     NGPhysicalOffsetRect self_ink_overflow_;
     scoped_refptr<const ComputedStyle> style_;  // Used only for ellipsis.
   };
-  RareData* EnsureRareData();
+  RareData* EnsureRareData() const;
 
   LayoutUnit InlinePositionForOffset(unsigned offset,
                                      LayoutUnit (*round)(float),
@@ -158,8 +158,8 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
 
   NGPhysicalOffsetRect ConvertToLocal(const LayoutRect&) const;
 
-  void UpdateSelfInkOverflow();
-  void ClearSelfInkOverflow();
+  void ComputeSelfInkOverflow() const;
+  void ClearSelfInkOverflow() const;
 
   // The text of NGInlineNode; i.e., of a parent block. The text for this
   // fragment is a substring(start_offset_, end_offset_) of this string.
@@ -170,7 +170,10 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
   const unsigned end_offset_;
   const scoped_refptr<const ShapeResultView> shape_result_;
 
-  std::unique_ptr<RareData> rare_data_;
+  // Fragments are immutable but allow certain expensive data, specifically ink
+  // overflow, to be cached as long as it is guaranteed to always recompute to
+  // the same value.
+  mutable std::unique_ptr<RareData> rare_data_;
 };
 
 template <>

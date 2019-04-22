@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_physical_offset_rect.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_text_fragment_builder.h"
+#include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_view.h"
 
@@ -78,8 +79,7 @@ NGPhysicalTextFragment::NGPhysicalTextFragment(
   DCHECK(!source.rare_data_ || !source.rare_data_->style_);
   line_orientation_ = source.line_orientation_;
   is_anonymous_text_ = source.is_anonymous_text_;
-
-  UpdateSelfInkOverflow();
+  ink_overflow_computed_ = false;
 }
 
 NGPhysicalTextFragment::NGPhysicalTextFragment(NGTextFragmentBuilder* builder)
@@ -100,11 +100,11 @@ NGPhysicalTextFragment::NGPhysicalTextFragment(NGTextFragmentBuilder* builder)
         builder->text_type_ == kGeneratedText ||
         IsPhysicalTextFragmentAnonymousText(builder->layout_object_);
   }
-
-  UpdateSelfInkOverflow();
+  ink_overflow_computed_ = false;
 }
 
-NGPhysicalTextFragment::RareData* NGPhysicalTextFragment::EnsureRareData() {
+NGPhysicalTextFragment::RareData* NGPhysicalTextFragment::EnsureRareData()
+    const {
   if (!rare_data_)
     rare_data_ = std::make_unique<RareData>();
   return rare_data_.get();
@@ -213,22 +213,27 @@ NGPhysicalOffsetRect NGPhysicalTextFragment::LocalRect(
 }
 
 NGPhysicalOffsetRect NGPhysicalTextFragment::SelfInkOverflow() const {
+  if (!ink_overflow_computed_)
+    ComputeSelfInkOverflow();
   return UNLIKELY(rare_data_) ? rare_data_->self_ink_overflow_ : LocalRect();
 }
 
-void NGPhysicalTextFragment::ClearSelfInkOverflow() {
+void NGPhysicalTextFragment::ClearSelfInkOverflow() const {
   if (UNLIKELY(rare_data_))
     rare_data_->self_ink_overflow_ = LocalRect();
 }
 
-void NGPhysicalTextFragment::UpdateSelfInkOverflow() {
+void NGPhysicalTextFragment::ComputeSelfInkOverflow() const {
+  ink_overflow_computed_ = true;
+
   if (UNLIKELY(!shape_result_)) {
     ClearSelfInkOverflow();
     return;
   }
 
   // Glyph bounds is in logical coordinate, origin at the alphabetic baseline.
-  LayoutRect ink_overflow = EnclosingLayoutRect(shape_result_->Bounds());
+  FloatRect text_ink_bounds = Style().GetFont().TextInkBounds(PaintInfo());
+  LayoutRect ink_overflow = EnclosingLayoutRect(text_ink_bounds);
 
   // Make the origin at the logical top of this fragment.
   const ComputedStyle& style = Style();

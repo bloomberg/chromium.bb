@@ -148,14 +148,9 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
   // The logical width of this result.
   float Width() const { return width_; }
   LayoutUnit SnappedWidth() const { return LayoutUnit::FromFloatCeil(width_); }
-  // The glyph bounding box, in logical coordinates, using alphabetic baseline
-  // even when the result is in vertical flow.
-  const FloatRect& Bounds() const { return glyph_bounding_box_; }
   unsigned NumCharacters() const { return num_characters_; }
   unsigned NumGlyphs() const { return num_glyphs_; }
-  CharacterRange GetCharacterRange(const StringView& text,
-                                   unsigned from,
-                                   unsigned to) const;
+
   // TODO(eae): Remove start_x and return value once ShapeResultBuffer has been
   // removed.
   float IndividualCharacterRanges(Vector<CharacterRange>* ranges,
@@ -320,6 +315,10 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
                                 GraphemeClusterCallback,
                                 void* context) const;
 
+  // Computes and returns the ink bounds (or visual overflow rect). This is
+  // quite expensive and involves measuring each glyph accumulating the bounds.
+  FloatRect ComputeInkBounds() const;
+
   String ToString() const;
   void ToString(StringBuilder*) const;
 
@@ -443,15 +442,16 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
   unsigned ComputeStartIndex() const;
   void UpdateStartIndex();
 
-  float LineLeftBounds() const;
-  float LineRightBounds() const;
+  template <bool is_horizontal_run>
+  void ComputeRunInkBounds(const ShapeResult::RunInfo&,
+                           float run_advance,
+                           FloatRect* ink_bounds) const;
 
   // Common signatures with ShapeResultView, to templatize algorithms.
   const Vector<scoped_refptr<RunInfo>>& RunsOrParts() const { return runs_; }
   unsigned StartIndexOffsetForRun() const { return 0; }
 
   float width_;
-  FloatRect glyph_bounding_box_;
   Vector<scoped_refptr<RunInfo>> runs_;
   scoped_refptr<const SimpleFontData> primary_font_;
   mutable std::unique_ptr<CharacterPositionData> character_position_;

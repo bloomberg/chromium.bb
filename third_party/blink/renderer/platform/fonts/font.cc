@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/platform/fonts/ng_text_fragment_paint_info.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/caching_word_shaper.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_bloberizer.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/shape_result_view.h"
 #include "third_party/blink/renderer/platform/fonts/simple_font_data.h"
 #include "third_party/blink/renderer/platform/fonts/text_run_paint_info.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
@@ -274,6 +275,21 @@ void Font::DrawEmphasisMarks(cc::PaintCanvas* canvas,
                                     text_info.to, emphasis_glyph_data,
                                     text_info.shape_result);
   DrawBlobs(canvas, flags, bloberizer.Blobs(), point);
+}
+
+FloatRect Font::TextInkBounds(const NGTextFragmentPaintInfo& text_info) const {
+  // No need to compute bounds if using custom fonts that are in the process
+  // of loading as it won't be painted.
+  if (ShouldSkipDrawing())
+    return FloatRect();
+
+  // NOTE(eae): We could use the SkTextBlob::bounds API [1] however by default
+  // it returns conservative bounds (rather than tight bounds) which are
+  // unsuitable for our needs. If we could get the tight bounds from Skia that
+  // would be quite a bit faster than the two-stage approach employed by the
+  // ShapeResultView::ComputeInkBounds method.
+  // 1: https://skia.org/user/api/SkTextBlob_Reference#SkTextBlob_bounds
+  return text_info.shape_result->ComputeInkBounds();
 }
 
 float Font::Width(const TextRun& run,

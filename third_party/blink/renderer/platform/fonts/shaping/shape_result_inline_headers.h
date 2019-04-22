@@ -55,12 +55,6 @@ struct HarfBuzzRunGlyphData {
   unsigned character_index : kCharacterIndexBits;
   unsigned safe_to_break_before : 1;
 
-  // LayoutUnit like fixed-point values, with 6 fractional and 10 integear bits.
-  // Can represent values between -1023.98 and 1023.96 which should be enough in
-  // the vast majority of cases. Max value is reserved to indicate invalid.
-  // Logical coordinate space.
-  int16_t bounds_x_raw_value;
-  int16_t bounds_width_raw_value;
   float advance;
   FloatSize offset;
 
@@ -70,34 +64,6 @@ struct HarfBuzzRunGlyphData {
                             const FloatSize& offset,
                             bool safe_to_break_before);
   void SetGlyphBounds(LayoutUnit bounds_logical_x, LayoutUnit bounds_logical_w);
-  bool HasValidGlyphBounds() const {
-    return bounds_x_raw_value != std::numeric_limits<int16_t>::max() &&
-           bounds_width_raw_value != std::numeric_limits<int16_t>::max();
-  }
-
-  LayoutUnit GlyphBoundsLogicalX() const {
-    LayoutUnit bounds;
-    bounds.SetRawValue(static_cast<int>(bounds_x_raw_value));
-    return bounds;
-  }
-  LayoutUnit GlyphBoundsLogicalWidth() const {
-    LayoutUnit bounds;
-    bounds.SetRawValue(static_cast<int>(bounds_width_raw_value));
-    return bounds;
-  }
-
-  template <bool is_horizontal_run>
-  FloatRect GlyphBounds() const {
-    // We only cache the logical left and right edges, the logical y-axis is set
-    // at the end of the computation.
-    // Bounds are united which requires a non-zero height. The correct height is
-    // set at the end, so pick a small non-zero number here.
-    float height = 0.1f;
-    return is_horizontal_run ? FloatRect(GlyphBoundsLogicalX(), 0.0f,
-                                         GlyphBoundsLogicalWidth(), height)
-                             : FloatRect(0.0f, GlyphBoundsLogicalX(), height,
-                                         GlyphBoundsLogicalWidth());
-  }
 };
 
 struct ShapeResult::RunInfo : public RefCounted<ShapeResult::RunInfo> {
