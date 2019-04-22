@@ -2015,6 +2015,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'cheza',
       'cobblepot',
       'coral',
+      'cyan',
       'daisy',
       'daisy_skate',
       'daisy_spring',
@@ -2117,7 +2118,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   # notice, preferably with a comment indicating why and a bug.
   _paladin_experimental_boards = _paladin_new_boards | frozenset([
       'auron_paine', # crbug.com/950751
-      'cyan', # crbug.com/953920
       'lakitu', # crbug.com/953855
       'lakitu-st', # crbug.com/953855
       'mistral', # contact: roopeshr@
