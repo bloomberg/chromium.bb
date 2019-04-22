@@ -1768,19 +1768,31 @@ VIEW_TEST(BookmarkBarViewTest19, BookmarkBarViewTest19_SiblingMenu)
 // the the mouse event (due to event reposting).
 class BookmarkBarViewTest20 : public BookmarkBarViewEventTestBase {
  public:
-  BookmarkBarViewTest20() : test_view_(new TestViewForMenuExit) {}
+  BookmarkBarViewTest20() = default;
+
+  void TearDown() override {
+    // Explicitly delete |container_view_| here so it is removed from the view
+    // hierarchy before the superclass TearDown() runs.  Otherwise, if the
+    // RunUntilIdle() call in the superclass triggers a layout, it will call
+    // ContainerViewForMenuExit::Layout(), which will fail since |bb_view_| will
+    // already be gone by that point.
+    container_view_.reset();
+    BookmarkBarViewEventTestBase::TearDown();
+  }
 
  protected:
   void DoTestOnMessageLoop() override {
     // Add |test_view_| next to |bb_view_|.
     views::View* parent = bb_view_->parent();
-    views::View* container_view = new ContainerViewForMenuExit;
-    container_view->AddChildView(bb_view_.get());
-    container_view->AddChildView(test_view_);
-    parent->AddChildView(container_view);
+    container_view_ = std::make_unique<ContainerViewForMenuExit>();
+    container_view_->set_owned_by_client();
+    container_view_->AddChildView(bb_view_.get());
+    test_view_ =
+        container_view_->AddChildView(std::make_unique<TestViewForMenuExit>());
+    parent->AddChildView(container_view_.get());
     parent->Layout();
 
-    ASSERT_EQ(test_view_->press_count(), 0);
+    EXPECT_EQ(0, test_view_->press_count());
 
     // Move the mouse to the Test View and press the left mouse button.
     ui_test_utils::MoveMouseToCenterAndPress(
@@ -1790,22 +1802,22 @@ class BookmarkBarViewTest20 : public BookmarkBarViewEventTestBase {
 
  private:
   void Step1() {
-    ASSERT_EQ(test_view_->press_count(), 1);
-    ASSERT_TRUE(bb_view_->GetMenu() == NULL);
+    EXPECT_EQ(1, test_view_->press_count());
+    EXPECT_EQ(nullptr, bb_view_->GetMenu());
 
     // Move the mouse to the first folder on the bookmark bar and press the
     // left mouse button.
-    views::LabelButton* button = GetBookmarkButton(0);
     ui_test_utils::MoveMouseToCenterAndPress(
-        button, ui_controls::LEFT, ui_controls::DOWN | ui_controls::UP,
+        GetBookmarkButton(0), ui_controls::LEFT,
+        ui_controls::DOWN | ui_controls::UP,
         CreateEventTask(this, &BookmarkBarViewTest20::Step2));
   }
 
   void Step2() {
-    ASSERT_EQ(test_view_->press_count(), 1);
+    EXPECT_EQ(1, test_view_->press_count());
     views::MenuItemView* menu = bb_view_->GetMenu();
-    ASSERT_TRUE(menu != NULL);
-    ASSERT_TRUE(menu->GetSubmenu()->IsShowing());
+    ASSERT_NE(nullptr, menu);
+    EXPECT_TRUE(menu->GetSubmenu()->IsShowing());
 
     // Move the mouse to the Test View and press the left mouse button.
     // The context menu will consume the event and exit. Thereafter,
@@ -1818,38 +1830,29 @@ class BookmarkBarViewTest20 : public BookmarkBarViewEventTestBase {
 
   void Step3() {
 #if defined(OS_LINUX)
-    ASSERT_EQ(test_view_->press_count(), 1);
+    EXPECT_EQ(1, test_view_->press_count());
 #else
-    ASSERT_EQ(test_view_->press_count(), 2);
+    EXPECT_EQ(2, test_view_->press_count());
 #endif
-    ASSERT_TRUE(bb_view_->GetMenu() == NULL);
+    EXPECT_EQ(nullptr, bb_view_->GetMenu());
     Done();
   }
 
   class ContainerViewForMenuExit : public views::View {
    public:
-    ContainerViewForMenuExit() {
-    }
+    ContainerViewForMenuExit() = default;
 
     void Layout() override {
       DCHECK_EQ(2u, children().size());
-      views::View* bb_view = child_at(0);
-      views::View* test_view = child_at(1);
-      const int width = bb_view->width();
-      const int height = bb_view->height();
-      bb_view->SetBounds(0,0, width - 22, height);
-      test_view->SetBounds(width - 20, 0, 20, height);
+      children()[0]->SetBounds(0, 0, width() - 22, height());
+      children()[1]->SetBounds(width() - 20, 0, 20, height());
     }
-
-   private:
-
-    DISALLOW_COPY_AND_ASSIGN(ContainerViewForMenuExit);
   };
 
   class TestViewForMenuExit : public views::View {
    public:
-    TestViewForMenuExit() : press_count_(0) {
-    }
+    TestViewForMenuExit() = default;
+
     bool OnMousePressed(const ui::MouseEvent& event) override {
       ++press_count_;
       return true;
@@ -1857,12 +1860,11 @@ class BookmarkBarViewTest20 : public BookmarkBarViewEventTestBase {
     int press_count() const { return press_count_; }
 
    private:
-    int press_count_;
-
-    DISALLOW_COPY_AND_ASSIGN(TestViewForMenuExit);
+    int press_count_ = 0;
   };
 
-  TestViewForMenuExit* test_view_;
+  std::unique_ptr<ContainerViewForMenuExit> container_view_;
+  TestViewForMenuExit* test_view_ = nullptr;
 };
 
 VIEW_TEST(BookmarkBarViewTest20, ContextMenuExitTest)
