@@ -130,7 +130,6 @@ void NativeViewHost::Layout() {
   } else {
     native_wrapper_->HideWidget();
   }
-  fast_resize_at_last_layout_ = visible && fast_resize_;
 }
 
 void NativeViewHost::OnPaint(gfx::Canvas* canvas) {
