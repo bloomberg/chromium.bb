@@ -165,9 +165,9 @@ ProtectedBufferManager::ProtectedNativePixmap::Create(
 
   ui::OzonePlatform* platform = ui::OzonePlatform::GetInstance();
   ui::SurfaceFactoryOzone* factory = platform->GetSurfaceFactoryOzone();
-  protected_pixmap->native_pixmap_ =
-      factory->CreateNativePixmap(gfx::kNullAcceleratedWidget, size, format,
-                                  gfx::BufferUsage::SCANOUT_VDA_WRITE);
+  protected_pixmap->native_pixmap_ = factory->CreateNativePixmap(
+      gfx::kNullAcceleratedWidget, VK_NULL_HANDLE, size, format,
+      gfx::BufferUsage::SCANOUT_VDA_WRITE);
 
   if (!protected_pixmap->native_pixmap_) {
     VLOGF(1) << "Failed allocating a native pixmap";

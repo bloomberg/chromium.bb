@@ -224,6 +224,7 @@ std::unique_ptr<SurfaceOzoneCanvas> GbmSurfaceFactory::CreateCanvasForWidget(
 
 scoped_refptr<gfx::NativePixmap> GbmSurfaceFactory::CreateNativePixmap(
     gfx::AcceleratedWidget widget,
+    VkDevice vk_device,
     gfx::Size size,
     gfx::BufferFormat format,
     gfx::BufferUsage usage) {

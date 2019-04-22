@@ -56,6 +56,7 @@ class GbmSurfaceFactory : public SurfaceFactoryOzone {
       gfx::AcceleratedWidget widget) override;
   scoped_refptr<gfx::NativePixmap> CreateNativePixmap(
       gfx::AcceleratedWidget widget,
+      VkDevice vk_device,
       gfx::Size size,
       gfx::BufferFormat format,
       gfx::BufferUsage usage) override;

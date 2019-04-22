@@ -274,8 +274,6 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
 
   std::unique_ptr<gpu::GpuWatchdogThread> watchdog_thread_;
 
-  std::unique_ptr<gpu::GpuMemoryBufferFactory> gpu_memory_buffer_factory_;
-
   const gpu::GpuPreferences gpu_preferences_;
 
   // Information about the GPU, such as device and vendor ID.
@@ -308,6 +306,8 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
   gpu::VulkanImplementation* vulkan_implementation_;
   scoped_refptr<VulkanContextProvider> vulkan_context_provider_;
 #endif
+
+  std::unique_ptr<gpu::GpuMemoryBufferFactory> gpu_memory_buffer_factory_;
 
   // An event that will be signalled when we shutdown. On some platforms it
   // comes from external sources.

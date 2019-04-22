@@ -191,6 +191,7 @@ HeadlessSurfaceFactory::CreateCanvasForWidget(gfx::AcceleratedWidget widget) {
 
 scoped_refptr<gfx::NativePixmap> HeadlessSurfaceFactory::CreateNativePixmap(
     gfx::AcceleratedWidget widget,
+    VkDevice vk_device,
     gfx::Size size,
     gfx::BufferFormat format,
     gfx::BufferUsage usage) {

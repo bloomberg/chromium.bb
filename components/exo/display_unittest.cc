@@ -65,8 +65,8 @@ TEST_F(DisplayTest, DISABLED_CreateLinuxDMABufBuffer) {
   scoped_refptr<gfx::NativePixmap> pixmap =
       ui::OzonePlatform::GetInstance()
           ->GetSurfaceFactoryOzone()
-          ->CreateNativePixmap(gfx::kNullAcceleratedWidget, buffer_size,
-                               gfx::BufferFormat::RGBA_8888,
+          ->CreateNativePixmap(gfx::kNullAcceleratedWidget, VK_NULL_HANDLE,
+                               buffer_size, gfx::BufferFormat::RGBA_8888,
                                gfx::BufferUsage::GPU_READ);
   gfx::NativePixmapHandle native_pixmap_handle = pixmap->ExportHandle();
   std::unique_ptr<Buffer> buffer1 = display->CreateLinuxDMABufBuffer(

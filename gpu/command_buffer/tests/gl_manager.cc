@@ -226,7 +226,7 @@ GLManager::Options::Options() = default;
 
 GLManager::GLManager()
     : gpu_memory_buffer_factory_(
-          gpu::GpuMemoryBufferFactory::CreateNativeType()) {
+          gpu::GpuMemoryBufferFactory::CreateNativeType(nullptr)) {
   SetupBaseContext();
 }
 

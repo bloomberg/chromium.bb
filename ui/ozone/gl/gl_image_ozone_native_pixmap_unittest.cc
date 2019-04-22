@@ -34,8 +34,8 @@ class GLImageNativePixmapTestDelegate : public GLImageTestDelegateBase {
     ui::SurfaceFactoryOzone* surface_factory =
         ui::OzonePlatform::GetInstance()->GetSurfaceFactoryOzone();
     scoped_refptr<gfx::NativePixmap> pixmap =
-        surface_factory->CreateNativePixmap(gfx::kNullAcceleratedWidget, size,
-                                            format, usage);
+        surface_factory->CreateNativePixmap(gfx::kNullAcceleratedWidget,
+                                            nullptr, size, format, usage);
     DCHECK(pixmap);
     if (usage == gfx::BufferUsage::GPU_READ_CPU_READ_WRITE ||
         usage == gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE) {

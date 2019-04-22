@@ -136,8 +136,6 @@ GpuServiceImpl::GpuServiceImpl(
     : main_runner_(base::ThreadTaskRunnerHandle::Get()),
       io_runner_(std::move(io_runner)),
       watchdog_thread_(std::move(watchdog_thread)),
-      gpu_memory_buffer_factory_(
-          gpu::GpuMemoryBufferFactory::CreateNativeType()),
       gpu_preferences_(gpu_preferences),
       gpu_info_(gpu_info),
       gpu_feature_info_(gpu_feature_info),
@@ -164,6 +162,9 @@ GpuServiceImpl::GpuServiceImpl(
       DLOG(WARNING) << "Failed to create Vulkan context provider.";
   }
 #endif
+
+  gpu_memory_buffer_factory_ =
+      gpu::GpuMemoryBufferFactory::CreateNativeType(vulkan_context_provider());
 
   weak_ptr_ = weak_ptr_factory_.GetWeakPtr();
 }
