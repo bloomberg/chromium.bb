@@ -1849,7 +1849,8 @@ crbug.com/803276 [ Win ] virtual/sampling-heap-profiler/inspector-protocol/memor
 # Run these tests with under virtual/scalefactor... only.
 crbug.com/567837 fast/hidpi/static [ Skip ]
 
-crbug.com/538697 [ Win ] virtual/threaded/printing/webgl-oversized-printing.html [ Failure Crash ]
+# For win10, see crbug.com/955109
+crbug.com/538697 [ Win Win10 ] virtual/threaded/printing/webgl-oversized-printing.html [ Failure Crash ]
 crbug.com/538697 [ Win ] printing/webgl-oversized-printing.html [ Failure Crash ]
 
 # ====== Out of Blink CORS related tests BEGIN ======
