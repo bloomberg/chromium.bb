@@ -306,9 +306,6 @@ gpu::SharedImageInterface* InProcessCommandBuffer::GetSharedImageInterface()
 
 bool InProcessCommandBuffer::MakeCurrent() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(gpu_sequence_checker_);
-  if (!context_) {
-    return true;
-  }
 
   if (error::IsError(command_buffer_->GetState().error)) {
     DLOG(ERROR) << "MakeCurrent failed because context lost.";
@@ -563,13 +560,12 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
       return gpu::ContextResult::kFatalFailure;
     }
     std::unique_ptr<webgpu::WebGPUDecoder> webgpu_decoder(
-        webgpu::WebGPUDecoder::Create(
-            this, command_buffer_.get(), task_executor_->shared_image_manager(),
-            context_group_->memory_tracker(), task_executor_->outputter()));
+        webgpu::WebGPUDecoder::Create(this, command_buffer_.get(),
+                                      task_executor_->outputter()));
     gpu::ContextResult result = webgpu_decoder->Initialize();
     if (result != gpu::ContextResult::kSuccess) {
       DestroyOnGpuThread();
-      DLOG(ERROR) << "Failed to initialize WebGPU decoder.";
+      DLOG(ERROR) << "Failed to initializ WebGPUe decoder.";
       return result;
     }
     decoder_ = std::move(webgpu_decoder);
@@ -1383,8 +1379,7 @@ void InProcessCommandBuffer::LazyCreateSharedImageFactory() {
       GetGpuPreferences(), context_group_->feature_info()->workarounds(),
       GetGpuFeatureInfo(), context_state_.get(),
       context_group_->mailbox_manager(), task_executor_->shared_image_manager(),
-      image_factory_, nullptr, features::IsUsingSkiaRenderer(),
-      context_ != nullptr);
+      image_factory_, nullptr, features::IsUsingSkiaRenderer());
 }
 
 void InProcessCommandBuffer::CreateSharedImageOnGpuThread(
@@ -1397,7 +1392,7 @@ void InProcessCommandBuffer::CreateSharedImageOnGpuThread(
   DCHECK_CALLED_ON_VALID_SEQUENCE(gpu_sequence_checker_);
   // |shared_image_factory_| never writes to the surface, so skip unnecessary
   // MakeCurrent to improve performance. https://crbug.com/457431
-  if (context_ && !context_->IsCurrent(nullptr) && !MakeCurrent())
+  if (!context_->IsCurrent(nullptr) && !MakeCurrent())
     return;
   LazyCreateSharedImageFactory();
   if (!shared_image_factory_->CreateSharedImage(mailbox, format, size,
@@ -1421,7 +1416,7 @@ void InProcessCommandBuffer::CreateSharedImageWithDataOnGpuThread(
   DCHECK_CALLED_ON_VALID_SEQUENCE(gpu_sequence_checker_);
   // |shared_image_factory_| never writes to the surface, so skip unnecessary
   // MakeCurrent to improve performance. https://crbug.com/457431
-  if (context_ && !context_->IsCurrent(nullptr) && !MakeCurrent())
+  if (!context_->IsCurrent(nullptr) && !MakeCurrent())
     return;
   LazyCreateSharedImageFactory();
   if (!shared_image_factory_->CreateSharedImage(

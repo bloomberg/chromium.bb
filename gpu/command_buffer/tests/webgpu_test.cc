@@ -67,30 +67,8 @@ webgpu::WebGPUInterface* WebGPUTest::webgpu() const {
   return context_->GetImplementation();
 }
 
-SharedImageInterface* WebGPUTest::GetSharedImageInterface() const {
-  return context_->GetCommandBufferForTest()->GetSharedImageInterface();
-}
-
 void WebGPUTest::RunPendingTasks() {
   context_->GetTaskRunner()->RunPendingTasks();
-}
-
-void WebGPUTest::WaitForCompletion(dawn::Device device) {
-  // Insert a fence signal and wait for it to be signaled. The guarantees of
-  // Dawn are that all previous operations will have been completed and more
-  // importantly the callbacks will have been called.
-  dawn::Queue queue = device.CreateQueue();
-  dawn::FenceDescriptor fence_desc{nullptr, 0};
-  dawn::Fence fence = queue.CreateFence(&fence_desc);
-
-  queue.Submit(0, nullptr);
-  queue.Signal(fence, 1u);
-
-  while (fence.GetCompletedValue() < 1) {
-    device.Tick();
-    webgpu()->FlushCommands();
-    RunPendingTasks();
-  }
 }
 
 TEST_F(WebGPUTest, FlushNoCommands) {

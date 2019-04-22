@@ -114,11 +114,9 @@ class WEBGPU_EXPORT WebGPUImplementation final
   const DawnProcTable& GetProcs() const override;
   void FlushCommands() override;
   DawnDevice GetDefaultDevice() override;
-  ReservedTexture ReserveTexture(DawnDevice device) override;
 
  private:
   const char* GetLogPrefix() const { return "webgpu"; }
-  void CheckGLError() {}
 
   WebGPUCmdHelper* helper_;
 #if BUILDFLAG(USE_DAWN)

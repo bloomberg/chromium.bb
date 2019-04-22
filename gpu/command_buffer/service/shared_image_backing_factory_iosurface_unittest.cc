@@ -57,7 +57,7 @@ class SharedImageBackingFactoryIOSurfaceTest : public testing::Test {
     context_state_->InitializeGL(GpuPreferences(), std::move(feature_info));
 
     backing_factory_ = std::make_unique<SharedImageBackingFactoryIOSurface>(
-        workarounds, GpuFeatureInfo(), /*use_gl*/ true);
+        workarounds, GpuFeatureInfo());
 
     memory_type_tracker_ = std::make_unique<MemoryTypeTracker>(nullptr);
     shared_image_representation_factory_ =
@@ -282,19 +282,18 @@ TEST_F(SharedImageBackingFactoryIOSurfaceTest, Dawn_SkiaGL) {
         dawn::Texture::Acquire(dawn_representation->BeginAccess(
             DAWN_TEXTURE_USAGE_BIT_OUTPUT_ATTACHMENT));
 
-    dawn::RenderPassColorAttachmentDescriptor color_desc;
-    color_desc.attachment = texture.CreateDefaultView();
-    color_desc.resolveTarget = nullptr;
-    color_desc.loadOp = dawn::LoadOp::Clear;
-    color_desc.storeOp = dawn::StoreOp::Store;
-    color_desc.clearColor = {0, 255, 0, 255};
+    dawn::RenderPassColorAttachmentDescriptor colorDesc;
+    colorDesc.attachment = texture.CreateDefaultView();
+    colorDesc.resolveTarget = nullptr;
+    colorDesc.loadOp = dawn::LoadOp::Clear;
+    colorDesc.storeOp = dawn::StoreOp::Store;
+    colorDesc.clearColor = {0, 255, 0, 255};
 
-    dawn::RenderPassColorAttachmentDescriptor* color_attachments_ptr =
-        &color_desc;
+    dawn::RenderPassColorAttachmentDescriptor* colorAttachmentsPtr = &colorDesc;
 
     dawn::RenderPassDescriptor renderPassDesc;
     renderPassDesc.colorAttachmentCount = 1;
-    renderPassDesc.colorAttachments = &color_attachments_ptr;
+    renderPassDesc.colorAttachments = &colorAttachmentsPtr;
     renderPassDesc.depthStencilAttachment = nullptr;
 
     dawn::CommandEncoder encoder = device.CreateCommandEncoder();

@@ -11,10 +11,7 @@
 #ifndef GPU_COMMAND_BUFFER_COMMON_WEBGPU_CMD_IDS_AUTOGEN_H_
 #define GPU_COMMAND_BUFFER_COMMON_WEBGPU_CMD_IDS_AUTOGEN_H_
 
-#define WEBGPU_COMMAND_LIST(OP)           \
-  OP(DawnCommands)              /* 256 */ \
-  OP(AssociateMailboxImmediate) /* 257 */ \
-  OP(DissociateMailbox)         /* 258 */
+#define WEBGPU_COMMAND_LIST(OP) OP(DawnCommands) /* 256 */
 
 enum CommandId {
   kOneBeforeStartPoint =

@@ -201,20 +201,12 @@ class SharedImageRepresentationDawnIOSurface
       : SharedImageRepresentationDawn(manager, backing, tracker),
         io_surface_(std::move(io_surface)),
         device_(device),
-        dawn_format_(dawn_format),
-        dawn_procs_(dawn_native::GetProcs()) {
+        dawn_format_(dawn_format) {
     DCHECK(device_);
     DCHECK(io_surface_);
-
-    // Keep a reference to the device so that it stays valid (it might become
-    // lost in which case operations will be noops).
-    dawn_procs_.deviceReference(device_);
   }
 
-  ~SharedImageRepresentationDawnIOSurface() override {
-    EndAccess();
-    dawn_procs_.deviceRelease(device_);
-  }
+  ~SharedImageRepresentationDawnIOSurface() override {}
 
   DawnTexture BeginAccess(DawnTextureUsageBit usage) final {
     DawnTextureDescriptor desc;
@@ -227,37 +219,11 @@ class SharedImageRepresentationDawnIOSurface
     desc.mipLevelCount = 1;
     desc.sampleCount = 1;
 
-    texture_ =
-        dawn_native::metal::WrapIOSurface(device_, &desc, io_surface_.get(), 0);
-
-    if (texture_) {
-      // Keep a reference to the texture so that it stays valid (its content
-      // might be destroyed).
-      dawn_procs_.textureReference(texture_);
-
-      // Assume that the user of this representation will write to the texture
-      // so set the cleared flag so that other representations don't overwrite
-      // the result.
-      // TODO(cwallez@chromium.org): This is incorrect and allows reading
-      // uninitialized data. When !IsCleared we should tell dawn_native to
-      // consider the texture lazy-cleared.
-      SetCleared();
-    }
-
-    return texture_;
+    return dawn_native::metal::WrapIOSurface(device_, &desc, io_surface_.get(),
+                                             0);
   }
 
   void EndAccess() final {
-    if (!texture_) {
-      return;
-    }
-    // TODO(cwallez@chromium.org): query dawn_native to know if the texture was
-    // cleared and set IsCleared appropriately.
-
-    // All further operations on the textures are errors (they would be racy
-    // with other backings).
-    dawn_procs_.textureDestroy(texture_);
-
     // macOS has a global GPU command queue so synchronization between APIs and
     // devices is automatic. However on Metal, dawnQueueSubmit "commits" the
     // Metal command buffers but they aren't "scheduled" in the global queue
@@ -267,20 +233,12 @@ class SharedImageRepresentationDawnIOSurface
     // This is a blocking call but should be almost instant.
     TRACE_EVENT0("gpu", "SharedImageRepresentationDawnIOSurface::EndAccess");
     dawn_native::metal::WaitForCommandsToBeScheduled(device_);
-
-    dawn_procs_.textureRelease(texture_);
-    texture_ = nullptr;
   }
 
  private:
   base::ScopedCFTypeRef<IOSurfaceRef> io_surface_;
   DawnDevice device_;
-  DawnTexture texture_ = nullptr;
   DawnTextureFormat dawn_format_;
-
-  // TODO(cwallez@chromium.org): Load procs only once when the factory is
-  // created and pass a pointer to them around?
-  DawnProcTable dawn_procs_;
 };
 #endif  // BUILDFLAG(USE_DAWN)
 
@@ -473,16 +431,6 @@ class SharedImageBackingIOSurface : public SharedImageBacking {
 // SharedImageBackings wrapping IOSurfaces.
 SharedImageBackingFactoryIOSurface::SharedImageBackingFactoryIOSurface(
     const GpuDriverBugWorkarounds& workarounds,
-    const GpuFeatureInfo& gpu_feature_info,
-    bool use_gl)
-    : use_gl_(use_gl) {
-  if (use_gl_) {
-    CollectGLFormatInfo(workarounds, gpu_feature_info);
-  }
-}
-
-void SharedImageBackingFactoryIOSurface::CollectGLFormatInfo(
-    const GpuDriverBugWorkarounds& workarounds,
     const GpuFeatureInfo& gpu_feature_info) {
   scoped_refptr<gles2::FeatureInfo> feature_info =
       new gles2::FeatureInfo(workarounds, gpu_feature_info);
@@ -517,7 +465,7 @@ SharedImageBackingFactoryIOSurface::CreateSharedImage(
   DCHECK(!is_thread_safe);
   // Check the format is supported and for simplicity always require it to be
   // supported for GL.
-  if (use_gl_ && !format_supported_by_gl_[format]) {
+  if (!format_supported_by_gl_[format]) {
     LOG(ERROR) << "viz::ResourceFormat " << format
                << " not supported by IOSurfaces";
     return nullptr;
