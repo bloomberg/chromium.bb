@@ -1,8 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Scott Hess <shess@chromium.org>
 Date: Sat, 20 Jul 2013 11:42:21 -0700
-Subject: [PATCH 01/15] Virtual table supporting recovery of corrupted
- databases.
+Subject: [PATCH 1/2] Virtual table supporting recovery of corrupted databases.
 
 "recover" implements a virtual table which uses the SQLite pager layer
 to read table pages and pull out the data which is structurally sound
@@ -34,7 +33,7 @@ third_party/sqlite/patched/src/{recover,recover-alt}.c .
  create mode 100644 third_party/sqlite/patched/test/recover2.test
 
 diff --git a/third_party/sqlite/patched/main.mk b/third_party/sqlite/patched/main.mk
-index c4e8b78e911f..57a27c1e3fc1 100644
+index f418eec68aed..59d7243320ba 100644
 --- a/third_party/sqlite/patched/main.mk
 +++ b/third_party/sqlite/patched/main.mk
 @@ -77,6 +77,8 @@ LIBOBJ+= vdbe.o parse.o \
@@ -55,7 +54,7 @@ index c4e8b78e911f..57a27c1e3fc1 100644
    $(TOP)/src/pcache.c \
    $(TOP)/src/pcache1.c \
    $(TOP)/src/select.c \
-@@ -898,6 +902,7 @@ TESTFIXTURE_FLAGS += -DSQLITE_DEFAULT_PAGE_SIZE=1024
+@@ -895,6 +899,7 @@ TESTFIXTURE_FLAGS += -DSQLITE_DEFAULT_PAGE_SIZE=1024
  TESTFIXTURE_FLAGS += -DSQLITE_ENABLE_STMTVTAB
  TESTFIXTURE_FLAGS += -DSQLITE_ENABLE_DBPAGE_VTAB
  TESTFIXTURE_FLAGS += -DTCLSH_INIT_PROC=sqlite3TestInit
@@ -64,10 +63,10 @@ index c4e8b78e911f..57a27c1e3fc1 100644
  testfixture$(EXE): $(TESTSRC2) libsqlite3.a $(TESTSRC) $(TOP)/src/tclsqlite.c
  	$(TCCX) $(TCL_FLAGS) $(TESTFIXTURE_FLAGS)                            \
 diff --git a/third_party/sqlite/patched/src/main.c b/third_party/sqlite/patched/src/main.c
-index c98cfe99eed3..d58f8c633f8b 100644
+index 6e5db1b9bdb2..62cb8e4f416e 100644
 --- a/third_party/sqlite/patched/src/main.c
 +++ b/third_party/sqlite/patched/src/main.c
-@@ -3244,6 +3244,14 @@ static int openDatabase(
+@@ -3246,6 +3246,14 @@ static int openDatabase(
    }
  #endif
  
@@ -3901,5 +3900,5 @@ index 000000000000..8aa4e049a010
 +
 +finish_test
 -- 
-2.21.0.392.gf8f6787159e-goog
+2.21.0
 

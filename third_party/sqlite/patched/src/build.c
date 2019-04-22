@@ -260,7 +260,12 @@ void sqlite3NestedParse(Parse *pParse, const char *zFormat, ...){
   zSql = sqlite3VMPrintf(db, zFormat, ap);
   va_end(ap);
   if( zSql==0 ){
-    return;   /* A malloc must have failed */
+    /* This can result either from an OOM or because the formatted string
+    ** exceeds SQLITE_LIMIT_LENGTH.  In the latter case, we need to set
+    ** an error */
+    if( !db->mallocFailed ) pParse->rc = SQLITE_TOOBIG;
+    pParse->nErr++;
+    return;
   }
   pParse->nested++;
   memcpy(saveBuf, PARSE_TAIL(pParse), PARSE_TAIL_SZ);
@@ -1822,6 +1827,7 @@ static void convertToWithoutRowidTable(Parse *pParse, Table *pTab){
     pTab->iPKey = -1;
   }else{
     pPk = sqlite3PrimaryKeyIndex(pTab);
+    assert( pPk!=0 );
 
     /*
     ** Remove all redundant columns from the PRIMARY KEY.  For example, change
@@ -1990,6 +1996,11 @@ void sqlite3EndTable(
     p->tnum = db->init.newTnum;
     if( p->tnum==1 ) p->tabFlags |= TF_Readonly;
   }
+
+  assert( (p->tabFlags & TF_HasPrimaryKey)==0
+       || p->iPKey>=0 || sqlite3PrimaryKeyIndex(p)!=0 );
+  assert( (p->tabFlags & TF_HasPrimaryKey)!=0
+       || (p->iPKey<0 && sqlite3PrimaryKeyIndex(p)==0) );
 
   /* Special processing for WITHOUT ROWID Tables */
   if( tabOpts & TF_WithoutRowid ){
@@ -3144,13 +3155,13 @@ void sqlite3CreateIndex(
   assert( pParse->nErr==0 );
   if( sqlite3StrNICmp(pTab->zName, "sqlite_", 7)==0
        && db->init.busy==0
+       && pTblName!=0
 #if SQLITE_USER_AUTHENTICATION
        && sqlite3UserAuthTable(pTab->zName)==0
 #endif
 #ifdef SQLITE_ALLOW_SQLITE_MASTER_INDEX
        && sqlite3StrICmp(&pTab->zName[7],"master")!=0
 #endif
-       && sqlite3StrNICmp(&pTab->zName[7],"altertab_",9)!=0
  ){
     sqlite3ErrorMsg(pParse, "table %s may not be indexed", pTab->zName);
     goto exit_create_index;
@@ -3254,6 +3265,7 @@ void sqlite3CreateIndex(
     sqlite3ExprListSetSortOrder(pList, sortOrder);
   }else{
     sqlite3ExprListCheckLength(pParse, pList, "index");
+    if( pParse->nErr ) goto exit_create_index;
   }
 
   /* Figure out how many bytes of space are required to store explicitly
@@ -3272,6 +3284,7 @@ void sqlite3CreateIndex(
   */
   nName = sqlite3Strlen30(zName);
   nExtraCol = pPk ? pPk->nKeyCol : 1;
+  assert( pList->nExpr + nExtraCol <= 32767 /* Fits in i16 */ );
   pIndex = sqlite3AllocateIndexObject(db, pList->nExpr + nExtraCol,
                                       nName + nExtra + 1, &zExtra);
   if( db->mallocFailed ){
@@ -3755,7 +3768,7 @@ void *sqlite3ArrayAllocate(
   int *pIdx         /* Write the index of a new slot here */
 ){
   char *z;
-  sqlite3_int64 n = *pnEntry;
+  sqlite3_int64 n = *pIdx = *pnEntry;
   if( (n & (n-1))==0 ){
     sqlite3_int64 sz = (n==0) ? 1 : 2*n;
     void *pNew = sqlite3DbRealloc(db, pArray, sz*szEntry);
@@ -3767,7 +3780,6 @@ void *sqlite3ArrayAllocate(
   }
   z = (char*)pArray;
   memset(&z[n * szEntry], 0, szEntry);
-  *pIdx = n;
   ++*pnEntry;
   return pArray;
 }
@@ -4385,7 +4397,8 @@ void sqlite3UniqueConstraint(
   StrAccum errMsg;
   Table *pTab = pIdx->pTable;
 
-  sqlite3StrAccumInit(&errMsg, pParse->db, 0, 0, 200);
+  sqlite3StrAccumInit(&errMsg, pParse->db, 0, 0,
+                      pParse->db->aLimit[SQLITE_LIMIT_LENGTH]);
   if( pIdx->aColExpr ){
     sqlite3_str_appendf(&errMsg, "index '%q'", pIdx->zName);
   }else{
