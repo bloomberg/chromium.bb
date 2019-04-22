@@ -169,8 +169,10 @@ NonClientFrameView* BubbleDialogDelegateView::CreateNonClientFrameView(
   frame->SetFootnoteView(CreateFootnoteView());
 
   BubbleBorder::Arrow adjusted_arrow = arrow();
-  if (base::i18n::IsRTL())
+  if (base::i18n::IsRTL()) {
     adjusted_arrow = BubbleBorder::horizontal_mirror(adjusted_arrow);
+    arrow_ = adjusted_arrow;
+  }
   std::unique_ptr<BubbleBorder> border =
       std::make_unique<BubbleBorder>(adjusted_arrow, GetShadow(), color());
   if (CustomShadowsSupported() && ShouldHaveRoundCorners()) {
