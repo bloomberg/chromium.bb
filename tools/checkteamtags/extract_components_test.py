@@ -204,9 +204,9 @@ class ExtractComponentsTest(unittest.TestCase):
                               '# COMPONENT: Dummy>Component2'),
         ('chromium/src/dir1/subdir', 'dummy@chromium.org'),
         ('chromium/src/dir2/subdir', None),
-        ('third_party/WebKit/LayoutTests/foo',
+        ('third_party/blink/web_tests/foo',
              '# TEAM: dummy-team-3@chromium.org\n'),
-        ('third_party/WebKit/LayoutTests/bar',
+        ('third_party/blink/web_tests/bar',
              '# TEAM: dummy-team-3@chromium.org\n'
              '# COMPONENT: Dummy>Component3\n'),
     ])):
@@ -231,10 +231,10 @@ class ExtractComponentsTest(unittest.TestCase):
               u'chromium/src/dir1/subdir': u'Dummy>Component',
               u'chromium/src/dir2': u'Dummy>Component2',
               u'chromium/src/dir2/subdir': u'Dummy>Component2',
-              u'third_party/WebKit/LayoutTests/bar': u'Dummy>Component3',
+              u'third_party/blink/web_tests/bar': u'Dummy>Component3',
           },
           u'dir-to-team': {
-              u'third_party/WebKit/LayoutTests/foo':
+              u'third_party/blink/web_tests/foo':
                   u'dummy-team-3@chromium.org',
           }})
 
