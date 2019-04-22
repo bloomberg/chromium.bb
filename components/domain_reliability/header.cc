@@ -28,8 +28,8 @@ class DirectiveHeaderValueParser {
     SYNTAX_ERROR
   };
 
-  DirectiveHeaderValueParser(base::StringPiece value)
-      : value_(value.data()),
+  explicit DirectiveHeaderValueParser(base::StringPiece value)
+      : value_(value.as_string()),
         tokenizer_(value_.begin(), value_.end(), ";= "),
         stopped_with_error_(false) {
     tokenizer_.set_options(base::StringTokenizer::RETURN_DELIMS);
@@ -134,6 +134,8 @@ class DirectiveHeaderValueParser {
     return BEFORE_VALUE;
   }
 
+  // TODO(https://crbug.com/820198): This could take a StringPiece once
+  // StringTokenizer is made StringPiece-friendly.
   std::string value_;
   base::StringTokenizer tokenizer_;
 
