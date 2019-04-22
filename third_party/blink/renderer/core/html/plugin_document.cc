@@ -44,6 +44,7 @@
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/scheduler/public/scheduling_policy.h"
 
 namespace blink {
@@ -105,13 +106,13 @@ void PluginDocumentParser::CreateDocumentStructure() {
       !frame->Loader().AllowPlugins(kNotAboutToInstantiatePlugin))
     return;
 
-  HTMLHtmlElement* root_element = HTMLHtmlElement::Create(*GetDocument());
+  auto* root_element = MakeGarbageCollected<HTMLHtmlElement>(*GetDocument());
   GetDocument()->AppendChild(root_element);
   root_element->InsertedByParser();
   if (IsStopped())
     return;  // runScriptsAtDocumentElementAvailable can detach the frame.
 
-  HTMLBodyElement* body = HTMLBodyElement::Create(*GetDocument());
+  auto* body = MakeGarbageCollected<HTMLBodyElement>(*GetDocument());
   body->setAttribute(kStyleAttr,
                      "height: 100%; width: 100%; overflow: hidden; margin: 0");
   body->SetInlineStyleProperty(

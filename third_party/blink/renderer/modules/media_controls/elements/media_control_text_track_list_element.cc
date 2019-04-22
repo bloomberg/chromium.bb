@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_toggle_closed_captions_button_element.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_text_track_manager.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
 
 namespace blink {
@@ -113,7 +114,7 @@ void MediaControlTextTrackListElement::DefaultEventHandler(Event& event) {
 Element* MediaControlTextTrackListElement::CreateTextTrackListItem(
     TextTrack* track) {
   int track_index = track ? track->TrackIndex() : kTrackIndexOffValue;
-  HTMLLabelElement* track_item = HTMLLabelElement::Create(GetDocument());
+  auto* track_item = MakeGarbageCollected<HTMLLabelElement>(GetDocument());
   track_item->SetShadowPseudoId(
       AtomicString("-internal-media-controls-text-track-list-item"));
   auto* track_item_input =
@@ -179,7 +180,7 @@ Element* MediaControlTextTrackListElement::CreateTextTrackListItem(
 }
 
 Element* MediaControlTextTrackListElement::CreateTextTrackHeaderItem() {
-  HTMLLabelElement* header_item = HTMLLabelElement::Create(GetDocument());
+  auto* header_item = MakeGarbageCollected<HTMLLabelElement>(GetDocument());
   header_item->SetShadowPseudoId(
       "-internal-media-controls-text-track-list-header");
   header_item->ParserAppendChild(

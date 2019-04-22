@@ -64,6 +64,7 @@
 #include "third_party/blink/renderer/core/svg/svg_script_element.h"
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/text/text_break_iterator.h"
 
 namespace blink {
@@ -417,7 +418,7 @@ void HTMLConstructionSite::InsertHTMLHtmlStartTagBeforeHTML(
     element = ToHTMLHtmlElement(document_->CreateElement(
         html_names::kHTMLTag, GetCreateElementFlags(), is_attribute->Value()));
   } else {
-    element = HTMLHtmlElement::Create(*document_);
+    element = MakeGarbageCollected<HTMLHtmlElement>(*document_);
   }
   SetAttributes(element, token, parser_content_policy_);
   AttachLater(attachment_root_, element);
@@ -741,7 +742,8 @@ void HTMLConstructionSite::InsertScriptElement(AtomicHTMLToken* token) {
     element = ToHTMLScriptElement(OwnerDocumentForCurrentNode().CreateElement(
         html_names::kScriptTag, flags, is_attribute->Value()));
   } else {
-    element = HTMLScriptElement::Create(OwnerDocumentForCurrentNode(), flags);
+    element = MakeGarbageCollected<HTMLScriptElement>(
+        OwnerDocumentForCurrentNode(), flags);
   }
   SetAttributes(element, token, parser_content_policy_);
   if (ScriptingContentIsAllowed(parser_content_policy_))

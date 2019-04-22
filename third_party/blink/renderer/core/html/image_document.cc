@@ -54,6 +54,7 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
@@ -217,20 +218,20 @@ IntSize ImageDocument::ImageSize() const {
 }
 
 void ImageDocument::CreateDocumentStructure() {
-  HTMLHtmlElement* root_element = HTMLHtmlElement::Create(*this);
+  auto* root_element = MakeGarbageCollected<HTMLHtmlElement>(*this);
   AppendChild(root_element);
   root_element->InsertedByParser();
 
   if (IsStopped())
     return;  // runScriptsAtDocumentElementAvailable can detach the frame.
 
-  HTMLHeadElement* head = HTMLHeadElement::Create(*this);
-  HTMLMetaElement* meta = HTMLMetaElement::Create(*this);
+  auto* head = MakeGarbageCollected<HTMLHeadElement>(*this);
+  auto* meta = MakeGarbageCollected<HTMLMetaElement>(*this);
   meta->setAttribute(kNameAttr, "viewport");
   meta->setAttribute(kContentAttr, "width=device-width, minimum-scale=0.1");
   head->AppendChild(meta);
 
-  HTMLBodyElement* body = HTMLBodyElement::Create(*this);
+  auto* body = MakeGarbageCollected<HTMLBodyElement>(*this);
 
   if (ShouldShrinkToFit()) {
     // Display the image prominently centered in the frame.

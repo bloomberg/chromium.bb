@@ -62,7 +62,7 @@ class HTMLSourceElement::Listener final : public MediaQueryListListener {
   Member<HTMLSourceElement> element_;
 };
 
-inline HTMLSourceElement::HTMLSourceElement(Document& document)
+HTMLSourceElement::HTMLSourceElement(Document& document)
     : HTMLElement(kSourceTag, document),
       listener_(MakeGarbageCollected<Listener>(this)) {
   DVLOG(SOURCE_LOG_LEVEL) << "HTMLSourceElement - " << (void*)this;

@@ -44,7 +44,7 @@ namespace blink {
 
 using namespace html_names;
 
-inline HTMLLabelElement::HTMLLabelElement(Document& document)
+HTMLLabelElement::HTMLLabelElement(Document& document)
     : HTMLElement(kLabelTag, document), processing_click_(false) {}
 
 HTMLLabelElement* HTMLLabelElement::Create(Document& document) {

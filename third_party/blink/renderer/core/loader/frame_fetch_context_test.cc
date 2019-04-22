@@ -62,6 +62,7 @@
 #include "third_party/blink/renderer/core/loader/subresource_filter.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_info.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
@@ -546,7 +547,7 @@ TEST_F(FrameFetchContextModifyRequestTest, SendRequiredCSPHeader) {
                {"https://example.test/page.html",
                 network::mojom::RequestContextFrameType::kTopLevel}};
 
-  HTMLIFrameElement* iframe = HTMLIFrameElement::Create(*document);
+  auto* iframe = MakeGarbageCollected<HTMLIFrameElement>(*document);
   const AtomicString& required_csp = AtomicString("default-src 'none'");
   const AtomicString& another_required_csp = AtomicString("default-src 'self'");
 

@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_elements_helper.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
@@ -61,7 +62,8 @@ HTMLElement* MediaControlInputElement::CreateOverflowElement(
   overflow_menu_text_->setInnerText(button->GetOverflowMenuString(),
                                     ASSERT_NO_EXCEPTION);
 
-  overflow_label_element_ = HTMLLabelElement::Create(GetDocument());
+  overflow_label_element_ =
+      MakeGarbageCollected<HTMLLabelElement>(GetDocument());
   overflow_label_element_->SetShadowPseudoId(
       AtomicString("-internal-media-controls-overflow-menu-list-item"));
   overflow_label_element_->setAttribute(html_names::kRoleAttr, "menuitem");

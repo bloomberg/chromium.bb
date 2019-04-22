@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/core/svg/svg_image_element.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
@@ -296,7 +297,7 @@ TEST_F(ImagePaintTimingDetectorTest,
     <div id="parent">
     </div>
   )HTML");
-  HTMLImageElement* image = HTMLImageElement::Create(GetDocument());
+  auto* image = MakeGarbageCollected<HTMLImageElement>(GetDocument());
   image->setAttribute("id", "target");
   GetDocument().getElementById("parent")->AppendChild(image);
   SetImageAndPaint("target", 5, 5);

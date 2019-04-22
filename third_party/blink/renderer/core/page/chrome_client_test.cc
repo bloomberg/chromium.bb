@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/loader/empty_clients.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -42,7 +43,7 @@ TEST_F(ChromeClientTest, SetToolTipFlood) {
   HitTestLocation location(LayoutPoint(10, 20));
   HitTestResult result(HitTestRequest(HitTestRequest::kMove), location);
   Document* doc = Document::CreateForTest();
-  Element* element = HTMLElement::Create(html_names::kDivTag, *doc);
+  auto* element = MakeGarbageCollected<HTMLElement>(html_names::kDivTag, *doc);
   element->setAttribute(html_names::kTitleAttr, "tooltip");
   result.SetInnerNode(element);
 

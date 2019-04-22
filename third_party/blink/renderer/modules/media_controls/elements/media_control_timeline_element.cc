@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_resource_loader.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_shared_helper.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
 
@@ -72,7 +73,8 @@ MediaControlTimelineElement::MediaControlTimelineElement(
     // be re-combined with the UA sheet.
     // This stylesheet element contains rules that cannot be present in the UA
     // stylesheet (e.g. animations).
-    auto* style = HTMLStyleElement::Create(GetDocument(), CreateElementFlags());
+    auto* style = MakeGarbageCollected<HTMLStyleElement>(GetDocument(),
+                                                         CreateElementFlags());
     style->setTextContent(
         MediaControlsResourceLoader::GetShadowTimelineStyleSheet());
     track.ParserAppendChild(style);
