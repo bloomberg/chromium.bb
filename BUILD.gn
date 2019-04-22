@@ -28,6 +28,7 @@ group("all") {
     ":system_api-seneschal-goprotos",
     ":system_api-seneschal-protos",
     ":system_api-smbprovider-protos",
+    ":system_api-tpm_manager-protos",
     ":system_api-u2f-protos",
     ":system_api-vm_applications-protos",
     ":system_api-vm_cicerone-goprotos",
@@ -171,6 +172,19 @@ proto_library("system_api-attestation-protos") {
   standalone = true
 
   # system_api-chaps-protos" is used by a shared_library
+  # object, so we need to build it with "-fPIC" instead of "-fPIE".
+  use_pic = true
+}
+
+proto_library("system_api-tpm_manager-protos") {
+  proto_in_dir = "dbus/tpm_manager"
+  proto_out_dir = "include/tpm_manager/proto_bindings"
+  sources = [
+    "${proto_in_dir}/tpm_manager.proto",
+  ]
+  standalone = true
+
+  # system_api-tpm_manager-protos is used by a shared_library
   # object, so we need to build it with "-fPIC" instead of "-fPIE".
   use_pic = true
 }
