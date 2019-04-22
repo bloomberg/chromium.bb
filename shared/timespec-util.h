@@ -81,7 +81,7 @@ timespec_add_nsec(struct timespec *r, const struct timespec *a, int64_t b)
 static inline void
 timespec_add_msec(struct timespec *r, const struct timespec *a, int64_t b)
 {
-	return timespec_add_nsec(r, a, b * 1000000);
+	timespec_add_nsec(r, a, b * 1000000);
 }
 
 /* Convert timespec to nanoseconds
