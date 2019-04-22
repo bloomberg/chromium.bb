@@ -58,9 +58,6 @@ class APP_LIST_EXPORT SearchResultView
   // Sets/gets SearchResult displayed by this view.
   void OnResultChanged() override;
 
-  // Clears the selected action.
-  void ClearSelectedAction();
-
   // Computes the button's spoken feedback name.
   base::string16 ComputeAccessibleName() const;
 

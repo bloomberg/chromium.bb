@@ -43,7 +43,7 @@ class ASH_EXPORT LoginMenuView : public LoginBaseBubbleView {
   };
 
   using OnSelect = base::RepeatingCallback<void(Item item)>;
-  using OnHighLight = base::RepeatingCallback<void(bool by_selection)>;
+  using OnHighlight = base::RepeatingCallback<void(bool by_selection)>;
 
   LoginMenuView(const std::vector<Item>& items,
                 views::View* anchor_view,
@@ -51,7 +51,7 @@ class ASH_EXPORT LoginMenuView : public LoginBaseBubbleView {
                 const OnSelect& on_select);
   ~LoginMenuView() override;
 
-  void OnHighLightChange(int item_index, bool by_selection);
+  void OnHighlightChange(int item_index, bool by_selection);
 
   // LoginBaseBubbleView:
   LoginButton* GetBubbleOpener() const override;

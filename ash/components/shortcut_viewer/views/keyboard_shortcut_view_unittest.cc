@@ -157,13 +157,10 @@ TEST_F(KeyboardShortcutViewTest, TopLineCenterAlignedInItemView) {
     // |shortcut_label_view_| should be center aligned. Only need to check one
     // view in the top line, because StyledLabel always center align all the
     // views in a line.
-    const views::View* description_view = item_view->child_at(0);
-    const views::View* shortcut_view = item_view->child_at(1);
-    const views::View* description_top_line_view =
-        description_view->child_at(0);
-    const views::View* shortcut_top_line_view = shortcut_view->child_at(0);
-    EXPECT_EQ(description_top_line_view->GetBoundsInScreen().CenterPoint().y(),
-              shortcut_top_line_view->GetBoundsInScreen().CenterPoint().y());
+    const views::View* description = item_view->child_at(0);
+    const views::View* shortcut = item_view->child_at(1);
+    EXPECT_EQ(description->child_at(0)->GetBoundsInScreen().CenterPoint().y(),
+              shortcut->child_at(0)->GetBoundsInScreen().CenterPoint().y());
   }
 
   // Cleaning up.

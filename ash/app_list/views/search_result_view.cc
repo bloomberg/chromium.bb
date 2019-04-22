@@ -101,10 +101,6 @@ void SearchResultView::OnResultChanged() {
   SchedulePaint();
 }
 
-void SearchResultView::ClearSelectedAction() {
-  actions_view_->SetSelectedAction(-1);
-}
-
 void SearchResultView::UpdateTitleText() {
   if (!result() || result()->title().empty())
     title_text_.reset();
@@ -256,33 +252,22 @@ void SearchResultView::Layout() {
 }
 
 bool SearchResultView::OnKeyPressed(const ui::KeyEvent& event) {
-  // |result()| could be NULL when result list is changing.
+  // result() could be null when result list is changing.
   if (!result())
     return false;
 
   switch (event.key_code()) {
-    case ui::VKEY_RETURN: {
-      int selected = actions_view_->selected_action();
-      if (actions_view_->IsValidActionIndex(selected)) {
-        OnSearchResultActionActivated(selected, event.flags());
-      } else {
-        list_view_->SearchResultActivated(this, event.flags());
-      }
+    case ui::VKEY_RETURN:
+      list_view_->SearchResultActivated(this, event.flags());
       return true;
-    }
     case ui::VKEY_UP:
-    case ui::VKEY_DOWN: {
-      if (!actions_view_->children().empty()) {
-        return list_view_->HandleVerticalFocusMovement(
-            this, event.key_code() == ui::VKEY_UP);
-      }
-      break;
-    }
+    case ui::VKEY_DOWN:
+      return !actions_view_->children().empty() &&
+             list_view_->HandleVerticalFocusMovement(
+                 this, event.key_code() == ui::VKEY_UP);
     default:
-      break;
+      return false;
   }
-
-  return false;
 }
 
 void SearchResultView::PaintButtonContents(gfx::Canvas* canvas) {

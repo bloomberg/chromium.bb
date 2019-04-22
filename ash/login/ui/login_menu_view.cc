@@ -34,7 +34,7 @@ constexpr SkColor kMenuBackgroundColor = SkColorSetRGB(0x3C, 0x40, 0x43);
 class MenuItemView : public views::Button, public views::ButtonListener {
  public:
   MenuItemView(const LoginMenuView::Item& item,
-               const LoginMenuView::OnHighLight& on_highlight)
+               const LoginMenuView::OnHighlight& on_highlight)
       : views::Button(this), item_(item), on_highlight_(on_highlight) {
     SetFocusBehavior(FocusBehavior::ALWAYS);
     SetLayoutManager(
@@ -94,7 +94,7 @@ class MenuItemView : public views::Button, public views::ButtonListener {
 
  private:
   const LoginMenuView::Item item_;
-  const LoginMenuView::OnHighLight on_highlight_;
+  const LoginMenuView::OnHighlight on_highlight_;
   std::unique_ptr<HoverNotifier> hover_notifier_;
 
   DISALLOW_COPY_AND_ASSIGN(MenuItemView);
@@ -155,7 +155,7 @@ LoginMenuView::LoginMenuView(const std::vector<Item>& items,
   for (size_t i = 0; i < items.size(); i++) {
     const Item& item = items[i];
     contents->AddChildView(new MenuItemView(
-        item, base::BindRepeating(&LoginMenuView::OnHighLightChange,
+        item, base::BindRepeating(&LoginMenuView::OnHighlightChange,
                                   base::Unretained(this), i)));
 
     if (item.selected)
@@ -167,7 +167,7 @@ LoginMenuView::LoginMenuView(const std::vector<Item>& items,
 
 LoginMenuView::~LoginMenuView() = default;
 
-void LoginMenuView::OnHighLightChange(int item_index, bool by_selection) {
+void LoginMenuView::OnHighlightChange(int item_index, bool by_selection) {
   selected_index_ = item_index;
   views::View* highlight_item = contents_->child_at(item_index);
   for (views::View* child : contents_->GetChildrenInZOrder()) {

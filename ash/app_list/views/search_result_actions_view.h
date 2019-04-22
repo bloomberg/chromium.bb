@@ -23,15 +23,12 @@ class SearchResultImageButton;
 class SearchResultActionsView : public views::View,
                                 public views::ButtonListener {
  public:
-  SearchResultActionsView(SearchResultActionsViewDelegate* delegate);
+  explicit SearchResultActionsView(SearchResultActionsViewDelegate* delegate);
   ~SearchResultActionsView() override;
 
   void SetActions(const SearchResult::Actions& actions);
 
-  void SetSelectedAction(int action_index);
-  int selected_action() const { return selected_action_; }
-
-  bool IsValidActionIndex(int action_index) const;
+  bool IsValidActionIndex(size_t action_index) const;
 
   bool IsSearchResultHoveredOrSelected() const;
 
@@ -45,14 +42,12 @@ class SearchResultActionsView : public views::View,
   void CreateImageButton(const SearchResult::Action& action);
 
   // views::View overrides:
-  void OnPaint(gfx::Canvas* canvas) override;
   void ChildVisibilityChanged(views::View* child) override;
 
   // views::ButtonListener overrides:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   SearchResultActionsViewDelegate* delegate_;  // Not owned.
-  int selected_action_;
   std::vector<SearchResultImageButton*> buttons_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchResultActionsView);

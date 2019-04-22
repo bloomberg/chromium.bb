@@ -383,14 +383,13 @@ void KeyboardShortcutView::InitCategoriesTabbedPane(
   KeyboardShortcutItemListView* item_list_view = nullptr;
   std::vector<KeyboardShortcutItemView*> shortcut_items;
   const bool already_has_tabs = categories_tabbed_pane_->GetTabCount() > 0;
-  int tab_index = -1;
+  int tab_index = 0;
   views::View* const tab_contents = categories_tabbed_pane_->child_at(1);
   for (const auto& item_view : shortcut_views_) {
     const ShortcutCategory category = item_view->category();
     DCHECK_NE(ShortcutCategory::kUnknown, category);
     if (current_category != category) {
       current_category = category;
-      ++tab_index;
       std::unique_ptr<views::View> content_view;
       // Delay constructing a KeyboardShortcutItemListView until it is needed.
       if (initial_category.value_or(category) == category) {
@@ -418,6 +417,8 @@ void KeyboardShortcutView::InitCategoriesTabbedPane(
             GetStringForCategory(current_category),
             CreateScrollView(std::move(content_view)));
       }
+
+      ++tab_index;
     }
 
     // If |initial_category| has a value, we only initialize the pane with the
