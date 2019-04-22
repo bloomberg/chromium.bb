@@ -20,6 +20,7 @@
 #include "net/base/load_timing_info.h"
 #include "net/base/load_timing_info_test_util.h"
 #include "net/base/net_errors.h"
+#include "net/base/privacy_mode.h"
 #include "net/base/test_completion_callback.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/log/test_net_log.h"
@@ -63,7 +64,7 @@ class WebSocketTransportClientSocketPoolTest
   WebSocketTransportClientSocketPoolTest()
       : group_id_(HostPortPair("www.google.com", 80),
                   ClientSocketPool::SocketType::kHttp,
-                  false /* privacy_mode */),
+                  PrivacyMode::PRIVACY_MODE_DISABLED),
         params_(ClientSocketPool::SocketParams::CreateFromTransportSocketParams(
             base::MakeRefCounted<TransportSocketParams>(
                 HostPortPair("www.google.com", 80),

@@ -44,6 +44,7 @@
 #include "net/base/load_timing_info.h"
 #include "net/base/load_timing_info_test_util.h"
 #include "net/base/net_errors.h"
+#include "net/base/privacy_mode.h"
 #include "net/base/proxy_delegate.h"
 #include "net/base/proxy_server.h"
 #include "net/base/request_priority.h"
@@ -11185,7 +11186,7 @@ TEST_F(HttpNetworkTransactionTest, GroupIdForDirectConnections) {
           "http://www.example.org/direct",
           ClientSocketPool::GroupId(HostPortPair("www.example.org", 80),
                                     ClientSocketPool::SocketType::kHttp,
-                                    false /* privacy_mode */),
+                                    PrivacyMode::PRIVACY_MODE_DISABLED),
           false,
       },
       {
@@ -11193,7 +11194,7 @@ TEST_F(HttpNetworkTransactionTest, GroupIdForDirectConnections) {
           "http://[2001:1418:13:1::25]/direct",
           ClientSocketPool::GroupId(HostPortPair("2001:1418:13:1::25", 80),
                                     ClientSocketPool::SocketType::kHttp,
-                                    false /* privacy_mode */),
+                                    PrivacyMode::PRIVACY_MODE_DISABLED),
           false,
       },
 
@@ -11203,7 +11204,7 @@ TEST_F(HttpNetworkTransactionTest, GroupIdForDirectConnections) {
           "https://www.example.org/direct_ssl",
           ClientSocketPool::GroupId(HostPortPair("www.example.org", 443),
                                     ClientSocketPool::SocketType::kSsl,
-                                    false /* privacy_mode */),
+                                    PrivacyMode::PRIVACY_MODE_DISABLED),
           true,
       },
       {
@@ -11211,7 +11212,7 @@ TEST_F(HttpNetworkTransactionTest, GroupIdForDirectConnections) {
           "https://[2001:1418:13:1::25]/direct",
           ClientSocketPool::GroupId(HostPortPair("2001:1418:13:1::25", 443),
                                     ClientSocketPool::SocketType::kSsl,
-                                    false /* privacy_mode */),
+                                    PrivacyMode::PRIVACY_MODE_DISABLED),
           true,
       },
       {
@@ -11219,7 +11220,7 @@ TEST_F(HttpNetworkTransactionTest, GroupIdForDirectConnections) {
           "https://host.with.alternate/direct",
           ClientSocketPool::GroupId(HostPortPair("host.with.alternate", 443),
                                     ClientSocketPool::SocketType::kSsl,
-                                    false /* privacy_mode */),
+                                    PrivacyMode::PRIVACY_MODE_DISABLED),
           true,
       },
   };
@@ -11254,7 +11255,7 @@ TEST_F(HttpNetworkTransactionTest, GroupIdForHTTPProxyConnections) {
           "http://www.example.org/http_proxy_normal",
           ClientSocketPool::GroupId(HostPortPair("www.example.org", 80),
                                     ClientSocketPool::SocketType::kHttp,
-                                    false /* privacy_mode */),
+                                    PrivacyMode::PRIVACY_MODE_DISABLED),
           false,
       },
 
@@ -11264,7 +11265,7 @@ TEST_F(HttpNetworkTransactionTest, GroupIdForHTTPProxyConnections) {
           "https://www.example.org/http_connect_ssl",
           ClientSocketPool::GroupId(HostPortPair("www.example.org", 443),
                                     ClientSocketPool::SocketType::kSsl,
-                                    false /* privacy_mode */),
+                                    PrivacyMode::PRIVACY_MODE_DISABLED),
           true,
       },
 
@@ -11273,7 +11274,7 @@ TEST_F(HttpNetworkTransactionTest, GroupIdForHTTPProxyConnections) {
           "https://host.with.alternate/direct",
           ClientSocketPool::GroupId(HostPortPair("host.with.alternate", 443),
                                     ClientSocketPool::SocketType::kSsl,
-                                    false /* privacy_mode */),
+                                    PrivacyMode::PRIVACY_MODE_DISABLED),
           true,
       },
 
@@ -11282,7 +11283,7 @@ TEST_F(HttpNetworkTransactionTest, GroupIdForHTTPProxyConnections) {
           "ftp://ftp.google.com/http_proxy_normal",
           ClientSocketPool::GroupId(HostPortPair("ftp.google.com", 21),
                                     ClientSocketPool::SocketType::kFtp,
-                                    false /* privacy_mode */),
+                                    PrivacyMode::PRIVACY_MODE_DISABLED),
           false,
       },
   };
@@ -11319,7 +11320,7 @@ TEST_F(HttpNetworkTransactionTest, GroupIdForSOCKSConnections) {
           "http://www.example.org/socks4_direct",
           ClientSocketPool::GroupId(HostPortPair("www.example.org", 80),
                                     ClientSocketPool::SocketType::kHttp,
-                                    false /* privacy_mode */),
+                                    PrivacyMode::PRIVACY_MODE_DISABLED),
           false,
       },
       {
@@ -11327,7 +11328,7 @@ TEST_F(HttpNetworkTransactionTest, GroupIdForSOCKSConnections) {
           "http://www.example.org/socks5_direct",
           ClientSocketPool::GroupId(HostPortPair("www.example.org", 80),
                                     ClientSocketPool::SocketType::kHttp,
-                                    false /* privacy_mode */),
+                                    PrivacyMode::PRIVACY_MODE_DISABLED),
           false,
       },
 
@@ -11337,7 +11338,7 @@ TEST_F(HttpNetworkTransactionTest, GroupIdForSOCKSConnections) {
           "https://www.example.org/socks4_ssl",
           ClientSocketPool::GroupId(HostPortPair("www.example.org", 443),
                                     ClientSocketPool::SocketType::kSsl,
-                                    false /* privacy_mode */),
+                                    PrivacyMode::PRIVACY_MODE_DISABLED),
           true,
       },
       {
@@ -11345,7 +11346,7 @@ TEST_F(HttpNetworkTransactionTest, GroupIdForSOCKSConnections) {
           "https://www.example.org/socks5_ssl",
           ClientSocketPool::GroupId(HostPortPair("www.example.org", 443),
                                     ClientSocketPool::SocketType::kSsl,
-                                    false /* privacy_mode */),
+                                    PrivacyMode::PRIVACY_MODE_DISABLED),
           true,
       },
 
@@ -11354,7 +11355,7 @@ TEST_F(HttpNetworkTransactionTest, GroupIdForSOCKSConnections) {
           "https://host.with.alternate/direct",
           ClientSocketPool::GroupId(HostPortPair("host.with.alternate", 443),
                                     ClientSocketPool::SocketType::kSsl,
-                                    false /* privacy_mode */),
+                                    PrivacyMode::PRIVACY_MODE_DISABLED),
           true,
       },
   };
@@ -14414,7 +14415,7 @@ TEST_F(HttpNetworkTransactionTest, MultiRoundAuth) {
 
   const ClientSocketPool::GroupId kSocketGroup(
       HostPortPair("www.example.com", 80), ClientSocketPool::SocketType::kHttp,
-      false /* privacy_mode */);
+      PrivacyMode::PRIVACY_MODE_DISABLED);
 
   // First round of authentication.
   auth_handler->SetGenerateExpectation(false, OK);

@@ -392,11 +392,11 @@ ClientSocketPool::GroupId GetGroupId(const TestCase& test) {
   if (test.ssl) {
     return ClientSocketPool::GroupId(HostPortPair("www.google.com", 443),
                                      ClientSocketPool::SocketType::kSsl,
-                                     false /* privacy_mode */);
+                                     PrivacyMode::PRIVACY_MODE_DISABLED);
   }
   return ClientSocketPool::GroupId(HostPortPair("www.google.com", 80),
                                    ClientSocketPool::SocketType::kHttp,
-                                   false /* privacy_mode */);
+                                   PrivacyMode::PRIVACY_MODE_DISABLED);
 }
 
 class CapturePreconnectsTransportSocketPool : public TransportClientSocketPool {
@@ -422,7 +422,7 @@ class CapturePreconnectsTransportSocketPool : public TransportClientSocketPool {
     last_group_id_ = ClientSocketPool::GroupId(
         HostPortPair(),
         ClientSocketPool::SocketType::kSslVersionInterferenceProbe,
-        true /* privacy_mode */);
+        PrivacyMode::PRIVACY_MODE_ENABLED);
   }
 
   int RequestSocket(
@@ -2010,7 +2010,7 @@ TEST_F(HttpStreamFactoryTest, NewSpdySessionCloseIdleH2Sockets) {
                             ssl_config, PRIVACY_MODE_DISABLED));
     ClientSocketPool::GroupId group_id(host_port_pair,
                                        ClientSocketPool::SocketType::kSsl,
-                                       false /* privacy_mode */);
+                                       PrivacyMode::PRIVACY_MODE_DISABLED);
     int rv = connection->Init(
         group_id,
         ClientSocketPool::SocketParams::CreateFromSSLSocketParams(ssl_params),

@@ -112,11 +112,12 @@ ClientSocketPool::SocketParams::CreateFromHttpProxySocketParams(
 ClientSocketPool::SocketParams::~SocketParams() = default;
 
 ClientSocketPool::GroupId::GroupId()
-    : socket_type_(SocketType::kHttp), privacy_mode_(false) {}
+    : socket_type_(SocketType::kHttp),
+      privacy_mode_(PrivacyMode::PRIVACY_MODE_DISABLED) {}
 
 ClientSocketPool::GroupId::GroupId(const HostPortPair& destination,
                                    SocketType socket_type,
-                                   bool privacy_mode)
+                                   PrivacyMode privacy_mode)
     : destination_(destination),
       socket_type_(socket_type),
       privacy_mode_(privacy_mode) {}

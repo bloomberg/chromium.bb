@@ -27,6 +27,7 @@
 #include "net/base/load_timing_info.h"
 #include "net/base/load_timing_info_test_util.h"
 #include "net/base/net_errors.h"
+#include "net/base/privacy_mode.h"
 #include "net/base/request_priority.h"
 #include "net/base/test_completion_callback.h"
 #include "net/http/http_response_headers.h"
@@ -69,11 +70,12 @@ const int kDefaultMaxSocketsPerGroup = 2;
 constexpr base::TimeDelta kUnusedIdleSocketTimeout =
     base::TimeDelta::FromSeconds(10);
 
-ClientSocketPool::GroupId TestGroupId(const std::string& host,
-                                      int port = 80,
-                                      ClientSocketPool::SocketType socket_type =
-                                          ClientSocketPool::SocketType::kHttp,
-                                      bool privacy_mode = false) {
+ClientSocketPool::GroupId TestGroupId(
+    const std::string& host,
+    int port = 80,
+    ClientSocketPool::SocketType socket_type =
+        ClientSocketPool::SocketType::kHttp,
+    PrivacyMode privacy_mode = PrivacyMode::PRIVACY_MODE_DISABLED) {
   return ClientSocketPool::GroupId(HostPortPair(host, port), socket_type,
                                    privacy_mode);
 }
@@ -799,7 +801,8 @@ TEST_F(ClientSocketPoolBaseTest, GroupSeparation) {
       ClientSocketPool::SocketType::kFtp,
   };
 
-  const bool kPrivacyModes[] = {false, true};
+  const PrivacyMode kPrivacyModes[] = {PrivacyMode::PRIVACY_MODE_DISABLED,
+                                       PrivacyMode::PRIVACY_MODE_ENABLED};
 
   int total_idle_sockets = 0;
 

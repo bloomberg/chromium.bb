@@ -112,7 +112,7 @@ class WebSocketClientSocketHandleAdapterTest
     int rv = connection->Init(
         ClientSocketPool::GroupId(host_port_pair_,
                                   ClientSocketPool::SocketType::kSsl,
-                                  false /* privacy_mode */),
+                                  PrivacyMode::PRIVACY_MODE_DISABLED),
         ClientSocketPool::SocketParams::CreateFromSSLSocketParams(ssl_params_),
         MEDIUM, SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
         callback.callback(), ClientSocketPool::ProxyAuthCallback(),

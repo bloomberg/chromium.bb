@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "net/base/host_port_pair.h"
+#include "net/base/privacy_mode.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -30,7 +31,8 @@ TEST(ClientSocketPool, GroupIdOperators) {
       ClientSocketPool::SocketType::kFtp,
   };
 
-  const bool kPrivacyModes[] = {false, true};
+  const PrivacyMode kPrivacyModes[] = {PrivacyMode::PRIVACY_MODE_DISABLED,
+                                       PrivacyMode::PRIVACY_MODE_ENABLED};
 
   // All previously created |group_ids|. They should all be less than the
   // current group under consideration.
@@ -69,57 +71,57 @@ TEST(ClientSocketPool, GroupIdToString) {
   EXPECT_EQ("foo:80",
             ClientSocketPool::GroupId(HostPortPair("foo", 80),
                                       ClientSocketPool::SocketType::kHttp,
-                                      false /* privacy_mode */)
+                                      PrivacyMode::PRIVACY_MODE_DISABLED)
                 .ToString());
   EXPECT_EQ("bar:443",
             ClientSocketPool::GroupId(HostPortPair("bar", 443),
                                       ClientSocketPool::SocketType::kHttp,
-                                      false /* privacy_mode */)
+                                      PrivacyMode::PRIVACY_MODE_DISABLED)
                 .ToString());
   EXPECT_EQ("pm/bar:80",
             ClientSocketPool::GroupId(HostPortPair("bar", 80),
                                       ClientSocketPool::SocketType::kHttp,
-                                      true /* privacy_mode */)
+                                      PrivacyMode::PRIVACY_MODE_ENABLED)
                 .ToString());
 
   EXPECT_EQ("ssl/foo:80",
             ClientSocketPool::GroupId(HostPortPair("foo", 80),
                                       ClientSocketPool::SocketType::kSsl,
-                                      false /* privacy_mode */)
+                                      PrivacyMode::PRIVACY_MODE_DISABLED)
                 .ToString());
   EXPECT_EQ("ssl/bar:443",
             ClientSocketPool::GroupId(HostPortPair("bar", 443),
                                       ClientSocketPool::SocketType::kSsl,
-                                      false /* privacy_mode */)
+                                      PrivacyMode::PRIVACY_MODE_DISABLED)
                 .ToString());
   EXPECT_EQ("pm/ssl/bar:80",
             ClientSocketPool::GroupId(HostPortPair("bar", 80),
                                       ClientSocketPool::SocketType::kSsl,
-                                      true /* privacy_mode */)
+                                      PrivacyMode::PRIVACY_MODE_ENABLED)
                 .ToString());
 
   EXPECT_EQ("version-interference-probe/ssl/foo:443",
             ClientSocketPool::GroupId(
                 HostPortPair("foo", 443),
                 ClientSocketPool::SocketType::kSslVersionInterferenceProbe,
-                false /* privacy_mode */)
+                PrivacyMode::PRIVACY_MODE_DISABLED)
                 .ToString());
   EXPECT_EQ("pm/version-interference-probe/ssl/bar:444",
             ClientSocketPool::GroupId(
                 HostPortPair("bar", 444),
                 ClientSocketPool::SocketType::kSslVersionInterferenceProbe,
-                true /* privacy_mode */)
+                PrivacyMode::PRIVACY_MODE_ENABLED)
                 .ToString());
 
   EXPECT_EQ("ftp/foo:80",
             ClientSocketPool::GroupId(HostPortPair("foo", 80),
                                       ClientSocketPool::SocketType::kFtp,
-                                      false /* privacy_mode */)
+                                      PrivacyMode::PRIVACY_MODE_DISABLED)
                 .ToString());
   EXPECT_EQ("pm/ftp/bar:81",
             ClientSocketPool::GroupId(HostPortPair("bar", 81),
                                       ClientSocketPool::SocketType::kFtp,
-                                      true /* privacy_mode */)
+                                      PrivacyMode::PRIVACY_MODE_ENABLED)
                 .ToString());
 }
 

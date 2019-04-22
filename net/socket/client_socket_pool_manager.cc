@@ -113,8 +113,8 @@ scoped_refptr<ClientSocketPool::SocketParams> CreateSocketParamsAndGetGroupId(
     }
   }
 
-  *connection_group = ClientSocketPool::GroupId(
-      endpoint, socket_type, privacy_mode == PRIVACY_MODE_ENABLED);
+  *connection_group =
+      ClientSocketPool::GroupId(endpoint, socket_type, privacy_mode);
 
   if (!proxy_info.is_direct()) {
     ProxyServer proxy_server = proxy_info.proxy_server();

@@ -14,6 +14,7 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
+#include "net/base/privacy_mode.h"
 #include "net/base/proxy_server.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_request_headers.h"
@@ -90,7 +91,7 @@ class MockClientSocketHandleFactory {
     socket_handle->Init(
         ClientSocketPool::GroupId(HostPortPair("a", 80),
                                   ClientSocketPool::SocketType::kHttp,
-                                  false /* privacy_mode */),
+                                  PrivacyMode::PRIVACY_MODE_DISABLED),
         scoped_refptr<ClientSocketPool::SocketParams>(), MEDIUM, SocketTag(),
         ClientSocketPool::RespectLimits::ENABLED, CompletionOnceCallback(),
         ClientSocketPool::ProxyAuthCallback(), &pool_, NetLogWithSource());

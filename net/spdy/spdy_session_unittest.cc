@@ -20,6 +20,7 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
+#include "net/base/privacy_mode.h"
 #include "net/base/proxy_delegate.h"
 #include "net/base/proxy_server.h"
 #include "net/base/request_priority.h"
@@ -3539,7 +3540,7 @@ TEST_F(SpdySessionTest, CloseOneIdleConnection) {
       connection2->Init(
           ClientSocketPool::GroupId(host_port2,
                                     ClientSocketPool::SocketType::kHttp,
-                                    false /* privacy_mode */),
+                                    PrivacyMode::PRIVACY_MODE_DISABLED),
           ClientSocketPool::SocketParams::CreateFromTransportSocketParams(
               params2),
           DEFAULT_PRIORITY, SocketTag(),
@@ -3624,7 +3625,7 @@ TEST_F(SpdySessionTest, CloseOneIdleConnectionWithAlias) {
       connection3->Init(
           ClientSocketPool::GroupId(host_port3,
                                     ClientSocketPool::SocketType::kHttp,
-                                    false /* privacy_mode */),
+                                    PrivacyMode::PRIVACY_MODE_DISABLED),
           ClientSocketPool::SocketParams::CreateFromTransportSocketParams(
               params3),
           DEFAULT_PRIORITY, SocketTag(),
@@ -3707,7 +3708,7 @@ TEST_F(SpdySessionTest, CloseSessionOnIdleWhenPoolStalled) {
       connection2->Init(
           ClientSocketPool::GroupId(host_port2,
                                     ClientSocketPool::SocketType::kHttp,
-                                    false /* privacy_mode */),
+                                    PrivacyMode::PRIVACY_MODE_DISABLED),
           ClientSocketPool::SocketParams::CreateFromTransportSocketParams(
               params2),
           DEFAULT_PRIORITY, SocketTag(),

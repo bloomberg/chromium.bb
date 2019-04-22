@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "net/base/privacy_mode.h"
 #include "net/base/proxy_server.h"
 #include "net/dns/context_host_resolver.h"
 #include "net/dns/dns_client.h"
@@ -210,7 +211,7 @@ TEST_F(HttpWithDnsOverHttpsTest, EndToEnd) {
 
   ClientSocketPool::GroupId group_id(
       HostPortPair(request_info.url.host(), request_info.url.IntPort()),
-      ClientSocketPool::SocketType::kHttp, false /* privacy_mode */);
+      ClientSocketPool::SocketType::kHttp, PrivacyMode::PRIVACY_MODE_DISABLED);
   EXPECT_EQ(network_session
                 ->GetSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL,
                                 ProxyServer::Direct())

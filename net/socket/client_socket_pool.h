@@ -14,6 +14,7 @@
 #include "net/base/completion_once_callback.h"
 #include "net/base/load_states.h"
 #include "net/base/net_export.h"
+#include "net/base/privacy_mode.h"
 #include "net/base/request_priority.h"
 #include "net/dns/host_resolver.h"
 #include "net/http/http_request_info.h"
@@ -115,7 +116,7 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
     GroupId();
     GroupId(const HostPortPair& destination,
             SocketType socket_type,
-            bool privacy_mode);
+            PrivacyMode privacy_mode);
     GroupId(const GroupId& group_id);
 
     ~GroupId();
@@ -127,7 +128,7 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
 
     SocketType socket_type() const { return socket_type_; }
 
-    bool privacy_mode() const { return privacy_mode_; }
+    PrivacyMode privacy_mode() const { return privacy_mode_; }
 
     // Returns the group ID as a string, for logging.
     std::string ToString() const;
@@ -150,8 +151,8 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
 
     SocketType socket_type_;
 
-    // True if this request is for a privacy mode / uncredentials connection.
-    bool privacy_mode_;
+    // If this request is for a privacy mode / uncredentialed connection.
+    PrivacyMode privacy_mode_;
   };
 
   // Callback to create a ConnectJob using the provided arguments. The lower

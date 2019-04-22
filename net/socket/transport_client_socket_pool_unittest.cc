@@ -22,6 +22,7 @@
 #include "net/base/load_timing_info.h"
 #include "net/base/load_timing_info_test_util.h"
 #include "net/base/net_errors.h"
+#include "net/base/privacy_mode.h"
 #include "net/base/test_completion_callback.h"
 #include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/mock_cert_verifier.h"
@@ -106,7 +107,7 @@ class TransportClientSocketPoolTest : public ::testing::Test,
             TransportClientSocketPool::set_connect_backup_jobs_enabled(true)),
         group_id_(HostPortPair("www.google.com", 80),
                   ClientSocketPool::SocketType::kHttp,
-                  false /* privacy_mode */),
+                  PrivacyMode::PRIVACY_MODE_DISABLED),
         params_(ClientSocketPool::SocketParams::CreateFromTransportSocketParams(
             base::MakeRefCounted<TransportSocketParams>(
                 HostPortPair("www.google.com", 80),
@@ -157,7 +158,7 @@ class TransportClientSocketPoolTest : public ::testing::Test,
   int StartRequest(const std::string& host_name, RequestPriority priority) {
     ClientSocketPool::GroupId group_id(HostPortPair(host_name, 80),
                                        ClientSocketPool::SocketType::kHttp,
-                                       false /* privacy_mode */);
+                                       PrivacyMode::PRIVACY_MODE_DISABLED);
     scoped_refptr<ClientSocketPool::SocketParams> params(
         ClientSocketPool::SocketParams::CreateFromTransportSocketParams(
             base::MakeRefCounted<TransportSocketParams>(
@@ -1017,7 +1018,7 @@ TEST_F(TransportClientSocketPoolTest, SSLCertError) {
   int rv = handle.Init(
       ClientSocketPool::GroupId(kHostPortPair,
                                 ClientSocketPool::SocketType::kSsl,
-                                false /* privacy_mode */),
+                                PrivacyMode::PRIVACY_MODE_DISABLED),
       ClientSocketPool::SocketParams::CreateFromSSLSocketParams(params), MEDIUM,
       SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
       callback.callback(), ClientSocketPool::ProxyAuthCallback(),
@@ -1286,7 +1287,7 @@ TEST_F(TransportClientSocketPoolTest, SOCKS) {
     int rv =
         handle.Init(ClientSocketPool::GroupId(
                         kDesination, ClientSocketPool::SocketType::kSsl,
-                        false /* privacy_mode */),
+                        PrivacyMode::PRIVACY_MODE_DISABLED),
                     socks_params, LOW, SocketTag(),
                     ClientSocketPool::RespectLimits::ENABLED,
                     callback.callback(), ClientSocketPool::ProxyAuthCallback(),
@@ -1369,8 +1370,9 @@ TEST_F(TransportClientSocketPoolTest, SpdyOneConnectJobTwoRequestsError) {
       ClientSocketPool::SocketParams::CreateFromSSLSocketParams(
           endpoint_ssl_params);
 
-  ClientSocketPool::GroupId group_id(
-      kEndpoint, ClientSocketPool::SocketType::kSsl, false /* privacy_mode */);
+  ClientSocketPool::GroupId group_id(kEndpoint,
+                                     ClientSocketPool::SocketType::kSsl,
+                                     PrivacyMode::PRIVACY_MODE_DISABLED);
 
   // Start the first connection attempt.
   TestCompletionCallback callback1;
@@ -1486,8 +1488,9 @@ TEST_F(TransportClientSocketPoolTest, SpdyAuthOneConnectJobTwoRequests) {
       ClientSocketPool::SocketParams::CreateFromSSLSocketParams(
           endpoint_ssl_params);
 
-  ClientSocketPool::GroupId group_id(
-      kEndpoint, ClientSocketPool::SocketType::kSsl, false /* privacy_mode */);
+  ClientSocketPool::GroupId group_id(kEndpoint,
+                                     ClientSocketPool::SocketType::kSsl,
+                                     PrivacyMode::PRIVACY_MODE_DISABLED);
 
   // Start the first connection attempt.
   TestCompletionCallback callback1;
@@ -1597,7 +1600,7 @@ TEST_F(TransportClientSocketPoolTest, HttpTunnelSetupRedirect) {
       int rv = handle.Init(
           ClientSocketPool::GroupId(kEndpoint,
                                     ClientSocketPool::SocketType::kSsl,
-                                    false /* privacy_mode */),
+                                    PrivacyMode::PRIVACY_MODE_DISABLED),
           pool_params, LOW, SocketTag(),
           ClientSocketPool::RespectLimits::ENABLED, callback.callback(),
           ClientSocketPool::ProxyAuthCallback(), tagging_pool_.get(),
@@ -1662,7 +1665,7 @@ TEST_F(TransportClientSocketPoolTest, Tag) {
   uint64_t old_traffic = GetTaggedBytes(tag_val1);
   const ClientSocketPool::GroupId kGroupId(test_server.host_port_pair(),
                                            ClientSocketPool::SocketType::kSsl,
-                                           false /* privacy_mode */);
+                                           PrivacyMode::PRIVACY_MODE_DISABLED);
   scoped_refptr<ClientSocketPool::SocketParams> params =
       ClientSocketPool::SocketParams::CreateFromTransportSocketParams(
           base::MakeRefCounted<TransportSocketParams>(
@@ -1782,7 +1785,7 @@ TEST_F(TransportClientSocketPoolTest, TagSOCKSProxy) {
   const HostPortPair kDestination("host", 80);
   const ClientSocketPool::GroupId kGroupId(kDestination,
                                            ClientSocketPool::SocketType::kHttp,
-                                           false /* privacy_mode */);
+                                           PrivacyMode::PRIVACY_MODE_DISABLED);
   scoped_refptr<TransportSocketParams> tcp_params =
       base::MakeRefCounted<TransportSocketParams>(HostPortPair("proxy", 80),
                                                   OnHostResolutionCallback());
@@ -1888,7 +1891,7 @@ TEST_F(TransportClientSocketPoolTest, TagSSLDirect) {
   SocketTag tag2(getuid(), tag_val2);
   const ClientSocketPool::GroupId kGroupId(test_server.host_port_pair(),
                                            ClientSocketPool::SocketType::kSsl,
-                                           false /* privacy_mode */);
+                                           PrivacyMode::PRIVACY_MODE_DISABLED);
   scoped_refptr<TransportSocketParams> tcp_params =
       base::MakeRefCounted<TransportSocketParams>(test_server.host_port_pair(),
                                                   OnHostResolutionCallback());
@@ -1961,7 +1964,7 @@ TEST_F(TransportClientSocketPoolTest, TagSSLDirectTwoSockets) {
   SocketTag tag2(getuid(), tag_val2);
   const ClientSocketPool::GroupId kGroupId(test_server.host_port_pair(),
                                            ClientSocketPool::SocketType::kSsl,
-                                           false /* privacy_mode */);
+                                           PrivacyMode::PRIVACY_MODE_DISABLED);
   scoped_refptr<TransportSocketParams> tcp_params =
       base::MakeRefCounted<TransportSocketParams>(test_server.host_port_pair(),
                                                   OnHostResolutionCallback());
@@ -2028,7 +2031,7 @@ TEST_F(TransportClientSocketPoolTest, TagSSLDirectTwoSocketsFullPool) {
   SocketTag tag2(getuid(), tag_val2);
   const ClientSocketPool::GroupId kGroupId(test_server.host_port_pair(),
                                            ClientSocketPool::SocketType::kSsl,
-                                           false /* privacy_mode */);
+                                           PrivacyMode::PRIVACY_MODE_DISABLED);
   scoped_refptr<TransportSocketParams> tcp_params =
       base::MakeRefCounted<TransportSocketParams>(test_server.host_port_pair(),
                                                   OnHostResolutionCallback());
@@ -2107,7 +2110,7 @@ TEST_F(TransportClientSocketPoolTest, TagHttpProxyNoTunnel) {
   const HostPortPair kDestination("www.google.com", 80);
   const ClientSocketPool::GroupId kGroupId(kDestination,
                                            ClientSocketPool::SocketType::kSsl,
-                                           false /* privacy_mode */);
+                                           PrivacyMode::PRIVACY_MODE_DISABLED);
   scoped_refptr<ClientSocketPool::SocketParams> params =
       ClientSocketPool::SocketParams::CreateFromHttpProxySocketParams(
           base::MakeRefCounted<HttpProxySocketParams>(
@@ -2176,7 +2179,7 @@ TEST_F(TransportClientSocketPoolTest, TagHttpProxyTunnel) {
   const HostPortPair kDestination("www.google.com", 443);
   const ClientSocketPool::GroupId kGroupId(kDestination,
                                            ClientSocketPool::SocketType::kSsl,
-                                           false /* privacy_mode */);
+                                           PrivacyMode::PRIVACY_MODE_DISABLED);
   scoped_refptr<ClientSocketPool::SocketParams> params =
       ClientSocketPool::SocketParams::CreateFromHttpProxySocketParams(
           base::MakeRefCounted<HttpProxySocketParams>(
@@ -2304,7 +2307,7 @@ TEST_F(TransportClientSocketPoolMockNowSourceTest, IdleUnusedSocketTimeout) {
       int rv = connection.Init(
           ClientSocketPool::GroupId(kHostPortPair1,
                                     ClientSocketPool::SocketType::kHttp,
-                                    false /* privacy_mode */),
+                                    PrivacyMode::PRIVACY_MODE_DISABLED),
           ClientSocketPool::SocketParams::CreateFromTransportSocketParams(
               transport_params),
           MEDIUM, SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
@@ -2351,7 +2354,7 @@ TEST_F(TransportClientSocketPoolMockNowSourceTest, IdleUnusedSocketTimeout) {
       int rv = connection.Init(
           ClientSocketPool::GroupId(kHostPortPair2,
                                     ClientSocketPool::SocketType::kHttp,
-                                    false /* privacy_mode */),
+                                    PrivacyMode::PRIVACY_MODE_DISABLED),
           ClientSocketPool::SocketParams::CreateFromTransportSocketParams(
               transport_params),
           MEDIUM, SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
