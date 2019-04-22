@@ -546,6 +546,15 @@
       },
     },
   },
+  'win10_nvidia_geforce_gtx_1660': {
+    'swarming': {
+      'dimensions': {
+        'gpu': '10de:2184',
+        'os': 'Windows-10',
+        'pool': 'Chrome-GPU',
+      },
+    },
+  },
   'win10_nvidia_quadro_p400_experimental': {
     'swarming': {
       'dimensions': {
