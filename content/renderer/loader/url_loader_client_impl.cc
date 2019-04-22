@@ -301,6 +301,9 @@ void URLLoaderClientImpl::OnTransferSizeUpdated(int32_t transfer_size_diff) {
 
 void URLLoaderClientImpl::OnStartLoadingResponseBody(
     mojo::ScopedDataPipeConsumerHandle body) {
+  TRACE_EVENT1("loading", "URLLoaderClientImpl::OnStartLoadingResponseBody",
+               "url", last_loaded_url_.possibly_invalid_spec());
+
   DCHECK(has_received_response_head_);
   DCHECK(!has_received_response_body_);
   has_received_response_body_ = true;

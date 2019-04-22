@@ -517,6 +517,7 @@ void DocumentLoader::BodyCodeCacheReceived(
 }
 
 void DocumentLoader::BodyDataReceived(base::span<const char> data) {
+  TRACE_EVENT0("loading", "DocumentLoader::BodyDataReceived");
   GetFrameLoader().Progress().IncrementProgress(main_resource_identifier_,
                                                 data.size());
   probe::DidReceiveData(probe::ToCoreProbeSink(GetFrame()),
@@ -532,6 +533,7 @@ void DocumentLoader::BodyLoadingFinished(
     int64_t total_decoded_body_length,
     bool should_report_corb_blocking,
     const base::Optional<WebURLError>& error) {
+  TRACE_EVENT0("loading", "DocumentLoader::BodyLoadingFinished");
   response_.SetEncodedDataLength(total_encoded_data_length);
   response_.SetEncodedBodyLength(total_encoded_body_length);
   response_.SetDecodedBodyLength(total_decoded_body_length);
@@ -886,6 +888,7 @@ void DocumentLoader::CommitNavigation(const AtomicString& mime_type,
 }
 
 void DocumentLoader::CommitData(const char* bytes, size_t length) {
+  TRACE_EVENT1("loading", "DocumentLoader::CommitData", "length", length);
   DCHECK_GE(state_, kCommitted);
 
   // This can happen if document.close() is called by an event handler while
@@ -909,6 +912,7 @@ void DocumentLoader::CommitData(const char* bytes, size_t length) {
 }
 
 void DocumentLoader::HandleData(const char* data, size_t length) {
+  TRACE_EVENT1("loading", "DocumentLoader::HandleData", "length", length);
   DCHECK(data);
   DCHECK(length);
   DCHECK(!frame_->GetPage()->Paused());

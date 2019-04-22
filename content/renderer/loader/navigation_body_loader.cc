@@ -139,6 +139,8 @@ void NavigationBodyLoader::OnTransferSizeUpdated(int32_t transfer_size_diff) {
 
 void NavigationBodyLoader::OnStartLoadingResponseBody(
     mojo::ScopedDataPipeConsumerHandle handle) {
+  TRACE_EVENT1("loading", "NavigationBodyLoader::OnStartLoadingResponseBody",
+               "url", resource_load_info_->url.possibly_invalid_spec());
   DCHECK(!has_received_body_handle_);
   DCHECK(!has_received_completion_);
   has_received_body_handle_ = true;
@@ -171,6 +173,8 @@ void NavigationBodyLoader::SetDefersLoading(bool defers) {
 void NavigationBodyLoader::StartLoadingBody(
     WebNavigationBodyLoader::Client* client,
     bool use_isolated_code_cache) {
+  TRACE_EVENT1("loading", "NavigationBodyLoader::StartLoadingBody", "url",
+               resource_load_info_->url.possibly_invalid_spec());
   client_ = client;
 
   NotifyResourceResponseReceived(render_frame_id_, resource_load_info_.get(),
@@ -216,6 +220,8 @@ void NavigationBodyLoader::OnConnectionClosed() {
 }
 
 void NavigationBodyLoader::OnReadable(MojoResult unused) {
+  TRACE_EVENT1("loading", "NavigationBodyLoader::OnReadable", "url",
+               resource_load_info_->url.possibly_invalid_spec());
   if (has_seen_end_of_data_ || is_deferred_ || is_in_on_readable_)
     return;
   // Protect against reentrancy:
@@ -233,6 +239,8 @@ void NavigationBodyLoader::OnReadable(MojoResult unused) {
 }
 
 void NavigationBodyLoader::ReadFromDataPipe() {
+  TRACE_EVENT1("loading", "NavigationBodyLoader::ReadFromDataPipe", "url",
+               resource_load_info_->url.possibly_invalid_spec());
   uint32_t num_bytes_consumed = 0;
   while (!is_deferred_) {
     const void* buffer = nullptr;

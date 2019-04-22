@@ -363,6 +363,7 @@ void XSSAuditor::InitForFragment() {
 
 void XSSAuditor::Init(Document* document,
                       XSSAuditorDelegate* auditor_delegate) {
+  TRACE_EVENT0("loading", "XSSAuditor::Init");
   DCHECK(IsMainThread());
   if (state_ != kUninitialized)
     return;
@@ -464,6 +465,7 @@ void XSSAuditor::Init(Document* document,
 }
 
 void XSSAuditor::SetEncoding(const WTF::TextEncoding& encoding) {
+  TRACE_EVENT0("loading", "XSSAuditor::SetEncoding");
   const wtf_size_t kMiniumLengthForSuffixTree =
       512;  // FIXME: Tune this parameter.
   const int kSuffixTreeDepth = 5;
@@ -843,6 +845,8 @@ String XSSAuditor::SnippetFromAttribute(const FilterTokenRequest& request,
 }
 
 String XSSAuditor::Canonicalize(String snippet, TruncationKind treatment) {
+  TRACE_EVENT0("loading", "XSSAuditor::Canonicalize");
+
   String decoded_snippet = FullyDecodeString(snippet, encoding_);
 
   if (treatment != kNoTruncation) {

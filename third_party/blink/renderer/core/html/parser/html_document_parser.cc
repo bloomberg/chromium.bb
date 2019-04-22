@@ -769,6 +769,7 @@ void HTMLDocumentParser::insert(const String& source) {
 }
 
 void HTMLDocumentParser::StartBackgroundParser() {
+  TRACE_EVENT0("blink,loading", "HTMLDocumentParser::StartBackgroundParser");
   DCHECK(!IsStopped());
   DCHECK(ShouldUseThreading());
   DCHECK(!have_background_parser_);
