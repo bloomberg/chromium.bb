@@ -137,13 +137,15 @@ Polymer({
     }
 
     const name = device.name || device.address;
-    const id = 'bluetooth_connect_' + error;
-    if (this.i18nExists(id)) {
-      this.errorMessage_ = this.i18n(id, name);
-    } else {
-      this.errorMessage_ = error;
-      console.error('Unexpected error connecting to: ' + name + ': ' + error);
+    let id = 'bluetooth_connect_' + error;
+    if (!this.i18nExists(id)) {
+      console.error(
+          'Unexpected error connecting to:', name, 'error:', error,
+          'result:', result);
+      id = 'bluetooth_connect_failed';
     }
+    this.errorMessage_ = this.i18n(id, name);
+
     return true;
   },
 
