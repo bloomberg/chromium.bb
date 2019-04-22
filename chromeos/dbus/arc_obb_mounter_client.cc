@@ -81,8 +81,8 @@ ArcObbMounterClient::ArcObbMounterClient() = default;
 ArcObbMounterClient::~ArcObbMounterClient() = default;
 
 // static
-ArcObbMounterClient* ArcObbMounterClient::Create() {
-  return new ArcObbMounterClientImpl();
+std::unique_ptr<ArcObbMounterClient> ArcObbMounterClient::Create() {
+  return std::make_unique<ArcObbMounterClientImpl>();
 }
 
 }  // namespace chromeos

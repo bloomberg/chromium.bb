@@ -77,8 +77,8 @@ VirtualFileProviderClient::VirtualFileProviderClient() = default;
 VirtualFileProviderClient::~VirtualFileProviderClient() = default;
 
 // static
-VirtualFileProviderClient* VirtualFileProviderClient::Create() {
-  return new VirtualFileProviderClientImpl();
+std::unique_ptr<VirtualFileProviderClient> VirtualFileProviderClient::Create() {
+  return std::make_unique<VirtualFileProviderClientImpl>();
 }
 
 }  // namespace chromeos

@@ -255,7 +255,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) DebugDaemonClient
 
   // Factory function, creates a new instance and returns ownership.
   // For normal usage, access the singleton via DBusThreadManager::Get().
-  static DebugDaemonClient* Create();
+  static std::unique_ptr<DebugDaemonClient> Create();
 
  protected:
   // Create() should be used instead.

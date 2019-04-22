@@ -78,8 +78,8 @@ ArcOemCryptoClient::ArcOemCryptoClient() = default;
 ArcOemCryptoClient::~ArcOemCryptoClient() = default;
 
 // static
-ArcOemCryptoClient* ArcOemCryptoClient::Create() {
-  return new ArcOemCryptoClientImpl();
+std::unique_ptr<ArcOemCryptoClient> ArcOemCryptoClient::Create() {
+  return std::make_unique<ArcOemCryptoClientImpl>();
 }
 
 }  // namespace chromeos

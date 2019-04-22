@@ -231,8 +231,8 @@ LorgnetteManagerClient::LorgnetteManagerClient() = default;
 LorgnetteManagerClient::~LorgnetteManagerClient() = default;
 
 // static
-LorgnetteManagerClient* LorgnetteManagerClient::Create() {
-  return new LorgnetteManagerClientImpl();
+std::unique_ptr<LorgnetteManagerClient> LorgnetteManagerClient::Create() {
+  return std::make_unique<LorgnetteManagerClientImpl>();
 }
 
 }  // namespace chromeos

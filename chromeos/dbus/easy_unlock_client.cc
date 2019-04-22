@@ -203,8 +203,8 @@ EasyUnlockClient::EasyUnlockClient() = default;
 EasyUnlockClient::~EasyUnlockClient() = default;
 
 // static
-EasyUnlockClient* EasyUnlockClient::Create() {
-  return new EasyUnlockClientImpl();
+std::unique_ptr<EasyUnlockClient> EasyUnlockClient::Create() {
+  return std::make_unique<EasyUnlockClientImpl>();
 }
 
 }  // namespace chromeos

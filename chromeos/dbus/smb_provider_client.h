@@ -5,6 +5,7 @@
 #ifndef CHROMEOS_DBUS_SMB_PROVIDER_CLIENT_H_
 #define CHROMEOS_DBUS_SMB_PROVIDER_CLIENT_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
@@ -57,7 +58,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) SmbProviderClient
 
   // Factory function, creates a new instance and returns ownership.
   // For normal usage, access the singleton via DBusThreadManager::Get().
-  static SmbProviderClient* Create();
+  static std::unique_ptr<SmbProviderClient> Create();
 
   // Calls Mount. It runs OpenDirectory() on |share_path| to check that it is a
   // valid share. |workgroup|, |username|, and |password_fd| will be used as

@@ -22,8 +22,10 @@
 #include "chromeos/dbus/fake_arc_midis_client.h"
 #include "chromeos/dbus/fake_arc_obb_mounter_client.h"
 #include "chromeos/dbus/fake_arc_oemcrypto_client.h"
+#include "chromeos/dbus/fake_cec_service_client.h"
 #include "chromeos/dbus/fake_cicerone_client.h"
 #include "chromeos/dbus/fake_concierge_client.h"
+#include "chromeos/dbus/fake_cros_disks_client.h"
 #include "chromeos/dbus/fake_debug_daemon_client.h"
 #include "chromeos/dbus/fake_diagnosticsd_client.h"
 #include "chromeos/dbus/fake_easy_unlock_client.h"
@@ -70,73 +72,35 @@ DBusClientsBrowser::DBusClientsBrowser(bool use_real_clients) {
   arc_appfuse_provider_client_ =
       CREATE_DBUS_CLIENT(ArcAppfuseProviderClient, use_real_clients);
   arc_midis_client_ = CREATE_DBUS_CLIENT(ArcMidisClient, use_real_clients);
-
-  if (use_real_clients)
-    arc_obb_mounter_client_.reset(ArcObbMounterClient::Create());
-  else
-    arc_obb_mounter_client_.reset(new FakeArcObbMounterClient);
-
-  if (use_real_clients)
-    arc_oemcrypto_client_.reset(ArcOemCryptoClient::Create());
-  else
-    arc_oemcrypto_client_.reset(new FakeArcOemCryptoClient);
-
-  cec_service_client_ = CecServiceClient::Create(client_impl_type);
-
-  cros_disks_client_.reset(CrosDisksClient::Create(client_impl_type));
-
+  arc_obb_mounter_client_ =
+      CREATE_DBUS_CLIENT(ArcObbMounterClient, use_real_clients);
+  arc_oemcrypto_client_ =
+      CREATE_DBUS_CLIENT(ArcOemCryptoClient, use_real_clients);
+  cec_service_client_ = CREATE_DBUS_CLIENT(CecServiceClient, use_real_clients);
+  cros_disks_client_ = CREATE_DBUS_CLIENT(CrosDisksClient, use_real_clients);
   cicerone_client_ = CREATE_DBUS_CLIENT(CiceroneClient, use_real_clients);
-
-  if (use_real_clients)
-    concierge_client_.reset(ConciergeClient::Create());
-  else
-    concierge_client_.reset(new FakeConciergeClient);
-
-  if (use_real_clients)
-    debug_daemon_client_.reset(DebugDaemonClient::Create());
-  else
-    debug_daemon_client_.reset(new FakeDebugDaemonClient);
-
+  concierge_client_ = CREATE_DBUS_CLIENT(ConciergeClient, use_real_clients);
+  debug_daemon_client_ =
+      CREATE_DBUS_CLIENT(DebugDaemonClient, use_real_clients);
   diagnosticsd_client_ =
       CREATE_DBUS_CLIENT(DiagnosticsdClient, use_real_clients);
-
-  if (use_real_clients)
-    easy_unlock_client_.reset(EasyUnlockClient::Create());
-  else
-    easy_unlock_client_.reset(new FakeEasyUnlockClient);
-
-  if (use_real_clients)
-    image_burner_client_.reset(ImageBurnerClient::Create());
-  else
-    image_burner_client_.reset(new FakeImageBurnerClient);
-
-  if (use_real_clients)
-    image_loader_client_.reset(ImageLoaderClient::Create());
-  else
-    image_loader_client_.reset(new FakeImageLoaderClient);
-
-  if (use_real_clients)
-    lorgnette_manager_client_.reset(LorgnetteManagerClient::Create());
-  else
-    lorgnette_manager_client_.reset(new FakeLorgnetteManagerClient);
-
+  easy_unlock_client_ = CREATE_DBUS_CLIENT(EasyUnlockClient, use_real_clients);
+  image_burner_client_ =
+      CREATE_DBUS_CLIENT(ImageBurnerClient, use_real_clients);
+  image_loader_client_ =
+      CREATE_DBUS_CLIENT(ImageLoaderClient, use_real_clients);
+  lorgnette_manager_client_ =
+      CREATE_DBUS_CLIENT(LorgnetteManagerClient, use_real_clients);
   oobe_configuration_client_ =
       CREATE_DBUS_CLIENT(OobeConfigurationClient, use_real_clients);
   runtime_probe_client_ =
       CREATE_DBUS_CLIENT(RuntimeProbeClient, use_real_clients);
   seneschal_client_ = CREATE_DBUS_CLIENT(SeneschalClient, use_real_clients);
-
-  if (use_real_clients)
-    smb_provider_client_.reset(SmbProviderClient::Create());
-  else
-    smb_provider_client_ = std::make_unique<FakeSmbProviderClient>();
-
+  smb_provider_client_ =
+      CREATE_DBUS_CLIENT(SmbProviderClient, use_real_clients);
   update_engine_client_.reset(UpdateEngineClient::Create(client_impl_type));
-
-  if (use_real_clients)
-    virtual_file_provider_client_.reset(VirtualFileProviderClient::Create());
-  else
-    virtual_file_provider_client_.reset(new FakeVirtualFileProviderClient);
+  virtual_file_provider_client_ =
+      CREATE_DBUS_CLIENT(VirtualFileProviderClient, use_real_clients);
 }
 
 DBusClientsBrowser::~DBusClientsBrowser() = default;

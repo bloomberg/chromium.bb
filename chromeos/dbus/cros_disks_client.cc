@@ -25,7 +25,6 @@
 #include "base/task_runner_util.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "chromeos/dbus/fake_cros_disks_client.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
@@ -714,11 +713,8 @@ CrosDisksClient::CrosDisksClient() = default;
 CrosDisksClient::~CrosDisksClient() = default;
 
 // static
-CrosDisksClient* CrosDisksClient::Create(DBusClientImplementationType type) {
-  if (type == REAL_DBUS_CLIENT_IMPLEMENTATION)
-    return new CrosDisksClientImpl();
-  DCHECK_EQ(FAKE_DBUS_CLIENT_IMPLEMENTATION, type);
-  return new FakeCrosDisksClient();
+std::unique_ptr<CrosDisksClient> CrosDisksClient::Create() {
+  return std::make_unique<CrosDisksClientImpl>();
 }
 
 // static

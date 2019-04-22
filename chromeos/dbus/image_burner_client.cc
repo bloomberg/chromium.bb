@@ -143,8 +143,8 @@ ImageBurnerClient::ImageBurnerClient() = default;
 ImageBurnerClient::~ImageBurnerClient() = default;
 
 // static
-ImageBurnerClient* ImageBurnerClient::Create() {
-  return new ImageBurnerClientImpl();
+std::unique_ptr<ImageBurnerClient> ImageBurnerClient::Create() {
+  return std::make_unique<ImageBurnerClientImpl>();
 }
 
 }  // namespace chromeos

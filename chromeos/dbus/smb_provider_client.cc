@@ -752,8 +752,8 @@ SmbProviderClient::SmbProviderClient() = default;
 SmbProviderClient::~SmbProviderClient() = default;
 
 // static
-SmbProviderClient* SmbProviderClient::Create() {
-  return new SmbProviderClientImpl();
+std::unique_ptr<SmbProviderClient> SmbProviderClient::Create() {
+  return std::make_unique<SmbProviderClientImpl>();
 }
 
 }  // namespace chromeos

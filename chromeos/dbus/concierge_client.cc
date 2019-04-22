@@ -329,8 +329,8 @@ ConciergeClient::ConciergeClient() = default;
 
 ConciergeClient::~ConciergeClient() = default;
 
-ConciergeClient* ConciergeClient::Create() {
-  return new ConciergeClientImpl();
+std::unique_ptr<ConciergeClient> ConciergeClient::Create() {
+  return std::make_unique<ConciergeClientImpl>();
 }
 
 }  // namespace chromeos

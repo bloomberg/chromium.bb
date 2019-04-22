@@ -853,8 +853,8 @@ DebugDaemonClient::DebugDaemonClient() = default;
 DebugDaemonClient::~DebugDaemonClient() = default;
 
 // static
-DebugDaemonClient* DebugDaemonClient::Create() {
-  return new DebugDaemonClientImpl();
+std::unique_ptr<DebugDaemonClient> DebugDaemonClient::Create() {
+  return std::make_unique<DebugDaemonClientImpl>();
 }
 
 }  // namespace chromeos
