@@ -24,6 +24,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <sys/types.h>
+#ifdef MAJOR_IN_SYSMACROS
+#include <sys/sysmacros.h>
+#endif
+#include <sys/stat.h>
+#include <fcntl.h>
 #ifdef HAVE_ALLOCA_H
 # include <alloca.h>
 #endif
@@ -51,6 +57,7 @@ static void amdgpu_sync_dependency_test(void);
 static void amdgpu_bo_eviction_test(void);
 static void amdgpu_dispatch_test(void);
 static void amdgpu_draw_test(void);
+static void amdgpu_gpu_reset_test(void);
 
 static void amdgpu_command_submission_write_linear_helper(unsigned ip_type);
 static void amdgpu_command_submission_const_fill_helper(unsigned ip_type);
@@ -74,6 +81,7 @@ CU_TestInfo basic_tests[] = {
 	{ "Sync dependency Test",  amdgpu_sync_dependency_test },
 	{ "Dispatch Test",  amdgpu_dispatch_test },
 	{ "Draw Test",  amdgpu_draw_test },
+	{ "GPU reset Test", amdgpu_gpu_reset_test },
 	CU_TEST_INFO_NULL,
 };
 #define BUFFER_SIZE (8 * 1024)
@@ -3130,4 +3138,37 @@ static void amdgpu_draw_test(void)
 		amdgpu_memset_draw_test(device_handle, ring_id);
 		amdgpu_memcpy_draw_test(device_handle, ring_id);
 	}
+}
+
+static void amdgpu_gpu_reset_test(void)
+{
+	int r;
+	char debugfs_path[256], tmp[10];
+	int fd;
+	struct stat sbuf;
+	amdgpu_context_handle context_handle;
+	uint32_t hang_state, hangs;
+
+	r = amdgpu_cs_ctx_create(device_handle, &context_handle);
+	CU_ASSERT_EQUAL(r, 0);
+
+	r = fstat(drm_amdgpu[0], &sbuf);
+	CU_ASSERT_EQUAL(r, 0);
+
+	sprintf(debugfs_path, "/sys/kernel/debug/dri/%d/amdgpu_gpu_recover", minor(sbuf.st_rdev));
+	fd = open(debugfs_path, O_RDONLY);
+	CU_ASSERT(fd >= 0);
+
+	r = read(fd, tmp, sizeof(tmp)/sizeof(char));
+	CU_ASSERT(r > 0);
+
+	r = amdgpu_cs_query_reset_state(context_handle, &hang_state, &hangs);
+	CU_ASSERT_EQUAL(r, 0);
+	CU_ASSERT_EQUAL(hang_state, AMDGPU_CTX_UNKNOWN_RESET);
+
+	close(fd);
+	r = amdgpu_cs_ctx_free(context_handle);
+	CU_ASSERT_EQUAL(r, 0);
+
+	amdgpu_dispatch_test();
 }
