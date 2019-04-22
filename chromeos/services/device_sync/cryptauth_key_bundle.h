@@ -30,8 +30,19 @@ namespace device_sync {
 class CryptAuthKeyBundle {
  public:
   // Names which uniquely define a CryptAuthKeyBundle.
-  // TODO(nohle): Add name for DeviceSync keys.
-  enum class Name { kUserKeyPair, kLegacyMasterKey };
+  enum class Name {
+    // A non-rotated asymmetric key associated with a user on the device. It is
+    // used for encrypting device-to-device communications, for example, and it
+    // has historically been used as a device identifier.
+    kUserKeyPair,
+    // Currently unused but required for CryptAuth v2 Enrollment.
+    kLegacyMasterKey,
+    // Enrolling this asymmetric key adds the device to the user's DeviceSync v2
+    // "DeviceSync:BetterTogether" group. This key is not to be confused with
+    // the unenrolled "group key-pair" which is used to end-to-end encrypt
+    // device metadata.
+    kDeviceSyncBetterTogether
+  };
   static const base::flat_set<CryptAuthKeyBundle::Name>& AllNames();
   static std::string KeyBundleNameEnumToString(CryptAuthKeyBundle::Name name);
   static base::Optional<CryptAuthKeyBundle::Name> KeyBundleNameStringToEnum(

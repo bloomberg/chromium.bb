@@ -50,7 +50,8 @@ std::string KeyDirectiveToPrefString(
 const base::flat_set<CryptAuthKeyBundle::Name>& CryptAuthKeyBundle::AllNames() {
   static const base::NoDestructor<base::flat_set<CryptAuthKeyBundle::Name>>
       name_list({CryptAuthKeyBundle::Name::kUserKeyPair,
-                 CryptAuthKeyBundle::Name::kLegacyMasterKey});
+                 CryptAuthKeyBundle::Name::kLegacyMasterKey,
+                 CryptAuthKeyBundle::Name::kDeviceSyncBetterTogether});
   return *name_list;
 }
 
@@ -62,6 +63,8 @@ std::string CryptAuthKeyBundle::KeyBundleNameEnumToString(
       return kCryptAuthUserKeyPairName;
     case CryptAuthKeyBundle::Name::kLegacyMasterKey:
       return kCryptAuthLegacyMasterKeyName;
+    case CryptAuthKeyBundle::Name::kDeviceSyncBetterTogether:
+      return kCryptAuthDeviceSyncBetterTogetherKeyName;
   }
 }
 
@@ -72,6 +75,8 @@ CryptAuthKeyBundle::KeyBundleNameStringToEnum(const std::string& name) {
     return CryptAuthKeyBundle::Name::kUserKeyPair;
   if (name == kCryptAuthLegacyMasterKeyName)
     return CryptAuthKeyBundle::Name::kLegacyMasterKey;
+  if (name == kCryptAuthDeviceSyncBetterTogetherKeyName)
+    return CryptAuthKeyBundle::Name::kDeviceSyncBetterTogether;
 
   return base::nullopt;
 }

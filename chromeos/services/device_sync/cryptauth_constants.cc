@@ -10,6 +10,8 @@ namespace device_sync {
 
 const char kCryptAuthUserKeyPairName[] = "PublicKey";
 const char kCryptAuthLegacyMasterKeyName[] = "authzen";
+const char kCryptAuthDeviceSyncBetterTogetherKeyName[] =
+    "DeviceSync:BetterTogether";
 const char kCryptAuthFixedUserKeyPairHandle[] = "device_key";
 const char kCryptAuthSymmetricKeyDerivationSalt[] = "CryptAuth Enrollment";
 const char kCryptAuthKeyProofSalt[] = "CryptAuth Key Proof";
