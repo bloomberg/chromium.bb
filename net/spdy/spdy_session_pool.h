@@ -207,13 +207,13 @@ class NET_EXPORT SpdySessionPool
   // another "blocking" request already pending. For example, the first request
   // created will be considered "blocking", but subsequent requests will not as
   // long as the "blocking" request is not destroyed.  Once the "blocking"
-  // request is destroyed, the next created request  will be marked "blocking".
+  // request is destroyed, the next created request will be marked "blocking".
   //
-  //  If a request is created, that request is not the "blocking" request, and
-  //  |on_blocking_request_destroyed_callback| is non-null,
-  // then |on_blocking_request_destroyed_callback| will be invoked
-  // asynchronously when the "blocking" request is destroyed. The callback
-  // associated with the "blocking" request is never invoked.
+  // If a request is created, that request is not the "blocking" request, and
+  // |on_blocking_request_destroyed_callback| is non-null, then
+  // |on_blocking_request_destroyed_callback| will be invoked asynchronously
+  // when the "blocking" request is destroyed. The callback associated with the
+  // "blocking" request is never invoked.
   //
   // |delegate|, |spdy_session_request|, and |is_blocking_request_for_session|
   // must all be non-null.
