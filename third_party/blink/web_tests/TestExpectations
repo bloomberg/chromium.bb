@@ -6158,3 +6158,8 @@ crbug.com/953994 [ Linux Win ] virtual/outofblink-cors/http/tests/security/svg-i
 
 # Sheriff 2019-04-19
 crbug.com/954628 [ Win ] external/wpt/payment-request/payment-request-canmakepayment-method.https.html [ Pass Timeout ]
+
+# Sheriff 2019-04-22
+crbug.com/954994 [ Mac ]  images/jpeg-yuv-image-decoding.html [ Pass Failure ]
+crbug.com/954994 [ Mac ]  virtual/exotic-color-space/images/jpeg-yuv-image-decoding.html [ Pass Failure ]
+crbug.com/954994 [ Mac ]  virtual/gpu-rasterization/images/jpeg-yuv-image-decoding.html [ Pass Failure ]
