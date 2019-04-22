@@ -429,6 +429,8 @@ bool TSFBridgeImpl::InitializeDocumentMapInternal() {
     tsf_document_map_[input_type].text_store = text_store;
     tsf_document_map_[input_type].document_manager = document_manager;
     tsf_document_map_[input_type].cookie = cookie;
+    if (text_store)
+      text_store->OnContextInitialized(context.Get());
   }
   return true;
 }
